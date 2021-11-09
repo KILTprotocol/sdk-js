@@ -9,22 +9,22 @@
  * @group integration/delegation
  */
 
-import type { ICType, IDelegationNode } from '@kiltprotocol/types'
+import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import type { KeyringPair } from '@polkadot/keyring/types'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
   FullDidDetails,
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
-import Attestation from '../attestation/Attestation'
-import Claim from '../claim/Claim'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import { AttestedClaim } from '..'
+import { BN } from '@polkadot/util'
+import { Attestation } from '../attestation/Attestation'
+import { Claim } from '../claim/Claim'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { Credential } from '..'
 import { disconnect, init } from '../kilt'
-import DelegationNode from '../delegation/DelegationNode'
+import { DelegationNode } from '../delegation/DelegationNode'
 import { CtypeOnChain, DriversLicense, devFaucet, WS_ADDRESS } from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
@@ -116,6 +116,13 @@ beforeEach(async () => {
   await Promise.all([attester, root, claimer].map((i) => i.refreshTxIndex()))
 })
 
+it('fetches the correct deposit amount', async () => {
+  const depositAmount = await DelegationNode.queryDepositAmount()
+  expect(depositAmount.toString()).toStrictEqual(
+    new BN(1000000000000000).toString()
+  )
+})
+
 it('should be possible to delegate attestation rights', async () => {
   const rootNode = await writeHierarchy(root, DriversLicense.hash)
   const delegatedNode = await addDelegation(
@@ -179,15 +186,15 @@ describe('and attestation rights have been delegated', () => {
         })
       )
 
-    const attClaim = AttestedClaim.fromRequestAndAttestation(
+    const credential = Credential.fromRequestAndAttestation(
       request,
       attestation
     )
-    expect(attClaim.verifyData()).toBeTruthy()
-    await expect(attClaim.verify()).resolves.toBeTruthy()
+    expect(credential.verifyData()).toBeTruthy()
+    await expect(credential.verify()).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await attClaim.attestation
+    await credential.attestation
       .revoke(1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) =>
@@ -196,7 +203,7 @@ describe('and attestation rights have been delegated', () => {
           reSign: true,
         })
       )
-    await expect(attClaim.verify()).resolves.toBeFalsy()
+    await expect(credential.verify()).resolves.toBeFalsy()
   }, 75_000)
 })
 
@@ -340,6 +347,23 @@ describe('handling queries to data not on chain', () => {
   it('getAttestationHashes on empty', async () => {
     return expect(getAttestationHashes(randomAsHex(32))).resolves.toEqual([])
   })
+})
+
+describe('hierarchyDetails', () => {
+  it('can fetch hierarchyDetails', async () => {
+    const rootNode = await writeHierarchy(root, DriversLicense.hash)
+    const delegatedNode = await addDelegation(
+      rootNode.id,
+      rootNode.id,
+      root,
+      attester
+    )
+
+    const details = await delegatedNode.getHierarchyDetails()
+
+    expect(details.cTypeHash).toBe(DriversLicense.hash)
+    expect(details.id).toBe(rootNode.id)
+  }, 60_000)
 })
 
 afterAll(() => {

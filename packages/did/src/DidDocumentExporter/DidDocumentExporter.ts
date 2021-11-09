@@ -5,8 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/* eslint-disable import/prefer-default-export */
-
 /**
  * @packageDocumentation
  * @module DID
@@ -93,6 +91,17 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
     })
   if (delegationKeyIds.length) {
     result.capabilityDelegation = delegationKeyIds
+  }
+
+  const serviceEndpoints = details.getEndpoints()
+  if (serviceEndpoints.length) {
+    result.service = serviceEndpoints.map((service) => {
+      return {
+        id: service.id,
+        type: service.types,
+        serviceEndpoints: service.urls,
+      }
+    })
   }
 
   return result as IDidDocument

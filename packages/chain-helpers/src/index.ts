@@ -5,22 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { ExtrinsicError, ExtrinsicErrors, PalletIndex } from './errorhandling'
-import {
+export { ExtrinsicError, ExtrinsicErrors, PalletIndex } from './errorhandling'
+export {
   BlockchainApiConnection,
   KILT_TYPES,
   TypeRegistry,
 } from './blockchainApiConnection'
-import { Blockchain, BlockchainUtils, SubscriptionPromise } from './blockchain'
-
-export {
-  Blockchain,
-  BlockchainUtils,
-  SubscriptionPromise,
-  ExtrinsicError,
-  ExtrinsicErrors,
-  PalletIndex,
-  BlockchainApiConnection,
-  TypeRegistry,
-  KILT_TYPES,
-}
+export { Blockchain, BlockchainUtils, SubscriptionPromise } from './blockchain'

@@ -9,18 +9,16 @@
  * @group unit/did
  */
 
-import { KeyRelationship } from '@kiltprotocol/types'
+import { IDidServiceEndpoint, KeyRelationship } from '@kiltprotocol/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import type { IDidKeyDetails } from '@kiltprotocol/types'
-import type { INewPublicKey } from '../types'
-import {
-  FullDidDetails,
-  FullDidDetailsCreationOpts,
-} from '../DidDetails/FullDidDetails'
-import {
-  LightDidDetails,
+import type {
+  INewPublicKey,
   LightDidDetailsCreationOpts,
-} from '../DidDetails/LightDidDetails'
+  FullDidDetailsCreationOpts,
+} from '../types'
+import { FullDidDetails } from '../DidDetails/FullDidDetails'
+import { LightDidDetails } from '../DidDetails/LightDidDetails'
 import { exportToDidDocument } from './DidDocumentExporter'
 
 describe('Full DID Document exporting tests', () => {
@@ -60,6 +58,18 @@ describe('Full DID Document exporting tests', () => {
         '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
   ]
+  const serviceEndpoints: IDidServiceEndpoint[] = [
+    {
+      id: `${did}#id-1`,
+      types: ['type-1'],
+      urls: ['url-1'],
+    },
+    {
+      id: `${did}#id-2`,
+      types: ['type-2'],
+      urls: ['url-2'],
+    },
+  ]
   const didDetails: FullDidDetailsCreationOpts = {
     did,
     keys,
@@ -68,10 +78,11 @@ describe('Full DID Document exporting tests', () => {
       [KeyRelationship.keyAgreement]: [keys[1].id, keys[2].id],
       [KeyRelationship.assertionMethod]: [keys[3].id],
     },
+    serviceEndpoints,
     lastTxIndex: new BN(10),
   }
 
-  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, and an Ecdsa delegation key', () => {
+  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', () => {
     const ecdsaKey: IDidKeyDetails = {
       id: `${did}#5`,
       controller: did,
@@ -145,10 +156,22 @@ describe('Full DID Document exporting tests', () => {
       capabilityDelegation: [
         'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#5',
       ],
+      service: [
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-1',
+          type: ['type-1'],
+          serviceEndpoints: ['url-1'],
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-2',
+          type: ['type-2'],
+          serviceEndpoints: ['url-2'],
+        },
+      ],
     })
   })
 
-  it('exports the expected application/ld+json W3C DID Document with only an authentication key', () => {
+  it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', () => {
     const ecdsaKey: IDidKeyDetails = {
       id: `${did}#5`,
       controller: did,
@@ -223,6 +246,18 @@ describe('Full DID Document exporting tests', () => {
       capabilityDelegation: [
         'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#5',
       ],
+      service: [
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-1',
+          type: ['type-1'],
+          serviceEndpoints: ['url-1'],
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-2',
+          type: ['type-2'],
+          serviceEndpoints: ['url-2'],
+        },
+      ],
     })
   })
 })
@@ -239,46 +274,69 @@ describe('Light DID Document exporting tests', () => {
     type: 'ed25519',
   }
   let encryptionDidKeyDetails: INewPublicKey | undefined
+  let serviceEndpoints: IDidServiceEndpoint[]
 
-  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, and an x25519 encryption key', () => {
+  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, an x25519 encryption key, and two service endpoints', () => {
     encryptionDidKeyDetails = {
       publicKey: encPublicKey,
       type: 'x25519',
     }
+    serviceEndpoints = [
+      {
+        id: `id-1`,
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: `id-2`,
+        types: ['type-2'],
+        urls: ['url-2'],
+      },
+    ]
 
     const didCreationDetails: LightDidDetailsCreationOpts = {
       authenticationKey: authenticationDidKeyDetails,
       encryptionKey: encryptionDidKeyDetails,
+      serviceEndpoints,
     }
     const didDetails = new LightDidDetails(didCreationDetails)
     const didDoc = exportToDidDocument(didDetails, 'application/json')
 
     expect(didDoc).toStrictEqual({
-      id:
-        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5',
+      id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==',
       verificationMethod: [
         {
-          id:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5#authentication',
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#authentication',
           controller:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5',
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==',
           type: 'Ed25519VerificationKey2018',
           publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
         },
         {
-          id:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5#encryption',
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#encryption',
           controller:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5',
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==',
           type: 'X25519KeyAgreementKey2019',
           publicKeyBase58: 'DdqGmK5uamYN5vmuZrzpQhKeehLdwtPLVJdhu5P2iJKC',
         },
       ],
       authentication: [
-        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5#authentication',
+        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#authentication',
       ],
       keyAgreement: [
-        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5#encryption',
+        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#encryption',
+      ],
+      service: [
+        {
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#id-1',
+          type: ['type-1'],
+          serviceEndpoints: ['url-1'],
+        },
+        {
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#id-2',
+          type: ['type-2'],
+          serviceEndpoints: ['url-2'],
+        },
       ],
     })
   })
@@ -298,8 +356,7 @@ describe('Light DID Document exporting tests', () => {
       id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
       verificationMethod: [
         {
-          id:
-            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+          id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
           controller:
             'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
           type: 'Sr25519VerificationKey2020',
@@ -328,8 +385,7 @@ describe('Light DID Document exporting tests', () => {
       id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
       verificationMethod: [
         {
-          id:
-            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+          id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
           controller:
             'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
           type: 'Sr25519VerificationKey2020',

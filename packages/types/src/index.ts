@@ -7,10 +7,11 @@
 
 export type { ISubmittableResult } from '@polkadot/types/types'
 export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+export type { KeyringPair } from '@polkadot/keyring/types'
 
 export * as SubscriptionPromise from './SubscriptionPromise'
 
-export * from './AttestedClaim'
+export * from './Credential'
 export * from './Attestation'
 export * from './Balance'
 export * from './CType'

@@ -5,8 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import * as suites from './suites'
-import documentLoader from './documentLoader'
-import context from './context'
-
-export { suites, documentLoader, context }
+export * as suites from './suites'
+export { documentLoader } from './documentLoader'
+export { validationContexts } from './context'

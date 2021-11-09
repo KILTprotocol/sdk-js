@@ -12,7 +12,7 @@ import { Schema } from '@cfworker/json-schema'
  * @module QuoteSchema
  */
 
-const QuoteSchema: Schema = {
+export const QuoteSchema: Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'kilt:quote:v1',
   type: 'object',
@@ -59,5 +59,3 @@ const QuoteSchema: Schema = {
     'timeframe',
   ],
 }
-
-export default QuoteSchema

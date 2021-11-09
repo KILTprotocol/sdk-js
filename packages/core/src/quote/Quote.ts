@@ -28,7 +28,7 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils, DefaultResolver } from '@kiltprotocol/did'
-import QuoteSchema from './QuoteSchema'
+import { QuoteSchema } from './QuoteSchema'
 
 /**
  * Validates the quote against the meta schema and quote data against the provided schema.

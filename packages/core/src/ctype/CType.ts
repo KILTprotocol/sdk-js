@@ -25,9 +25,9 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { store } from './CType.chain'
-import CTypeUtils from './CType.utils'
+import * as CTypeUtils from './CType.utils'
 
-export default class CType implements ICType {
+export class CType implements ICType {
   /**
    * [STATIC] Clones an already existing [[CType]]
    * or initializes from an [[ICType]] like object

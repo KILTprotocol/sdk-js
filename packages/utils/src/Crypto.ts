@@ -15,7 +15,7 @@
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
-import type { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@kiltprotocol/types'
 import {
   isString,
   stringToU8a,

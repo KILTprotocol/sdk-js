@@ -48,6 +48,7 @@ export interface IDidKeyDetails<T extends string = string> {
   /**
    * The DID with which this public key is associated.
    */
+  // eslint-disable-next-line no-use-before-define
   controller: IDidDetails['did']
   /**
    * The public key material encoded as hex.
@@ -57,6 +58,24 @@ export interface IDidKeyDetails<T extends string = string> {
    * Can be used to indicate the block at which this key was added to the on-chain DID record.
    */
   includedAt?: number
+}
+
+/**
+ * A single service endpoint.
+ */
+export interface IDidServiceEndpoint {
+  /**
+   * The identifier of the endpoint in the form <did_identifier>#<endpoint_id>.
+   */
+  id: string
+  /**
+   * A list of service types the endpoint exposes.
+   */
+  types: string[]
+  /**
+   * A list of URLs the endpoint exposes its services at.
+   */
+  urls: string[]
 }
 
 /**
@@ -92,6 +111,22 @@ export interface IDidDetails {
    * @returns An array of all or selected [[IDidKeyDetails]], depending on the `relationship` parameter.
    */
   getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[]
+  /**
+   * Retrieves the service endpoint associated with the DID, if any.
+   *
+   * @param id The identifier of the service endpoint, without the DID prefix.
+   */
+  getEndpointById(id: string): IDidServiceEndpoint | undefined
+  /**
+   * Retrieves all the service endpoints matching a given type.
+   *
+   * @param id The type of the service endpoints to retrieve.
+   */
+  getEndpointsByType(type: string): IDidServiceEndpoint[]
+  /**
+   * Retrieves all the service endpoints associated with the DID.
+   */
+  getEndpoints(): IDidServiceEndpoint[]
 }
 
 export type ApiOrMetadata = ApiPromise | Metadata

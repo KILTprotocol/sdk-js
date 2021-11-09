@@ -24,10 +24,10 @@ import type {
   ISubmitTerms,
   ITerms,
   IRejectTerms,
-  IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
-  IRequestClaimsForCTypes,
-  IAttestedClaim,
+  IRequestAttestation,
+  ISubmitAttestation,
+  IRequestCredential,
+  ICredential,
   IRequestAcceptDelegation,
   ISubmitAcceptDelegation,
   IRejectAcceptDelegation,
@@ -39,13 +39,13 @@ import type {
   CompressedTerms,
   CompressedRejectTerms,
   CompressedRejectedTerms,
-  IRequestAttestationForClaimContent,
-  CompressedRequestAttestationForClaim,
-  CompressedRequestAttestationForClaimContent,
-  ISubmitAttestationForClaimContent,
-  CompressedSubmitAttestationForClaim,
-  IRequestClaimsForCTypesContent,
-  CompressedRequestClaimsForCTypes,
+  IRequestAttestationContent,
+  CompressedRequestAttestation,
+  CompressedRequestAttestationContent,
+  ISubmitAttestationContent,
+  CompressedSubmitAttestation,
+  IRequestCredentialContent,
+  CompressedRequestCredentials,
   IRequestDelegationApproval,
   CompressedRequestAcceptDelegation,
   CompressedRequestDelegationApproval,
@@ -59,22 +59,22 @@ import type {
   CompressedInformCreateDelegation,
   CompressedInformDelegationCreation,
   CompressedMessageBody,
-  CompressedAttestedClaim,
-  CompressedSubmitClaimsForCTypes,
-  ISubmitClaimsForCTypes,
+  CompressedCredential,
+  CompressedSubmitCredentials,
+  ISubmitCredential,
   CompressedAttestation,
   PartialClaim,
-  CompressedRequestClaimsForCTypesContent,
+  CompressedRequestCredentialContent,
   IMessage,
-  IRejectAttestationForClaim,
-  IAcceptClaimsForCTypes,
-  IRejectClaimsForCTypes,
+  IRejectAttestation,
+  IAcceptCredential,
+  IRejectCredential,
   IDidDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import {
   Attestation,
-  AttestedClaim,
+  Credential,
   Claim,
   CType,
   Quote,
@@ -88,23 +88,23 @@ import {
 } from '@kiltprotocol/did'
 import * as MessageUtils from './Message.utils'
 
-import Message from './Message'
+import { Message } from './Message'
 
 import '../../../testingTools/jestErrorCodeMatcher'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
-async function buildAttestedClaim(
+async function buildCredential(
   claimer: IDidDetails,
   attester: IDidDetails,
   contents: IClaim['contents'],
-  legitimations: AttestedClaim[]
-): Promise<AttestedClaim> {
+  legitimations: Credential[]
+): Promise<Credential> {
   // create claim
 
   const rawCType: ICType['schema'] = {
     $id: Crypto.hashStr('kilt:ctype:0x1'),
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Attested Claim',
+    title: 'Credential',
     properties: {
       name: { type: 'string' },
     },
@@ -127,12 +127,12 @@ async function buildAttestedClaim(
     requestForAttestation,
     attester.did
   )
-  // combine to attested claim
-  const attestedClaim = AttestedClaim.fromRequestAndAttestation(
+  // combine to credential
+  const credential = Credential.fromRequestAndAttestation(
     requestForAttestation,
     testAttestation
   )
-  return attestedClaim
+  return credential
 }
 
 describe('Messaging Utilities', () => {
@@ -150,9 +150,9 @@ describe('Messaging Utilities', () => {
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
-  let compressedLegitimation: CompressedAttestedClaim
+  let compressedLegitimation: CompressedCredential
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
-  let legitimation: AttestedClaim
+  let legitimation: Credential
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: PartialClaim
@@ -169,25 +169,25 @@ describe('Messaging Utilities', () => {
   >
   let compressedRejectTermsBody: CompressedRejectTerms
   let compressedRejectTermsContent: CompressedRejectedTerms
-  let requestAttestationBody: IRequestAttestationForClaim
-  let requestAttestationContent: IRequestAttestationForClaimContent
-  let compressedRequestAttestationBody: CompressedRequestAttestationForClaim
-  let compressedRequestAttestationContent: CompressedRequestAttestationForClaimContent
-  let submitAttestationContent: ISubmitAttestationForClaimContent
-  let submitAttestationBody: ISubmitAttestationForClaim
+  let requestAttestationBody: IRequestAttestation
+  let requestAttestationContent: IRequestAttestationContent
+  let compressedRequestAttestationBody: CompressedRequestAttestation
+  let compressedRequestAttestationContent: CompressedRequestAttestationContent
+  let submitAttestationContent: ISubmitAttestationContent
+  let submitAttestationBody: ISubmitAttestation
   let compressedSubmitAttestationContent: CompressedAttestation
-  let compressedSubmitAttestationBody: CompressedSubmitAttestationForClaim
-  let rejectAttestationForClaimBody: IRejectAttestationForClaim
-  let requestClaimsForCTypesBody: IRequestClaimsForCTypes
-  let requestClaimsForCTypesContent: IRequestClaimsForCTypesContent
-  let compressedRequestClaimsForCTypesBody: CompressedRequestClaimsForCTypes
-  let compressedRequestClaimsForCTypesContent: CompressedRequestClaimsForCTypesContent
-  let submitClaimsForCTypesBody: ISubmitClaimsForCTypes
-  let submitClaimsForCTypesContent: IAttestedClaim[]
-  let acceptClaimsForCTypesBody: IAcceptClaimsForCTypes
-  let compressedSubmitClaimsForCTypesBody: CompressedSubmitClaimsForCTypes
-  let compressedSubmitClaimsForCTypesContent: CompressedAttestedClaim[]
-  let rejectClaimsForCTypesBody: IRejectClaimsForCTypes
+  let compressedSubmitAttestationBody: CompressedSubmitAttestation
+  let rejectAttestationForClaimBody: IRejectAttestation
+  let requestCredentialBody: IRequestCredential
+  let requestCredentialContent: IRequestCredentialContent
+  let compressedRequestCredentialBody: CompressedRequestCredentials
+  let compressedRequestCredentialContent: CompressedRequestCredentialContent
+  let submitCredentialBody: ISubmitCredential
+  let submitCredentialContent: ICredential[]
+  let acceptCredentialBody: IAcceptCredential
+  let compressedSubmitCredentialBody: CompressedSubmitCredentials
+  let compressedSubmitCredentialContent: CompressedCredential[]
+  let rejectCredentialBody: IRejectCredential
   let requestAcceptDelegationBody: IRequestAcceptDelegation
   let requestAcceptDelegationContent: IRequestDelegationApproval
   let compressedRequestAcceptDelegationBody: CompressedRequestAcceptDelegation
@@ -209,11 +209,11 @@ describe('Messaging Utilities', () => {
   let messageRejectTerms: IMessage
   let messageRequestAttestationForClaim: IMessage
   let messageSubmitAttestationForClaim: IMessage
-  let messageRequestClaimsForCTypes: IMessage
+  let messageRequestCredential: IMessage
   let messageRejectAttestationForClaim: IMessage
-  let messageSubmitClaimsForCTypes: IMessage
-  let messageAcceptClaimsForCTypes: IMessage
-  let messageRejectClaimsForCTypes: IMessage
+  let messageSubmitCredential: IMessage
+  let messageAcceptCredential: IMessage
+  let messageRejectCredential: IMessage
   let messageRequestAcceptDelegation: IMessage
   let messageSubmitAcceptDelegation: IMessage
   let messageRejectAcceptDelegation: IMessage
@@ -239,9 +239,8 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (keyId: string) => {
-      const { identifier, type, version, fragment } = DidUtils.parseDidUrl(
-        keyId
-      )
+      const { identifier, type, version, fragment } =
+        DidUtils.parseDidUrl(keyId)
       const didSubject = DidUtils.getKiltDidFromIdentifier(
         identifier,
         type,
@@ -262,7 +261,7 @@ describe('Messaging Utilities', () => {
       resolve: async (did: string) => {
         return resolveKey(did) || resolveDoc(did)
       },
-    }
+    } as IDidResolver
 
     rawCTypeWithMultipleProperties = {
       $id: Crypto.hashStr('kilt:ctype:0x2'),
@@ -299,7 +298,7 @@ describe('Messaging Utilities', () => {
       identityAlice.did
     )
     // Legitimation
-    legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
+    legitimation = await buildCredential(identityAlice, identityBob, {}, [])
     // Compressed Legitimation
     compressedLegitimation = [
       [
@@ -400,7 +399,6 @@ describe('Messaging Utilities', () => {
       legitimations: [legitimation],
       delegationId: undefined,
       quote: quoteAttesterSigned,
-      prerequisiteClaims: undefined,
       cTypes: undefined,
     }
     // Compressed Submit Terms Contentƒ
@@ -409,7 +407,6 @@ describe('Messaging Utilities', () => {
       [compressedLegitimation],
       undefined,
       compressedResultAttesterSignedQuote,
-      undefined,
       undefined,
     ]
     // Reject terms Content
@@ -430,7 +427,6 @@ describe('Messaging Utilities', () => {
     requestAttestationContent = {
       requestForAttestation: legitimation.request,
       quote: bothSigned,
-      prerequisiteClaims: undefined,
     }
 
     // Compressed Request attestation content
@@ -449,7 +445,6 @@ describe('Messaging Utilities', () => {
         legitimation.request.delegationId,
       ],
       compressedQuoteAgreement,
-      undefined,
     ]
 
     // Submit Attestation content
@@ -471,22 +466,26 @@ describe('Messaging Utilities', () => {
       submitAttestationContent.attestation.revoked,
       submitAttestationContent.attestation.delegationId,
     ]
-    // Request Claims for CTypes content
-    requestClaimsForCTypesContent = {
-      cTypeHash: claim.cTypeHash,
-      acceptedAttester: [identityAlice.did],
-      requiredProperties: ['id', 'name'],
+    // Request Credential content
+    requestCredentialContent = {
+      cTypes: [
+        {
+          cTypeHash: claim.cTypeHash,
+          trustedAttesters: [identityAlice.did],
+          requiredProperties: ['id', 'name'],
+        },
+      ],
+      challenge: '1234',
     }
-    // Compressed Request claims for CType content
-    compressedRequestClaimsForCTypesContent = [
-      claim.cTypeHash,
-      [identityAlice.did],
-      ['id', 'name'],
+    // Compressed Request Credential content
+    compressedRequestCredentialContent = [
+      [[claim.cTypeHash, [identityAlice.did], ['id', 'name']]],
+      '1234',
     ]
-    // Submit claims for CType content
-    submitClaimsForCTypesContent = [legitimation]
-    // Compressed Submit claims for CType content
-    compressedSubmitClaimsForCTypesContent = [compressedLegitimation]
+    // Submit Credential content
+    submitCredentialContent = [legitimation]
+    // Compressed Submit Credential content
+    compressedSubmitCredentialContent = [compressedLegitimation]
     // Request Accept delegation content
     requestAcceptDelegationContent = {
       delegationData: {
@@ -619,59 +618,56 @@ describe('Messaging Utilities', () => {
 
     requestAttestationBody = {
       content: requestAttestationContent,
-      type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REQUEST_ATTESTATION,
     }
 
     compressedRequestAttestationBody = [
-      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      Message.BodyType.REQUEST_ATTESTATION,
       compressedRequestAttestationContent,
     ]
 
     submitAttestationBody = {
       content: submitAttestationContent,
-      type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.SUBMIT_ATTESTATION,
     }
 
     compressedSubmitAttestationBody = [
-      Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      Message.BodyType.SUBMIT_ATTESTATION,
       compressedSubmitAttestationContent,
     ]
 
     rejectAttestationForClaimBody = {
       content: requestAttestationContent.requestForAttestation.rootHash,
-      type: Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REJECT_ATTESTATION,
     }
-    requestClaimsForCTypesBody = {
-      content: [requestClaimsForCTypesContent, requestClaimsForCTypesContent],
-      type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+    requestCredentialBody = {
+      content: requestCredentialContent,
+      type: Message.BodyType.REQUEST_CREDENTIAL,
     }
 
-    compressedRequestClaimsForCTypesBody = [
-      Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-      [
-        compressedRequestClaimsForCTypesContent,
-        compressedRequestClaimsForCTypesContent,
-      ],
+    compressedRequestCredentialBody = [
+      Message.BodyType.REQUEST_CREDENTIAL,
+      compressedRequestCredentialContent,
     ]
 
-    submitClaimsForCTypesBody = {
-      content: submitClaimsForCTypesContent,
-      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+    submitCredentialBody = {
+      content: submitCredentialContent,
+      type: Message.BodyType.SUBMIT_CREDENTIAL,
     }
 
-    compressedSubmitClaimsForCTypesBody = [
-      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
-      compressedSubmitClaimsForCTypesContent,
+    compressedSubmitCredentialBody = [
+      Message.BodyType.SUBMIT_CREDENTIAL,
+      compressedSubmitCredentialContent,
     ]
 
-    acceptClaimsForCTypesBody = {
+    acceptCredentialBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.ACCEPT_CREDENTIAL,
     }
 
-    rejectClaimsForCTypesBody = {
+    rejectCredentialBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.REJECT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.REJECT_CREDENTIAL,
     }
 
     requestAcceptDelegationBody = {
@@ -761,23 +757,23 @@ describe('Messaging Utilities', () => {
     ).toEqual(submitAttestationBody)
   })
 
-  it('Checking message compression and decompression Claims for CTypes', async () => {
-    // Request compression of claims for ctypes body
-    expect(MessageUtils.compressMessage(requestClaimsForCTypesBody)).toEqual(
-      compressedRequestClaimsForCTypesBody
+  it('Checking message compression and decompression Reqyest Credential', async () => {
+    // Request compression of credential body
+    expect(MessageUtils.compressMessage(requestCredentialBody)).toEqual(
+      compressedRequestCredentialBody
     )
-    // Request decompression of claims for ctypes body
+    // Request decompression of credential body
     expect(
-      MessageUtils.decompressMessage(compressedRequestClaimsForCTypesBody)
-    ).toEqual(requestClaimsForCTypesBody)
-    // Submit compression of claims for ctypes body
-    expect(MessageUtils.compressMessage(submitClaimsForCTypesBody)).toEqual(
-      compressedSubmitClaimsForCTypesBody
+      MessageUtils.decompressMessage(compressedRequestCredentialBody)
+    ).toEqual(requestCredentialBody)
+    // Submit compression of credential body
+    expect(MessageUtils.compressMessage(submitCredentialBody)).toEqual(
+      compressedSubmitCredentialBody
     )
-    // Submit decompression of claims for ctypes body
+    // Submit decompression of credential body
     expect(
-      MessageUtils.decompressMessage(compressedSubmitClaimsForCTypesBody)
-    ).toEqual(submitClaimsForCTypesBody)
+      MessageUtils.decompressMessage(compressedSubmitCredentialBody)
+    ).toEqual(submitCredentialBody)
   })
   it('Checking message compression and decompression delegation', async () => {
     // Request compression of delegation body
@@ -816,16 +812,16 @@ describe('Messaging Utilities', () => {
     ).toEqual(informCreateDelegationBody)
   })
   it('Checks the MessageBody Types through the compress and decompress switch funciton', async () => {
-    const compressedMalformed = (['', []] as unknown) as CompressedMessageBody
+    const compressedMalformed = ['', []] as unknown as CompressedMessageBody
 
     expect(() =>
       MessageUtils.decompressMessage(compressedMalformed)
     ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED())
 
-    const malformed = ({
+    const malformed = {
       content: '',
       type: 'Message.BodyType',
-    } as unknown) as MessageBody
+    } as unknown as MessageBody
 
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
       SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
@@ -883,23 +879,23 @@ describe('Messaging Utilities', () => {
       identityAlice.did,
       identityBob.did
     )
-    messageRequestClaimsForCTypes = new Message(
-      requestClaimsForCTypesBody,
+    messageRequestCredential = new Message(
+      requestCredentialBody,
       identityAlice.did,
       identityBob.did
     )
-    messageSubmitClaimsForCTypes = new Message(
-      submitClaimsForCTypesBody,
+    messageSubmitCredential = new Message(
+      submitCredentialBody,
       identityAlice.did,
       identityBob.did
     )
-    messageAcceptClaimsForCTypes = new Message(
-      acceptClaimsForCTypesBody,
+    messageAcceptCredential = new Message(
+      acceptCredentialBody,
       identityAlice.did,
       identityBob.did
     )
-    messageRejectClaimsForCTypes = new Message(
-      rejectClaimsForCTypesBody,
+    messageRejectCredential = new Message(
+      rejectCredentialBody,
       identityAlice.did,
       identityBob.did
     )
@@ -944,16 +940,16 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(requestCredentialBody)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessageBody(submitClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(submitCredentialBody)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessageBody(acceptClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(acceptCredentialBody)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessageBody(rejectClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(rejectCredentialBody)
     ).not.toThrowError()
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
@@ -988,16 +984,16 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckMessage(messageRejectAttestationForClaim)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessage(messageRequestClaimsForCTypes)
+      MessageUtils.errorCheckMessage(messageRequestCredential)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessage(messageSubmitClaimsForCTypes)
+      MessageUtils.errorCheckMessage(messageSubmitCredential)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessage(messageAcceptClaimsForCTypes)
+      MessageUtils.errorCheckMessage(messageAcceptCredential)
     ).not.toThrowError()
     expect(() =>
-      MessageUtils.errorCheckMessage(messageRejectClaimsForCTypes)
+      MessageUtils.errorCheckMessage(messageRejectCredential)
     ).not.toThrowError()
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestAcceptDelegation)
@@ -1031,10 +1027,6 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
-    submitTermsBody.content.prerequisiteClaims = 'this is not a delegation id'
-    expect(() =>
-      MessageUtils.errorCheckMessageBody(submitTermsBody)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     submitTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitTermsBody)
@@ -1065,27 +1057,28 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
-    requestClaimsForCTypesBody.content[0].cTypeHash = 'this is not a cTypeHash'
+    requestCredentialBody.content.cTypes[0].cTypeHash =
+      'this is not a cTypeHash'
     expect(() =>
-      MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(requestCredentialBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     // @ts-expect-error
-    delete submitClaimsForCTypesBody.content[0].attestation.revoked
+    delete submitCredentialBody.content[0].attestation.revoked
     expect(() =>
-      MessageUtils.errorCheckMessageBody(submitClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(submitCredentialBody)
     ).toThrowError(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
-    acceptClaimsForCTypesBody.content[0] = 'this is not a cTypeHash'
+    acceptCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
-      MessageUtils.errorCheckMessageBody(acceptClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(acceptCredentialBody)
     ).toThrowError(
       SDKErrors.ERROR_HASH_MALFORMED(
-        acceptClaimsForCTypesBody.content[0],
-        'accept claims for ctypes message ctype hash invalid'
+        acceptCredentialBody.content[0],
+        'accept credential message ctype hash invalid'
       )
     )
-    rejectClaimsForCTypesBody.content[0] = 'this is not a cTypeHash'
+    rejectCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
-      MessageUtils.errorCheckMessageBody(rejectClaimsForCTypesBody)
+      MessageUtils.errorCheckMessageBody(rejectCredentialBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     delete requestAcceptDelegationBody.content.metaData
     expect(() =>

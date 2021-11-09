@@ -23,14 +23,14 @@ import { BN } from '@polkadot/util'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
+  BlockchainStats,
   IIdentity,
   ISubmittableResult,
-  SubmittableExtrinsic,
   IBlockchainApi,
-  BlockchainStats,
+  KeyringPair,
+  SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import type { KeyringPair } from '@polkadot/keyring/types'
 import { submitSignedTx } from './Blockchain.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
@@ -38,7 +38,7 @@ const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
-export default class Blockchain implements IBlockchainApi {
+export class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: Codec): AnyJson[] {
     const json = queryResult.toJSON()
     if (json instanceof Array) return json

@@ -9,7 +9,7 @@
  * @group unit/balance
  */
 
-import { Keyring, SubmittableResult } from '@polkadot/api'
+import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
@@ -18,15 +18,15 @@ import {
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 
-import type { Balances } from '@kiltprotocol/types'
-import { KeyringPair } from '@polkadot/keyring/types'
+import type { Balances, KeyringPair } from '@kiltprotocol/types'
+import { Keyring } from '@kiltprotocol/utils'
 import {
   getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from './Balance.chain'
-import BalanceUtils from './Balance.utils'
-import Kilt from '../kilt/Kilt'
+import * as BalanceUtils from './Balance.utils'
+import * as Kilt from '../kilt/Kilt'
 
 jest.mock(
   '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
@@ -40,8 +40,8 @@ describe('Balance', () => {
   const keyring = new Keyring({ type: 'sr25519', ss58Format: 38 })
   let alice: KeyringPair
   let bob: KeyringPair
-  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
-    .__mocked_api
+  const blockchainApi =
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api
 
   const accountInfo = (balance: number): AccountInfo => {
     return {
@@ -101,11 +101,9 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await makeTransfer(
-      bob.address,
-      amount,
-      exponent
-    ).then((tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true }))
+    const status = await makeTransfer(bob.address, amount, exponent).then(
+      (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+    )
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

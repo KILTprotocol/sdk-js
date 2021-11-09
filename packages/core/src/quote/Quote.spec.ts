@@ -31,11 +31,11 @@ import {
   createLocalDemoDidFromSeed,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
-import CType from '../ctype/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import { CType } from '../ctype/CType'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import * as Quote from './Quote'
-import QuoteUtils from './Quote.utils'
-import QuoteSchema from './QuoteSchema'
+import * as QuoteUtils from './Quote.utils'
+import { QuoteSchema } from './QuoteSchema'
 
 describe('Claim', () => {
   let claimerIdentity: IDidDetails
@@ -58,26 +58,24 @@ describe('Claim', () => {
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
-  const mockResolver: IDidResolver = {
-    resolve: async (didUri: string) => {
-      if (didUri === claimerIdentity.did) {
-        return { details: claimerIdentity }
+  const mockResolver: IDidResolver = (() => {
+    const resolve = async (didUri: string) => {
+      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+      const didWithoutFragment = didUri.split('#')[0]
+      switch (didWithoutFragment) {
+        case claimerIdentity.did:
+          return { details: claimerIdentity }
+        case attesterIdentity.did:
+          return { details: attesterIdentity }
+        default:
+          return null
       }
-      if (didUri === attesterIdentity.did) {
-        return { details: attesterIdentity }
-      }
-      return null
-    },
-    resolveDoc: async (didUri: string) => {
-      if (didUri === claimerIdentity.did) {
-        return { details: claimerIdentity }
-      }
-      if (didUri === attesterIdentity.did) {
-        return { details: attesterIdentity }
-      }
-      return null
-    },
-  } as IDidResolver
+    }
+    return {
+      resolve,
+      resolveDoc: resolve,
+    } as IDidResolver
+  })()
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
@@ -93,10 +91,10 @@ describe('Claim', () => {
       SigningAlgorithms.Ed25519
     )
 
-    invalidCost = ({
+    invalidCost = {
       gross: 233,
       tax: { vat: 3.3 },
-    } as unknown) as ICostBreakdown
+    } as unknown as ICostBreakdown
     date = new Date(2019, 11, 10).toISOString()
 
     cTypeSchema = {
@@ -128,7 +126,7 @@ describe('Claim', () => {
       termsAndConditions: 'Lots of these',
     } as IQuote
 
-    invalidPropertiesQuoteData = ({
+    invalidPropertiesQuoteData = {
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -138,7 +136,7 @@ describe('Claim', () => {
       timeframe: date,
       currency: 'Euro',
       termsAndConditions: 'Lots of these',
-    } as unknown) as IQuote
+    } as unknown as IQuote
 
     validQuoteData = {
       attesterDid: attesterIdentity.did,

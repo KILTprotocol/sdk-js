@@ -21,7 +21,7 @@ import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import type { AttestedProof } from '../../types'
 import { verifyAttestedProof, AttestationStatus } from '../../verificationUtils'
 import { KILT_ATTESTED_PROOF_TYPE } from '../../constants'
-import KiltAbstractSuite from './KiltAbstractSuite'
+import { KiltAbstractSuite } from './KiltAbstractSuite'
 
 class AttestationError extends Error {
   public readonly attestationStatus: AttestationStatus
@@ -33,7 +33,7 @@ class AttestationError extends Error {
   }
 }
 
-export default class KiltAttestedSuite extends KiltAbstractSuite {
+export class KiltAttestedSuite extends KiltAbstractSuite {
   private readonly provider: Blockchain
 
   constructor(options: { KiltConnection: Blockchain }) {
@@ -80,7 +80,7 @@ export default class KiltAttestedSuite extends KiltAbstractSuite {
           error: new AttestationError(errors[0].message, status),
         }
       return { verified }
-    } catch (e) {
+    } catch (e: any) {
       return { verified: false, error: e }
     }
   }

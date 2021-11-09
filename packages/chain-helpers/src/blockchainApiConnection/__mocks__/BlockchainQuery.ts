@@ -1,12 +1,15 @@
 import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-import TYPE_REGISTRY from '../TypeRegistry'
+import { TYPE_REGISTRY } from '../TypeRegistry'
 
 const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
 })
 TYPE_REGISTRY.setChainProperties(chainProperties)
+TYPE_REGISTRY.register({
+  AttestationAttestationsAttestationDetails: 'AttestationDetails',
+})
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
@@ -41,7 +44,9 @@ const chainQueryReturnTuples: {
   },
   attestation: {
     // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked, deposit)?
-    attestations: TYPE_REGISTRY.getOrUnknown('AttestationDetails'),
+    attestations: TYPE_REGISTRY.getOrUnknown(
+      'AttestationAttestationsAttestationDetails'
+    ),
     // DelegatedAttestations: delegation-id -> [claim-hash]
     delegatedAttestations: TYPE_REGISTRY.getOrUnknown('Hash'),
   },
@@ -51,7 +56,7 @@ const chainQueryReturnTuples: {
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
-    accumulatorList: ('Vec<u8>' as unknown) as Constructor,
+    accumulatorList: 'Vec<u8>' as unknown as Constructor,
     // AccumulatorCount: account-id -> counter
     accumulatorCount: U64,
     // AccountState: account-id -> state

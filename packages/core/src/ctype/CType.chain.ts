@@ -26,8 +26,12 @@ import { getSchemaPropertiesForHash } from './CType.utils'
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
 /**
- * @param ctype
- * @internal
+ * Generate the extrinsic to store the provided [[ICtype]].
+ *
+ * If present, the CType schema id is stripped out before submission, as the same is computed on chain.
+ *
+ * @param ctype The CType to write on the blockchain.
+ * @returns The [[SubmittableExtrinsic]] for the `add` call.
  */
 export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -39,20 +43,18 @@ export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
   return tx
 }
 
-/**
- * @param encoded
- * @internal
- */
-export function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<CtypeCreatorOf>'])
+function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
+  DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
     ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
     : null
 }
 
 /**
- * @param ctypeHash
- * @internal
+ * Queries the blockchain and returns the DID of the provided CType owner.
+ *
+ * @param ctypeHash The has of the CType to retrieve the owner for.
+ * @returns The CType owner DID or null if the CType with the given hash does not exist.
  */
 export async function getOwner(
   ctypeHash: ICType['hash']
@@ -65,8 +67,10 @@ export async function getOwner(
 }
 
 /**
- * @param ctypeHash
- * @internal
+ * Queries the blockchain and returns whether a CType with the provide hash exists.
+ *
+ * @param ctypeHash The has of the CType to check.
+ * @returns True if a CType with the provided hash exists, false otherwise.
  */
 export async function isStored(ctypeHash: ICType['hash']): Promise<boolean> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()

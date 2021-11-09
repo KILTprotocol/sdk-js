@@ -10,15 +10,14 @@
  */
 
 import type {
-  IAttestedClaim,
-  IClaim,
+  ICredential,
   IEncryptedMessage,
   IQuote,
   IDidResolvedDetails,
   IDidKeyDetails,
-  IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
+  IRequestAttestation,
+  ISubmitAttestation,
+  ISubmitCredential,
   IDidDetails,
   IDidResolver,
 } from '@kiltprotocol/types'
@@ -27,7 +26,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Quote, RequestForAttestation } from '@kiltprotocol/core'
 import { createLocalDemoDidFromSeed, DemoKeystore } from '@kiltprotocol/did'
-import Message from './Message'
+import { Message } from './Message'
 
 describe('Messaging', () => {
   let mockResolver: IDidResolver
@@ -63,14 +62,16 @@ describe('Messaging', () => {
       },
       resolveKey,
       resolveDoc,
-    }
+    } as IDidResolver
   })
 
   it('verify message encryption and signing', async () => {
     const message = new Message(
       {
-        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        type: Message.BodyType.REQUEST_CREDENTIAL,
+        content: {
+          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        },
       },
       identityAlice.did,
       identityBob.did
@@ -134,8 +135,10 @@ describe('Messaging', () => {
 
     const message = new Message(
       {
-        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        type: Message.BodyType.REQUEST_CREDENTIAL,
+        content: {
+          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        },
       },
       wrongSender,
       identityBob.did
@@ -190,13 +193,12 @@ describe('Messaging', () => {
       keystore,
       mockResolver
     )
-    const requestAttestationBody: IRequestAttestationForClaim = {
+    const requestAttestationBody: IRequestAttestation = {
       content: {
         requestForAttestation: content,
         quote: bothSigned,
-        prerequisiteClaims: [] as IClaim[],
       },
-      type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REQUEST_ATTESTATION,
     }
 
     Message.ensureOwnerIsSender(
@@ -216,11 +218,11 @@ describe('Messaging', () => {
       revoked: false,
     }
 
-    const submitAttestationBody: ISubmitAttestationForClaim = {
+    const submitAttestationBody: ISubmitAttestation = {
       content: {
         attestation,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.SUBMIT_ATTESTATION,
     }
     expect(() =>
       Message.ensureOwnerIsSender(
@@ -231,14 +233,14 @@ describe('Messaging', () => {
       new Message(submitAttestationBody, identityBob.did, identityAlice.did)
     )
 
-    const attestedClaim: IAttestedClaim = {
+    const credential: ICredential = {
       request: content,
       attestation: submitAttestationBody.content.attestation,
     }
 
-    const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
-      content: [attestedClaim],
-      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+    const submitClaimsForCTypeBody: ISubmitCredential = {
+      content: [credential],
+      type: Message.BodyType.SUBMIT_CREDENTIAL,
     }
 
     Message.ensureOwnerIsSender(

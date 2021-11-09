@@ -7,20 +7,19 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { SDKErrors, Crypto } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/util-crypto'
 import {
+  assembleDidFragment,
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
 } from '../Did.utils'
-import type { INewPublicKey } from '../types'
+import type { LightDidDetailsCreationOpts } from '../types'
 import { DidDetails } from './DidDetails'
-import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
-
-export interface LightDidDetailsCreationOpts {
-  authenticationKey: INewPublicKey
-  encryptionKey?: INewPublicKey
-}
+import {
+  serializeAndEncodeAdditionalLightDidDetails,
+  checkLightDidCreationOptions,
+} from './LightDidDetails.utils'
 
 export class LightDidDetails extends DidDetails {
   /// The latest version for KILT light DIDs.
@@ -29,16 +28,20 @@ export class LightDidDetails extends DidDetails {
   constructor({
     authenticationKey,
     encryptionKey = undefined,
+    serviceEndpoints = [],
   }: LightDidDetailsCreationOpts) {
+    checkLightDidCreationOptions({
+      authenticationKey,
+      encryptionKey,
+      serviceEndpoints,
+    })
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey,
+      serviceEndpoints,
     })
     const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
       authenticationKey.type
     )
-    if (!authenticationKeyTypeEncoding) {
-      throw SDKErrors.ERROR_UNSUPPORTED_KEY
-    }
 
     // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
     const id = authenticationKeyTypeEncoding.concat(
@@ -53,7 +56,13 @@ export class LightDidDetails extends DidDetails {
       did = did.concat(':', encodedDetails)
     }
 
-    super(did, id)
+    super(
+      did,
+      id,
+      serviceEndpoints.map((service) => {
+        return { ...service, id: assembleDidFragment(did, service.id) }
+      })
+    )
 
     // Authentication key always has the #authentication ID.
     this.keys = new Map([

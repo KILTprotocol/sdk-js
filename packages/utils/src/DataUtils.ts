@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/* eslint-disable import/prefer-default-export */
 /**
  * @packageDocumentation
  * @module DataUtils

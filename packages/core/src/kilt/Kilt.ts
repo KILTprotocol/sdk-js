@@ -45,10 +45,3 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
   await cryptoWaitReady()
 }
 export const { disconnect } = BlockchainApiConnection
-
-export default {
-  connect,
-  disconnect,
-  config,
-  init,
-}

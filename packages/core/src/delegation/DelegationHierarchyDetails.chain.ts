@@ -23,19 +23,21 @@ import {
  */
 
 /**
- * @param rootId
- * @internal
+ * Query a delegation hierarchy node from the blockchain given its identifier.
+ *
+ * @param rootId The root delegation node ID to query.
+ * @returns Either the retrieved [[IDelegationHierarchyDetails]] or null.
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function query(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const decoded: DelegationHierarchyDetailsRecord | null = decodeDelegationHierarchyDetails(
-    await blockchain.api.query.delegation.delegationHierarchies<
-      Option<IChainDelegationHierarchyDetails>
-    >(rootId)
-  )
+  const decoded: DelegationHierarchyDetailsRecord | null =
+    decodeDelegationHierarchyDetails(
+      await blockchain.api.query.delegation.delegationHierarchies<
+        Option<IChainDelegationHierarchyDetails>
+      >(rootId)
+    )
   if (!decoded) {
     return null
   }

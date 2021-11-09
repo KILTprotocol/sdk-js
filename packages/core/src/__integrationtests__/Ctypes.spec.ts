@@ -9,9 +9,8 @@
  * @group integration/ctype
  */
 
-import type { ICType } from '@kiltprotocol/types'
+import type { ICType, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
-import { KeyringPair } from '@polkadot/keyring/types'
 import {
   FullDidDetails,
   DemoKeystore,
@@ -19,7 +18,7 @@ import {
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { Crypto } from '@kiltprotocol/utils'
-import CType from '../ctype/CType'
+import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { config, disconnect } from '../kilt'
 import { devFaucet, keypairFromRandom, WS_ADDRESS } from './utils'

@@ -14,6 +14,7 @@ import type {
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
+  IDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
@@ -31,6 +32,7 @@ import type {
   INewPublicKey,
   PublicKeyRoleAssignment,
   IDidParsingResult,
+  IServiceEndpointChainRecordCodec,
 } from './types'
 import { generateCreateTx } from './Did.chain'
 import { LightDidDetails } from '.'
@@ -40,14 +42,16 @@ export const KILT_DID_PREFIX = 'did:kilt:'
 // Matches the following full DIDs
 // - did:kilt:<kilt_address>
 // - did:kilt:<kilt_address>#<fragment>
-export const FULL_KILT_DID_REGEX = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
+export const FULL_KILT_DID_REGEX =
+  /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
 // - did:kilt:light:00<kilt_address>
 // - did:kilt:light:01<kilt_address>:<encoded_details>
 // - did:kilt:light:10<kilt_address>#<fragment>
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
-export const LIGHT_KILT_DID_REGEX = /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48,49})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
+export const LIGHT_KILT_DID_REGEX =
+  /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48,49})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
 export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
   ed25519 = 'ed25519',
@@ -227,7 +231,7 @@ export function isINewPublicKey(key: unknown): key is INewPublicKey {
 
 export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, submitter, keys = {} }: IDidCreationOptions
+  { didIdentifier, submitter, keys = {}, endpoints = [] }: IDidCreationOptions
 ): DidCreationDetails {
   const {
     [KeyRelationship.assertionMethod]: assertionMethodKey,
@@ -239,17 +243,20 @@ export function encodeDidCreationOperation(
     did: didIdentifier,
     submitter,
     newKeyAgreementKeys: encryptionKey ? [formatPublicKey(encryptionKey)] : [],
-    newAssertionMethodKey: assertionMethodKey
+    newAttestationKey: assertionMethodKey
       ? formatPublicKey(assertionMethodKey)
       : undefined,
-    newCapabilityDelegationKey: delegationKey
+    newDelegationKey: delegationKey
       ? formatPublicKey(delegationKey)
       : undefined,
+    newServiceDetails: endpoints.map((service) => {
+      const { id, urls } = service
+      return { id, urls, serviceTypes: service.types }
+    }),
   }
-  return new (registry.getOrThrow<DidCreationDetails>('DidCreationDetails'))(
-    registry,
-    didCreateRaw
-  )
+  return new (registry.getOrThrow<DidCreationDetails>(
+    'DidDidDetailsDidCreationDetails'
+  ))(registry, didCreateRaw)
 }
 
 export function encodeDidAuthorizedCallOperation(
@@ -270,6 +277,19 @@ export function encodeDidAuthorizedCallOperation(
     call,
     blockNumber,
     submitter,
+  })
+}
+
+export function encodeServiceEndpoint(
+  registry: Registry,
+  endpoint: IDidServiceEndpoint
+): IServiceEndpointChainRecordCodec {
+  return new (registry.getOrThrow<IServiceEndpointChainRecordCodec>(
+    'DidServiceEndpointsDidEndpoint'
+  ))(registry, {
+    id: endpoint.id,
+    serviceTypes: endpoint.types,
+    urls: endpoint.urls,
   })
 }
 
@@ -345,7 +365,8 @@ function verifyDidSignatureFromDetails({
   }
 }
 
-// Verify a DID signature given the key ID of the signature
+// Verify a DID signature given the key ID of the signature.
+// A signature verification returns false if a migrated and then deleted DID is used.
 export async function verifyDidSignature({
   message,
   signature,
@@ -355,22 +376,20 @@ export async function verifyDidSignature({
 }: {
   message: string | Uint8Array
   signature: string | Uint8Array
-  keyId: string
+  keyId: IDidKeyDetails['id']
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
-  const { identifier, type, version } = parseDidUrl(keyId)
-  // If the identifier could not be parsed, it is a malformed URL
-  if (!identifier) {
-    throw new Error(
-      `Invalid key ID provided for signature verification  - ${keyId}`
-    )
-  }
-  // Resolve DID details regardless of the DID type
-  const did = getKiltDidFromIdentifier(identifier, type, version)
-  const details = await resolver.resolveDoc(did)
+  // resolveDoc can accept a key ID, but it will always return the DID details.
+  const details = await resolver.resolveDoc(keyId)
   // If no details can be resolved, it is clearly an error, so we return false
   if (!details) {
+    return {
+      verified: false,
+    }
+  }
+  // Returns false also if the migrated full DID has been deleted.
+  if (details.metadata?.deleted) {
     return {
       verified: false,
     }
@@ -401,7 +420,31 @@ export async function writeDidFromPublicKeys(
     alg: getSignatureAlgForKeyType(authenticationKey.type),
     signingPublicKey: authenticationKey.publicKey,
   })
-  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return { extrinsic, did }
+}
+
+export async function writeDidFromPublicKeysAndServices(
+  signer: KeystoreSigner,
+  submitter: IIdentity['address'],
+  publicKeys: PublicKeyRoleAssignment,
+  endpoints: IDidServiceEndpoint[]
+): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
+  const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
+  if (!authenticationKey)
+    throw Error(`${KeyRelationship.authentication} key is required`)
+  const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
+  const extrinsic = await generateCreateTx({
+    signer,
+    submitter,
+    didIdentifier,
+    keys: publicKeys,
+    alg: getSignatureAlgForKeyType(authenticationKey.type),
+    signingPublicKey: authenticationKey.publicKey,
+    endpoints,
+  })
+  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return { extrinsic, did }
 }
 
 export function writeDidFromIdentity(
@@ -471,6 +514,13 @@ export async function getDidAuthenticationSignature(
   return { keyId, signature: Crypto.u8aToHex(signature) }
 }
 
+export function assembleDidFragment(
+  didUri: IDidDetails['did'],
+  fragmentId: string
+): string {
+  return `${didUri}#${fragmentId}`
+}
+
 // This function is tested in the DID integration tests, in the `DID migration` test case.
 export async function upgradeDid(
   lightDid: LightDidDetails,
@@ -495,5 +545,17 @@ export async function upgradeDid(
     }
   }
 
-  return writeDidFromPublicKeys(signer, submitter, newDidPublicKeys)
+  const adjustedServiceEndpoints = lightDid.getEndpoints().map((service) => {
+    // We are sure a fragment exists.
+    const id = parseDidUrl(service.id).fragment as string
+    // We remove the service ID prefix (did:light:...) before writing it on chain.
+    return { ...service, id }
+  })
+
+  return writeDidFromPublicKeysAndServices(
+    signer,
+    submitter,
+    newDidPublicKeys,
+    adjustedServiceEndpoints
+  )
 }

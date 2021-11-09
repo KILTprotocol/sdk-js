@@ -17,8 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import { MapKeyToRelationship } from '../types'
-import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
+import { generateDidAuthenticatedTx, queryLastTxCounter } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
 import {
   getSignatureAlgForKeyType,
@@ -26,14 +25,7 @@ import {
   parseDidUrl,
 } from '../Did.utils'
 import { DidDetails } from './DidDetails'
-
-export interface FullDidDetailsCreationOpts {
-  // The full DID URI, following the scheme did:kilt:<kilt_address>
-  did: string
-  keys: IDidKeyDetails[]
-  keyRelationships: MapKeyToRelationship
-  lastTxIndex: BN
-}
+import type { FullDidDetailsCreationOpts } from '../types'
 
 function errorCheck({
   did,
@@ -83,16 +75,18 @@ export class FullDidDetails extends DidDetails {
     keys,
     keyRelationships = {},
     lastTxIndex,
+    serviceEndpoints = [],
   }: FullDidDetailsCreationOpts) {
     errorCheck({
       did,
       keys,
       keyRelationships,
       lastTxIndex,
+      serviceEndpoints,
     })
 
     const id = getIdentifierFromKiltDid(did)
-    super(did, id)
+    super(did, id, serviceEndpoints)
 
     this.keys = new Map(keys.map((key) => [key.id, key]))
     this.lastTxIndex = lastTxIndex
@@ -183,7 +177,7 @@ export class FullDidDetails extends DidDetails {
    * @returns The last used nonce.
    */
   public async refreshTxIndex(): Promise<this> {
-    this.lastTxIndex = await queryLastTxIndex(this.did)
+    this.lastTxIndex = await queryLastTxCounter(this.did)
     return this
   }
 }

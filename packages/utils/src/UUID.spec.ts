@@ -9,7 +9,7 @@
  * @group unit/utils
  */
 
-import UUID from './UUID'
+import * as UUID from './UUID'
 
 describe('UUID', () => {
   it('generate', () => {

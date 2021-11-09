@@ -17,12 +17,12 @@ import {
   verifySchemaWithErrors,
 } from './CType.utils'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
-import CType from '.'
+import { CType } from '.'
 import { getOwner, isStored } from './CType.chain'
 
 jest.mock('./CType.chain')
 
-const ctypeInput = ({
+const ctypeInput = {
   $id: 'kilt:ctype:0x1',
   $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
   title: 'Ctype Title',
@@ -40,7 +40,7 @@ const ctypeInput = ({
   ],
   type: 'object',
   required: ['first-property', 'second-property'],
-} as any) as ICType['schema']
+} as any as ICType['schema']
 
 const ctypeWrapperModel: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',

@@ -11,13 +11,13 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
-import type { KeyringPair } from '@polkadot/keyring/types'
 import type { Header } from '@polkadot/types/interfaces/types'
 import type { AnyNumber } from '@polkadot/types/types'
 import type { BN } from '@polkadot/util'
 import type {
   IIdentity,
   ISubmittableResult,
+  KeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '.'

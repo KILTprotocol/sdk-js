@@ -20,7 +20,7 @@
 import type {
   CompressedMessageBody,
   IMessage,
-  ISubmitClaimsForCTypes,
+  ISubmitCredential,
   IEncryptedMessage,
   MessageBody,
   ICType,
@@ -42,7 +42,7 @@ import {
   verifyRequiredCTypeProperties,
 } from './Message.utils'
 
-export default class Message implements IMessage {
+export class Message implements IMessage {
   /**
    * [STATIC] Lists all possible body types of [[Message]].
    */
@@ -58,7 +58,7 @@ export default class Message implements IMessage {
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
-      case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.REQUEST_ATTESTATION:
         {
           const requestAttestation = body
           if (
@@ -69,7 +69,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.SUBMIT_ATTESTATION:
         {
           const submitAttestation = body
           if (submitAttestation.content.attestation.owner !== sender) {
@@ -77,9 +77,9 @@ export default class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES:
+      case Message.BodyType.SUBMIT_CREDENTIAL:
         {
-          const submitClaimsForCtype: ISubmitClaimsForCTypes = body
+          const submitClaimsForCtype: ISubmitCredential = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== sender) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
@@ -97,11 +97,11 @@ export default class Message implements IMessage {
    * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
    *
    * @param encrypted The encrypted message.
-   * @param keystore
-   * @param resolutionOptions
-   * @param resolutionOptions.senderDetails
-   * @param resolutionOptions.receiverDetails
-   * @param resolutionOptions.resolver
+   * @param keystore The keystore used to perform the cryptographic operations.
+   * @param resolutionOptions Options to resolve the DID key ID. It is recommended to specify the sender details and let the given resolver resolve the receiver details.
+   * @param resolutionOptions.senderDetails The DID details of the sender.
+   * @param resolutionOptions.receiverDetails The DID details of the receiver.
+   * @param resolutionOptions.resolver The DID resolver to use.
    * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
    * @throws [[ERROR_PARSING_MESSAGE]] when the decoded message could not be parsed.
    * @returns The original [[Message]].
@@ -119,16 +119,14 @@ export default class Message implements IMessage {
       resolver?: IDidResolver
     } = {}
   ): Promise<IMessage> {
-    const {
-      senderKeyId,
-      receiverKeyId,
-      ciphertext,
-      nonce,
-      receivedAt,
-    } = encrypted
+    const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
+      encrypted
 
     // if we don't have the sender DID & receiver details already, fetch it via resolver
-    const resolveKey = async (keyId: string, didDetails?: IDidDetails) => {
+    const resolveKey = async (
+      keyId: string,
+      didDetails?: IDidDetails
+    ): Promise<IDidKeyDetails> => {
       // check if key is currently associated with DID
       const keyDetails =
         didDetails?.getKey(keyId) || (await resolver.resolveKey(keyId))
@@ -236,9 +234,9 @@ export default class Message implements IMessage {
   /**
    * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
    *
-   * @param senderKey
-   * @param receiverKey
-   * @param keystore
+   * @param senderKey The details of the sender's encryption key.
+   * @param receiverKey The details of the receiver's encryption key.
+   * @param keystore The keystore instance to use to encrypt the message payload.
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
@@ -247,10 +245,7 @@ export default class Message implements IMessage {
     keystore: Pick<NaclBoxCapable, 'encrypt'>
   ): Promise<IEncryptedMessage> {
     if (this.receiver !== receiverKey.controller) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH(
-        'receiver public key',
-        'revceiver'
-      )
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
     }
     if (this.sender !== senderKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')

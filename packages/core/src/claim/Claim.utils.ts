@@ -266,12 +266,3 @@ export function decompress(
     contents: claim[2],
   }
 }
-
-export default {
-  decompress,
-  compress,
-  errorCheck,
-  hashClaimContents,
-  verifyDisclosedAttributes,
-  toJsonLD,
-}
