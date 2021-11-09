@@ -130,7 +130,10 @@ export async function resolveDoc(
   switch (type) {
     case 'full': {
       const details = await queryFullDetailsFromIdentifier(identifier, version)
-      return { details } as IDidResolvedDetails
+      if (details) {
+        return { details } as IDidResolvedDetails
+      }
+      return null
     }
     case 'light': {
       let details: LightDidDetails
