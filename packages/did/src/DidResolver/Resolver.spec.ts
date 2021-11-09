@@ -13,7 +13,9 @@
 
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
 import {
+  IDidKeyDetails,
   IDidServiceEndpoint,
+  IIdentity,
   KeyRelationship,
   KeyringPair,
 } from '@kiltprotocol/types'
@@ -24,49 +26,143 @@ import { LightDidDetails } from '../DidDetails'
 import type { INewPublicKey } from '../types'
 import { IDidChainRecordJSON } from '../types'
 import { DefaultResolver } from './DefaultResolver'
+import { getKiltDidFromIdentifier } from '../Did.utils'
+
+const fullDidPresentWithAuthenticationKey =
+  'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+const fullDidPresentWithAllKeys =
+  'did:kilt:4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp'
+const fullDidPresentWithServiceEndpoints =
+  'did:kilt:4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN'
+
+function generateAuthenticationKeyDetails(
+  didIdentifier: IIdentity['address']
+): [string, IDidKeyDetails] {
+  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return [
+    'auth',
+    {
+      id: `${didUri}#auth`,
+      type: 'ed25519',
+      controller: didUri,
+      publicKeyHex:
+        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      includedAt: 200,
+    },
+  ]
+}
+
+function generateEncryptionKeyDetails(
+  didIdentifier: IIdentity['address']
+): [string, IDidKeyDetails] {
+  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return [
+    'enc',
+    {
+      id: `${didUri}#enc`,
+      type: 'x25519',
+      controller: didUri,
+      publicKeyHex:
+        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      includedAt: 250,
+    },
+  ]
+}
+
+function generateAttestationKeyDetails(
+  didIdentifier: IIdentity['address']
+): [string, IDidKeyDetails] {
+  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return [
+    'att',
+    {
+      id: `${didUri}#att`,
+      type: 'sr25519',
+      controller: didUri,
+      publicKeyHex:
+        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      includedAt: 300,
+    },
+  ]
+}
+
+function generateDelegationKeyDetails(
+  didIdentifier: IIdentity['address']
+): [string, IDidKeyDetails] {
+  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return [
+    'del',
+    {
+      id: `${didUri}#del`,
+      type: 'ed25519',
+      controller: didUri,
+      publicKeyHex:
+        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+      includedAt: 350,
+    },
+  ]
+}
 
 jest.mock('../Did.chain', () => {
   const queryByDID = jest.fn(
-    async (did: string): Promise<IDidChainRecordJSON | null> => ({
-      did,
-      authenticationKey: `${did}#auth`,
-      keyAgreementKeys: [`${did}#x25519`],
-      publicKeys: [
-        {
-          id: `${did}#auth`,
-          type: 'ed25519',
-          controller: did,
-          publicKeyHex:
-            '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          includedAt: 200,
-        },
-        {
-          id: `${did}#x25519`,
-          type: 'x25519',
-          controller: did,
-          publicKeyHex:
-            '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-          includedAt: 250,
-        },
-      ],
-      lastTxCounter: TypeRegistry.createType('u64', 10),
-    })
+    async (did: string): Promise<IDidChainRecordJSON | null> => {
+      const [authKeyId, authKey] = generateAuthenticationKeyDetails(did)
+      const [encKeyId, encKey] = generateEncryptionKeyDetails(did)
+      const [attKeyId, attKey] = generateAttestationKeyDetails(did)
+      const [delKeyId, delKey] = generateDelegationKeyDetails(did)
+      switch (did) {
+        case fullDidPresentWithAuthenticationKey:
+          return {
+            did,
+            authenticationKey: authKeyId,
+            keyAgreementKeys: [],
+            publicKeys: [authKey],
+            lastTxCounter: TypeRegistry.createType('u64'),
+          }
+        case fullDidPresentWithAllKeys:
+          return {
+            did,
+            authenticationKey: authKeyId,
+            keyAgreementKeys: [encKeyId],
+            assertionMethodKey: attKeyId,
+            capabilityDelegationKey: delKeyId,
+            publicKeys: [authKey, encKey, attKey, delKey],
+            lastTxCounter: TypeRegistry.createType('u64'),
+          }
+        default:
+          return null
+      }
+    }
   )
   const queryServiceEndpoint = jest.fn(
     async (
       did: string,
       serviceId: string
-    ): Promise<IDidServiceEndpoint | null> => ({
-      id: `${did}#${serviceId}`,
-      types: [`type-${serviceId}`],
-      urls: [`url-${serviceId}`],
-    })
+    ): Promise<IDidServiceEndpoint | null> => {
+      switch (did) {
+        case fullDidPresentWithServiceEndpoints:
+          return {
+            id: `${fullDidPresentWithServiceEndpoints}#${serviceId}`,
+            types: [`type-${serviceId}`],
+            urls: [`urls-${serviceId}`],
+          }
+        default:
+          return null
+      }
+    }
   )
   const queryServiceEndpoints = jest.fn(
-    async (did: string): Promise<IDidServiceEndpoint[]> => [
-      (await queryServiceEndpoint(did, 'id-1')) as IDidServiceEndpoint,
-      (await queryServiceEndpoint(did, 'id-2')) as IDidServiceEndpoint,
-    ]
+    async (did: string): Promise<IDidServiceEndpoint[]> => {
+      switch (did) {
+        case fullDidPresentWithServiceEndpoints:
+          return [
+            (await queryServiceEndpoint(did, 'id-1')) as IDidServiceEndpoint,
+            (await queryServiceEndpoint(did, 'id-2')) as IDidServiceEndpoint,
+          ]
+        default:
+          return []
+      }
+    }
   )
   return {
     queryByDID,
@@ -78,6 +174,10 @@ jest.mock('../Did.chain', () => {
     queryServiceEndpoints,
   }
 })
+
+// describe('Full DID resolution', () => {
+
+// })
 
 const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 const fullDid = `did:kilt:${identifier}`
