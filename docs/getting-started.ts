@@ -6,7 +6,8 @@
  */
 
 /* eslint-disable no-console */
-import Kilt, { KeyRelationship } from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
+import { KeyRelationship } from '@kiltprotocol/sdk-js'
 import type {
   SubmittableExtrinsic,
   IRequestForAttestation,
@@ -144,7 +145,7 @@ async function main(): Promise<void> {
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
   const messageBody: MessageBody = {
     content: { requestForAttestation },
-    type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+    type: Kilt.Message.BodyType.REQUEST_ATTESTATION,
   }
   const message = new Kilt.Message(
     messageBody,
@@ -173,9 +174,7 @@ async function main(): Promise<void> {
   /* Therefore, **during decryption** both the **sender account and the validity of the message are checked automatically**. */
   const decrypted = await Kilt.Message.decrypt(encryptedMessage, keystore)
   /* At this point the Attester has the original request for attestation object: */
-  if (
-    decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
-  ) {
+  if (decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION) {
     const extractedRequestForAttestation: IRequestForAttestation =
       decrypted.body.content.requestForAttestation
 
@@ -200,18 +199,18 @@ async function main(): Promise<void> {
       reSign: true,
     })
 
-    /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer: */
-    const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
+    /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `Credential` object before sending it back to the Claimer: */
+    const credential = Kilt.Credential.fromRequestAndAttestation(
       extractedRequestForAttestation,
       attestation
     )
-    /* The complete `attestedClaim` object looks as follows: */
-    console.log(attestedClaim)
+    /* The complete `credential` object looks as follows: */
+    console.log(credential)
 
-    /* The Attester has to send the `attestedClaim` object back to the Claimer in the following message: */
+    /* The Attester has to send the `credential` object back to the Claimer in the following message: */
     const messageBodyBack: MessageBody = {
-      content: attestedClaim,
-      type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      content: credential,
+      type: Kilt.Message.BodyType.SUBMIT_ATTESTATION,
     }
     const messageBack = new Kilt.Message(
       messageBodyBack,
@@ -223,11 +222,8 @@ async function main(): Promise<void> {
     console.log(messageBack)
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
-    if (
-      messageBack.body.type ===
-      Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
-    ) {
-      const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
+    if (messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION) {
+      const myCredential = Kilt.Credential.fromCredential({
         ...messageBack.body.content,
         request: requestForAttestation,
       })
@@ -262,8 +258,8 @@ async function main(): Promise<void> {
 
       /* 6.1. Request presentation for CTYPE */
       const messageBodyForClaimer: MessageBody = {
-        type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: ctype.hash }],
+        type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
+        content: { cTypes: [{ cTypeHash: ctype.hash }] },
       }
       const messageForClaimer = new Kilt.Message(
         messageBodyForClaimer,
@@ -271,11 +267,11 @@ async function main(): Promise<void> {
         claimerLightDid.did
       )
 
-      /* Now the claimer can send a message to verifier including the attested claim: */
+      /* Now the claimer can send a message to verifier including the credential: */
       console.log('Requested from verifier:', messageForClaimer.body.content)
 
-      const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
-        JSON.parse(JSON.stringify(myAttestedClaim))
+      const copiedCredential = Kilt.Credential.fromCredential(
+        JSON.parse(JSON.stringify(myCredential))
       )
 
       const credentialForVerifier = await copiedCredential.createPresentation({
@@ -286,7 +282,7 @@ async function main(): Promise<void> {
 
       const messageBodyForVerifier: MessageBody = {
         content: [credentialForVerifier],
-        type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+        type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,
@@ -315,17 +311,15 @@ async function main(): Promise<void> {
       /* When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request: */
       if (
         decryptedMessageForVerifier.body.type ===
-        Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
+        Kilt.Message.BodyType.SUBMIT_CREDENTIAL
       ) {
         const claims = decryptedMessageForVerifier.body.content
         console.log('before verifying', credentialForVerifier)
 
-        const verifiablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
-          claims[0]
-        )
+        const verifiablePresentation = Kilt.Credential.fromCredential(claims[0])
         const isValid = await verifiablePresentation.verify()
         console.log('Verification success?', isValid)
-        console.log('Attested claims from verifier perspective:\n', claims)
+        console.log('Credential from verifier perspective:\n', claims)
       }
     }
   }

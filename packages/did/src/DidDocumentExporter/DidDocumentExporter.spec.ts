@@ -303,20 +303,17 @@ describe('Light DID Document exporting tests', () => {
     const didDoc = exportToDidDocument(didDetails, 'application/json')
 
     expect(didDoc).toStrictEqual({
-      id:
-        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==',
+      id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==',
       verificationMethod: [
         {
-          id:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#authentication',
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#authentication',
           controller:
             'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==',
           type: 'Ed25519VerificationKey2018',
           publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
         },
         {
-          id:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#encryption',
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#encryption',
           controller:
             'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==',
           type: 'X25519KeyAgreementKey2019',
@@ -331,14 +328,12 @@ describe('Light DID Document exporting tests', () => {
       ],
       service: [
         {
-          id:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#id-1',
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#id-1',
           type: ['type-1'],
           serviceEndpoints: ['url-1'],
         },
         {
-          id:
-            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#id-2',
+          id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGRpZC0xZXR5cGVzgWZ0eXBlLTFkdXJsc4FldXJsLTGjYmlkZGlkLTJldHlwZXOBZnR5cGUtMmR1cmxzgWV1cmwtMg==#id-2',
           type: ['type-2'],
           serviceEndpoints: ['url-2'],
         },
@@ -361,8 +356,7 @@ describe('Light DID Document exporting tests', () => {
       id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
       verificationMethod: [
         {
-          id:
-            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+          id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
           controller:
             'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
           type: 'Sr25519VerificationKey2020',
@@ -391,8 +385,7 @@ describe('Light DID Document exporting tests', () => {
       id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
       verificationMethod: [
         {
-          id:
-            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+          id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
           controller:
             'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
           type: 'Sr25519VerificationKey2020',

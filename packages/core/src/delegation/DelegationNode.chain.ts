@@ -10,22 +10,25 @@
  * @module DelegationNode
  */
 
-import type { Option, Vec } from '@polkadot/types'
+import type { Option, Vec, U128 } from '@polkadot/types'
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
+import { BN } from '@polkadot/util'
 import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
-import DelegationNode from './DelegationNode'
+import { DelegationNode } from './DelegationNode'
 import { permissionsAsBitset } from './DelegationNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 /**
- * @param delegation
- * @internal
+ * Generate the extrinsic to store a given delegation node as the root of a new delegation hierarchy.
+ *
+ * @param delegation The delegation node to store as hierarchy root.
+ * @returns The [[SubmittableExtrinsic]] for the `createHierarchy` call.
  */
 export async function storeAsRoot(
   delegation: DelegationNode
@@ -42,9 +45,11 @@ export async function storeAsRoot(
 }
 
 /**
- * @param delegation
- * @param signature
- * @internal
+ * Generate the extrinsic to store a given delegation node under a given delegation hierarchy.
+ *
+ * @param delegation The delegation node to store under the hierarchy specified as part of the node.
+ * @param signature The DID signature of the delegee owner of the new delegation node.
+ * @returns The [[SubmittableExtrinsic]] for the `addDelegation` call.
  */
 export async function storeAsDelegation(
   delegation: DelegationNode,
@@ -66,9 +71,10 @@ export async function storeAsDelegation(
 }
 
 /**
- * @param delegation
- * @param delegationId
- * @internal
+ * Query a delegation node from the blockchain given its identifier.
+ *
+ * @param delegationId The delegation node ID to query.
+ * @returns Either the retrieved [[DelegationNode]] or null.
  */
 export async function query(
   delegationId: IDelegationNode['id']
@@ -89,61 +95,57 @@ export async function query(
 }
 
 /**
- * @internal
+ * Generate the extrinsic to revoke a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
  *
- * Revokes part of a delegation tree at specified node, also revoking all nodes below.
- *
- * @param delegationId The id of the node in the delegation tree at which to revoke.
- * @param maxDepth How many nodes may be traversed upwards in the hierarchy when searching for a node owned by `identity`. Each traversal will add to the transaction fee. Therefore a higher number will increase the fees locked until the transaction is complete. A number lower than the actual required traversals will result in a failed extrinsic (node will not be revoked).
- * @param maxRevocations How many delegation nodes may be revoked during the process. Each revocation adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the revocation process, leaving some nodes unrevoked. Revocations will first be performed on child nodes, therefore the current node is only revoked when this is accurate.
- * @returns An unsigned SubmittableExtrinsic ready to be signed and dispatched.
+ * @param delegationId The identifier of the delegation node to revoke.
+ * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
+ * @param maxRevocations The max number of children nodes that will be revoked as part of the revocation operation. This value does not include the node itself being removed.
+ * @returns The [[SubmittableExtrinsic]] for the `revokeDelegation` call.
  */
 export async function revoke(
   delegationId: IDelegationNode['id'],
-  maxDepth: number,
+  maxParentChecks: number,
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
-    delegationId,
-    maxDepth,
-    maxRevocations
-  )
+  const tx: SubmittableExtrinsic =
+    blockchain.api.tx.delegation.revokeDelegation(
+      delegationId,
+      maxParentChecks,
+      maxRevocations
+    )
   return tx
 }
 
 /**
- * @internal
+ * Generate the extrinsic to remove a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
  *
- * Revokes and removes part of a delegation tree at specified node, also removing all nodes below.
- *
- * @param delegationId The id of the node in the delegation tree at which to remove.
- * @param maxRevocations How many delegation nodes may be removed during the process. Each removal adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the removal process, leaving some nodes unremoved. Removals will first be performed on child nodes, therefore the current node is only removed when this is accurate.
- * @returns An unsigned SubmittableExtrinsic ready to be signed and dispatched.
+ * @param delegationId The identifier of the delegation node to remove.
+ * @param maxRevocations The max number of children nodes that will be removed as part of the revocation operation. This value does not include the node itself being removed.
+ * @returns The [[SubmittableExtrinsic]] for the `removeDelegation` call.
  */
 export async function remove(
   delegationId: IDelegationNode['id'],
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.removeDelegation(
-    delegationId,
-    maxRevocations
-  )
+  const tx: SubmittableExtrinsic =
+    blockchain.api.tx.delegation.removeDelegation(delegationId, maxRevocations)
   return tx
 }
 
 /**
- * @param delegationNodeId
- * @param delegationNode
- * @internal
+ * Query the blockchain to retrieve the number of **direct** children of a given delegation node.
+ *
+ * @param delegationNode The delegation node to perform the lookup for.
+ * @returns A list of [[DelegationNode]] containing all the direct children of the provided node.
  */
 export async function getChildren(
   delegationNode: DelegationNode
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNode.id}')`)
   const childrenNodes = await Promise.all(
-    delegationNode.childrenIds.map(async (childId) => {
+    delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
       const childNode = await query(childId)
       if (!childNode) {
         throw SDKErrors.ERROR_DELEGATION_ID_MISSING
@@ -155,27 +157,34 @@ export async function getChildren(
   return childrenNodes
 }
 
-/**
- * @param delegationNodeId
- * @param queryResult
- * @internal
- */
 function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
   DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<H256>>'])
   return queryResult.unwrapOrDefault().map((hash) => hash.toHex())
 }
 
 /**
- * @param delegationNodeId
- * @param id
- * @internal
+ * Query the blockchain to retrieve all the attestations (their claim hashes) creating with the provided delegation.
+ *
+ * @param id The identifier of the delegation node to retrieve delegated attestations for.
+ * @returns A list of claim hashes issued using the provided delegation.
  */
 export async function getAttestationHashes(
   id: IDelegationNode['id']
 ): Promise<string[]> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations<
-    Option<Vec<Hash>>
-  >(id)
+  const encodedHashes =
+    await blockchain.api.query.attestation.delegatedAttestations<
+      Option<Vec<Hash>>
+    >(id)
   return decodeDelegatedAttestations(encodedHashes)
+}
+
+async function queryDepositAmountEncoded(): Promise<U128> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.consts.delegation.deposit as U128
+}
+
+export async function queryDepositAmount(): Promise<BN> {
+  const encodedDeposit = await queryDepositAmountEncoded()
+  return encodedDeposit.toBn()
 }

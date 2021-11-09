@@ -16,8 +16,8 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { ConfigService } from '@kiltprotocol/config'
-import Blockchain from '../blockchain/Blockchain'
-import TYPE_REGISTRY from './TypeRegistry'
+import { Blockchain } from '../blockchain/Blockchain'
+import { TYPE_REGISTRY } from './TypeRegistry'
 
 let instance: Promise<Blockchain> | null
 

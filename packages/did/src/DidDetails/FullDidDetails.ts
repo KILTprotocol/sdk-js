@@ -64,7 +64,6 @@ function errorCheck({
   })
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export class FullDidDetails extends DidDetails {
   /// The latest version for KILT full DIDs.
   public static readonly FULL_DID_LATEST_VERSION = 1

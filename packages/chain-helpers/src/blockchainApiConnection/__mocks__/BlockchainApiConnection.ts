@@ -43,7 +43,7 @@
  *
  */
 
-import Blockchain from '../../blockchain/Blockchain'
+import { Blockchain } from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import type {
   AccountInfoWithProviders,
@@ -57,7 +57,7 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from './BlockchainQuery'
-import TYPE_REGISTRY from '../TypeRegistry'
+import { TYPE_REGISTRY } from '../TypeRegistry'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 
@@ -136,7 +136,7 @@ class MockSubmittableExtrinsic {
 
 function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
   const result: ISubmittableResult = TxResultsQueue.shift() || defaultTxResult
-  return (new MockSubmittableExtrinsic(result) as any) as SubmittableExtrinsic
+  return new MockSubmittableExtrinsic(result) as any as SubmittableExtrinsic
 }
 
 function __makeSubmittableResult(

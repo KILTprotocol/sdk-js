@@ -317,10 +317,3 @@ export function validateSchema(
   }
   return { verified: false, errors: [] }
 }
-
-export default {
-  verifySelfSignedProof,
-  verifyCredentialDigestProof,
-  verifyAttestedProof,
-  validateSchema,
-}

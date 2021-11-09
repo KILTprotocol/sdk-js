@@ -25,8 +25,8 @@ import {
   listenToBalanceChanges,
   makeTransfer,
 } from './Balance.chain'
-import BalanceUtils from './Balance.utils'
-import Kilt from '../kilt/Kilt'
+import * as BalanceUtils from './Balance.utils'
+import * as Kilt from '../kilt/Kilt'
 
 jest.mock(
   '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
@@ -40,8 +40,8 @@ describe('Balance', () => {
   const keyring = new Keyring({ type: 'sr25519', ss58Format: 38 })
   let alice: KeyringPair
   let bob: KeyringPair
-  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
-    .__mocked_api
+  const blockchainApi =
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api
 
   const accountInfo = (balance: number): AccountInfo => {
     return {
@@ -101,11 +101,9 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await makeTransfer(
-      bob.address,
-      amount,
-      exponent
-    ).then((tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true }))
+    const status = await makeTransfer(bob.address, amount, exponent).then(
+      (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+    )
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

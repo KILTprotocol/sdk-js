@@ -35,6 +35,7 @@ export function makeSubscriptionPromise<SubscriptionType>(
 } {
   const { resolveOn, rejectOn, timeout } = { ...terminationOptions }
   let resolve: (value: SubscriptionType) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reject: (reason: any) => void
   const promise = new Promise<SubscriptionType>((res, rej) => {
     resolve = res

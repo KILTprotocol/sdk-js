@@ -5,8 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import * as Quote from './Quote'
-
-export default Quote
-export { default as QuoteUtils } from './Quote.utils'
-export { default as QuoteSchema } from './QuoteSchema'
+export * as Quote from './Quote'
+export * as QuoteUtils from './Quote.utils'
+export { QuoteSchema } from './QuoteSchema'

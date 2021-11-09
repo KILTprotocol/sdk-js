@@ -7,7 +7,7 @@
 
 /**
  * @packageDocumentation
- * @module IAttestedClaim
+ * @module ICredential
  */
 
 import type { IAttestation, CompressedAttestation } from './Attestation'
@@ -16,12 +16,12 @@ import type {
   CompressedRequestForAttestation,
 } from './RequestForAttestation'
 
-export interface IAttestedClaim {
+export interface ICredential {
   attestation: IAttestation
   request: IRequestForAttestation
 }
 
-export type CompressedAttestedClaim = [
+export type CompressedCredential = [
   CompressedRequestForAttestation,
   CompressedAttestation
 ]

@@ -9,20 +9,6 @@
  * @packageDocumentation
  * @module ICTypeMetadata
  */
-export interface ICTypeMetadata {
-  metadata: IMetadata
-  ctypeHash: string | null
-}
-
-export interface IMetadata {
-  title: IMultilangLabel
-  description?: IMultilangLabel
-  properties: IMetadataProperties
-}
-
-export type IMetadataProperties = {
-  [key: string]: { title: IMultilangLabel; description?: IMultilangLabel }
-}
 
 /**
  * String struct with string keys and a mandatory `default` field.
@@ -34,4 +20,19 @@ export interface IMultilangLabel {
   default: string
   /** An arbitrary number of translations where the key indicates the language. */
   [key: string]: string
+}
+
+export type IMetadataProperties = {
+  [key: string]: { title: IMultilangLabel; description?: IMultilangLabel }
+}
+
+export interface IMetadata {
+  title: IMultilangLabel
+  description?: IMultilangLabel
+  properties: IMetadataProperties
+}
+
+export interface ICTypeMetadata {
+  metadata: IMetadata
+  ctypeHash: string | null
 }

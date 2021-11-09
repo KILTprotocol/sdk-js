@@ -10,7 +10,7 @@
  * @module ITerms
  */
 
-import type { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
+import type { ICredential, CompressedCredential } from './Credential'
 import type { CompressedCType, ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type {
@@ -22,18 +22,16 @@ import type { PartialClaim } from './Claim'
 
 export interface ITerms {
   claim: PartialClaim
-  legitimations: IAttestedClaim[]
+  legitimations: ICredential[]
   delegationId?: IDelegationNode['id']
   quote?: IQuoteAttesterSigned
-  prerequisiteClaims?: ICType['hash']
   cTypes?: ICType[]
 }
 
 export type CompressedTerms = [
   CompressedPartialClaim,
-  CompressedAttestedClaim[],
+  CompressedCredential[],
   IDelegationNode['id'] | undefined,
   CompressedQuoteAttesterSigned | undefined,
-  ICType['hash'] | undefined,
   CompressedCType[] | undefined
 ]

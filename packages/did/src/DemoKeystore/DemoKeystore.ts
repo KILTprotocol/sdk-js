@@ -18,6 +18,7 @@ import {
 } from '@polkadot/util-crypto'
 import { Crypto, Keyring } from '@kiltprotocol/utils'
 import {
+  IDidKeyDetails,
   KeyRelationship,
   KeyringPair,
   Keystore,
@@ -32,7 +33,7 @@ import { u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { FullDidDetails, LightDidDetails } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
-import { PublicKeyRoleAssignment } from '../types'
+import { INewPublicKey, PublicKeyRoleAssignment } from '../types'
 import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils'
 
 export enum SigningAlgorithms {
@@ -78,7 +79,8 @@ const KeypairTypeForAlg: Record<string, string> = {
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
 export class DemoKeystore
-  implements Keystore<SigningAlgorithms, EncryptionAlgorithms>, NaclBoxCapable {
+  implements Keystore<SigningAlgorithms, EncryptionAlgorithms>, NaclBoxCapable
+{
   private signingKeyring: Keyring = new Keyring()
   private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
 
@@ -275,11 +277,13 @@ export class DemoKeystore
 }
 
 /**
- * Creates DidDetails for use in local testing. Will not work on-chain bc identifiers are generated ad-hoc.
+ * Creates an instance of [[FullDidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.
  *
- * @param keystore
- * @param mnemonicOrHexSeed
- * @param signingKeyType
+ * @param keystore The keystore to generate and store the DID private keys.
+ * @param mnemonicOrHexSeed The mnemonic phrase or HEX seed for key generation.
+ * @param signingKeyType One of the supported [[SigningAlgorithms]] to generate the DID authentication key.
+ *
+ * @returns A promise resolving to a [[FullDidDetails]] object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoDidFromSeed(
   keystore: DemoKeystore,
@@ -295,7 +299,7 @@ export async function createLocalDemoDidFromSeed(
     derivation: string,
     alg: string,
     keytype: string
-  ) => {
+  ): Promise<IDidKeyDetails> => {
     const seed = derivation
       ? `${mnemonicOrHexSeed}//${derivation}`
       : mnemonicOrHexSeed
@@ -363,7 +367,7 @@ export async function createOnChainDidFromSeed(
   const makeKey = (
     seed: string,
     alg: SigningAlgorithms | EncryptionAlgorithms
-  ) =>
+  ): Promise<INewPublicKey> =>
     keystore
       .generateKeypair({
         alg,

@@ -11,9 +11,9 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
-import CType from '../ctype/CType'
-import Claim from './Claim'
-import ClaimUtils from './Claim.utils'
+import { CType } from '../ctype/CType'
+import { Claim } from './Claim'
+import * as ClaimUtils from './Claim.utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 

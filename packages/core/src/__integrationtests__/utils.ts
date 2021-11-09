@@ -4,7 +4,7 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import { Keyring } from '@kiltprotocol/utils'
 import { randomAsU8a } from '@polkadot/util-crypto'
-import CType from '../ctype/CType'
+import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import {
   DefaultResolver,

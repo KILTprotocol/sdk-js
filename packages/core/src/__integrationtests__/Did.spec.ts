@@ -45,6 +45,13 @@ beforeAll(async () => {
   paymentAccount = devAlice
 })
 
+it('fetches the correct deposit amount', async () => {
+  const depositAmount = await DidChain.queryDepositAmount()
+  expect(depositAmount.toString()).toStrictEqual(
+    new BN(2000000000000000).toString()
+  )
+})
+
 describe('write and didDeleteTx', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
@@ -219,6 +226,10 @@ describe('write and didDeleteTx', () => {
       submitter: paymentAccount.address,
     })
 
+    // Check that DID is not blacklisted.
+    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([])
+    await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeFalsy()
+
     await expect(
       BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -227,6 +238,10 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     await expect(DidChain.queryById(didIdentifier)).resolves.toBe(null)
+
+    // Check that DID is now blacklisted.
+    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([did])
+    await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeTruthy()
   }, 60_000)
 })
 
@@ -256,7 +271,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
     Partial<DidTypes.IDidChainRecordJSON>
   >({
-    did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+    did,
   })
 
   const newKeypair = await keystore.generateKeypair({
@@ -376,8 +391,7 @@ describe('DID migration', () => {
       alg: SigningAlgorithms.Ed25519,
     })
     const didEncryptionKeyDetails = await keystore.generateKeypair({
-      seed:
-        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      seed: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       alg: EncryptionAlgorithms.NaclBox,
     })
     const lightDidDetails = new LightDidDetails({
@@ -415,6 +429,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
@@ -454,6 +469,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
@@ -463,8 +479,7 @@ describe('DID migration', () => {
       alg: SigningAlgorithms.Ed25519,
     })
     const didEncryptionKeyDetails = await keystore.generateKeypair({
-      seed:
-        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      seed: '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
       alg: EncryptionAlgorithms.NaclBox,
     })
     const serviceEndpoints: IDidServiceEndpoint[] = [
@@ -521,6 +536,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
     // Verify service endpoints for light DID resolution
@@ -531,6 +547,7 @@ describe('DID migration', () => {
     )
     // Verify service endpints for full DID resolution
     const fullDid = await resolveDoc(resolutionResult!.metadata!.canonicalId)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(fullDid?.details).toBeDefined()
 
@@ -539,7 +556,37 @@ describe('DID migration', () => {
         return { ...service, id: DidUtils.assembleDidFragment(did, service.id) }
       })
     )
-  })
+
+    // Remove and claim the deposit back
+    const fullDidIdentifier = DidUtils.getIdentifierFromKiltDid(did)
+    const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
+    const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
+      fullDidIdentifier,
+      storedEndpointsCount
+    )
+    await expect(
+      BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
+
+    // Check that the resolver now correctly resolves a migrated-then-deleted light DID.
+    const didResolutionResultAfterDeletion = await resolveDoc(
+      lightDidDetails.did
+    )
+
+    // Check that the returned light DID is the same as the queried one.
+    expect(didResolutionResultAfterDeletion?.details.did).toStrictEqual(
+      lightDidDetails.did
+    )
+    // Check that the full DID is still returned albeit already deleted.
+    expect(
+      didResolutionResultAfterDeletion?.metadata?.canonicalId
+    ).toStrictEqual(did)
+    // Check that the deletion flag is set to true.
+    expect(didResolutionResultAfterDeletion?.metadata?.deleted).toBeTruthy()
+  }, 60_000)
 })
 
 describe('DID authorization', () => {

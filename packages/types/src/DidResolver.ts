@@ -10,12 +10,13 @@ import type { IDidDetails, IDidKeyDetails } from './DidDetails'
 
 export type IDidResolutionDocumentMetadata = {
   canonicalId: string
+  deleted: boolean
 }
 
 /**
  * The result of a DID resolution.
  *
- * It includes the DID details, and any optional document metadata as specified in the [W3C standard](https://www.w3.org/TR/did-core/#did-document-metadata).
+ * It includes the DID details, and optional document resolution metadata.
  */
 export type IDidResolvedDetails = {
   details: IDidDetails
@@ -26,11 +27,9 @@ export interface IDidResolver {
   /**
    * Resolves a DID or DID URI and returns the respective resource.
    *
-   * @param didUri A DID string or DID URI (DID + # + fragment) identifying a DID document or DID
-   * public key.
-   * @returns A promise of a [[IDidResolvedDetails]] object if the didUri is a DID, or [[IDidKeyDetails]]
-   * if didUri contains a fragment (i.e. did:kilt:<identifier>#<fragment>), null
-   * if a resource cannot be resolved.
+   * @param didUri A DID string or DID URI (DID + # + fragment) identifying a DID document or DID public key.
+   * @returns A promise of a [[IDidResolvedDetails]] object if the didUri is a DID, [[IDidKeyDetails]] or [[IDidServiceEndpoint]]
+   * if didUri contains a fragment (i.e., did:kilt:<identifier>#<fragment>) null if a resource cannot be resolved.
    */
   resolve: (
     didUri: string
