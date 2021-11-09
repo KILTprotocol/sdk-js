@@ -37,9 +37,9 @@ import {
   CtypeOnChain,
 } from './utils'
 import { Balance } from '../balance'
-import Attestation from '../attestation/Attestation'
-import Claim from '../claim/Claim'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import { Attestation } from '../attestation/Attestation'
+import { Claim } from '../claim/Claim'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { disconnect, init } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 
@@ -353,39 +353,34 @@ describe('Different deposits scenarios', () => {
   let testFullDidEight: FullDidDetails
   let testFullDidNine: FullDidDetails
   beforeAll(async () => {
-    const [
-      testDidFive,
-      testDidSix,
-      testDidSeven,
-      testDidEight,
-      testDidNine,
-    ] = await Promise.all([
-      createLightDidFromSeed(
-        keystore,
-        testMnemonics[4],
-        SigningAlgorithms.Sr25519
-      ),
-      createLightDidFromSeed(
-        keystore,
-        testMnemonics[5],
-        SigningAlgorithms.Sr25519
-      ),
-      createLightDidFromSeed(
-        keystore,
-        testMnemonics[6],
-        SigningAlgorithms.Sr25519
-      ),
-      createLightDidFromSeed(
-        keystore,
-        testMnemonics[7],
-        SigningAlgorithms.Sr25519
-      ),
-      createLightDidFromSeed(
-        keystore,
-        testMnemonics[8],
-        SigningAlgorithms.Sr25519
-      ),
-    ])
+    const [testDidFive, testDidSix, testDidSeven, testDidEight, testDidNine] =
+      await Promise.all([
+        createLightDidFromSeed(
+          keystore,
+          testMnemonics[4],
+          SigningAlgorithms.Sr25519
+        ),
+        createLightDidFromSeed(
+          keystore,
+          testMnemonics[5],
+          SigningAlgorithms.Sr25519
+        ),
+        createLightDidFromSeed(
+          keystore,
+          testMnemonics[6],
+          SigningAlgorithms.Sr25519
+        ),
+        createLightDidFromSeed(
+          keystore,
+          testMnemonics[7],
+          SigningAlgorithms.Sr25519
+        ),
+        createLightDidFromSeed(
+          keystore,
+          testMnemonics[8],
+          SigningAlgorithms.Sr25519
+        ),
+      ])
 
     ;[
       testFullDidOne,
