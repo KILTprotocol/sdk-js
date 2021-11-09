@@ -25,7 +25,13 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { Credential } from '..'
 import { disconnect, init } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
-import { CtypeOnChain, DriversLicense, devFaucet, WS_ADDRESS } from './utils'
+import {
+  CtypeOnChain,
+  DriversLicense,
+  devFaucet,
+  WS_ADDRESS,
+  devBob,
+} from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
@@ -341,6 +347,7 @@ describe('revocation', () => {
 
 describe('Deposit claiming', () => {
   it('deposit payer should be able to claim back its own deposit and delete any children', async () => {
+    // Delegation nodes are written on the chain using `paymentAccount`.
     const rootNode = await writeHierarchy(root, DriversLicense.hash)
     const delegatedNode = await addDelegation(
       rootNode.id,
@@ -361,6 +368,15 @@ describe('Deposit claiming', () => {
     ).resolves.not.toBeNull()
 
     const depositClaimTx = await delegatedNode.reclaimDeposit()
+
+    // Test removal failure with an account that is not the deposit payer.
+    await expect(
+      BlockchainUtils.signAndSubmitTx(depositClaimTx, devBob, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).rejects
+
+    // Test removal success with the right account.
     await BlockchainUtils.signAndSubmitTx(depositClaimTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
