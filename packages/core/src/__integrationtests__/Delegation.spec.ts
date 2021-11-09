@@ -374,7 +374,7 @@ describe('Deposit claiming', () => {
       BlockchainUtils.signAndSubmitTx(depositClaimTx, devBob, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
-    ).rejects
+    ).rejects.toThrow()
 
     // Test removal success with the right account.
     await BlockchainUtils.signAndSubmitTx(depositClaimTx, paymentAccount, {
