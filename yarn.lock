@@ -879,7 +879,7 @@ __metadata:
     "@polkadot/types": 6.4.2
     "@polkadot/util": 7.5.1
     "@polkadot/util-crypto": 7.5.1
-    cbor: ^6.0.0
+    cbor: ^8.0.2
     rimraf: ^3.0.2
     typescript: ^4.2.2
   languageName: unknown
@@ -2430,13 +2430,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "bignumber.js@npm:9.0.1"
-  checksum: 6e72f6069d9db32fc8d27561164de9f811b15f9144be61f323d8b36150a239eea50c92e20ba38af2ba5e717af10b8ef12db8f9948fe2ff02bf17ede5239d15d3
-  languageName: node
-  linkType: hard
-
 "blakejs@npm:^1.1.1":
   version: 1.1.1
   resolution: "blakejs@npm:1.1.1"
@@ -2770,13 +2763,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cbor@npm:^6.0.0":
-  version: 6.0.1
-  resolution: "cbor@npm:6.0.1"
+"cbor@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "cbor@npm:8.0.2"
   dependencies:
-    bignumber.js: ^9.0.1
-    nofilter: ^1.0.4
-  checksum: fd51d389b90f438bfdfa63f33d20e068995f7a0aee9cb2c94d6770950282f5840abb488fe0be59fac8bf38894a46d56fb82265bbb02cf37b8ad0c793b1490074
+    nofilter: ^3.0.3
+  checksum: 713b2d70a84ce13040c762459c2b7da5182b77f5dfa3db26aadffa0279aa23cc12a7e4edf0bff3f9bacc6299387a60d2842516db5716135cbd182c8ba71cac9a
   languageName: node
   linkType: hard
 
@@ -7112,10 +7104,10 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"nofilter@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "nofilter@npm:1.0.4"
-  checksum: 54d864f745de5c3312994e880cf2d4f55e34830d6adc8275dce3731507ca380d21040336e4a277a4901551c07f04c452fbeffd57fad1dc8f68a2943eaf894a04
+"nofilter@npm:^3.0.3":
+  version: 3.1.0
+  resolution: "nofilter@npm:3.1.0"
+  checksum: 58aa85a5b4b35cbb6e42de8a8591c5e338061edc9f3e7286f2c335e9e9b9b8fa7c335ae45daa8a1f3433164dc0b9a3d187fa96f9516e04a17a1f9ce722becc4f
   languageName: node
   linkType: hard
 
