@@ -10,7 +10,7 @@
  * @module CTypeUtils
  */
 
-import { Validator } from '@cfworker/json-schema'
+import { validator, Schema, Json, ValidationError } from '@exodus/schemasafe'
 import type {
   ICType,
   IClaim,
@@ -24,28 +24,23 @@ import { getOwner, isStored } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
 export function verifySchemaWithErrors(
-  object: Record<string, unknown>,
-  schema: Record<string, unknown>,
-  messages?: string[]
-): boolean {
-  const validator = new Validator(schema, '7', false)
-  if (schema.$id !== CTypeModel.$id) {
-    validator.addSchema(CTypeModel)
-  }
-  const result = validator.validate(object)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
-      messages.push(error.error)
-    })
-  }
-  return result.valid
+  object: Json,
+  schema: Schema,
+  includeErrors?: boolean
+): { valid: boolean; errors?: ValidationError[] } {
+  const validate = validator(schema, {
+    schemas: [CTypeModel],
+    includeErrors,
+  })
+  const valid = validate(object)
+  return { valid, errors: validate.errors }
 }
 
 export function verifySchema(
   object: Record<string, any>,
   schema: Record<string, any>
 ): boolean {
-  return verifySchemaWithErrors(object, schema)
+  return verifySchemaWithErrors(object, schema).valid
 }
 
 /**
@@ -61,9 +56,9 @@ export function verifyClaimStructure(
   claimContents: IClaim['contents'],
   schema: ICType['schema']
 ): boolean {
-  if (!verifySchema(schema, CTypeModel)) {
-    throw SDKErrors.ERROR_OBJECT_MALFORMED()
-  }
+  // if (!verifySchema(schema, CTypeModel)) {
+  //   throw SDKErrors.ERROR_OBJECT_MALFORMED()
+  // }
   return verifySchema(claimContents, schema)
 }
 
@@ -230,7 +225,7 @@ export function decompress(cType: CompressedCType): ICType {
  * @param cType - A [[CType]] that has nested [[CType]]s inside.
  * @param nestedCTypes - An array of [[CType]] schemas.
  * @param claimContents - The contents of a [[Claim]] to be validated.
- * @param messages
+ * @param includeErrors - If errors should be included in the return.
  *
  * @returns Whether the contents is valid.
  */
@@ -238,19 +233,13 @@ export function decompress(cType: CompressedCType): ICType {
 export function validateNestedSchemas(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,
-  claimContents: Record<string, any>,
-  messages?: string[]
-): boolean {
-  const validator = new Validator(cType, '7', false)
-  nestedCTypes.forEach((ctype) => {
-    validator.addSchema(ctype)
+  claimContents: Json,
+  includeErrors?: boolean
+): { valid: boolean; errors?: ValidationError[] } {
+  const validate = validator(cType, {
+    schemas: [CTypeModel, ...nestedCTypes],
+    includeErrors,
   })
-  validator.addSchema(CTypeModel)
-  const result = validator.validate(claimContents)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
-      messages.push(error.error)
-    })
-  }
-  return result.valid
+  const valid = validate(claimContents)
+  return { valid, errors: validate.errors }
 }

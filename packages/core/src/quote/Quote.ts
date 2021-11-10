@@ -16,7 +16,7 @@
  * @module Quote
  */
 
-import { Validator, Schema } from '@cfworker/json-schema'
+import { validator, Schema, Json, ValidationError } from '@exodus/schemasafe'
 import type {
   IDidDetails,
   IQuote,
@@ -34,28 +34,20 @@ import { QuoteSchema } from './QuoteSchema'
  * Validates the quote against the meta schema and quote data against the provided schema.
  *
  * @param schema A [[Quote]] schema object.
- * @param validate [[Quote]] data to be validated against the provided schema.
- * @param messages The errors messages are listed in an array.
+ * @param quote [[Quote]] data to be validated against the provided schema.
+ * @param messages Wether to return errors.
  *
  * @returns Whether the quote schema is valid.
  */
 
 export function validateQuoteSchema(
   schema: Schema,
-  validate: unknown,
-  messages?: string[]
-): boolean {
-  const validator = new Validator(schema)
-  if (schema.$id !== QuoteSchema.$id) {
-    validator.addSchema(QuoteSchema)
-  }
-  const result = validator.validate(validate)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
-      messages.push(error.error)
-    })
-  }
-  return result.valid
+  quote: Json,
+  includeErrors?: boolean
+): { valid: boolean; errors?: ValidationError[] } {
+  const validate = validator(schema, { schemas: [QuoteSchema], includeErrors })
+  const valid = validate(quote)
+  return { valid, errors: validate.errors }
 }
 
 /**
@@ -78,9 +70,9 @@ export async function fromAttesterSignedInput(
     keyRelationship: KeyRelationship.authentication,
     resolver,
   })
-  const messages: string[] = []
-  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    console.log(messages)
+  const result = validateQuoteSchema(QuoteSchema, basicQuote as IQuote, true)
+  if (!result.valid) {
+    console.log(result.errors)
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 

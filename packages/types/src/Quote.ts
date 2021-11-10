@@ -13,12 +13,14 @@
 import type { ICType } from './CType'
 import type { DidSignature } from './DidDetails'
 
-export interface ICostBreakdown {
-  tax: Record<string, unknown>
+export type ICostBreakdown = {
+  tax: Record<string, any>
   net: number
   gross: number
 }
-export interface IQuote {
+// Using `type` instead of `interface` here, since the index type can't
+// be inferred on interfaces, which is needed for the schema validator.
+export type IQuote = {
   attesterDid: string
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
@@ -26,11 +28,11 @@ export interface IQuote {
   timeframe: string
   termsAndConditions: string
 }
-export interface IQuoteAttesterSigned extends IQuote {
+export type IQuoteAttesterSigned = IQuote & {
   attesterSignature: DidSignature
 }
 
-export interface IQuoteAgreement extends IQuoteAttesterSigned {
+export type IQuoteAgreement = IQuoteAttesterSigned & {
   rootHash: string
   claimerSignature: DidSignature
 }

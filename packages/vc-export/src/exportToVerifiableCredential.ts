@@ -11,7 +11,7 @@
  */
 
 import { isHex } from '@polkadot/util'
-import type { AnyJson } from '@polkadot/types/types'
+import type { Json } from '@exodus/schemasafe'
 import { ClaimUtils } from '@kiltprotocol/core'
 import type { ICredential, ICType } from '@kiltprotocol/types'
 import {
@@ -73,7 +73,7 @@ export function fromCredential(
   // transform & annotate claim to be json-ld and VC conformant
   const { credentialSubject } = ClaimUtils.toJsonLD(claim, false) as Record<
     string,
-    Record<string, AnyJson>
+    Record<string, Json>
   >
 
   const issuer = input.attestation.owner

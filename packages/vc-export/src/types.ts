@@ -9,7 +9,7 @@
  * @packageDocumentation
  * @module VCExportTypes
  */
-import type { AnyJson } from '@polkadot/types/types'
+import type { Json } from '@exodus/schemasafe'
 import type { ICType, IDidKeyDetails } from '@kiltprotocol/types'
 import type {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
@@ -65,7 +65,7 @@ export interface VerifiableCredential {
   type: [typeof DEFAULT_VERIFIABLECREDENTIAL_TYPE, ...string[]]
   id: string
   // claims about the subjects of the credential
-  credentialSubject: Record<string, AnyJson>
+  credentialSubject: Record<string, Json>
   // the entity that issued the credential
   issuer: string
   // when the credential was issued

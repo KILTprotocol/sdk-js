@@ -409,13 +409,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cfworker/json-schema@npm:^1.9.0":
-  version: 1.9.0
-  resolution: "@cfworker/json-schema@npm:1.9.0"
-  checksum: 51eb523463fb6bec9de50da3c9126c95866e3c3c027a8ed91db82b64f00c3a438ca454d6b03e6080b76e4434b37919c55c15f0e7f61b8fa494839121ed69f99a
-  languageName: node
-  linkType: hard
-
 "@cnakazawa/watch@npm:^1.0.3":
   version: 1.0.4
   resolution: "@cnakazawa/watch@npm:1.0.4"
@@ -602,6 +595,13 @@ __metadata:
   version: 0.5.2
   resolution: "@discoveryjs/json-ext@npm:0.5.2"
   checksum: cf7ce79a6e25944b6618f3336a4f69191ce9019ee08e47129c4933f03f66aa625c0e7d55075f890cdfc9a7f9b3f6c5465a1e51bd3e7a73aec803753d7d0cec91
+  languageName: node
+  linkType: hard
+
+"@exodus/schemasafe@npm:^1.0.0-rc.6":
+  version: 1.0.0-rc.6
+  resolution: "@exodus/schemasafe@npm:1.0.0-rc.6"
+  checksum: 494324093632adcaff9495ebda8d373045da8db845219f1b3c606b755332329c01876f32e57980f9521f50cdc2ad5464e6f0aa8bee9904007d6fb67681b20890
   languageName: node
   linkType: hard
 
@@ -853,7 +853,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
-    "@cfworker/json-schema": ^1.9.0
+    "@exodus/schemasafe": ^1.0.0-rc.6
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
@@ -971,7 +971,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
-    "@cfworker/json-schema": ^1.9.0
+    "@exodus/schemasafe": ^1.0.0-rc.6
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"

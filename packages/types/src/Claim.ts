@@ -12,10 +12,13 @@
 import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
 
-export type IClaimContents = Record<
-  string,
-  Record<string, unknown> | string | number | boolean
->
+export type IClaimContentsBase =
+  | string
+  | number
+  | boolean
+  | { [key: string]: IClaimContentsBase }
+
+export type IClaimContents = Record<string, IClaimContentsBase>
 export interface IClaim {
   cTypeHash: ICType['hash']
   contents: IClaimContents

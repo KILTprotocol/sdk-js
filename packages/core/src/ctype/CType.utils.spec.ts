@@ -68,7 +68,9 @@ describe('CTypeUtils', () => {
   it('verifies claims', () => {
     expect(verifyClaimStructure(goodClaim, ctypeWrapperModel)).toBeTruthy()
     expect(verifyClaimStructure(badClaim, ctypeWrapperModel)).toBeFalsy()
-    expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
+    expect(
+      verifySchemaWithErrors(badClaim, CTypeWrapperModel).valid
+    ).toBeFalsy()
     expect(() => {
       verifyClaimStructure(badClaim, ctypeInput)
     }).toThrow(SDKErrors.ERROR_OBJECT_MALFORMED())

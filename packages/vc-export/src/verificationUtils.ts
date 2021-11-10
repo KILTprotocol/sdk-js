@@ -13,7 +13,7 @@
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { Validator } from '@cfworker/json-schema'
+import { validator } from '@exodus/schemasafe'
 import { Attestation, CTypeSchema } from '@kiltprotocol/core'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -307,12 +307,20 @@ export function validateSchema(
   // if present, perform schema validation
   if (schema) {
     // there's no rule against additional properties, so we can just validate the ones that are there
-    const validator = new Validator(schema)
-    validator.addSchema(CTypeSchema.CTypeModel)
-    const result = validator.validate(credential.credentialSubject)
+    const validate = validator(schema, {
+      schemas: [CTypeSchema.CTypeModel],
+      includeErrors: true,
+    })
+    const valid = validate(credential.credentialSubject)
     return {
-      verified: result.valid,
-      errors: result.errors?.map((e) => new Error(e.error)) || [],
+      verified: valid,
+      errors:
+        validate.errors?.map(
+          (e) =>
+            new Error(
+              `Error at instance: '${e.instanceLocation}' and keyword '${e.keywordLocation}'`
+            )
+        ) || [],
     }
   }
   return { verified: false, errors: [] }
