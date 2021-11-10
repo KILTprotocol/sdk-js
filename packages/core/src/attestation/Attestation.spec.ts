@@ -279,7 +279,7 @@ describe('Attestation', () => {
     expect(() =>
       AttestationUtils.errorCheck(malformedAddress)
     ).toThrowErrorWithCode(
-      SDKErrors.ERROR_INVALID_DID_FORMAT(identityAlice.replace('4', 'D'))
+      SDKErrors.ERROR_INVALID_DID_FORMAT(malformedAddress.owner)
     )
   })
   it('Typeguard should return true on complete Attestations', () => {
