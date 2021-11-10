@@ -43,7 +43,7 @@ export const KILT_DID_PREFIX = 'did:kilt:'
 // - did:kilt:<kilt_address>
 // - did:kilt:<kilt_address>#<fragment>
 export const FULL_KILT_DID_REGEX =
-  /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
 // - did:kilt:light:00<kilt_address>
@@ -51,7 +51,7 @@ export const FULL_KILT_DID_REGEX =
 // - did:kilt:light:10<kilt_address>#<fragment>
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
 export const LIGHT_KILT_DID_REGEX =
-  /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48,49})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
 export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
   ed25519 = 'ed25519',

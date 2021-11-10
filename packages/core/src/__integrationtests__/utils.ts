@@ -115,9 +115,9 @@ export async function createMinimalFullDidFromLightDid(
 
   const key = {
     publicKey: hexToU8a(
-      queried.details.getKeys(KeyRelationship.authentication)[0].publicKeyHex
-    ),
-    type: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+      queried.details!.getKeys(KeyRelationship.authentication)[0].publicKeyHex
+      ),
+    type: queried.details!.getKeys(KeyRelationship.authentication)[0].type,
   }
 
   const addExtrinsic = await DidChain.getSetKeyExtrinsic(
@@ -130,9 +130,9 @@ export async function createMinimalFullDidFromLightDid(
     txCounter: (queried.details as FullDidDetails).getNextTxIndex(),
     call: addExtrinsic,
     signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: queried.details.getKeys(KeyRelationship.authentication)[0]
+    signingPublicKey: queried.details!.getKeys(KeyRelationship.authentication)[0]
       .publicKeyHex,
-    alg: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+    alg: queried.details!.getKeys(KeyRelationship.authentication)[0].type,
     submitter: identity.address,
   })
 

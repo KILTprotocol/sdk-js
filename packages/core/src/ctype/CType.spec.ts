@@ -135,11 +135,10 @@ describe('CType', () => {
       SDKErrors.ERROR_OBJECT_MALFORMED()
     )
     expect(() => CType.fromCType(invalidAddressCtype))
-      .toThrowErrorMatchingInlineSnapshot(`
-      "Provided DID identifier address invalid 
-
-          Address: Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N"
-    `)
+      // eslint-disable-next-line prettier/prettier
+      .toThrowErrorMatchingInlineSnapshot(
+        // eslint-disable-next-line prettier/prettier
+        `"Not a valid KILT did: did:kilt:Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N"`)
     expect(() =>
       CType.fromCType(faultyAddressTypeCType)
     ).toThrowErrorMatchingInlineSnapshot(`"Not a valid KILT did: 4262626426"`)
