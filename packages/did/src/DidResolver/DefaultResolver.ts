@@ -183,8 +183,7 @@ export async function resolveDoc(
       const isFullDidDeleted = await queryDidDeletionStatus(fullDidUri)
       if (isFullDidDeleted) {
         return {
-          details,
-          // No canonicalId is returned as we consider this DID deactivated/deleted.
+          // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
           metadata: {
             deactivated: true,
           },
