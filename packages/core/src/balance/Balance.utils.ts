@@ -40,6 +40,14 @@ export const Prefixes = new Map<MetricPrefix, number>([
   ['yotta', 24],
 ])
 
+/**
+ * Uses the polkadot.js balance formatter, to convert given BN to a human readable prefixed number.
+ *
+ * @param amount BN to format.
+ * @param additionalOptions Optional formatting settings, these are defaulted to KILT specific settings.
+ * @returns String representation of the given BN with prefix and unit ('KILT' as default).
+
+ */
 export function formatKiltBalance(
   amount: BN,
   additionalOptions?: BalanceOptions
@@ -130,18 +138,24 @@ export function toFemtoKilt(
  * it's output can therefore be formatted via the polkadot formatting options.
  *
  * @param input [[BalanceNumber]] to convert from Femto Kilt.
+ * @param decimals [[number]] Set the minimum decimal places in the formatted localized output, default is 4.
  * @param options [[BalanceOptions]] for internationalization and formatting.
  * @returns String representation of the given [[BalanceNumber]] with unit und metric prefix.
  */
 export function fromFemtoKilt(
   input: BalanceNumber,
+  decimals = 4,
   options?: BalanceOptions
 ): string {
   const inputBN = new BN(balanceNumberToString(input))
   const formatted = formatKiltBalance(inputBN, options)
   const [number, ...rest] = formatted.split(' ')
+  const negative = number.startsWith('-')
   const localeNumber = new Intl.NumberFormat(options?.locale, {
-    minimumFractionDigits: 3,
-  }).format(Number(number))
-  return `${localeNumber} ${rest.join(' ')}`
+    minimumFractionDigits: 4,
+  }).format(Number(negative ? number.slice(1) : number))
+  return `${negative ? '-' : ''}${localeNumber.slice(
+    0,
+    localeNumber.length - 4 + decimals
+  )} ${rest.join(' ')}`
 }

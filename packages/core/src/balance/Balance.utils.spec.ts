@@ -269,66 +269,77 @@ describe('toFemtoKilt', () => {
 })
 describe('fromFemtoKilt', () => {
   it('converts femtoKilt to whole KILT using convertToTxUnit', () => {
-    expect(fromFemtoKilt(new BN('1'))).toEqual(`1.000 femto KILT`)
-    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
-    expect(fromFemtoKilt(new BN('1000000'))).toEqual(`1.000 nano KILT`)
-    expect(fromFemtoKilt(new BN('1000000000'))).toEqual(`1.000 micro KILT`)
-    expect(fromFemtoKilt(new BN('1000000000000'))).toEqual(`1.000 milli KILT`)
-    expect(fromFemtoKilt(new BN('1000000000000000'))).toEqual(`1.000 KILT`)
+    expect(fromFemtoKilt(new BN('1'))).toEqual(`1.0000 femto KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.0000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000000'))).toEqual(`1.0000 nano KILT`)
+    expect(fromFemtoKilt(new BN('1000000000'))).toEqual(`1.0000 micro KILT`)
+    expect(fromFemtoKilt(new BN('1000000000000'))).toEqual(`1.0000 milli KILT`)
+    expect(fromFemtoKilt(new BN('1000000000000000'))).toEqual(`1.0000 KILT`)
     expect(fromFemtoKilt(new BN('1000000000000000000'))).toEqual(
-      `1.000 Kilo KILT`
+      `1.0000 Kilo KILT`
     )
     expect(fromFemtoKilt(new BN('1000000000000000000000'))).toEqual(
-      `1.000 Mill KILT`
+      `1.0000 Mill KILT`
     )
     expect(fromFemtoKilt(new BN('1000000000000000000000000'))).toEqual(
-      `1.000 Bill KILT`
+      `1.0000 Bill KILT`
     )
     expect(fromFemtoKilt(new BN('1000000000000000000000000000'))).toEqual(
-      `1.000 Tril KILT`
+      `1.0000 Tril KILT`
     )
     expect(fromFemtoKilt(new BN('1000000000000000000000000000000'))).toEqual(
-      `1.000 Peta KILT`
+      `1.0000 Peta KILT`
     )
-    expect(fromFemtoKilt(new BN('1234'))).toEqual(`1.234 pico KILT`)
-    expect(fromFemtoKilt(new BN('1234567'))).toEqual(`1.235 nano KILT`)
-    expect(fromFemtoKilt(new BN('1234567890'))).toEqual(`1.235 micro KILT`)
-    expect(fromFemtoKilt(new BN('1234567890000'))).toEqual(`1.235 milli KILT`)
-    expect(fromFemtoKilt(new BN('1234567890000000'))).toEqual(`1.235 KILT`)
+    expect(fromFemtoKilt(new BN('1234'), 3)).toEqual(`1.234 pico KILT`)
+    expect(fromFemtoKilt(new BN('1234567'))).toEqual(`1.2345 nano KILT`)
+    expect(fromFemtoKilt(new BN('1234567890'), 3)).toEqual(`1.234 micro KILT`)
+    expect(fromFemtoKilt(new BN('1234567890000'))).toEqual(`1.2345 milli KILT`)
+    expect(fromFemtoKilt(new BN('1234567890000000'))).toEqual(`1.2345 KILT`)
     expect(fromFemtoKilt(new BN('1234567890000000000'))).toEqual(
-      `1.235 Kilo KILT`
+      `1.2345 Kilo KILT`
     )
     expect(fromFemtoKilt(new BN('1234567890000000000000'))).toEqual(
-      `1.235 Mill KILT`
+      `1.2345 Mill KILT`
     )
     expect(fromFemtoKilt(new BN('1234567890000000000000000'))).toEqual(
-      `1.235 Bill KILT`
+      `1.2345 Bill KILT`
     )
     expect(fromFemtoKilt(new BN('1234567890000000000000000000'))).toEqual(
-      `1.235 Tril KILT`
+      `1.2345 Tril KILT`
     )
     expect(fromFemtoKilt(new BN('1234567890000000000000000000000'))).toEqual(
-      `1.235 Peta KILT`
+      `1.2345 Peta KILT`
     )
   })
   it('returns localized number string', () => {
     expect(
-      fromFemtoKilt(new BN('1000000000000000000'), { locale: 'ar-EG' })
+      fromFemtoKilt(new BN('1000000000000000000'), 3, { locale: 'ar-EG' })
     ).toEqual(`١٫٠٠٠ Kilo KILT`)
     expect(
-      fromFemtoKilt(new BN('1000000000000000000'), { locale: 'de-DE' })
+      fromFemtoKilt(new BN('1000000000000000000'), 3, { locale: 'de-DE' })
     ).toEqual(`1,000 Kilo KILT`)
   })
-  it('rounds to 3 decimal places', () => {
-    expect(fromFemtoKilt(new BN('1234560000000000000'))).toEqual(
-      `1.235 Kilo KILT`
+  it('Does not round, as especially balances should not be portrayed larger than they are', () => {
+    expect(fromFemtoKilt(new BN('1234560000000000000'), 3)).toEqual(
+      `1.234 Kilo KILT`
     )
-    expect(fromFemtoKilt(new BN('12345600000000000000'))).toEqual(
-      `12.346 Kilo KILT`
+    expect(fromFemtoKilt(new BN('12345600000000000000'), 3)).toEqual(
+      `12.345 Kilo KILT`
+    )
+  })
+  it('Accepts decimal as argument to set minimum amount of decimal places', () => {
+    expect(fromFemtoKilt(new BN('12000000000000000000'), 1)).toEqual(
+      `12.0 Kilo KILT`
+    )
+    expect(fromFemtoKilt(new BN('12300000000000000000'), 2)).toEqual(
+      `12.30 Kilo KILT`
+    )
+    expect(fromFemtoKilt(new BN('12345000000000000000'), 4)).toEqual(
+      `12.3450 Kilo KILT`
     )
   })
   it('converts negative femtoKilt to whole KILT using convertToTxUnit', () => {
-    expect(fromFemtoKilt(new BN('-1000000000000000000'))).toEqual(
+    expect(fromFemtoKilt(new BN('-1000000000000000000'), 3)).toEqual(
       `-1.000 Kilo KILT`
     )
   })
