@@ -425,7 +425,7 @@ export class DelegationNode implements IDelegationNode {
   /**
    * [ASYNC] Reclaims the deposit of a delegation and removes the delegation and all its children.
    *
-   * This call can only be successfully executed if the submitter of the transaction is the original payer of the delegationdeposit.
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the delegation deposit.
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    */
