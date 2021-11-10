@@ -166,16 +166,14 @@ describe('balanceNumberToString', () => {
   })
   it('verifies BN and BigInt', () => {
     expect(() => balanceNumberToString({} as BN)).toThrowError()
-    expect(() => balanceNumberToString(([] as unknown) as BN)).toThrowError()
+    expect(() => balanceNumberToString([] as unknown as BN)).toThrowError()
     expect(() =>
-      balanceNumberToString(({ toString: 'blurt' } as unknown) as BN)
+      balanceNumberToString({ toString: 'blurt' } as unknown as BN)
     ).toThrowError()
     expect(() => balanceNumberToString({} as bigint)).toThrowError()
+    expect(() => balanceNumberToString([] as unknown as bigint)).toThrowError()
     expect(() =>
-      balanceNumberToString(([] as unknown) as bigint)
-    ).toThrowError()
-    expect(() =>
-      balanceNumberToString(({ toLocaleString: 'blurt' } as unknown) as bigint)
+      balanceNumberToString({ toLocaleString: 'blurt' } as unknown as bigint)
     ).toThrowError()
     expect(balanceNumberToString(BigInt('12345678900'))).toEqual('12345678900')
   })
@@ -247,7 +245,7 @@ describe('toFemtoKilt', () => {
 
     expect(() => toFemtoKilt({} as BalanceNumber).toString()).toThrowError()
     expect(() =>
-      toFemtoKilt(([] as unknown) as BalanceNumber).toString()
+      toFemtoKilt([] as unknown as BalanceNumber).toString()
     ).toThrowError()
     expect(() =>
       toFemtoKilt(1, 'nono' as MetricPrefix).toString()
@@ -338,9 +336,9 @@ describe('fromFemtoKilt', () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(() => fromFemtoKilt(undefined!)).toThrowError()
     expect(() => fromFemtoKilt({} as BN)).toThrowError()
-    expect(() => fromFemtoKilt(([] as unknown) as BN)).toThrowError()
+    expect(() => fromFemtoKilt([] as unknown as BN)).toThrowError()
     expect(() => fromFemtoKilt({} as bigint)).toThrowError()
-    expect(() => fromFemtoKilt(([] as unknown) as bigint)).toThrowError()
+    expect(() => fromFemtoKilt([] as unknown as bigint)).toThrowError()
   })
 })
 

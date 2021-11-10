@@ -145,12 +145,3 @@ export function fromFemtoKilt(
   }).format(Number(number))
   return `${localeNumber} ${rest.join(' ')}`
 }
-
-export default {
-  KILT_COIN,
-  TRANSACTION_FEE,
-  formatKiltBalance,
-  toFemtoKilt,
-  fromFemtoKilt,
-  convertToTxUnit,
-}
