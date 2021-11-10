@@ -10,7 +10,6 @@
  * @module CTypeUtils
  */
 
-import { Validator } from '@cfworker/json-schema'
 import type {
   ICType,
   IClaim,
@@ -18,7 +17,7 @@ import type {
   CompressedCTypeSchema,
   CTypeSchemaWithoutId,
 } from '@kiltprotocol/types'
-import { jsonabc, Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { jsonabc, Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
 import { getOwner, isStored } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
@@ -28,7 +27,7 @@ export function verifySchemaWithErrors(
   schema: Record<string, unknown>,
   messages?: string[]
 ): boolean {
-  const validator = new Validator(schema, '7', false)
+  const validator = new JsonSchema.Validator(schema, '7', false)
   if (schema.$id !== CTypeModel.$id) {
     validator.addSchema(CTypeModel)
   }
@@ -241,7 +240,7 @@ export function validateNestedSchemas(
   claimContents: Record<string, any>,
   messages?: string[]
 ): boolean {
-  const validator = new Validator(cType, '7', false)
+  const validator = new JsonSchema.Validator(cType, '7', false)
   nestedCTypes.forEach((ctype) => {
     validator.addSchema(ctype)
   })

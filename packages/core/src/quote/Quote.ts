@@ -16,7 +16,6 @@
  * @module Quote
  */
 
-import { Validator, Schema } from '@cfworker/json-schema'
 import type {
   IDidDetails,
   IQuote,
@@ -26,7 +25,7 @@ import type {
   KeystoreSigner,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { DidUtils, DefaultResolver } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema'
 
@@ -41,11 +40,11 @@ import { QuoteSchema } from './QuoteSchema'
  */
 
 export function validateQuoteSchema(
-  schema: Schema,
+  schema: JsonSchema.Schema,
   validate: unknown,
   messages?: string[]
 ): boolean {
-  const validator = new Validator(schema)
+  const validator = new JsonSchema.Validator(schema)
   if (schema.$id !== QuoteSchema.$id) {
     validator.addSchema(QuoteSchema)
   }
@@ -80,7 +79,6 @@ export async function fromAttesterSignedInput(
   })
   const messages: string[] = []
   if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    console.log(messages)
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 
