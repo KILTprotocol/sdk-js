@@ -833,7 +833,7 @@ __metadata:
     "@polkadot/api": 6.4.2
     "@polkadot/keyring": 7.5.1
     "@polkadot/types": 6.4.2
-    "@polkadot/util": 7.8.2
+    "@polkadot/util": 7.5.1
     rimraf: ^3.0.2
     typescript: ^4.2.2
     typescript-logging: ^0.6.4
@@ -864,7 +864,7 @@ __metadata:
     "@polkadot/keyring": 7.5.1
     "@polkadot/types": 6.4.2
     "@polkadot/types-known": 6.4.2
-    "@polkadot/util": 7.8.2
+    "@polkadot/util": 7.5.1
     "@polkadot/util-crypto": 7.5.1
     "@types/uuid": ^8.0.0
     ajv: ^6.12.5
@@ -886,7 +886,7 @@ __metadata:
     "@polkadot/api": 6.4.2
     "@polkadot/keyring": 7.5.1
     "@polkadot/types": 6.4.2
-    "@polkadot/util": 7.8.2
+    "@polkadot/util": 7.5.1
     "@polkadot/util-crypto": 7.5.1
     cbor: ^6.0.0
     rimraf: ^3.0.2
@@ -960,7 +960,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/keyring": 7.5.1
     "@polkadot/types": 6.4.2
-    "@polkadot/util": 7.8.2
+    "@polkadot/util": 7.5.1
     "@polkadot/util-crypto": 7.5.1
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
@@ -981,7 +981,7 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/keyring": 7.5.1
     "@polkadot/types": 6.4.2
-    "@polkadot/util": 7.8.2
+    "@polkadot/util": 7.5.1
     "@polkadot/util-crypto": 7.5.1
     "@types/jsonld": 1.5.1
     ajv: ^6.12.5
