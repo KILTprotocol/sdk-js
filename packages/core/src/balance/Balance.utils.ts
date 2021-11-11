@@ -96,6 +96,7 @@ export function balanceNumberToString(input: BalanceNumber): string {
 
 /**
  * Converts the given [[BalanceNumber]] to the femto KILT equivalent.
+ *
  * @param input [[BalanceNumber]] to convert.
  * @param unit Metric prefix of the given [[BalanceNumber]].
  * @returns Exact BN representation in femtoKilt, to use in transactions and calculations.
