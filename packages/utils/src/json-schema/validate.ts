@@ -1,16 +1,16 @@
 /* eslint-disable */
-import { deepCompareStrict } from './deep-compare-strict.js'
-import { dereference } from './dereference.js'
-import { fastFormat } from './format.js'
-import { encodePointer } from './pointer.js'
+import { deepCompareStrict } from './deep-compare-strict'
+import { dereference } from './dereference'
+import { fastFormat } from './format'
+import { encodePointer } from './pointer'
 import {
   InstanceType,
   OutputUnit,
   Schema,
   SchemaDraft,
   ValidationResult,
-} from './types.js'
-import { ucs2length } from './ucs2-length.js'
+} from './types'
+import { ucs2length } from './ucs2-length'
 
 export type Evaluated = Record<string | number, boolean>
 

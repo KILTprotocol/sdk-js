@@ -1,7 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck
-import { encodePointer } from './pointer.js'
-import { Schema } from './types.js'
+import { encodePointer } from './pointer'
+import { Schema } from './types'
 
 export const schemaKeyword: Record<string, boolean> = {
   additionalItems: true,
