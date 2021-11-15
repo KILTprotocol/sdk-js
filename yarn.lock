@@ -972,7 +972,7 @@ __metadata:
     "@polkadot/keyring": 7.5.1
     "@polkadot/types": 6.4.2
     "@polkadot/util": 7.5.1
-    "@polkadot/util-crypto": ^7.5.1
+    "@polkadot/util-crypto": 7.5.1
     "@types/jsonld": 1.5.1
     crypto-ld: ^3.7.0
     jsonld: ^2.0.2
