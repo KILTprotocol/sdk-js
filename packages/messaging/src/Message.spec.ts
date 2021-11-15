@@ -33,10 +33,10 @@ describe('Messaging', () => {
   let keystore: DemoKeystore
   let identityAlice: IDidDetails
   let identityBob: IDidDetails
-  let date: Date
+  let date: string
 
   beforeAll(async () => {
-    date = new Date(2019, 11, 10)
+    date = new Date(2019, 11, 10).toISOString()
     keystore = new DemoKeystore()
     identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
     identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')

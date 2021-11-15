@@ -16,7 +16,6 @@
  * @module Quote
  */
 
-import Ajv from 'ajv'
 import type {
   IDidDetails,
   IQuote,
@@ -26,7 +25,7 @@ import type {
   KeystoreSigner,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { DidUtils, DefaultResolver } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema'
 
@@ -41,26 +40,21 @@ import { QuoteSchema } from './QuoteSchema'
  */
 
 export function validateQuoteSchema(
-  schema: unknown,
+  schema: JsonSchema.Schema,
   validate: unknown,
   messages?: string[]
 ): boolean {
-  const ajv = new Ajv()
-  ajv.addMetaSchema(QuoteSchema)
-  const result = ajv.validate(
-    JSON.parse(JSON.stringify(schema)),
-    JSON.parse(JSON.stringify(validate))
-  )
-  if (!result && ajv.errors) {
-    if (messages) {
-      ajv.errors.forEach((error: Ajv.ErrorObject) => {
-        if (typeof error.message === 'string') {
-          messages.push(error.message)
-        }
-      })
-    }
+  const validator = new JsonSchema.Validator(schema)
+  if (schema.$id !== QuoteSchema.$id) {
+    validator.addSchema(QuoteSchema)
   }
-  return !!result
+  const result = validator.validate(validate)
+  if (!result.valid && messages) {
+    result.errors.forEach((error) => {
+      messages.push(error.error)
+    })
+  }
+  return result.valid
 }
 
 /**
@@ -83,7 +77,8 @@ export async function fromAttesterSignedInput(
     keyRelationship: KeyRelationship.authentication,
     resolver,
   })
-  if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
+  const messages: string[] = []
+  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 

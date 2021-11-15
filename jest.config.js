@@ -28,6 +28,7 @@ module.exports = {
     '!**/types/**/*',
     '!**/SDKErrors.ts',
     '!**/*.chain.ts',
+    '!utils/src/json-schema/*',
     // TODO: write tests for these files and remove here
     '!did/src/index.types.ts',
     '!did/src/Did.chain.ts',
