@@ -150,7 +150,7 @@ There are two types of KILT chains which you can use, each one having a differen
 1. The prod-net: `wss://full-nodes.kilt.io`
 2. A local node: `ws://127.0.0.1:9944`
 
-In case you go with option #1, you have to request test money ([prod-net](https://faucet.kilt.io/) **since storing a CTYPE on the chain requires tokens** as transaction fee.
+In case you go with option #1, you have to request test money [prod-net](https://faucet.kilt.io/) **since storing a CTYPE on the chain requires tokens** as transaction fee.
 However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image. Depending on which version of the SDK you are using, you might need to spin up the latest officially released version of the node working with the latest release of the SDK.
 
 ```
