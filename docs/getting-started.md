@@ -148,10 +148,9 @@ initializes the SDK _and_ sets the config, so it is related to the second approa
 There are [three types](https://dev.kilt.io/#/?id=source-code-and-deployed-instances) of KILT chains which you can use, each one having a different address:
 
 1. The prod-net: `wss://full-nodes.kilt.io`
-2. The dev-net: `wss://full-nodes-lb.devnet.kilt.io`
-3. A local node: `ws://127.0.0.1:9944`
+2. A local node: `ws://127.0.0.1:9944`
 
-In case you go with option #1 or #2, you have to request test money ([prod-net](https://faucet.kilt.io/), [dev-net](https://faucet-devnet.kilt.io/)) **since storing a CTYPE on the chain requires tokens** as transaction fee.
+In case you go with option #1, you have to request test money ([prod-net](https://faucet.kilt.io/), [dev-net](https://faucet-devnet.kilt.io/)) **since storing a CTYPE on the chain requires tokens** as transaction fee.
 However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image. Depending on which version of the SDK you are using, you might need to spin up the latest officially released version of the node (working with the latest release of the SDK) or the latest development version of the node (working with the latest development version of the SDK). Either version can be started with the following command by using one between the `latest` and `develop` tag.
 
 ```
