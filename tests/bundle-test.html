@@ -6,7 +6,7 @@
       const {
         Claim,
         Attestation,
-        AttestedClaim,
+        Credential,
         CType,
         RequestForAttestation,
         Did,
@@ -27,7 +27,7 @@
 
       blockchain.then((chain) => {
         if (!chain) console.error('No blockchain connection established')
-        else chain.getStats().then((t) => console.log(t,0))
+        else chain.getStats().then((t) => console.log(t, 0))
       })
       const keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
     </script>
@@ -64,10 +64,8 @@
         },
       }
       const testDid = new Did.LightDidDetails(didCreationDetails)
-      ;(testDid.did !==
-        `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5` &&
-        new Error('Did Test Unsuccessful')) ||
-        console.log(
+      if (testDid.did !== `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTk=`) throw new Error('Did Test Unsuccessful')
+      else console.log(
           `light did successfully created: ${JSON.stringify(testDid, null, 2)}`, 1
         )
     </script>
@@ -78,7 +76,7 @@
           alg: Did.SigningAlgorithms.Ed25519,
         })
         .then(({ publicKey, alg }) => {
-          const didIdentifier = Crypto.encodeAddress(publicKey,38)
+          const didIdentifier = Crypto.encodeAddress(publicKey, 38)
           const key = { publicKey, type: alg }
           Did.DidChain.generateCreateTx({
             didIdentifier,
@@ -160,7 +158,9 @@
             new Error('did not created')
         )
         DriversLicense.store()
-          .then((tx) => alice.authorizeExtrinsic(tx, keystore, devFaucet.address))
+          .then((tx) =>
+            alice.authorizeExtrinsic(tx, keystore, devFaucet.address)
+          )
           .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -206,7 +206,7 @@
             signed.claim.contents !== content &&
             new Error('Claim content inside Req4Att mismatching')
           const attestation = Attestation.fromRequestAndDid(signed, alice.did)
-          const aClaim = AttestedClaim.fromRequestAndAttestation(
+          const aClaim = Credential.fromRequestAndAttestation(
             signed,
             attestation
           )
@@ -215,7 +215,9 @@
             new Error('Attested Claim data not verifiable')
           attestation
             .store()
-            .then((tx) => alice.authorizeExtrinsic(tx, keystore, devFaucet.address))
+            .then((tx) =>
+              alice.authorizeExtrinsic(tx, keystore, devFaucet.address)
+            )
             .then((tx) =>
               BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
                 resolveOn: BlockchainUtils.IS_IN_BLOCK,
