@@ -59,6 +59,16 @@ describe('Configuration Service', () => {
       ConfigService.set({ logLevel: LogLevel.Warn })
       expect(ConfigService.get('logLevel')).toEqual(LogLevel.Warn)
     })
+    it('setLogLevel does set if 0 is passed', () => {
+      ConfigService.set({ logLevel: 0 })
+      expect(ConfigService.get('logLevel')).toEqual(LogLevel.Trace)
+    })
+    it('setLogLevel does not set if nothing passed', () => {
+      ConfigService.set({ logLevel: 3 })
+      expect(ConfigService.get('logLevel')).toEqual(LogLevel.Warn)
+      ConfigService.set({})
+      expect(ConfigService.get('logLevel')).toEqual(LogLevel.Warn)
+    })
     it('custom config prop', () => {
       ConfigService.set({ testProp: 'test' })
       expect(ConfigService.get('testProp')).toEqual('test')

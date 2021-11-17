@@ -139,6 +139,7 @@ export class Credential implements ICredential {
     )
   }
 
+  /* istanbul ignore next */
   public async verify(
     verificationOpts: {
       resolver?: IDidResolver

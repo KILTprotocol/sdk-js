@@ -192,7 +192,13 @@ describe('Attestation', () => {
       revoked: false,
       delegationId: null,
     }
-
+    const everythingWithWrongId = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice,
+      revoked: false,
+      delegationId: true,
+    }
     const noClaimHash = {
       claimHash: '',
       cTypeHash,
@@ -253,6 +259,11 @@ describe('Attestation', () => {
     expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
     )
+    expect(() =>
+      AttestationUtils.errorCheck(
+        everythingWithWrongId as unknown as IAttestation
+      )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_DELEGATION_ID_TYPE())
 
     expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()

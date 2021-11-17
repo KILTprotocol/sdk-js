@@ -118,6 +118,7 @@ export class Claim implements IClaim {
     })
   }
 
+  /* istanbul ignore next */
   /**
    *  [STATIC] Custom Type Guard to determine input being of type IClaim using the ClaimUtils errorCheck.
    *

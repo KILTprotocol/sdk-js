@@ -118,6 +118,9 @@ export function getIdForSchema(
  *
  */
 export function errorCheck(input: ICType): void {
+  if (!(input.owner === null || DidUtils.validateKiltDid(input.owner))) {
+    throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
+  }
   if (!verifySchema(input, CTypeWrapperModel)) {
     throw SDKErrors.ERROR_OBJECT_MALFORMED()
   }
@@ -129,9 +132,6 @@ export function errorCheck(input: ICType): void {
       getIdForSchema(input.schema),
       input.schema.$id
     )
-  }
-  if (!(input.owner === null || DidUtils.validateKiltDid(input.owner))) {
-    throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }
 
