@@ -10,7 +10,7 @@
  */
 
 import { UUID } from '@kiltprotocol/utils'
-import { encodeAddress } from '@polkadot/keyring'
+import { encodeAddress } from '@polkadot/util-crypto'
 import {
   DemoKeystore,
   DidChain,
