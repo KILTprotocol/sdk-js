@@ -92,6 +92,7 @@ export class CType implements ICType {
     this.hash = cTypeInput.hash
   }
 
+  /* istanbul ignore next */
   /**
    * [ASYNC] Stores the [[CType]] on the blockchain.
    *

@@ -43,7 +43,6 @@ describe('Claim', () => {
     }
 
     testCType = CType.fromSchema(rawCType)
-
     claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
     compressedClaim = [
       claim.cTypeHash,
@@ -53,12 +52,26 @@ describe('Claim', () => {
       },
     ]
   })
+  it('can be made from ctype and claim contents, throws on unverifiable Claim', () => {
+    const contents = {
+      name: 1000,
+    }
 
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(testCType, contents, claim.owner)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_CLAIM_UNVERIFIABLE())
+  })
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
     expect(Claim.fromClaim(claimObj, testCType.schema)).toEqual(claim)
   })
-
+  it('throws when Claim can not be verified', () => {
+    const claimObj = JSON.parse(JSON.stringify(claim))
+    claimObj.contents.name = 100
+    expect(() =>
+      Claim.fromClaim(claimObj, testCType.schema)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_CLAIM_UNVERIFIABLE())
+  })
   it('allows falsy claim values', () => {
     const claimWithFalsy: IClaim = {
       ...claim,

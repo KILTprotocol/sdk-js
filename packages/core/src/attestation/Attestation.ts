@@ -378,6 +378,7 @@ export class Attestation implements IAttestation {
     return Attestation.fromAttestation(decompressedAttestation)
   }
 
+  /* istanbul ignore next */
   /**
    * [STATIC] Query and return the amount of KILTs (in femto notation) needed to deposit in order to create an attestation.
    *

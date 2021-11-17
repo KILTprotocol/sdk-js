@@ -33,7 +33,7 @@ export function errorCheck(input: IAttestation): void {
     throw SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
   } else DataUtils.validateHash(input.claimHash, 'Claim')
 
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+  if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (!input.owner) {

@@ -16,7 +16,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Header } from '@polkadot/types/interfaces/types'
-import type { AnyJson, AnyNumber, Codec } from '@polkadot/types/types'
+import type { AnyNumber } from '@polkadot/types/types'
 import type { Text } from '@polkadot/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import { BN } from '@polkadot/util'
@@ -39,12 +39,6 @@ const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
 export class Blockchain implements IBlockchainApi {
-  public static asArray(queryResult: Codec): AnyJson[] {
-    const json = queryResult.toJSON()
-    if (json instanceof Array) return json
-    return []
-  }
-
   public api: ApiPromise
   private accountNonces: Map<IIdentity['address'], BN>
 
