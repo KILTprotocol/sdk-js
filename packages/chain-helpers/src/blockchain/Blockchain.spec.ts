@@ -305,38 +305,39 @@ describe('Tx logic', () => {
     }, 20_000)
   })
   describe('Blockchain.utils exported function signAndSubmit', () => {
-    it('signs tx and calls depending on reSign flag and opts', async () => {
-      jest.mock('blockchain')
-      const submittable: SubmittableExtrinsic = ({
-        signature: {
-          toHuman: jest.fn(),
-        },
-        addSignature: jest.fn(),
-        signAsync: jest.fn(),
-        nonce: { toHuman: jest.fn() },
-        method: { data: 'unchanged', toHex: jest.fn() },
-      } as unknown) as SubmittableExtrinsic
+    it('signs tx and calls depending on reSign flag false', async () => {
       setDefault()
       const chain = new Blockchain(api)
-      const chainSignTxSpy = jest
-        .spyOn(chain, 'signTx')
-        .mockImplementation(async (Tx, id, tip) => Tx)
-      const submitSignedTxWithReSignSpy = jest
-        .spyOn(chain, 'submitSignedTxWithReSign')
-        .mockImplementation(
-          async (Tx, id, tip) => (Tx as unknown) as ISubmittableResult
+      const tx = chain.api.tx.balances.transfer(bob.address, 100)
+      const mockSend = jest
+        .fn()
+        .mockRejectedValue(
+          Error('1010: Invalid Transaction: Transaction is outdated')
         )
-
+      tx.send = mockSend
       await expect(
-        signAndSubmitTx(submittable, alice, { reSign: false, tip: 1 })
-      ).rejects.not.toThrow()
-      expect(chainSignTxSpy).toHaveBeenCalledTimes(1)
-      expect(chainSignTxSpy).toHaveBeenCalledWith(submittable, alice, 1)
-      expect(submitSignedTxWithReSignSpy).toHaveBeenCalledTimes(0)
-      // await signAndSubmitTx(tx, alice, { reSign: true, tip: 1 })
-      // expect(chainSignTxSpy).toHaveBeenCalledTimes(2)
-      // expect(submitSignedTxWithReSignSpy).toHaveBeenCalledTimes(1)
-    }, 20000)
+        signAndSubmitTx(tx, alice, { reSign: false, tip: 1 })
+      ).rejects.toThrow(
+        'Tx failed due to nonce collision, this is recoverable by re-signing!'
+      )
+      expect(mockSend).toHaveBeenCalledTimes(1)
+    })
+    it('signs tx and calls depending on reSign flag true', async () => {
+      setDefault()
+      const chain = new Blockchain(api)
+      jest.spyOn(chain, 'reSignTx').mockImplementation(async (tx) => tx)
+      const tx = chain.api.tx.balances.transfer(bob.address, 100)
+      const mockSend = jest
+        .fn()
+        .mockRejectedValue(
+          Error('1010: Invalid Transaction: Transaction is outdated')
+        )
+      tx.send = mockSend
+      await expect(
+        signAndSubmitTx(tx, alice, { reSign: true, tip: 1 })
+      ).rejects.toThrow(`Chain failed to retrieve nonce for : ${alice.address}`)
+      expect(mockSend).toHaveBeenCalledTimes(1)
+    })
   })
   describe('Blockchain class method submitSignedTx', () => {
     it('Retries to send up to two times if recoverable error is caught', async () => {
