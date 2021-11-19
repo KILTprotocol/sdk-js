@@ -170,6 +170,7 @@ export class Credential implements ICredential {
     )
   }
 
+  /* istanbul ignore next */
   public verifyData(): boolean {
     return Credential.verifyData(this)
   }
