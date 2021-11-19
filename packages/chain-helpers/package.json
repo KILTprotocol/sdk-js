@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.24.0-19",
+  "version": "0.24.0",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
