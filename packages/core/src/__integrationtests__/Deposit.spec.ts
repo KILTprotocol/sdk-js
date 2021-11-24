@@ -20,11 +20,11 @@ import {
 import {
   IRequestForAttestation,
   KeyRelationship,
+  KeyringPair,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils, Keyring } from '@kiltprotocol/utils'
-import { KeyringPair } from '@polkadot/keyring/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'

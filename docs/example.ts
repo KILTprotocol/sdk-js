@@ -8,7 +8,7 @@
 /* eslint-disable no-console */
 
 import * as Kilt from '@kiltprotocol/sdk-js'
-import { KeyRelationship } from '@kiltprotocol/sdk-js'
+import { KeyRelationship, KeyringPair } from '@kiltprotocol/sdk-js'
 import type {
   Credential,
   Claim,
@@ -21,7 +21,6 @@ import type {
   ISubmitCredential,
   IDidKeyDetails,
 } from '@kiltprotocol/sdk-js'
-import { KeyringPair } from '@polkadot/keyring/types'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 
 const NODE_URL = 'ws://127.0.0.1:9944'

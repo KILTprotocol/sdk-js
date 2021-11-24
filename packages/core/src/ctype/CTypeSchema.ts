@@ -9,8 +9,9 @@
  * @packageDocumentation
  * @module CTypeSchema
  */
+import { JsonSchema } from '@kiltprotocol/utils'
 
-export const CTypeModel = {
+export const CTypeModel: JsonSchema.Schema = {
   $id: 'http://kilt-protocol.org/draft-01/ctype#',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',

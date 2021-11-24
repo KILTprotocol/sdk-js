@@ -54,7 +54,7 @@ describe('Light DID v1 tests', () => {
 
     const did = new LightDidDetails(didCreationDetails)
     expect(did.did).toEqual(
-      `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5`
+      `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTk=`
     )
   })
 
@@ -78,7 +78,7 @@ describe('Light DID v1 tests', () => {
 
     const did = new LightDidDetails(didCreationDetails)
     expect(did.did).toEqual(
-      `did:kilt:light:01${address}:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOBo2JpZHNteS1zZXJ2aWNlLWVuZHBvaW50ZXR5cGVzgnZDb2xsYXRvckNyZWRlbnRpYWxUeXBlbVNvY2lhbEtZQ1R5cGVkdXJsc4J1aHR0cHM6Ly9teV9kb21haW4ub3JnbXJhbmRvbV9kb21haW4=`
+      `did:kilt:light:01${address}:omFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTlhc4GjYmlkc215LXNlcnZpY2UtZW5kcG9pbnRldHlwZXOCdkNvbGxhdG9yQ3JlZGVudGlhbFR5cGVtU29jaWFsS1lDVHlwZWR1cmxzgnVodHRwczovL215X2RvbWFpbi5vcmdtcmFuZG9tX2RvbWFpbg==`
     )
   })
 })

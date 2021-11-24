@@ -13,9 +13,8 @@
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import Ajv from 'ajv'
 import { Attestation, CTypeSchema } from '@kiltprotocol/core'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, JsonSchema } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
 import { VerificationKeyTypesMap } from '@kiltprotocol/types'
 import {
@@ -307,12 +306,12 @@ export function validateSchema(
   // if present, perform schema validation
   if (schema) {
     // there's no rule against additional properties, so we can just validate the ones that are there
-    const ajv = new Ajv()
-    ajv.addMetaSchema(CTypeSchema.CTypeModel)
-    const result = ajv.validate(schema, credential.credentialSubject)
+    const validator = new JsonSchema.Validator(schema)
+    validator.addSchema(CTypeSchema.CTypeModel)
+    const result = validator.validate(credential.credentialSubject)
     return {
-      verified: typeof result === 'boolean' && result,
-      errors: ajv.errors?.map((e) => new Error(e.message)) || [],
+      verified: result.valid,
+      errors: result.errors?.map((e) => new Error(e.error)) || [],
     }
   }
   return { verified: false, errors: [] }

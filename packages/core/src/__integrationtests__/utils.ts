@@ -8,7 +8,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-console */
 
-import { KeyringPair } from '@polkadot/keyring/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import { Keyring } from '@kiltprotocol/utils'
 import { randomAsU8a } from '@polkadot/util-crypto'
@@ -21,7 +20,11 @@ import {
   LightDidDetails,
 } from '@kiltprotocol/did'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
+import {
+  KeyRelationship,
+  KeyringPair,
+  KeystoreSigner,
+} from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { Balance } from '../balance'
