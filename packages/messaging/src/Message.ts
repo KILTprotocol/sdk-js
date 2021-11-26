@@ -281,10 +281,12 @@ export class Message implements IMessage {
     }
   }
 
+  /* istanbul ignore next */
   public compress(): CompressedMessageBody {
     return compressMessage(this.body)
   }
 
+  /* istanbul ignore next */
   public static verifyRequiredCTypeProperties(
     requiredProperties: string[],
     cType: ICType

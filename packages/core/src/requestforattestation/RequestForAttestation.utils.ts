@@ -59,8 +59,9 @@ export function errorCheck(input: IRequestForAttestation): void {
   ) {
     throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
   }
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
+
+  if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (input.claimerSignature)
     DidUtils.validateDidSignature(input.claimerSignature)

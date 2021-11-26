@@ -67,8 +67,8 @@ export class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Signs the SubmittableExtrinsic with the given identity or keyring pair.
    *
-   * @param signer The [[Identity]] or [[KeyringPair]] to sign the tx with.
    * @param tx The unsigned [[SubmittableExtrinsic]].
+   * @param signer The [[Identity]] or [[KeyringPair]] to sign the tx with.
    * @param tip The amount of Femto-KILT to tip the validator.
    * @returns Signed [[SubmittableExtrinsic]].
    */
@@ -145,8 +145,8 @@ export class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Re-signs the given SubmittableExtrinsic with an updated Nonce.
    *
-   * @param signer The [[Identity]] or [[KeyringPair]] to re-sign the tx with.
    * @param tx The tx with recoverable Error that failed.
+   * @param signer The [[Identity]] or [[KeyringPair]] to re-sign the tx with.
    * @returns Original Tx, injected with signature payload with updated nonce.
    */
   public async reSignTx(
