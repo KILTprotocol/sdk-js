@@ -347,7 +347,7 @@ describe('Tx logic', () => {
       tx.signAsync(alice.signKeyringPair)
       const reSignSpy = jest
         .spyOn(chain, 'reSignTx')
-        .mockImplementation(async (Tx, id) => {
+        .mockImplementation(async (Tx) => {
           return Tx
         })
       await expect(chain.submitSignedTxWithReSign(tx, alice)).rejects.toThrow(
