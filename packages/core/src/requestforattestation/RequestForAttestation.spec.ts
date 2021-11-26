@@ -25,7 +25,6 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { Credential } from '../credential/Credential'
 import { CType } from '../ctype/CType'
-
 import { RequestForAttestation } from './RequestForAttestation'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils'
 
@@ -301,6 +300,58 @@ describe('RequestForAttestation', () => {
     } as IRequestForAttestation
     // @ts-expect-error
     delete builtRequestNoLegitimations.legitimations
+    const builtRequestNoClaim = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as IRequestForAttestation
+    // @ts-expect-error
+    delete builtRequestNoClaim.claim
+    const builtRequestWrongDelegationID = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as IRequestForAttestation
+    // @ts-expect-error
+    builtRequestWrongDelegationID.delegationId = BigInt(1)
+    const builtRequestNoClaimNonceMap = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as IRequestForAttestation
+    // @ts-expect-error
+    delete builtRequestNoClaimNonceMap.claimNonceMap
+    const builtRequestMalformedClaimNonceMap = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as IRequestForAttestation
+    // @ts-expect-error
+    builtRequestMalformedClaimNonceMap.claimNonceMap = 'replaced with string'
 
     const builtRequestMalformedRootHash = {
       ...buildRequestForAttestation(
@@ -398,6 +449,21 @@ describe('RequestForAttestation', () => {
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestNoClaim)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_CLAIM_NOT_PROVIDED)
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestWrongDelegationID)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_DELEGATION_ID_TYPE)
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestNoClaimNonceMap)
+    ).toThrowErrorWithCode(
+      SDKErrors.ErrorCode.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED
+    )
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedClaimNonceMap)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_CLAIM_NONCE_MAP_MALFORMED)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()
@@ -406,6 +472,11 @@ describe('RequestForAttestation', () => {
         builtRequestWithLegitimation
       )
     ).toEqual(true)
+    expect(
+      RequestForAttestation.isIRequestForAttestation(
+        builtRequestMalformedSignature
+      )
+    ).toEqual(false)
     expect(() => {
       RequestForAttestationUtils.errorCheck(builtRequestWithLegitimation)
     }).not.toThrow()

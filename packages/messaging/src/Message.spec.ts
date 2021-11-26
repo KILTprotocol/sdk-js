@@ -28,6 +28,9 @@ import { Quote, RequestForAttestation } from '@kiltprotocol/core'
 import { createLocalDemoDidFromSeed, DemoKeystore } from '@kiltprotocol/did'
 import { Message } from './Message'
 
+import '../../../testingTools/jestErrorCodeMatcher'
+import { compressMessage } from './Message.utils'
+
 describe('Messaging', () => {
   let mockResolver: IDidResolver
   let keystore: DemoKeystore
@@ -64,7 +67,25 @@ describe('Messaging', () => {
       resolveDoc,
     } as IDidResolver
   })
-
+  it('constructs from compressed and uncomressed', () => {
+    const message = new Message(
+      {
+        type: Message.BodyType.REQUEST_CREDENTIAL,
+        content: {
+          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        },
+      },
+      identityAlice.did,
+      identityBob.did
+    )
+    const compressedMessage = compressMessage(message.body)
+    const fromCompressedMessage = new Message(
+      compressedMessage,
+      identityAlice.did,
+      identityBob.did
+    )
+    expect(message.body).toEqual(fromCompressedMessage.body)
+  })
   it('verify message encryption and signing', async () => {
     const message = new Message(
       {
@@ -81,7 +102,44 @@ describe('Messaging', () => {
       identityBob.getKeys(KeyRelationship.keyAgreement)[0],
       keystore
     )
-
+    const messageIdentityMismatchReceiver = new Message(
+      {
+        type: Message.BodyType.REQUEST_CREDENTIAL,
+        content: {
+          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        },
+      },
+      identityAlice.did,
+      identityBob.did
+    )
+    messageIdentityMismatchReceiver.receiver =
+      messageIdentityMismatchReceiver.receiver.slice(-1)
+    await expect(async () =>
+      messageIdentityMismatchReceiver.encrypt(
+        identityAlice.getKeys(KeyRelationship.keyAgreement)[0],
+        identityBob.getKeys(KeyRelationship.keyAgreement)[0],
+        keystore
+      )
+    ).rejects.toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_IDENTITY_MISMATCH)
+    const messageIdentityMismatchSender = new Message(
+      {
+        type: Message.BodyType.REQUEST_CREDENTIAL,
+        content: {
+          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        },
+      },
+      identityAlice.did,
+      identityBob.did
+    )
+    messageIdentityMismatchSender.sender =
+      messageIdentityMismatchSender.sender.slice(-1)
+    await expect(async () =>
+      messageIdentityMismatchSender.encrypt(
+        identityAlice.getKeys(KeyRelationship.keyAgreement)[0],
+        identityBob.getKeys(KeyRelationship.keyAgreement)[0],
+        keystore
+      )
+    ).rejects.toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_IDENTITY_MISMATCH)
     const decryptedMessage = await Message.decrypt(encryptedMessage, keystore, {
       resolver: mockResolver,
     })

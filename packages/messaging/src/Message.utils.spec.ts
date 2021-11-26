@@ -1021,6 +1021,37 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessage(messageRejectTerms)
     ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))
+    expect(() =>
+      MessageUtils.errorCheckMessage({
+        ...messageRejectTerms,
+        // @ts-expect-error
+        messageId: BigInt(1),
+      })
+    ).toThrow(TypeError('message id is expected to be a string'))
+    expect(() =>
+      MessageUtils.errorCheckMessage({
+        ...messageRejectTerms,
+        // @ts-expect-error
+        createdAt: 'replaced by a string',
+      })
+    ).toThrow(TypeError('created at is expected to be a number'))
+    expect(() =>
+      MessageUtils.errorCheckMessage({
+        ...messageRejectTerms,
+        // @ts-expect-error
+        receivedAt: 'replaced by a string',
+      })
+    ).toThrow(TypeError('received at is expected to be a number'))
+    const inReplyToMalformed = new Message(
+      informCreateDelegationBody,
+      identityAlice.did,
+      identityBob.did
+    )
+    // @ts-expect-error
+    inReplyToMalformed.inReplyTo = BigInt(1)
+    expect(() => MessageUtils.errorCheckMessage(inReplyToMalformed)).toThrow(
+      TypeError('in reply to is expected to be a string')
+    )
   })
   it('error check should throw errors on faulty bodies', () => {
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
