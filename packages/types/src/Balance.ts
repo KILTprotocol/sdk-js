@@ -11,6 +11,7 @@
  */
 
 import type { BN } from '@polkadot/util'
+import { AnyNumber } from '@polkadot/types/types'
 
 export type Balances = {
   free: BN
@@ -26,4 +27,27 @@ export interface BalanceOptions {
   withSi?: boolean
   withSiFull?: boolean
   withUnit?: boolean | string
+  locale?: string
 }
+
+export type BalanceNumber = Exclude<AnyNumber, Uint8Array>
+
+export type MetricPrefix =
+  | 'femto'
+  | 'pico'
+  | 'nano'
+  | 'micro'
+  | 'milli'
+  | 'centi'
+  | 'KILT'
+  | 'kilo'
+  | 'mega'
+  | 'mill'
+  | 'giga'
+  | 'bill'
+  | 'tera'
+  | 'tril'
+  | 'peta'
+  | 'exa'
+  | 'zetta'
+  | 'yotta'
