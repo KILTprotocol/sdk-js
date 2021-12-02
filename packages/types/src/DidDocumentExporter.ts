@@ -10,7 +10,7 @@
  * @module IDidDocumentExporter
  */
 
-import type { IDidDetails, IDidKeyDetails, IDidServiceEndpoint } from '.'
+import type { IDid, IDidKey, IDidServiceEndpoint } from '.'
 
 export enum DidDocumentPublicKeyType {
   Ed25519VerificationKey = 'Ed25519VerificationKey2018',
@@ -31,23 +31,21 @@ export const EncryptionKeyTypesMap = {
   x25519: DidDocumentPublicKeyType.X25519EncryptionKey,
 }
 
-export type IDidPublicKeyDetails = Pick<IDidKeyDetails, 'id' | 'controller'> & {
+export type IDidPublicKey = Pick<IDidKey, 'id' | 'controller'> & {
   publicKeyBase58: string
   type: DidDocumentPublicKeyType
 }
-
-export type IDidPublicKeyId = Pick<IDidKeyDetails, 'id'>
 
 /**
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
 export type IDidDocument = {
-  id: IDidDetails['did']
-  verificationMethod: IDidPublicKeyDetails[]
-  authentication: IDidPublicKeyId[]
-  assertionMethod?: IDidPublicKeyId[]
-  keyAgreement?: IDidPublicKeyId[]
-  capabilityDelegation?: IDidPublicKeyId[]
+  id: IDid['did']
+  verificationMethod: IDidPublicKey[]
+  authentication: IDidPublicKey['id']
+  assertionMethod?: IDidPublicKey['id']
+  keyAgreement?: IDidPublicKey['id']
+  capabilityDelegation?: IDidPublicKey['id']
   service?: IDidServiceEndpoint[]
 }
 
@@ -62,5 +60,5 @@ export type IJsonLDDidDocument = IDidDocument & { '@context': string[] }
  * It is purposefully general with regard to the mime types supported, so that multiple exporters might support different encoding types.
  */
 export interface IDidDocumentExporter {
-  exportToDidDocument: (details: IDidDetails, mimeType: string) => IDidDocument
+  exportToDidDocument: (details: IDid, mimeType: string) => IDidDocument
 }

@@ -12,6 +12,8 @@ import type {
   IDidDetails,
   IDidServiceEndpoint,
   KeyRelationship,
+  IDidKey,
+  IDid,
 } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import type { AnyNumber } from '@polkadot/types/types'
@@ -45,9 +47,7 @@ export type IDidParsingResult = {
   encodedDetails?: string
 }
 
-export type MapKeyToRelationship = Partial<
-  Record<KeyRelationship, Array<IDidKeyDetails['id']>>
->
+export type MapKeyToRelationship = Partial<Record<KeyRelationship, string[]>>
 
 export interface INewPublicKey<T extends string = string> {
   publicKey: Uint8Array
@@ -190,10 +190,19 @@ export type JsonDidDocument = {
 
 export type JsonLDDidDocument = JsonDidDocument & { '@context': string[] }
 
+export type DidCreationOptions = {
+  did: IDid['did']
+  // Accepts a list of keys where the ID does not include the DID URI.
+  keys: Array<Omit<IDidKey, 'id'> & { id: string }>
+  keyRelationships: MapKeyToRelationship
+  // Accepts a list of service endpoints where the ID does not include the DID URI.
+  serviceEndpoints: Array<Omit<IDidServiceEndpoint, 'id'> & { id: string }>
+}
+
 /**
  * The options that can be used to create a light DID.
  */
-export type LightDidDetailsCreationOpts = {
+export type LightDidCreationDetails = {
   /**
    * The DID authentication key. This is mandatory and will be used as the first authentication key
    * of the full DID upon migration.

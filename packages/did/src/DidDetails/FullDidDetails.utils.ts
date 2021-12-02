@@ -10,10 +10,8 @@ import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
 import { BN } from '@polkadot/util'
 import type {
-  ApiOrMetadata,
-  CallMeta,
-  IDidDetails,
-  IDidKeyDetails,
+  IDid,
+  IDidKey,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'

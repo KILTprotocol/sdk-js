@@ -7,14 +7,15 @@
 
 import type {
   DidSignature,
-  IDidDetails,
+  IDid,
   IDidResolver,
   IIdentity,
-  IDidKeyDetails,
+  IDidKey,
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
   IDidServiceEndpoint,
+  IDidIdentifier,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
@@ -36,6 +37,7 @@ import type {
 } from './types'
 import { generateCreateTx } from './Did.chain'
 import { LightDidDetails } from '.'
+import { LightDid } from './DidDetails/LightDid'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -175,7 +177,7 @@ export function getIdentifierFromKiltDid(did: string): string {
 export function validateKiltDid(
   input: unknown,
   allowFragment = false
-): input is IDidDetails['did'] {
+): input is IDid['did'] {
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
@@ -328,8 +330,8 @@ export function computeKeyId(publicKey: DidPublicKey): string {
 
 export type VerificationResult = {
   verified: boolean
-  didDetails?: IDidDetails
-  key?: IDidKeyDetails
+  didDetails?: IDid
+  key?: IDidKey
 }
 
 function verifyDidSignatureFromDetails({
@@ -342,7 +344,7 @@ function verifyDidSignatureFromDetails({
   message: string | Uint8Array
   signature: string | Uint8Array
   keyId: string
-  didDetails: IDidDetails
+  didDetails: IDid
   keyRelationship?: VerificationKeyRelationship
 }): VerificationResult {
   const key = keyRelationship
@@ -376,7 +378,7 @@ export async function verifyDidSignature({
 }: {
   message: string | Uint8Array
   signature: string | Uint8Array
-  keyId: IDidKeyDetails['id']
+  keyId: IDidKey['id']
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
@@ -406,7 +408,7 @@ export async function verifyDidSignature({
       ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
           ?.details
       : resolutionDetails.details
-  ) as IDidDetails
+  ) as IDid
 
   return verifyDidSignatureFromDetails({
     message,
@@ -481,7 +483,7 @@ export function writeDidFromIdentity(
 
 export async function signWithKey(
   toSign: Uint8Array | string,
-  key: IDidKeyDetails,
+  key: IDidKey,
   signer: KeystoreSigner
 ): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
   const alg = getSignatureAlgForKeyType(key.type)
@@ -495,11 +497,11 @@ export async function signWithKey(
 
 export async function signWithDid(
   toSign: Uint8Array | string,
-  did: IDidDetails,
+  did: IDid,
   signer: KeystoreSigner,
-  whichKey: KeyRelationship | IDidKeyDetails['id']
+  whichKey: KeyRelationship | IDidKey['id']
 ): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
-  let key: IDidKeyDetails | undefined
+  let key: IDidKey | undefined
   if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
     // eslint-disable-next-line prefer-destructuring
     key = did.getKeys(KeyRelationship.authentication)[0]
@@ -516,7 +518,7 @@ export async function signWithDid(
 
 export async function getDidAuthenticationSignature(
   toSign: Uint8Array | string,
-  did: IDidDetails,
+  did: IDid,
   signer: KeystoreSigner
 ): Promise<DidSignature> {
   const { keyId, signature } = await signWithDid(
@@ -529,7 +531,7 @@ export async function getDidAuthenticationSignature(
 }
 
 export function assembleDidFragment(
-  didUri: IDidDetails['did'],
+  didUri: IDid['did'],
   fragmentId: string
 ): string {
   return `${didUri}#${fragmentId}`
@@ -537,8 +539,8 @@ export function assembleDidFragment(
 
 // This function is tested in the DID integration tests, in the `DID migration` test case.
 export async function upgradeDid(
-  lightDid: LightDidDetails,
-  submitter: IIdentity['address'],
+  lightDid: LightDid,
+  submitter: IDidIdentifier,
   signer: KeystoreSigner
 ): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const didAuthenticationKey = lightDid.getKeys(
@@ -559,17 +561,10 @@ export async function upgradeDid(
     }
   }
 
-  const adjustedServiceEndpoints = lightDid.getEndpoints().map((service) => {
-    // We are sure a fragment exists.
-    const id = parseDidUrl(service.id).fragment as string
-    // We remove the service ID prefix (did:light:...) before writing it on chain.
-    return { ...service, id }
-  })
-
   return writeDidFromPublicKeysAndServices(
     signer,
     submitter,
     newDidPublicKeys,
-    adjustedServiceEndpoints
+    lightDid.getEndpoints()
   )
 }
