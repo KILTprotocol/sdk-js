@@ -13,7 +13,7 @@
 
 import { hexToU8a } from '@polkadot/util'
 import { encodeAddress } from '@polkadot/util-crypto'
-import type { IDidServiceEndpoint } from '@kiltprotocol/types'
+import type { DidServiceEndpoint } from '@kiltprotocol/types'
 import { LightDidDetails } from './LightDidDetails'
 import type { INewPublicKey, LightDidDetailsCreationOpts } from '../types'
 
@@ -24,7 +24,7 @@ describe('Light DID v1 tests', () => {
   const encPublicKey = hexToU8a(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  let serviceEndpoint: IDidServiceEndpoint
+  let serviceEndpoint: DidServiceEndpoint
   const address = encodeAddress(authPublicKey, 38)
   const authenticationDidKeyDetails: INewPublicKey = {
     publicKey: authPublicKey,

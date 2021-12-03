@@ -14,12 +14,12 @@
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
 import {
   IDidKeyDetails,
-  IDidResolutionDocumentMetadata,
-  IDidServiceEndpoint,
+  DidResolutionDocumentMetadata,
+  DidServiceEndpoint,
   IIdentity,
   KeyringPair,
 } from '@kiltprotocol/types'
-import type { IDidResolvedDetails } from '@kiltprotocol/types'
+import type { DidResolvedDetails } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
 import { LightDidDetails } from '../DidDetails'
@@ -47,7 +47,7 @@ const migratedDeletedLightDid = `did:kilt:light:00${getIdentifierFromKiltDid(
 )}`
 
 function generateAuthenticationKeyDetails(
-  didIdentifier: IIdentity['address']
+  didIdentifier: IDidIdentifier
 ): [string, IDidKeyDetails] {
   const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
   return [
@@ -64,7 +64,7 @@ function generateAuthenticationKeyDetails(
 }
 
 function generateEncryptionKeyDetails(
-  didIdentifier: IIdentity['address']
+  didIdentifier: IDidIdentifier
 ): [string, IDidKeyDetails] {
   const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
   return [
@@ -81,7 +81,7 @@ function generateEncryptionKeyDetails(
 }
 
 function generateAttestationKeyDetails(
-  didIdentifier: IIdentity['address']
+  didIdentifier: IDidIdentifier
 ): [string, IDidKeyDetails] {
   const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
   return [
@@ -98,7 +98,7 @@ function generateAttestationKeyDetails(
 }
 
 function generateDelegationKeyDetails(
-  didIdentifier: IIdentity['address']
+  didIdentifier: IDidIdentifier
 ): [string, IDidKeyDetails] {
   const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
   return [
@@ -115,9 +115,9 @@ function generateDelegationKeyDetails(
 }
 
 function generateServiceEndpointDetails(
-  didIdentifier: IIdentity['address'],
+  didIdentifier: IDidIdentifier,
   serviceId: string
-): IDidServiceEndpoint {
+): DidServiceEndpoint {
   const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
   return {
     id: `${didUri}#${serviceId}`,
@@ -136,7 +136,7 @@ jest.mock('../Did.chain', () => {
       switch (did) {
         case fullDidPresentWithAuthenticationKey:
           return {
-            did,
+            identifier: did,
             authenticationKey: authKeyId,
             keyAgreementKeys: [],
             publicKeys: [authKey],
@@ -144,7 +144,7 @@ jest.mock('../Did.chain', () => {
           }
         case fullDidPresentWithAllKeys:
           return {
-            did,
+            identifier: did,
             authenticationKey: authKeyId,
             keyAgreementKeys: [encKeyId],
             assertionMethodKey: attKeyId,
@@ -154,7 +154,7 @@ jest.mock('../Did.chain', () => {
           }
         case fullDidPresentWithServiceEndpoints:
           return {
-            did,
+            identifier: did,
             authenticationKey: authKeyId,
             keyAgreementKeys: [],
             publicKeys: [authKey],
@@ -174,7 +174,7 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryServiceEndpoint = jest.fn(
-    async (didUri: string): Promise<IDidServiceEndpoint | null> => {
+    async (didUri: string): Promise<DidServiceEndpoint | null> => {
       const { identifier, fragment } = parseDidUrl(didUri)
       const subjectDid = getKiltDidFromIdentifier(identifier, 'full')
       switch (subjectDid) {
@@ -186,16 +186,16 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryServiceEndpoints = jest.fn(
-    async (didUri: string): Promise<IDidServiceEndpoint[]> => {
+    async (didUri: string): Promise<DidServiceEndpoint[]> => {
       switch (didUri) {
         case fullDidPresentWithServiceEndpoints:
           return [
             (await queryServiceEndpoint(
               `${didUri}#id-1`
-            )) as IDidServiceEndpoint,
+            )) as DidServiceEndpoint,
             (await queryServiceEndpoint(
               `${didUri}#id-2`
-            )) as IDidServiceEndpoint,
+            )) as DidServiceEndpoint,
           ]
         default:
           return []
@@ -242,8 +242,8 @@ describe('Service endpoint resolution', () => {
   it('Correctly resolves a service endpoint given its ID', async () => {
     const serviceEndpoint = (await DefaultResolver.resolveServiceEndpoint(
       `${fullDidPresentWithServiceEndpoints}#id-1`
-    )) as IDidServiceEndpoint
-    expect(serviceEndpoint).toMatchObject<IDidServiceEndpoint>({
+    )) as DidServiceEndpoint
+    expect(serviceEndpoint).toMatchObject<DidServiceEndpoint>({
       id: `${fullDidPresentWithServiceEndpoints}#id-1`,
       types: ['type-id-1'],
       urls: ['urls-id-1'],
@@ -255,8 +255,8 @@ describe('Full DID resolution', () => {
   it('Correctly resolves full DID details with authentication key', async () => {
     const { details, metadata } = (await DefaultResolver.resolve(
       fullDidPresentWithAuthenticationKey
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    )) as DidResolvedDetails
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
     expect(details?.did).toStrictEqual(fullDidPresentWithAuthenticationKey)
@@ -275,8 +275,8 @@ describe('Full DID resolution', () => {
   it('Correctly resolves full DID details with all keys', async () => {
     const { details, metadata } = (await DefaultResolver.resolve(
       fullDidPresentWithAllKeys
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    )) as DidResolvedDetails
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
     expect(details?.did).toStrictEqual(fullDidPresentWithAllKeys)
@@ -319,8 +319,8 @@ describe('Full DID resolution', () => {
   it('Correctly resolves full DID details with service endpoints', async () => {
     const { details, metadata } = (await DefaultResolver.resolve(
       fullDidPresentWithServiceEndpoints
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    )) as DidResolvedDetails
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
     expect(details?.did).toStrictEqual(fullDidPresentWithServiceEndpoints)
@@ -351,9 +351,9 @@ describe('Full DID resolution', () => {
   it('Correctly resolves a full DID that does not exist', async () => {
     const { details, metadata } = (await DefaultResolver.resolve(
       deletedDid
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
     expect(details).toBeUndefined()
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: true,
     })
   })
@@ -361,8 +361,8 @@ describe('Full DID resolution', () => {
   it('Correctly resolves a full DID given a key ID', async () => {
     const { details, metadata } = (await DefaultResolver.resolveDoc(
       `${fullDidPresentWithAuthenticationKey}#auth`
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    )) as DidResolvedDetails
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
     expect(details?.did).toStrictEqual(fullDidPresentWithAuthenticationKey)
@@ -381,8 +381,8 @@ describe('Full DID resolution', () => {
   it('Correctly resolves a full DID given a service ID', async () => {
     const { details, metadata } = (await DefaultResolver.resolveDoc(
       `${fullDidPresentWithServiceEndpoints}#id-1`
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    )) as DidResolvedDetails
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
     expect(details?.did).toStrictEqual(fullDidPresentWithServiceEndpoints)
@@ -418,7 +418,7 @@ describe('Light DID resolution', () => {
   let keypair: KeyringPair
   let publicAuthKey: INewPublicKey
   let encryptionKey: INewPublicKey
-  let serviceEndpoints: IDidServiceEndpoint[]
+  let serviceEndpoints: DidServiceEndpoint[]
 
   it('Correctly resolves a light DID created with only an ed25519 authentication key', async () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
@@ -431,7 +431,7 @@ describe('Light DID resolution', () => {
     })
     const { details, metadata } = (await DefaultResolver.resolve(
       lightDID.did
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
       Partial<IDidKeyDetails>
@@ -441,7 +441,7 @@ describe('Light DID resolution', () => {
       publicKeyHex: u8aToHex(publicAuthKey.publicKey),
     })
 
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
   })
@@ -457,7 +457,7 @@ describe('Light DID resolution', () => {
     })
     const { details, metadata } = (await DefaultResolver.resolve(
       lightDID.did
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
       Partial<IDidKeyDetails>
@@ -467,7 +467,7 @@ describe('Light DID resolution', () => {
       publicKeyHex: u8aToHex(publicAuthKey.publicKey),
     })
 
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
   })
@@ -508,7 +508,7 @@ describe('Light DID resolution', () => {
     })
     const { details, metadata } = (await DefaultResolver.resolve(
       lightDID.did
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
       Partial<IDidKeyDetails>
@@ -524,7 +524,7 @@ describe('Light DID resolution', () => {
       controller: lightDID.did,
       publicKeyHex: u8aToHex(encryptionKey.publicKey),
     })
-    expect(details?.getEndpoints()).toStrictEqual<IDidServiceEndpoint[]>([
+    expect(details?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
       {
         id: `${lightDID.did}#id-1`,
         types: ['type-1'],
@@ -542,7 +542,7 @@ describe('Light DID resolution', () => {
       },
     ])
 
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
   })
@@ -558,7 +558,7 @@ describe('Light DID resolution', () => {
     })
     const { details, metadata } = (await DefaultResolver.resolveDoc(
       `${lightDID.did}#auth`
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
       Partial<IDidKeyDetails>
@@ -568,7 +568,7 @@ describe('Light DID resolution', () => {
       publicKeyHex: u8aToHex(publicAuthKey.publicKey),
     })
 
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
   })
@@ -609,7 +609,7 @@ describe('Light DID resolution', () => {
     })
     const { details, metadata } = (await DefaultResolver.resolveDoc(
       `${lightDID.did}#id-1`
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
       Partial<IDidKeyDetails>
@@ -625,7 +625,7 @@ describe('Light DID resolution', () => {
       controller: lightDID.did,
       publicKeyHex: u8aToHex(encryptionKey.publicKey),
     })
-    expect(details?.getEndpoints()).toStrictEqual<IDidServiceEndpoint[]>([
+    expect(details?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
       {
         id: `${lightDID.did}#id-1`,
         types: ['type-1'],
@@ -643,7 +643,7 @@ describe('Light DID resolution', () => {
       },
     ])
 
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
   })
@@ -653,9 +653,9 @@ describe('Migrated DID resolution', () => {
   it('Correctly resolves a migrated light DID that has not been deleted', async () => {
     const { details, metadata } = (await DefaultResolver.resolve(
       migratedUndeletedLightDid
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
     expect(details).toBeDefined()
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
       canonicalId: fullDidPresentWithAuthenticationKey,
     })
@@ -664,9 +664,9 @@ describe('Migrated DID resolution', () => {
   it('Correctly resolves a migrated light DID that has been deleted', async () => {
     const { details, metadata } = (await DefaultResolver.resolve(
       migratedDeletedLightDid
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
     expect(details).toBeUndefined()
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: true,
     })
   })

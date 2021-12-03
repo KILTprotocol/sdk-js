@@ -7,32 +7,49 @@
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { LightDidDetailsCreationOpts } from '../types'
-import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
+import { encodeAddress } from '@polkadot/util-crypto'
+import { hexToU8a } from '@polkadot/util'
+import type {
+  DidKey,
+  DidServiceEndpoint,
+  IIdentity,
+  KeystoreSigner,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
+import type { LightDidCreationDetails, PublicKeyRoleAssignment } from '../types'
+import {
+  getEncodingForSigningKeyType,
+  getKiltDidFromIdentifier,
+  getSignatureAlgForKeyType,
+  parseDidUrl,
+} from '../Did.utils'
+import { LightDidDetails } from './LightDidDetails'
+import { generateCreateTx } from '../Did.chain'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
 
-export function checkLightDidCreationOptions(
-  options: LightDidDetailsCreationOpts
+export function checkLightDidCreationDetails(
+  details: LightDidCreationDetails
 ): void {
   // Check authentication key type
   const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
-    options.authenticationKey.type
+    details.authenticationKey.type
   )
   if (!authenticationKeyTypeEncoding) {
     throw SDKErrors.ERROR_UNSUPPORTED_KEY
   }
 
   // Check service endpoints
-  if (!options.serviceEndpoints) {
+  if (!details.serviceEndpoints) {
     return
   }
 
   // Checks that for all service IDs have regular strings as their ID and not a full DID.
   // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
   // when upgrading to a full DID.
-  options.serviceEndpoints?.forEach((service) => {
+  details.serviceEndpoints?.forEach((service) => {
     let isServiceIdADid = true
     try {
       // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
@@ -56,6 +73,26 @@ export function checkLightDidCreationOptions(
   })
 }
 
+export function mergeKeyAndKeyId(
+  keyId: string,
+  key: Omit<DidKey, 'id'>
+): DidKey {
+  return {
+    id: keyId,
+    ...key,
+  }
+}
+
+export function mergeServiceAndServiceId(
+  serviceId: string,
+  service: Omit<DidServiceEndpoint, 'id'>
+): DidServiceEndpoint {
+  return {
+    id: serviceId,
+    ...service,
+  }
+}
+
 /**
  * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.
  *
@@ -67,7 +104,7 @@ export function checkLightDidCreationOptions(
 export function serializeAndEncodeAdditionalLightDidDetails({
   encryptionKey,
   serviceEndpoints,
-}: Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'serviceEndpoints'>):
+}: Pick<LightDidCreationDetails, 'encryptionKey' | 'serviceEndpoints'>):
   | string
   | null {
   const objectToSerialize: Map<string, unknown> = new Map()
@@ -89,7 +126,7 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   rawInput: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   version = 1
-): Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'serviceEndpoints'> {
+): Pick<LightDidCreationDetails, 'encryptionKey' | 'serviceEndpoints'> {
   const decodedPayload: Map<string, unknown> = cborDecode(rawInput, {
     encoding: 'base64',
   })

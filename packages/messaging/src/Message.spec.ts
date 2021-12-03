@@ -13,7 +13,7 @@ import type {
   ICredential,
   IEncryptedMessage,
   IQuote,
-  IDidResolvedDetails,
+  DidResolvedDetails,
   IDidKeyDetails,
   IRequestAttestation,
   ISubmitAttestation,
@@ -43,7 +43,7 @@ describe('Messaging', () => {
 
     const resolveDoc = async (
       did: string
-    ): Promise<IDidResolvedDetails | null> => {
+    ): Promise<DidResolvedDetails | null> => {
       if (did.startsWith(identityAlice.did)) {
         return { details: identityAlice, metadata: { deactivated: false } }
       }

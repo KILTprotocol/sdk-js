@@ -36,11 +36,11 @@ export type VerificationKeyRelationship =
 export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
 
 /**
- * The details of a public key record with a given DID.
+ * The details of a new DID public key.
  */
-export interface IDidKey<T extends string = string> {
+export type DidKey<T extends string = string> = {
   /**
-   * Key id, which is a URI consisting of did:kilt:<did identifier>#<key identifier>.
+   * Key id without the leading did:kilt:<did_identifier> prefix.
    */
   id: string
   /**
@@ -48,26 +48,18 @@ export interface IDidKey<T extends string = string> {
    */
   type: T
   /**
-   * The DID with which this public key is associated.
+   * The public key material.
    */
-  // eslint-disable-next-line no-use-before-define
-  controller: IDid['did']
+  publicKey: Uint8Array
   /**
-   * The public key material encoded as hex.
-   */
-  publicKeyHex: string
-  /**
-   * Can be used to indicate the block at which this key was added to the on-chain DID record.
+   * The inclusion block of the key, if stored on chain.
    */
   includedAt?: number
 }
 
-/**
- * A single service endpoint.
- */
-export interface IDidServiceEndpoint {
+export type DidServiceEndpoint = {
   /**
-   * The identifier of the endpoint in the form <did_identifier>#<endpoint_id>.
+   * The identifier of the endpoint, without the leading did:kilt:<did_identifier> prefix.
    */
   id: string
   /**
@@ -83,7 +75,7 @@ export interface IDidServiceEndpoint {
 /**
  * An internal representation of data associated with a DID, equivalent to a DID document.
  */
-export interface IDid {
+export interface IDidDetails {
   /**
    * The decentralized identifier (DID) to which the remaining info pertains.
    */
@@ -94,7 +86,7 @@ export interface IDid {
    * @param id The key ID, without the leading DID URI.
    * @returns [[IDidKey]] or undefined if no key with this id is present.
    */
-  getKey(id: string): IDidKey | undefined
+  getKey(id: string): DidKey | undefined
   /**
    * Retrieves public key details from the [[IDid]], optionally filtering by [[KeyRelationship]].
    *
@@ -102,19 +94,19 @@ export interface IDid {
    * relationship, undefined to return all keys.
    * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
    */
-  getKeys(relationship?: KeyRelationship | 'none'): IDidKey[]
+  getKeys(relationship?: KeyRelationship | 'none'): DidKey[]
   /**
    * Retrieves the service endpoint associated with the DID, if any.
    *
    * @param id The identifier of the service endpoint, without the DID prefix.
    */
-  getEndpoint(id: string): IDidServiceEndpoint | undefined
+  getEndpoint(id: string): DidServiceEndpoint | undefined
   /**
    * Retrieves all the service endpoints associated with the DID.
    *
    * @param type The type of the service endpoints to filter and include in the result.
    */
-  getEndpoints(type?: string): IDidServiceEndpoint[]
+  getEndpoints(type?: string): DidServiceEndpoint[]
 }
 
 /**

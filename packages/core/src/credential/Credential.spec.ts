@@ -17,7 +17,7 @@ import type {
   ICType,
   IDidDetails,
   IDidResolver,
-  IDidResolvedDetails,
+  DidResolvedDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import {
@@ -140,7 +140,7 @@ describe('RequestForAttestation', () => {
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
       didUri: string
-    ): Promise<IDidResolvedDetails | null> => {
+    ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
@@ -389,7 +389,7 @@ describe('create presentation', () => {
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
       didUri: string
-    ): Promise<IDidResolvedDetails | null> => {
+    ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {

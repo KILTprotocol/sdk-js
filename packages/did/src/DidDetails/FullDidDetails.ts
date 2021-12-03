@@ -5,179 +5,113 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Extrinsic } from '@polkadot/types/interfaces'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type {
-  IDidKeyDetails,
+import {
+  DidKey,
+  IIdentity,
+  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
-  ApiOrMetadata,
-  CallMeta,
-  IIdentity,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
-import { BN } from '@polkadot/util'
-import { generateDidAuthenticatedTx, queryLastTxCounter } from '../Did.chain'
-import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
-import {
-  getSignatureAlgForKeyType,
-  getIdentifierFromKiltDid,
-  parseDidUrl,
-} from '../Did.utils'
+import { Extrinsic } from '@polkadot/types/interfaces'
 import { DidDetails } from './DidDetails'
-import type { FullDidDetailsCreationOpts } from '../types'
+import {
+  getIdentifierFromKiltDid,
+  getKiltDidFromIdentifier,
+  getSignatureAlgForKeyType,
+} from '../Did.utils'
+import { DidCreationOptions, MapKeyToRelationship } from '../types'
+import {
+  generateDidAuthenticatedTx,
+  queryById,
+  queryLastTxCounter,
+  queryServiceEndpoints,
+} from '../Did.chain'
+import { getKeysForExtrinsic } from './FullDidDetails.utils'
 
-function errorCheck({
-  did,
-  keys,
-  keyRelationships,
-}: Required<FullDidDetailsCreationOpts>): void {
-  if (!did) {
-    throw Error('did is required for FullDidDetails')
-  }
-  const { type } = parseDidUrl(did)
-  if (type !== 'full') {
-    throw Error('Only a full DID URI is allowed.')
-  }
-  const keyIds = new Set(keys.map((key) => key.id))
-  if (keyRelationships[KeyRelationship.authentication]?.length !== 1) {
-    throw Error(
-      `One and only one ${KeyRelationship.authentication} key is required on FullDidDetails`
-    )
-  }
-  const allowedKeyRelationships: string[] = [
-    ...Object.values(KeyRelationship),
-    'none',
-  ]
-  Object.keys(keyRelationships).forEach((kr) => {
-    if (!allowedKeyRelationships.includes(kr)) {
-      throw Error(
-        `key relationship ${kr} is not recognized. Allowed: ${KeyRelationship}`
-      )
-    }
-  })
-  const keyReferences = new Set<string>(
-    Array.prototype.concat(...Object.values(keyRelationships))
-  )
-  keyReferences.forEach((id) => {
-    if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
-  })
+function defaultExtrinsicKeySelection(
+  keysForExtrinsic: DidKey[]
+): DidKey | null {
+  return keysForExtrinsic[0] || null
 }
 
 export class FullDidDetails extends DidDetails {
   /// The latest version for KILT full DIDs.
   public static readonly FULL_DID_LATEST_VERSION = 1
 
-  private lastTxIndex: BN
+  // eslint-disable-next-line no-useless-constructor
+  private constructor(creationOptions: DidCreationOptions) {
+    super(creationOptions)
+  }
 
-  constructor({
-    did,
-    keys,
-    keyRelationships = {},
-    lastTxIndex,
-    serviceEndpoints = [],
-  }: FullDidDetailsCreationOpts) {
-    errorCheck({
-      did,
-      keys,
-      keyRelationships,
-      lastTxIndex,
-      serviceEndpoints,
-    })
+  // This is used to re-create a full DID from the chain.
+  public static async fromChainInfo(
+    didIdentifier: IDidIdentifier
+  ): Promise<FullDidDetails | null> {
+    const didRec = await queryById(didIdentifier)
+    if (!didRec) return null
+    const {
+      publicKeys,
+      assertionMethodKey,
+      authenticationKey,
+      capabilityDelegationKey,
+      keyAgreementKeys,
+    } = didRec
 
-    const id = getIdentifierFromKiltDid(did)
-    super(did, id, serviceEndpoints)
+    const keyRelationships: MapKeyToRelationship = {
+      [KeyRelationship.authentication]: [authenticationKey],
+      [KeyRelationship.keyAgreement]: keyAgreementKeys,
+    }
+    if (assertionMethodKey) {
+      keyRelationships[KeyRelationship.assertionMethod] = [assertionMethodKey]
+    }
+    if (capabilityDelegationKey) {
+      keyRelationships[KeyRelationship.capabilityDelegation] = [
+        capabilityDelegationKey,
+      ]
+    }
 
-    this.keys = new Map(keys.map((key) => [key.id, key]))
-    this.lastTxIndex = lastTxIndex
-    this.keyRelationships = keyRelationships
-    this.keyRelationships.none = []
-    const keysWithRelationship = new Set<string>(
-      Array.prototype.concat(...Object.values(keyRelationships))
+    const didUri = getKiltDidFromIdentifier(
+      didIdentifier,
+      'full',
+      FullDidDetails.FULL_DID_LATEST_VERSION
     )
-    this.keys.forEach((_, keyId) => {
-      if (!keysWithRelationship.has(keyId)) {
-        this.keyRelationships.none?.push(keyId)
-      }
+
+    const endpoints = await queryServiceEndpoints(didUri)
+
+    return new FullDidDetails({
+      did: didUri,
+      keys: publicKeys,
+      keyRelationships,
+      serviceEndpoints: endpoints,
     })
   }
 
-  /**
-   * Gets the next nonce/transaction index required for DID authorized blockchain transactions.
-   *
-   * @param increment Flag indicating whether the retrieved tx index should be increased.
-   * @returns A [[BN]] indicating the next transaction index.
-   */
-  public getNextTxIndex(increment = true): BN {
-    const nextIndex = this.lastTxIndex.addn(1)
-    if (increment) this.lastTxIndex = nextIndex
-    return nextIndex
+  public getKeysForExtrinsic(extrinsic: Extrinsic): DidKey[] {
+    return getKeysForExtrinsic(this, extrinsic)
   }
 
-  /**
-   * Returns all the DID keys that could be used to authorize the submission of the provided call.
-   *
-   * @param call The call to submit.
-   * @returns The set of keys that could be used to sign the call.
-   */
-  public getKeysForCall(call: CallMeta): IDidKeyDetails[] {
-    return getKeysForCall(this, call)
-  }
-
-  /**
-   * Returns all the DID keys that could be used to authorize the submission of the provided extrinsic.
-   *
-   * @param apiOrMetadata The node runtime information to use to retrieve the required information.
-   * @param extrinsic The extrinsic to submit.
-   * @returns The set of keys that could be used to sign the extrinsic.
-   */
-  public getKeysForExtrinsic(
-    apiOrMetadata: ApiOrMetadata,
-    extrinsic: Extrinsic
-  ): IDidKeyDetails[] {
-    return getKeysForExtrinsic(apiOrMetadata, this, extrinsic)
-  }
-
-  /**
-   * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will return an error.
-   *
-   * @param extrinsic The unsigned extrinsic to sign.
-   * @param signer The keystore to be used to sign the encoded extrinsic.
-   * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
-   * @param incrementTxIndex Flag indicating whether the DID nonce should be increased before submitting the operation or not.
-   * @returns The DID-signed submittable extrinsic.
-   */
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
     signer: KeystoreSigner,
-    submitterAccount: IIdentity['address'],
-    incrementTxIndex = true
+    submitterAccount: IDidIdentifier,
+    keySelection: (
+      keysForExtrinsic: DidKey[]
+    ) => DidKey | null = defaultExtrinsicKeySelection
   ): Promise<SubmittableExtrinsic> {
-    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-    const [signingKey] = this.getKeysForExtrinsic(api, extrinsic)
+    const signingKey = keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
       throw new Error(
         `The details for did ${this.did} do not contain the required keys for this operation`
       )
     }
     return generateDidAuthenticatedTx({
-      didIdentifier: this.identifier,
+      didIdentifier: getIdentifierFromKiltDid(this.did),
       signingPublicKey: signingKey.publicKeyHex,
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
-      txCounter: this.getNextTxIndex(incrementTxIndex),
+      txCounter: await queryLastTxCounter(this.did),
       submitter: submitterAccount,
     })
-  }
-
-  /**
-   * Retrieve from the chain the last used nonce for the DID.
-   *
-   * @returns The last used nonce.
-   */
-  public async refreshTxIndex(): Promise<this> {
-    this.lastTxIndex = await queryLastTxCounter(this.did)
-    return this
   }
 }

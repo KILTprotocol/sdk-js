@@ -13,7 +13,7 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import type { IDidKeyDetails, IDidServiceEndpoint } from '@kiltprotocol/types'
+import type { DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
 import { mapCallToKeyRelationship } from './FullDidDetails.utils'
 import { FullDidDetails } from './FullDidDetails'
 import type { FullDidDetailsCreationOpts } from '../types'
@@ -56,7 +56,7 @@ describe('functional tests', () => {
         '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
   ]
-  const serviceEndpoints: IDidServiceEndpoint[] = [
+  const serviceEndpoints: DidServiceEndpoint[] = [
     {
       id: assembleDidFragment(did, 'service-1'),
       types: ['type-1'],

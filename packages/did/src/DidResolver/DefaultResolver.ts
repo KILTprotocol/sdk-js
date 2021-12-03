@@ -8,8 +8,8 @@
 import type {
   IDidResolver,
   IDidKeyDetails,
-  IDidResolvedDetails,
-  IDidServiceEndpoint,
+  DidResolvedDetails,
+  DidServiceEndpoint,
   IDidDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -124,7 +124,7 @@ function buildLightDetailsFromUriRegexMatch({
  */
 export async function resolveDoc(
   did: IDidDetails['did']
-): Promise<IDidResolvedDetails | null> {
+): Promise<DidResolvedDetails | null> {
   const { identifier, type, version, encodedDetails } = parseDidUrl(did)
 
   switch (type) {
@@ -241,8 +241,8 @@ export async function resolveKey(
  * @returns The details associated with the service endpoint.
  */
 export async function resolveServiceEndpoint(
-  didUri: IDidServiceEndpoint['id']
-): Promise<IDidServiceEndpoint | null> {
+  didUri: DidServiceEndpoint['id']
+): Promise<DidServiceEndpoint | null> {
   const { fragment, type } = parseDidUrl(didUri)
 
   // A fragment IS expected to resolve a service endpoint.
@@ -274,7 +274,7 @@ export async function resolveServiceEndpoint(
  */
 export async function resolve(
   didUri: string
-): Promise<IDidResolvedDetails | IDidKeyDetails | IDidServiceEndpoint | null> {
+): Promise<DidResolvedDetails | IDidKeyDetails | DidServiceEndpoint | null> {
   const { fragment } = parseDidUrl(didUri)
 
   if (fragment) {

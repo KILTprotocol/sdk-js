@@ -7,37 +7,36 @@
 
 import type {
   DidSignature,
-  IDid,
+  IDidDetails,
   IDidResolver,
   IIdentity,
-  IDidKey,
+  DidKey,
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
-  IDidServiceEndpoint,
+  DidServiceEndpoint,
   IDidIdentifier,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
-import { hexToU8a, isHex } from '@polkadot/util'
+import { isHex } from '@polkadot/util'
 import type { Registry } from '@polkadot/types/types'
 import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
 import type {
   PublicKeyEnum,
-  IDidCreationOptions,
   IAuthorizeCallOptions,
-  DidAuthorizedCallOperation,
-  DidCreationDetails,
+  IDidAuthorizedCallOperation,
+  IDidCreationDetails,
   DidPublicKey,
   INewPublicKey,
   PublicKeyRoleAssignment,
   IDidParsingResult,
   IServiceEndpointChainRecordCodec,
+  DidCreationDetails,
 } from './types'
 import { generateCreateTx } from './Did.chain'
-import { LightDidDetails } from '.'
-import { LightDid } from './DidDetails/LightDid'
+import { DidDetails } from '.'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -77,8 +76,8 @@ const SignatureAlgForKeyType = {
   [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.secp256k1]: 'ecdsa-secp256k1',
 }
 
-export function getSignatureAlgForKeyType(keyType: string): string {
-  return SignatureAlgForKeyType[keyType] || keyType
+export function getSignatureAlgForKeyType(keyType: string): string | undefined {
+  return SignatureAlgForKeyType[keyType]
 }
 
 export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
@@ -96,12 +95,16 @@ const SigningKeyTypeFromEncoding = {
   '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
 }
 
-export function getEncodingForSigningKeyType(keyType: string): string {
-  return EncodingForSigningKeyType[keyType] || null
+export function getEncodingForSigningKeyType(
+  keyType: string
+): string | undefined {
+  return EncodingForSigningKeyType[keyType]
 }
 
-export function getSigningKeyTypeFromEncoding(encoding: string): string {
-  return SigningKeyTypeFromEncoding[encoding]?.toString() || null
+export function getSigningKeyTypeFromEncoding(
+  encoding: string
+): string | undefined {
+  return SigningKeyTypeFromEncoding[encoding]?.toString()
 }
 
 function getLightDidFromIdentifier(identifier: string, didVersion = 1): string {
@@ -177,7 +180,7 @@ export function getIdentifierFromKiltDid(did: string): string {
 export function validateKiltDid(
   input: unknown,
   allowFragment = false
-): input is IDid['did'] {
+): input is IDidDetails['did'] {
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
@@ -204,11 +207,11 @@ export function validateKiltDid(
   return true
 }
 
-export function validateDidSignature(input: unknown): input is DidSignature {
+export function validateDidSignature(signature: DidSignature): boolean {
   try {
     if (
-      !isHex((input as DidSignature).signature) ||
-      !validateKiltDid((input as DidSignature).keyId, true)
+      !isHex(signature.signature) ||
+      !validateKiltDid(signature.keyId, true)
     ) {
       throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
     }
@@ -218,23 +221,15 @@ export function validateDidSignature(input: unknown): input is DidSignature {
   }
 }
 
-export function formatPublicKey(keypair: INewPublicKey): PublicKeyEnum {
-  const { type, publicKey } = keypair
+export function formatPublicKey(key: DidKey): PublicKeyEnum {
+  const { type, publicKey } = key
   return { [type]: publicKey }
-}
-
-export function isINewPublicKey(key: unknown): key is INewPublicKey {
-  if (typeof key === 'object') {
-    const { publicKey, type } = key as INewPublicKey
-    return publicKey instanceof Uint8Array && typeof type === 'string'
-  }
-  return false
 }
 
 export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, submitter, keys = {}, endpoints = [] }: IDidCreationOptions
-): DidCreationDetails {
+  { did, keys = {}, keyRelatiosendpoints = [] }: DidCreationDetails
+): IDidCreationDetails {
   const {
     [KeyRelationship.assertionMethod]: assertionMethodKey,
     [KeyRelationship.capabilityDelegation]: delegationKey,
@@ -256,82 +251,15 @@ export function encodeDidCreationOperation(
       return { id, urls, serviceTypes: service.types }
     }),
   }
-  return new (registry.getOrThrow<DidCreationDetails>(
+  return new (registry.getOrThrow<IDidCreationDetails>(
     'DidDidDetailsDidCreationDetails'
   ))(registry, didCreateRaw)
 }
 
-export function encodeDidAuthorizedCallOperation(
-  registry: Registry,
-  {
-    didIdentifier,
-    txCounter,
-    call,
-    submitter,
-    blockNumber,
-  }: IAuthorizeCallOptions
-): DidAuthorizedCallOperation {
-  return new (registry.getOrThrow<DidAuthorizedCallOperation>(
-    'DidAuthorizedCallOperation'
-  ))(registry, {
-    did: didIdentifier,
-    txCounter,
-    call,
-    blockNumber,
-    submitter,
-  })
-}
-
-export function encodeServiceEndpoint(
-  registry: Registry,
-  endpoint: IDidServiceEndpoint
-): IServiceEndpointChainRecordCodec {
-  return new (registry.getOrThrow<IServiceEndpointChainRecordCodec>(
-    'DidServiceEndpointsDidEndpoint'
-  ))(registry, {
-    id: endpoint.id,
-    serviceTypes: endpoint.types,
-    urls: endpoint.urls,
-  })
-}
-
-export function encodeDidPublicKey(
-  registry: Registry,
-  key: INewPublicKey
-): DidPublicKey {
-  let keyClass: string
-  if (
-    (Object.values(CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES) as string[]).includes(
-      key.type
-    )
-  ) {
-    keyClass = 'PublicVerificationKey'
-  } else if (
-    (Object.values(CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES) as string[]).includes(
-      key.type
-    )
-  ) {
-    keyClass = 'PublicEncryptionKey'
-  } else {
-    throw TypeError(
-      `Unsupported key type; types currently recognized are ${Object.values(
-        CHAIN_SUPPORTED_KEY_TYPES
-      )}`
-    )
-  }
-  return new (registry.getOrThrow<DidPublicKey>('DidPublicKey'))(registry, {
-    [keyClass]: formatPublicKey(key),
-  })
-}
-
-export function computeKeyId(publicKey: DidPublicKey): string {
-  return Crypto.hashStr(publicKey.toU8a())
-}
-
 export type VerificationResult = {
   verified: boolean
-  didDetails?: IDid
-  key?: IDidKey
+  didDetails?: IDidDetails
+  key?: DidKey
 }
 
 function verifyDidSignatureFromDetails({
@@ -344,7 +272,7 @@ function verifyDidSignatureFromDetails({
   message: string | Uint8Array
   signature: string | Uint8Array
   keyId: string
-  didDetails: IDid
+  didDetails: IDidDetails
   keyRelationship?: VerificationKeyRelationship
 }): VerificationResult {
   const key = keyRelationship
@@ -378,7 +306,7 @@ export async function verifyDidSignature({
 }: {
   message: string | Uint8Array
   signature: string | Uint8Array
-  keyId: IDidKey['id']
+  keyId: DidKey['id']
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
@@ -408,7 +336,7 @@ export async function verifyDidSignature({
       ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
           ?.details
       : resolutionDetails.details
-  ) as IDid
+  ) as IDidDetails
 
   return verifyDidSignatureFromDetails({
     message,
@@ -419,152 +347,23 @@ export async function verifyDidSignature({
   })
 }
 
-export async function writeDidFromPublicKeys(
-  signer: KeystoreSigner,
-  submitter: IIdentity['address'],
-  publicKeys: PublicKeyRoleAssignment
-): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
-  const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
-  if (!authenticationKey)
-    throw Error(`${KeyRelationship.authentication} key is required`)
-  const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
-  const extrinsic = await generateCreateTx({
-    signer,
-    submitter,
-    didIdentifier,
-    keys: publicKeys,
-    alg: getSignatureAlgForKeyType(authenticationKey.type),
-    signingPublicKey: authenticationKey.publicKey,
-  })
-  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
-  return { extrinsic, did }
-}
+// export async function getDidAuthenticationSignature(
+//   toSign: Uint8Array | string,
+//   did: DidDetails,
+//   signer: KeystoreSigner
+// ): Promise<DidSignature> {
+//   const { keyId, signature } = await signWithDid(
+//     toSign,
+//     did,
+//     signer,
+//     KeyRelationship.authentication
+//   )
+//   return { keyId, signature: Crypto.u8aToHex(signature) }
+// }
 
-export async function writeDidFromPublicKeysAndServices(
-  signer: KeystoreSigner,
-  submitter: IIdentity['address'],
-  publicKeys: PublicKeyRoleAssignment,
-  endpoints: IDidServiceEndpoint[]
-): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
-  const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
-  if (!authenticationKey)
-    throw Error(`${KeyRelationship.authentication} key is required`)
-  const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
-  const extrinsic = await generateCreateTx({
-    signer,
-    submitter,
-    didIdentifier,
-    keys: publicKeys,
-    alg: getSignatureAlgForKeyType(authenticationKey.type),
-    signingPublicKey: authenticationKey.publicKey,
-    endpoints,
-  })
-  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
-  return { extrinsic, did }
-}
-
-export function writeDidFromIdentity(
-  identity: IIdentity,
-  submitter: IIdentity['address']
-): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
-  const { signKeyringPair } = identity
-  const signer: KeystoreSigner = {
-    sign: ({ data }) =>
-      Promise.resolve({
-        data: signKeyringPair.sign(data),
-        alg: getSignatureAlgForKeyType(signKeyringPair.type) as any,
-      }),
-  }
-  return writeDidFromPublicKeys(signer, submitter, {
-    [KeyRelationship.authentication]: signKeyringPair,
-    [KeyRelationship.keyAgreement]: { ...identity.boxKeyPair, type: 'x25519' },
-  })
-}
-
-export async function signWithKey(
-  toSign: Uint8Array | string,
-  key: IDidKey,
-  signer: KeystoreSigner
-): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
-  const alg = getSignatureAlgForKeyType(key.type)
-  const { data: signature } = await signer.sign({
-    publicKey: Crypto.coToUInt8(key.publicKeyHex),
-    alg,
-    data: Crypto.coToUInt8(toSign),
-  })
-  return { keyId: key.id, signature, alg }
-}
-
-export async function signWithDid(
-  toSign: Uint8Array | string,
-  did: IDid,
-  signer: KeystoreSigner,
-  whichKey: KeyRelationship | IDidKey['id']
-): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
-  let key: IDidKey | undefined
-  if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
-    // eslint-disable-next-line prefer-destructuring
-    key = did.getKeys(KeyRelationship.authentication)[0]
-  } else {
-    key = did.getKey(whichKey)
-  }
-  if (!key) {
-    throw Error(
-      `failed to find key on FullDidDetails (${did.did}): ${whichKey}`
-    )
-  }
-  return signWithKey(toSign, key, signer)
-}
-
-export async function getDidAuthenticationSignature(
-  toSign: Uint8Array | string,
-  did: IDid,
-  signer: KeystoreSigner
-): Promise<DidSignature> {
-  const { keyId, signature } = await signWithDid(
-    toSign,
-    did,
-    signer,
-    KeyRelationship.authentication
-  )
-  return { keyId, signature: Crypto.u8aToHex(signature) }
-}
-
-export function assembleDidFragment(
-  didUri: IDid['did'],
-  fragmentId: string
-): string {
-  return `${didUri}#${fragmentId}`
-}
-
-// This function is tested in the DID integration tests, in the `DID migration` test case.
-export async function upgradeDid(
-  lightDid: LightDid,
-  submitter: IDidIdentifier,
-  signer: KeystoreSigner
-): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
-  const didAuthenticationKey = lightDid.getKeys(
-    KeyRelationship.authentication
-  )[0]
-  const didEncryptionKey = lightDid.getKeys(KeyRelationship.keyAgreement)[0]
-
-  const newDidPublicKeys: PublicKeyRoleAssignment = {
-    authentication: {
-      publicKey: hexToU8a(didAuthenticationKey.publicKeyHex),
-      type: didAuthenticationKey.type,
-    },
-  }
-  if (didEncryptionKey) {
-    newDidPublicKeys.keyAgreement = {
-      publicKey: hexToU8a(didEncryptionKey.publicKeyHex),
-      type: didEncryptionKey.type,
-    }
-  }
-
-  return writeDidFromPublicKeysAndServices(
-    signer,
-    submitter,
-    newDidPublicKeys,
-    lightDid.getEndpoints()
-  )
-}
+// export function assembleDidFragment(
+//   didUri: IDidDetails['did'],
+//   fragmentId: string
+// ): string {
+//   return `${didUri}#${fragmentId}`
+// }

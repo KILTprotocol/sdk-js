@@ -23,7 +23,7 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   IDidDetails,
-  IDidResolvedDetails,
+  DidResolvedDetails,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import {
@@ -62,7 +62,7 @@ describe('Claim', () => {
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
       didUri: string
-    ): Promise<IDidResolvedDetails | null> => {
+    ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {

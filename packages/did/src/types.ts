@@ -7,13 +7,11 @@
 
 import type {
   Deposit,
-  IIdentity,
-  IDidKeyDetails,
+  DidKey,
   IDidDetails,
-  IDidServiceEndpoint,
+  DidServiceEndpoint,
   KeyRelationship,
-  IDidKey,
-  IDid,
+  IDidIdentifier,
 } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import type { AnyNumber } from '@polkadot/types/types'
@@ -47,7 +45,9 @@ export type IDidParsingResult = {
   encodedDetails?: string
 }
 
-export type MapKeyToRelationship = Partial<Record<KeyRelationship, string[]>>
+export type MapKeyToRelationship = Partial<
+  Record<KeyRelationship, Array<DidKey['id']>>
+>
 
 export interface INewPublicKey<T extends string = string> {
   publicKey: Uint8Array
@@ -55,16 +55,18 @@ export interface INewPublicKey<T extends string = string> {
 }
 
 export type PublicKeyRoleAssignment = Partial<
-  Record<KeyRelationship, INewPublicKey>
+  Record<
+    KeyRelationship,
+    Pick<DidKey, 'includedAt' | 'publicKeyHex' | 'type'> & { id: string }
+  >
 >
 
 export interface IDidChainRecordJSON {
-  did: IIdentity['address']
-  authenticationKey: IDidKeyDetails['id']
-  keyAgreementKeys: Array<IDidKeyDetails['id']>
-  capabilityDelegationKey?: IDidKeyDetails['id']
-  assertionMethodKey?: IDidKeyDetails['id']
-  publicKeys: IDidKeyDetails[]
+  authenticationKey: DidKey['id']
+  keyAgreementKeys: Array<DidKey['id']>
+  capabilityDelegationKey?: DidKey['id']
+  assertionMethodKey?: DidKey['id']
+  publicKeys: DidKey[]
   lastTxCounter: u64
 }
 
@@ -78,18 +80,11 @@ export interface DidSigned<PayloadType> {
   signature: SignatureEnum
 }
 
-export interface IDidCreationOptions {
-  didIdentifier: IIdentity['address']
-  submitter: IIdentity['address']
-  keys?: PublicKeyRoleAssignment
-  endpoints?: IDidServiceEndpoint[]
-}
-
 export interface IAuthorizeCallOptions {
-  didIdentifier: IIdentity['address']
+  didIdentifier: IDidIdentifier
   txCounter: AnyNumber
   call: Extrinsic
-  submitter: IIdentity['address']
+  submitter: IDidIdentifier
   blockNumber: AnyNumber
 }
 
@@ -160,16 +155,16 @@ export interface IServiceEndpointChainRecordCodec extends Struct {
   urls: Vec<Text>
 }
 
-export interface DidCreationDetails extends Struct {
-  did: DidIdentifier
+export interface IDidCreationDetails extends Struct {
+  did: IDidIdentifier
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
   newAttestationKey: Option<DidVerificationKey>
   newDelegationKey: Option<DidVerificationKey>
   newServiceDetails: Vec<IServiceEndpointChainRecordCodec>
 }
 
-export interface DidAuthorizedCallOperation extends Struct {
-  did: DidIdentifier
+export interface IDidAuthorizedCallOperation extends Struct {
+  did: IDidIdentifier
   txCounter: u64
   call: Call
   submitter: AccountId
@@ -178,25 +173,25 @@ export interface DidAuthorizedCallOperation extends Struct {
 
 export type JsonDidDocument = {
   id: IDidDetails['did']
-  verificationMethod: Pick<IDidKeyDetails, 'id' | 'controller' | 'type'> & {
+  verificationMethod: Pick<DidKey, 'id' | 'controller' | 'type'> & {
     publicKeyBase58: string
   }
   authentication: string[]
   assertionMethod?: string[]
   keyAgreement?: string[]
   capabilityDelegation?: string[]
-  serviceEndpoints?: IDidServiceEndpoint[]
+  serviceEndpoints?: DidServiceEndpoint[]
 }
 
 export type JsonLDDidDocument = JsonDidDocument & { '@context': string[] }
 
-export type DidCreationOptions = {
-  did: IDid['did']
+export type DidCreationDetails = {
+  did: IDidDetails['did']
   // Accepts a list of keys where the ID does not include the DID URI.
-  keys: Array<Omit<IDidKey, 'id'> & { id: string }>
+  keys: Array<Omit<DidKey, 'id'> & { id: string }>
   keyRelationships: MapKeyToRelationship
   // Accepts a list of service endpoints where the ID does not include the DID URI.
-  serviceEndpoints: Array<Omit<IDidServiceEndpoint, 'id'> & { id: string }>
+  serviceEndpoints: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>
 }
 
 /**
@@ -207,12 +202,12 @@ export type LightDidCreationDetails = {
    * The DID authentication key. This is mandatory and will be used as the first authentication key
    * of the full DID upon migration.
    */
-  authenticationKey: INewPublicKey
+  authenticationKey: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
   /**
    * The optional DID encryption key. If present, it will be used as the first key agreement key
    * of the full DID upon migration.
    */
-  encryptionKey?: INewPublicKey
+  encryptionKey?: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
@@ -230,7 +225,7 @@ export type LightDidCreationDetails = {
    * RequestForAttestation.fromRequest(parsedRequest);
    * ```
    */
-  serviceEndpoints?: IDidServiceEndpoint[]
+  serviceEndpoints?: DidServiceEndpoint[]
 }
 
 export type FullDidDetailsCreationOpts = {
@@ -239,5 +234,5 @@ export type FullDidDetailsCreationOpts = {
   keys: IDidKeyDetails[]
   keyRelationships: MapKeyToRelationship
   lastTxIndex: BN
-  serviceEndpoints?: IDidServiceEndpoint[]
+  serviceEndpoints?: DidServiceEndpoint[]
 }

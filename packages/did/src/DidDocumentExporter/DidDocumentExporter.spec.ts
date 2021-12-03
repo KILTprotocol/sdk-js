@@ -9,7 +9,7 @@
  * @group unit/did
  */
 
-import { IDidServiceEndpoint, KeyRelationship } from '@kiltprotocol/types'
+import { DidServiceEndpoint, KeyRelationship } from '@kiltprotocol/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import type { IDidKeyDetails } from '@kiltprotocol/types'
 import type {
@@ -58,7 +58,7 @@ describe('Full DID Document exporting tests', () => {
         '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
   ]
-  const serviceEndpoints: IDidServiceEndpoint[] = [
+  const serviceEndpoints: DidServiceEndpoint[] = [
     {
       id: `${did}#id-1`,
       types: ['type-1'],
@@ -274,7 +274,7 @@ describe('Light DID Document exporting tests', () => {
     type: 'ed25519',
   }
   let encryptionDidKeyDetails: INewPublicKey | undefined
-  let serviceEndpoints: IDidServiceEndpoint[]
+  let serviceEndpoints: DidServiceEndpoint[]
 
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, an x25519 encryption key, and two service endpoints', () => {
     encryptionDidKeyDetails = {

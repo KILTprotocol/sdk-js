@@ -14,8 +14,8 @@ import { base58Encode } from '@polkadot/util-crypto'
 import { hexToU8a } from '@polkadot/util'
 
 import type {
-  IDidDocument,
-  IJsonLDDidDocument,
+  DidDocument,
+  JsonLDDidDocument,
   IDidDetails,
   IDidDocumentExporter,
 } from '@kiltprotocol/types'
@@ -25,7 +25,7 @@ import {
   EncryptionKeyTypesMap,
 } from '@kiltprotocol/types'
 
-function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
+function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   const result: any = {}
 
   result.id = details.did
@@ -104,13 +104,13 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
     })
   }
 
-  return result as IDidDocument
+  return result as DidDocument
 }
 
-function exportToJsonLdDidDocument(details: IDidDetails): IJsonLDDidDocument {
+function exportToJsonLdDidDocument(details: IDidDetails): JsonLDDidDocument {
   const document = exportToJsonDidDocument(details)
   document['@context'] = ['https://www.w3.org/ns/did/v1']
-  return document as IJsonLDDidDocument
+  return document as JsonLDDidDocument
 }
 
 /**
@@ -123,7 +123,7 @@ function exportToJsonLdDidDocument(details: IDidDetails): IJsonLDDidDocument {
 export function exportToDidDocument(
   details: IDidDetails,
   mimeType: string
-): IDidDocument {
+): DidDocument {
   switch (mimeType) {
     case 'application/json':
       return exportToJsonDidDocument(details)

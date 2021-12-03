@@ -27,10 +27,10 @@ import {
 } from '@kiltprotocol/chain-helpers'
 import {
   KeyRelationship,
-  IDidServiceEndpoint,
+  DidServiceEndpoint,
   KeyringPair,
   KeystoreSigner,
-  IDidResolvedDetails,
+  DidResolvedDetails,
 } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
@@ -116,10 +116,10 @@ describe('write and didDeleteTx', () => {
     await expect(DidChain.queryDidDetails(did)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
-      did,
+      identifier: did,
     })
     await expect(DidChain.queryServiceEndpoints(did)).resolves.toMatchObject<
-      IDidServiceEndpoint[]
+      DidServiceEndpoint[]
     >([
       {
         id: DidUtils.assembleDidFragment(did, 'test-id-1'),
@@ -134,7 +134,7 @@ describe('write and didDeleteTx', () => {
     ])
     await expect(
       DidChain.queryServiceEndpoint(`${did}#test-id-1`)
-    ).resolves.toMatchObject<IDidServiceEndpoint>({
+    ).resolves.toMatchObject<DidServiceEndpoint>({
       id: DidUtils.assembleDidFragment(did, 'test-id-1'),
       types: ['test-type-1'],
       urls: ['test-url-1'],
@@ -211,7 +211,7 @@ describe('write and didDeleteTx', () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
-      did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+      identifier: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
 
     const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
@@ -272,7 +272,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
     Partial<DidTypes.IDidChainRecordJSON>
   >({
-    did,
+    identifier: did,
   })
 
   const newKeypair = await keystore.generateKeypair({
@@ -308,11 +308,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
     Partial<DidTypes.IDidChainRecordJSON>
   >({
-    did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+    identifier: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
   })
 
   // Add a new service endpoint
-  const newEndpoint: IDidServiceEndpoint = {
+  const newEndpoint: DidServiceEndpoint = {
     id: 'new-endpoint',
     types: ['new-type'],
     urls: ['new-url'],
@@ -336,7 +336,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   ).resolves.not.toThrow()
   await expect(
     DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
-  ).resolves.toMatchObject<IDidServiceEndpoint>({
+  ).resolves.toMatchObject<DidServiceEndpoint>({
     ...newEndpoint,
     id: DidUtils.assembleDidFragment(did, newEndpoint.id),
   })
@@ -426,7 +426,7 @@ describe('DID migration', () => {
 
     const { details, metadata } = (await resolveDoc(
       lightDidDetails.did
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.did).toStrictEqual(lightDidDetails.did)
 
@@ -465,7 +465,7 @@ describe('DID migration', () => {
 
     const { details, metadata } = (await resolveDoc(
       lightDidDetails.did
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.did).toStrictEqual(lightDidDetails.did)
 
@@ -481,7 +481,7 @@ describe('DID migration', () => {
       seed: '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
       alg: EncryptionAlgorithms.NaclBox,
     })
-    const serviceEndpoints: IDidServiceEndpoint[] = [
+    const serviceEndpoints: DidServiceEndpoint[] = [
       {
         id: 'id-1',
         types: ['type-1'],
@@ -521,7 +521,7 @@ describe('DID migration', () => {
     expect(chainDetails?.keyAgreementKeys).toHaveLength(1)
     // The returned service endpoints will have the initial ID, prepended with the full DID identifier.
     await expect(DidChain.queryServiceEndpoints(did)).resolves.toMatchObject<
-      IDidServiceEndpoint[]
+      DidServiceEndpoint[]
     >([
       {
         ...serviceEndpoints[0],
@@ -531,7 +531,7 @@ describe('DID migration', () => {
 
     const { details, metadata } = (await resolveDoc(
       lightDidDetails.did
-    )) as IDidResolvedDetails
+    )) as DidResolvedDetails
 
     expect(details?.did).toStrictEqual(lightDidDetails.did)
     // Verify service endpoints for light DID resolution
@@ -596,7 +596,7 @@ describe('DID authorization', () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
-      did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+      identifier: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
   }, 60_000)
 

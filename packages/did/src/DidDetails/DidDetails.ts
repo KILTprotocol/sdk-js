@@ -5,82 +5,119 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
-import type {
+import {
   IDidDetails,
-  IDidKeyDetails,
-  IDidServiceEndpoint,
+  DidKey,
+  DidServiceEndpoint,
+  KeyRelationship,
+  IDidIdentifier,
+  KeystoreSigner,
+  DidPublicKey,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
-import type { MapKeyToRelationship } from '../types'
+import { Crypto } from '@kiltprotocol/utils'
+import { checkDidCreationDetails } from './DidDetails.utils'
+import type { DidCreationDetails, MapKeyToRelationship } from '../types'
+import { getSignatureAlgForKeyType } from '../Did.utils'
 
-/**
- * An abstract instance for some details associated with a KILT DID.
- */
 export abstract class DidDetails implements IDidDetails {
-  // The complete DID URI, such as did:kilt:<kilt_address> for full DIDs and did:kilt:light:v1:<kilt_address>
-  protected didUri: string
+  public readonly did: IDidDetails['did']
 
-  // The identifier of the DID, meaning either the KILT address for full DIDs or the KILT address + the encoded authentication key type for light DIDs.
-  protected id: string
 
-  // A map from key ID to key details, which allows for efficient retrieval of a key information given its ID.
-  protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails> = new Map()
+  protected publicKeys: Map<string, Omit<DidKey, 'id'>> = new Map()
 
-  // A map from key relationship type (authentication, assertion method, etc.) to key ID, which can then be used to retrieve the key details if needed.
   protected keyRelationships: MapKeyToRelationship & {
-    none?: Array<IDidKeyDetails['id']>
+    none?: Array<DidKey['id']>
   } = {}
 
-  // A map from service endpoint ID to service endpoint details.
-  public services: Map<string, IDidServiceEndpoint> = new Map()
+  protected services: Map<string, Omit<DidServiceEndpoint, 'id'>> = new Map()
 
-  constructor(didUri: string, id: string, services: IDidServiceEndpoint[]) {
-    this.didUri = didUri
-    this.id = id
-    services.forEach((service) => {
-      this.services.set(service.id, service)
+  protected constructor({
+    did,
+    keys,
+    keyRelationships,
+    serviceEndpoints = [],
+  }: DidCreationDetails) {
+    checkDidCreationDetails({
+      did,
+      keys,
+      keyRelationships,
+      serviceEndpoints,
+    })
+    this.did = did
+    keys.forEach(({ id, ...details }) => {
+      this.publicKeys.set(id, details)
+    })
+    this.keyRelationships = keyRelationships
+    serviceEndpoints.forEach(({ id, ...details }) => {
+      this.services.set(id, details)
     })
   }
 
-  public get did(): string {
-    return this.didUri
-  }
+  public abstract get identifier(): IDidIdentifier
 
-  public get identifier(): string {
-    return this.id
-  }
-
-  public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {
-    return this.keys.get(id)
-  }
-
-  public getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[] {
-    if (relationship) {
-      return this.getKeyIds(relationship).map((id) => this.getKey(id)!)
+  public getKey(id: string): DidKey | undefined {
+    const keyDetails = this.publicKeys.get(id)
+    if (!keyDetails) {
+      return undefined
     }
-    return [...this.keys.values()]
-  }
-
-  public getKeyIds(
-    relationship?: KeyRelationship | 'none'
-  ): Array<IDidKeyDetails['id']> {
-    if (relationship) {
-      return this.keyRelationships[relationship] || []
+    return {
+      id,
+      ...keyDetails,
     }
-    return [...this.keys.keys()]
   }
 
-  getEndpointById(id: string): IDidServiceEndpoint | undefined {
-    return this.services.get(id)
+  public getKeys(relationship?: KeyRelationship | 'none'): DidKey[] {
+    const keyIds = relationship
+      ? this.keyRelationships[relationship] || []
+      : [...this.publicKeys.keys()]
+    return keyIds.map((keyId) => this.getKey(keyId) as DidKey)
   }
 
-  getEndpoints(): IDidServiceEndpoint[] {
-    return Array.from(this.services.values())
+  public getEndpoint(id: string): DidServiceEndpoint | undefined {
+    const endpointDetails = this.services.get(id)
+    if (!endpointDetails) {
+      return undefined
+    }
+    return {
+      id,
+      ...endpointDetails,
+    }
   }
 
-  getEndpointsByType(type: string): IDidServiceEndpoint[] {
-    return this.getEndpoints().filter((service) => service.types.includes(type))
+  public getEndpoints(type?: string): DidServiceEndpoint[] {
+    const serviceEndpointsEntries = type
+      ? [...this.services.entries()].filter(([, details]) => {
+          return details.types.includes(type)
+        })
+      : [...this.services.entries()]
+
+    return serviceEndpointsEntries.map(([id, details]) => {
+      return { id, ...details }
+    })
+  }
+
+  public async signPayload(
+    signer: KeystoreSigner,
+    payload: Uint8Array | string,
+    keyId: DidKey['id']
+  ): Promise<{
+    keyId: DidPublicKey['id']
+    alg: string
+    signature: Uint8Array
+  }> {
+    const key = this.getKey(keyId)
+    if (!key) {
+      throw Error(`failed to find key with ID ${keyId} on DID (${this.did})`)
+    }
+    const alg = getSignatureAlgForKeyType(key.type)
+    if (!alg) {
+      throw new Error(`No algorithm found for key type ${key.type}`)
+    }
+    const { data: signature } = await signer.sign({
+      publicKey: key.publicKey,
+      alg,
+      data: Crypto.coToUInt8(payload),
+    })
+    return { keyId: key.id, signature, alg }
   }
 }
