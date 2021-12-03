@@ -9,11 +9,10 @@
  * @packageDocumentation
  * @module IIdentity
  */
-import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type { BoxKeyPair } from 'tweetnacl'
 import type { Index } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import type { KeyringPair } from '.'
+import type { KeyringPair, SubmittableExtrinsic } from '.'
 
 export interface IIdentity {
   readonly signKeyringPair: KeyringPair

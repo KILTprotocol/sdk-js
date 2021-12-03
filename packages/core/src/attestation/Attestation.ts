@@ -18,12 +18,12 @@
  * @preferred
  */
 
-import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type {
   IAttestation,
   IDelegationHierarchyDetails,
   IRequestForAttestation,
   CompressedAttestation,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import {
