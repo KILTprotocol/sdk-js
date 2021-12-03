@@ -7,25 +7,9 @@
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { encodeAddress } from '@polkadot/util-crypto'
-import { hexToU8a } from '@polkadot/util'
-import type {
-  DidKey,
-  DidServiceEndpoint,
-  IIdentity,
-  KeystoreSigner,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
-import type { LightDidCreationDetails, PublicKeyRoleAssignment } from '../types'
-import {
-  getEncodingForSigningKeyType,
-  getKiltDidFromIdentifier,
-  getSignatureAlgForKeyType,
-  parseDidUrl,
-} from '../Did.utils'
-import { LightDidDetails } from './LightDidDetails'
-import { generateCreateTx } from '../Did.chain'
+import type { DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
+import type { LightDidCreationDetails } from '../types'
+import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'

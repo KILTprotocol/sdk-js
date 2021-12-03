@@ -22,7 +22,6 @@ import { getSignatureAlgForKeyType } from '../Did.utils'
 export abstract class DidDetails implements IDidDetails {
   public readonly did: IDidDetails['did']
 
-
   protected publicKeys: Map<string, Omit<DidKey, 'id'>> = new Map()
 
   protected keyRelationships: MapKeyToRelationship & {

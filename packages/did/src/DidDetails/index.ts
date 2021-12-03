@@ -6,7 +6,5 @@
  */
 
 export { DidDetails } from './DidDetails'
-export * from './DidDetails.utils'
-export { FullDidDetails } from './FullDidDetails'
-export * from './FullDidDetails.utils'
 export { LightDidDetails } from './LightDidDetails'
+export { FullDidDetails } from './FullDidDetails'

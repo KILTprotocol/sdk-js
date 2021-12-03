@@ -18,7 +18,7 @@ import {
 } from '@polkadot/util-crypto'
 import { Crypto, Keyring } from '@kiltprotocol/utils'
 import {
-  IDidKeyDetails,
+  DidKey,
   KeyRelationship,
   KeyringPair,
   Keystore,
@@ -34,7 +34,6 @@ import { getKiltDidFromIdentifier } from '../Did.utils'
 import { FullDidDetails, LightDidDetails } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
 import { INewPublicKey, PublicKeyRoleAssignment } from '../types'
-import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -299,7 +298,7 @@ export async function createLocalDemoDidFromSeed(
     derivation: string,
     alg: string,
     keytype: string
-  ): Promise<IDidKeyDetails> => {
+  ): Promise<DidKey> => {
     const seed = derivation
       ? `${mnemonicOrHexSeed}//${derivation}`
       : mnemonicOrHexSeed
@@ -310,9 +309,8 @@ export async function createLocalDemoDidFromSeed(
     })
     return {
       id: keyId,
-      controller: did,
       type: keytype,
-      publicKeyHex: Crypto.u8aToHex(publicKey),
+      publicKey,
     }
   }
 

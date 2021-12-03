@@ -55,10 +55,7 @@ export interface INewPublicKey<T extends string = string> {
 }
 
 export type PublicKeyRoleAssignment = Partial<
-  Record<
-    KeyRelationship,
-    Pick<DidKey, 'includedAt' | 'publicKeyHex' | 'type'> & { id: string }
-  >
+  Record<KeyRelationship, Set<DidKey>>
 >
 
 export interface IDidChainRecordJSON {

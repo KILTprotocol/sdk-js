@@ -7,7 +7,7 @@
 
 import {
   DidKey,
-  IIdentity,
+  IDidIdentifier,
   KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
@@ -19,7 +19,7 @@ import {
   getKiltDidFromIdentifier,
   getSignatureAlgForKeyType,
 } from '../Did.utils'
-import { DidCreationOptions, MapKeyToRelationship } from '../types'
+import { DidCreationDetails, MapKeyToRelationship } from '../types'
 import {
   generateDidAuthenticatedTx,
   queryById,
@@ -38,9 +38,15 @@ export class FullDidDetails extends DidDetails {
   /// The latest version for KILT full DIDs.
   public static readonly FULL_DID_LATEST_VERSION = 1
 
+  public readonly identifier: IDidIdentifier
+
   // eslint-disable-next-line no-useless-constructor
-  private constructor(creationOptions: DidCreationOptions) {
-    super(creationOptions)
+  private constructor(
+    identifier: IDidIdentifier,
+    creationDetails: DidCreationDetails
+  ) {
+    super(creationDetails)
+    this.identifier = identifier
   }
 
   // This is used to re-create a full DID from the chain.
@@ -49,6 +55,13 @@ export class FullDidDetails extends DidDetails {
   ): Promise<FullDidDetails | null> {
     const didRec = await queryById(didIdentifier)
     if (!didRec) return null
+
+    const didUri = getKiltDidFromIdentifier(
+      didIdentifier,
+      'full',
+      FullDidDetails.FULL_DID_LATEST_VERSION
+    )
+
     const {
       publicKeys,
       assertionMethodKey,
@@ -70,15 +83,9 @@ export class FullDidDetails extends DidDetails {
       ]
     }
 
-    const didUri = getKiltDidFromIdentifier(
-      didIdentifier,
-      'full',
-      FullDidDetails.FULL_DID_LATEST_VERSION
-    )
-
     const endpoints = await queryServiceEndpoints(didUri)
 
-    return new FullDidDetails({
+    return new FullDidDetails(didIdentifier, {
       did: didUri,
       keys: publicKeys,
       keyRelationships,
@@ -106,7 +113,7 @@ export class FullDidDetails extends DidDetails {
     }
     return generateDidAuthenticatedTx({
       didIdentifier: getIdentifierFromKiltDid(this.did),
-      signingPublicKey: signingKey.publicKeyHex,
+      signingPublicKey: signingKey.publicKey,
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,

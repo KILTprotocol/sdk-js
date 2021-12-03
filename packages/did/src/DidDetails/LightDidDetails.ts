@@ -6,7 +6,6 @@
  */
 
 import { encodeAddress } from '@polkadot/util-crypto'
-import { Crypto } from '@kiltprotocol/utils'
 import {
   IDidIdentifier,
   DidKey,
@@ -15,7 +14,6 @@ import {
   KeyRelationship,
 } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { IS_IN_BLOCK } from 'chain-helpers/src/blockchain/Blockchain.utils'
 import type {
   DidCreationDetails,
   LightDidCreationDetails,
@@ -23,7 +21,6 @@ import type {
 } from '../types'
 import {
   getEncodingForSigningKeyType,
-  getIdentifierFromKiltDid,
   getKiltDidFromIdentifier,
   getSignatureAlgForKeyType,
 } from '../Did.utils'
@@ -45,12 +42,13 @@ export class LightDidDetails extends DidDetails {
 
   public readonly identifier: IDidIdentifier
 
-  private constructor(creationDetails: DidCreationDetails) {
+  private constructor(
+    identifier: IDidIdentifier,
+    creationDetails: DidCreationDetails
+  ) {
     super(creationDetails)
 
-    const identifier = getIdentifierFromKiltDid(creationDetails.did)
-    // The first two characters represent the key encoding info, so we remove them from the main identifier.
-    this.identifier = identifier.substring(2)
+    this.identifier = identifier
   }
 
   public static fromDetails({
@@ -91,7 +89,7 @@ export class LightDidDetails extends DidDetails {
     }
 
     // Authentication key always has the #authentication ID.
-    const keys: Array<Omit<DidKey, 'id'> & { id: string }> = [
+    const keys: DidKey[] = [
       mergeKeyAndKeyId(authenticationKeyId, authenticationKey),
     ]
     const keyRelationships: MapKeyToRelationship = {
@@ -104,7 +102,7 @@ export class LightDidDetails extends DidDetails {
       keyRelationships.keyAgreement = [encryptionKeyId]
     }
 
-    return new LightDidDetails({
+    return new LightDidDetails(id.substring(2), {
       did,
       keys,
       keyRelationships,
@@ -134,7 +132,7 @@ export class LightDidDetails extends DidDetails {
     })
     await BlockchainUtils.signAndSubmitTx(creationTx, submitter, {
       reSign: true,
-      resolveOn: IS_IN_BLOCK,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
     const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
     if (!fullDidDetails) {

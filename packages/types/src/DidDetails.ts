@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { DidPublicKey } from './DidDocumentExporter'
 import { IIdentity } from './Identity'
 
 /**
@@ -112,4 +113,4 @@ export interface IDidDetails {
 /**
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
-export type DidSignature = { keyId: string; signature: string }
+export type DidSignature = { keyId: DidPublicKey['id']; signature: string }
