@@ -43,8 +43,8 @@ export abstract class DidDetails implements IDidDetails {
       serviceEndpoints,
     })
     this.did = did
-    keys.forEach(({ id, ...details }) => {
-      this.publicKeys.set(id, details)
+    Object.entries(keys).forEach(([keyId, key]) => {
+      this.publicKeys.set(keyId, key)
     })
     this.keyRelationships = keyRelationships
     serviceEndpoints.forEach(({ id, ...details }) => {

@@ -31,7 +31,7 @@ import {
   mergeKeyAndKeyId,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
-import { generateCreateTx } from '../Did.chain'
+import { generateCreateTxFromDidDetails } from '../Did.chain'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
@@ -125,11 +125,15 @@ export class LightDidDetails extends DidDetails {
     submitter: IIdentity,
     signer: KeystoreSigner
   ): Promise<FullDidDetails> {
-    const creationTx = await generateCreateTx(this, submitter.address, {
-      alg: getSignatureAlgForKeyType(this.authenticationKey.type),
-      signingPublicKey: this.authenticationKey.publicKey,
-      signer,
-    })
+    const creationTx = await generateCreateTxFromDidDetails(
+      this,
+      submitter.address,
+      {
+        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
+        signingPublicKey: this.authenticationKey.publicKey,
+        signer,
+      }
+    )
     await BlockchainUtils.signAndSubmitTx(creationTx, submitter, {
       reSign: true,
       resolveOn: BlockchainUtils.IS_IN_BLOCK,

@@ -9,34 +9,14 @@ import type {
   DidSignature,
   IDidDetails,
   IDidResolver,
-  IIdentity,
   DidKey,
-  KeystoreSigner,
-  SubmittableExtrinsic,
   VerificationKeyRelationship,
-  DidServiceEndpoint,
-  IDidIdentifier,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
-import type { Registry } from '@polkadot/types/types'
-import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
+import { checkAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
-import type {
-  PublicKeyEnum,
-  IAuthorizeCallOptions,
-  IDidAuthorizedCallOperation,
-  IDidCreationDetails,
-  DidPublicKey,
-  INewPublicKey,
-  PublicKeyRoleAssignment,
-  IDidParsingResult,
-  IServiceEndpointChainRecordCodec,
-  DidCreationDetails,
-} from './types'
-import { generateCreateTx } from './Did.chain'
-import { DidDetails } from '.'
+import type { PublicKeyEnum, IDidParsingResult } from './types'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -226,35 +206,6 @@ export function formatPublicKey(key: DidKey): PublicKeyEnum {
   return { [type]: publicKey }
 }
 
-export function encodeDidCreationOperation(
-  registry: Registry,
-  { did, keys = {}, keyRelatiosendpoints = [] }: DidCreationDetails
-): IDidCreationDetails {
-  const {
-    [KeyRelationship.assertionMethod]: assertionMethodKey,
-    [KeyRelationship.capabilityDelegation]: delegationKey,
-    [KeyRelationship.keyAgreement]: encryptionKey,
-  } = keys
-  // build did create object
-  const didCreateRaw = {
-    did: didIdentifier,
-    submitter,
-    newKeyAgreementKeys: encryptionKey ? [formatPublicKey(encryptionKey)] : [],
-    newAttestationKey: assertionMethodKey
-      ? formatPublicKey(assertionMethodKey)
-      : undefined,
-    newDelegationKey: delegationKey
-      ? formatPublicKey(delegationKey)
-      : undefined,
-    newServiceDetails: endpoints.map((service) => {
-      const { id, urls } = service
-      return { id, urls, serviceTypes: service.types }
-    }),
-  }
-  return new (registry.getOrThrow<IDidCreationDetails>(
-    'DidDidDetailsDidCreationDetails'
-  ))(registry, didCreateRaw)
-}
 
 export type VerificationResult = {
   verified: boolean

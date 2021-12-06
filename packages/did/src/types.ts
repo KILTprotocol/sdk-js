@@ -185,7 +185,7 @@ export type JsonLDDidDocument = JsonDidDocument & { '@context': string[] }
 export type DidCreationDetails = {
   did: IDidDetails['did']
   // Accepts a list of keys where the ID does not include the DID URI.
-  keys: Array<Omit<DidKey, 'id'> & { id: string }>
+  keys: Map<DidKey['id'], Omit<DidKey, 'id'>>
   keyRelationships: MapKeyToRelationship
   // Accepts a list of service endpoints where the ID does not include the DID URI.
   serviceEndpoints: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>

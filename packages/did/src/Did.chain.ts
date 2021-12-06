@@ -292,8 +292,70 @@ export async function queryDidDeletionStatus(
 
 // ### EXTRINSICS
 
-export async function generateCreateTx(
+export async function generateCreateTxFromDidDetails(
   did: DidDetails,
+  submitterAddress: IIdentity['address'],
+  signingOptions: KeystoreSigningOptions
+): Promise<SubmittableExtrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const { signer, signingPublicKey, alg } = signingOptions
+
+  const newKeyAgreementKeys: PublicKeyEnum[] = did
+    .getKeys(KeyRelationship.keyAgreement)
+    .map((key) => {
+      return formatPublicKey(key)
+    })
+
+  // For now, it only takes the first attestation key, if present.
+  const newAttestationKey: PublicKeyEnum | undefined =
+    did
+      .getKeys(KeyRelationship.assertionMethod)
+      .map((key) => {
+        return formatPublicKey(key)
+      })
+      .pop() || undefined
+
+  // For now, it only takes the first delegation key, if present.
+  const newDelegationKey: PublicKeyEnum | undefined =
+    did
+      .getKeys(KeyRelationship.capabilityDelegation)
+      .map((key) => {
+        return formatPublicKey(key)
+      })
+      .pop() || undefined
+
+  const newServiceDetails = did.getEndpoints().map((service) => {
+    const { id, urls } = service
+    return { id, urls, serviceTypes: service.types }
+  })
+
+  const rawCreationDetails = {
+    did: did.identifier,
+    submitter: submitterAddress,
+    newKeyAgreementKeys,
+    newAttestationKey,
+    newDelegationKey,
+    newServiceDetails,
+  }
+
+  const encodedDidCreationDetails =
+    new (api.registry.getOrThrow<IDidCreationDetails>(
+      'DidDidDetailsDidCreationDetails'
+    ))(api.registry, rawCreationDetails)
+
+  const signature = await signer.sign({
+    data: encodedDidCreationDetails.toU8a(),
+    meta: {},
+    publicKey: Crypto.coToUInt8(signingPublicKey),
+    alg,
+  })
+  return api.tx.did.create(encodedDidCreationDetails, {
+    [signature.alg]: signature.data,
+  })
+}
+
+export async function generateCreateTxFromCreationDetails(
+  creationDetails: IDidCreationDetails,
   submitterAddress: IIdentity['address'],
   signingOptions: KeystoreSigningOptions
 ): Promise<SubmittableExtrinsic> {

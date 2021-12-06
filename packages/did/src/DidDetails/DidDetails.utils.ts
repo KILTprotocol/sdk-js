@@ -15,7 +15,7 @@ export function checkDidCreationDetails({
   keyRelationships,
 }: DidCreationDetails): void {
   validateKiltDid(did, false)
-  const keyIds = new Set(Object.values(keys).map((key) => key.id))
+  const keyIds = new Set(Object.keys(keys))
   if (keyRelationships[KeyRelationship.authentication]?.length !== 1) {
     throw Error(
       `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`
