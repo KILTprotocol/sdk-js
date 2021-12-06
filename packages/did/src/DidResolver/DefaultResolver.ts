@@ -130,7 +130,25 @@ export async function resolveDoc(
   switch (type) {
     case 'full': {
       const details = await queryFullDetailsFromIdentifier(identifier, version)
-      return { details } as IDidResolvedDetails
+      // If the details are found, return those details.
+      if (details) {
+        return {
+          details,
+          metadata: {
+            deactivated: false,
+          },
+        }
+      }
+      // If not, check whether the DID has been deleted or simply does not exist.
+      const isDeactivated = await queryDidDeletionStatus(did)
+      if (isDeactivated) {
+        return {
+          metadata: {
+            deactivated: true,
+          },
+        }
+      }
+      return null
     }
     case 'light': {
       let details: LightDidDetails
@@ -143,9 +161,7 @@ export async function resolveDoc(
       } catch {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
       }
-      const didResolvedDetails: IDidResolvedDetails = {
-        details,
-      }
+
       // LightDID identifier has two leading characters indicating the authentication key type.
       const fullDidIdentifier = identifier.substring(2)
       const fullDidUri = getKiltDidFromIdentifier(fullDidIdentifier, 'full')
@@ -153,24 +169,34 @@ export async function resolveDoc(
       const fullDidDetails = await queryFullDetailsFromIdentifier(
         fullDidIdentifier
       )
-      // If a full DID with same identifier is present, add resolution metadata linking to that.
+      // If a full DID with same identifier is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
-        didResolvedDetails.metadata = {
-          canonicalId: fullDidUri,
-          deleted: false,
-        }
-      } else {
-        // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
-        const isFullDidDeleted = await queryDidDeletionStatus(fullDidUri)
-        if (isFullDidDeleted) {
-          didResolvedDetails.metadata = {
+        return {
+          details,
+          metadata: {
             canonicalId: fullDidUri,
-            deleted: true,
-          }
+            deactivated: false,
+          },
         }
       }
-      // If no full DID details nor deletion info is found, the light DID is un-migrated, so no resolution metadata is returned.
-      return didResolvedDetails
+      // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
+      const isFullDidDeleted = await queryDidDeletionStatus(fullDidUri)
+      if (isFullDidDeleted) {
+        return {
+          // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
+          metadata: {
+            deactivated: true,
+          },
+        }
+      }
+      // If no full DID details nor deletion info is found, the light DID is un-migrated.
+      // Metadata will simply contain `deactivated: false`.
+      return {
+        details,
+        metadata: {
+          deactivated: false,
+        },
+      }
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(did)
@@ -201,7 +227,7 @@ export async function resolveKey(
       if (!resolvedDetails) {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      return resolvedDetails.details.getKey(didUri) || null
+      return resolvedDetails.details?.getKey(didUri) || null
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
@@ -233,7 +259,7 @@ export async function resolveServiceEndpoint(
       if (!resolvedDetails) {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      return resolvedDetails.details.getEndpointById(didUri) || null
+      return resolvedDetails.details?.getEndpointById(didUri) || null
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)

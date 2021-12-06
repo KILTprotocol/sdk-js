@@ -295,9 +295,10 @@ await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, attester, {
 })
 
 // The resolved full DID
-const attesterFullDid = await Did.DefaultResolver.resolveDoc(did)
+  const attesterFullDid = (await Kilt.Did.resolveDoc(fullDid.did))
+    ?.details as IDidDetails
 
-console.log('Full DID', attesterFullDid.details)
+console.log('Full DID', attesterFullDid)
 
 // Example of a full did:
 {

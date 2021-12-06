@@ -278,7 +278,9 @@ describe('Attestation', () => {
 
     expect(() =>
       AttestationUtils.errorCheck(malformedAddress)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_ADDRESS_INVALID())
+    ).toThrowErrorWithCode(
+      SDKErrors.ERROR_INVALID_DID_FORMAT(malformedAddress.owner)
+    )
   })
   it('Typeguard should return true on complete Attestations', () => {
     const attestation = Attestation.fromRequestAndDid(

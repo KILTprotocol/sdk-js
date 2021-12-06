@@ -17,6 +17,7 @@ import type {
   ICType,
   IDidDetails,
   IDidResolver,
+  IDidResolvedDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import {
@@ -137,28 +138,32 @@ describe('RequestForAttestation', () => {
   let migratedAndDeletedFullDid: IDidDetails
 
   const mockResolver: IDidResolver = (() => {
-    const resolve = async (didUri: string) => {
+    const resolve = async (
+      didUri: string
+    ): Promise<IDidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
         case identityAlice.did:
-          return { details: identityAlice }
+          return { details: identityAlice, metadata: { deactivated: false } }
         case identityBob.did:
-          return { details: identityBob }
+          return { details: identityBob, metadata: { deactivated: false } }
         case identityCharlie.did:
-          return { details: identityCharlie }
+          return { details: identityCharlie, metadata: { deactivated: false } }
         case identityDave.did:
-          return { details: identityDave }
+          return { details: identityDave, metadata: { deactivated: false } }
         case migratedAndDeletedLightDid.did:
           return {
-            details: migratedAndDeletedLightDid,
             metadata: {
-              canonicalId: migratedAndDeletedFullDid.did,
-              deleted: true,
+              deactivated: true,
             },
           }
         case migratedAndDeletedFullDid.did:
-          return null
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
         default:
           return null
       }
@@ -382,7 +387,9 @@ describe('create presentation', () => {
   let attestation: Attestation
 
   const mockResolver: IDidResolver = (() => {
-    const resolve = async (didUri: string) => {
+    const resolve = async (
+      didUri: string
+    ): Promise<IDidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
@@ -391,25 +398,33 @@ describe('create presentation', () => {
             details: migratedClaimerLightDid,
             metadata: {
               canonicalId: migratedClaimerFullDid.did,
-              deleted: false,
+              deactivated: false,
             },
           }
         case migratedThenDeletedClaimerLightDid.did:
           return {
-            details: migratedThenDeletedClaimerLightDid,
             metadata: {
-              canonicalId: migratedThenDeletedClaimerFullDid.did,
-              deleted: true,
+              deactivated: true,
             },
           }
         case migratedThenDeletedClaimerFullDid.did:
-          return null
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
         case unmigratedClaimerLightDid.did:
-          return { details: unmigratedClaimerLightDid }
+          return {
+            details: unmigratedClaimerLightDid,
+            metadata: { deactivated: false },
+          }
         case migratedClaimerFullDid.did:
-          return { details: migratedClaimerFullDid }
+          return {
+            details: migratedClaimerFullDid,
+            metadata: { deactivated: false },
+          }
         case attester.did:
-          return { details: attester }
+          return { details: attester, metadata: { deactivated: false } }
         default:
           return null
       }
@@ -640,9 +655,7 @@ describe('create presentation', () => {
       Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"Addresses expected to be equal mismatched"'
-    )
+    ).resolves.toBeFalsy()
   })
 
   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {

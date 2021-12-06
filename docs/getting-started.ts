@@ -7,12 +7,11 @@
 
 /* eslint-disable no-console */
 import * as Kilt from '@kiltprotocol/sdk-js'
-import { KeyRelationship } from '@kiltprotocol/sdk-js'
+import { IDidDetails, KeyRelationship } from '@kiltprotocol/sdk-js'
 import type {
   SubmittableExtrinsic,
   IRequestForAttestation,
   MessageBody,
-  IDidResolvedDetails,
   IDidKeyDetails,
 } from '@kiltprotocol/sdk-js'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
@@ -136,9 +135,8 @@ async function main(): Promise<void> {
   console.log(requestForAttestation)
 
   /* Before we can send the request for an attestation to an Attester, we should first fetch the on chain did and create an encryption key. */
-  const attesterFullDid = (await Kilt.Did.resolveDoc(
-    fullDid.did
-  )) as IDidResolvedDetails
+  const attesterFullDid = (await Kilt.Did.resolveDoc(fullDid.did))
+    ?.details as IDidDetails
 
   /* Creating an encryption key */
 
@@ -150,13 +148,13 @@ async function main(): Promise<void> {
   const message = new Kilt.Message(
     messageBody,
     claimerLightDid.did,
-    attesterFullDid.details.did
+    attesterFullDid.did
   )
 
   /* The complete `message` looks as follows: */
   console.log(message)
 
-  const attesterEncryptionKey = attesterFullDid.details.getKeys(
+  const attesterEncryptionKey = attesterFullDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
 
@@ -181,7 +179,7 @@ async function main(): Promise<void> {
     /* The Attester creates the attestation based on the IRequestForAttestation object she received: */
     const attestation = Kilt.Attestation.fromRequestAndDid(
       extractedRequestForAttestation,
-      attesterFullDid.details.did
+      attesterFullDid.did
     )
 
     /* The complete `attestation` object looks as follows: */
@@ -214,7 +212,7 @@ async function main(): Promise<void> {
     }
     const messageBack = new Kilt.Message(
       messageBodyBack,
-      attesterFullDid.details.did,
+      attesterFullDid.did,
       claimerLightDid.did
     )
 
