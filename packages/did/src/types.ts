@@ -49,11 +49,6 @@ export type MapKeyToRelationship = Partial<
   Record<KeyRelationship, Array<DidKey['id']>>
 >
 
-export interface INewPublicKey<T extends string = string> {
-  publicKey: Uint8Array
-  type: T
-}
-
 export type PublicKeyRoleAssignment = Partial<
   Record<KeyRelationship, Set<DidKey>>
 >
@@ -181,49 +176,6 @@ export type JsonDidDocument = {
 }
 
 export type JsonLDDidDocument = JsonDidDocument & { '@context': string[] }
-
-export type DidCreationDetails = {
-  did: IDidDetails['did']
-  // Accepts a list of keys where the ID does not include the DID URI.
-  keys: Map<DidKey['id'], Omit<DidKey, 'id'>>
-  keyRelationships: MapKeyToRelationship
-  // Accepts a list of service endpoints where the ID does not include the DID URI.
-  serviceEndpoints: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>
-}
-
-/**
- * The options that can be used to create a light DID.
- */
-export type LightDidCreationDetails = {
-  /**
-   * The DID authentication key. This is mandatory and will be used as the first authentication key
-   * of the full DID upon migration.
-   */
-  authenticationKey: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
-  /**
-   * The optional DID encryption key. If present, it will be used as the first key agreement key
-   * of the full DID upon migration.
-   */
-  encryptionKey?: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
-  /**
-   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
-   * The service ID must not contain the DID prefix when used to create a new DID.
-   *
-   * @example ```typescript
-   * const authenticationKey = exampleKey;
-   * const services = [
-   *   {
-   *     id: 'test-service',
-   *     types: ['CredentialExposureService'],
-   *     urls: ['http://my_domain.example.org'],
-   *   },
-   * ];
-   * const lightDid = new LightDid({ authenticationKey, services });
-   * RequestForAttestation.fromRequest(parsedRequest);
-   * ```
-   */
-  serviceEndpoints?: DidServiceEndpoint[]
-}
 
 export type FullDidDetailsCreationOpts = {
   // The full DID URI, following the scheme did:kilt:<kilt_address>

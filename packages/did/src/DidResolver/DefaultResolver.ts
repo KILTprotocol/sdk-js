@@ -7,7 +7,7 @@
 
 import type {
   IDidResolver,
-  IDidKeyDetails,
+  DidKey,
   DidResolvedDetails,
   DidServiceEndpoint,
   IDidDetails,
@@ -29,7 +29,7 @@ import {
   getSigningKeyTypeFromEncoding,
   parseDidUrl,
 } from '../Did.utils'
-import type { IDidParsingResult, LightDidDetailsCreationOpts } from '../types'
+import type { IDidParsingResult } from '../types'
 
 /**
  * Retrieves all the details associated with a DID from the KILT blockchain.

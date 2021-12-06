@@ -355,44 +355,59 @@ export async function generateCreateTxFromDidDetails(
 }
 
 export async function generateCreateTxFromCreationDetails(
-  creationDetails: IDidCreationDetails,
+  creationDetails: Omit<DidCreationDetails, 'did'> & { id: IDidIdentifier },
   submitterAddress: IIdentity['address'],
   signingOptions: KeystoreSigningOptions
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const { signer, signingPublicKey, alg } = signingOptions
 
-  const newKeyAgreementKeys: PublicKeyEnum[] = did
-    .getKeys(KeyRelationship.keyAgreement)
-    .map((key) => {
-      return formatPublicKey(key)
+  const newKeyAgreementKeysIds: Array<DidKey['id']> =
+    creationDetails.keyRelationships.keyAgreement || []
+  const newAttestationKeyId: DidKey['id'] | undefined =
+    creationDetails.keyRelationships.assertionMethod?.pop()
+  const newDelegationKeyId: DidKey['id'] | undefined =
+    creationDetails.keyRelationships.capabilityDelegation?.pop()
+
+  // For now, we only take one attestation and one delegation key.
+  const newKeyAgreementKeys: PublicKeyEnum[] = newKeyAgreementKeysIds.map(
+    (keyId) => {
+      const { type, publicKey } = creationDetails.keys.get(keyId) as DidKey
+      return formatPublicKey({ id: keyId, type, publicKey })
+    }
+  )
+
+  let newAttestationKey: PublicKeyEnum | undefined
+  if (newAttestationKeyId) {
+    const { type, publicKey } = creationDetails.keys.get(
+      newAttestationKeyId
+    ) as DidKey
+    newAttestationKey = formatPublicKey({
+      id: newAttestationKeyId,
+      type,
+      publicKey,
     })
+  }
 
-  // For now, it only takes the first attestation key, if present.
-  const newAttestationKey: PublicKeyEnum | undefined =
-    did
-      .getKeys(KeyRelationship.assertionMethod)
-      .map((key) => {
-        return formatPublicKey(key)
-      })
-      .pop() || undefined
+  let newDelegationKey: PublicKeyEnum | undefined
+  if (newDelegationKeyId) {
+    const { type, publicKey } = creationDetails.keys.get(
+      newDelegationKeyId
+    ) as DidKey
+    newDelegationKey = formatPublicKey({
+      id: newDelegationKeyId,
+      type,
+      publicKey,
+    })
+  }
 
-  // For now, it only takes the first delegation key, if present.
-  const newDelegationKey: PublicKeyEnum | undefined =
-    did
-      .getKeys(KeyRelationship.capabilityDelegation)
-      .map((key) => {
-        return formatPublicKey(key)
-      })
-      .pop() || undefined
-
-  const newServiceDetails = did.getEndpoints().map((service) => {
+  const newServiceDetails = creationDetails.serviceEndpoints.map((service) => {
     const { id, urls } = service
     return { id, urls, serviceTypes: service.types }
   })
 
   const rawCreationDetails = {
-    did: did.identifier,
+    did: creationDetails.id,
     submitter: submitterAddress,
     newKeyAgreementKeys,
     newAttestationKey,

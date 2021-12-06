@@ -12,13 +12,11 @@ import {
   IIdentity,
   KeystoreSigner,
   KeyRelationship,
+  DidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import type {
-  DidCreationDetails,
-  LightDidCreationDetails,
-  MapKeyToRelationship,
-} from '../types'
+import type { DidCreationDetails } from './DidDetails'
+import type { MapKeyToRelationship } from '../types'
 import {
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
@@ -35,6 +33,40 @@ import { generateCreateTxFromDidDetails } from '../Did.chain'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
+
+/**
+ * The options that can be used to create a light DID.
+ */
+export type LightDidCreationDetails = {
+  /**
+   * The DID authentication key. This is mandatory and will be used as the first authentication key
+   * of the full DID upon migration.
+   */
+  authenticationKey: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
+  /**
+   * The optional DID encryption key. If present, it will be used as the first key agreement key
+   * of the full DID upon migration.
+   */
+  encryptionKey?: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
+  /**
+   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
+   * The service ID must not contain the DID prefix when used to create a new DID.
+   *
+   * @example ```typescript
+   * const authenticationKey = exampleKey;
+   * const services = [
+   *   {
+   *     id: 'test-service',
+   *     types: ['CredentialExposureService'],
+   *     urls: ['http://my_domain.example.org'],
+   *   },
+   * ];
+   * const lightDid = new LightDid({ authenticationKey, services });
+   * RequestForAttestation.fromRequest(parsedRequest);
+   * ```
+   */
+  serviceEndpoints?: DidServiceEndpoint[]
+}
 
 export class LightDidDetails extends DidDetails {
   /// The latest version for KILT light DIDs.
@@ -89,9 +121,9 @@ export class LightDidDetails extends DidDetails {
     }
 
     // Authentication key always has the #authentication ID.
-    const keys: DidKey[] = [
-      mergeKeyAndKeyId(authenticationKeyId, authenticationKey),
-    ]
+    const keys: Map<DidKey['id'], Omit<DidKey, 'id'>> = {
+      authenticationKeyId: authenticationKey,
+    }
     const keyRelationships: MapKeyToRelationship = {
       authentication: [authenticationKeyId],
     }
