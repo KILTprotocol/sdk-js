@@ -17,6 +17,7 @@
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
     "lint:fix": "yarn lint --fix",
+    "set:version": "yarn workspaces foreach -pt exec npm version --no-git-tag-version",
     "style": "prettier -l packages",
     "style:fix": "yarn style --write",
     "test": "jest --coverage --group=unit",
