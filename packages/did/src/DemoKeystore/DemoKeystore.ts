@@ -8,7 +8,7 @@
 import {
   randomAsU8a,
   cryptoWaitReady,
-  naclBoxKeypairFromSecret,
+  naclBoxPairFromSecret,
   naclOpen,
   naclSeal,
   randomAsHex,
@@ -135,8 +135,8 @@ export class DemoKeystore
     alg: T
   }> {
     const { seed, alg } = opts
-    const { secretKey, publicKey } = naclBoxKeypairFromSecret(
-      seed ? blake2AsU8a(seed, 32 * 8) : randomAsU8a(32)
+    const { secretKey, publicKey } = naclBoxPairFromSecret(
+      seed ? blake2AsU8a(seed, 256) : randomAsU8a(32)
     )
     return this.addEncryptionKeypair({ alg, secretKey, publicKey })
   }
@@ -186,7 +186,7 @@ export class DemoKeystore
     publicKey: Uint8Array
     alg: T
   }> {
-    const keypair = naclBoxKeypairFromSecret(secretKey)
+    const keypair = naclBoxPairFromSecret(secretKey)
     const { publicKey } = keypair
     const publicKeyHex = Crypto.u8aToHex(publicKey)
     if (this.encryptionKeypairs.has(publicKeyHex))
@@ -291,7 +291,7 @@ export async function createLocalDemoDidFromSeed(
   signingKeyType = SigningAlgorithms.Ed25519
 ): Promise<FullDidDetails> {
   const did = getKiltDidFromIdentifier(
-    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38),
+    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 256), 38),
     'full'
   )
 
