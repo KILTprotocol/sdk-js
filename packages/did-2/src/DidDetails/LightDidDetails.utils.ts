@@ -5,14 +5,32 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { DidServiceEndpoint } from '@kiltprotocol/types'
+import { encode as cborEncode, decode as cborDecode } from 'cbor'
+import { parseDidUrl } from '../Did.utils'
 import type { LightDidCreationDetails } from './LightDidDetails'
-import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
+
+export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
+  ed25519 = 'ed25519',
+  sr25519 = 'sr25519',
+}
+
+const EncodingForSigningKeyType = {
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
+}
+
+// const SigningKeyTypeFromEncoding = {
+//   '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
+//   '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
+// }
+
+function getEncodingForSigningKeyType(keyType: string): string | undefined {
+  return EncodingForSigningKeyType[keyType]
+}
 
 export function checkLightDidCreationDetails(
   details: LightDidCreationDetails
@@ -55,16 +73,6 @@ export function checkLightDidCreationDetails(
       )
     }
   })
-}
-
-export function mergeServiceAndServiceId(
-  serviceId: string,
-  service: Omit<DidServiceEndpoint, 'id'>
-): DidServiceEndpoint {
-  return {
-    id: serviceId,
-    ...service,
-  }
 }
 
 /**

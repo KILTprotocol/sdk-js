@@ -5,33 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { encodeAddress } from '@polkadot/util-crypto'
-import {
-  IDidIdentifier,
+import type {
   DidKey,
-  IIdentity,
-  KeystoreSigner,
-  KeyRelationship,
   DidServiceEndpoint,
+  IDidIdentifier,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import type { DidCreationDetails } from './DidDetails'
-import type { MapKeyToRelationship } from '../types'
-import {
-  getEncodingForSigningKeyType,
-  getKiltDidFromIdentifier,
-  getSignatureAlgForKeyType,
-} from '../Did.utils'
-import { DidDetails } from './DidDetails'
-import { FullDidDetails } from './FullDidDetails'
-import {
-  checkLightDidCreationDetails,
-  serializeAndEncodeAdditionalLightDidDetails,
-} from './LightDidDetails.utils'
-import { generateCreateTxFromDidDetails } from '../Did.chain'
+import { checkLightDidCreationDetails } from './LightDidDetails.utils'
 
-const authenticationKeyId = 'authentication'
-const encryptionKeyId = 'encryption'
+export type LightDidKeyCreation = Pick<DidKey, 'type'> & {
+  publicKey: Uint8Array
+}
 
 /**
  * The options that can be used to create a light DID.
@@ -41,12 +25,12 @@ export type LightDidCreationDetails = {
    * The DID authentication key. This is mandatory and will be used as the first authentication key
    * of the full DID upon migration.
    */
-  authenticationKey: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
+  authenticationKey: LightDidKeyCreation
   /**
    * The optional DID encryption key. If present, it will be used as the first key agreement key
    * of the full DID upon migration.
    */
-  encryptionKey?: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
+  encryptionKey?: LightDidKeyCreation
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
@@ -73,10 +57,10 @@ export class LightDidDetails extends DidDetails {
 
   public readonly identifier: IDidIdentifier
 
-  private constructor({
-    identifier,
-    ...creationDetails
-  }: DidCreationDetails & { identifier: IDidIdentifier }) {
+  private constructor(
+    identifier: IDidIdentifier,
+    creationDetails: DidCreationDetails
+  ) {
     super(creationDetails)
 
     this.identifier = identifier
@@ -119,61 +103,25 @@ export class LightDidDetails extends DidDetails {
       did = did.concat(':', encodedDetails)
     }
 
-    const keys: Map<DidKey['id'], Omit<DidKey, 'id'>> = new Map()
-
     // Authentication key always has the #authentication ID.
-    keys.set(authenticationKeyId, authenticationKey)
+    const keys: Map<DidKey['id'], Omit<DidKey, 'id'>> = {
+      authenticationKeyId: authenticationKey,
+    }
     const keyRelationships: MapKeyToRelationship = {
       authentication: [authenticationKeyId],
     }
 
     // Encryption key always has the #encryption ID.
     if (encryptionKey) {
-      keys.set(encryptionKeyId, encryptionKey)
+      keys.push(mergeKeyAndKeyId(encryptionKeyId, encryptionKey))
       keyRelationships.keyAgreement = [encryptionKeyId]
     }
 
-    return new LightDidDetails({
-      identifier: id.substring(2),
+    return new LightDidDetails(id.substring(2), {
       did,
       keys,
       keyRelationships,
       serviceEndpoints,
     })
-  }
-
-  // Return the only authentication key of this light DID.
-  public get authenticationKey(): DidKey {
-    // Always exists
-    return this.getKeys(KeyRelationship.authentication).pop() as DidKey
-  }
-
-  // Return the only encryption key, if present, of this light DID.
-  public get encryptionKey(): DidKey | undefined {
-    return this.getKeys(KeyRelationship.keyAgreement).pop()
-  }
-
-  public async migrate(
-    submitter: IIdentity,
-    signer: KeystoreSigner
-  ): Promise<FullDidDetails> {
-    const creationTx = await generateCreateTxFromDidDetails(
-      this,
-      submitter.address,
-      {
-        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
-        signingPublicKey: this.authenticationKey.publicKey,
-        signer,
-      }
-    )
-    await BlockchainUtils.signAndSubmitTx(creationTx, submitter, {
-      reSign: true,
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-    })
-    const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
-    if (!fullDidDetails) {
-      throw new Error('Something went wrong during the migration.')
-    }
-    return fullDidDetails
-  }
+  }  
 }
