@@ -18,7 +18,12 @@ import type {
   ServiceEndpoints,
 } from '../types'
 import type { DidCreationDetails } from './DidDetails'
-import { generateDidAuthenticatedTx, queryDetails, queryNonce, queryServiceEndpoints } from '../Did.chain'
+import {
+  generateDidAuthenticatedTx,
+  queryDetails,
+  queryNonce,
+  queryServiceEndpoints,
+} from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { DidDetails } from './DidDetails'
 import {

@@ -10,11 +10,25 @@ import type {
   DidServiceEndpoint,
   IDidIdentifier,
 } from '@kiltprotocol/types'
+import { encodeAddress } from '@polkadot/util-crypto'
+import type {
+  MapKeysToRelationship,
+  PublicKeys,
+  ServiceEndpoints,
+} from '../types'
 import type { DidCreationDetails } from './DidDetails'
+import { getKiltDidFromIdentifier } from '../Did.utils'
 import { DidDetails } from './DidDetails'
-import { checkLightDidCreationDetails } from './LightDidDetails.utils'
+import {
+  checkLightDidCreationDetails,
+  getEncodingForSigningKeyType,
+  serializeAndEncodeAdditionalLightDidDetails,
+} from './LightDidDetails.utils'
 
-export type LightDidKeyCreation = Pick<DidKey, 'type'> & {
+const authenticationKeyId = 'authentication'
+const encryptionKeyId = 'encryption'
+
+export type LightDidKeyCreationInput = Pick<DidKey, 'type'> & {
   publicKey: Uint8Array
 }
 
@@ -26,12 +40,12 @@ export type LightDidCreationDetails = {
    * The DID authentication key. This is mandatory and will be used as the first authentication key
    * of the full DID upon migration.
    */
-  authenticationKey: LightDidKeyCreation
+  authenticationKey: LightDidKeyCreationInput
   /**
    * The optional DID encryption key. If present, it will be used as the first key agreement key
    * of the full DID upon migration.
    */
-  encryptionKey?: LightDidKeyCreation
+  encryptionKey?: LightDidKeyCreationInput
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
@@ -105,24 +119,30 @@ export class LightDidDetails extends DidDetails {
     }
 
     // Authentication key always has the #authentication ID.
-    const keys: Map<DidKey['id'], Omit<DidKey, 'id'>> = {
-      authenticationKeyId: authenticationKey,
-    }
-    const keyRelationships: MapKeyToRelationship = {
-      authentication: [authenticationKeyId],
+    const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
+    const keyRelationships: MapKeysToRelationship = {
+      authentication: new Set(authenticationKeyId),
     }
 
     // Encryption key always has the #encryption ID.
     if (encryptionKey) {
-      keys.push(mergeKeyAndKeyId(encryptionKeyId, encryptionKey))
-      keyRelationships.keyAgreement = [encryptionKeyId]
+      keys.set(encryptionKeyId, encryptionKey)
+      keyRelationships.keyAgreement = new Set(encryptionKeyId)
     }
+
+    const endpoints: ServiceEndpoints = serviceEndpoints.reduce(
+      (res, service) => {
+        res.set(service.id, service)
+        return res
+      },
+      new Map()
+    )
 
     return new LightDidDetails(id.substring(2), {
       did,
       keys,
       keyRelationships,
-      serviceEndpoints,
+      serviceEndpoints: endpoints,
     })
-  }  
+  }
 }

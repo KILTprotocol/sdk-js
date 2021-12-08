@@ -23,12 +23,9 @@ const EncodingForSigningKeyType = {
   [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
 }
 
-// const SigningKeyTypeFromEncoding = {
-//   '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
-//   '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
-// }
-
-function getEncodingForSigningKeyType(keyType: string): string | undefined {
+export function getEncodingForSigningKeyType(
+  keyType: string
+): string | undefined {
   return EncodingForSigningKeyType[keyType]
 }
 
