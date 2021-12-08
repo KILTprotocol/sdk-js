@@ -188,17 +188,6 @@ export async function queryById(
   return decodeDidChainRecord(result.unwrap())
 }
 
-// Query full DID details given the DID URI.
-export async function queryDidDetails(
-  didUri: IDidDetails['did']
-): Promise<IDidChainRecordJSON | null> {
-  const { identifier, fragment } = parseDidUrl(didUri)
-  if (fragment) {
-    throw new Error(`The provided URI ${didUri} must not contain any fragment.`)
-  }
-  return queryById(identifier)
-}
-
 // Query a given key given the DID identifier and the key ID.
 export async function queryDidKey(
   keyUri: DidPublicKey['id']

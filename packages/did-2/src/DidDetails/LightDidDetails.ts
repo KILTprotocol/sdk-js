@@ -11,6 +11,7 @@ import type {
   IDidIdentifier,
 } from '@kiltprotocol/types'
 import type { DidCreationDetails } from './DidDetails'
+import { DidDetails } from './DidDetails'
 import { checkLightDidCreationDetails } from './LightDidDetails.utils'
 
 export type LightDidKeyCreation = Pick<DidKey, 'type'> & {
