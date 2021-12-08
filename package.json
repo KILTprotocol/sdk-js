@@ -17,6 +17,7 @@
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
     "lint:fix": "yarn lint --fix",
+    "set:version": "yarn workspaces foreach -pt exec npm version --no-git-tag-version",
     "style": "prettier -l packages",
     "style:fix": "yarn style --write",
     "test": "jest --coverage --group=unit",
@@ -63,6 +64,6 @@
     "typedoc-plugin-external-module-name": "^4.0.6",
     "typescript": "^4.2.2"
   },
-  "version": "0.24.0-22",
+  "version": "0.24.1",
   "packageManager": "yarn@2.4.3"
 }
