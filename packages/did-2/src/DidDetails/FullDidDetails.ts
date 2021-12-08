@@ -49,16 +49,13 @@ export class FullDidDetails extends DidDetails {
 
   // This is used to re-create a full DID from the chain.
   public static async fromChainInfo(
-    didIdentifier: IDidIdentifier
+    didIdentifier: IDidIdentifier,
+    version: number = this.FULL_DID_LATEST_VERSION
   ): Promise<FullDidDetails | null> {
     const didRec = await queryDetails(didIdentifier)
     if (!didRec) return null
 
-    const didUri = getKiltDidFromIdentifier(
-      didIdentifier,
-      'full',
-      FullDidDetails.FULL_DID_LATEST_VERSION
-    )
+    const didUri = getKiltDidFromIdentifier(didIdentifier, 'full', version)
 
     const {
       publicKeys,

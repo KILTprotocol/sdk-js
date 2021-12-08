@@ -29,6 +29,17 @@ export function getEncodingForSigningKeyType(
   return EncodingForSigningKeyType[keyType]
 }
 
+const SigningKeyTypeFromEncoding = {
+  '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
+  '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
+}
+
+export function getSigningKeyTypeFromEncoding(
+  encoding: string
+): string | undefined {
+  return SigningKeyTypeFromEncoding[encoding]?.toString()
+}
+
 export function checkLightDidCreationDetails(
   details: LightDidCreationDetails
 ): void {

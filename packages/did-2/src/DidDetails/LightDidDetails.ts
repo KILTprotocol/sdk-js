@@ -8,20 +8,23 @@
 import type {
   DidKey,
   DidServiceEndpoint,
+  IDidDetails,
   IDidIdentifier,
 } from '@kiltprotocol/types'
-import { encodeAddress } from '@polkadot/util-crypto'
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 import type {
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
 } from '../types'
 import type { DidCreationDetails } from './DidDetails'
-import { getKiltDidFromIdentifier } from '../Did.utils'
+import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
 import { DidDetails } from './DidDetails'
 import {
   checkLightDidCreationDetails,
+  decodeAndDeserializeAdditionalLightDidDetails,
   getEncodingForSigningKeyType,
+  getSigningKeyTypeFromEncoding,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
 
@@ -143,6 +146,36 @@ export class LightDidDetails extends DidDetails {
       keys,
       keyRelationships,
       serviceEndpoints: endpoints,
+    })
+  }
+
+  public static fromUri(uri: IDidDetails['did']): LightDidDetails {
+    const { identifier, version, encodedDetails, fragment, type } =
+      parseDidUrl(uri)
+
+    if (type !== 'light') {
+      throw new Error(
+        `Cannot build a light DID from the provided URI ${uri} because it does not refer to a light DID.`
+      )
+    }
+    if (fragment) {
+      throw new Error(
+        `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
+      )
+    }
+    const authenticationKey: LightDidKeyCreationInput = {
+      publicKey: decodeAddress(identifier.substring(2), false, 38),
+      type: getSigningKeyTypeFromEncoding(identifier.substring(2)) as string,
+    }
+    if (!encodedDetails) {
+      return LightDidDetails.fromDetails({ authenticationKey })
+    }
+    const { encryptionKey, serviceEndpoints } =
+      decodeAndDeserializeAdditionalLightDidDetails(encodedDetails, version)
+    return LightDidDetails.fromDetails({
+      authenticationKey,
+      encryptionKey,
+      serviceEndpoints,
     })
   }
 }
