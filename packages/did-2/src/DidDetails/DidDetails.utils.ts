@@ -20,19 +20,21 @@ export function checkDidCreationDetails({
       `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`
     )
   }
-  const allowedKeyRelationships: string[] = [
+  const allowedKeyRelationships: Set<string> = new Set([
     ...Object.values(KeyRelationship),
     'none',
-  ]
+  ])
   Object.keys(keyRelationships).forEach((kr) => {
-    if (!allowedKeyRelationships.includes(kr)) {
+    if (!allowedKeyRelationships.has(kr)) {
       throw Error(
         `key relationship ${kr} is not recognized. Allowed: ${KeyRelationship}`
       )
     }
   })
-  // TODO: check from here for the logic
-  const keyIds = new Set(keys.keys())
+  const keyIds = new Set<string>(keys.keys())
+  const keyReferences = new Set<string>(
+    Array.prototype.concat(...Object.values(keyRelationships))
+  )
   keyReferences.forEach((id) => {
     if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
   })
