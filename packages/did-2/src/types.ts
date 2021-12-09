@@ -9,6 +9,7 @@ import type {
   DidKey,
   DidServiceEndpoint,
   IDidDetails,
+  IDidIdentifier,
   KeyRelationship,
 } from '@kiltprotocol/types'
 
@@ -27,7 +28,8 @@ export type IDidParsingResult = {
   did: IDidDetails['did']
   version: number
   type: 'light' | 'full'
-  identifier: string
+  identifier: IDidIdentifier
   fragment?: string
+  authKeyTypeEncoding?: string
   encodedDetails?: string
 }

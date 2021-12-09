@@ -206,7 +206,6 @@ export function formatPublicKey(key: DidKey): PublicKeyEnum {
   return { [type]: publicKey }
 }
 
-
 export type VerificationResult = {
   verified: boolean
   didDetails?: IDidDetails

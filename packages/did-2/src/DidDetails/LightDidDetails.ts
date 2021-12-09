@@ -25,6 +25,7 @@ import {
   decodeAndDeserializeAdditionalLightDidDetails,
   getEncodingForSigningKeyType,
   getSigningKeyTypeFromEncoding,
+  LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
 
@@ -176,6 +177,19 @@ export class LightDidDetails extends DidDetails {
       authenticationKey,
       encryptionKey,
       serviceEndpoints,
+    })
+  }
+
+  public static fromIdentifier(
+    identifier: IDidIdentifier,
+    keyType: LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES = LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519
+  ): LightDidDetails {
+    const authenticationKey: LightDidKeyCreationInput = {
+      publicKey: decodeAddress(identifier, false, 38),
+      type: keyType,
+    }
+    return LightDidDetails.fromDetails({
+      authenticationKey,
     })
   }
 }
