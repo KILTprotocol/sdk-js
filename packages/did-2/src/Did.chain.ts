@@ -5,12 +5,13 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
+import {
   Deposit,
   DidKey,
   DidServiceEndpoint,
   IDidIdentifier,
   IIdentity,
+  KeyRelationship,
   KeystoreSigningOptions,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -38,6 +39,7 @@ import type { AnyNumber, Codec } from '@polkadot/types/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { BN, hexToString } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
+import { DidDetails } from './DidDetails'
 
 // ### Chain type definitions
 
@@ -306,6 +308,17 @@ export async function queryDeletedDidIdentifiers(): Promise<IDidIdentifier[]> {
 
 // ### EXTRINSICS types
 
+export type PublicKeyEnum = Record<string, Uint8Array>
+export type SignatureEnum = Record<string, Uint8Array>
+
+interface IDidCreationDetails extends Struct {
+  did: IDidIdentifier
+  newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
+  newAttestationKey: Option<DidVerificationKey>
+  newDelegationKey: Option<DidVerificationKey>
+  newServiceDetails: Vec<IServiceEndpointChainRecordCodec>
+}
+
 export type AuthorizeCallInput = {
   didIdentifier: IDidIdentifier
   txCounter: AnyNumber
@@ -313,6 +326,8 @@ export type AuthorizeCallInput = {
   submitter: IIdentity['address']
   blockNumber?: AnyNumber
 }
+
+export type NewDidKey = Pick<DidKey, 'type' | 'publicKey'>
 
 interface IDidAuthorizedCallOperation extends Struct {
   did: IDidIdentifier
@@ -323,6 +338,179 @@ interface IDidAuthorizedCallOperation extends Struct {
 }
 
 // ### EXTRINSICS
+
+function formatPublicKey(key: NewDidKey): PublicKeyEnum {
+  const { type, publicKey } = key
+  return { [type]: publicKey }
+}
+
+export async function generateCreateTxFromDidDetails(
+  did: DidDetails,
+  submitterAddress: IIdentity['address'],
+  signingOptions: KeystoreSigningOptions
+): Promise<SubmittableExtrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const { signer, signingPublicKey, alg } = signingOptions
+
+  const newKeyAgreementKeys: PublicKeyEnum[] = did
+    .getKeys(KeyRelationship.keyAgreement)
+    .map((key) => {
+      return formatPublicKey(key)
+    })
+
+  // For now, it only takes the first attestation key, if present.
+  const newAttestationKey: PublicKeyEnum | undefined =
+    did
+      .getKeys(KeyRelationship.assertionMethod)
+      .map((key) => {
+        return formatPublicKey(key)
+      })
+      .pop() || undefined
+
+  // For now, it only takes the first delegation key, if present.
+  const newDelegationKey: PublicKeyEnum | undefined =
+    did
+      .getKeys(KeyRelationship.capabilityDelegation)
+      .map((key) => {
+        return formatPublicKey(key)
+      })
+      .pop() || undefined
+
+  const newServiceDetails = did.getEndpoints().map((service) => {
+    const { id, urls } = service
+    return { id, urls, serviceTypes: service.types }
+  })
+
+  const rawCreationDetails = {
+    did: did.identifier,
+    submitter: submitterAddress,
+    newKeyAgreementKeys,
+    newAttestationKey,
+    newDelegationKey,
+    newServiceDetails,
+  }
+
+  const encodedDidCreationDetails =
+    new (api.registry.getOrThrow<IDidCreationDetails>(
+      'DidDidDetailsDidCreationDetails'
+    ))(api.registry, rawCreationDetails)
+
+  const signature = await signer.sign({
+    data: encodedDidCreationDetails.toU8a(),
+    meta: {},
+    publicKey: Crypto.coToUInt8(signingPublicKey),
+    alg,
+  })
+  return api.tx.did.create(encodedDidCreationDetails, {
+    [signature.alg]: signature.data,
+  })
+}
+
+export async function getSetKeyExtrinsic(
+  keyRelationship: KeyRelationship,
+  key: NewDidKey
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const keyAsEnum = formatPublicKey(key)
+  switch (keyRelationship) {
+    case KeyRelationship.authentication:
+      return api.tx.did.setAuthenticationKey(keyAsEnum)
+    case KeyRelationship.capabilityDelegation:
+      return api.tx.did.setDelegationKey(keyAsEnum)
+    case KeyRelationship.assertionMethod:
+      return api.tx.did.setAttestationKey(keyAsEnum)
+    default:
+      throw new Error(
+        `setting a key is only allowed for the following key types: ${[
+          KeyRelationship.authentication,
+          KeyRelationship.capabilityDelegation,
+          KeyRelationship.assertionMethod,
+        ]}`
+      )
+  }
+}
+
+export async function getRemoveKeyExtrinsic(
+  keyRelationship: KeyRelationship,
+  keyId?: DidKey['id']
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  switch (keyRelationship) {
+    case KeyRelationship.capabilityDelegation:
+      return api.tx.did.removeDelegationKey()
+    case KeyRelationship.assertionMethod:
+      return api.tx.did.removeAttestationKey()
+    case KeyRelationship.keyAgreement:
+      if (!keyId) {
+        throw new Error(
+          `When removing a ${KeyRelationship.keyAgreement} key it is required to specify the id of the key to be removed.`
+        )
+      }
+      return api.tx.did.removeKeyAgreementKey(keyId)
+    default:
+      throw new Error(
+        `key removal is only allowed for the following key types: ${[
+          KeyRelationship.keyAgreement,
+          KeyRelationship.capabilityDelegation,
+          KeyRelationship.assertionMethod,
+        ]}`
+      )
+  }
+}
+
+export async function getAddKeyExtrinsic(
+  keyRelationship: KeyRelationship,
+  key: NewDidKey
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const keyAsEnum = formatPublicKey(key)
+  if (keyRelationship === KeyRelationship.keyAgreement) {
+    return api.tx.did.addKeyAgreementKey(keyAsEnum)
+  }
+  throw new Error(
+    `adding to the key set is only allowed for the following key types:  ${[
+      KeyRelationship.keyAgreement,
+    ]}`
+  )
+}
+
+export async function getAddEndpointExtrinsic(
+  endpoint: DidServiceEndpoint
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const encodedEndpoint =
+    new (api.registry.getOrThrow<IServiceEndpointChainRecordCodec>(
+      'DidServiceEndpointsDidEndpoint'
+    ))(api.registry, {
+      serviceTypes: endpoint.types,
+      ...endpoint,
+    })
+  return api.tx.did.addServiceEndpoint(encodedEndpoint)
+}
+
+// The endpointId parameter is the service endpoint ID without the DID prefix.
+// So for a endpoint of the form did:kilt:<identifier>#<endpoint_id>, only <endpoint_id> must be passed as parameter here.
+export async function getRemoveEndpointExtrinsic(
+  endpointId: DidServiceEndpoint['id']
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.removeServiceEndpoint(endpointId)
+}
+
+export async function getDeleteDidExtrinsic(
+  endpointsCount: BN
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.delete(endpointsCount)
+}
+
+export async function getReclaimDepositExtrinsic(
+  didIdentifier: IDidIdentifier,
+  endpointsCount: number
+): Promise<SubmittableExtrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)
+}
 
 // The block number can either be provided by the DID subject,
 // or the latest one will automatically be fetched from the blockchain.
