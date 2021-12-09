@@ -5,22 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  Deposit,
-  DidKey,
-  DidServiceEndpoint,
-  IDidIdentifier,
-  IIdentity,
-  KeyRelationship,
-  KeystoreSigningOptions,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
-import type {
-  BlockNumber,
-  Call,
-  Extrinsic,
-  Hash,
-} from '@polkadot/types/interfaces'
 import type {
   BTreeMap,
   BTreeSet,
@@ -35,10 +19,28 @@ import type {
   u32,
   U128,
 } from '@polkadot/types'
+import type {
+  BlockNumber,
+  Call,
+  Extrinsic,
+  Hash,
+} from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec } from '@polkadot/types/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { BN, hexToString } from '@polkadot/util'
+
+import type {
+  Deposit,
+  DidKey,
+  DidServiceEndpoint,
+  IDidIdentifier,
+  IIdentity,
+  KeystoreSigningOptions,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto } from '@kiltprotocol/utils'
+
 import { DidDetails } from './DidDetails'
 
 // ### Chain type definitions

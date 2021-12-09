@@ -5,13 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Extrinsic } from '@polkadot/types/interfaces'
+
 import type {
   DidKey,
   IDidIdentifier,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import type { Extrinsic } from '@polkadot/types/interfaces'
+
 import type {
   MapKeysToRelationship,
   PublicKeys,
@@ -19,18 +21,18 @@ import type {
 } from '../types'
 import type { DidCreationDetails } from './DidDetails'
 import {
+  getKeysForExtrinsic,
+  defaultExtrinsicKeySelection,
+} from './FullDidDetails.utils'
+import { DidDetails } from './DidDetails'
+import { getSignatureAlgForKeyType } from './DidDetails.utils'
+import {
   generateDidAuthenticatedTx,
   queryDetails,
   queryNonce,
   queryServiceEndpoints,
 } from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
-import { DidDetails } from './DidDetails'
-import {
-  getKeysForExtrinsic,
-  defaultExtrinsicKeySelection,
-} from './FullDidDetails.utils'
-import { getSignatureAlgForKeyType } from './DidDetails.utils'
 
 export class FullDidDetails extends DidDetails {
   /// The latest version for KILT full DIDs.

@@ -8,8 +8,6 @@
 import type {
   DidKey,
   DidServiceEndpoint,
-  IDidDetails,
-  IDidIdentifier,
   KeyRelationship,
 } from '@kiltprotocol/types'
 
@@ -23,13 +21,3 @@ export type ServiceEndpoints = Map<
   DidServiceEndpoint['id'],
   Omit<DidServiceEndpoint, 'id'>
 >
-
-export type IDidParsingResult = {
-  did: IDidDetails['did']
-  version: number
-  type: 'light' | 'full'
-  identifier: IDidIdentifier
-  fragment?: string
-  authKeyTypeEncoding?: string
-  encodedDetails?: string
-}

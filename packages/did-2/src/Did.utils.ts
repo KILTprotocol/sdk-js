@@ -7,7 +7,7 @@
 
 import { checkAddress } from '@polkadot/util-crypto'
 import { isHex, u8aToHex } from '@polkadot/util'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+
 import type {
   DidKey,
   DidSignature,
@@ -16,7 +16,8 @@ import type {
   IDidResolver,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
-import type { IDidParsingResult } from './types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+
 import { FullDidDetails } from './DidDetails'
 import { DefaultResolver } from './DidResolver'
 
@@ -36,7 +37,7 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
-function getKiltDidFromIdentifier(
+export function getKiltDidFromIdentifier(
   identifier: IDidIdentifier,
   didType: 'full' | 'light',
   version: number,
@@ -46,6 +47,16 @@ function getKiltDidFromIdentifier(
   const versionString = version === 1 ? '' : `v${version}:`
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   return `${KILT_DID_PREFIX}${typeString}${versionString}${identifier}${encodedDetailsString}`
+}
+
+export type IDidParsingResult = {
+  did: IDidDetails['did']
+  version: number
+  type: 'light' | 'full'
+  identifier: IDidIdentifier
+  fragment?: string
+  authKeyTypeEncoding?: string
+  encodedDetails?: string
 }
 
 export function parseDidUri(didUri: string): IDidParsingResult {

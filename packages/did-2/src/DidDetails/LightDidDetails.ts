@@ -5,21 +5,21 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
+
 import type {
   DidKey,
   DidServiceEndpoint,
   IDidDetails,
   IDidIdentifier,
 } from '@kiltprotocol/types'
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
+
 import type {
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
 } from '../types'
 import type { DidCreationDetails } from './DidDetails'
-import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
-import { DidDetails } from './DidDetails'
 import {
   checkLightDidCreationDetails,
   decodeAndDeserializeAdditionalLightDidDetails,
@@ -28,6 +28,8 @@ import {
   LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
+import { DidDetails } from './DidDetails'
+import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
@@ -152,7 +154,7 @@ export class LightDidDetails extends DidDetails {
 
   public static fromUri(uri: IDidDetails['did']): LightDidDetails {
     const { identifier, version, encodedDetails, fragment, type } =
-      parseDidUrl(uri)
+      parseDidUri(uri)
 
     if (type !== 'light') {
       throw new Error(

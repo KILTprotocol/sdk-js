@@ -15,7 +15,12 @@ import type {
   KeystoreSigner,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { MapKeysToRelationship, PublicKeys, ServiceEndpoints } from '../types'
+
+import type {
+  MapKeysToRelationship,
+  PublicKeys,
+  ServiceEndpoints,
+} from '../types'
 import {
   checkDidCreationDetails,
   getSignatureAlgForKeyType,

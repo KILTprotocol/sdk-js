@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import {
   randomAsU8a,
   cryptoWaitReady,
@@ -14,8 +15,9 @@ import {
   randomAsHex,
   blake2AsU8a,
 } from '@polkadot/util-crypto'
-import { Crypto, Keyring } from '@kiltprotocol/utils'
-import {
+import { u8aEq } from '@polkadot/util'
+
+import type {
   KeyringPair,
   Keystore,
   KeystoreSigningData,
@@ -23,8 +25,7 @@ import {
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
-import { KeypairType } from '@polkadot/util-crypto/types'
-import { u8aEq } from '@polkadot/util'
+import { Crypto, Keyring } from '@kiltprotocol/utils'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',

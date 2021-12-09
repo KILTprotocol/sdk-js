@@ -5,9 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidKey, VerificationKeyRelationship } from '@kiltprotocol/types'
 import type { Extrinsic } from '@polkadot/types/interfaces'
+
+import type { DidKey, VerificationKeyRelationship } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
+
 import { FullDidDetails } from './FullDidDetails'
 
 interface MethodMapping<V extends string> {

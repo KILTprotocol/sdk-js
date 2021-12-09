@@ -15,6 +15,7 @@ import type {
   IDidResolver,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+
 import { LightDidDetails, FullDidDetails } from '../DidDetails'
 import {
   queryDetails,
@@ -22,7 +23,7 @@ import {
   queryKey,
   queryServiceEndpoint,
 } from '../Did.chain'
-import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
+import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils'
 
 /**
  * Resolve a DID URI to the details of the DID subject.
@@ -35,7 +36,7 @@ import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
 export async function resolveDoc(
   did: IDidDetails['did']
 ): Promise<DidResolvedDetails | null> {
-  const { identifier, type, version } = parseDidUrl(did)
+  const { identifier, type, version } = parseDidUri(did)
 
   switch (type) {
     case 'full': {
@@ -71,7 +72,11 @@ export async function resolveDoc(
       const fullDidDetails = await queryDetails(details.identifier)
       // If a full DID with same identifier is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
-        const fullDidUri = getKiltDidFromIdentifier(details.identifier, 'full')
+        const fullDidUri = getKiltDidFromIdentifier(
+          details.identifier,
+          'full',
+          version
+        )
         return {
           details,
           metadata: {
@@ -113,7 +118,7 @@ export async function resolveDoc(
 export async function resolveKey(
   didUri: DidPublicKey['id']
 ): Promise<DidKey | null> {
-  const { identifier, fragment: keyId, type } = parseDidUrl(didUri)
+  const { identifier, fragment: keyId, type } = parseDidUri(didUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
@@ -144,7 +149,7 @@ export async function resolveKey(
 export async function resolveServiceEndpoint(
   didUri: DidPublicServiceEndpoint['id']
 ): Promise<DidServiceEndpoint | null> {
-  const { identifier, fragment: serviceId, type } = parseDidUrl(didUri)
+  const { identifier, fragment: serviceId, type } = parseDidUri(didUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
@@ -176,7 +181,7 @@ export async function resolveServiceEndpoint(
 export async function resolve(
   didUri: string
 ): Promise<DidResolvedDetails | DidKey | DidServiceEndpoint | null> {
-  const { fragment } = parseDidUrl(didUri)
+  const { fragment } = parseDidUri(didUri)
 
   if (fragment) {
     return resolveKey(didUri) || resolveServiceEndpoint(didUri) || null

@@ -5,19 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { base58Encode } from '@polkadot/util-crypto'
+
 import type {
   DidDocument,
   IDidDetails,
   IDidDocumentExporter,
   JsonLDDidDocument,
 } from '@kiltprotocol/types'
-
 import {
   KeyRelationship,
   VerificationKeyTypesMap,
   EncryptionKeyTypesMap,
 } from '@kiltprotocol/types'
-import { base58Encode } from '@polkadot/util-crypto'
 
 /**
  * @packageDocumentation

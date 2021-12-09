@@ -5,10 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { SDKErrors } from '@kiltprotocol/utils'
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
-import { parseDidUrl } from '../Did.utils'
+
+import { SDKErrors } from '@kiltprotocol/utils'
+
 import type { LightDidCreationDetails } from './LightDidDetails'
+import { parseDidUri } from '../Did.utils'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
@@ -63,7 +65,7 @@ export function checkLightDidCreationDetails(
     let isServiceIdADid = true
     try {
       // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-      parseDidUrl(service.id)
+      parseDidUri(service.id)
     } catch {
       // Here if parseDidUrl throws -> service.id is NOT a DID.
       isServiceIdADid = false
