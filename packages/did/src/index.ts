@@ -9,7 +9,7 @@ export * from './DemoKeystore'
 export * from './DidDetails'
 export * from './DidDocumentExporter'
 export * from './DidResolver'
-export * from './FullDidBuilder'
+// export * from './FullDidBuilder'
 export * as DidChain from './Did.chain'
 export * as DidUtils from './Did.utils'
 
