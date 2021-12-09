@@ -26,7 +26,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import { DidUtils, DefaultResolver } from '@kiltprotocol/did'
+import { DidUtils, DefaultResolver, DidDetails } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema'
 
 /**
@@ -72,9 +72,9 @@ export async function fromAttesterSignedInput(
 ): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
   await DidUtils.verifyDidSignature({
-    ...attesterSignature,
+    signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    keyRelationship: KeyRelationship.authentication,
+    expectedVerificationMethod: KeyRelationship.authentication,
     resolver,
   })
   const messages: string[] = []
@@ -99,17 +99,21 @@ export async function fromAttesterSignedInput(
 
 export async function createAttesterSignature(
   quoteInput: IQuote,
-  attesterIdentity: IDidDetails,
+  attesterIdentity: DidDetails,
   signer: KeystoreSigner
 ): Promise<IQuoteAttesterSigned> {
-  const signature = await DidUtils.getDidAuthenticationSignature(
+  const { id } = attesterIdentity.authenticationKey
+  const signature = await attesterIdentity.signPayload(
+    signer,
     Crypto.hashObjectAsStr(quoteInput),
-    attesterIdentity,
-    signer
+    id
   )
   return {
     ...quoteInput,
-    attesterSignature: signature,
+    attesterSignature: {
+      keyId: attesterIdentity.assembleKeyId(id),
+      signature: signature.signature,
+    },
   }
 }
 
@@ -125,7 +129,7 @@ export async function createAttesterSignature(
 
 export async function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
-  attesterIdentity: IDidDetails,
+  attesterIdentity: DidDetails,
   signer: KeystoreSigner
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
@@ -148,7 +152,7 @@ export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: string,
   attesterIdentity: IDidDetails['did'],
-  claimerIdentity: IDidDetails,
+  claimerIdentity: DidDetails,
   signer: KeystoreSigner,
   resolver: IDidResolver = DefaultResolver
 ): Promise<IQuoteAgreement> {
@@ -161,16 +165,16 @@ export async function createQuoteAgreement(
     )
 
   await DidUtils.verifyDidSignature({
-    ...attesterSignature,
+    signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    keyRelationship: KeyRelationship.authentication,
+    expectedVerificationMethod: KeyRelationship.authentication,
     resolver,
   })
 
-  const signature = await DidUtils.getDidAuthenticationSignature(
+  const signature = await claimerIdentity.signPayload(
+    signer,
     Crypto.hashObjectAsStr(attesterSignedQuote),
-    claimerIdentity,
-    signer
+    claimerIdentity.authenticationKey.id
   )
 
   return {

@@ -9,12 +9,14 @@ import type {
   DidKey,
   DidPublicKey,
   DidServiceEndpoint,
+  DidSignature,
   IDidDetails,
   IDidIdentifier,
-  KeyRelationship,
   KeystoreSigner,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import { u8aToHex } from '@polkadot/util'
 
 import type {
   MapKeysToRelationship,
@@ -65,6 +67,30 @@ export abstract class DidDetails implements IDidDetails {
 
   public abstract get identifier(): IDidIdentifier
 
+  public get authenticationKey(): DidKey {
+    const firstAuthenticationKey = this.getKeys(
+      KeyRelationship.authentication
+    )[0]
+    if (!firstAuthenticationKey) {
+      throw new Error(
+        'Unexpected error. Any DID should always have at least one authentication key.'
+      )
+    }
+    return firstAuthenticationKey
+  }
+
+  public get encryptionKey(): DidKey | undefined {
+    return this.getKeys(KeyRelationship.keyAgreement)[0]
+  }
+
+  public get attestationKey(): DidKey | undefined {
+    return this.getKeys(KeyRelationship.assertionMethod)[0]
+  }
+
+  public get delegationKey(): DidKey | undefined {
+    return this.getKeys(KeyRelationship.capabilityDelegation)[0]
+  }
+
   public getKey(id: string): DidKey | undefined {
     const keyDetails = this.publicKeys.get(id)
     if (!keyDetails) {
@@ -106,15 +132,15 @@ export abstract class DidDetails implements IDidDetails {
     })
   }
 
+  public assembleKeyId(keyId: DidKey['id']): DidPublicKey['id'] {
+    return `${this.did}#${keyId}`
+  }
+
   public async signPayload(
     signer: KeystoreSigner,
     payload: Uint8Array | string,
     keyId: DidKey['id']
-  ): Promise<{
-    keyId: DidPublicKey['id']
-    alg: string
-    signature: Uint8Array
-  }> {
+  ): Promise<DidSignature> {
     const key = this.getKey(keyId)
     if (!key) {
       throw Error(`failed to find key with ID ${keyId} on DID (${this.did})`)
@@ -128,6 +154,6 @@ export abstract class DidDetails implements IDidDetails {
       alg,
       data: Crypto.coToUInt8(payload),
     })
-    return { keyId: key.id, signature, alg }
+    return { keyId: this.assembleKeyId(key.id), signature: u8aToHex(signature) }
   }
 }

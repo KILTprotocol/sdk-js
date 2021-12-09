@@ -24,6 +24,7 @@ import type {
   IDelegationHierarchyDetails,
   IRequestForAttestation,
   CompressedAttestation,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import {
@@ -155,7 +156,7 @@ export class Attestation implements IAttestation {
    */
   public static fromRequestAndDid(
     request: IRequestForAttestation,
-    attesterDid: string
+    attesterDid: IDidDetails['did']
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,

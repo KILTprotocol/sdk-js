@@ -23,7 +23,7 @@ import type {
   IRequestForAttestation,
 } from './RequestForAttestation'
 import type { CompressedTerms, ITerms } from './Terms'
-import { DidKey, IClaimContents } from '.'
+import type { DidPublicKey, IClaimContents } from '.'
 
 export enum MessageBodyType {
   ERROR = 'error',
@@ -403,8 +403,8 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: DidKey['id']
-  senderKeyId: DidKey['id']
+  receiverKeyId: DidPublicKey['id']
+  senderKeyId: DidPublicKey['id']
   ciphertext: string
   nonce: string
 }

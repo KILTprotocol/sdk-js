@@ -16,20 +16,23 @@
  * @module Credential
  */
 
+import { DidDetails } from '@kiltprotocol/did'
 import type {
   ICredential,
   CompressedCredential,
   IAttestation,
   IRequestForAttestation,
-  IDidDetails,
   IDidResolver,
   KeystoreSigner,
-  IDidKeyDetails,
+  DidKey,
+  KeyRelationship,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import * as CredentialUtils from './Credential.utils'
+
+const defaultKeySelection = (keys: DidKey[]): DidKey | undefined => keys[0]
 
 export class Credential implements ICredential {
   /**
@@ -224,14 +227,16 @@ export class Credential implements ICredential {
     selectedAttributes,
     signer,
     challenge,
-    claimerSigningKey,
     claimerDid,
+    keyRelationship,
+    keySelection = defaultKeySelection,
   }: {
-    signer: KeystoreSigner
-    claimerSigningKey?: IDidKeyDetails
-    claimerDid?: IDidDetails
-    challenge?: string
     selectedAttributes?: string[]
+    signer: KeystoreSigner
+    challenge?: string
+    claimerDid: DidDetails
+    keyRelationship: KeyRelationship
+    keySelection?: (keys: DidKey[]) => DidKey | undefined
   }): Promise<Credential> {
     const credential = new Credential(
       // clone the attestation and request for attestation because properties will be deleted later.
@@ -249,15 +254,22 @@ export class Credential implements ICredential {
     // remove these attributes
     credential.request.removeClaimProperties(excludedClaimProperties)
 
-    if (claimerDid) {
-      await credential.request.signWithDid(signer, claimerDid, challenge)
-    } else if (claimerSigningKey) {
-      await credential.request.signWithKey(signer, claimerSigningKey, challenge)
-    } else {
+    const keys = claimerDid.getKeys(keyRelationship)
+    const selectedKeyId = keySelection(keys)?.id
+
+    if (!selectedKeyId) {
       throw new Error(
-        'Either a key or claimer did details are required for signing'
+        `No key matching the required key relationship ${keySelection}`
       )
     }
+
+    await credential.request.signWithDidKey(
+      signer,
+      claimerDid,
+      selectedKeyId,
+      challenge
+    )
+
     return credential
   }
 

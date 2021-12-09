@@ -24,16 +24,17 @@
  */
 
 import {
+  DidSignature,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
-  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { DidTypes, DidUtils } from '@kiltprotocol/did'
+import { DidDetails } from '@kiltprotocol/did'
+import type { DidChain } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain'
@@ -275,16 +276,14 @@ export class DelegationNode implements IDelegationNode {
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegeeSign(
-    delegeeDid: IDidDetails,
+    delegeeDid: DidDetails,
     signer: KeystoreSigner
-  ): Promise<DidTypes.SignatureEnum> {
-    const { alg, signature } = await DidUtils.signWithDid(
-      Crypto.coToUInt8(this.generateHash()),
-      delegeeDid,
+  ): Promise<DidSignature> {
+    return delegeeDid.signPayload(
       signer,
-      KeyRelationship.authentication
+      this.generateHash(),
+      delegeeDid.authenticationKey.id
     )
-    return { [alg]: signature }
   }
 
   /**
@@ -307,7 +306,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async store(
-    signature?: DidTypes.SignatureEnum
+    signature?: DidChain.SignatureEnum
   ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
       return storeAsRoot(this)

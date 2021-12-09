@@ -24,15 +24,15 @@ import type {
   IEncryptedMessage,
   MessageBody,
   ICType,
-  IDidDetails,
   IDidResolver,
   IEncryptedMessageContents,
-  IDidKeyDetails,
+  DidKey,
   NaclBoxCapable,
+  DidPublicKey,
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DefaultResolver } from '@kiltprotocol/did'
+import { DidUtils, DefaultResolver, DidDetails } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -110,34 +110,29 @@ export class Message implements IMessage {
     encrypted: IEncryptedMessage,
     keystore: Pick<NaclBoxCapable, 'decrypt'>,
     {
-      senderDetails,
       receiverDetails,
       resolver = DefaultResolver,
     }: {
-      senderDetails?: IDidDetails
-      receiverDetails?: IDidDetails
+      receiverDetails: DidDetails
       resolver?: IDidResolver
-    } = {}
+    }
   ): Promise<IMessage> {
     const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
       encrypted
 
-    // if we don't have the sender DID & receiver details already, fetch it via resolver
-    const resolveKey = async (
-      keyId: string,
-      didDetails?: IDidDetails
-    ): Promise<IDidKeyDetails> => {
-      // check if key is currently associated with DID
-      const keyDetails =
-        didDetails?.getKey(keyId) || (await resolver.resolveKey(keyId))
-      if (!keyDetails) {
-        throw Error(`key with id ${keyId} cannot be resolved`) // TODO: improve error
-      }
-      return keyDetails
+    const { did: senderDid } = DidUtils.parseDidUri(senderKeyId)
+    const senderKeyDetails = await resolver.resolveKey(senderKeyId)
+    if (!senderKeyDetails) {
+      throw new Error(`Could not resolve sender key ${senderKeyId}`)
     }
-
-    const senderKeyDetails = await resolveKey(senderKeyId, senderDetails)
-    const receiverKeyDetails = await resolveKey(receiverKeyId, receiverDetails)
+    const { fragment } = DidUtils.parseDidUri(receiverKeyId)
+    if (!fragment) {
+      throw new Error(`No fragment for the receiver key ID ${receiverKeyId}`)
+    }
+    const receiverKeyDetails = receiverDetails.getKey(fragment)
+    if (!receiverKeyDetails) {
+      throw new Error(`Could not resolve receiver key ${receiverKeyId}`)
+    }
 
     // check key type
     if (senderKeyDetails.type !== 'x25519') {
@@ -148,9 +143,9 @@ export class Message implements IMessage {
 
     const { data } = await keystore
       .decrypt({
-        publicKey: hexToU8a(receiverKeyDetails.publicKeyHex),
+        publicKey: receiverKeyDetails?.publicKey,
         alg: 'x25519-xsalsa20-poly1305', // TODO find better ways than hard-coding the alg
-        peerPublicKey: hexToU8a(senderKeyDetails.publicKeyHex),
+        peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
         nonce: hexToU8a(nonce),
       })
@@ -181,7 +176,7 @@ export class Message implements IMessage {
         references,
       }
 
-      if (sender !== senderKeyDetails.controller) {
+      if (sender !== senderDid) {
         throw SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
       }
 
@@ -240,15 +235,33 @@ export class Message implements IMessage {
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
-    senderKey: IDidKeyDetails,
-    receiverKey: IDidKeyDetails,
-    keystore: Pick<NaclBoxCapable, 'encrypt'>
+    senderKeyId: DidKey['id'],
+    senderDetails: DidDetails,
+    keystore: Pick<NaclBoxCapable, 'encrypt'>,
+    {
+      receiverKeyId,
+      resolver = DefaultResolver,
+    }: {
+      receiverKeyId: DidPublicKey['id']
+      resolver?: IDidResolver
+    }
   ): Promise<IEncryptedMessage> {
-    if (this.receiver !== receiverKey.controller) {
+    const { did: receiverDid } = DidUtils.parseDidUri(receiverKeyId)
+    if (this.receiver !== receiverDid) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
     }
-    if (this.sender !== senderKey.controller) {
+    const receiverKey = await resolver.resolveKey(receiverKeyId)
+    if (!receiverKey) {
+      throw new Error(`Cannot resolve key ${receiverKeyId}`)
+    }
+    if (this.sender !== senderDetails.did) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
+    }
+    const senderKey = senderDetails.getKey(senderKeyId)
+    if (!senderKey) {
+      throw new Error(
+        `Cannot find key with ID ${senderKeyId} for the sender DID.`
+      )
     }
 
     const toEncrypt: IEncryptedMessageContents = {
@@ -266,8 +279,8 @@ export class Message implements IMessage {
     const encryted = await keystore.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
       data: serialized,
-      publicKey: hexToU8a(senderKey.publicKeyHex),
-      peerPublicKey: hexToU8a(receiverKey.publicKeyHex),
+      publicKey: senderKey.publicKey,
+      peerPublicKey: receiverKey.publicKey,
     })
     const ciphertext = u8aToHex(encryted.data)
     const nonce = u8aToHex(encryted.nonce)

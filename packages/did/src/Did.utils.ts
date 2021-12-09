@@ -18,7 +18,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { FullDidDetails } from './DidDetails'
+import { FullDidDetails, LightDidDetails } from './DidDetails'
 import { DefaultResolver } from './DidResolver'
 
 const KILT_DID_PREFIX = 'did:kilt:'
@@ -40,11 +40,19 @@ const LIGHT_KILT_DID_REGEX =
 export function getKiltDidFromIdentifier(
   identifier: IDidIdentifier,
   didType: 'full' | 'light',
-  version: number,
+  version?: number,
   encodedDetails?: string
 ): IDidDetails['did'] {
   const typeString = didType === 'full' ? '' : `light:`
-  const versionString = version === 1 ? '' : `v${version}:`
+  let versionValue = version
+  // If no version is specified, take the default one depending on the requested DID type.
+  if (!versionValue) {
+    versionValue =
+      didType === 'full'
+        ? FullDidDetails.FULL_DID_LATEST_VERSION
+        : LightDidDetails.LIGHT_DID_LATEST_VERSION
+  }
+  const versionString = versionValue === 1 ? '' : `v${version}:`
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   return `${KILT_DID_PREFIX}${typeString}${versionString}${identifier}${encodedDetailsString}`
 }
@@ -96,6 +104,12 @@ export function parseDidUri(didUri: string): IDidParsingResult {
   }
 
   throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+}
+
+export function getIdentifierFromKiltDid(
+  did: IDidDetails['did']
+): IDidIdentifier {
+  return parseDidUri(did).identifier
 }
 
 export function validateKiltDid(

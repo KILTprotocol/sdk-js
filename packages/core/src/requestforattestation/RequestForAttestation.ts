@@ -24,15 +24,14 @@ import type {
   IDelegationNode,
   IClaim,
   ICredential,
-  IDidKeyDetails,
+  DidKey,
   KeystoreSigner,
-  IDidDetails,
   IDidResolver,
   DidSignature,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
+import { DefaultResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils'
 import { Credential } from '../credential/Credential'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils'
@@ -268,9 +267,9 @@ export class RequestForAttestation implements IRequestForAttestation {
     if (challenge && challenge !== claimerSignature.challenge) return false
     const verifyData = makeSigningData(input, claimerSignature.challenge)
     const { verified } = await DidUtils.verifyDidSignature({
-      ...claimerSignature,
+      signature: claimerSignature,
       message: verifyData,
-      keyRelationship: KeyRelationship.authentication,
+      expectedVerificationMethod: KeyRelationship.authentication,
       resolver,
     })
     return verified
@@ -303,31 +302,18 @@ export class RequestForAttestation implements IRequestForAttestation {
     return this
   }
 
-  public async signWithDid(
+  public async signWithDidKey(
     signer: KeystoreSigner,
-    did: IDidDetails,
+    didDetails: DidDetails,
+    key: DidKey['id'],
     challenge?: string
   ): Promise<this> {
-    const { signature, keyId } = await DidUtils.signWithDid(
-      makeSigningData(this, challenge),
-      did,
+    const { signature, keyId } = await didDetails.signPayload(
       signer,
-      KeyRelationship.authentication
+      makeSigningData(this, challenge),
+      key
     )
     return this.addSignature(signature, keyId, challenge)
-  }
-
-  public async signWithKey(
-    signer: KeystoreSigner<string>,
-    key: IDidKeyDetails,
-    challenge?: string
-  ): Promise<this> {
-    const { signature } = await DidUtils.signWithKey(
-      makeSigningData(this, challenge),
-      key,
-      signer
-    )
-    return this.addSignature(signature, key.id, challenge)
   }
 
   private static getHashLeaves(
