@@ -5,33 +5,38 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { encodeAddress } from '@polkadot/util-crypto'
-import {
-  IDidIdentifier,
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
+
+import type {
   DidKey,
-  IIdentity,
-  KeystoreSigner,
-  KeyRelationship,
   DidServiceEndpoint,
+  IDidDetails,
+  IDidIdentifier,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+
+import type {
+  MapKeysToRelationship,
+  PublicKeys,
+  ServiceEndpoints,
+} from '../types'
 import type { DidCreationDetails } from './DidDetails'
-import type { MapKeyToRelationship } from '../types'
-import {
-  getEncodingForSigningKeyType,
-  getKiltDidFromIdentifier,
-  getSignatureAlgForKeyType,
-} from '../Did.utils'
-import { DidDetails } from './DidDetails'
-import { FullDidDetails } from './FullDidDetails'
 import {
   checkLightDidCreationDetails,
+  decodeAndDeserializeAdditionalLightDidDetails,
+  getEncodingForSigningKeyType,
+  getSigningKeyTypeFromEncoding,
+  LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
-import { generateCreateTxFromDidDetails } from '../Did.chain'
+import { DidDetails } from './DidDetails'
+import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
+
+export type LightDidKeyCreationInput = Pick<DidKey, 'type'> & {
+  publicKey: Uint8Array
+}
 
 /**
  * The options that can be used to create a light DID.
@@ -41,12 +46,12 @@ export type LightDidCreationDetails = {
    * The DID authentication key. This is mandatory and will be used as the first authentication key
    * of the full DID upon migration.
    */
-  authenticationKey: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
+  authenticationKey: LightDidKeyCreationInput
   /**
    * The optional DID encryption key. If present, it will be used as the first key agreement key
    * of the full DID upon migration.
    */
-  encryptionKey?: Pick<DidKey, 'type'> & { publicKey: Uint8Array }
+  encryptionKey?: LightDidKeyCreationInput
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
@@ -73,10 +78,10 @@ export class LightDidDetails extends DidDetails {
 
   public readonly identifier: IDidIdentifier
 
-  private constructor({
-    identifier,
-    ...creationDetails
-  }: DidCreationDetails & { identifier: IDidIdentifier }) {
+  private constructor(
+    identifier: IDidIdentifier,
+    creationDetails: DidCreationDetails
+  ) {
     super(creationDetails)
 
     this.identifier = identifier
@@ -119,61 +124,74 @@ export class LightDidDetails extends DidDetails {
       did = did.concat(':', encodedDetails)
     }
 
-    const keys: Map<DidKey['id'], Omit<DidKey, 'id'>> = new Map()
-
     // Authentication key always has the #authentication ID.
-    keys.set(authenticationKeyId, authenticationKey)
-    const keyRelationships: MapKeyToRelationship = {
-      authentication: [authenticationKeyId],
+    const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
+    const keyRelationships: MapKeysToRelationship = {
+      authentication: new Set(authenticationKeyId),
     }
 
     // Encryption key always has the #encryption ID.
     if (encryptionKey) {
       keys.set(encryptionKeyId, encryptionKey)
-      keyRelationships.keyAgreement = [encryptionKeyId]
+      keyRelationships.keyAgreement = new Set(encryptionKeyId)
     }
 
-    return new LightDidDetails({
-      identifier: id.substring(2),
+    const endpoints: ServiceEndpoints = serviceEndpoints.reduce(
+      (res, service) => {
+        res.set(service.id, service)
+        return res
+      },
+      new Map()
+    )
+
+    return new LightDidDetails(id.substring(2), {
       did,
       keys,
       keyRelationships,
+      serviceEndpoints: endpoints,
+    })
+  }
+
+  public static fromUri(uri: IDidDetails['did']): LightDidDetails {
+    const { identifier, version, encodedDetails, fragment, type } =
+      parseDidUri(uri)
+
+    if (type !== 'light') {
+      throw new Error(
+        `Cannot build a light DID from the provided URI ${uri} because it does not refer to a light DID.`
+      )
+    }
+    if (fragment) {
+      throw new Error(
+        `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
+      )
+    }
+    const authenticationKey: LightDidKeyCreationInput = {
+      publicKey: decodeAddress(identifier.substring(2), false, 38),
+      type: getSigningKeyTypeFromEncoding(identifier.substring(2)) as string,
+    }
+    if (!encodedDetails) {
+      return LightDidDetails.fromDetails({ authenticationKey })
+    }
+    const { encryptionKey, serviceEndpoints } =
+      decodeAndDeserializeAdditionalLightDidDetails(encodedDetails, version)
+    return LightDidDetails.fromDetails({
+      authenticationKey,
+      encryptionKey,
       serviceEndpoints,
     })
   }
 
-  // Return the only authentication key of this light DID.
-  public get authenticationKey(): DidKey {
-    // Always exists
-    return this.getKeys(KeyRelationship.authentication).pop() as DidKey
-  }
-
-  // Return the only encryption key, if present, of this light DID.
-  public get encryptionKey(): DidKey | undefined {
-    return this.getKeys(KeyRelationship.keyAgreement).pop()
-  }
-
-  public async migrate(
-    submitter: IIdentity,
-    signer: KeystoreSigner
-  ): Promise<FullDidDetails> {
-    const creationTx = await generateCreateTxFromDidDetails(
-      this,
-      submitter.address,
-      {
-        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
-        signingPublicKey: this.authenticationKey.publicKey,
-        signer,
-      }
-    )
-    await BlockchainUtils.signAndSubmitTx(creationTx, submitter, {
-      reSign: true,
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-    })
-    const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
-    if (!fullDidDetails) {
-      throw new Error('Something went wrong during the migration.')
+  public static fromIdentifier(
+    identifier: IDidIdentifier,
+    keyType: LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES = LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519
+  ): LightDidDetails {
+    const authenticationKey: LightDidKeyCreationInput = {
+      publicKey: decodeAddress(identifier, false, 38),
+      type: keyType,
     }
-    return fullDidDetails
+    return LightDidDetails.fromDetails({
+      authenticationKey,
+    })
   }
 }

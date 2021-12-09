@@ -6,44 +6,49 @@
  */
 
 import type {
-  IDidDetails,
   DidKey,
-  DidServiceEndpoint,
-  KeyRelationship,
-  IDidIdentifier,
-  KeystoreSigner,
   DidPublicKey,
+  DidServiceEndpoint,
+  IDidDetails,
+  IDidIdentifier,
+  KeyRelationship,
+  KeystoreSigner,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { checkDidCreationDetails } from './DidDetails.utils'
-import type { MapKeyToRelationship } from '../types'
-import { getSignatureAlgForKeyType } from '../Did.utils'
+
+import type {
+  MapKeysToRelationship,
+  PublicKeys,
+  ServiceEndpoints,
+} from '../types'
+import {
+  checkDidCreationDetails,
+  getSignatureAlgForKeyType,
+} from './DidDetails.utils'
 
 export type DidCreationDetails = {
   did: IDidDetails['did']
   // Accepts a list of keys where the ID does not include the DID URI.
-  keys: Map<DidKey['id'], Omit<DidKey, 'id'>>
-  keyRelationships: MapKeyToRelationship
+  keys: PublicKeys
+  keyRelationships: MapKeysToRelationship
   // Accepts a list of service endpoints where the ID does not include the DID URI.
-  serviceEndpoints: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>
+  serviceEndpoints: ServiceEndpoints
 }
 
 export abstract class DidDetails implements IDidDetails {
   public readonly did: IDidDetails['did']
 
-  protected publicKeys: Map<string, Omit<DidKey, 'id'>> = new Map()
+  protected publicKeys: PublicKeys
 
-  protected keyRelationships: MapKeyToRelationship & {
-    none?: Array<DidKey['id']>
-  } = {}
+  protected keyRelationships: MapKeysToRelationship
 
-  protected services: Map<string, Omit<DidServiceEndpoint, 'id'>> = new Map()
+  protected serviceEndpoints: ServiceEndpoints
 
   protected constructor({
     did,
     keys,
     keyRelationships,
-    serviceEndpoints = [],
+    serviceEndpoints = new Map(),
   }: DidCreationDetails) {
     checkDidCreationDetails({
       did,
@@ -51,14 +56,11 @@ export abstract class DidDetails implements IDidDetails {
       keyRelationships,
       serviceEndpoints,
     })
+
     this.did = did
-    Object.entries(keys).forEach(([keyId, key]) => {
-      this.publicKeys.set(keyId, key)
-    })
+    this.publicKeys = keys
     this.keyRelationships = keyRelationships
-    serviceEndpoints.forEach(({ id, ...details }) => {
-      this.services.set(id, details)
-    })
+    this.serviceEndpoints = serviceEndpoints
   }
 
   public abstract get identifier(): IDidIdentifier
@@ -76,13 +78,13 @@ export abstract class DidDetails implements IDidDetails {
 
   public getKeys(relationship?: KeyRelationship | 'none'): DidKey[] {
     const keyIds = relationship
-      ? this.keyRelationships[relationship] || []
-      : [...this.publicKeys.keys()]
-    return keyIds.map((keyId) => this.getKey(keyId) as DidKey)
+      ? this.keyRelationships[relationship] || new Set()
+      : new Set(this.publicKeys.keys())
+    return [...keyIds].map((keyId) => this.getKey(keyId) as DidKey)
   }
 
   public getEndpoint(id: string): DidServiceEndpoint | undefined {
-    const endpointDetails = this.services.get(id)
+    const endpointDetails = this.serviceEndpoints.get(id)
     if (!endpointDetails) {
       return undefined
     }
@@ -94,10 +96,10 @@ export abstract class DidDetails implements IDidDetails {
 
   public getEndpoints(type?: string): DidServiceEndpoint[] {
     const serviceEndpointsEntries = type
-      ? [...this.services.entries()].filter(([, details]) => {
+      ? [...this.serviceEndpoints.entries()].filter(([, details]) => {
           return details.types.includes(type)
         })
-      : [...this.services.entries()]
+      : [...this.serviceEndpoints.entries()]
 
     return serviceEndpointsEntries.map(([id, details]) => {
       return { id, ...details }

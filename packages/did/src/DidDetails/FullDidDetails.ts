@@ -5,34 +5,34 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
+import type { Extrinsic } from '@polkadot/types/interfaces'
+
+import type {
   DidKey,
   IDidIdentifier,
-  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { Extrinsic } from '@polkadot/types/interfaces'
-import { DidDetails } from './DidDetails'
+
+import type {
+  MapKeysToRelationship,
+  PublicKeys,
+  ServiceEndpoints,
+} from '../types'
+import type { DidCreationDetails } from './DidDetails'
 import {
-  getIdentifierFromKiltDid,
-  getKiltDidFromIdentifier,
-  getSignatureAlgForKeyType,
-} from '../Did.utils'
-import { DidCreationDetails, MapKeyToRelationship } from '../types'
+  getKeysForExtrinsic,
+  defaultExtrinsicKeySelection,
+} from './FullDidDetails.utils'
+import { DidDetails } from './DidDetails'
+import { getSignatureAlgForKeyType } from './DidDetails.utils'
 import {
   generateDidAuthenticatedTx,
-  queryById,
-  queryLastTxCounter,
+  queryDetails,
+  queryNonce,
   queryServiceEndpoints,
 } from '../Did.chain'
-import { getKeysForExtrinsic } from './FullDidDetails.utils'
-
-function defaultExtrinsicKeySelection(
-  keysForExtrinsic: DidKey[]
-): DidKey | null {
-  return keysForExtrinsic[0] || null
-}
+import { getKiltDidFromIdentifier } from '../Did.utils'
 
 export class FullDidDetails extends DidDetails {
   /// The latest version for KILT full DIDs.
@@ -40,27 +40,24 @@ export class FullDidDetails extends DidDetails {
 
   public readonly identifier: IDidIdentifier
 
-  // eslint-disable-next-line no-useless-constructor
-  private constructor(
-    identifier: IDidIdentifier,
-    creationDetails: DidCreationDetails
-  ) {
+  private constructor({
+    identifier,
+    ...creationDetails
+  }: DidCreationDetails & { identifier: IDidIdentifier }) {
     super(creationDetails)
+
     this.identifier = identifier
   }
 
   // This is used to re-create a full DID from the chain.
   public static async fromChainInfo(
-    didIdentifier: IDidIdentifier
+    didIdentifier: IDidIdentifier,
+    version: number = this.FULL_DID_LATEST_VERSION
   ): Promise<FullDidDetails | null> {
-    const didRec = await queryById(didIdentifier)
+    const didRec = await queryDetails(didIdentifier)
     if (!didRec) return null
 
-    const didUri = getKiltDidFromIdentifier(
-      didIdentifier,
-      'full',
-      FullDidDetails.FULL_DID_LATEST_VERSION
-    )
+    const didUri = getKiltDidFromIdentifier(didIdentifier, 'full', version)
 
     const {
       publicKeys,
@@ -70,26 +67,35 @@ export class FullDidDetails extends DidDetails {
       keyAgreementKeys,
     } = didRec
 
-    const keyRelationships: MapKeyToRelationship = {
-      [KeyRelationship.authentication]: [authenticationKey],
-      [KeyRelationship.keyAgreement]: keyAgreementKeys,
+    const keys: PublicKeys = publicKeys.reduce((res, key) => {
+      res.set(key.id, key)
+      return res
+    }, new Map())
+
+    const keyRelationships: MapKeysToRelationship = {
+      authentication: new Set(authenticationKey),
+      keyAgreement: new Set(keyAgreementKeys),
     }
     if (assertionMethodKey) {
-      keyRelationships[KeyRelationship.assertionMethod] = [assertionMethodKey]
+      keyRelationships.assertionMethod = new Set(assertionMethodKey)
     }
     if (capabilityDelegationKey) {
-      keyRelationships[KeyRelationship.capabilityDelegation] = [
-        capabilityDelegationKey,
-      ]
+      keyRelationships.capabilityDelegation = new Set(capabilityDelegationKey)
     }
 
-    const endpoints = await queryServiceEndpoints(didUri)
+    const serviceEndpoints: ServiceEndpoints = (
+      await queryServiceEndpoints(didIdentifier)
+    ).reduce((res, service) => {
+      res.set(service.id, service)
+      return res
+    }, new Map())
 
-    return new FullDidDetails(didIdentifier, {
+    return new FullDidDetails({
+      identifier: didIdentifier,
       did: didUri,
-      keys: publicKeys,
+      keys,
       keyRelationships,
-      serviceEndpoints: endpoints,
+      serviceEndpoints,
     })
   }
 
@@ -112,12 +118,12 @@ export class FullDidDetails extends DidDetails {
       )
     }
     return generateDidAuthenticatedTx({
-      didIdentifier: getIdentifierFromKiltDid(this.did),
+      didIdentifier: this.identifier,
       signingPublicKey: signingKey.publicKey,
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
-      txCounter: await queryLastTxCounter(this.did),
+      txCounter: await queryNonce(this.did),
       submitter: submitterAccount,
     })
   }

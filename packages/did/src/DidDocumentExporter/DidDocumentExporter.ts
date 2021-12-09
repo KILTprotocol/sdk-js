@@ -5,25 +5,24 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DID
- */
-
 import { base58Encode } from '@polkadot/util-crypto'
-import { hexToU8a } from '@polkadot/util'
 
 import type {
   DidDocument,
-  JsonLDDidDocument,
   IDidDetails,
   IDidDocumentExporter,
+  JsonLDDidDocument,
 } from '@kiltprotocol/types'
 import {
   KeyRelationship,
   VerificationKeyTypesMap,
   EncryptionKeyTypesMap,
 } from '@kiltprotocol/types'
+
+/**
+ * @packageDocumentation
+ * @module DID
+ */
 
 function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   const result: any = {}
@@ -39,10 +38,9 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
         id: authKey.id,
         controller: details.did,
         type: VerificationKeyTypesMap[authKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(authKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(authKey.publicKey),
       })
-      // Parse only the key ID from the complete key URI
-      return authKey.id
+      return `${details.did}#${authKey.id}`
     })
   if (authenticationKeysIds.length) {
     result.authentication = authenticationKeysIds
@@ -55,9 +53,9 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
         id: keyAgrKey.id,
         controller: details.did,
         type: EncryptionKeyTypesMap[keyAgrKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(keyAgrKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(keyAgrKey.publicKey),
       })
-      return keyAgrKey.id
+      return `${details.did}#${keyAgrKey.id}`
     })
   if (keyAgreementKeysIds.length) {
     result.keyAgreement = keyAgreementKeysIds
@@ -70,9 +68,9 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
         id: assKey.id,
         controller: details.did,
         type: VerificationKeyTypesMap[assKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(assKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(assKey.publicKey),
       })
-      return assKey.id
+      return `${details.did}#${assKey.id}`
     })
   if (assertionKeysIds.length) {
     result.assertionMethod = assertionKeysIds
@@ -85,9 +83,9 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
         id: delKey.id,
         controller: details.did,
         type: VerificationKeyTypesMap[delKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(delKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(delKey.publicKey),
       })
-      return delKey.id
+      return `${details.did}#${delKey.id}`
     })
   if (delegationKeyIds.length) {
     result.capabilityDelegation = delegationKeyIds
@@ -97,7 +95,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   if (serviceEndpoints.length) {
     result.service = serviceEndpoints.map((service) => {
       return {
-        id: service.id,
+        id: `${details.did}#${service.id}`,
         type: service.types,
         serviceEndpoint: service.urls,
       }

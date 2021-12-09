@@ -6,13 +6,41 @@
  */
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
+
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { DidServiceEndpoint } from '@kiltprotocol/types'
+
 import type { LightDidCreationDetails } from './LightDidDetails'
-import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
+import { parseDidUri } from '../Did.utils'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
+
+export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
+  ed25519 = 'ed25519',
+  sr25519 = 'sr25519',
+}
+
+const EncodingForSigningKeyType = {
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
+}
+
+export function getEncodingForSigningKeyType(
+  keyType: string
+): string | undefined {
+  return EncodingForSigningKeyType[keyType]
+}
+
+const SigningKeyTypeFromEncoding = {
+  '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
+  '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
+}
+
+export function getSigningKeyTypeFromEncoding(
+  encoding: string
+): string | undefined {
+  return SigningKeyTypeFromEncoding[encoding]?.toString()
+}
 
 export function checkLightDidCreationDetails(
   details: LightDidCreationDetails
@@ -37,7 +65,7 @@ export function checkLightDidCreationDetails(
     let isServiceIdADid = true
     try {
       // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-      parseDidUrl(service.id)
+      parseDidUri(service.id)
     } catch {
       // Here if parseDidUrl throws -> service.id is NOT a DID.
       isServiceIdADid = false
@@ -55,16 +83,6 @@ export function checkLightDidCreationDetails(
       )
     }
   })
-}
-
-export function mergeServiceAndServiceId(
-  serviceId: string,
-  service: Omit<DidServiceEndpoint, 'id'>
-): DidServiceEndpoint {
-  return {
-    id: serviceId,
-    ...service,
-  }
 }
 
 /**

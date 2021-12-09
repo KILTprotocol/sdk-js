@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import {
   randomAsU8a,
   cryptoWaitReady,
@@ -13,13 +14,10 @@ import {
   naclSeal,
   randomAsHex,
   blake2AsU8a,
-  blake2AsHex,
-  encodeAddress,
 } from '@polkadot/util-crypto'
-import { Crypto, Keyring } from '@kiltprotocol/utils'
-import {
-  DidKey,
-  KeyRelationship,
+import { u8aEq } from '@polkadot/util'
+
+import type {
   KeyringPair,
   Keystore,
   KeystoreSigningData,
@@ -27,13 +25,7 @@ import {
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { KeypairType } from '@polkadot/util-crypto/types'
-import { u8aEq } from '@polkadot/util'
-import { getKiltDidFromIdentifier } from '../Did.utils'
-import { FullDidDetails, LightDidDetails } from '../DidDetails'
-import { DefaultResolver, DidUtils } from '..'
-import { INewPublicKey, PublicKeyRoleAssignment } from '../types'
+import { Crypto, Keyring } from '@kiltprotocol/utils'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -273,137 +265,4 @@ export class DemoKeystore
   public static getKeypairTypeForAlg(alg: string): KeypairType {
     return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
   }
-}
-
-/**
- * Creates an instance of [[FullDidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.
- *
- * @param keystore The keystore to generate and store the DID private keys.
- * @param mnemonicOrHexSeed The mnemonic phrase or HEX seed for key generation.
- * @param signingKeyType One of the supported [[SigningAlgorithms]] to generate the DID authentication key.
- *
- * @returns A promise resolving to a [[FullDidDetails]] object. The resulting object is NOT stored on chain.
- */
-export async function createLocalDemoDidFromSeed(
-  keystore: DemoKeystore,
-  mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Ed25519
-): Promise<FullDidDetails> {
-  const did = getKiltDidFromIdentifier(
-    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38),
-    'full'
-  )
-
-  const generateKeypairForDid = async (
-    derivation: string,
-    alg: string,
-    keytype: string
-  ): Promise<DidKey> => {
-    const seed = derivation
-      ? `${mnemonicOrHexSeed}//${derivation}`
-      : mnemonicOrHexSeed
-    const keyId = `${did}#${blake2AsHex(seed, 64)}`
-    const { publicKey } = await keystore.generateKeypair<any>({
-      alg,
-      seed,
-    })
-    return {
-      id: keyId,
-      type: keytype,
-      publicKey,
-    }
-  }
-
-  return newFullDidDetailsfromKeys({
-    [KeyRelationship.authentication]: await generateKeypairForDid(
-      '',
-      signingKeyType,
-      signingKeyType
-    ),
-    [KeyRelationship.assertionMethod]: await generateKeypairForDid(
-      'assertionMethod',
-      signingKeyType,
-      signingKeyType
-    ),
-    [KeyRelationship.capabilityDelegation]: await generateKeypairForDid(
-      'capabilityDelegation',
-      signingKeyType,
-      signingKeyType
-    ),
-    [KeyRelationship.keyAgreement]: await generateKeypairForDid(
-      'keyAgreement',
-      EncryptionAlgorithms.NaclBox,
-      'x25519'
-    ),
-  })
-}
-
-export async function createLightDidFromSeed(
-  keystore: DemoKeystore,
-  mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Sr25519
-): Promise<LightDidDetails> {
-  const authenticationPublicKey = await keystore.generateKeypair({
-    alg: signingKeyType,
-    seed: mnemonicOrHexSeed,
-  })
-
-  return new LightDidDetails({
-    authenticationKey: {
-      publicKey: authenticationPublicKey.publicKey,
-      type: authenticationPublicKey.alg,
-    },
-  })
-}
-
-export async function createOnChainDidFromSeed(
-  paymentAccount: KeyringPair,
-  keystore: DemoKeystore,
-  mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Ed25519
-): Promise<FullDidDetails> {
-  const makeKey = (
-    seed: string,
-    alg: SigningAlgorithms | EncryptionAlgorithms
-  ): Promise<INewPublicKey> =>
-    keystore
-      .generateKeypair({
-        alg,
-        seed,
-      })
-      .then((key) => ({ ...key, type: DemoKeystore.getKeypairTypeForAlg(alg) }))
-
-  const keys: PublicKeyRoleAssignment = {
-    [KeyRelationship.authentication]: await makeKey(
-      mnemonicOrHexSeed,
-      signingKeyType
-    ),
-    [KeyRelationship.assertionMethod]: await makeKey(
-      `${mnemonicOrHexSeed}//assertionMethod`,
-      signingKeyType
-    ),
-    [KeyRelationship.capabilityDelegation]: await makeKey(
-      `${mnemonicOrHexSeed}//capabilityDelegation`,
-      signingKeyType
-    ),
-    [KeyRelationship.keyAgreement]: await makeKey(
-      `${mnemonicOrHexSeed}//keyAgreement`,
-      EncryptionAlgorithms.NaclBox
-    ),
-  }
-
-  const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
-    keystore,
-    paymentAccount.address,
-    keys
-  )
-  await BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
-    reSign: true,
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
-  })
-  const queried = await DefaultResolver.resolveDoc(did)
-  if (queried) {
-    return queried.details as FullDidDetails
-  }
-  throw Error(`failed to write Did${did}`)
 }

@@ -6,8 +6,10 @@
  */
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
+
 import type { DidKey, VerificationKeyRelationship } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
+
 import { FullDidDetails } from './FullDidDetails'
 
 interface MethodMapping<V extends string> {
@@ -44,4 +46,10 @@ export function getKeysForExtrinsic(
   return keyRelationship === 'paymentAccount'
     ? []
     : fullDidDetails.getKeys(keyRelationship)
+}
+
+export function defaultExtrinsicKeySelection(
+  keysForExtrinsic: DidKey[]
+): DidKey | null {
+  return keysForExtrinsic[0] || null
 }

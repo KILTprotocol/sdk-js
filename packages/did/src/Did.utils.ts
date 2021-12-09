@@ -5,25 +5,28 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { checkAddress } from '@polkadot/util-crypto'
+import { isHex, u8aToHex } from '@polkadot/util'
+
 import type {
+  DidKey,
   DidSignature,
   IDidDetails,
+  IDidIdentifier,
   IDidResolver,
-  DidKey,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
-import { SDKErrors, Crypto } from '@kiltprotocol/utils'
-import { isHex } from '@polkadot/util'
-import { checkAddress } from '@polkadot/util-crypto'
-import { DefaultResolver } from './DidResolver/DefaultResolver'
-import type { PublicKeyEnum, IDidParsingResult } from './types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-export const KILT_DID_PREFIX = 'did:kilt:'
+import { FullDidDetails } from './DidDetails'
+import { DefaultResolver } from './DidResolver'
+
+const KILT_DID_PREFIX = 'did:kilt:'
 
 // Matches the following full DIDs
 // - did:kilt:<kilt_address>
 // - did:kilt:<kilt_address>#<fragment>
-export const FULL_KILT_DID_REGEX =
+const FULL_KILT_DID_REGEX =
   /^did:kilt:(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
@@ -31,101 +34,37 @@ export const FULL_KILT_DID_REGEX =
 // - did:kilt:light:01<kilt_address>:<encoded_details>
 // - did:kilt:light:10<kilt_address>#<fragment>
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
-export const LIGHT_KILT_DID_REGEX =
+const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
-export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
-  ed25519 = 'ed25519',
-  sr25519 = 'sr25519',
-  secp256k1 = 'secp256k1',
-}
-
-export enum CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES {
-  x25519 = 'x25519',
-}
-
-export const CHAIN_SUPPORTED_KEY_TYPES = {
-  ...CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES,
-  ...CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES,
-}
-export type CHAIN_SUPPORTED_KEY_TYPES = typeof CHAIN_SUPPORTED_KEY_TYPES
-
-const SignatureAlgForKeyType = {
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.ed25519]: 'ed25519',
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.sr25519]: 'sr25519',
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.secp256k1]: 'ecdsa-secp256k1',
-}
-
-export function getSignatureAlgForKeyType(keyType: string): string | undefined {
-  return SignatureAlgForKeyType[keyType]
-}
-
-export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
-  ed25519 = 'ed25519',
-  sr25519 = 'sr25519',
-}
-
-const EncodingForSigningKeyType = {
-  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
-  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
-}
-
-const SigningKeyTypeFromEncoding = {
-  '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
-  '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
-}
-
-export function getEncodingForSigningKeyType(
-  keyType: string
-): string | undefined {
-  return EncodingForSigningKeyType[keyType]
-}
-
-export function getSigningKeyTypeFromEncoding(
-  encoding: string
-): string | undefined {
-  return SigningKeyTypeFromEncoding[encoding]?.toString()
-}
-
-function getLightDidFromIdentifier(identifier: string, didVersion = 1): string {
-  const versionString = didVersion === 1 ? '' : `:v${didVersion}`
-  return KILT_DID_PREFIX.concat(`light${versionString}:${identifier}`)
-}
-
-function getFullDidFromIdentifier(identifier: string, didVersion = 1): string {
-  const versionString = didVersion === 1 ? '' : `v${didVersion}:`
-  return KILT_DID_PREFIX.concat(`${versionString}${identifier}`)
-}
-
 export function getKiltDidFromIdentifier(
-  identifier: string,
+  identifier: IDidIdentifier,
   didType: 'full' | 'light',
-  didVersion = 1
-): string {
-  if (identifier.startsWith(KILT_DID_PREFIX)) {
-    if (
-      FULL_KILT_DID_REGEX.exec(identifier) ||
-      LIGHT_KILT_DID_REGEX.exec(identifier)
-    ) {
-      return identifier
-    }
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT
-  }
-
-  switch (didType) {
-    case 'full':
-      return getFullDidFromIdentifier(identifier, didVersion)
-    case 'light':
-      return getLightDidFromIdentifier(identifier, didVersion)
-    default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(didType)
-  }
+  version: number,
+  encodedDetails?: string
+): IDidDetails['did'] {
+  const typeString = didType === 'full' ? '' : `light:`
+  const versionString = version === 1 ? '' : `v${version}:`
+  const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
+  return `${KILT_DID_PREFIX}${typeString}${versionString}${identifier}${encodedDetailsString}`
 }
 
-export function parseDidUrl(didUrl: string): IDidParsingResult {
-  let matches = FULL_KILT_DID_REGEX.exec(didUrl)?.groups
+export type IDidParsingResult = {
+  did: IDidDetails['did']
+  version: number
+  type: 'light' | 'full'
+  identifier: IDidIdentifier
+  fragment?: string
+  authKeyTypeEncoding?: string
+  encodedDetails?: string
+}
+
+export function parseDidUri(didUri: string): IDidParsingResult {
+  let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
-    const version = matches.version ? parseInt(matches.version, 10) : 1
+    const version = matches.version
+      ? parseInt(matches.version, 10)
+      : FullDidDetails.FULL_DID_LATEST_VERSION
     return {
       did: getKiltDidFromIdentifier(matches.identifier, 'full', version),
       version,
@@ -136,12 +75,18 @@ export function parseDidUrl(didUrl: string): IDidParsingResult {
   }
 
   // If it fails to parse full DID, try with light DID
-  matches = LIGHT_KILT_DID_REGEX.exec(didUrl)?.groups
+  matches = LIGHT_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier && matches.auth_key_type) {
     const version = matches.version ? parseInt(matches.version, 10) : 1
     const lightDidIdentifier = matches.auth_key_type.concat(matches.identifier)
+    const encodedDetails = matches.encoded_details
     return {
-      did: getKiltDidFromIdentifier(lightDidIdentifier, 'light', version),
+      did: getKiltDidFromIdentifier(
+        lightDidIdentifier,
+        'light',
+        version,
+        encodedDetails
+      ),
       version,
       type: 'light',
       identifier: matches.auth_key_type.concat(matches.identifier),
@@ -150,11 +95,7 @@ export function parseDidUrl(didUrl: string): IDidParsingResult {
     }
   }
 
-  throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUrl)
-}
-
-export function getIdentifierFromKiltDid(did: string): string {
-  return parseDidUrl(did).identifier
+  throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
 }
 
 export function validateKiltDid(
@@ -164,7 +105,7 @@ export function validateKiltDid(
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, type, fragment } = parseDidUrl(input)
+  const { identifier, type, fragment } = parseDidUri(input)
   if (!allowFragment && fragment) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
@@ -201,13 +142,17 @@ export function validateDidSignature(signature: DidSignature): boolean {
   }
 }
 
-export function formatPublicKey(key: DidKey): PublicKeyEnum {
-  const { type, publicKey } = key
-  return { [type]: publicKey }
+type DidSignatureVerificationFromDetailsInput = {
+  message: string | Uint8Array
+  signature: string
+  keyId: DidKey['id']
+  expectedVerificationMethod?: VerificationKeyRelationship
+  details: IDidDetails
 }
 
 export type VerificationResult = {
   verified: boolean
+  reason?: string
   didDetails?: IDidDetails
   key?: DidKey
 }
@@ -216,33 +161,52 @@ function verifyDidSignatureFromDetails({
   message,
   signature,
   keyId,
-  keyRelationship,
-  didDetails,
-}: {
-  message: string | Uint8Array
-  signature: string | Uint8Array
-  keyId: string
-  didDetails: IDidDetails
-  keyRelationship?: VerificationKeyRelationship
-}): VerificationResult {
-  const key = keyRelationship
-    ? didDetails?.getKeys(keyRelationship).find((k) => k.id === keyId)
-    : didDetails?.getKey(keyId)
-  if (
-    !key ||
-    key.controller !== didDetails.did ||
-    !SignatureAlgForKeyType[key.type]
-  )
+  expectedVerificationMethod,
+  details,
+}: DidSignatureVerificationFromDetailsInput): VerificationResult {
+  const key = details.getKey(keyId)
+  if (!key) {
     return {
       verified: false,
-      didDetails,
-      key,
+      reason: `No key with ID ${keyId} for the DID ${details.did}`,
     }
+  }
+  // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
+  if (
+    expectedVerificationMethod &&
+    !details
+      .getKeys(expectedVerificationMethod)
+      .map((verKey) => verKey.id)
+      .includes(keyId)
+  ) {
+    return {
+      verified: false,
+      reason: `No key with ID ${keyId} for the verification method ${expectedVerificationMethod}`,
+    }
+  }
+  const isSignatureValid = Crypto.verify(
+    message,
+    signature,
+    u8aToHex(key.publicKey)
+  )
+  if (!isSignatureValid) {
+    return {
+      verified: false,
+      reason: 'Invalid signature',
+    }
+  }
   return {
-    verified: Crypto.verify(message, signature, key.publicKeyHex),
-    didDetails,
+    verified: true,
+    didDetails: details,
     key,
   }
+}
+
+export type DidSignatureVerificationInput = {
+  message: string | Uint8Array
+  signature: DidSignature
+  expectedVerificationMethod?: VerificationKeyRelationship
+  resolver?: IDidResolver
 }
 
 // Verify a DID signature given the key ID of the signature.
@@ -250,38 +214,33 @@ function verifyDidSignatureFromDetails({
 export async function verifyDidSignature({
   message,
   signature,
-  keyId,
-  keyRelationship,
+  expectedVerificationMethod,
   resolver = DefaultResolver,
-}: {
-  message: string | Uint8Array
-  signature: string | Uint8Array
-  keyId: DidKey['id']
-  resolver?: IDidResolver
-  keyRelationship?: VerificationKeyRelationship
-}): Promise<VerificationResult> {
-  // resolveDoc can accept a key ID, but it will always return the DID details.
-  const resolutionDetails = await resolver.resolveDoc(keyId)
+}: DidSignatureVerificationInput): Promise<VerificationResult> {
+  const resolutionDetails = await resolver.resolveDoc(signature.keyId)
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
     return {
       verified: false,
+      reason: `No result for provided key ID ${signature.keyId}`,
     }
   }
   // Verification also fails if the DID has been deleted.
   if (resolutionDetails.metadata.deactivated) {
     return {
       verified: false,
+      reason: 'DID for provided key is deactivated.',
     }
   }
   // Verification also fails if the signer is a migrated light DID.
   if (resolutionDetails.metadata.canonicalId) {
     return {
       verified: false,
+      reason: 'DID for provided key has been migrated and not usable anymore.',
     }
   }
   // Otherwise, the details used are either the migrated full DID details or the light DID details.
-  const didDetails = (
+  const details = (
     resolutionDetails.metadata.canonicalId
       ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
           ?.details
@@ -290,30 +249,9 @@ export async function verifyDidSignature({
 
   return verifyDidSignatureFromDetails({
     message,
-    signature,
-    keyId,
-    keyRelationship,
-    didDetails,
+    signature: signature.signature,
+    keyId: signature.keyId,
+    expectedVerificationMethod,
+    details,
   })
 }
-
-// export async function getDidAuthenticationSignature(
-//   toSign: Uint8Array | string,
-//   did: DidDetails,
-//   signer: KeystoreSigner
-// ): Promise<DidSignature> {
-//   const { keyId, signature } = await signWithDid(
-//     toSign,
-//     did,
-//     signer,
-//     KeyRelationship.authentication
-//   )
-//   return { keyId, signature: Crypto.u8aToHex(signature) }
-// }
-
-// export function assembleDidFragment(
-//   didUri: IDidDetails['did'],
-//   fragmentId: string
-// ): string {
-//   return `${didUri}#${fragmentId}`
-// }

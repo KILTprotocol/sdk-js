@@ -5,9 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DID
- */
-
-export { DidDocumentExporter, exportToDidDocument } from './DidDocumentExporter'
+export * from './DidDocumentExporter'
