@@ -7,7 +7,7 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 
-import type { DidCreationDetails } from './DidDetails'
+import type { DidCreationDetails } from '../types'
 import { validateKiltDid } from '../Did.utils'
 
 export function checkDidCreationDetails({
@@ -33,9 +33,14 @@ export function checkDidCreationDetails({
     }
   })
   const keyIds = new Set<string>(keys.keys())
-  const keyReferences = new Set<string>(
-    Array.prototype.concat(...Object.values(keyRelationships))
-  )
+  const keyReferences = new Set<string>()
+
+  // TODO: Find a more efficient way to populate the keyReferences set
+  Object.values(keyRelationships).forEach((keysRel) => {
+    keysRel.forEach((keyRel) => {
+      keyReferences.add(keyRel)
+    })
+  })
   keyReferences.forEach((id) => {
     if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
   })

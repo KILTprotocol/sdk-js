@@ -9,7 +9,7 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import type { LightDidCreationDetails } from './LightDidDetails'
+import type { LightDidCreationDetails } from '../types'
 import { parseDidUri } from '../Did.utils'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'

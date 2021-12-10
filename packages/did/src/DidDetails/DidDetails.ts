@@ -19,6 +19,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import { u8aToHex } from '@polkadot/util'
 
 import type {
+  DidCreationDetails,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
@@ -27,15 +28,6 @@ import {
   checkDidCreationDetails,
   getSignatureAlgForKeyType,
 } from './DidDetails.utils'
-
-export type DidCreationDetails = {
-  did: IDidDetails['did']
-  // Accepts a list of keys where the ID does not include the DID URI.
-  keys: PublicKeys
-  keyRelationships: MapKeysToRelationship
-  // Accepts a list of service endpoints where the ID does not include the DID URI.
-  serviceEndpoints: ServiceEndpoints
-}
 
 export abstract class DidDetails implements IDidDetails {
   public readonly did: IDidDetails['did']

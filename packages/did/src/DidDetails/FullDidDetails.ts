@@ -15,13 +15,13 @@ import type {
 } from '@kiltprotocol/types'
 
 import type {
+  DidCreationDetails,
   DidKeySelection,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
 } from '../types'
-import type { DidCreationDetails } from './DidDetails'
-import { getKeysForExtrinsic } from './FullDidDetails.utils'
+import { methodMapping } from './FullDidDetails.utils'
 import { DidDetails } from './DidDetails'
 import { getSignatureAlgForKeyType } from './DidDetails.utils'
 import {
@@ -30,12 +30,13 @@ import {
   queryNonce,
   queryServiceEndpoints,
 } from '../Did.chain'
-import { defaultDidKeySelection, getKiltDidFromIdentifier } from '../Did.utils'
+import {
+  defaultDidKeySelection,
+  FULL_DID_LATEST_VERSION,
+  getKiltDidFromIdentifier,
+} from '../Did.utils'
 
 export class FullDidDetails extends DidDetails {
-  /// The latest version for KILT full DIDs.
-  public static readonly FULL_DID_LATEST_VERSION = 1
-
   public readonly identifier: IDidIdentifier
 
   private constructor({
@@ -50,7 +51,7 @@ export class FullDidDetails extends DidDetails {
   // This is used to re-create a full DID from the chain.
   public static async fromChainInfo(
     didIdentifier: IDidIdentifier,
-    version: number = this.FULL_DID_LATEST_VERSION
+    version: number = FULL_DID_LATEST_VERSION
   ): Promise<FullDidDetails | null> {
     const didRec = await queryDetails(didIdentifier)
     if (!didRec) return null
@@ -71,14 +72,14 @@ export class FullDidDetails extends DidDetails {
     }, new Map())
 
     const keyRelationships: MapKeysToRelationship = {
-      authentication: new Set(authenticationKey),
+      authentication: new Set([authenticationKey]),
       keyAgreement: new Set(keyAgreementKeys),
     }
     if (assertionMethodKey) {
-      keyRelationships.assertionMethod = new Set(assertionMethodKey)
+      keyRelationships.assertionMethod = new Set([assertionMethodKey])
     }
     if (capabilityDelegationKey) {
-      keyRelationships.capabilityDelegation = new Set(capabilityDelegationKey)
+      keyRelationships.capabilityDelegation = new Set([capabilityDelegationKey])
     }
 
     const serviceEndpoints: ServiceEndpoints = (
@@ -98,7 +99,13 @@ export class FullDidDetails extends DidDetails {
   }
 
   public getKeysForExtrinsic(extrinsic: Extrinsic): DidKey[] {
-    return getKeysForExtrinsic(this, extrinsic)
+    const callMethod = extrinsic.method
+    const { section, method } = callMethod
+    const keyRelationship =
+      methodMapping[section][method] || methodMapping.default.default
+    return keyRelationship === 'paymentAccount'
+      ? []
+      : this.getKeys(keyRelationship)
   }
 
   public async authorizeExtrinsic(

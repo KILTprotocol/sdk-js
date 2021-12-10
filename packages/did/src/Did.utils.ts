@@ -19,8 +19,13 @@ import type {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import type { DidKeySelection } from './types'
-import { FullDidDetails, LightDidDetails } from './DidDetails'
 import { DefaultResolver } from './DidResolver'
+
+/// The latest version for KILT light DIDs.
+export const LIGHT_DID_LATEST_VERSION = 1
+
+/// The latest version for KILT full DIDs.
+export const FULL_DID_LATEST_VERSION = 1
 
 const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -51,9 +56,7 @@ export function getKiltDidFromIdentifier(
   // If no version is specified, take the default one depending on the requested DID type.
   if (!versionValue) {
     versionValue =
-      didType === 'full'
-        ? FullDidDetails.FULL_DID_LATEST_VERSION
-        : LightDidDetails.LIGHT_DID_LATEST_VERSION
+      didType === 'full' ? FULL_DID_LATEST_VERSION : LIGHT_DID_LATEST_VERSION
   }
   const versionString = versionValue === 1 ? '' : `v${version}:`
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
@@ -75,7 +78,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
   if (matches && matches.identifier) {
     const version = matches.version
       ? parseInt(matches.version, 10)
-      : FullDidDetails.FULL_DID_LATEST_VERSION
+      : FULL_DID_LATEST_VERSION
     return {
       did: getKiltDidFromIdentifier(matches.identifier, 'full', version),
       version,

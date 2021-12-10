@@ -177,7 +177,7 @@ export interface IDidChainRecordJSON {
   capabilityDelegationKey?: DidKey['id']
   assertionMethodKey?: DidKey['id']
   publicKeys: DidKey[]
-  lastTxCounter: u64
+  lastTxCounter: BN
 }
 
 // ### DECODED QUERYING (builds on top of raw querying)
@@ -214,7 +214,7 @@ function decodeDidChainRecord(
     publicKeys,
     authenticationKey: authenticationKeyId,
     keyAgreementKeys: keyAgreementKeyIds,
-    lastTxCounter: didDetail.lastTxCounter,
+    lastTxCounter: didDetail.lastTxCounter.toBn(),
   }
   if (didDetail.delegationKey.isSome) {
     didRecord.capabilityDelegationKey = didDetail.delegationKey.unwrap().toHex()

@@ -7,19 +7,16 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
-import type {
-  DidKey,
-  DidServiceEndpoint,
-  IDidDetails,
-  IDidIdentifier,
-} from '@kiltprotocol/types'
+import type { IDidDetails, IDidIdentifier } from '@kiltprotocol/types'
 
 import type {
+  DidCreationDetails,
+  LightDidCreationDetails,
+  LightDidKeyCreationInput,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
 } from '../types'
-import type { DidCreationDetails } from './DidDetails'
 import {
   checkLightDidCreationDetails,
   decodeAndDeserializeAdditionalLightDidDetails,
@@ -29,53 +26,16 @@ import {
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
 import { DidDetails } from './DidDetails'
-import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils'
+import {
+  getKiltDidFromIdentifier,
+  LIGHT_DID_LATEST_VERSION,
+  parseDidUri,
+} from '../Did.utils'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
 
-export type LightDidKeyCreationInput = Pick<DidKey, 'type'> & {
-  publicKey: Uint8Array
-}
-
-/**
- * The options that can be used to create a light DID.
- */
-export type LightDidCreationDetails = {
-  /**
-   * The DID authentication key. This is mandatory and will be used as the first authentication key
-   * of the full DID upon migration.
-   */
-  authenticationKey: LightDidKeyCreationInput
-  /**
-   * The optional DID encryption key. If present, it will be used as the first key agreement key
-   * of the full DID upon migration.
-   */
-  encryptionKey?: LightDidKeyCreationInput
-  /**
-   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
-   * The service ID must not contain the DID prefix when used to create a new DID.
-   *
-   * @example ```typescript
-   * const authenticationKey = exampleKey;
-   * const services = [
-   *   {
-   *     id: 'test-service',
-   *     types: ['CredentialExposureService'],
-   *     urls: ['http://my_domain.example.org'],
-   *   },
-   * ];
-   * const lightDid = new LightDid({ authenticationKey, services });
-   * RequestForAttestation.fromRequest(parsedRequest);
-   * ```
-   */
-  serviceEndpoints?: DidServiceEndpoint[]
-}
-
 export class LightDidDetails extends DidDetails {
-  /// The latest version for KILT light DIDs.
-  public static readonly LIGHT_DID_LATEST_VERSION = 1
-
   public readonly identifier: IDidIdentifier
 
   private constructor(
@@ -115,11 +75,7 @@ export class LightDidDetails extends DidDetails {
       encodeAddress(authenticationKey.publicKey, 38)
     )
 
-    let did = getKiltDidFromIdentifier(
-      id,
-      'light',
-      LightDidDetails.LIGHT_DID_LATEST_VERSION
-    )
+    let did = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
     if (encodedDetails) {
       did = did.concat(':', encodedDetails)
     }
