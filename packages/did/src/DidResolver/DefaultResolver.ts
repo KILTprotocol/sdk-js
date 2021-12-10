@@ -5,14 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  DidKey,
+import {
   DidPublicKey,
   DidPublicServiceEndpoint,
   DidResolvedDetails,
-  DidServiceEndpoint,
   IDidDetails,
   IDidResolver,
+  ResolvedDidKey,
+  ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
@@ -117,8 +117,8 @@ export async function resolveDoc(
  */
 export async function resolveKey(
   didUri: DidPublicKey['id']
-): Promise<DidKey | null> {
-  const { identifier, fragment: keyId, type } = parseDidUri(didUri)
+): Promise<ResolvedDidKey | null> {
+  const { did, identifier, fragment: keyId, type } = parseDidUri(didUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
@@ -126,14 +126,33 @@ export async function resolveKey(
   }
 
   switch (type) {
-    case 'full':
-      return queryKey(identifier, keyId)
+    case 'full': {
+      const key = await queryKey(identifier, keyId)
+      if (!key) {
+        return null
+      }
+      return {
+        controller: did,
+        id: `${did}#${keyId}`,
+        publicKey: key.publicKey,
+        type: key.type,
+      }
+    }
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
       if (!resolvedDetails) {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      return resolvedDetails.details?.getKey(keyId) || null
+      const key = resolvedDetails.details?.getKey(keyId)
+      if (!key) {
+        return null
+      }
+      return {
+        controller: did,
+        id: `${did}#${keyId}`,
+        publicKey: key.publicKey,
+        type: key.type,
+      }
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
@@ -148,8 +167,8 @@ export async function resolveKey(
  */
 export async function resolveServiceEndpoint(
   didUri: DidPublicServiceEndpoint['id']
-): Promise<DidServiceEndpoint | null> {
-  const { identifier, fragment: serviceId, type } = parseDidUri(didUri)
+): Promise<ResolvedDidServiceEndpoint | null> {
+  const { did, identifier, fragment: serviceId, type } = parseDidUri(didUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
@@ -158,14 +177,30 @@ export async function resolveServiceEndpoint(
 
   switch (type) {
     case 'full': {
-      return queryServiceEndpoint(identifier, serviceId)
+      const serviceEndpoint = await queryServiceEndpoint(identifier, serviceId)
+      if (!serviceEndpoint) {
+        return null
+      }
+      return {
+        id: `${did}#${serviceEndpoint.id}`,
+        type: serviceEndpoint.types,
+        serviceEndpoint: serviceEndpoint.urls,
+      }
     }
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
       if (!resolvedDetails) {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      return resolvedDetails.details?.getEndpoint(serviceId) || null
+      const serviceEndpoint = resolvedDetails.details?.getEndpoint(serviceId)
+      if (!serviceEndpoint) {
+        return null
+      }
+      return {
+        id: `${did}#${serviceEndpoint.id}`,
+        type: serviceEndpoint.types,
+        serviceEndpoint: serviceEndpoint.urls,
+      }
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
@@ -180,7 +215,9 @@ export async function resolveServiceEndpoint(
  */
 export async function resolve(
   didUri: string
-): Promise<DidResolvedDetails | DidKey | DidServiceEndpoint | null> {
+): Promise<
+  DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
+> {
   const { fragment } = parseDidUri(didUri)
 
   if (fragment) {

@@ -6,7 +6,7 @@
  */
 
 import { DidPublicKey, DidPublicServiceEndpoint } from './DidDocumentExporter'
-import type { IDidDetails, DidKey, DidServiceEndpoint } from './DidDetails'
+import type { IDidDetails, DidKey } from './DidDetails'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
@@ -38,6 +38,13 @@ export type DidResolvedDetails = {
   metadata: DidResolutionDocumentMetadata
 }
 
+export type ResolvedDidKey = Pick<DidPublicKey, 'id' | 'controller'> & {
+  publicKey: DidKey['publicKey']
+  type: DidKey['type']
+}
+
+export type ResolvedDidServiceEndpoint = DidPublicServiceEndpoint
+
 export interface IDidResolver {
   /**
    * Resolves a DID or DID URI and returns the respective resource.
@@ -51,7 +58,9 @@ export interface IDidResolver {
       | IDidDetails['did']
       | DidPublicKey['id']
       | DidPublicServiceEndpoint['id']
-  ) => Promise<DidResolvedDetails | DidKey | DidServiceEndpoint | null>
+  ) => Promise<
+    DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
+  >
   /**
    * Resolves a DID (or DID URI), returning the full contents of the DID document.
    *
@@ -69,7 +78,7 @@ export interface IDidResolver {
    * @returns A promise of a [[IDidKeyDetails]] object representing the DID public key or null if
    * the DID or key URI cannot be resolved.
    */
-  resolveKey: (didUri: DidPublicKey['id']) => Promise<DidKey | null>
+  resolveKey: (didUri: DidPublicKey['id']) => Promise<ResolvedDidKey | null>
   /**
    * Resolves a DID URI identifying a service endpoint associated with a DID.
    *
@@ -80,5 +89,5 @@ export interface IDidResolver {
    */
   resolveServiceEndpoint: (
     didUri: DidPublicServiceEndpoint['id']
-  ) => Promise<DidServiceEndpoint | null>
+  ) => Promise<ResolvedDidServiceEndpoint | null>
 }
