@@ -18,6 +18,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
+import type { DidKeySelection } from './types'
 import { FullDidDetails, LightDidDetails } from './DidDetails'
 import { DefaultResolver } from './DidResolver'
 
@@ -36,6 +37,8 @@ const FULL_KILT_DID_REGEX =
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
+
+export const defaultDidKeySelection: DidKeySelection = (keys) => keys[0]
 
 export function getKiltDidFromIdentifier(
   identifier: IDidIdentifier,

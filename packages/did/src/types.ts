@@ -21,3 +21,5 @@ export type ServiceEndpoints = Map<
   DidServiceEndpoint['id'],
   Omit<DidServiceEndpoint, 'id'>
 >
+
+export type DidKeySelection = (keys: DidKey[]) => DidKey | undefined
