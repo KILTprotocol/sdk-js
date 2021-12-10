@@ -108,11 +108,12 @@ export class Message implements IMessage {
    */
   public static async decrypt(
     encrypted: IEncryptedMessage,
-    keystore: Pick<NaclBoxCapable, 'decrypt'>,
     {
+      keystore,
       receiverDetails,
       resolver = DefaultResolver,
     }: {
+      keystore: Pick<NaclBoxCapable, 'decrypt'>
       receiverDetails: DidDetails
       resolver?: IDidResolver
     }
@@ -236,11 +237,12 @@ export class Message implements IMessage {
   public async encrypt(
     senderKeyId: DidKey['id'],
     senderDetails: DidDetails,
-    keystore: Pick<NaclBoxCapable, 'encrypt'>,
     {
+      keystore,
       receiverKeyId,
       resolver = DefaultResolver,
     }: {
+      keystore: Pick<NaclBoxCapable, 'encrypt'>
       receiverKeyId: DidPublicKey['id']
       resolver?: IDidResolver
     }

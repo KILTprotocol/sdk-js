@@ -289,11 +289,10 @@ export class DelegationNode implements IDelegationNode {
         `Delegee ${delegeeDid.did} does not have any authentication key.`
       )
     }
-    return delegeeDid.signPayload(
+    return delegeeDid.signPayload(this.generateHash(), {
       signer,
-      this.generateHash(),
-      authenticationKey.id
-    )
+      keyId: authenticationKey.id,
+    })
   }
 
   /**

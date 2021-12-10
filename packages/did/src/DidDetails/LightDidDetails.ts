@@ -152,7 +152,10 @@ export class LightDidDetails extends DidDetails {
     })
   }
 
-  public static fromUri(uri: IDidDetails['did']): LightDidDetails {
+  public static fromUri(
+    uri: IDidDetails['did'],
+    failIfFragmentPresent = true
+  ): LightDidDetails {
     const { identifier, version, encodedDetails, fragment, type } =
       parseDidUri(uri)
 
@@ -161,7 +164,7 @@ export class LightDidDetails extends DidDetails {
         `Cannot build a light DID from the provided URI ${uri} because it does not refer to a light DID.`
       )
     }
-    if (fragment) {
+    if (fragment && failIfFragmentPresent) {
       throw new Error(
         `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
       )

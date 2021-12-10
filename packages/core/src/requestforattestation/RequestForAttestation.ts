@@ -259,8 +259,8 @@ export class RequestForAttestation implements IRequestForAttestation {
       challenge,
       resolver = DefaultResolver,
     }: {
-      resolver?: IDidResolver
       challenge?: string
+      resolver?: IDidResolver
     } = {}
   ): Promise<boolean> {
     const { claimerSignature } = input
@@ -306,15 +306,17 @@ export class RequestForAttestation implements IRequestForAttestation {
   public async signWithDidKey(
     signer: KeystoreSigner,
     didDetails: DidDetails,
-    key: DidKey['id'],
+    keyId: DidKey['id'],
     challenge?: string
   ): Promise<this> {
-    const { signature, keyId } = await didDetails.signPayload(
-      signer,
+    const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
       makeSigningData(this, challenge),
-      key
+      {
+        signer,
+        keyId,
+      }
     )
-    return this.addSignature(signature, keyId, challenge)
+    return this.addSignature(signature, signatureKeyId, challenge)
   }
 
   private static getHashLeaves(

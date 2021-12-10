@@ -47,9 +47,3 @@ export function getKeysForExtrinsic(
     ? []
     : fullDidDetails.getKeys(keyRelationship)
 }
-
-export function defaultExtrinsicKeySelection(
-  keysForExtrinsic: DidKey[]
-): DidKey | null {
-  return keysForExtrinsic[0] || null
-}

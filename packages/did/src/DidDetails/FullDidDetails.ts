@@ -15,15 +15,13 @@ import type {
 } from '@kiltprotocol/types'
 
 import type {
+  DidKeySelection,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
 } from '../types'
 import type { DidCreationDetails } from './DidDetails'
-import {
-  getKeysForExtrinsic,
-  defaultExtrinsicKeySelection,
-} from './FullDidDetails.utils'
+import { getKeysForExtrinsic } from './FullDidDetails.utils'
 import { DidDetails } from './DidDetails'
 import { getSignatureAlgForKeyType } from './DidDetails.utils'
 import {
@@ -32,7 +30,7 @@ import {
   queryNonce,
   queryServiceEndpoints,
 } from '../Did.chain'
-import { getKiltDidFromIdentifier } from '../Did.utils'
+import { defaultDidKeySelection, getKiltDidFromIdentifier } from '../Did.utils'
 
 export class FullDidDetails extends DidDetails {
   /// The latest version for KILT full DIDs.
@@ -105,11 +103,15 @@ export class FullDidDetails extends DidDetails {
 
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
-    signer: KeystoreSigner,
-    submitterAccount: IDidIdentifier,
-    keySelection: (
-      keysForExtrinsic: DidKey[]
-    ) => DidKey | null = defaultExtrinsicKeySelection
+    {
+      signer,
+      submitterAccount,
+      keySelection = defaultDidKeySelection,
+    }: {
+      signer: KeystoreSigner
+      submitterAccount: IDidIdentifier
+      keySelection?: DidKeySelection
+    }
   ): Promise<SubmittableExtrinsic> {
     const signingKey = keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {

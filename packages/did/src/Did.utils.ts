@@ -38,7 +38,7 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
-export const defaultDidKeySelection: DidKeySelection = (keys) => keys[0]
+export const defaultDidKeySelection: DidKeySelection = (keys) => keys[0] || null
 
 export function getKiltDidFromIdentifier(
   identifier: IDidIdentifier,

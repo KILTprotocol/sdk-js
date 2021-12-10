@@ -137,9 +137,14 @@ export abstract class DidDetails implements IDidDetails {
   }
 
   public async signPayload(
-    signer: KeystoreSigner,
     payload: Uint8Array | string,
-    keyId: DidKey['id']
+    {
+      signer,
+      keyId,
+    }: {
+      signer: KeystoreSigner
+      keyId: DidKey['id']
+    }
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
     if (!key) {

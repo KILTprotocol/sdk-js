@@ -64,7 +64,7 @@ export async function resolveDoc(
     case 'light': {
       let details: LightDidDetails
       try {
-        details = LightDidDetails.fromUri(did)
+        details = LightDidDetails.fromUri(did, false)
       } catch {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
       }
