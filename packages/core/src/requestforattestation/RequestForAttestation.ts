@@ -28,6 +28,7 @@ import type {
   KeystoreSigner,
   IDidResolver,
   DidSignature,
+  DidPublicKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -294,7 +295,7 @@ export class RequestForAttestation implements IRequestForAttestation {
 
   public async addSignature(
     sig: string | Uint8Array,
-    keyId: string,
+    keyId: DidPublicKey['id'],
     challenge?: string
   ): Promise<this> {
     const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
