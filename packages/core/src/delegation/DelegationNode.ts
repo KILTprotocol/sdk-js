@@ -28,12 +28,13 @@ import {
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
+  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { DidDetails } from '@kiltprotocol/did'
+import { DidDetails, DidKeySelection, DidUtils } from '@kiltprotocol/did'
 import type { DidChain } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
@@ -277,12 +278,21 @@ export class DelegationNode implements IDelegationNode {
    */
   public async delegeeSign(
     delegeeDid: DidDetails,
-    signer: KeystoreSigner
+    signer: KeystoreSigner,
+    keySelection: DidKeySelection = DidUtils.defaultDidKeySelection
   ): Promise<DidSignature> {
+    const authenticationKey = keySelection(
+      delegeeDid.getKeys(KeyRelationship.authentication)
+    )
+    if (!authenticationKey) {
+      throw new Error(
+        `Delegee ${delegeeDid.did} does not have any authentication key.`
+      )
+    }
     return delegeeDid.signPayload(
       signer,
       this.generateHash(),
-      delegeeDid.authenticationKey.id
+      authenticationKey.id
     )
   }
 
@@ -310,13 +320,11 @@ export class DelegationNode implements IDelegationNode {
   ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
       return storeAsRoot(this)
-      // eslint-disable-next-line no-else-return
-    } else {
-      if (!signature) {
-        throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
-      }
-      return storeAsDelegation(this, signature)
     }
+    if (!signature) {
+      throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
+    }
+    return storeAsDelegation(this, signature)
   }
 
   isRoot(): boolean {
