@@ -120,7 +120,6 @@ export class Message implements IMessage {
     const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
       encrypted
 
-    const { did: senderDid } = DidUtils.parseDidUri(senderKeyId)
     const senderKeyDetails = await resolver.resolveKey(senderKeyId)
     if (!senderKeyDetails) {
       throw new Error(`Could not resolve sender key ${senderKeyId}`)
@@ -143,7 +142,7 @@ export class Message implements IMessage {
 
     const { data } = await keystore
       .decrypt({
-        publicKey: receiverKeyDetails?.publicKey,
+        publicKey: receiverKeyDetails.publicKey,
         alg: 'x25519-xsalsa20-poly1305', // TODO find better ways than hard-coding the alg
         peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
@@ -176,7 +175,7 @@ export class Message implements IMessage {
         references,
       }
 
-      if (sender !== senderDid) {
+      if (sender !== senderKeyDetails.controller) {
         throw SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
       }
 
@@ -246,13 +245,12 @@ export class Message implements IMessage {
       resolver?: IDidResolver
     }
   ): Promise<IEncryptedMessage> {
-    const { did: receiverDid } = DidUtils.parseDidUri(receiverKeyId)
-    if (this.receiver !== receiverDid) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
-    }
     const receiverKey = await resolver.resolveKey(receiverKeyId)
     if (!receiverKey) {
       throw new Error(`Cannot resolve key ${receiverKeyId}`)
+    }
+    if (this.receiver !== receiverKey.controller) {
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
     }
     if (this.sender !== senderDetails.did) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')

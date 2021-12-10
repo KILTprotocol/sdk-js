@@ -41,6 +41,7 @@ export type DidResolvedDetails = {
 export type ResolvedDidKey = Pick<DidPublicKey, 'id' | 'controller'> & {
   publicKey: DidKey['publicKey']
   type: DidKey['type']
+  includedAt?: DidKey['includedAt']
 }
 
 export type ResolvedDidServiceEndpoint = DidPublicServiceEndpoint
