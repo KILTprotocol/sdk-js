@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.esm.json",
+
+  "compilerOptions": {
+    "outDir": "./lib/esm"
+  },
+
+  "include": [
+    "src/**/*.ts", "src/**/*.js"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts",
+    "jest.config.js",
+    "docs",
+    "**/*.spec.ts",
+    "src/__integrationtests__",
+    "**/test"
+  ]
+}
