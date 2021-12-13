@@ -15,22 +15,22 @@ import { parseDidUri } from '../Did.utils'
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
 
-export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
+export enum LightDidSupportedSigningKeyTypes {
   ed25519 = 'ed25519',
   sr25519 = 'sr25519',
 }
 
-export enum LIGHT_DID_SUPPORTED_ENCRYPTION_KEY_TYPES {
+export enum LightDidSupportedEncryptionKeyTypes {
   x25519 = 'x25519',
 }
 
 const supportedEncryptionKeyTypes = new Set<string>([
-  ...Object.keys(LIGHT_DID_SUPPORTED_ENCRYPTION_KEY_TYPES),
+  ...Object.keys(LightDidSupportedEncryptionKeyTypes),
 ])
 
 const EncodingForSigningKeyType = {
-  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
-  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
+  [LightDidSupportedSigningKeyTypes.sr25519]: '00',
+  [LightDidSupportedSigningKeyTypes.ed25519]: '01',
 }
 
 export function getEncodingForSigningKeyType(
@@ -40,8 +40,8 @@ export function getEncodingForSigningKeyType(
 }
 
 const SigningKeyTypeFromEncoding = {
-  '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
-  '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
+  '00': LightDidSupportedSigningKeyTypes.sr25519,
+  '01': LightDidSupportedSigningKeyTypes.ed25519,
 }
 
 export function getSigningKeyTypeFromEncoding(

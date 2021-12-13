@@ -16,7 +16,11 @@ import {
 import type { LightDidCreationDetails } from '../types'
 import { LightDidDetails } from '.'
 import { getKiltDidFromIdentifier } from '../Did.utils'
-import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
+import {
+  serializeAndEncodeAdditionalLightDidDetails,
+  LightDidSupportedSigningKeyTypes,
+  getEncodingForSigningKeyType,
+} from './LightDidDetails.utils'
 
 /**
  * @group unit/did
@@ -255,5 +259,183 @@ describe('When creating an instance from the details', () => {
       },
     }
     expect(() => LightDidDetails.fromDetails(invalidOptions)).toThrowError()
+  })
+})
+
+describe('When creating an instance from a URI', () => {
+  it('correctly assign the right authentication key, encryption key, and service endpoints', () => {
+    const authKey = new Keyring({
+      type: 'sr25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+    const encKey = new Keyring().addFromMnemonic('enc')
+    const endpoints: DidServiceEndpoint[] = [
+      {
+        id: 'service#1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: 'service#2',
+        types: ['type-21', 'type-22'],
+        urls: ['url-21', 'url-22'],
+      },
+    ]
+    const creationOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+      serviceEndpoints: endpoints,
+    }
+    // We are sure this is correct because of the describe case above
+    const expectedLightDidDetails: LightDidDetails =
+      LightDidDetails.fromDetails(creationOptions)
+
+    const builtLightDidDetails = LightDidDetails.fromUri(
+      expectedLightDidDetails.did
+    )
+
+    expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
+      expectedLightDidDetails
+    )
+  })
+
+  it('fail if a fragment is present according to the options', () => {
+    const authKey = new Keyring({
+      type: 'sr25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+    const encKey = new Keyring().addFromMnemonic('enc')
+    const endpoints: DidServiceEndpoint[] = [
+      {
+        id: 'service#1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: 'service#2',
+        types: ['type-21', 'type-22'],
+        urls: ['url-21', 'url-22'],
+      },
+    ]
+    const creationOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+      serviceEndpoints: endpoints,
+    }
+    // We are sure this is correct because of the describe case above
+    const expectedLightDidDetails: LightDidDetails =
+      LightDidDetails.fromDetails(creationOptions)
+
+    const uriWithFragment = `${expectedLightDidDetails.did}#authentication`
+
+    expect(() => LightDidDetails.fromUri(uriWithFragment, true)).toThrow()
+    expect(() => LightDidDetails.fromUri(uriWithFragment, false)).not.toThrow()
+  })
+
+  it('fail if the URI is not correct', () => {
+    const validKiltAddress = new Keyring({ ss58Format: 38 }).addFromMnemonic(
+      'random'
+    )
+    const incorrectURIs: string[] = [
+      'did:kilt:light:sdasdsadas',
+      'random-uri',
+      'did:kilt:light',
+      'did:kilt:light:',
+      // Wrong auth key encoding
+      `did:kilt:light:11${validKiltAddress}`,
+      // Full DID
+      `did:kilt:${validKiltAddress}`,
+      // Random encoded details
+      `did:kilt:light:00${validKiltAddress}:randomdetails`,
+    ]
+    incorrectURIs.forEach((uri) => {
+      expect(() => LightDidDetails.fromUri(uri)).toThrow()
+    })
+  })
+})
+
+describe('When creating an instance from an identifier', () => {
+  it('correctly assign the right sr25519 authentication key', () => {
+    const authKey = new Keyring({
+      type: 'sr25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+
+    const creationOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+    }
+
+    // We are sure this is correct because of the describe case above
+    const expectedLightDidDetails: LightDidDetails =
+      LightDidDetails.fromDetails(creationOptions)
+    // We are sure this is correct because of the describe case above
+    const builtLightDidDetails: LightDidDetails =
+      LightDidDetails.fromIdentifier(
+        authKey.address,
+        LightDidSupportedSigningKeyTypes.sr25519
+      )
+
+    expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
+      expectedLightDidDetails
+    )
+    expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
+      getEncodingForSigningKeyType('sr25519')
+    )
+  })
+
+  it('correctly assign the right ed25519 authentication key', () => {
+    const authKey = new Keyring({
+      type: 'ed25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+
+    const creationOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+    }
+
+    // We are sure this is correct because of the describe case above
+    const expectedLightDidDetails: LightDidDetails =
+      LightDidDetails.fromDetails(creationOptions)
+    // We are sure this is correct because of the describe case above
+    const builtLightDidDetails: LightDidDetails =
+      LightDidDetails.fromIdentifier(
+        authKey.address,
+        LightDidSupportedSigningKeyTypes.ed25519
+      )
+
+    expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
+      expectedLightDidDetails
+    )
+    expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
+      getEncodingForSigningKeyType('ed25519')
+    )
+  })
+
+  it('throws with an unsupported key type', () => {
+    const randomAddress = new Keyring({ ss58Format: 38 }).addFromMnemonic(
+      'random'
+    ).address
+
+    expect(() =>
+      LightDidDetails.fromIdentifier(randomAddress, 'ecdsa')
+    ).toThrow()
   })
 })

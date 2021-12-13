@@ -7,4 +7,8 @@
 
 export * from './DidDetails'
 export * from './LightDidDetails'
+export {
+  LightDidSupportedSigningKeyTypes,
+  LightDidSupportedEncryptionKeyTypes,
+} from './LightDidDetails.utils'
 export * from './FullDidDetails'

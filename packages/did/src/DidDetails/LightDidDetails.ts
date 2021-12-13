@@ -134,9 +134,17 @@ export class LightDidDetails extends DidDetails {
         `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
       )
     }
+    const authKeyTypeEncoding = identifier.substring(0, 2)
+    const decodedAuthKeyType =
+      getSigningKeyTypeFromEncoding(authKeyTypeEncoding)
+    if (!decodedAuthKeyType) {
+      throw new Error(
+        `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type.`
+      )
+    }
     const authenticationKey: LightDidKeyCreationInput = {
       publicKey: decodeAddress(identifier.substring(2), false, 38),
-      type: getSigningKeyTypeFromEncoding(identifier.substring(2)) as string,
+      type: decodedAuthKeyType,
     }
     if (!encodedDetails) {
       return LightDidDetails.fromDetails({ authenticationKey })
