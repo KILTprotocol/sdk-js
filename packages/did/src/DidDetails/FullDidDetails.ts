@@ -48,6 +48,8 @@ export class FullDidDetails extends DidDetails {
     this.identifier = identifier
   }
 
+  // TODO: Add a de-serialization function using DidCreationDetails
+
   // This is used to re-create a full DID from the chain.
   public static async fromChainInfo(
     didIdentifier: IDidIdentifier,

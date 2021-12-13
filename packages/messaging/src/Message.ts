@@ -235,7 +235,7 @@ export class Message implements IMessage {
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
-    senderKeyId: DidKey['id'],
+    senderKeyId: DidPublicKey['id'],
     senderDetails: DidDetails,
     {
       keystore,
