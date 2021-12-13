@@ -176,7 +176,7 @@ export async function resolveServiceEndpoint(
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
   }
 
   switch (type) {
