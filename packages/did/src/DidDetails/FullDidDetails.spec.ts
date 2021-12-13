@@ -25,7 +25,7 @@ import { getKiltDidFromIdentifier } from '../Did.utils'
  */
 
 const existingIdentifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
-// const nonExistingIdentifier = '4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM'
+const nonExistingIdentifier = '4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM'
 
 const existingDidDetails: IDidChainRecordJSON = {
   authenticationKey: 'auth#1',
@@ -102,6 +102,15 @@ jest.mock('../Did.chain.ts', () => {
     ),
   }
 })
+
+/*
+ * Functions tested:
+ * - fromChainInfo
+ *
+ * Functions tested in integration tests:
+ * - getKeysForExtrinsic
+ * - authorizeExtrinsic
+ */
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
@@ -229,5 +238,11 @@ describe('When creating an instance from the chain', () => {
         urls: ['url-2'],
       },
     ])
+  })
+
+  it('returns null if the identifier does not exist', async () => {
+    const fullDidDetails: FullDidDetails | null =
+      await FullDidDetails.fromChainInfo(nonExistingIdentifier)
+    expect(fullDidDetails).toBeNull()
   })
 })

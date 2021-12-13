@@ -5,80 +5,255 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { Keyring } from '@polkadot/api'
+
+import {
+  DidKey,
+  DidServiceEndpoint,
+  KeyRelationship,
+} from '@kiltprotocol/types'
+
+import type { LightDidCreationDetails } from '../types'
+import { LightDidDetails } from '.'
+import { getKiltDidFromIdentifier } from '../Did.utils'
+import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
 
 /**
  * @group unit/did
  */
 
-import { hexToU8a } from '@polkadot/util'
-import { encodeAddress } from '@polkadot/util-crypto'
-import type { DidServiceEndpoint } from '@kiltprotocol/types'
-import { LightDidDetails } from './LightDidDetails'
-import type { INewPublicKey, LightDidDetailsCreationOpts } from '../types'
+/*
+ * Functions tested:
+ * - fromDetails
+ * - fromUri
+ * - fromIdentifier
+ *
+ * Functions tested in integration tests:
+ * - getKeysForExtrinsic
+ * - authorizeExtrinsic
+ * - migrate
+ */
 
-describe('Light DID v1 tests', () => {
-  const authPublicKey = hexToU8a(
-    '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-  )
-  const encPublicKey = hexToU8a(
-    '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-  )
-  let serviceEndpoint: DidServiceEndpoint
-  const address = encodeAddress(authPublicKey, 38)
-  const authenticationDidKeyDetails: INewPublicKey = {
-    publicKey: authPublicKey,
-    type: 'ed25519',
-  }
-  let encryptionDidKeyDetails: INewPublicKey | undefined
-
-  it('creates LightDidDetails from authentication key only', () => {
-    const didCreationDetails: LightDidDetailsCreationOpts = {
-      authenticationKey: authenticationDidKeyDetails,
+describe('When creating an instance from the details', () => {
+  it('correctly assign the right ed25519 authentication key, x25519 encryption key, and service endpoints', () => {
+    const authKey = new Keyring({
+      type: 'sr25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+    const encKey = new Keyring().addFromMnemonic('enc')
+    const endpoints: DidServiceEndpoint[] = [
+      {
+        id: 'service#1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: 'service#2',
+        types: ['type-21', 'type-22'],
+        urls: ['url-21', 'url-22'],
+      },
+    ]
+    const validOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+      serviceEndpoints: endpoints,
     }
+    const lightDidDetails: LightDidDetails =
+      LightDidDetails.fromDetails(validOptions)
 
-    const did = new LightDidDetails(didCreationDetails)
-    expect(did.did).toEqual(`did:kilt:light:01${address}`)
+    expect(lightDidDetails?.identifier).toStrictEqual(authKey.address)
+
+    const encodedDetails: string = serializeAndEncodeAdditionalLightDidDetails({
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+      serviceEndpoints: endpoints,
+    })!
+    const expectedDid = getKiltDidFromIdentifier(
+      lightDidDetails.authKeyEncoding + authKey.address,
+      'light',
+      undefined,
+      encodedDetails
+    )
+    expect(lightDidDetails?.did).toStrictEqual(expectedDid)
+
+    expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
+      id: 'authentication',
+      publicKey: authKey.publicKey,
+      type: 'sr25519',
+    })
+    expect(
+      lightDidDetails?.getKeys(KeyRelationship.authentication)
+    ).toStrictEqual<DidKey[]>([
+      {
+        id: 'authentication',
+        publicKey: authKey.publicKey,
+        type: 'sr25519',
+      },
+    ])
+
+    expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
+      id: 'encryption',
+      publicKey: encKey.publicKey,
+      type: 'x25519',
+    })
+    expect(
+      lightDidDetails?.getKeys(KeyRelationship.keyAgreement)
+    ).toStrictEqual<DidKey[]>([
+      {
+        id: 'encryption',
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+    ])
+
+    expect(
+      lightDidDetails?.getEndpoint('service#1')
+    ).toStrictEqual<DidServiceEndpoint>({
+      id: 'service#1',
+      types: ['type-1'],
+      urls: ['url-1'],
+    })
+    expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
+      DidServiceEndpoint[]
+    >([
+      {
+        id: 'service#1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+    ])
+
+    expect(
+      lightDidDetails?.getEndpoint('service#2')
+    ).toStrictEqual<DidServiceEndpoint>({
+      id: 'service#2',
+      types: ['type-21', 'type-22'],
+      urls: ['url-21', 'url-22'],
+    })
+    expect(lightDidDetails?.getEndpoints('type-21')).toStrictEqual<
+      DidServiceEndpoint[]
+    >([
+      {
+        id: 'service#2',
+        types: ['type-21', 'type-22'],
+        urls: ['url-21', 'url-22'],
+      },
+    ])
   })
 
-  it('creates LightDidDetails from authentication key and encryption key', () => {
-    encryptionDidKeyDetails = {
-      publicKey: encPublicKey,
+  it('correctly assign the right ed25519 authentication key and encryption key', () => {
+    const authKey = new Keyring({
+      type: 'ed25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+    const encKey = new Keyring().addFromMnemonic('enc')
+    const validOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+    }
+    const lightDidDetails: LightDidDetails =
+      LightDidDetails.fromDetails(validOptions)
+
+    expect(lightDidDetails?.identifier).toStrictEqual(authKey.address)
+
+    const encodedDetails: string = serializeAndEncodeAdditionalLightDidDetails({
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+    })!
+    const expectedDid = getKiltDidFromIdentifier(
+      lightDidDetails.authKeyEncoding + authKey.address,
+      'light',
+      undefined,
+      encodedDetails
+    )
+    expect(lightDidDetails?.did).toStrictEqual(expectedDid)
+
+    expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
+      id: 'authentication',
+      publicKey: authKey.publicKey,
+      type: 'ed25519',
+    })
+    expect(
+      lightDidDetails?.getKeys(KeyRelationship.authentication)
+    ).toStrictEqual<DidKey[]>([
+      {
+        id: 'authentication',
+        publicKey: authKey.publicKey,
+        type: 'ed25519',
+      },
+    ])
+
+    expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
+      id: 'encryption',
+      publicKey: encKey.publicKey,
       type: 'x25519',
-    }
+    })
+    expect(
+      lightDidDetails?.getKeys(KeyRelationship.keyAgreement)
+    ).toStrictEqual<DidKey[]>([
+      {
+        id: 'encryption',
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+    ])
 
-    const didCreationDetails: LightDidDetailsCreationOpts = {
-      authenticationKey: authenticationDidKeyDetails,
-      encryptionKey: encryptionDidKeyDetails,
-    }
+    expect(lightDidDetails?.getEndpoint('service#1')).toBeUndefined()
 
-    const did = new LightDidDetails(didCreationDetails)
-    expect(did.did).toEqual(
-      `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTk=`
+    expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
+      DidServiceEndpoint[]
+    >([])
+    expect(lightDidDetails?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>(
+      []
     )
   })
 
-  it('creates LightDidDetails from authentication key, encryption key, and service endpoints', () => {
-    encryptionDidKeyDetails = {
-      publicKey: encPublicKey,
-      type: 'x25519',
+  it('throws for unsupported authentication key type', () => {
+    const authKey = new Keyring({
+      type: 'ed25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+    const invalidOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: 'ecdsa',
+      },
     }
+    expect(() => LightDidDetails.fromDetails(invalidOptions)).toThrowError()
+  })
 
-    serviceEndpoint = {
-      id: 'my-service-endpoint',
-      types: ['CollatorCredentialType', 'SocialKYCType'],
-      urls: ['https://my_domain.org', 'random_domain'],
+  it('throws for unsupported encryption key type', () => {
+    const authKey = new Keyring({
+      type: 'ed25519',
+      ss58Format: 38,
+    }).addFromMnemonic('auth')
+    const encKey = new Keyring().addFromMnemonic('enc')
+    const invalidOptions: LightDidCreationDetails = {
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: 'ed25519',
+      },
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'bls',
+      },
     }
-
-    const didCreationDetails: LightDidDetailsCreationOpts = {
-      authenticationKey: authenticationDidKeyDetails,
-      encryptionKey: encryptionDidKeyDetails,
-      serviceEndpoints: [serviceEndpoint],
-    }
-
-    const did = new LightDidDetails(didCreationDetails)
-    expect(did.did).toEqual(
-      `did:kilt:light:01${address}:omFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTlhc4GjYmlkc215LXNlcnZpY2UtZW5kcG9pbnRldHlwZXOCdkNvbGxhdG9yQ3JlZGVudGlhbFR5cGVtU29jaWFsS1lDVHlwZWR1cmxzgnVodHRwczovL215X2RvbWFpbi5vcmdtcmFuZG9tX2RvbWFpbg==`
-    )
+    expect(() => LightDidDetails.fromDetails(invalidOptions)).toThrowError()
   })
 })

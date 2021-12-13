@@ -20,6 +20,14 @@ export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
   sr25519 = 'sr25519',
 }
 
+export enum LIGHT_DID_SUPPORTED_ENCRYPTION_KEY_TYPES {
+  x25519 = 'x25519',
+}
+
+const supportedEncryptionKeyTypes = new Set<string>([
+  ...Object.keys(LIGHT_DID_SUPPORTED_ENCRYPTION_KEY_TYPES),
+])
+
 const EncodingForSigningKeyType = {
   [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
   [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
@@ -51,6 +59,14 @@ export function checkLightDidCreationDetails(
   )
   if (!authenticationKeyTypeEncoding) {
     throw SDKErrors.ERROR_UNSUPPORTED_KEY
+  }
+
+  if (details.encryptionKey?.type) {
+    if (!supportedEncryptionKeyTypes.has(details.encryptionKey.type)) {
+      throw new Error(
+        `Encryption key type ${details.encryptionKey.type} is not supported.`
+      )
+    }
   }
 
   // Check service endpoints

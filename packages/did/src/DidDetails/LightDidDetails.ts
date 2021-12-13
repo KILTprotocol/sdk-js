@@ -56,6 +56,10 @@ export class LightDidDetails extends DidDetails {
     this.identifier = identifier
   }
 
+  public get authKeyEncoding(): string {
+    return getEncodingForSigningKeyType(this.authenticationKey.type) as string
+  }
+
   public static fromDetails({
     authenticationKey,
     encryptionKey = undefined,
@@ -70,14 +74,10 @@ export class LightDidDetails extends DidDetails {
       encryptionKey,
       serviceEndpoints,
     })
+    // Validity is checked in checkLightDidCreationDetails
     const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
       authenticationKey.type
-    )
-    if (!authenticationKeyTypeEncoding) {
-      throw new Error(
-        `The provided key type ${authenticationKey.type} is not supported.`
-      )
-    }
+    ) as string
 
     // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
     const id = authenticationKeyTypeEncoding.concat(
@@ -92,13 +92,13 @@ export class LightDidDetails extends DidDetails {
     // Authentication key always has the #authentication ID.
     const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
     const keyRelationships: MapKeysToRelationship = {
-      authentication: new Set(authenticationKeyId),
+      authentication: new Set([authenticationKeyId]),
     }
 
     // Encryption key always has the #encryption ID.
     if (encryptionKey) {
       keys.set(encryptionKeyId, encryptionKey)
-      keyRelationships.keyAgreement = new Set(encryptionKeyId)
+      keyRelationships.keyAgreement = new Set([encryptionKeyId])
     }
 
     const endpoints: ServiceEndpoints = serviceEndpoints.reduce(
