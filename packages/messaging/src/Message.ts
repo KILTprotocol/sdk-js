@@ -235,7 +235,7 @@ export class Message implements IMessage {
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
-    senderKeyId: DidPublicKey['id'],
+    senderKeyId: DidKey['id'],
     senderDetails: DidDetails,
     {
       keystore,
@@ -276,20 +276,20 @@ export class Message implements IMessage {
 
     const serialized = stringToU8a(JSON.stringify(toEncrypt))
 
-    const encryted = await keystore.encrypt({
+    const encrypted = await keystore.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
       data: serialized,
       publicKey: senderKey.publicKey,
       peerPublicKey: receiverKey.publicKey,
     })
-    const ciphertext = u8aToHex(encryted.data)
-    const nonce = u8aToHex(encryted.nonce)
+    const ciphertext = u8aToHex(encrypted.data)
+    const nonce = u8aToHex(encrypted.nonce)
 
     return {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      senderKeyId: senderKey.id,
+      senderKeyId: senderDetails.assembleKeyId(senderKey.id),
       receiverKeyId: receiverKey.id,
     }
   }
