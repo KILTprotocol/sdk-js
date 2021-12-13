@@ -7,7 +7,13 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
-import type { IDidDetails, IDidIdentifier } from '@kiltprotocol/types'
+import type {
+  IDidDetails,
+  IDidIdentifier,
+  IIdentity,
+  KeystoreSigner,
+} from '@kiltprotocol/types'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 
 import type {
   DidCreationDetails,
@@ -26,11 +32,14 @@ import {
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
 import { DidDetails } from './DidDetails'
+import { getSignatureAlgForKeyType } from './DidDetails.utils'
+import { FullDidDetails } from './FullDidDetails'
 import {
   getKiltDidFromIdentifier,
   LIGHT_DID_LATEST_VERSION,
   parseDidUri,
 } from '../Did.utils'
+import { generateCreateTxFromDidDetails } from '../Did.chain'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
@@ -152,5 +161,29 @@ export class LightDidDetails extends DidDetails {
     return LightDidDetails.fromDetails({
       authenticationKey,
     })
+  }
+
+  public async migrate(
+    submitter: IIdentity,
+    signer: KeystoreSigner
+  ): Promise<FullDidDetails> {
+    const creationTx = await generateCreateTxFromDidDetails(
+      this,
+      submitter.address,
+      {
+        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
+        signingPublicKey: this.authenticationKey.publicKey,
+        signer,
+      }
+    )
+    await BlockchainUtils.signAndSubmitTx(creationTx, submitter, {
+      reSign: true,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+    const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
+    if (!fullDidDetails) {
+      throw new Error('Something went wrong during the migration.')
+    }
+    return fullDidDetails
   }
 }
