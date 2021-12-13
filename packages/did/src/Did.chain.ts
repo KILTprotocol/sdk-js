@@ -191,7 +191,7 @@ function decodeDidPublicKeyDetails(
     id: keyId.toHex(),
     type: key.type.toLowerCase(),
     publicKey: key.value.toU8a(),
-    includedAt: blockNumber.toNumber(),
+    includedAt: blockNumber.toBn(),
   }
 }
 

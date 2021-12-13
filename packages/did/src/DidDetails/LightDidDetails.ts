@@ -28,7 +28,7 @@ import {
   decodeAndDeserializeAdditionalLightDidDetails,
   getEncodingForSigningKeyType,
   getSigningKeyTypeFromEncoding,
-  LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES,
+  LightDidSupportedSigningKeyTypes,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils'
 import { DidDetails } from './DidDetails'
@@ -160,7 +160,7 @@ export class LightDidDetails extends DidDetails {
 
   public static fromIdentifier(
     identifier: IDidIdentifier,
-    keyType: LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES = LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519
+    keyType: LightDidSupportedSigningKeyTypes = LightDidSupportedSigningKeyTypes.sr25519
   ): LightDidDetails {
     const authenticationKey: LightDidKeyCreationInput = {
       publicKey: decodeAddress(identifier, false, 38),
