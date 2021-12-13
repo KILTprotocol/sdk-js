@@ -102,6 +102,9 @@ describe('When creating an instance from the details', () => {
         type: 'sr25519',
       },
     ])
+    expect(lightDidDetails?.authenticationKey.id).toStrictEqual(
+      'authentication'
+    )
 
     expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
       id: 'encryption',
@@ -117,6 +120,10 @@ describe('When creating an instance from the details', () => {
         type: 'x25519',
       },
     ])
+    expect(lightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
+
+    expect(lightDidDetails?.attestationKey).toBeUndefined()
+    expect(lightDidDetails?.delegationKey).toBeUndefined()
 
     expect(
       lightDidDetails?.getEndpoint('service#1')
@@ -202,6 +209,9 @@ describe('When creating an instance from the details', () => {
         type: 'ed25519',
       },
     ])
+    expect(lightDidDetails?.authenticationKey.id).toStrictEqual(
+      'authentication'
+    )
 
     expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
       id: 'encryption',
@@ -217,6 +227,10 @@ describe('When creating an instance from the details', () => {
         type: 'x25519',
       },
     ])
+    expect(lightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
+
+    expect(lightDidDetails?.attestationKey).toBeUndefined()
+    expect(lightDidDetails?.delegationKey).toBeUndefined()
 
     expect(lightDidDetails?.getEndpoint('service#1')).toBeUndefined()
 
@@ -303,6 +317,13 @@ describe('When creating an instance from a URI', () => {
     expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
       expectedLightDidDetails
     )
+
+    expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
+      'authentication'
+    )
+    expect(builtLightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
+    expect(builtLightDidDetails?.attestationKey).toBeUndefined()
+    expect(builtLightDidDetails?.delegationKey).toBeUndefined()
   })
 
   it('fail if a fragment is present according to the options', () => {
@@ -396,6 +417,13 @@ describe('When creating an instance from an identifier', () => {
     expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
       getEncodingForSigningKeyType('sr25519')
     )
+
+    expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
+      'authentication'
+    )
+    expect(builtLightDidDetails?.encryptionKey).toBeUndefined()
+    expect(builtLightDidDetails?.attestationKey).toBeUndefined()
+    expect(builtLightDidDetails?.delegationKey).toBeUndefined()
   })
 
   it('correctly assign the right ed25519 authentication key', () => {
@@ -427,6 +455,13 @@ describe('When creating an instance from an identifier', () => {
     expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
       getEncodingForSigningKeyType('ed25519')
     )
+
+    expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
+      'authentication'
+    )
+    expect(builtLightDidDetails?.encryptionKey).toBeUndefined()
+    expect(builtLightDidDetails?.attestationKey).toBeUndefined()
+    expect(builtLightDidDetails?.delegationKey).toBeUndefined()
   })
 
   it('throws with an unsupported key type', () => {

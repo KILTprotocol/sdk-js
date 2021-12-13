@@ -140,6 +140,7 @@ describe('When creating an instance from the chain', () => {
         includedAt: 0,
       },
     ])
+    expect(fullDidDetails?.authenticationKey.id).toStrictEqual('auth#1')
 
     expect(fullDidDetails?.getKey('enc#1')).toStrictEqual<DidKey>({
       id: 'enc#1',
@@ -169,6 +170,7 @@ describe('When creating an instance from the chain', () => {
         includedAt: 0,
       },
     ])
+    expect(fullDidDetails?.encryptionKey?.id).toStrictEqual('enc#1')
 
     expect(fullDidDetails?.getKey('att#1')).toStrictEqual<DidKey>({
       id: 'att#1',
@@ -186,6 +188,7 @@ describe('When creating an instance from the chain', () => {
         includedAt: 0,
       },
     ])
+    expect(fullDidDetails?.attestationKey?.id).toStrictEqual('att#1')
 
     expect(fullDidDetails?.getKey('del#1')).toStrictEqual<DidKey>({
       id: 'del#1',
@@ -193,7 +196,6 @@ describe('When creating an instance from the chain', () => {
       type: 'ecdsa',
       includedAt: 0,
     })
-
     expect(
       fullDidDetails?.getKeys(KeyRelationship.capabilityDelegation)
     ).toStrictEqual<DidKey[]>([
@@ -204,6 +206,7 @@ describe('When creating an instance from the chain', () => {
         includedAt: 0,
       },
     ])
+    expect(fullDidDetails?.delegationKey?.id).toStrictEqual('del#1')
 
     expect(
       fullDidDetails?.getEndpoint('service#1')
