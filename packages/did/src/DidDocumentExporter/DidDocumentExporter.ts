@@ -35,7 +35,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getKeys(KeyRelationship.authentication)
     .map((authKey) => {
       result.verificationMethod.push({
-        id: authKey.id,
+        id: `${details.did}#${authKey.id}`,
         controller: details.did,
         type: VerificationKeyTypesMap[authKey.type],
         publicKeyBase58: base58Encode(authKey.publicKey),
@@ -50,7 +50,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getKeys(KeyRelationship.keyAgreement)
     .map((keyAgrKey) => {
       result.verificationMethod.push({
-        id: keyAgrKey.id,
+        id: `${details.did}#${keyAgrKey.id}`,
         controller: details.did,
         type: EncryptionKeyTypesMap[keyAgrKey.type],
         publicKeyBase58: base58Encode(keyAgrKey.publicKey),
@@ -65,7 +65,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getKeys(KeyRelationship.assertionMethod)
     .map((assKey) => {
       result.verificationMethod.push({
-        id: assKey.id,
+        id: `${details.did}#${assKey.id}`,
         controller: details.did,
         type: VerificationKeyTypesMap[assKey.type],
         publicKeyBase58: base58Encode(assKey.publicKey),
@@ -80,7 +80,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getKeys(KeyRelationship.capabilityDelegation)
     .map((delKey) => {
       result.verificationMethod.push({
-        id: delKey.id,
+        id: `${details.did}#${delKey.id}`,
         controller: details.did,
         type: VerificationKeyTypesMap[delKey.type],
         publicKeyBase58: base58Encode(delKey.publicKey),
