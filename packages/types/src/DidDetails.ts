@@ -5,8 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidPublicKey } from './DidDocumentExporter'
-import { IIdentity } from './Identity'
+import type { BN } from '@polkadot/util'
+
+import type { DidPublicKey } from './DidDocumentExporter'
+import type { IIdentity } from './Identity'
 
 /**
  * A DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
@@ -55,7 +57,7 @@ export type DidKey<T extends string = string> = {
   /**
    * The inclusion block of the key, if stored on chain.
    */
-  includedAt?: number
+  includedAt?: BN
 }
 
 export type DidServiceEndpoint = {

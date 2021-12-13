@@ -15,8 +15,9 @@ import {
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
-import { FullDidDetails } from '.'
 import { getKiltDidFromIdentifier } from '../Did.utils'
+
+import { FullDidDetails } from '.'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -38,31 +39,31 @@ const existingDidDetails: IDidChainRecordJSON = {
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
       type: 'sr25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     },
     {
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
       type: 'x25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     },
     {
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
       type: 'x25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     },
     {
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
       type: 'ed25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     },
     {
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
       type: 'ecdsa',
-      includedAt: 0,
+      includedAt: new BN(0),
     },
   ],
 }
@@ -128,7 +129,7 @@ describe('When creating an instance from the chain', () => {
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
       type: 'sr25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     })
     expect(
       fullDidDetails?.getKeys(KeyRelationship.authentication)
@@ -137,7 +138,7 @@ describe('When creating an instance from the chain', () => {
         id: 'auth#1',
         publicKey: new Uint8Array(32).fill(0),
         type: 'sr25519',
-        includedAt: 0,
+        includedAt: new BN(0),
       },
     ])
     expect(fullDidDetails?.authenticationKey.id).toStrictEqual('auth#1')
@@ -146,13 +147,13 @@ describe('When creating an instance from the chain', () => {
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
       type: 'x25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     })
     expect(fullDidDetails?.getKey('enc#2')).toStrictEqual<DidKey>({
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
       type: 'x25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     })
     expect(fullDidDetails?.getKeys(KeyRelationship.keyAgreement)).toStrictEqual<
       DidKey[]
@@ -161,13 +162,13 @@ describe('When creating an instance from the chain', () => {
         id: 'enc#1',
         publicKey: new Uint8Array(32).fill(1),
         type: 'x25519',
-        includedAt: 0,
+        includedAt: new BN(0),
       },
       {
         id: 'enc#2',
         publicKey: new Uint8Array(32).fill(2),
         type: 'x25519',
-        includedAt: 0,
+        includedAt: new BN(0),
       },
     ])
     expect(fullDidDetails?.encryptionKey?.id).toStrictEqual('enc#1')
@@ -176,7 +177,7 @@ describe('When creating an instance from the chain', () => {
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
       type: 'ed25519',
-      includedAt: 0,
+      includedAt: new BN(0),
     })
     expect(
       fullDidDetails?.getKeys(KeyRelationship.assertionMethod)
@@ -185,7 +186,7 @@ describe('When creating an instance from the chain', () => {
         id: 'att#1',
         publicKey: new Uint8Array(32).fill(3),
         type: 'ed25519',
-        includedAt: 0,
+        includedAt: new BN(0),
       },
     ])
     expect(fullDidDetails?.attestationKey?.id).toStrictEqual('att#1')
@@ -194,7 +195,7 @@ describe('When creating an instance from the chain', () => {
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
       type: 'ecdsa',
-      includedAt: 0,
+      includedAt: new BN(0),
     })
     expect(
       fullDidDetails?.getKeys(KeyRelationship.capabilityDelegation)
@@ -203,7 +204,7 @@ describe('When creating an instance from the chain', () => {
         id: 'del#1',
         publicKey: new Uint8Array(32).fill(4),
         type: 'ecdsa',
-        includedAt: 0,
+        includedAt: new BN(0),
       },
     ])
     expect(fullDidDetails?.delegationKey?.id).toStrictEqual('del#1')

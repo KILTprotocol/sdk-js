@@ -14,13 +14,14 @@ import {
 } from '@kiltprotocol/types'
 
 import type { LightDidCreationDetails } from '../types'
-import { LightDidDetails } from '.'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import {
   serializeAndEncodeAdditionalLightDidDetails,
   LightDidSupportedSigningKeyTypes,
   getEncodingForSigningKeyType,
 } from './LightDidDetails.utils'
+
+import { LightDidDetails } from '.'
 
 /**
  * @group unit/did

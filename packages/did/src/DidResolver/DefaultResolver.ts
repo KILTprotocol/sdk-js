@@ -122,7 +122,7 @@ export async function resolveKey(
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
   }
 
   switch (type) {
@@ -131,12 +131,16 @@ export async function resolveKey(
       if (!key) {
         return null
       }
-      return {
+      const result: ResolvedDidKey = {
         controller: did,
         id: `${did}#${keyId}`,
         publicKey: key.publicKey,
         type: key.type,
       }
+      if (key.includedAt) {
+        result.includedAt = key.includedAt
+      }
+      return result
     }
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
