@@ -26,12 +26,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import {
-  DidUtils,
-  DefaultResolver,
-  DidDetails,
-  DidKeySelection,
-} from '@kiltprotocol/did'
+import { DidUtils, DefaultResolver, DidDetails, DidKeySelection } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema'
 
 /**

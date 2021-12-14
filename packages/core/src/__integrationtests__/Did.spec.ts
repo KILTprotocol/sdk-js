@@ -14,7 +14,6 @@ import { encodeAddress } from '@polkadot/keyring'
 import {
   DemoKeystore,
   DidChain,
-  DidTypes,
   DidUtils,
   SigningAlgorithms,
   EncryptionAlgorithms,
@@ -55,7 +54,7 @@ it('fetches the correct deposit amount', async () => {
 
 describe('write and didDeleteTx', () => {
   let didIdentifier: string
-  let key: DidTypes.INewPublicKey
+  let key: INewPublicKey
   beforeAll(async () => {
     const { publicKey, alg } = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,

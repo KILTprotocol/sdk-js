@@ -14,7 +14,7 @@
 
 import type {
   IClaim,
-  ClaimContents,
+  IClaimContents,
   CompressedCredential,
   ICType,
   CompressedRequestForAttestation,
@@ -33,7 +33,7 @@ import '../../../../testingTools/jestErrorCodeMatcher'
 
 function buildRequestForAttestation(
   claimerDid: string,
-  contents: ClaimContents,
+  contents: IClaimContents,
   legitimations: Credential[]
 ): RequestForAttestation {
   // create claim

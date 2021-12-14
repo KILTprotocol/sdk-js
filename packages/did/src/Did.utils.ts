@@ -80,7 +80,12 @@ export function parseDidUri(didUri: string): IDidParsingResult {
       ? parseInt(matches.version, 10)
       : FULL_DID_LATEST_VERSION
     return {
-      did: getKiltDidFromIdentifier(matches.identifier, 'full', version),
+      did: getKiltDidFromIdentifier(
+        matches.identifier,
+        'full',
+        version,
+        matches.encoded_details
+      ),
       version,
       type: 'full',
       identifier: matches.identifier,
@@ -237,6 +242,14 @@ export async function verifyDidSignature({
   expectedVerificationMethod,
   resolver = DefaultResolver,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
+  // Verification fails if the signature key ID is not valid
+  const { fragment: keyId } = parseDidUri(signature.keyId)
+  if (!keyId) {
+    return {
+      verified: false,
+      reason: `Signature key ID ${signature.keyId} invalid.`,
+    }
+  }
   const resolutionDetails = await resolver.resolveDoc(signature.keyId)
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
@@ -270,7 +283,7 @@ export async function verifyDidSignature({
   return verifyDidSignatureFromDetails({
     message,
     signature: signature.signature,
-    keyId: signature.keyId,
+    keyId,
     expectedVerificationMethod,
     details,
   })

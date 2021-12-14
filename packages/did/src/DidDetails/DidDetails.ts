@@ -135,7 +135,7 @@ export abstract class DidDetails implements IDidDetails {
       keyId,
     }: {
       signer: KeystoreSigner
-      keyId: DidKey['id']
+      keyId: DidPublicKey['id']
     }
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)

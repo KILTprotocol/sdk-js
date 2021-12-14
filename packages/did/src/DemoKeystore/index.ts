@@ -6,3 +6,4 @@
  */
 
 export * from './DemoKeystore'
+export * as DemoKeystoreUtils from './DemoKeystore.utils'
