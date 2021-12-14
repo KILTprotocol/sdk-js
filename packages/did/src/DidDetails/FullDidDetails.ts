@@ -102,7 +102,9 @@ export class FullDidDetails extends DidDetails {
     const callMethod = extrinsic.method
     const { section, method } = callMethod
     const keyRelationship =
-      methodMapping[section][method] || methodMapping.default.default
+      methodMapping[section][method] ||
+      methodMapping[section].default ||
+      methodMapping.default.default
     return keyRelationship === 'paymentAccount'
       ? []
       : this.getKeys(keyRelationship)

@@ -10,7 +10,7 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 import type {
   IDidDetails,
   IDidIdentifier,
-  IIdentity,
+  KeyringPair,
   KeystoreSigner,
 } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
@@ -172,7 +172,7 @@ export class LightDidDetails extends DidDetails {
   }
 
   public async migrate(
-    submitter: IIdentity,
+    submitter: KeyringPair,
     signer: KeystoreSigner
   ): Promise<FullDidDetails> {
     const creationTx = await generateCreateTxFromDidDetails(

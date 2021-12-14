@@ -8,23 +8,21 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-console */
 
-import { BN, hexToU8a } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 import { Keyring } from '@kiltprotocol/utils'
-import { randomAsU8a } from '@polkadot/util-crypto'
+import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
-  DefaultResolver,
   DemoKeystore,
   DidChain,
+  DidCreationDetails,
   DidUtils,
   FullDidDetails,
   LightDidDetails,
+  LightDidSupportedSigningKeyTypes,
+  SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import {
-  KeyRelationship,
-  KeyringPair,
-  KeystoreSigner,
-} from '@kiltprotocol/types'
+import { KeyringPair } from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { Balance } from '../balance'
@@ -106,53 +104,69 @@ export async function endowAccounts(
   )
 }
 
+export async function createMinimalLightDid(
+  keystore: DemoKeystore,
+  seed?: string
+): Promise<LightDidDetails> {
+  const genSeed = seed || randomAsHex(32)
+  const key = await keystore.generateKeypair({
+    alg: SigningAlgorithms.Sr25519,
+    seed: genSeed,
+  })
+  return LightDidDetails.fromIdentifier(
+    encodeAddress(key.publicKey, 38),
+    LightDidSupportedSigningKeyTypes.sr25519
+  )
+}
+
+// It takes the auth key from the light DID and use it as attestation key as well.
 export async function createMinimalFullDidFromLightDid(
   identity: KeyringPair,
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
 ): Promise<FullDidDetails> {
-  const { extrinsic, did } = await DidUtils.upgradeDid(
-    lightDidForId,
-    identity.address,
-    keystore
-  )
-
-  await BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-  })
-
-  const queried = await DefaultResolver.resolveDoc(did)
-  if (!queried) throw new Error('Light Did to full did not made')
-
-  const key = {
-    publicKey: hexToU8a(
-      queried.details!.getKeys(KeyRelationship.authentication)[0].publicKeyHex
-    ),
-    type: queried.details!.getKeys(KeyRelationship.authentication)[0].type,
+  const fullDidCreationDetails: DidCreationDetails = {
+    did: DidUtils.getKiltDidFromIdentifier(lightDidForId.identifier, 'full'),
+    keyRelationships: {
+      authentication: new Set([lightDidForId.authenticationKey.id]),
+      assertionMethod: new Set([lightDidForId.authenticationKey.id]),
+    },
+    keys: new Map([
+      [lightDidForId.authenticationKey.id, lightDidForId.authenticationKey],
+    ]),
+    serviceEndpoints: new Map(),
   }
+  console.log(fullDidCreationDetails)
 
-  const addExtrinsic = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.assertionMethod,
-    key
-  )
-
-  const tx = await DidChain.generateDidAuthenticatedTx({
-    didIdentifier: identity.address,
-    txCounter: (queried.details as FullDidDetails).getNextTxIndex(),
-    call: addExtrinsic,
-    signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: queried.details!.getKeys(
-      KeyRelationship.authentication
-    )[0].publicKeyHex,
-    alg: queried.details!.getKeys(KeyRelationship.authentication)[0].type,
-    submitter: identity.address,
+  const fullDid = new FullDidDetails({
+    identifier: lightDidForId.identifier,
+    ...fullDidCreationDetails,
   })
+  console.log('this outside')
+  console.log(fullDid)
+
+  const tx = await DidChain.generateCreateTxFromDidDetails(
+    fullDid,
+    identity.address,
+    {
+      alg: lightDidForId.authenticationKey.type,
+      signer: keystore,
+      signingPublicKey: lightDidForId.authenticationKey.publicKey,
+    }
+  )
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
-  const refetchedDid = await DefaultResolver.resolveDoc(did)
-  if (!refetchedDid) throw new Error('Light Did to full did not made')
-  return refetchedDid.details as FullDidDetails
+  console.log('this after')
+  console.log(JSON.stringify(fullDid.authenticationKey))
+
+  const didFromChain = await FullDidDetails.fromChainInfo(fullDid.identifier)
+  console.log('did from chain')
+  console.log(JSON.stringify(didFromChain!.authenticationKey))
+  return didFromChain as FullDidDetails
+  // return FullDidDetails.fromChainInfo(
+  //   fullDid.identifier
+  // ) as Promise<FullDidDetails>
 }

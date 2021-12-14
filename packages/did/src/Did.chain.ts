@@ -186,12 +186,12 @@ function decodeDidPublicKeyDetails(
   keyId: Hash,
   keyDetails: DidPublicKeyDetails
 ): DidKey {
-  const { key, blockNumber } = keyDetails
+  const key = keyDetails.key.value
   return {
     id: keyId.toHex(),
     type: key.type.toLowerCase(),
     publicKey: key.value.toU8a(),
-    includedAt: blockNumber.toBn(),
+    includedAt: keyDetails.blockNumber.toBn(),
   }
 }
 
