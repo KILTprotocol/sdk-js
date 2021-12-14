@@ -133,7 +133,7 @@ export async function resolveKey(
       }
       const result: ResolvedDidKey = {
         controller: did,
-        id: `${did}#${keyId}`,
+        id: didUri,
         publicKey: key.publicKey,
         type: key.type,
       }
@@ -153,7 +153,7 @@ export async function resolveKey(
       }
       return {
         controller: did,
-        id: `${did}#${keyId}`,
+        id: didUri,
         publicKey: key.publicKey,
         type: key.type,
       }
@@ -172,7 +172,7 @@ export async function resolveKey(
 export async function resolveServiceEndpoint(
   didUri: DidPublicServiceEndpoint['id']
 ): Promise<ResolvedDidServiceEndpoint | null> {
-  const { did, identifier, fragment: serviceId, type } = parseDidUri(didUri)
+  const { identifier, fragment: serviceId, type } = parseDidUri(didUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
@@ -186,7 +186,7 @@ export async function resolveServiceEndpoint(
         return null
       }
       return {
-        id: `${did}#${serviceEndpoint.id}`,
+        id: didUri,
         type: serviceEndpoint.types,
         serviceEndpoint: serviceEndpoint.urls,
       }
@@ -201,7 +201,7 @@ export async function resolveServiceEndpoint(
         return null
       }
       return {
-        id: `${did}#${serviceEndpoint.id}`,
+        id: didUri,
         type: serviceEndpoint.types,
         serviceEndpoint: serviceEndpoint.urls,
       }

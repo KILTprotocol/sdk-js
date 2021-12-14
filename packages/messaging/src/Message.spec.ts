@@ -67,7 +67,7 @@ const resolveKey = async (
   }
 }
 
-async function generateAliceDid(
+export async function generateAliceDid(
   keystore: DemoKeystore
 ): Promise<LightDidDetails> {
   const authKeyAlice = await keystore.generateKeypair({
@@ -91,7 +91,7 @@ async function generateAliceDid(
   })
 }
 
-async function generateBobDid(
+export async function generateBobDid(
   keystore: DemoKeystore
 ): Promise<LightDidDetails> {
   const authKeyBob = await keystore.generateKeypair({
@@ -122,7 +122,7 @@ beforeEach(async () => {
 })
 
 describe('Messaging', () => {
-  const mockResolver: IDidResolver = {
+  const mockResolver = {
     resolveDoc,
     resolveKey,
     resolve: async (
@@ -132,11 +132,7 @@ describe('Messaging', () => {
     > => {
       return (await resolveKey(didUri)) || resolveDoc(didUri)
     },
-    resolveServiceEndpoint:
-      async (): Promise<ResolvedDidServiceEndpoint | null> => {
-        return null
-      },
-  }
+  } as IDidResolver
 
   it('verify message encryption and signing', async () => {
     const aliceDid: LightDidDetails = await generateAliceDid(keystore)

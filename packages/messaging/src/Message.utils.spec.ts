@@ -70,6 +70,9 @@ import type {
   IAcceptCredential,
   IRejectCredential,
   IDidDetails,
+  DidResolvedDetails,
+  DidPublicKey,
+  ResolvedDidKey,
 } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import {
@@ -80,22 +83,18 @@ import {
   Quote,
   RequestForAttestation,
 } from '@kiltprotocol/core'
+import { DemoKeystore, DidDetails, DidUtils } from '@kiltprotocol/did'
 
-import {
-  createLocalDemoDidFromSeed,
-  DemoKeystore,
-  DidUtils,
-} from '@kiltprotocol/did'
 import * as MessageUtils from './Message.utils'
-
+import { generateAliceDid, generateBobDid } from './Message.spec'
 import { Message } from './Message'
 
 import '../../../testingTools/jestErrorCodeMatcher'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildCredential(
-  claimer: IDidDetails,
-  attester: IDidDetails,
+  claimerDid: IDidDetails['did'],
+  attesterDid: IDidDetails['did'],
   contents: IClaim['contents'],
   legitimations: Credential[]
 ): Promise<Credential> {
@@ -113,11 +112,7 @@ async function buildCredential(
 
   const testCType: CType = CType.fromSchema(rawCType)
 
-  const claim = Claim.fromCTypeAndClaimContents(
-    testCType,
-    contents,
-    claimer.did
-  )
+  const claim = Claim.fromCTypeAndClaimContents(testCType, contents, claimerDid)
   // build request for attestation with legitimations
   const requestForAttestation = RequestForAttestation.fromClaim(claim, {
     legitimations,
@@ -125,7 +120,7 @@ async function buildCredential(
   // build attestation
   const testAttestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    attester.did
+    attesterDid
   )
   // combine to credential
   const credential = Credential.fromRequestAndAttestation(
@@ -137,8 +132,8 @@ async function buildCredential(
 
 describe('Messaging Utilities', () => {
   let keystore: DemoKeystore
-  let identityAlice: IDidDetails
-  let identityBob: IDidDetails
+  let identityAlice: DidDetails
+  let identityBob: DidDetails
   let mockResolver: IDidResolver
   let date: string
   let rawCType: ICType['schema']
@@ -221,36 +216,69 @@ describe('Messaging Utilities', () => {
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
-    identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
-    identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
+    identityAlice = await generateAliceDid(keystore)
+    identityBob = await generateBobDid(keystore)
     date = new Date(2019, 11, 10).toISOString()
     claimContents = {
       name: 'Bob',
     }
 
-    const resolveDoc = async (didUri: string) => {
+    const resolveDoc = async (
+      didUri: IDidDetails['did']
+    ): Promise<DidResolvedDetails | null> => {
       if (didUri === identityAlice.did) {
-        return { details: identityAlice }
+        return {
+          metadata: {
+            deactivated: false,
+          },
+          details: identityAlice,
+        }
       }
       if (didUri === identityBob.did) {
-        return { details: identityBob }
+        return {
+          metadata: {
+            deactivated: false,
+          },
+          details: identityBob,
+        }
       }
       return null
     }
 
-    const resolveKey = async (keyId: string) => {
-      const { identifier, type, version, fragment } =
-        DidUtils.parseDidUrl(keyId)
+    const resolveKey = async (
+      keyId: DidPublicKey['id']
+    ): Promise<ResolvedDidKey | null> => {
+      const { identifier, type, version, fragment, encodedDetails } =
+        DidUtils.parseDidUri(keyId)
       const didSubject = DidUtils.getKiltDidFromIdentifier(
         identifier,
         type,
-        version
+        version,
+        encodedDetails
       )
       if (didSubject === identityAlice.did) {
-        return identityAlice.getKey(fragment!) || null
+        const aliceKey = identityAlice.getKey(fragment!)
+        if (aliceKey) {
+          return {
+            id: keyId,
+            controller: didSubject,
+            publicKey: aliceKey.publicKey,
+            type: aliceKey.type,
+          }
+        }
+        return null
       }
       if (didSubject === identityBob.did) {
-        return identityBob.getKey(fragment!) || null
+        const bobKey = identityBob.getKey(fragment!)
+        if (bobKey) {
+          return {
+            id: keyId,
+            controller: didSubject,
+            publicKey: bobKey.publicKey,
+            type: bobKey.type,
+          }
+        }
+        return null
       }
       return null
     }
@@ -298,7 +326,12 @@ describe('Messaging Utilities', () => {
       identityAlice.did
     )
     // Legitimation
-    legitimation = await buildCredential(identityAlice, identityBob, {}, [])
+    legitimation = await buildCredential(
+      identityAlice.did,
+      identityBob.did,
+      {},
+      []
+    )
     // Compressed Legitimation
     compressedLegitimation = [
       [
@@ -339,7 +372,9 @@ describe('Messaging Utilities', () => {
     quoteAttesterSigned = await Quote.createAttesterSignature(
       quoteData,
       identityAlice,
-      keystore
+      {
+        signer: keystore,
+      }
     )
     // Compressed Quote Attester Signed quote
     compressedResultAttesterSignedQuote = [
@@ -364,8 +399,10 @@ describe('Messaging Utilities', () => {
       legitimation.request.rootHash,
       identityAlice.did,
       identityBob,
-      keystore,
-      mockResolver
+      {
+        signer: keystore,
+        resolver: mockResolver,
+      }
     )
     // Compressed Quote Agreement
     compressedQuoteAgreement = [
@@ -497,11 +534,10 @@ describe('Messaging Utilities', () => {
       },
       metaData: {},
       signatures: {
-        inviter: await DidUtils.getDidAuthenticationSignature(
-          'signature',
-          identityAlice,
-          keystore
-        ),
+        inviter: await identityAlice.signPayload('signature', {
+          signer: keystore,
+          keyId: identityAlice.authenticationKey.id,
+        }),
       },
     }
     // Compressed Request accept delegation content
@@ -529,16 +565,14 @@ describe('Messaging Utilities', () => {
         isPCR: false,
       },
       signatures: {
-        inviter: await DidUtils.getDidAuthenticationSignature(
-          'signature',
-          identityAlice,
-          keystore
-        ),
-        invitee: await DidUtils.getDidAuthenticationSignature(
-          'signature',
-          identityBob,
-          keystore
-        ),
+        inviter: await identityAlice.signPayload('signature', {
+          signer: keystore,
+          keyId: identityAlice.authenticationKey.id,
+        }),
+        invitee: await identityBob.signPayload('signature', {
+          signer: keystore,
+          keyId: identityBob.authenticationKey.id,
+        }),
       },
     }
     // Compressed Submit accept delegation content
@@ -757,7 +791,7 @@ describe('Messaging Utilities', () => {
     ).toEqual(submitAttestationBody)
   })
 
-  it('Checking message compression and decompression Reqyest Credential', async () => {
+  it('Checking message compression and decompression Request Credential', async () => {
     // Request compression of credential body
     expect(MessageUtils.compressMessage(requestCredentialBody)).toEqual(
       compressedRequestCredentialBody
@@ -811,7 +845,7 @@ describe('Messaging Utilities', () => {
       MessageUtils.decompressMessage(compressedInformCreateDelegationBody)
     ).toEqual(informCreateDelegationBody)
   })
-  it('Checks the MessageBody Types through the compress and decompress switch funciton', async () => {
+  it('Checks the MessageBody Types through the compress and decompress switch function', async () => {
     const compressedMalformed = ['', []] as unknown as CompressedMessageBody
 
     expect(() =>
