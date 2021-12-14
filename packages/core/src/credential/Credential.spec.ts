@@ -20,24 +20,19 @@ import type {
   IDidDetails,
   IDidResolver,
   DidResolvedDetails,
-  // DidKey,
+  DidKey,
 } from '@kiltprotocol/types'
-// import { KeyRelationship } from '@kiltprotocol/types'
 import {
   DemoKeystore,
   DemoKeystoreUtils,
-  // FullDidDetails,
   LightDidDetails,
-  // DidUtils,
-  // DidTypes,
   SigningAlgorithms,
   DidDetails,
   LightDidSupportedSigningKeyTypes,
   FullDidDetails,
   DidUtils,
 } from '@kiltprotocol/did'
-// import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
-// import { UUID } from '@kiltprotocol/utils'
+import { UUID } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
@@ -96,27 +91,27 @@ async function buildCredential(
   return credential
 }
 
-// // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
-// function createMinimalFullDidFromLightDid(
-//   lightDidForId: LightDidDetails,
-//   newAuthenticationKey?: DidKey
-// ): FullDidDetails {
-//   const did = DidUtils.getKiltDidFromIdentifier(
-//     lightDidForId.identifier,
-//     'full'
-//   )
-//   const authKey = newAuthenticationKey || lightDidForId.authenticationKey
+// Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
+function createMinimalFullDidFromLightDid(
+  lightDidForId: LightDidDetails,
+  newAuthenticationKey?: DidKey
+): FullDidDetails {
+  const did = DidUtils.getKiltDidFromIdentifier(
+    lightDidForId.identifier,
+    'full'
+  )
+  const authKey = newAuthenticationKey || lightDidForId.authenticationKey
 
-//   return new FullDidDetails({
-//     identifier: lightDidForId.identifier,
-//     did,
-//     keyRelationships: {
-//       authentication: new Set([authKey.id]),
-//     },
-//     keys: new Map([[authKey.id, authKey]]),
-//     serviceEndpoints: new Map(),
-//   })
-// }
+  return new FullDidDetails({
+    identifier: lightDidForId.identifier,
+    did,
+    keyRelationships: {
+      authentication: new Set([authKey.id]),
+    },
+    keys: new Map([[authKey.id, authKey]]),
+    serviceEndpoints: new Map(),
+  })
+}
 
 describe('RequestForAttestation', () => {
   let keystore: DemoKeystore
@@ -401,338 +396,354 @@ describe('RequestForAttestation', () => {
   })
 })
 
-// describe('create presentation', () => {
-//   let keystore: DemoKeystore
-//   let migratedClaimerLightDid: IDidDetails
-//   let migratedClaimerFullDid: IDidDetails
-//   let unmigratedClaimerLightDid: IDidDetails
-//   let migratedThenDeletedClaimerLightDid: IDidDetails
-//   let migratedThenDeletedClaimerFullDid: IDidDetails
-//   let attester: IDidDetails
-//   let ctype: CType
-//   let reqForAtt: RequestForAttestation
-//   let attestation: Attestation
+describe('create presentation', () => {
+  let keystore: DemoKeystore
+  let migratedClaimerLightDid: DidDetails
+  let migratedClaimerFullDid: DidDetails
+  let unmigratedClaimerLightDid: DidDetails
+  let migratedThenDeletedClaimerLightDid: DidDetails
+  let migratedThenDeletedClaimerFullDid: DidDetails
+  let attester: DidDetails
+  let ctype: CType
+  let reqForAtt: RequestForAttestation
+  let attestation: Attestation
 
-//   const mockResolver: IDidResolver = (() => {
-//     const resolve = async (
-//       didUri: string
-//     ): Promise<IDidResolvedDetails | null> => {
-//       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-//       const didWithoutFragment = didUri.split('#')[0]
-//       switch (didWithoutFragment) {
-//         case migratedClaimerLightDid.did:
-//           return {
-//             details: migratedClaimerLightDid,
-//             metadata: {
-//               canonicalId: migratedClaimerFullDid.did,
-//               deactivated: false,
-//             },
-//           }
-//         case migratedThenDeletedClaimerLightDid.did:
-//           return {
-//             metadata: {
-//               deactivated: true,
-//             },
-//           }
-//         case migratedThenDeletedClaimerFullDid.did:
-//           return {
-//             metadata: {
-//               deactivated: true,
-//             },
-//           }
-//         case unmigratedClaimerLightDid.did:
-//           return {
-//             details: unmigratedClaimerLightDid,
-//             metadata: { deactivated: false },
-//           }
-//         case migratedClaimerFullDid.did:
-//           return {
-//             details: migratedClaimerFullDid,
-//             metadata: { deactivated: false },
-//           }
-//         case attester.did:
-//           return { details: attester, metadata: { deactivated: false } }
-//         default:
-//           return null
-//       }
-//     }
-//     return {
-//       resolve,
-//       resolveDoc: resolve,
-//     } as IDidResolver
-//   })()
+  const mockResolver: IDidResolver = (() => {
+    const resolve = async (
+      didUri: string
+    ): Promise<DidResolvedDetails | null> => {
+      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+      const { did } = DidUtils.parseDidUri(didUri)
+      switch (did) {
+        case migratedClaimerLightDid?.did:
+          return {
+            details: migratedClaimerLightDid,
+            metadata: {
+              canonicalId: migratedClaimerFullDid.did,
+              deactivated: false,
+            },
+          }
+        case migratedThenDeletedClaimerLightDid?.did:
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
+        case migratedThenDeletedClaimerFullDid?.did:
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
+        case unmigratedClaimerLightDid?.did:
+          return {
+            details: unmigratedClaimerLightDid,
+            metadata: { deactivated: false },
+          }
+        case migratedClaimerFullDid?.did:
+          return {
+            details: migratedClaimerFullDid,
+            metadata: { deactivated: false },
+          }
+        case attester?.did:
+          return { details: attester, metadata: { deactivated: false } }
+        default:
+          return null
+      }
+    }
+    return {
+      resolve,
+      resolveDoc: resolve,
+    } as IDidResolver
+  })()
 
-//   beforeAll(async () => {
-//     keystore = new DemoKeystore()
-//     attester = await createLocalDemoDidFromSeed(keystore, '//Attester')
-//     unmigratedClaimerLightDid = await createLightDidFromSeed(
-//       keystore,
-//       '//UnmigratedClaimer'
-//     )
-//     migratedClaimerLightDid = await createLightDidFromSeed(
-//       keystore,
-//       '//MigratedClaimer'
-//     )
-//     // Change also the authentication key of the full DID to properly verify signature verification,
-//     // so that it uses a completely different key and the credential is still correctly verified.
-//     const newKeyForMigratedClaimerDid = await keystore.generateKeypair({
-//       alg: SigningAlgorithms.Sr25519,
-//       seed: '//RandomSeed',
-//     })
-//     migratedClaimerFullDid = createMinimalFullDidFromLightDid(
-//       migratedClaimerLightDid as LightDidDetails,
-//       {
-//         type: DemoKeystore.getKeypairTypeForAlg(
-//           newKeyForMigratedClaimerDid.alg
-//         ),
-//         publicKey: newKeyForMigratedClaimerDid.publicKey,
-//       }
-//     )
-//     migratedThenDeletedClaimerLightDid = await createLightDidFromSeed(
-//       keystore,
-//       '//MigratedThenDeletedClaimer'
-//     )
-//     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
-//       migratedThenDeletedClaimerLightDid as LightDidDetails
-//     )
+  beforeAll(async () => {
+    keystore = new DemoKeystore()
+    attester = await DemoKeystoreUtils.createLocalDemoDidFromSeed(
+      keystore,
+      '//Attester'
+    )
+    const unmigratedClaimerKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+      seed: '//UnmigratedClaimer',
+    })
+    unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(unmigratedClaimerKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.sr25519
+    )
+    const migratedClaimerKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+      seed: '//MigratedClaimer',
+    })
+    migratedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(migratedClaimerKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.sr25519
+    )
+    // Change also the authentication key of the full DID to properly verify signature verification,
+    // so that it uses a completely different key and the credential is still correctly verified.
+    const newKeyForMigratedClaimerDid = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+      seed: '//RandomSeed',
+    })
+    migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
+      migratedClaimerLightDid as LightDidDetails,
+      {
+        type: DemoKeystore.getKeypairTypeForAlg(
+          newKeyForMigratedClaimerDid.alg
+        ),
+        publicKey: newKeyForMigratedClaimerDid.publicKey,
+        id: 'new-auth',
+      }
+    )
+    const migratedThenDeletedKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+      seed: '//MigratedThenDeletedClaimer',
+    })
+    migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(migratedThenDeletedKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.ed25519
+    )
+    migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
+      migratedThenDeletedClaimerLightDid as LightDidDetails
+    )
 
-//     const rawCType: ICType['schema'] = {
-//       $id: 'kilt:ctype:0x1',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//       title: 'credential',
-//       properties: {
-//         name: { type: 'string' },
-//       },
-//       type: 'object',
-//     }
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
 
-//     ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.did)
+    ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.did)
 
-//     // cannot be used since the variable needs to be established in the outer scope
-//     reqForAtt = RequestForAttestation.fromClaim(
-//       Claim.fromCTypeAndClaimContents(
-//         ctype,
-//         {
-//           name: 'Peter',
-//           age: 12,
-//         },
-//         migratedClaimerFullDid.did
-//       )
-//     )
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        migratedClaimerFullDid.did
+      )
+    )
 
-//     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
-//   })
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+  })
 
-//   it('should build from reqForAtt and Attestation', async () => {
-//     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-//     expect(cred).toBeDefined()
-//   })
+  it('should build from reqForAtt and Attestation', async () => {
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    expect(cred).toBeDefined()
+  })
 
-//   it('should create presentation and exclude specific attributes using a full DID', async () => {
-//     ;(query as jest.Mock).mockResolvedValue(attestation)
+  it('should create presentation and exclude specific attributes using a full DID', async () => {
+    ;(query as jest.Mock).mockResolvedValue(attestation)
 
-//     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
-//     const challenge = UUID.generate()
-//     const att = await cred.createPresentation({
-//       selectedAttributes: ['name'],
-//       signer: keystore,
-//       claimerDid: migratedClaimerFullDid,
-//       challenge,
-//     })
-//     expect(att.getAttributes()).toEqual(new Set(['name']))
-//     await expect(
-//       Credential.verify(att, {
-//         resolver: mockResolver,
-//       })
-//     ).resolves.toBe(true)
-//     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
-//   })
-//   it('should create presentation and exclude specific attributes using a light DID', async () => {
-//     const rawCType: ICType['schema'] = {
-//       $id: 'kilt:ctype:0x1',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//       title: 'credential',
-//       properties: {
-//         name: { type: 'string' },
-//       },
-//       type: 'object',
-//     }
-//     ctype = CType.fromSchema(rawCType, attester.did)
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      claimerDid: migratedClaimerFullDid,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      Credential.verify(att, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBe(true)
+    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+  })
+  it('should create presentation and exclude specific attributes using a light DID', async () => {
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, attester.did)
 
-//     // cannot be used since the variable needs to be established in the outer scope
-//     reqForAtt = RequestForAttestation.fromClaim(
-//       Claim.fromCTypeAndClaimContents(
-//         ctype,
-//         {
-//           name: 'Peter',
-//           age: 12,
-//         },
-//         unmigratedClaimerLightDid.did
-//       )
-//     )
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        unmigratedClaimerLightDid.did
+      )
+    )
 
-//     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
-//     ;(query as jest.Mock).mockResolvedValue(attestation)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    ;(query as jest.Mock).mockResolvedValue(attestation)
 
-//     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
-//     const challenge = UUID.generate()
-//     const att = await cred.createPresentation({
-//       selectedAttributes: ['name'],
-//       signer: keystore,
-//       claimerDid: unmigratedClaimerLightDid,
-//       challenge,
-//     })
-//     expect(att.getAttributes()).toEqual(new Set(['name']))
-//     await expect(
-//       Credential.verify(att, {
-//         resolver: mockResolver,
-//       })
-//     ).resolves.toBe(true)
-//     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
-//   })
-//   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
-//     const rawCType: ICType['schema'] = {
-//       $id: 'kilt:ctype:0x1',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//       title: 'credential',
-//       properties: {
-//         name: { type: 'string' },
-//       },
-//       type: 'object',
-//     }
-//     ctype = CType.fromSchema(rawCType, attester.did)
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      claimerDid: unmigratedClaimerLightDid,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      Credential.verify(att, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBe(true)
+    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+  })
+  it('should create presentation and exclude specific attributes using a migrated DID', async () => {
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, attester.did)
 
-//     // cannot be used since the variable needs to be established in the outer scope
-//     reqForAtt = RequestForAttestation.fromClaim(
-//       Claim.fromCTypeAndClaimContents(
-//         ctype,
-//         {
-//           name: 'Peter',
-//           age: 12,
-//         },
-//         // Use of light DID in the claim.
-//         migratedClaimerLightDid.did
-//       )
-//     )
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedClaimerLightDid.did
+      )
+    )
 
-//     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
-//     ;(query as jest.Mock).mockResolvedValue(attestation)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    ;(query as jest.Mock).mockResolvedValue(attestation)
 
-//     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
-//     const challenge = UUID.generate()
-//     const att = await cred.createPresentation({
-//       selectedAttributes: ['name'],
-//       signer: keystore,
-//       // Use of full DID to sign the presentation.
-//       claimerDid: migratedClaimerFullDid,
-//       challenge,
-//     })
-//     expect(att.getAttributes()).toEqual(new Set(['name']))
-//     await expect(
-//       Credential.verify(att, {
-//         resolver: mockResolver,
-//       })
-//     ).resolves.toBe(true)
-//     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
-//   })
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      // Use of full DID to sign the presentation.
+      claimerDid: migratedClaimerFullDid,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      Credential.verify(att, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBe(true)
+    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+  })
 
-//   it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
-//     const rawCType: ICType['schema'] = {
-//       $id: 'kilt:ctype:0x1',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//       title: 'credential',
-//       properties: {
-//         name: { type: 'string' },
-//       },
-//       type: 'object',
-//     }
-//     ctype = CType.fromSchema(rawCType, attester.did)
+  it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, attester.did)
 
-//     // cannot be used since the variable needs to be established in the outer scope
-//     reqForAtt = RequestForAttestation.fromClaim(
-//       Claim.fromCTypeAndClaimContents(
-//         ctype,
-//         {
-//           name: 'Peter',
-//           age: 12,
-//         },
-//         // Use of light DID in the claim.
-//         migratedClaimerLightDid.did
-//       )
-//     )
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedClaimerLightDid.did
+      )
+    )
 
-//     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
-//     ;(query as jest.Mock).mockResolvedValue(attestation)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    ;(query as jest.Mock).mockResolvedValue(attestation)
 
-//     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
-//     const challenge = UUID.generate()
-//     const att = await cred.createPresentation({
-//       selectedAttributes: ['name'],
-//       signer: keystore,
-//       // Still using the light DID, which should fail since it has been migrated
-//       claimerDid: migratedClaimerLightDid,
-//       challenge,
-//     })
-//     expect(att.getAttributes()).toEqual(new Set(['name']))
-//     await expect(
-//       Credential.verify(att, {
-//         resolver: mockResolver,
-//       })
-//     ).resolves.toBeFalsy()
-//   })
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      // Still using the light DID, which should fail since it has been migrated
+      claimerDid: migratedClaimerLightDid,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      Credential.verify(att, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBeFalsy()
+  })
 
-//   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
-//     const rawCType: ICType['schema'] = {
-//       $id: 'kilt:ctype:0x1',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//       title: 'credential',
-//       properties: {
-//         name: { type: 'string' },
-//       },
-//       type: 'object',
-//     }
-//     ctype = CType.fromSchema(rawCType, attester.did)
+  it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, attester.did)
 
-//     // cannot be used since the variable needs to be established in the outer scope
-//     reqForAtt = RequestForAttestation.fromClaim(
-//       Claim.fromCTypeAndClaimContents(
-//         ctype,
-//         {
-//           name: 'Peter',
-//           age: 12,
-//         },
-//         // Use of light DID in the claim.
-//         migratedThenDeletedClaimerLightDid.did
-//       )
-//     )
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedThenDeletedClaimerLightDid.did
+      )
+    )
 
-//     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
-//     ;(query as jest.Mock).mockResolvedValue(attestation)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    ;(query as jest.Mock).mockResolvedValue(attestation)
 
-//     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
-//     const challenge = UUID.generate()
-//     const att = await cred.createPresentation({
-//       selectedAttributes: ['name'],
-//       signer: keystore,
-//       // Still using the light DID, which should fail since it has been migrated and then deleted
-//       claimerDid: migratedThenDeletedClaimerLightDid,
-//       challenge,
-//     })
-//     expect(att.getAttributes()).toEqual(new Set(['name']))
-//     await expect(
-//       Credential.verify(att, {
-//         resolver: mockResolver,
-//       })
-//     ).resolves.toBeFalsy()
-//   })
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      // Still using the light DID, which should fail since it has been migrated and then deleted
+      claimerDid: migratedThenDeletedClaimerLightDid,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      Credential.verify(att, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBeFalsy()
+  })
 
-//   it('should get attribute keys', async () => {
-//     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-//     expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
-//   })
-// })
+  it('should get attribute keys', async () => {
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
+  })
+})

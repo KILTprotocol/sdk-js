@@ -24,8 +24,8 @@ import type {
   IRequestForAttestation,
   IDidResolver,
   KeystoreSigner,
-  KeyRelationship,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
@@ -225,14 +225,12 @@ export class Credential implements ICredential {
     signer,
     challenge,
     claimerDid,
-    keyRelationship,
     keySelection = DidUtils.defaultDidKeySelection,
   }: {
     selectedAttributes?: string[]
     signer: KeystoreSigner
     challenge?: string
     claimerDid: DidDetails
-    keyRelationship: KeyRelationship
     keySelection?: DidKeySelection
   }): Promise<Credential> {
     const credential = new Credential(
@@ -251,7 +249,7 @@ export class Credential implements ICredential {
     // remove these attributes
     credential.request.removeClaimProperties(excludedClaimProperties)
 
-    const keys = claimerDid.getKeys(keyRelationship)
+    const keys = claimerDid.getKeys(KeyRelationship.authentication)
     const selectedKeyId = keySelection(keys)?.id
 
     if (!selectedKeyId) {
