@@ -9,7 +9,7 @@
  * @group unit/ctype
  */
 
-import type { ICType, IClaim, ClaimContents } from '@kiltprotocol/types'
+import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import { CType } from './CType'
 import { Claim } from '../claim/Claim'
 import * as CTypeUtils from './CType.utils'
@@ -20,7 +20,7 @@ describe('Nested CTypes', () => {
   let kycCType: ICType['schema']
   let passport: CType
   let kyc: CType
-  let claimContents: ClaimContents
+  let claimContents: IClaimContents
   let claimDeepContents: IClaim['contents']
   let nested: ICType['schema']
   let nestedDeeply: ICType['schema']
