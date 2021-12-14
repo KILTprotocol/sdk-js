@@ -464,14 +464,4 @@ describe('When creating an instance from an identifier', () => {
     expect(builtLightDidDetails?.attestationKey).toBeUndefined()
     expect(builtLightDidDetails?.delegationKey).toBeUndefined()
   })
-
-  it('throws with an unsupported key type', () => {
-    const randomAddress = new Keyring({ ss58Format: 38 }).addFromMnemonic(
-      'random'
-    ).address
-
-    expect(() =>
-      LightDidDetails.fromIdentifier(randomAddress, 'ecdsa')
-    ).toThrow()
-  })
 })
