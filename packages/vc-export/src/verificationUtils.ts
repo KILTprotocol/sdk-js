@@ -21,7 +21,7 @@ import {
   KILT_SELF_SIGNED_PROOF_TYPE,
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
-} from './constants'
+} from './constants.js'
 import type {
   VerifiableCredential,
   SelfSignedProof,
@@ -29,7 +29,7 @@ import type {
   CredentialDigestProof,
   IPublicKeyRecord,
 } from './types'
-import { fromCredentialIRI } from './exportToVerifiableCredential'
+import { fromCredentialIRI } from './exportToVerifiableCredential.js'
 
 export interface VerificationResult {
   verified: boolean

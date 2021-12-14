@@ -21,7 +21,7 @@ import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { hexToU8a, isHex } from '@polkadot/util'
 import type { Registry } from '@polkadot/types/types'
 import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
-import { DefaultResolver } from './DidResolver/DefaultResolver'
+import { DefaultResolver } from './DidResolver/DefaultResolver.js'
 import type {
   PublicKeyEnum,
   IDidCreationOptions,
@@ -34,8 +34,8 @@ import type {
   IDidParsingResult,
   IServiceEndpointChainRecordCodec,
 } from './types'
-import { generateCreateTx } from './Did.chain'
-import { LightDidDetails } from '.'
+import { generateCreateTx } from './Did.chain.js'
+import { LightDidDetails } from './DidDetails/index.js'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 

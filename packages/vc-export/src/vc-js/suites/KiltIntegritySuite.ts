@@ -14,9 +14,9 @@ import type {
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import type { CredentialDigestProof } from '../../types'
 
-import { verifyCredentialDigestProof } from '../../verificationUtils'
-import { KiltAbstractSuite } from './KiltAbstractSuite'
-import { KILT_CREDENTIAL_DIGEST_PROOF_TYPE } from '../../constants'
+import { verifyCredentialDigestProof } from '../../verificationUtils.js'
+import { KiltAbstractSuite } from './KiltAbstractSuite.js'
+import { KILT_CREDENTIAL_DIGEST_PROOF_TYPE } from '../../constants.js'
 
 export class KiltDisclosureSuite extends KiltAbstractSuite {
   constructor() {

@@ -24,7 +24,7 @@ import {
   KILT_CREDENTIAL_CONTEXT_URL,
   KILT_VERIFIABLECREDENTIAL_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,
-} from './constants'
+} from './constants.js'
 import type {
   AttestedProof,
   CredentialDigestProof,

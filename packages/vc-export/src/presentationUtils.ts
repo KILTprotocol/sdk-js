@@ -17,7 +17,7 @@ import {
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLEPRESENTATION_TYPE,
-} from './constants'
+} from './constants.js'
 import type {
   VerifiableCredential,
   VerifiablePresentation,

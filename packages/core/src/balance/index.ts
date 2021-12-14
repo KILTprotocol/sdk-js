@@ -5,5 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as BalanceUtils from './Balance.utils'
-export * as Balance from './Balance.chain'
+export * as BalanceUtils from './Balance.utils.js'
+export * as Balance from './Balance.chain.js'

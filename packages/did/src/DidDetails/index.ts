@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { DidDetails } from './DidDetails'
-export * from './DidDetails.utils'
-export { FullDidDetails } from './FullDidDetails'
-export * from './FullDidDetails.utils'
-export { LightDidDetails } from './LightDidDetails'
+export { DidDetails } from './DidDetails.js'
+export * from './DidDetails.utils.js'
+export { FullDidDetails } from './FullDidDetails.js'
+export * from './FullDidDetails.utils.js'
+export { LightDidDetails } from './LightDidDetails.js'

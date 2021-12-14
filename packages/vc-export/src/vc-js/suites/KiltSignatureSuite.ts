@@ -13,9 +13,9 @@ import type {
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import type { SelfSignedProof } from '../../types'
-import { verifySelfSignedProof } from '../../verificationUtils'
-import { KiltAbstractSuite } from './KiltAbstractSuite'
-import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
+import { verifySelfSignedProof } from '../../verificationUtils.js'
+import { KiltAbstractSuite } from './KiltAbstractSuite.js'
+import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants.js'
 
 export class KiltSignatureSuite extends KiltAbstractSuite {
   constructor() {

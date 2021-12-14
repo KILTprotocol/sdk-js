@@ -7,9 +7,9 @@
 
 import type * as types from './types'
 
-export * as verification from './verificationUtils'
-export * as presentation from './presentationUtils'
-export { fromCredential } from './exportToVerifiableCredential'
-export * as vcjsSuites from './vc-js'
+export * as verification from './verificationUtils.js'
+export * as presentation from './presentationUtils.js'
+export { fromCredential } from './exportToVerifiableCredential.js'
+export * as vcjsSuites from './vc-js/index.js'
 
 export type { types }

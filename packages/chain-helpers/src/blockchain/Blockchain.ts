@@ -31,7 +31,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { submitSignedTx } from './Blockchain.utils'
+import { submitSignedTx } from './Blockchain.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -126,7 +126,6 @@ export class Blockchain implements IBlockchainApi {
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
    * @returns Representation of the Tx nonce for the identity.
-   *
    */
   public async getNonce(accountAddress: string): Promise<BN> {
     let nonce = this.accountNonces.get(accountAddress)

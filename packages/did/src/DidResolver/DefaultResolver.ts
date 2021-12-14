@@ -14,21 +14,21 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { LightDidDetails } from '../DidDetails/LightDidDetails'
-import { FullDidDetails } from '../DidDetails/FullDidDetails'
-import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/LightDidDetails.utils'
+import { LightDidDetails } from '../DidDetails/LightDidDetails.js'
+import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
+import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/LightDidDetails.utils.js'
 import {
   queryServiceEndpoint,
   queryServiceEndpoints,
   queryById,
   queryDidKey,
   queryDidDeletionStatus,
-} from '../Did.chain'
+} from '../Did.chain.js'
 import {
   getKiltDidFromIdentifier,
   getSigningKeyTypeFromEncoding,
   parseDidUrl,
-} from '../Did.utils'
+} from '../Did.utils.js'
 import type { IDidParsingResult, LightDidDetailsCreationOpts } from '../types'
 
 /**

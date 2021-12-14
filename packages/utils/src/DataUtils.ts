@@ -16,7 +16,7 @@
 import type { IIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import { SDKErrors } from '.'
-import { verify } from './Crypto'
+import { verify } from './Crypto.js'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 38.

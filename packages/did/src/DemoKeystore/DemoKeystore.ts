@@ -30,11 +30,11 @@ import {
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { u8aEq } from '@polkadot/util'
-import { getKiltDidFromIdentifier } from '../Did.utils'
-import { FullDidDetails, LightDidDetails } from '../DidDetails'
+import { getKiltDidFromIdentifier } from '../Did.utils.js'
+import { FullDidDetails, LightDidDetails } from '../DidDetails/index.js'
 import { DefaultResolver, DidUtils } from '..'
-import { INewPublicKey, PublicKeyRoleAssignment } from '../types'
-import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils'
+import { INewPublicKey, PublicKeyRoleAssignment } from '../types.js'
+import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils.js'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',

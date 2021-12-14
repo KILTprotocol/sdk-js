@@ -12,9 +12,9 @@
 
 import type { ICredential, CompressedCredential } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import * as AttestationUtils from '../attestation/Attestation.utils'
-import * as RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
-import { Credential } from './Credential'
+import * as AttestationUtils from '../attestation/Attestation.utils.js'
+import * as RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils.js'
+import { Credential } from './Credential.js'
 
 /**
  *  Checks whether the input meets all the required criteria of an ICredential object.
