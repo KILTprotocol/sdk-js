@@ -38,7 +38,7 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { Message } from './Message'
 
-// The mock resolver returns null for any full DID, marking all light DID as unmigrated.
+// The mock resolver returns null for any full DID, marking all light DID as unmigrated, since we can test encryption with light DIDs as well.
 const resolveDoc = async (
   did: IDidDetails['did']
 ): Promise<DidResolvedDetails | null> => {
