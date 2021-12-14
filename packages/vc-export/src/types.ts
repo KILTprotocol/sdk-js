@@ -32,7 +32,7 @@ export type IPublicKeyRecord = DidPublicKey
 
 export interface SelfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
-  verificationMethod: string | IPublicKeyRecord
+  verificationMethod: IPublicKeyRecord['id'] | IPublicKeyRecord
   signature: string
   challenge?: string
 }
