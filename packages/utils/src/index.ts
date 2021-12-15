@@ -5,8 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import * as jsonabcCjs from './jsonabc.cjs'
+
+export const jsonabc = jsonabcCjs
 export * as Crypto from './Crypto.js'
-export * as jsonabc from './jsonabc.js'
 export * as UUID from './UUID.js'
 export * as DataUtils from './DataUtils.js'
 export * as DecoderUtils from './Decode.js'
