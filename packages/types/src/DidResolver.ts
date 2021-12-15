@@ -5,8 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { IDidServiceEndpoint } from '.'
-import type { IDidDetails, IDidKeyDetails } from './DidDetails'
+import type {
+  IDidDetails,
+  IDidKeyDetails,
+  IDidServiceEndpoint,
+} from './DidDetails'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).

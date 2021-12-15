@@ -15,7 +15,7 @@
  */
 import type { IIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
-import { SDKErrors } from '.'
+import * as SDKErrors from './SDKErrors.js'
 import { verify } from './Crypto.js'
 
 /**

@@ -21,9 +21,15 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'prettier', 'jsdoc', 'license-header'],
+  plugins: [
+    '@typescript-eslint',
+    'prettier',
+    'jsdoc',
+    'license-header',
+    'import',
+  ],
   rules: {
-    'import/no-cycle': 'error', // TODO: This rule does not seem to be working atm.
+    'import/no-cycle': 'off', // TODO: This rule does not seem to be working atm.
     'import/extensions': [
       'error',
       'ignorePackages',
@@ -32,6 +38,7 @@ module.exports = {
         chain: 'never',
       },
     ],
+    'no-restricted-imports': ['error', '.'],
     // Taken care of by typescript
     'import/no-unresolved': 'off',
     'prettier/prettier': 'error',
