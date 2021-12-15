@@ -38,6 +38,8 @@ describe('Log Configuration', () => {
 
     ConfigService.modifyLogLevel(-100)
     expect(testLogger.getLogLevel()).toEqual(0)
+    ConfigService.modifyLogLevel(6)
+    expect(testLogger.getLogLevel()).toEqual(5)
     ConfigService.modifyLogLevel(initialLevel)
     expect(testLogger.getLogLevel()).toEqual(initialLevel)
   })
@@ -68,6 +70,11 @@ describe('Configuration Service', () => {
       expect(ConfigService.get('logLevel')).toEqual(LogLevel.Warn)
       ConfigService.set({})
       expect(ConfigService.get('logLevel')).toEqual(LogLevel.Warn)
+      // @ts-expect-error Type
+      ConfigService.set({ logLevel: 'blabla' })
+      expect(
+        ConfigService.LoggingFactory.getLogger('testLogger').getLogLevel()
+      ).toEqual(LogLevel.Warn)
     })
     it('custom config prop', () => {
       ConfigService.set({ testProp: 'test' })

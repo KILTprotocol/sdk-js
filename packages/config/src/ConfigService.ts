@@ -23,6 +23,7 @@ import {
 } from 'typescript-logging'
 import { SDKErrors } from '@kiltprotocol/utils'
 
+/* istanbul ignore next */
 const DEFAULT_DEBUG_LEVEL =
   process.env.DEBUG && process.env.DEBUG === 'true'
     ? LogLevel.Debug
@@ -75,13 +76,23 @@ export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
 }
 
 function setLogLevel(logLevel?: LogLevel): void {
-  if (logLevel || logLevel === 0) {
+  if (typeof logLevel === 'number') {
     modifyLogLevel(logLevel)
   }
 }
 
 export function set<K extends Partial<configOpts>>(opts: K): void {
-  configuration = { ...configuration, ...opts }
+  const optParsed = Object.entries(opts).reduce((accu, pair: [string, any]) => {
+    const result = accu
+    const [key, value] = pair
+    if (value === undefined || (!value && value !== 0 && value !== '')) {
+      return result
+    }
+    result[key] = value
+    return result
+  }, {})
+  configuration = { ...configuration, ...optParsed }
+
   setLogLevel(configuration.logLevel)
 }
 

@@ -175,6 +175,7 @@ export class Credential implements ICredential {
     return Credential.verifyData(this)
   }
 
+  /* istanbul ignore next */
   /**
    *  [STATIC] Verifies the data of each element of the given Array of ICredentials.
    *

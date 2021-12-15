@@ -10,7 +10,13 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
+import type {
+  IClaim,
+  CompressedClaim,
+  ICType,
+  PartialClaim,
+  CompressedPartialClaim,
+} from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { Claim } from './Claim'
 import * as ClaimUtils from './Claim.utils'
@@ -24,6 +30,7 @@ describe('Claim', () => {
   let testCType: CType
   let claim: Claim
   let compressedClaim: CompressedClaim
+  let compressedPartialClaim: CompressedPartialClaim
 
   beforeAll(async () => {
     did = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
@@ -51,6 +58,7 @@ describe('Claim', () => {
         name: 'Bob',
       },
     ]
+    compressedPartialClaim = [claim.cTypeHash, claim.owner, undefined]
   })
   it('can be made from ctype and claim contents, throws on unverifiable Claim', () => {
     const contents = {
@@ -83,8 +91,12 @@ describe('Claim', () => {
   })
 
   it('compresses and decompresses the Claim object', () => {
+    const partialClaim: PartialClaim = {
+      cTypeHash: claim.cTypeHash,
+      owner: claim.owner,
+    }
+    expect(ClaimUtils.compress(partialClaim)).toEqual(compressedPartialClaim)
     expect(ClaimUtils.compress(claim)).toEqual(compressedClaim)
-
     expect(ClaimUtils.decompress(compressedClaim)).toEqual(claim)
 
     expect(Claim.decompress(compressedClaim)).toEqual(claim)
@@ -136,6 +148,15 @@ describe('Claim', () => {
       owner: ownerAddress,
     } as IClaim
 
+    const brokenContent = {
+      cTypeHash,
+      contents: { ...claimContents, key: BigInt(1) },
+      owner: ownerAddress,
+    } as IClaim
+    const undefinedContent = {
+      cTypeHash,
+      owner: ownerAddress,
+    } as PartialClaim
     const malformedAddress = {
       cTypeHash,
       contents: claimContents,
@@ -155,5 +176,9 @@ describe('Claim', () => {
     expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowErrorWithCode(
       SDKErrors.ERROR_ADDRESS_INVALID()
     )
+    expect(() => ClaimUtils.errorCheck(brokenContent)).toThrowErrorWithCode(
+      SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
+    )
+    expect(() => ClaimUtils.errorCheck(undefinedContent)).not.toThrow()
   })
 })
