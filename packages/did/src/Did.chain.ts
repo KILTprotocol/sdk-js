@@ -16,8 +16,8 @@ import type {
   u64,
   GenericAccountId,
   Text,
+  u128,
   u32,
-  U128,
 } from '@polkadot/types'
 import type {
   BlockNumber,
@@ -164,9 +164,9 @@ async function queryEndpointsCountsEncoded(
   return api.query.did.didEndpointsCount<u32>(didIdentifier)
 }
 
-async function queryDepositAmountEncoded(): Promise<U128> {
+async function queryDepositAmountEncoded(): Promise<u128> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.did.deposit as U128
+  return api.consts.did.deposit as u128
 }
 
 // ### DECODED QUERYING types
@@ -529,10 +529,10 @@ export async function generateDidAuthenticatedTx({
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const signableCall =
     new (api.registry.getOrThrow<IDidAuthorizedCallOperation>(
-      'DidAuthorizedCallOperation'
+      'DidDidDetailsDidAuthorizedCallOperation'
     ))(api.registry, {
       txCounter,
-      didIdentifier,
+      did: didIdentifier,
       call,
       submitter,
       blockNumber: blockNumber || (await api.query.system.number()),
