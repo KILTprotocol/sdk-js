@@ -9,6 +9,7 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { LightDidDetailsCreationOpts } from '../types'
 import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
+import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
@@ -82,7 +83,9 @@ export function serializeAndEncodeAdditionalLightDidDetails({
     return null
   }
 
-  return cborEncode(objectToSerialize).toString('base64')
+  const serialised = cborEncode(objectToSerialize)
+
+  return base58Encode(serialised)
 }
 
 export function decodeAndDeserializeAdditionalLightDidDetails(
@@ -90,9 +93,8 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   version = 1
 ): Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'serviceEndpoints'> {
-  const decodedPayload: Map<string, unknown> = cborDecode(rawInput, {
-    encoding: 'base64',
-  })
+  const deserialised = base58Decode(rawInput)
+  const decodedPayload: Map<string, unknown> = cborDecode(deserialised)
 
   return {
     encryptionKey: decodedPayload[ENCRYPTION_KEY_MAP_KEY],
