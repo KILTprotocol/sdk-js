@@ -39,7 +39,7 @@ export type VerificationKeyRelationship =
 export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
 
 /**
- * The details of a new DID public key.
+ * The SDK-specific details of a new DID public key.
  */
 export type DidKey<T extends string = string> = {
   /**
@@ -60,6 +60,9 @@ export type DidKey<T extends string = string> = {
   includedAt?: BN
 }
 
+/**
+ * The SDK-specific details of a new DID service endpoint.
+ */
 export type DidServiceEndpoint = {
   /**
    * The identifier of the endpoint, without the leading did:kilt:<did_identifier> prefix.

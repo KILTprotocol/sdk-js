@@ -32,10 +32,13 @@ import {
 export abstract class DidDetails implements IDidDetails {
   public readonly did: IDidDetails['did']
 
+  // { key ID -> key details} - key ID does not include the DID subject
   protected publicKeys: PublicKeys
 
+  // { key relationship -> set of key IDs}
   protected keyRelationships: MapKeysToRelationship
 
+  // { service ID -> service details} - service ID does not include the DID subject
   protected serviceEndpoints: ServiceEndpoints
 
   protected constructor({
@@ -128,6 +131,7 @@ export abstract class DidDetails implements IDidDetails {
     return `${this.did}#${keyId}`
   }
 
+  // Generates a DID signature over a given input using the key with the given ID.
   public async signPayload(
     payload: Uint8Array | string,
     {

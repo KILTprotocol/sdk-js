@@ -34,6 +34,9 @@ export type DidCreationDetails = {
   serviceEndpoints: ServiceEndpoints
 }
 
+/**
+ * A new public key specified when creating a new DID.
+ */
 export type LightDidKeyCreationInput = Pick<DidKey, 'type'> & {
   publicKey: Uint8Array
 }
