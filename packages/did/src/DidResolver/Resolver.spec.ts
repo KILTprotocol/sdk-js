@@ -547,6 +547,82 @@ describe('Light DID resolution', () => {
     })
   })
 
+  it('Correctly resolves a light DID created with an authentication, an encryption key, and three service endpoints base64-encoded', async () => {
+    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
+    publicAuthKey = {
+      publicKey: keypair.publicKey,
+      type: 'sr25519',
+    }
+    encryptionKey = {
+      publicKey: hexToU8a(
+        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      ),
+      type: 'x25519',
+    }
+    serviceEndpoints = [
+      {
+        id: 'id-1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: 'id-2',
+        types: ['type-2'],
+        urls: ['url-2'],
+      },
+      {
+        id: 'id-3',
+        types: ['type-3'],
+        urls: ['url-3'],
+      },
+    ]
+    const lightDID = new LightDidDetails({
+      authenticationKey: publicAuthKey,
+      encryptionKey,
+      serviceEndpoints,
+      detailsEncoding: 'base64',
+    })
+    const { details, metadata } = (await DefaultResolver.resolve(
+      lightDID.did
+    )) as IDidResolvedDetails
+
+    expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
+      Partial<IDidKeyDetails>
+    >({
+      id: `${lightDID.did}#authentication`,
+      controller: lightDID.did,
+      publicKeyHex: u8aToHex(publicAuthKey.publicKey),
+    })
+    expect(details?.getKey(`${lightDID.did}#encryption`)).toMatchObject<
+      Partial<IDidKeyDetails>
+    >({
+      id: `${lightDID.did}#encryption`,
+      controller: lightDID.did,
+      publicKeyHex: u8aToHex(encryptionKey.publicKey),
+    })
+    expect(details?.getEndpoints()).toStrictEqual<IDidServiceEndpoint[]>([
+      {
+        id: `${lightDID.did}#id-1`,
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: `${lightDID.did}#id-2`,
+        types: ['type-2'],
+        urls: ['url-2'],
+      },
+      {
+        id: `${lightDID.did}#id-3`,
+        types: ['type-3'],
+        urls: ['url-3'],
+      },
+    ])
+
+    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+      deactivated: false,
+    })
+  })
+
   it('Correctly resolves a light DID using a key ID', async () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'sr25519')
     publicAuthKey = {

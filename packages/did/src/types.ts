@@ -222,6 +222,7 @@ export type LightDidDetailsCreationOpts = {
    * ```
    */
   serviceEndpoints?: IDidServiceEndpoint[]
+  detailsEncoding?: 'base64' | 'base58'
 }
 
 export type FullDidDetailsCreationOpts = {

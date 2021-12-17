@@ -29,6 +29,7 @@ export class LightDidDetails extends DidDetails {
     authenticationKey,
     encryptionKey = undefined,
     serviceEndpoints = [],
+    detailsEncoding = 'base58',
   }: LightDidDetailsCreationOpts) {
     checkLightDidCreationOptions({
       authenticationKey,
@@ -38,6 +39,7 @@ export class LightDidDetails extends DidDetails {
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey,
       serviceEndpoints,
+      detailsEncoding,
     })
     const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
       authenticationKey.type
