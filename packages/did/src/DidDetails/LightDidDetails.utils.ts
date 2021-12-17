@@ -7,7 +7,7 @@
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { base58Decode, base58Encode, base64Decode } from '@polkadot/util-crypto'
+import { base58Decode, base58Encode, base64Decode, base64Encode } from '@polkadot/util-crypto'
 import type { LightDidDetailsCreationOpts } from '../types'
 import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
 
@@ -89,21 +89,28 @@ export function serializeAdditionalLightDidDetails({
  *
  * @param details The light DID details to encode.
  * @param details.encryptionKey The DID encryption key.
+ * @param details.detailsEncoding The algorithm to use to encode a light DID details. Base58 is the default and the recommended one.
  * @param details.serviceEndpoints The DID service endpoints.
  * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({
   encryptionKey,
   serviceEndpoints,
-}: Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'serviceEndpoints'>):
-  | string
-  | null {
+  detailsEncoding,
+}: Pick<
+  LightDidDetailsCreationOpts,
+  'encryptionKey' | 'serviceEndpoints' | 'detailsEncoding'
+>): string | null {
   const serialisedObject = serializeAdditionalLightDidDetails({
     encryptionKey,
     serviceEndpoints,
   })
-  // By default, it now encodes using base58-encoding
-  return serialisedObject ? base58Encode(serialisedObject) : null
+  if (!serialisedObject) {
+    return null
+  }
+  return detailsEncoding === 'base64'
+    ? base64Encode(serialisedObject)
+    : base58Encode(serialisedObject)
 }
 
 export type DetailsDecodingResult = Pick<

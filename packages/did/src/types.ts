@@ -222,6 +222,10 @@ export type LightDidDetailsCreationOpts = {
    * ```
    */
   serviceEndpoints?: IDidServiceEndpoint[]
+  /**
+   * The algorithm to use to encode the additional light DID details. Base58 is the default and the recommended one.
+   */
+  detailsEncoding?: 'base64' | 'base58'
 }
 
 export type FullDidDetailsCreationOpts = {

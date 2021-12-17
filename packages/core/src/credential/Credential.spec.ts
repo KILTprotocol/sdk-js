@@ -29,6 +29,7 @@ import {
   DidUtils,
   DidTypes,
   SigningAlgorithms,
+  EncryptionAlgorithms,
 } from '@kiltprotocol/did'
 import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
 import { UUID } from '@kiltprotocol/utils'
@@ -39,6 +40,7 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
+import { base58Decode, base64Encode } from '@polkadot/util-crypto'
 
 jest.mock('../attestation/Attestation.chain')
 
@@ -250,6 +252,57 @@ describe('RequestForAttestation', () => {
       keystore
     )
 
+    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
+
+    // check proof on complete data
+    expect(Credential.verifyData(credential)).toBeTruthy()
+    await expect(
+      Credential.verify(credential, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBe(true)
+  })
+
+  it.only('verify credentials signed by a base64-encoded light DID', async () => {
+    const authKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+    })
+    const encKey = await keystore.generateKeypair({
+      alg: EncryptionAlgorithms.NaclBox,
+    })
+    identityDave = new LightDidDetails({
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.alg,
+      },
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: 'x25519',
+      },
+    })
+
+    const credential = await buildCredential(
+      identityDave,
+      identityAlice,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation],
+      keystore
+    )
+
+    const { encodedDetails } = DidUtils.parseDidUrl(identityDave.did)
+    console.log(encodedDetails)
+    const base64EncodedDetails = base64Encode(base58Decode(encodedDetails!))
+    const newClaimOwner = identityDave.did.replace(
+      /:[^:]*$/,
+      ':'.concat(base64EncodedDetails!)
+    )
+    console.log(credential.request.claim.owner)
+    console.log(newClaimOwner)
+    credential.request.claim.owner = newClaimOwner
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
