@@ -24,9 +24,9 @@ import type {
   CompressedPartialClaim,
   PartialClaim,
   IDidDetails,
+  ICType,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { CType as ICType } from '../ctype/CType'
 import * as CTypeUtils from '../ctype/CType.utils'
 import * as ClaimUtils from './Claim.utils'
 

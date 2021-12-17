@@ -27,11 +27,11 @@ describe('Claim', () => {
   let did: string
   let claimContents: any
   let rawCType: ICType['schema']
-  let testCType: CType
+  let testCType: ICType
   let claim: Claim
   let compressedClaim: CompressedClaim
   let compressedPartialClaim: CompressedPartialClaim
-
+  let testCTypeNoSchema: ICType
   beforeAll(async () => {
     did = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
@@ -50,7 +50,12 @@ describe('Claim', () => {
     }
 
     testCType = CType.fromSchema(rawCType)
+    testCTypeNoSchema = {
+      ...testCType,
+      schema: undefined,
+    } as unknown as ICType
     claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
+
     compressedClaim = [
       claim.cTypeHash,
       claim.owner,
@@ -68,6 +73,15 @@ describe('Claim', () => {
     expect(() =>
       Claim.fromCTypeAndClaimContents(testCType, contents, claim.owner)
     ).toThrowErrorWithCode(SDKErrors.ERROR_CLAIM_UNVERIFIABLE())
+  })
+  it('can be made from ctype and claim contents even if ctype only contains hash, throws on unverifiable Claim', () => {
+    const contents = {
+      name: 1000,
+    }
+
+    expect(() =>
+      Claim.fromCTypeAndClaimContents(testCTypeNoSchema, contents, claim.owner)
+    ).not.toThrowErrorWithCode(SDKErrors.ERROR_CLAIM_UNVERIFIABLE())
   })
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))

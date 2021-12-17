@@ -10,7 +10,10 @@
  */
 
 import type { IClaim } from '@kiltprotocol/types'
+import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { hashClaimContents, toJsonLD } from './Claim.utils'
+
+import '../../../../testingTools/jestErrorCodeMatcher'
 
 const claim: IClaim = {
   cTypeHash:
@@ -26,7 +29,7 @@ const claim: IClaim = {
 
 it('exports claim as json-ld', () => {
   // this is what a kilt claim looks like when expressed in expanded JSON-LD
-  const jsonld = toJsonLD(claim, true)
+  const jsonld = toJsonLD(claim)
   expect(jsonld).toMatchInlineSnapshot(`
     Object {
       "https://www.w3.org/2018/credentials#credentialSchema": Object {
@@ -124,5 +127,17 @@ describe('compute hashes & validate by reproducing them', () => {
         expect(hashes).toContain(hash)
       })
     })
+  })
+  it('throws error on missing nonce', () => {
+    const cryptospy = jest
+      .spyOn(Crypto, 'hashStatements')
+      .mockImplementation(() => [
+        { digest: 'test', statement: 'test', saltedHash: '0x1234', nonce: '1' },
+        { digest: 'test', statement: 'test', saltedHash: '0x1234', nonce: '' },
+      ])
+    expect(() => hashClaimContents(claim)).toThrowErrorWithCode(
+      SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
+    )
+    expect(cryptospy).toHaveBeenCalled()
   })
 })
