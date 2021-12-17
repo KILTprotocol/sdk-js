@@ -109,7 +109,6 @@ function buildLightDetailsFromUriRegexMatch({
     )
     lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
     lightDidCreationOptions.serviceEndpoints = decodedDetails.serviceEndpoints
-    lightDidCreationOptions.detailsEncoding = decodedDetails.detailsEncoding
   }
 
   return new LightDidDetails(lightDidCreationOptions)
