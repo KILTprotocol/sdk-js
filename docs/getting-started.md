@@ -202,7 +202,7 @@ const claimerLightDid = new Kilt.Did.LightDidDetails({
   },
 })
 
-// Example light DID: `did:kilt:light:014qFxmHnWw5sGMwjskdvMCrASF9Jvu5ggWRTWTK2NNYSLDg56:oWFlomlwdWJsaWNLZXlYIJuIow7rjSdf92qMKYtWV42lF9mctD1nFf8RM24auJhwZHR5cGVmeDI1NTE5`
+// Example light DID: `did:kilt:light:014qFxmHnWw5sGMwjskdvMCrASF9Jvu5ggWRTWTK2NNYSLDg56:VbhwuXRpY6SCnavD668usTkDZsRxZMj7yWcs6sjY7RuJ1KQSYiuPExvfHx3WEM5cmXGJmhEBzLAGVV2JF2`
 console.log(claimerLightDid.did)
 ```
 
@@ -464,7 +464,7 @@ RequestForAttestation {
     claim: Claim {
       cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
       contents: { name: 'Alice', age: 29 },
-      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5'
+      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:VbhwuXRpY6SCnavD668usUw5oTbs4411Sd6w85KVCUmM1BZJQFucJksDkvaVh5BiKGdRqmXhUjoiRLo69N'
     },
     claimHashes: [
       '0x5847086b70b224e6a27952e00ca347005c5032097382a2beb8e83e2b990cd272',
@@ -481,7 +481,7 @@ RequestForAttestation {
     rootHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
     claimerSignature: {
       signature: '0x102beecf2d1649daa081b45726408a4d82009f045538cc25a0faf60329734b31ff0f93c21173df9f3f6448651bd2c07b8afa97562eb6a8d52adabdf81265ec8b',
-      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5#authentication',
+      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:VbhwuXRpY6SCnavD668usUw5oTbs4411Sd6w85KVCUmM1BZJQFucJksDkvaVh5BiKGdRqmXhUjoiRLo69N#authentication',
       challenge: undefined
     }
   }
@@ -557,7 +557,7 @@ const decrypted = Kilt.Message.decrypt(encrypted, keystore, {
 })
 ```
 
-As sender account and message validity are also checked during decryption, if the decryption process completes successfully, you can assume that the sender of the message is also the owner of the claim, as the two identites match.
+As sender account and message validity are also checked during decryption, if the decryption process completes successfully, you can assume that the sender of the message is also the owner of the claim, as the two identities match.
 At this point the Attester has the original request for attestation object:
 
 ```typescript
@@ -622,7 +622,7 @@ Credential {
     claim: Claim {
       cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
       contents: [Object],
-      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5'
+      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:VbhwuXRpY6SCnavD668usUw5oTbs4411Sd6w85KVCUmM1BZJQFucJksDkvaVh5BiKGdRqmXhUjoiRLo69N'
     },
     claimHashes: [
       '0x5847086b70b224e6a27952e00ca347005c5032097382a2beb8e83e2b990cd272',
@@ -639,7 +639,7 @@ Credential {
     rootHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
     claimerSignature: {
       signature: '0x102beecf2d1649daa081b45726408a4d82009f045538cc25a0faf60329734b31ff0f93c21173df9f3f6448651bd2c07b8afa97562eb6a8d52adabdf81265ec8b',
-      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5#authentication',
+      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:VbhwuXRpY6SCnavD668usUw5oTbs4411Sd6w85KVCUmM1BZJQFucJksDkvaVh5BiKGdRqmXhUjoiRLo69N#authentication',
       challenge: undefined
     }
   },
@@ -777,7 +777,7 @@ if (
 ) {
   const claims = messageForVerifier.body.content
   const isValid = await Kilt.Credential.fromCredential(claims[0]).verify()
-  console.log('Verifcation success?', isValid)
+  console.log('Verification success?', isValid)
   console.log('Credentials from verifier perspective:\n', claims)
 }
 ```

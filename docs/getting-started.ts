@@ -59,7 +59,7 @@ async function main(): Promise<void> {
       ),
     },
   })
-  // Example `did:kilt:light:014rXt3vRYupKgtUJgjGjQG45PBa6uDbDzF48iFn96F9RYrBMB:oWFlomlwdWJsaWNLZXlYIABgPwMAHGu5yMbBpdiiFH2djWzJqbSpUc0ymDIVlqV0ZHR5cGVmeDI1NTE5`.
+  // Example `did:kilt:light:014rXt3vRYupKgtUJgjGjQG45PBa6uDbDzF48iFn96F9RYrBMB:VbhwuXRpY6SCnavD668usTkDZsRxZMj7yWcs6sjY7RuJ1KQSYiuPExvfHx3WEM5cmXGJmhEBzLAGVV2JF2`.
   console.log(claimerLightDid.did)
 
   /* 3.1. Building a CTYPE */
