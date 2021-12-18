@@ -19,7 +19,6 @@ import {
   IIdentity,
   KeyringPair,
 } from '@kiltprotocol/types'
-import { base64Encode, encodeAddress } from '@polkadot/util-crypto'
 import type { IDidResolvedDetails } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
@@ -32,7 +31,6 @@ import {
   getKiltDidFromIdentifier,
   parseDidUrl,
 } from '../Did.utils'
-import { serializeAdditionalLightDidDetails } from '../DidDetails/LightDidDetails.utils'
 
 const fullDidPresentWithAuthenticationKey =
   'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
@@ -512,6 +510,9 @@ describe('Light DID resolution', () => {
       lightDID.did
     )) as IDidResolvedDetails
 
+    expect(details?.did).toStrictEqual<string>(
+      'did:kilt:light:004pwRuKrrDMtVCZQ7JhvxFEnbFv5f5Bv46pL9WZA424jh5f8x:2DzefyGznaLX1rkzC1DEb9Z16amfm3pu2AQZGWcodDQHcdcqK8iSWp9oJCS5miqz1YNT9nVpLSHgKtAtgRWvJiPbVh5jgeqehxsDrZbGhiecTqgi4sSYT1R4vjAeBaiWQrCVZZUecT9hA9d1g9Yz7CViMmWVGSLPsR52MtZ8avoRnSvCBVq9TkA2z4qHw5XRkKzHCTvG36dAan7qsJiJuGWH5PRqG8kDX8EoQp6n6'
+    )
     expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
       Partial<IDidKeyDetails>
     >({
@@ -578,26 +579,54 @@ describe('Light DID resolution', () => {
         urls: ['url-3'],
       },
     ]
-    const serialisedDetails = serializeAdditionalLightDidDetails({
+    const lightDID = new LightDidDetails({
+      authenticationKey: publicAuthKey,
       encryptionKey,
       serviceEndpoints,
+      detailsEncoding: 'base64',
     })
-    const base64EncodedDetails = base64Encode(serialisedDetails as Buffer)
-    const base58EncodedDetails = base64Encode(serialisedDetails as Buffer)
+    const { details, metadata } = (await DefaultResolver.resolve(
+      lightDID.did
+    )) as IDidResolvedDetails
 
-    const lightDidPrefix = getKiltDidFromIdentifier(
-      '00'.concat(encodeAddress(publicAuthKey.publicKey, 38)),
-      'light'
+    expect(details?.did).toStrictEqual<string>(
+      'did:kilt:light:004pwRuKrrDMtVCZQ7JhvxFEnbFv5f5Bv46pL9WZA424jh5f8x:omFlomlwdWJsaWNLZXnYQFggqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpkdHlwZWZ4MjU1MTlhc4OjYmlkZGlkLTFldHlwZXOBZnR5cGUtMWR1cmxzgWV1cmwtMaNiaWRkaWQtMmV0eXBlc4FmdHlwZS0yZHVybHOBZXVybC0yo2JpZGRpZC0zZXR5cGVzgWZ0eXBlLTNkdXJsc4FldXJsLTM='
     )
+    expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
+      Partial<IDidKeyDetails>
+    >({
+      id: `${lightDID.did}#authentication`,
+      controller: lightDID.did,
+      publicKeyHex: u8aToHex(publicAuthKey.publicKey),
+    })
+    expect(details?.getKey(`${lightDID.did}#encryption`)).toMatchObject<
+      Partial<IDidKeyDetails>
+    >({
+      id: `${lightDID.did}#encryption`,
+      controller: lightDID.did,
+      publicKeyHex: u8aToHex(encryptionKey.publicKey),
+    })
+    expect(details?.getEndpoints()).toStrictEqual<IDidServiceEndpoint[]>([
+      {
+        id: `${lightDID.did}#id-1`,
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: `${lightDID.did}#id-2`,
+        types: ['type-2'],
+        urls: ['url-2'],
+      },
+      {
+        id: `${lightDID.did}#id-3`,
+        types: ['type-3'],
+        urls: ['url-3'],
+      },
+    ])
 
-    const base64Result = await DefaultResolver.resolveDoc(
-      `${lightDidPrefix}:${base64EncodedDetails}`
-    )
-    const base58Result = await DefaultResolver.resolveDoc(
-      `${lightDidPrefix}:${base58EncodedDetails}`
-    )
-    // Even though they use two different encodings, they still return the exact same object.
-    expect(base64Result).toStrictEqual(base58Result)
+    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+      deactivated: false,
+    })
   })
 
   it('Correctly resolves a light DID using a key ID', async () => {
