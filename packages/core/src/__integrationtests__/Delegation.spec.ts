@@ -345,7 +345,7 @@ describe('revocation', () => {
   }, 60_000)
 })
 
-describe.only('Deposit claiming', () => {
+describe('Deposit claiming', () => {
   it('deposit payer should be able to claim back its own deposit and delete any children', async () => {
     // Delegation nodes are written on the chain using `paymentAccount`.
     const rootNode = await writeHierarchy(root, DriversLicense.hash)
