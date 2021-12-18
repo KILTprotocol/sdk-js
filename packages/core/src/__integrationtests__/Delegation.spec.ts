@@ -224,7 +224,7 @@ describe('revocation', () => {
     secondDelegee = claimer
   })
 
-  it('delegator can revoke and remove delegation', async () => {
+  it('delegator can revoke but not remove delegation', async () => {
     const rootNode = await writeHierarchy(delegator, DriversLicense.hash)
     const delegationA = await addDelegation(
       rootNode.id,
@@ -249,7 +249,9 @@ describe('revocation', () => {
     ).resolves.not.toThrow()
     await expect(delegationA.verify()).resolves.toBe(false)
 
-    // Test removal with deposit payer's account.
+    // Delegation removal can only be done by either the delegation owner themselves via DID call
+    // or the deposit owner as a regular signed call.
+    // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
     await expect(
       delegationA
         .remove()
@@ -262,11 +264,11 @@ describe('revocation', () => {
             reSign: true,
           })
         )
-    ).resolves.not.toThrow()
+    ).rejects.toThrow()
 
-    // Check that delegation fails to verify and that it is not stored on the blockchain anymore.
-    await expect(DelegationNode.query(delegationA.id)).resolves.toBeNull()
-    await expect(delegationA.verify()).resolves.toBe(false)
+    // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
+    await expect(delegationA.verify()).resolves.toBeFalsy()
+    await expect(DelegationNode.query(delegationA.id)).resolves.not.toBeNull()
   }, 60_000)
 
   it('delegee cannot revoke root but can revoke own delegation', async () => {
