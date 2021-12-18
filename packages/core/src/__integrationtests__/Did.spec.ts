@@ -37,7 +37,6 @@ import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
 import { devAlice, devBob } from './utils'
-import { base58Decode, base64Encode } from '@polkadot/util-crypto'
 
 let paymentAccount: KeyringPair
 const keystore = new DemoKeystore()
@@ -474,7 +473,7 @@ describe('DID migration', () => {
     expect(metadata.deactivated).toBeFalsy()
   })
 
-  it('migrates base58-encoded light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
+  it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
     const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
     })

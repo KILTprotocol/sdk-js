@@ -31,6 +31,7 @@ import {
   SigningAlgorithms,
   EncryptionAlgorithms,
 } from '@kiltprotocol/did'
+import { base58Encode, base64Decode } from '@polkadot/util-crypto'
 import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
 import { UUID } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
@@ -40,7 +41,6 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
-import { base58Encode, base64Decode } from '@polkadot/util-crypto'
 
 jest.mock('../attestation/Attestation.chain')
 

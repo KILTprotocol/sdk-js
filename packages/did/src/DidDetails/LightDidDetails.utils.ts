@@ -7,17 +7,18 @@
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { base58Decode, base58Encode, base64Decode, base64Encode } from '@polkadot/util-crypto'
+import {
+  base58Decode,
+  base58Encode,
+  base64Decode,
+  base64Encode,
+} from '@polkadot/util-crypto'
 import type { LightDidDetailsCreationOpts } from '../types'
 import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
+import { LightDidDetails } from '.'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
-
-export enum EncodingType {
-  Base64 = 'base64',
-  Base58 = 'base58',
-}
 
 export function checkLightDidCreationOptions(
   options: LightDidDetailsCreationOpts
@@ -62,6 +63,14 @@ export function checkLightDidCreationOptions(
   })
 }
 
+/**
+ * Serialize using CBOR the optional encryption key and service endpoints of a light DID.
+ *
+ * @param details The light DID creation additional details.
+ * @param details.encryptionKey The optional encryption key.
+ * @param details.serviceEndpoints THe optional service endpoints.
+ * @returns The CBOR-encoded creation details, or null if none of the details are specified.
+ */
 export function serializeAdditionalLightDidDetails({
   encryptionKey,
   serviceEndpoints,
@@ -85,13 +94,13 @@ export function serializeAdditionalLightDidDetails({
 }
 
 /**
- * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.
+ * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm and encoding the result in the specified format, if supported.
  *
  * @param details The light DID details to encode.
  * @param details.encryptionKey The DID encryption key.
- * @param details.detailsEncoding The algorithm to use to encode a light DID details. Base58 is the default and the recommended one.
  * @param details.serviceEndpoints The DID service endpoints.
- * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
+ * @param details.detailsEncoding The algorithm to use to encode a light DID details. Base58 is the default and the recommended and the default one.
+ * @returns The encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({
   encryptionKey,
@@ -108,10 +117,15 @@ export function serializeAndEncodeAdditionalLightDidDetails({
   if (!serialisedObject) {
     return null
   }
-  // Anything but base64 defaults to base58
-  return detailsEncoding === 'base64'
-    ? base64Encode(serialisedObject)
-    : base58Encode(serialisedObject)
+  if (detailsEncoding === 'base64') {
+    return base64Encode(serialisedObject)
+  }
+  if (detailsEncoding === 'base58') {
+    return base58Encode(serialisedObject)
+  }
+  throw new Error(
+    `Specified encoding ${detailsEncoding} not supported or undefined.`
+  )
 }
 
 export type DetailsDecodingResult = Pick<
@@ -121,24 +135,31 @@ export type DetailsDecodingResult = Pick<
   detailsEncoding: 'base58' | 'base64'
 }
 
+/**
+ * Decode and deserialize encryption key and service endpoints from the provided encoded representation.
+ *
+ * @param rawInput The encoded string for the details to decode.
+ * @param version The version of the light DID to use to decode the details, if present. It defaults to [[LightDidDetails.LIGHT_DID_LATEST_VERSION]].
+ * @returns The [[DetailsDecodingResult]] result of the decoding operation.
+ */
 export function decodeAndDeserializeAdditionalLightDidDetails(
   rawInput: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  version = 1
+  version = LightDidDetails.LIGHT_DID_LATEST_VERSION
 ): DetailsDecodingResult {
-  let deserialised: Uint8Array
+  let deserialized: Uint8Array
   let encoding: 'base58' | 'base64'
   try {
     // Try decoding details as base58
-    deserialised = base58Decode(rawInput)
+    deserialized = base58Decode(rawInput)
     encoding = 'base58'
   } catch {
     // Upon failure, try decoding them as base64. If it fails, it is not a valid payload
-    deserialised = base64Decode(rawInput)
+    deserialized = base64Decode(rawInput)
     encoding = 'base64'
   }
 
-  const decodedPayload: Map<string, unknown> = cborDecode(deserialised)
+  const decodedPayload: Map<string, unknown> = cborDecode(deserialized)
   return {
     encryptionKey: decodedPayload[ENCRYPTION_KEY_MAP_KEY],
     serviceEndpoints: decodedPayload[SERVICES_KEY_MAP_KEY],
