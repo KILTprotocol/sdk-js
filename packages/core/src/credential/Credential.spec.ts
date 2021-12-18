@@ -40,7 +40,7 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
-import { base58Decode, base64Encode } from '@polkadot/util-crypto'
+import { base58Encode, base64Decode } from '@polkadot/util-crypto'
 
 jest.mock('../attestation/Attestation.chain')
 
@@ -263,9 +263,9 @@ describe('RequestForAttestation', () => {
     ).resolves.toBe(true)
   })
 
-  it.only('verify credentials signed by a base64-encoded light DID', async () => {
+  it('verify credentials signed by a base64-encoded light DID', async () => {
     const authKey = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Sr25519,
+      alg: SigningAlgorithms.Ed25519,
     })
     const encKey = await keystore.generateKeypair({
       alg: EncryptionAlgorithms.NaclBox,
@@ -277,8 +277,9 @@ describe('RequestForAttestation', () => {
       },
       encryptionKey: {
         publicKey: encKey.publicKey,
-        type: 'x25519',
+        type: encKey.alg,
       },
+      detailsEncoding: 'base64',
     })
 
     const credential = await buildCredential(
@@ -293,16 +294,6 @@ describe('RequestForAttestation', () => {
       keystore
     )
 
-    const { encodedDetails } = DidUtils.parseDidUrl(identityDave.did)
-    console.log(encodedDetails)
-    const base64EncodedDetails = base64Encode(base58Decode(encodedDetails!))
-    const newClaimOwner = identityDave.did.replace(
-      /:[^:]*$/,
-      ':'.concat(base64EncodedDetails!)
-    )
-    console.log(credential.request.claim.owner)
-    console.log(newClaimOwner)
-    credential.request.claim.owner = newClaimOwner
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
@@ -312,6 +303,60 @@ describe('RequestForAttestation', () => {
         resolver: mockResolver,
       })
     ).resolves.toBe(true)
+  })
+
+  it('fails to verify credentials issued to a base64-encoded light DID and then used by its base58-encoded version', async () => {
+    const authKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+    })
+    const encKey = await keystore.generateKeypair({
+      alg: EncryptionAlgorithms.NaclBox,
+    })
+    identityDave = new LightDidDetails({
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.alg,
+      },
+      encryptionKey: {
+        publicKey: encKey.publicKey,
+        type: encKey.alg,
+      },
+      detailsEncoding: 'base64',
+    })
+
+    const credential = await buildCredential(
+      identityDave,
+      identityAlice,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation],
+      keystore
+    )
+
+    // Decode details and re-encode them in base58...
+    const decodedDetails = base64Decode(
+      DidUtils.parseDidUrl(identityDave.did).encodedDetails!
+    )
+    const base58EncodedDetails = base58Encode(decodedDetails)
+
+    // ... and replace the original claim with the new encoded DID
+    const reEncodedDid = identityDave.did.replace(
+      /:[^:]*$/,
+      ':'.concat(base58EncodedDetails!)
+    )
+    credential.request.claim.owner = reEncodedDid
+    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
+
+    // Check that the different encoding results in a verification error
+    expect(() => Credential.verifyData(credential)).toThrow()
+    await expect(
+      Credential.verify(credential, {
+        resolver: mockResolver,
+      })
+    ).rejects.toThrow()
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
