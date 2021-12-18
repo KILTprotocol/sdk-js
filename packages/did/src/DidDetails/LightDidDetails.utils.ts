@@ -108,6 +108,7 @@ export function serializeAndEncodeAdditionalLightDidDetails({
   if (!serialisedObject) {
     return null
   }
+  // Anything but base64 defaults to base58
   return detailsEncoding === 'base64'
     ? base64Encode(serialisedObject)
     : base58Encode(serialisedObject)

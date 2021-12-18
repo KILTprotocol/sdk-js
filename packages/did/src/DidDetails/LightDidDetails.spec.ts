@@ -81,4 +81,29 @@ describe('Light DID v1 tests', () => {
       `did:kilt:light:01${address}:cMUDNpqRXwbeHqACfmSMkde311bJLNpk7KwDAdtMTGRTihJ5fortrNvov9chGUJitnb2STbUL5nvZSijCoV2av2UAfe5f66dbFa7hZzgWt2SBfrJFNRtiaYeEXt27G1SKsdnMP5UCQJtR672uH3tg13LXtdYKgvkC7VdQ7QDioGD8G1YJMVfgjuDS6RKt4U6VzbDzDMcoAZGuMWZe41Lzf9x1FFH2BGG87hD2BBorKvLkCV`
     )
   })
+
+  it('creates base64-encoded LightDidDetails from authentication key, encryption key, and service endpoints', () => {
+    encryptionDidKeyDetails = {
+      publicKey: encPublicKey,
+      type: 'x25519',
+    }
+
+    serviceEndpoint = {
+      id: 'my-service-endpoint',
+      types: ['CollatorCredentialType', 'SocialKYCType'],
+      urls: ['https://my_domain.org', 'random_domain'],
+    }
+
+    const didCreationDetails: LightDidDetailsCreationOpts = {
+      authenticationKey: authenticationDidKeyDetails,
+      encryptionKey: encryptionDidKeyDetails,
+      serviceEndpoints: [serviceEndpoint],
+      detailsEncoding: 'base64',
+    }
+
+    const did = new LightDidDetails(didCreationDetails)
+    expect(did.did).toEqual(
+      `did:kilt:light:01${address}:omFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTlhc4GjYmlkc215LXNlcnZpY2UtZW5kcG9pbnRldHlwZXOCdkNvbGxhdG9yQ3JlZGVudGlhbFR5cGVtU29jaWFsS1lDVHlwZWR1cmxzgnVodHRwczovL215X2RvbWFpbi5vcmdtcmFuZG9tX2RvbWFpbg==`
+    )
+  })
 })
