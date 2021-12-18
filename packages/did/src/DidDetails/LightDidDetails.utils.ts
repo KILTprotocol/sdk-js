@@ -68,8 +68,8 @@ export function checkLightDidCreationOptions(
  *
  * @param details The light DID creation additional details.
  * @param details.encryptionKey The optional encryption key.
- * @param details.serviceEndpoints THe optional service endpoints.
- * @returns The CBOR-encoded creation details, or null if none of the details are specified.
+ * @param details.serviceEndpoints The optional service endpoints.
+ * @returns The CBOR-encoded creation details, or null if none is provided.
  */
 export function serializeAdditionalLightDidDetails({
   encryptionKey,
@@ -99,7 +99,7 @@ export function serializeAdditionalLightDidDetails({
  * @param details The light DID details to encode.
  * @param details.encryptionKey The DID encryption key.
  * @param details.serviceEndpoints The DID service endpoints.
- * @param details.detailsEncoding The algorithm to use to encode a light DID details. Base58 is the default and the recommended and the default one.
+ * @param details.detailsEncoding The algorithm to use to encode a light DID details. Base58 is the default and recommended.
  * @returns The encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({
@@ -139,8 +139,8 @@ export type DetailsDecodingResult = Pick<
  * Decode and deserialize encryption key and service endpoints from the provided encoded representation.
  *
  * @param rawInput The encoded string for the details to decode.
- * @param version The version of the light DID to use to decode the details, if present. It defaults to [[LightDidDetails.LIGHT_DID_LATEST_VERSION]].
- * @returns The [[DetailsDecodingResult]] result of the decoding operation.
+ * @param version The version of the light DID to use to decode the details, if present. It defaults to the latest supported version.
+ * @returns The result of the decoding operation.
  */
 export function decodeAndDeserializeAdditionalLightDidDetails(
   rawInput: string,

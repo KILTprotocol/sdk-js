@@ -379,6 +379,7 @@ describe('Deposit claiming', () => {
     // Test removal success with the right account.
     await BlockchainUtils.signAndSubmitTx(depositClaimTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
     })
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
