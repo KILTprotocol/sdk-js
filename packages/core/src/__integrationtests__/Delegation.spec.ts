@@ -345,7 +345,7 @@ describe('revocation', () => {
   }, 60_000)
 })
 
-describe('Deposit claiming', () => {
+describe.only('Deposit claiming', () => {
   it('deposit payer should be able to claim back its own deposit and delete any children', async () => {
     // Delegation nodes are written on the chain using `paymentAccount`.
     const rootNode = await writeHierarchy(root, DriversLicense.hash)
@@ -383,7 +383,7 @@ describe('Deposit claiming', () => {
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
     await expect(DelegationNode.query(subDelegatedNode.id)).resolves.toBeNull()
-  }, 60_000)
+  }, 80_000)
 })
 
 describe('handling queries to data not on chain', () => {
