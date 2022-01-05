@@ -5909,7 +5909,7 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"jest-resolve@npm:27.4.6, jest-resolve@npm:^27.4.6":
+"jest-resolve@npm:27.4.6, jest-resolve@npm:^27.2.5, jest-resolve@npm:^27.4.6":
   version: 27.4.6
   resolution: "jest-resolve@npm:27.4.6"
   dependencies:
@@ -7898,6 +7898,7 @@ fsevents@^2.3.2:
     jest-runner-groups: ^2.1.0
     prettier: ^2.4.1
     ts-jest: ^27.1.2
+    ts-jest-resolver: ^2.0.0
     ts-node: ^10.4.0
     typedoc: ^0.22.7
     typedoc-plugin-external-module-name: ^4.0.6
@@ -8766,6 +8767,15 @@ fsevents@^2.3.2:
   version: 1.0.1
   resolution: "trim-off-newlines@npm:1.0.1"
   checksum: ca644908cace3d91b4c5b0fee0224640fed34a4503583e542db3f2dbec95246f2dc0f1bdfc5169e95f244f2613c0256ccc0c594ebe678fd9afdd9c5cf424562f
+  languageName: node
+  linkType: hard
+
+"ts-jest-resolver@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "ts-jest-resolver@npm:2.0.0"
+  dependencies:
+    jest-resolve: ^27.2.5
+  checksum: 7208f45efd64b9e110e07fcb2ab1dcaf97c8a6f16daee8d188432857f7ffc128fdf0c4c8eee348803de603ca7805ea00554feec915b41b9320b2b4014625c607
   languageName: node
   linkType: hard
 
