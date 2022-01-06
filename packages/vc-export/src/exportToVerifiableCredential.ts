@@ -32,7 +32,7 @@ import type {
   Proof,
   SelfSignedProof,
   VerifiableCredential,
-} from './types'
+} from './types.js'
 
 export function fromCredentialIRI(credentialId: string): string {
   const hexString = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)

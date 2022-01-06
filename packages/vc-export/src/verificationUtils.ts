@@ -28,7 +28,7 @@ import type {
   AttestedProof,
   CredentialDigestProof,
   IPublicKeyRecord,
-} from './types'
+} from './types.js'
 import { fromCredentialIRI } from './exportToVerifiableCredential.js'
 
 export interface VerificationResult {
@@ -128,7 +128,7 @@ export async function verifySelfSignedProof(
     return result
   } catch (e) {
     result.verified = false
-    result.errors = [e]
+    result.errors = [e as Error]
     return result
   }
 }
@@ -202,7 +202,7 @@ export async function verifyAttestedProof(
   } catch (e) {
     return {
       verified: false,
-      errors: [e],
+      errors: [e as Error],
       status,
     }
   }
@@ -294,7 +294,7 @@ export async function verifyCredentialDigestProof(
     )
   } catch (e) {
     result.verified = false
-    result.errors = [e]
+    result.errors = [e as Error]
     return result
   }
 }

@@ -18,7 +18,7 @@ import type {
   VerificationResult,
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
-import type { AttestedProof } from '../../types'
+import type { AttestedProof } from '../../types.js'
 import {
   verifyAttestedProof,
   AttestationStatus,

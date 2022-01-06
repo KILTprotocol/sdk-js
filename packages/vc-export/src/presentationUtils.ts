@@ -22,7 +22,7 @@ import type {
   VerifiableCredential,
   VerifiablePresentation,
   CredentialDigestProof,
-} from './types'
+} from './types.js'
 
 /**
  * This proof is added to a credential to prove that revealed properties were attested in the original credential.

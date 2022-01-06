@@ -14,7 +14,11 @@ import {
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import jsonld from 'jsonld'
-import type { VerifiableCredential, Proof, IPublicKeyRecord } from '../../types'
+import type {
+  VerifiableCredential,
+  Proof,
+  IPublicKeyRecord,
+} from '../../types.js'
 import { documentLoader as defaultDocumentLoader } from '../documentLoader.js'
 import {
   KILT_CREDENTIAL_CONTEXT_URL,
