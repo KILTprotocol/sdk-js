@@ -54,7 +54,7 @@ describe('Light DID v1 tests', () => {
 
     const did = new LightDidDetails(didCreationDetails)
     expect(did.did).toEqual(
-      `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTk=`
+      `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
     )
   })
 
@@ -78,7 +78,7 @@ describe('Light DID v1 tests', () => {
 
     const did = new LightDidDetails(didCreationDetails)
     expect(did.did).toEqual(
-      `did:kilt:light:01${address}:omFlomlwdWJsaWNLZXnYQFggu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7tkdHlwZWZ4MjU1MTlhc4GjYmlkc215LXNlcnZpY2UtZW5kcG9pbnRldHlwZXOCdkNvbGxhdG9yQ3JlZGVudGlhbFR5cGVtU29jaWFsS1lDVHlwZWR1cmxzgnVodHRwczovL215X2RvbWFpbi5vcmdtcmFuZG9tX2RvbWFpbg==`
+      `did:kilt:light:01${address}:z1cMUDNpqRXwbeHqACfmSMkde311bJLNpk7KwDAdtMTGRTihJ5fortrNvov9chGUJitnb2STbUL5nvZSijCoV2av2UAfe5f66dbFa7hZzgWt2SBfrJFNRtiaYeEXt27G1SKsdnMP5UCQJtR672uH3tg13LXtdYKgvkC7VdQ7QDioGD8G1YJMVfgjuDS6RKt4U6VzbDzDMcoAZGuMWZe41Lzf9x1FFH2BGG87hD2BBorKvLkCV`
     )
   })
 })
