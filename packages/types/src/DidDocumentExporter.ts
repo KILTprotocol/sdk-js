@@ -10,7 +10,11 @@
  * @module IDidDocumentExporter
  */
 
-import type { IDidDetails, IDidKeyDetails, IDidServiceEndpoint } from '.'
+import type {
+  IDidDetails,
+  IDidKeyDetails,
+  IDidServiceEndpoint,
+} from './index.js'
 
 export enum DidDocumentPublicKeyType {
   Ed25519VerificationKey = 'Ed25519VerificationKey2018',
