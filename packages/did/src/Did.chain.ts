@@ -117,20 +117,6 @@ async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
     )
 }
 
-// Returns the raw representation of the storage entry for the given DID identifier.
-async function queryDidDeletionStatusEncoded(
-  didIdentifier: IDidIdentifier
-): Promise<Uint8Array> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedStorageKey = await api.query.did.didBlacklist.key(didIdentifier)
-  return (
-    api.rpc.state
-      .queryStorageAt<Codec[]>([encodedStorageKey])
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      .then((encodedValue) => encodedValue.pop()!.toU8a())
-  )
-}
-
 // Query a DID service given the DID identifier and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryServiceEncoded(
@@ -291,11 +277,11 @@ export async function queryNonce(didIdentifier: IDidIdentifier): Promise<BN> {
 export async function queryDidDeletionStatus(
   didIdentifier: IDidIdentifier
 ): Promise<boolean> {
-  const encodedDeletionStorageEntry = await queryDidDeletionStatusEncoded(
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const encodedStorageHash = await api.query.did.didBlacklist.hash(
     didIdentifier
   )
-  // The result is a 1-byte array where the only element is 1 if the DID has been deleted, and 0 otherwise.
-  return encodedDeletionStorageEntry[0] === 1
+  return !encodedStorageHash.isEmpty
 }
 
 export async function queryDepositAmount(): Promise<BN> {
