@@ -10,10 +10,9 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 import type {
   IDidDetails,
   IDidIdentifier,
-  KeyringPair,
+  IIdentity,
   KeystoreSigner,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 
 import type {
   DidCreationDetails,
@@ -172,21 +171,14 @@ export class LightDidDetails extends DidDetails {
   }
 
   public async migrate(
-    submitter: KeyringPair,
+    submitter: IIdentity['address'],
     signer: KeystoreSigner
   ): Promise<FullDidDetails> {
-    const creationTx = await generateCreateTxFromDidDetails(
-      this,
-      submitter.address,
-      {
-        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
-        signingPublicKey: this.authenticationKey.publicKey,
-        signer,
-      }
-    )
-    await BlockchainUtils.signAndSubmitTx(creationTx, submitter, {
-      reSign: true,
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    // TODO: change this to be a user-provided closure
+    const creationTx = await generateCreateTxFromDidDetails(this, submitter, {
+      alg: getSignatureAlgForKeyType(this.authenticationKey.type),
+      signingPublicKey: this.authenticationKey.publicKey,
+      signer,
     })
     const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
     if (!fullDidDetails) {
