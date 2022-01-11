@@ -230,8 +230,7 @@ export async function resolve(
   return resolveDoc(didUri)
 }
 
-// TODO: rename to DidResolver
-export const DefaultResolver: IDidResolver = {
+export const DidResolver: IDidResolver = {
   resolveDoc,
   resolveKey,
   resolve,

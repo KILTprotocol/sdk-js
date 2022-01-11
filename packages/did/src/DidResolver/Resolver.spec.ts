@@ -24,7 +24,7 @@ import type {
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 
-import { DefaultResolver } from '.'
+import { DidResolver } from '.'
 import { LightDidDetails } from '..'
 
 /**
@@ -184,7 +184,7 @@ describe('When resolving a key', () => {
     const keyIdUri = `${fullDid}#auth`
 
     await expect(
-      DefaultResolver.resolveKey(keyIdUri)
+      DidResolver.resolveKey(keyIdUri)
     ).resolves.toStrictEqual<ResolvedDidKey>({
       controller: fullDid,
       publicKey: new Uint8Array(32).fill(0),
@@ -197,7 +197,7 @@ describe('When resolving a key', () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
     let keyIdUri = `${deletedFullDid}#enc`
 
-    await expect(DefaultResolver.resolveKey(keyIdUri)).resolves.toBeNull()
+    await expect(DidResolver.resolveKey(keyIdUri)).resolves.toBeNull()
 
     const didWithNoEncryptionKey = getKiltDidFromIdentifier(
       identifierWithAuthenticationKey,
@@ -205,7 +205,7 @@ describe('When resolving a key', () => {
     )
     keyIdUri = `${didWithNoEncryptionKey}#enc`
 
-    await expect(DefaultResolver.resolveKey(keyIdUri)).resolves.toBeNull()
+    await expect(DidResolver.resolveKey(keyIdUri)).resolves.toBeNull()
   })
 
   it('throws for invalid URIs', async () => {
@@ -214,11 +214,11 @@ describe('When resolving a key', () => {
       'full'
     )
     await expect(
-      DefaultResolver.resolveKey(uriWithoutFragment)
+      DidResolver.resolveKey(uriWithoutFragment)
     ).rejects.toThrow()
 
     const invalidUri = 'invalid-uri'
-    await expect(DefaultResolver.resolveKey(invalidUri)).rejects.toThrow()
+    await expect(DidResolver.resolveKey(invalidUri)).rejects.toThrow()
   })
 })
 
@@ -231,7 +231,7 @@ describe('When resolving a service endpoint', () => {
     const serviceIdUri = `${fullDid}#service-1`
 
     await expect(
-      DefaultResolver.resolveServiceEndpoint(serviceIdUri)
+      DidResolver.resolveServiceEndpoint(serviceIdUri)
     ).resolves.toStrictEqual<ResolvedDidServiceEndpoint>({
       id: serviceIdUri,
       type: [`type-service-1`],
@@ -244,7 +244,7 @@ describe('When resolving a service endpoint', () => {
     let serviceIdUri = `${deletedFullDid}#service-1`
 
     await expect(
-      DefaultResolver.resolveServiceEndpoint(serviceIdUri)
+      DidResolver.resolveServiceEndpoint(serviceIdUri)
     ).resolves.toBeNull()
 
     const didWithNoServiceEndpoints = getKiltDidFromIdentifier(
@@ -254,7 +254,7 @@ describe('When resolving a service endpoint', () => {
     serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
 
     await expect(
-      DefaultResolver.resolveServiceEndpoint(serviceIdUri)
+      DidResolver.resolveServiceEndpoint(serviceIdUri)
     ).resolves.toBeNull()
   })
 
@@ -264,12 +264,12 @@ describe('When resolving a service endpoint', () => {
       'full'
     )
     await expect(
-      DefaultResolver.resolveServiceEndpoint(uriWithoutFragment)
+      DidResolver.resolveServiceEndpoint(uriWithoutFragment)
     ).rejects.toThrow()
 
     const invalidUri = 'invalid-uri'
     await expect(
-      DefaultResolver.resolveServiceEndpoint(invalidUri)
+      DidResolver.resolveServiceEndpoint(invalidUri)
     ).rejects.toThrow()
   })
 })
@@ -280,7 +280,7 @@ describe('When resolving a full DID', () => {
       identifierWithAuthenticationKey,
       'full'
     )
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       fullDidWithAuthenticationKey
     )) as DidResolvedDetails
 
@@ -304,7 +304,7 @@ describe('When resolving a full DID', () => {
       identifierWithAllKeys,
       'full'
     )
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       fullDidWithAllKeys
     )) as DidResolvedDetails
 
@@ -344,7 +344,7 @@ describe('When resolving a full DID', () => {
       identifierWithServiceEndpoints,
       'full'
     )
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       fullDidWithServiceEndpoints
     )) as DidResolvedDetails
 
@@ -374,12 +374,12 @@ describe('When resolving a full DID', () => {
     ).address
     const randomDid = getKiltDidFromIdentifier(randomIdentifier, 'full')
 
-    await expect(DefaultResolver.resolveDoc(randomDid)).resolves.toBeNull()
+    await expect(DidResolver.resolveDoc(randomDid)).resolves.toBeNull()
   })
 
   it('correctly resolves a deleted DID', async () => {
     const deletedDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       deletedDid
     )) as DidResolvedDetails
 
@@ -395,7 +395,7 @@ describe('When resolving a full DID', () => {
       'full'
     )
     const keyIdUri = `${fullDidWithAuthenticationKey}#auth`
-    const { details, metadata } = (await DefaultResolver.resolveDoc(
+    const { details, metadata } = (await DidResolver.resolveDoc(
       keyIdUri
     )) as DidResolvedDetails
 
@@ -420,7 +420,7 @@ describe('When resolving a light DID', () => {
         type: authKey.type,
       },
     })
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       lightDidWithAuthenticationKey.did
     )) as DidResolvedDetails
 
@@ -454,7 +454,7 @@ describe('When resolving a light DID', () => {
         generateServiceEndpointDetails('service-2'),
       ],
     })
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       lightDid.did
     )) as DidResolvedDetails
 
@@ -493,7 +493,7 @@ describe('When resolving a light DID', () => {
       '00'.concat(identifierWithAuthenticationKey),
       'light'
     )
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       migratedDid
     )) as DidResolvedDetails
 
@@ -519,7 +519,7 @@ describe('When resolving a light DID', () => {
       '00'.concat(deletedIdentifier),
       'light'
     )
-    const { details, metadata } = (await DefaultResolver.resolve(
+    const { details, metadata } = (await DidResolver.resolve(
       migratedDid
     )) as DidResolvedDetails
 
@@ -537,7 +537,7 @@ describe('When resolving a light DID', () => {
       },
     })
     const keyIdUri = `${lightDid.did}#auth`
-    const { details, metadata } = (await DefaultResolver.resolveDoc(
+    const { details, metadata } = (await DidResolver.resolveDoc(
       keyIdUri
     )) as DidResolvedDetails
 

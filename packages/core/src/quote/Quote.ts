@@ -26,7 +26,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import { DidUtils, DefaultResolver, DidDetails, DidKeySelection } from '@kiltprotocol/did'
+import { DidUtils, DidResolver, DidDetails, DidKeySelection } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema'
 
 /**
@@ -68,7 +68,7 @@ export function validateQuoteSchema(
 
 export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
-  resolver: IDidResolver = DefaultResolver
+  resolver: IDidResolver = DidResolver
 ): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
   await DidUtils.verifyDidSignature({
@@ -180,7 +180,7 @@ export async function createQuoteAgreement(
   {
     signer,
     keySelection = DidUtils.defaultDidKeySelection,
-    resolver = DefaultResolver,
+    resolver = DidResolver,
   }: {
     signer: KeystoreSigner
     keySelection?: DidKeySelection

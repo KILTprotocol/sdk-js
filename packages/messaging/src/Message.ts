@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DidUtils, DefaultResolver, DidDetails } from '@kiltprotocol/did'
+import { DidResolverltResolver, DidDetails, DidResolver } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -111,7 +111,7 @@ export class Message implements IMessage {
     {
       keystore,
       receiverDetails,
-      resolver = DefaultResolver,
+      resolver = DidResolver,
     }: {
       keystore: Pick<NaclBoxCapable, 'decrypt'>
       receiverDetails: DidDetails
@@ -240,7 +240,7 @@ export class Message implements IMessage {
     {
       keystore,
       receiverKeyId,
-      resolver = DefaultResolver,
+      resolver = DidResolver,
     }: {
       keystore: Pick<NaclBoxCapable, 'encrypt'>
       receiverKeyId: DidPublicKey['id']

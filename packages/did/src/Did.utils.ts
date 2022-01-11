@@ -19,7 +19,7 @@ import type {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import type { DidKeySelection } from './types'
-import { DefaultResolver } from './DidResolver'
+import { DidResolver } from './DidResolver'
 
 /// The latest version for KILT light DIDs.
 export const LIGHT_DID_LATEST_VERSION = 1
@@ -240,7 +240,7 @@ export async function verifyDidSignature({
   message,
   signature,
   expectedVerificationMethod,
-  resolver = DefaultResolver,
+  resolver = DidResolver,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
   // Verification fails if the signature key ID is not valid
   const { fragment: keyId } = parseDidUri(signature.keyId)

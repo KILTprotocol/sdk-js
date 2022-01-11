@@ -113,7 +113,7 @@ export class Credential implements ICredential {
    * @param credential - The credential to check for validity.
    * @param verificationOpts The additional options to use upon attested credential verification.
    * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
-   * Defaults to the DefaultResolver.
+   * Defaults to [[DidResolver]].
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether the provided credential is valid.
    * @example ```javascript

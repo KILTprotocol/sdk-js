@@ -5,4 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './DefaultResolver'
+export * from './DidResolver'

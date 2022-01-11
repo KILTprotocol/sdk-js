@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DefaultResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
+import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils'
 import { Credential } from '../credential/Credential'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils'
@@ -243,7 +243,7 @@ export class RequestForAttestation implements IRequestForAttestation {
    *
    * @param input - The [[RequestForAttestation]].
    * @param verificationOpts Additional options to retrieve the details from the identifiers inside the request for attestation.
-   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to the [[DefaultResolver]].
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
    * @returns Whether the signature is correct.
@@ -257,7 +257,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     input: IRequestForAttestation,
     {
       challenge,
-      resolver = DefaultResolver,
+      resolver = DidResolver,
     }: {
       challenge?: string
       resolver?: IDidResolver
