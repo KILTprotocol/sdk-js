@@ -10,7 +10,7 @@
  */
 
 import type { ICredential, IClaim, KeyringPair } from '@kiltprotocol/types'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
@@ -254,9 +254,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrowErrorWithCode(
-      ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
-    )
+    ).rejects.toThrowErrorMatchingInlineSnapshot()
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
@@ -300,9 +298,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
               reSign: true,
             })
           )
-      ).rejects.toThrowErrorWithCode(
-        ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED.code
-      )
+      ).rejects.toThrowErrorMatchingInlineSnapshot()
     }, 15_000)
 
     it('should not be possible to use attestation for different claim', async () => {

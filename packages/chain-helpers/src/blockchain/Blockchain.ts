@@ -20,7 +20,6 @@ import type { AnyJson, AnyNumber, Codec } from '@polkadot/types/types'
 import type { Text } from '@polkadot/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import { BN } from '@polkadot/util'
-import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
   BlockchainStats,
@@ -31,7 +30,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { submitSignedTx } from './Blockchain.utils.js'
+import { isRecoverableTxError, submitSignedTx } from './Blockchain.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -109,14 +108,14 @@ export class Blockchain implements IBlockchainApi {
     signer?: KeyringPair | IIdentity,
     opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult> {
-    const retry = async (reason: Error): Promise<ISubmittableResult> => {
-      if (
-        reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
-        signer
-      ) {
+    const retry = async (
+      reason: Error | ISubmittableResult
+    ): Promise<ISubmittableResult> => {
+      if (isRecoverableTxError(reason) && signer) {
         return submitSignedTx(await this.reSignTx(signer, tx), opts)
       }
-      throw reason
+      if (reason instanceof Error) throw reason
+      return reason
     }
     return submitSignedTx(tx, opts).catch(retry).catch(retry)
   }

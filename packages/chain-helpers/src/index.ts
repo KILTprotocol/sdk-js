@@ -6,11 +6,6 @@
  */
 
 export {
-  ExtrinsicError,
-  ExtrinsicErrors,
-  PalletIndex,
-} from './errorhandling/index.js'
-export {
   BlockchainApiConnection,
   KILT_TYPES,
   TypeRegistry,

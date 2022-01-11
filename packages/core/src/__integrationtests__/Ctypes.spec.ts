@@ -10,7 +10,7 @@
  */
 
 import type { ICType, KeyringPair } from '@kiltprotocol/types'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   FullDidDetails,
   DemoKeystore,
@@ -127,9 +127,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrowErrorWithCode(
-      ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
-    )
+    ).rejects.toThrowErrorMatchingInlineSnapshot()
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did)
   }, 45_000)

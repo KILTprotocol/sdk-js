@@ -11,23 +11,15 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { ISubmittableResult } from '@kiltprotocol/types'
-import { DispatchError, EventRecord } from '@polkadot/types/interfaces'
-import { ErrorHandler, PalletIndex } from './index'
-import { ExtrinsicError, ExtrinsicErrors } from './ExtrinsicError'
-import { TypeRegistry } from '../blockchainApiConnection'
+import { EventRecord } from '@polkadot/types/interfaces'
+import { ErrorHandler } from './index'
 
 describe('ErrorHandler', () => {
   it('test extrinsic failed', () => {
     const evtRecord = {
-      phase: {
-        isApplyExtrinsic: true,
-      },
       event: {
-        index: {
-          toHex: jest.fn(() => {
-            return '0x0001'
-          }),
-        },
+        section: 'system',
+        method: 'ExtrinsicFailed',
       },
     }
     const submittableResult = {
@@ -39,15 +31,9 @@ describe('ErrorHandler', () => {
 
   it('test extrinsic succeeded', () => {
     const evtRecord = {
-      phase: {
-        isApplyExtrinsic: true,
-      },
       event: {
-        index: {
-          toHex: jest.fn(() => {
-            return '0x0000'
-          }),
-        },
+        section: 'system',
+        method: 'ExtrinsicSuccess',
       },
     }
     const submittableResult = {
@@ -55,33 +41,5 @@ describe('ErrorHandler', () => {
     } as ISubmittableResult
 
     expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeFalsy()
-  })
-
-  it('test get extrinsic error', async () => {
-    const dispatchError: DispatchError = TypeRegistry.createType(
-      'DispatchError',
-      { Module: { index: PalletIndex.CType, error: 0 } }
-    )
-
-    const errorEventRecord = {
-      phase: {
-        isApplyExtrinsic: true,
-      },
-      event: {
-        section: 'system',
-        data: [dispatchError],
-      },
-    }
-    const submittableResult = {
-      events: [errorEventRecord] as unknown as EventRecord[],
-      dispatchError,
-    } as ISubmittableResult
-
-    const { code, message } = ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND
-
-    // @ts-ignore
-    expect(ErrorHandler.getExtrinsicError(submittableResult)).toStrictEqual(
-      new ExtrinsicError(code, message)
-    )
   })
 })
