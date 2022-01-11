@@ -7,10 +7,13 @@
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { KeyringPair, SubmittableExtrinsic } from '@kiltprotocol/types'
 
 import type { LightDidCreationDetails } from '../types'
 import { parseDidUri } from '../Did.utils'
+import { DidMigrationHandler } from '.'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
@@ -142,5 +145,16 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   return {
     encryptionKey: decodedPayload[ENCRYPTION_KEY_MAP_KEY],
     serviceEndpoints: decodedPayload[SERVICES_KEY_MAP_KEY],
+  }
+}
+
+export function getDefaultMigrationHandler(
+  submitter: KeyringPair
+): DidMigrationHandler {
+  return async (e) => {
+    await BlockchainUtils.signAndSubmitTx(e, submitter, {
+      reSign: true,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
   }
 }

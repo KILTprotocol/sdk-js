@@ -10,5 +10,6 @@ export * from './LightDidDetails'
 export {
   LightDidSupportedSigningKeyTypes,
   LightDidSupportedEncryptionKeyTypes,
+  getDefaultMigrationHandler,
 } from './LightDidDetails.utils'
 export * from './FullDidDetails'

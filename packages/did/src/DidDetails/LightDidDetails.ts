@@ -12,6 +12,7 @@ import type {
   IDidIdentifier,
   IIdentity,
   KeystoreSigner,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
 import type {
@@ -42,6 +43,10 @@ import { generateCreateTxFromDidDetails } from '../Did.chain'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
+
+export type DidMigrationHandler = (
+  migrationExtrinsic: SubmittableExtrinsic
+) => Promise<void>
 
 export class LightDidDetails extends DidDetails {
   public readonly identifier: IDidIdentifier
@@ -171,15 +176,20 @@ export class LightDidDetails extends DidDetails {
   }
 
   public async migrate(
-    submitter: IIdentity['address'],
-    signer: KeystoreSigner
+    submitterAddress: IIdentity['address'],
+    signer: KeystoreSigner,
+    migrationHandler: DidMigrationHandler
   ): Promise<FullDidDetails> {
-    // TODO: change this to be a user-provided closure
-    const creationTx = await generateCreateTxFromDidDetails(this, submitter, {
-      alg: getSignatureAlgForKeyType(this.authenticationKey.type),
-      signingPublicKey: this.authenticationKey.publicKey,
-      signer,
-    })
+    const creationTx = await generateCreateTxFromDidDetails(
+      this,
+      submitterAddress,
+      {
+        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
+        signingPublicKey: this.authenticationKey.publicKey,
+        signer,
+      }
+    )
+    await migrationHandler(creationTx)
     const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
     if (!fullDidDetails) {
       throw new Error('Something went wrong during the migration.')
