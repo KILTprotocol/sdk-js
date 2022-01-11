@@ -17,7 +17,7 @@ import type {
   ICType,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { DidUtils } from '@kiltprotocol/did'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
@@ -29,7 +29,7 @@ import * as Kilt from '../kilt/Kilt'
 import '../../../../testingTools/jestErrorCodeMatcher'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('Attestation', () => {
@@ -44,7 +44,7 @@ describe('Attestation', () => {
   let testClaim: Claim
   let requestForAttestation: RequestForAttestation
   const blockchainApi =
-    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api
+    require('@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection').__mocked_api
 
   beforeAll(async () => {
     rawCTypeSchema = {

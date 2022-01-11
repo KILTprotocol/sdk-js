@@ -40,7 +40,7 @@ import {
   errorCheckMessage,
   errorCheckMessageBody,
   verifyRequiredCTypeProperties,
-} from './Message.utils'
+} from './Message.utils.js'
 
 export class Message implements IMessage {
   /**

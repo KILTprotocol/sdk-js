@@ -5,6 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as KiltIntegritySuite from './KiltIntegritySuite'
-export * as KiltSignatureSuite from './KiltSignatureSuite'
-export * as KiltAttestedSuite from './KiltAttestedSuite'
+export * as KiltIntegritySuite from './KiltIntegritySuite.js'
+export * as KiltSignatureSuite from './KiltSignatureSuite.js'
+export * as KiltAttestedSuite from './KiltAttestedSuite.js'

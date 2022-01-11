@@ -5,6 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as Quote from './Quote'
-export * as QuoteUtils from './Quote.utils'
-export { QuoteSchema } from './QuoteSchema'
+export * as Quote from './Quote.js'
+export * as QuoteUtils from './Quote.utils.js'
+export { QuoteSchema } from './QuoteSchema.js'

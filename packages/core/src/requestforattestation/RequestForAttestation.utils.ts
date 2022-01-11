@@ -18,9 +18,10 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import * as CredentialUtils from '../credential/Credential.utils'
-import * as ClaimUtils from '../claim/Claim.utils'
-import { RequestForAttestation } from './RequestForAttestation'
+import * as CredentialUtils from '../credential/Credential.utils.js'
+import * as ClaimUtils from '../claim/Claim.utils.js'
+// TODO: circular dependency
+import { RequestForAttestation } from './RequestForAttestation.js'
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.

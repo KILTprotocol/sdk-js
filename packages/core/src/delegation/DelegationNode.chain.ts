@@ -18,9 +18,12 @@ import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
-import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
-import { DelegationNode } from './DelegationNode'
-import { permissionsAsBitset } from './DelegationNode.utils'
+import {
+  decodeDelegationNode,
+  IChainDelegationNode,
+} from './DelegationDecoder.js'
+import { DelegationNode } from './DelegationNode.js'
+import { permissionsAsBitset } from './DelegationNode.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 

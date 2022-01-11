@@ -8,9 +8,9 @@
 import type * as DidTypes from './index.types'
 
 export { DidTypes }
-export * as DidChain from './Did.chain'
-export * as DidUtils from './Did.utils'
-export * from './DemoKeystore/DemoKeystore'
-export * from './DidDetails'
-export * from './DidResolver/DefaultResolver'
-export * from './DidDocumentExporter'
+export * as DidChain from './Did.chain.js'
+export * as DidUtils from './Did.utils.js'
+export * from './DemoKeystore/DemoKeystore.js'
+export * from './DidDetails/index.js'
+export * from './DidResolver/DefaultResolver.js'
+export * from './DidDocumentExporter/index.js'

@@ -42,7 +42,7 @@ import {
   encodeServiceEndpoint,
   parseDidUrl,
   assembleDidFragment,
-} from './Did.utils'
+} from './Did.utils.js'
 
 // ### RAW QUERYING (lowest layer)
 

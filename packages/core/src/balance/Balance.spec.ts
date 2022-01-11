@@ -29,7 +29,7 @@ import * as BalanceUtils from './Balance.utils'
 import * as Kilt from '../kilt/Kilt'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection'
 )
 
 const BALANCE = 42
@@ -41,7 +41,7 @@ describe('Balance', () => {
   let alice: KeyringPair
   let bob: KeyringPair
   const blockchainApi =
-    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api
+    require('@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection').__mocked_api
 
   const accountInfo = (balance: number): AccountInfo => {
     return {
@@ -69,7 +69,7 @@ describe('Balance', () => {
     alice = keyring.addFromUri('//Alice')
     bob = keyring.addFromUri('//Bob')
   })
-  it('should listen to balance changes', async (done) => {
+  it('should listen to balance changes', (done) => {
     const listener = (
       account: string,
       balances: Balances,
@@ -81,7 +81,10 @@ describe('Balance', () => {
       done()
     }
 
-    await listenToBalanceChanges(bob.address, listener)
+    listenToBalanceChanges(bob.address, listener)
+  })
+
+  it('should get the balance', async () => {
     const currentBalance = await getBalances(bob.address)
     expect(currentBalance.free.toNumber()).toBeTruthy()
     expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
