@@ -9,11 +9,11 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { KeyringPair, SubmittableExtrinsic } from '@kiltprotocol/types'
+import { KeyringPair } from '@kiltprotocol/types'
 
 import type { LightDidCreationDetails } from '../types'
 import { parseDidUri } from '../Did.utils'
-import { DidMigrationHandler } from '.'
+import { DidMigrationHandler } from './LightDidDetails'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'

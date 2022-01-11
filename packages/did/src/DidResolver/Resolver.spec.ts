@@ -213,9 +213,7 @@ describe('When resolving a key', () => {
       deletedIdentifier,
       'full'
     )
-    await expect(
-      DidResolver.resolveKey(uriWithoutFragment)
-    ).rejects.toThrow()
+    await expect(DidResolver.resolveKey(uriWithoutFragment)).rejects.toThrow()
 
     const invalidUri = 'invalid-uri'
     await expect(DidResolver.resolveKey(invalidUri)).rejects.toThrow()

@@ -25,7 +25,7 @@ import type {
   Extrinsic,
   Hash,
 } from '@polkadot/types/interfaces'
-import type { AnyNumber, Codec } from '@polkadot/types/types'
+import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString } from '@polkadot/util'
 
 import type {
