@@ -494,7 +494,7 @@ export async function getDeleteDidExtrinsic(
 
 export async function getReclaimDepositExtrinsic(
   didIdentifier: IDidIdentifier,
-  endpointsCount: number
+  endpointsCount: BN
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)

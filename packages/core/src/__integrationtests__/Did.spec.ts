@@ -22,6 +22,7 @@ import {
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   DidServiceEndpoint,
+  KeyRelationship,
   KeyringPair,
   KeystoreSigner,
 } from '@kiltprotocol/types'
@@ -262,145 +263,148 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 })
 
-// it('creates and updates DID, and then reclaims the deposit back', async () => {
-//   const { publicKey, alg } = await keystore.generateKeypair({
-//     alg: SigningAlgorithms.Ed25519,
-//   })
-//   const didIdentifier = encodeAddress(publicKey, 38)
-//   const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
-//   const key: DidTypes.INewPublicKey = { publicKey, type: alg }
+it.only('creates and updates DID, and then reclaims the deposit back', async () => {
+  const { publicKey, alg } = await keystore.generateKeypair({
+    alg: SigningAlgorithms.Ed25519,
+  })
+  let newDetails = LightDidDetails.fromDetails({
+    authenticationKey: {
+      publicKey,
+      type: alg,
+    },
+  })
 
-//   const tx = await DidChain.generateCreateTx({
-//     didIdentifier,
-//     signer: keystore as KeystoreSigner<string>,
-//     submitter: paymentAccount.address,
-//     signingPublicKey: key.publicKey,
-//     alg: key.type,
-//   })
+  const tx = await DidChain.generateCreateTxFromDidDetails(
+    newDetails,
+    paymentAccount.address,
+    {
+      alg: newDetails.authenticationKey.type,
+      signer: keystore as KeystoreSigner<string>,
+      signingPublicKey: newDetails.authenticationKey.publicKey,
+    }
+  )
 
-//   await expect(
-//     BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-//       resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//       reSign: true,
-//     })
-//   ).resolves.not.toThrow()
+  await expect(
+    BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).resolves.not.toThrow()
 
-//   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-//     Partial<DidTypes.IDidChainRecordJSON>
-//   >({
-//     identifier: did,
-//   })
+  const newKeypair = await keystore.generateKeypair({
+    alg: SigningAlgorithms.Ed25519,
+  })
+  const newKeyDetails: DidChain.NewDidKey = {
+    publicKey: newKeypair.publicKey,
+    type: newKeypair.alg,
+  }
 
-//   const newKeypair = await keystore.generateKeypair({
-//     alg: SigningAlgorithms.Ed25519,
-//   })
-//   const newKeyDetails: DidTypes.INewPublicKey = {
-//     publicKey: newKeypair.publicKey,
-//     type: newKeypair.alg,
-//   }
+  const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
+    KeyRelationship.authentication,
+    newKeyDetails
+  )
 
-//   const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
-//     KeyRelationship.authentication,
-//     newKeyDetails
-//   )
+  const tx2 = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier: newDetails.identifier,
+    txCounter: 1,
+    call: updateAuthenticationKeyCall,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: newDetails.authenticationKey.publicKey,
+    alg: newDetails.authenticationKey.type,
+    submitter: paymentAccount.address,
+  })
 
-//   const tx2 = await DidChain.generateDidAuthenticatedTx({
-//     didIdentifier,
-//     txCounter: 1,
-//     call: updateAuthenticationKeyCall,
-//     signer: keystore as KeystoreSigner<string>,
-//     signingPublicKey: key.publicKey,
-//     alg: key.type,
-//     submitter: paymentAccount.address,
-//   })
+  await expect(
+    BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).resolves.not.toThrow()
 
-//   await expect(
-//     BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
-//       resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//       reSign: true,
-//     })
-//   ).resolves.not.toThrow()
+  // Authentication key changed, so details must be updated.
+  // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
+  newDetails = LightDidDetails.fromDetails({
+    authenticationKey: newKeyDetails,
+  })
 
-//   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-//     Partial<DidTypes.IDidChainRecordJSON>
-//   >({
-//     identifier: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-//   })
+  // Add a new service endpoint
+  const newEndpoint: DidServiceEndpoint = {
+    id: 'new-endpoint',
+    types: ['new-type'],
+    urls: ['new-url'],
+  }
+  const updateEndpointCall = await DidChain.getAddEndpointExtrinsic(newEndpoint)
 
-//   // Add a new service endpoint
-//   const newEndpoint: DidServiceEndpoint = {
-//     id: 'new-endpoint',
-//     types: ['new-type'],
-//     urls: ['new-url'],
-//   }
-//   const updateEndpointCall = await DidChain.getAddEndpointExtrinsic(newEndpoint)
+  // TODO: This throws and it shouldn't
+  const tx3 = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier: newDetails.identifier,
+    txCounter: 2,
+    call: updateEndpointCall,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: newDetails.authenticationKey.publicKey,
+    alg: newDetails.authenticationKey.type,
+    submitter: paymentAccount.address,
+  })
+  await expect(
+    BlockchainUtils.signAndSubmitTx(tx3, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).resolves.not.toThrow()
+  await expect(
+    DidChain.queryServiceEndpoint(newDetails.identifier, newEndpoint.id)
+  ).resolves.toStrictEqual(newEndpoint)
 
-//   const tx3 = await DidChain.generateDidAuthenticatedTx({
-//     didIdentifier,
-//     txCounter: 2,
-//     call: updateEndpointCall,
-//     signer: keystore as KeystoreSigner<string>,
-//     signingPublicKey: newKeyDetails.publicKey,
-//     alg: newKeyDetails.type,
-//     submitter: paymentAccount.address,
-//   })
-//   await expect(
-//     BlockchainUtils.signAndSubmitTx(tx3, paymentAccount, {
-//       resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//       reSign: true,
-//     })
-//   ).resolves.not.toThrow()
-//   await expect(
-//     DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
-//   ).resolves.toMatchObject<DidServiceEndpoint>({
-//     ...newEndpoint,
-//     id: DidUtils.assembleDidFragment(did, newEndpoint.id),
-//   })
+  // Delete the added service endpoint
+  const removeEndpointCall = await DidChain.getRemoveEndpointExtrinsic(
+    newEndpoint.id
+  )
 
-//   // Delete the added service endpoint
-//   const removeEndpointCall = await DidChain.getRemoveEndpointExtrinsic(
-//     newEndpoint.id
-//   )
+  const tx4 = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier: newDetails.identifier,
+    txCounter: 3,
+    call: removeEndpointCall,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: newDetails.authenticationKey.publicKey,
+    alg: newDetails.authenticationKey.type,
+    submitter: paymentAccount.address,
+  })
 
-//   const tx4 = await DidChain.generateDidAuthenticatedTx({
-//     didIdentifier,
-//     txCounter: 3,
-//     call: removeEndpointCall,
-//     signer: keystore as KeystoreSigner<string>,
-//     signingPublicKey: newKeyDetails.publicKey,
-//     alg: newKeyDetails.type,
-//     submitter: paymentAccount.address,
-//   })
+  await expect(
+    BlockchainUtils.signAndSubmitTx(tx4, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).resolves.not.toThrow()
 
-//   await expect(
-//     BlockchainUtils.signAndSubmitTx(tx4, paymentAccount, {
-//       resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//       reSign: true,
-//     })
-//   ).resolves.not.toThrow()
+  // There should not be any endpoint with the given ID now.
+  await expect(
+    DidChain.queryServiceEndpoint(newDetails.identifier, newEndpoint.id)
+  ).resolves.toBeNull()
 
-//   // There should not be any endpoint with the given ID now.
-//   await expect(
-//     DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
-//   ).resolves.toBeNull()
-
-//   // Claim the deposit back
-//   const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
-//   const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
-//     didIdentifier,
-//     storedEndpointsCount
-//   )
-//   await expect(
-//     BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
-//       resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//       reSign: true,
-//     })
-//   ).resolves.not.toThrow()
-//   // Verify that the DID has been deleted
-//   await expect(DidChain.queryById(didIdentifier)).resolves.toBeNull()
-//   await expect(DidChain.queryServiceEndpoints(did)).resolves.toHaveLength(0)
-//   await expect(DidChain.queryEndpointsCounts(did)).resolves.toBe(0)
-// }, 80_000)
+  // Claim the deposit back
+  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+    newDetails.identifier
+  )
+  const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
+    newDetails.identifier,
+    storedEndpointsCount
+  )
+  await expect(
+    BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).resolves.not.toThrow()
+  // Verify that the DID has been deleted
+  await expect(DidChain.queryDetails(newDetails.identifier)).resolves.toBeNull()
+  await expect(
+    DidChain.queryServiceEndpoints(newDetails.identifier)
+  ).resolves.toHaveLength(0)
+  await expect(
+    DidChain.queryEndpointsCounts(newDetails.identifier)
+  ).resolves.toBe(0)
+}, 80_000)
 
 // describe('DID migration', () => {
 //   it('migrates light DID with ed25519 auth key and encryption key', async () => {
