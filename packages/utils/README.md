@@ -5,4 +5,4 @@
 
 # Kilt Utils
 
-This package provides different generic utility functions.
+This package provides different generic utility (and stateless) functions.

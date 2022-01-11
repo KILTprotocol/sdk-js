@@ -5,4 +5,4 @@
 
 # Kilt Chain Helpers
 
-This package includes utilities to manage and cache a blockchain connection, handle extrinsic errors and submit transactions.
+This package includes modules to manage and cache a blockchain connection, handle extrinsic errors and submit transactions (with resigning and Promises).
