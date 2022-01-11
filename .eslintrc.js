@@ -38,7 +38,7 @@ module.exports = {
         chain: 'never',
       },
     ],
-    'no-restricted-imports': ['error', '.'],
+    'no-restricted-imports': ['error', '.', '..'],
     // Taken care of by typescript
     'import/no-unresolved': 'off',
     'prettier/prettier': 'error',

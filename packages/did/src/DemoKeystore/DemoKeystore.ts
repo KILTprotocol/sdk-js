@@ -32,7 +32,7 @@ import { KeypairType } from '@polkadot/util-crypto/types'
 import { u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils.js'
 import { FullDidDetails, LightDidDetails } from '../DidDetails/index.js'
-import { DefaultResolver, DidUtils } from '..'
+import { DefaultResolver, DidUtils } from '../index.js'
 import { INewPublicKey, PublicKeyRoleAssignment } from '../types.js'
 import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils.js'
 
