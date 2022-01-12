@@ -150,7 +150,7 @@ describe('Chain returns specific errors, that we check for', () => {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
-    ).rejects.toMatchObject({ value: { status: { isUsurped: true } } })
+    ).rejects.toHaveProperty('status.isUsurped', true)
 
     const { signature: errorSignature } = blockchain.api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
