@@ -6,6 +6,7 @@
  */
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
+import { BN } from '@polkadot/util'
 
 import type {
   DidKey,
@@ -35,6 +36,9 @@ import {
   FULL_DID_LATEST_VERSION,
   getKiltDidFromIdentifier,
 } from '../Did.utils'
+
+// Max nonce value is (2^64) - 1
+const maxNonceValue = new BN(new BN(2).pow(new BN(64))).subn(1)
 
 export class FullDidDetails extends DidDetails {
   public readonly identifier: IDidIdentifier
@@ -110,6 +114,13 @@ export class FullDidDetails extends DidDetails {
       : this.getKeys(keyRelationship)
   }
 
+  async getNextNonce(): Promise<BN> {
+    const currentNonce = await queryNonce(this.identifier)
+    // Wrap around the max u64 value when reached.
+    // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
+    return currentNonce === maxNonceValue ? new BN(0) : currentNonce.addn(1)
+  }
+
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
     {
@@ -122,7 +133,7 @@ export class FullDidDetails extends DidDetails {
       keySelection?: DidKeySelection
     }
   ): Promise<SubmittableExtrinsic> {
-    const signingKey = keySelection(this.getKeysForExtrinsic(extrinsic))
+    const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
       throw new Error(
         `The details for did ${this.did} do not contain the required keys for this operation`
@@ -134,7 +145,7 @@ export class FullDidDetails extends DidDetails {
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
-      txCounter: await queryNonce(this.did),
+      txCounter: await this.getNextNonce(),
       submitter: submitterAccount,
     })
   }
