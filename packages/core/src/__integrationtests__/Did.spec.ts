@@ -80,7 +80,7 @@ describe('write and didDeleteTx', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
@@ -181,7 +181,7 @@ describe('write and didDeleteTx', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
     call = await DidChain.getDeleteDidExtrinsic(1)
@@ -203,7 +203,10 @@ describe('write and didDeleteTx', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'did',
+      name: 'StoredEndpointsCountTooLarge',
+    })
   }, 60_000)
 
   it('deletes DID from previous step', async () => {
@@ -714,7 +717,7 @@ describe('DID authorization', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
 
     await expect(ctype.verifyStored()).resolves.toEqual(false)
   }, 60_000)

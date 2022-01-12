@@ -127,7 +127,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrowErrorMatchingInlineSnapshot()
+    ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did)
   }, 45_000)

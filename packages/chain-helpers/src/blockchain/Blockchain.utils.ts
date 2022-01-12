@@ -90,7 +90,9 @@ export async function submitSignedTx(
 
   const unsubscribe = await tx.send(subscription)
 
-  return promise.finally(() => unsubscribe())
+  return promise
+    .catch((e) => Promise.reject(ErrorHandler.getExtrinsicError(e) || e))
+    .finally(() => unsubscribe())
 }
 export const dispatchTx = submitSignedTx
 

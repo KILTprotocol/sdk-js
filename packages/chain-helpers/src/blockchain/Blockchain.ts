@@ -114,8 +114,7 @@ export class Blockchain implements IBlockchainApi {
       if (isRecoverableTxError(reason) && signer) {
         return submitSignedTx(await this.reSignTx(signer, tx), opts)
       }
-      if (reason instanceof Error) throw reason
-      return reason
+      return Promise.reject(reason)
     }
     return submitSignedTx(tx, opts).catch(retry).catch(retry)
   }

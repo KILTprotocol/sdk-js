@@ -85,7 +85,10 @@ describe('handling attestations that do not exist', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'attestation',
+      name: 'AttestationNotFound',
+    })
   }, 30_000)
 
   it('Attestation.remove', async () => {
@@ -100,7 +103,10 @@ describe('handling attestations that do not exist', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'attestation',
+      name: 'AttestationNotFound',
+    })
   }, 30_000)
 })
 
@@ -209,7 +215,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrow()
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low"`
+    )
     const credential = Credential.fromRequestAndAttestation(
       request,
       attestation
@@ -254,7 +262,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrowErrorMatchingInlineSnapshot()
+    ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
@@ -298,7 +306,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
               reSign: true,
             })
           )
-      ).rejects.toThrowErrorMatchingInlineSnapshot()
+      ).rejects.toMatchObject({
+        section: 'attestation',
+        name: 'AlreadyAttested',
+      })
     }, 15_000)
 
     it('should not be possible to use attestation for different claim', async () => {
@@ -330,7 +341,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
               reSign: true,
             })
           )
-      ).rejects.toThrowError('not permitted')
+      ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
       await expect(credential.verify()).resolves.toBe(true)
     }, 45_000)
 

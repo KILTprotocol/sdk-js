@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+export { ErrorHandler } from './errorhandling/index.js'
 export {
   BlockchainApiConnection,
   KILT_TYPES,

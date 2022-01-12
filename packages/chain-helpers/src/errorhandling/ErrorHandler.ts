@@ -15,7 +15,7 @@
 
 import type { DispatchError, EventRecord } from '@polkadot/types/interfaces'
 import type { ISubmittableResult } from '@kiltprotocol/types'
-import { RegistryError } from '@polkadot/types/types'
+import type { RegistryError } from '@polkadot/types/types'
 
 /**
  * Checks if there is `SystemEvent.ExtrinsicFailed` in the list of
@@ -62,8 +62,11 @@ export function getExtrinsicError(
 
   if (errorEvent && errorEvent.isModule) {
     const moduleError = errorEvent.asModule
-    return moduleError.registry.findMetaError(moduleError)
+    try {
+      return moduleError.registry.findMetaError(moduleError)
+    } catch {
+      // handled below
+    }
   }
-
   return errorEvent || null
 }
