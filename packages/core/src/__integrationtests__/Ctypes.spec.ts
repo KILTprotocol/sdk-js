@@ -9,14 +9,16 @@
  * @group integration/ctype
  */
 
-import type { ICType, KeyringPair } from '@kiltprotocol/types'
+import { ICType, KeyRelationship, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   FullDidDetails,
   DemoKeystore,
-  createOnChainDidFromSeed,
+  SigningAlgorithms,
+  LightDidDetails,
+  getDefaultMigrationHandler,
+  DidChain,
 } from '@kiltprotocol/did'
-import { randomAsHex } from '@polkadot/util-crypto'
 import { Crypto } from '@kiltprotocol/utils'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -50,12 +52,35 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   beforeAll(async () => {
     paymentAccount = devFaucet
-    ctypeCreator = await createOnChainDidFromSeed(
-      paymentAccount,
+    const authKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+    })
+    const newKey: DidChain.NewDidKey = { ...authKey, type: authKey.alg }
+    const lightDid = LightDidDetails.fromDetails({
+      authenticationKey: newKey,
+    })
+    // TODO: use a DID builder to combine multiple operations.
+    const fullDid = await lightDid.migrate(
+      paymentAccount.address,
       keystore,
-      randomAsHex(32)
+      getDefaultMigrationHandler(paymentAccount)
     )
-  })
+    const attestationKeyTx = await DidChain.getSetKeyExtrinsic(
+      KeyRelationship.assertionMethod,
+      newKey
+    )
+    const signedTx = await fullDid.authorizeExtrinsic(attestationKeyTx, {
+      submitterAccount: paymentAccount.address,
+      signer: keystore,
+    })
+    await BlockchainUtils.signAndSubmitTx(signedTx, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+    ctypeCreator = (await FullDidDetails.fromChainInfo(
+      fullDid.identifier
+    )) as FullDidDetails
+  }, 30_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
@@ -64,12 +89,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctype
         .store()
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(
-            tx,
-            keystore,
-            bobbyBroke.address,
-            false
-          )
+          ctypeCreator.authorizeExtrinsic(tx, {
+            signer: keystore,
+            submitterAccount: bobbyBroke.address,
+          })
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
@@ -86,7 +109,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await ctype
       .store()
       .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+        ctypeCreator.authorizeExtrinsic(tx, {
+          signer: keystore,
+          submitterAccount: paymentAccount.address,
+        })
       )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -107,7 +133,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await ctype
       .store()
       .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+        ctypeCreator.authorizeExtrinsic(tx, {
+          signer: keystore,
+          submitterAccount: paymentAccount.address,
+        })
       )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -119,7 +148,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctype
         .store()
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+          ctypeCreator.authorizeExtrinsic(tx, {
+            signer: keystore,
+            submitterAccount: paymentAccount.address,
+          })
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
