@@ -80,7 +80,7 @@ describe('write and didDeleteTx', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
+    ).rejects.toMatchObject({ isBadOrigin: true })
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
