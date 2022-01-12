@@ -6,6 +6,7 @@
  */
 
 export * from './DidDetails'
+export { getSignatureAlgForKeyType } from './DidDetails.utils'
 export * from './LightDidDetails'
 export {
   LightDidSupportedSigningKeyTypes,

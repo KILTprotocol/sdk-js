@@ -24,7 +24,6 @@
  */
 
 import {
-  DidSignature,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
@@ -34,8 +33,8 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { DidChain, DidKeySelection } from '@kiltprotocol/did'
-import { DidDetails, DidUtils } from '@kiltprotocol/did'
+import type { DidKeySelection } from '@kiltprotocol/did'
+import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain'
@@ -290,8 +289,8 @@ export class DelegationNode implements IDelegationNode {
     delegeeDid: DidDetails,
     signer: KeystoreSigner,
     keySelection: DidKeySelection = DidUtils.defaultDidKeySelection
-  ): Promise<DidSignature> {
-    const authenticationKey = keySelection(
+  ): Promise<DidChain.SignatureEnum> {
+    const authenticationKey = await keySelection(
       delegeeDid.getKeys(KeyRelationship.authentication)
     )
     if (!authenticationKey) {
@@ -299,10 +298,11 @@ export class DelegationNode implements IDelegationNode {
         `Delegee ${delegeeDid.did} does not have any authentication key.`
       )
     }
-    return delegeeDid.signPayload(this.generateHash(), {
+    const delegeeSignature = await delegeeDid.signPayload(this.generateHash(), {
       signer,
       keyId: authenticationKey.id,
     })
+    return DidChain.encodeDidSignature(authenticationKey, delegeeSignature)
   }
 
   /**

@@ -26,12 +26,13 @@ import type {
   Hash,
 } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import { BN, hexToString } from '@polkadot/util'
+import { BN, hexToString, hexToU8a } from '@polkadot/util'
 
 import type {
   Deposit,
   DidKey,
   DidServiceEndpoint,
+  DidSignature,
   IDidIdentifier,
   IIdentity,
   KeystoreSigningOptions,
@@ -41,7 +42,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto } from '@kiltprotocol/utils'
 
-import { DidDetails } from './DidDetails'
+import { DidDetails, getSignatureAlgForKeyType } from './DidDetails'
 
 // ### Chain type definitions
 
@@ -540,4 +541,20 @@ export async function generateDidAuthenticatedTx({
   return api.tx.did.submitDidCall(signableCall, {
     [signature.alg]: signature.data,
   })
+}
+
+// ### Chain utils
+export function encodeDidSignature(
+  key: Pick<DidKey, 'type'>,
+  signature: Pick<DidSignature, 'signature'>
+): SignatureEnum {
+  const alg = getSignatureAlgForKeyType(key.type)
+  if (!alg) {
+    throw new Error(
+      `The provided type ${key.type} does not match any known algorithm.`
+    )
+  }
+  return {
+    [alg]: hexToU8a(signature.signature),
+  }
 }
