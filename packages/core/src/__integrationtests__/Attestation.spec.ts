@@ -61,7 +61,7 @@ it('fetches the correct deposit amount', async () => {
   )
 })
 
-describe.skip('handling attestations that do not exist', () => {
+describe('handling attestations that do not exist', () => {
   const claimHash = Crypto.hashStr('abcde')
   it('Attestation.query', async () => {
     return expect(Attestation.query(claimHash)).resolves.toBeNull()
@@ -104,7 +104,7 @@ describe.skip('handling attestations that do not exist', () => {
   }, 30_000)
 })
 
-describe.only('When there is an attester, claimer and ctype drivers license', () => {
+describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
     const ctypeExists = await CtypeOnChain(DriversLicense)
     if (!ctypeExists) {
@@ -122,7 +122,7 @@ describe.only('When there is an attester, claimer and ctype drivers license', ()
     }
   }, 60_000)
 
-  it.only('should be possible to make a claim', async () => {
+  it('should be possible to make a claim', async () => {
     const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
@@ -267,7 +267,7 @@ describe.only('When there is an attester, claimer and ctype drivers license', ()
     )
   }, 60_000)
 
-  describe.skip('when there is a credential on-chain', () => {
+  describe('when there is a credential on-chain', () => {
     let credential: Credential
 
     beforeAll(async () => {
