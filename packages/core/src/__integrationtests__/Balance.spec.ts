@@ -132,7 +132,7 @@ describe('When there are haves and have-nots', () => {
     expect(zeroBalance.free.toNumber()).toBe(0)
   }, 50_000)
 
-  xit('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
+  it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalances(richieRich.address)
     await expect(
       makeTransfer(bobbyBroke.address, RichieBalance.free).then((tx) =>
