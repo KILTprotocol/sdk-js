@@ -12,11 +12,7 @@
 import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import {
-  createOnChainDidFromSeed,
-  DemoKeystore,
-  FullDidDetails,
-} from '@kiltprotocol/did'
+import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation/Attestation'
@@ -31,6 +27,7 @@ import {
   devFaucet,
   WS_ADDRESS,
   devBob,
+  createMinimalFullDidFromSeed,
 } from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
@@ -53,7 +50,10 @@ async function writeHierarchy(
   await rootNode
     .store()
     .then((tx) =>
-      delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+      delegator.authorizeExtrinsic(tx, {
+        signer,
+        submitterAccount: paymentAccount.address,
+      })
     )
     .then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -82,7 +82,10 @@ async function addDelegation(
   await delegationNode
     .store(signature)
     .then((tx) =>
-      delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+      delegator.authorizeExtrinsic(tx, {
+        signer,
+        submitterAccount: paymentAccount.address,
+      })
     )
     .then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -99,15 +102,18 @@ beforeAll(async () => {
 
   signer = new DemoKeystore()
   ;[attester, root, claimer] = await Promise.all([
-    createOnChainDidFromSeed(paymentAccount, signer, randomAsHex()),
-    createOnChainDidFromSeed(paymentAccount, signer, randomAsHex()),
-    createOnChainDidFromSeed(paymentAccount, signer, randomAsHex()),
+    createMinimalFullDidFromSeed(paymentAccount, signer),
+    createMinimalFullDidFromSeed(paymentAccount, signer),
+    createMinimalFullDidFromSeed(paymentAccount, signer),
   ])
 
   if (!(await CtypeOnChain(DriversLicense))) {
     await DriversLicense.store()
       .then((tx) =>
-        attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
+        attester.authorizeExtrinsic(tx, {
+          signer,
+          submitterAccount: paymentAccount.address,
+        })
       )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -117,10 +123,6 @@ beforeAll(async () => {
       )
   }
 }, 30_000)
-
-beforeEach(async () => {
-  await Promise.all([attester, root, claimer].map((i) => i.refreshTxIndex()))
-})
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DelegationNode.queryDepositAmount()
@@ -175,7 +177,7 @@ describe('and attestation rights have been delegated', () => {
     const request = RequestForAttestation.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await request.signWithDid(signer, claimer)
+    await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
     expect(request.verifyData()).toBeTruthy()
     await expect(request.verifySignature()).resolves.toBeTruthy()
 
@@ -183,7 +185,10 @@ describe('and attestation rights have been delegated', () => {
     await attestation
       .store()
       .then((tx) =>
-        attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
+        attester.authorizeExtrinsic(tx, {
+          signer,
+          submitterAccount: paymentAccount.address,
+        })
       )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -202,7 +207,12 @@ describe('and attestation rights have been delegated', () => {
     // revoke attestation through root
     await credential.attestation
       .revoke(1)
-      .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
+      .then((tx) =>
+        root.authorizeExtrinsic(tx, {
+          signer,
+          submitterAccount: paymentAccount.address,
+        })
+      )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -238,7 +248,10 @@ describe('revocation', () => {
       delegationA
         .revoke(delegator.did)
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          delegator.authorizeExtrinsic(tx, {
+            signer,
+            submitterAccount: paymentAccount.address,
+          })
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -256,7 +269,10 @@ describe('revocation', () => {
       delegationA
         .remove()
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          delegator.authorizeExtrinsic(tx, {
+            signer,
+            submitterAccount: paymentAccount.address,
+          })
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -283,7 +299,10 @@ describe('revocation', () => {
       delegationRoot
         .revoke(firstDelegee.did)
         .then((tx) =>
-          firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          firstDelegee.authorizeExtrinsic(tx, {
+            signer,
+            submitterAccount: paymentAccount.address,
+          })
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -298,7 +317,10 @@ describe('revocation', () => {
       delegationA
         .revoke(firstDelegee.did)
         .then((tx) =>
-          firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          firstDelegee.authorizeExtrinsic(tx, {
+            signer,
+            submitterAccount: paymentAccount.address,
+          })
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -329,7 +351,10 @@ describe('revocation', () => {
       delegationRoot
         .revoke(delegator.did)
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          delegator.authorizeExtrinsic(tx, {
+            signer,
+            submitterAccount: paymentAccount.address,
+          })
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -385,7 +410,7 @@ describe('Deposit claiming', () => {
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
     await expect(DelegationNode.query(subDelegatedNode.id)).resolves.toBeNull()
-  }, 60_000)
+  }, 80_000)
 })
 
 describe('handling queries to data not on chain', () => {

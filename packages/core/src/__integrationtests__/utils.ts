@@ -119,7 +119,7 @@ export async function createMinimalLightDid(
   )
 }
 
-// It takes the auth key from the light DID and use it as attestation key as well.
+// It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createMinimalFullDidFromLightDid(
   identity: KeyringPair,
   lightDidForId: LightDidDetails,
@@ -130,20 +130,18 @@ export async function createMinimalFullDidFromLightDid(
     keyRelationships: {
       authentication: new Set([lightDidForId.authenticationKey.id]),
       assertionMethod: new Set([lightDidForId.authenticationKey.id]),
+      capabilityDelegation: new Set([lightDidForId.authenticationKey.id]),
     },
     keys: new Map([
       [lightDidForId.authenticationKey.id, lightDidForId.authenticationKey],
     ]),
     serviceEndpoints: new Map(),
   }
-  console.log(fullDidCreationDetails)
 
   const fullDid = new FullDidDetails({
     identifier: lightDidForId.identifier,
     ...fullDidCreationDetails,
   })
-  console.log('this outside')
-  console.log(fullDid)
 
   const tx = await DidChain.generateCreateTxFromDidDetails(
     fullDid,
@@ -159,14 +157,16 @@ export async function createMinimalFullDidFromLightDid(
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
-  console.log('this after')
-  console.log(JSON.stringify(fullDid.authenticationKey))
+  return FullDidDetails.fromChainInfo(
+    fullDid.identifier
+  ) as Promise<FullDidDetails>
+}
 
-  const didFromChain = await FullDidDetails.fromChainInfo(fullDid.identifier)
-  console.log('did from chain')
-  console.log(JSON.stringify(didFromChain!.authenticationKey))
-  return didFromChain as FullDidDetails
-  // return FullDidDetails.fromChainInfo(
-  //   fullDid.identifier
-  // ) as Promise<FullDidDetails>
+export async function createMinimalFullDidFromSeed(
+  identity: KeyringPair,
+  keystore: DemoKeystore,
+  seed: string = randomAsHex()
+): Promise<FullDidDetails> {
+  const minimalDid = await createMinimalLightDid(keystore, seed)
+  return createMinimalFullDidFromLightDid(identity, minimalDid, keystore)
 }
