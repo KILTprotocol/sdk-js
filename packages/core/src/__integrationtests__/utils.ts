@@ -9,6 +9,7 @@
 /* eslint-disable no-console */
 
 import { BN } from '@polkadot/util'
+
 import { Keyring } from '@kiltprotocol/utils'
 import { encodeAddress, randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
@@ -120,7 +121,7 @@ export async function createMinimalLightDid(
 }
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
-export async function createMinimalFullDidFromLightDid(
+export async function createFullDidFromLightDid(
   identity: KeyringPair,
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
@@ -162,11 +163,11 @@ export async function createMinimalFullDidFromLightDid(
   ) as Promise<FullDidDetails>
 }
 
-export async function createMinimalFullDidFromSeed(
+export async function createFullDidFromSeed(
   identity: KeyringPair,
   keystore: DemoKeystore,
   seed: string = randomAsHex()
 ): Promise<FullDidDetails> {
   const minimalDid = await createMinimalLightDid(keystore, seed)
-  return createMinimalFullDidFromLightDid(identity, minimalDid, keystore)
+  return createFullDidFromLightDid(identity, minimalDid, keystore)
 }

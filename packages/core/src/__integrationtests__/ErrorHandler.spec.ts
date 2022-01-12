@@ -12,16 +12,17 @@
 import { BN } from '@polkadot/util'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
-import {
-  createOnChainDidFromSeed,
-  DemoKeystore,
-  FullDidDetails,
-} from '@kiltprotocol/did'
+import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
 import { config, disconnect } from '../kilt'
-import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'
+import {
+  addressFromRandom,
+  createFullDidFromSeed,
+  devAlice,
+  WS_ADDRESS,
+} from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
@@ -32,7 +33,7 @@ const keystore = new DemoKeystore()
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
   paymentAccount = devAlice
-  someDid = await createOnChainDidFromSeed(
+  someDid = await createFullDidFromSeed(
     paymentAccount,
     keystore,
     randomAsHex(32)
@@ -60,11 +61,12 @@ it('records an extrinsic error when ctype does not exist', async () => {
     owner: someDid.did,
     revoked: false,
   })
-  const tx = await attestation
-    .store()
-    .then((ex) =>
-      someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
-    )
+  const tx = await attestation.store().then((ex) =>
+    someDid.authorizeExtrinsic(ex, {
+      signer: keystore,
+      submitterAccount: paymentAccount.address,
+    })
+  )
   await expect(
     BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,

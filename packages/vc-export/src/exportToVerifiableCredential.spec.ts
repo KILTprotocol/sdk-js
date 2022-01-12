@@ -9,11 +9,15 @@
  * @group unit/vc-export
  */
 
-import { DidDocumentPublicKeyType, IRequestForAttestation } from '@kiltprotocol/types'
+import {
+  DidDocumentPublicKeyType,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 import { Attestation, Credential, CType } from '@kiltprotocol/core'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
+import { base58Encode } from '@polkadot/util-crypto'
 import * as toVC from './exportToVerifiableCredential'
 import * as verificationUtils from './verificationUtils'
 import * as presentationUtils from './presentationUtils'
@@ -24,7 +28,6 @@ import {
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
 } from './constants'
-import { base58Encode } from '@polkadot/util-crypto'
 
 const ctype = CType.fromCType({
   schema: {

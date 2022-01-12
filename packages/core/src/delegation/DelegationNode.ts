@@ -266,6 +266,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @param delegeeDid The DID of the delegee.
    * @param signer The keystore responsible for signing the delegation creation details for the delegee.
+   * @param keySelection
    * @example
    * ```
    * // Sign the hash of the delegation node...

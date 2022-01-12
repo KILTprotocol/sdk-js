@@ -11,7 +11,11 @@
  */
 
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
-import { signatureVerify, blake2AsHex, base58Decode } from '@polkadot/util-crypto'
+import {
+  signatureVerify,
+  blake2AsHex,
+  base58Decode,
+} from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import { Attestation, CTypeSchema } from '@kiltprotocol/core'
 import { Crypto, JsonSchema } from '@kiltprotocol/utils'

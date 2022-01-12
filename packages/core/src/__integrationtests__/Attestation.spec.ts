@@ -29,7 +29,7 @@ import {
   WS_ADDRESS,
   keypairFromRandom,
   createMinimalLightDid,
-  createMinimalFullDidFromLightDid,
+  createFullDidFromLightDid,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
@@ -48,13 +48,9 @@ beforeAll(async () => {
   const anotherAttesterLightDid = await createMinimalLightDid(signer)
   const claimerightDid = await createMinimalLightDid(signer)
   ;[attester, anotherAttester, claimer] = await Promise.all([
-    createMinimalFullDidFromLightDid(tokenHolder, attesterLightDid, signer),
-    createMinimalFullDidFromLightDid(
-      tokenHolder,
-      anotherAttesterLightDid,
-      signer
-    ),
-    createMinimalFullDidFromLightDid(tokenHolder, claimerightDid, signer),
+    createFullDidFromLightDid(tokenHolder, attesterLightDid, signer),
+    createFullDidFromLightDid(tokenHolder, anotherAttesterLightDid, signer),
+    createFullDidFromLightDid(tokenHolder, claimerightDid, signer),
   ])
 }, 30_000)
 
@@ -134,15 +130,10 @@ describe.only('When there is an attester, claimer and ctype drivers license', ()
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    console.log('a')
     await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
-    console.log('b')
     expect(request.verifyData()).toBe(true)
-    console.log('c')
     await expect(request.verifySignature()).resolves.toBe(true)
-    console.log('d')
     expect(request.claim.contents).toMatchObject(content)
-    console.log('e')
   })
 
   it('should be possible to attest a claim and then claim the attestation deposit back', async () => {

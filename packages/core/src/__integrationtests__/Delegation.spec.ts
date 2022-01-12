@@ -27,7 +27,7 @@ import {
   devFaucet,
   WS_ADDRESS,
   devBob,
-  createMinimalFullDidFromSeed,
+  createFullDidFromSeed,
 } from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
@@ -102,9 +102,9 @@ beforeAll(async () => {
 
   signer = new DemoKeystore()
   ;[attester, root, claimer] = await Promise.all([
-    createMinimalFullDidFromSeed(paymentAccount, signer),
-    createMinimalFullDidFromSeed(paymentAccount, signer),
-    createMinimalFullDidFromSeed(paymentAccount, signer),
+    createFullDidFromSeed(paymentAccount, signer),
+    createFullDidFromSeed(paymentAccount, signer),
+    createFullDidFromSeed(paymentAccount, signer),
   ])
 
   if (!(await CtypeOnChain(DriversLicense))) {

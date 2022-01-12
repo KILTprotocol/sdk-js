@@ -97,11 +97,14 @@ export class Message implements IMessage {
    * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
    *
    * @param encrypted The encrypted message.
+   * @param keystore.keystore
    * @param keystore The keystore used to perform the cryptographic operations.
    * @param resolutionOptions Options to resolve the DID key ID. It is recommended to specify the sender details and let the given resolver resolve the receiver details.
    * @param resolutionOptions.senderDetails The DID details of the sender.
    * @param resolutionOptions.receiverDetails The DID details of the receiver.
    * @param resolutionOptions.resolver The DID resolver to use.
+   * @param keystore.receiverDetails
+   * @param keystore.resolver
    * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
    * @throws [[ERROR_PARSING_MESSAGE]] when the decoded message could not be parsed.
    * @returns The original [[Message]].
@@ -231,7 +234,15 @@ export class Message implements IMessage {
    *
    * @param senderKey The details of the sender's encryption key.
    * @param receiverKey The details of the receiver's encryption key.
+   * @param senderKeyId
+   * @param senderDetails
+   * @param keystore.keystore
+   * @param senderKeyId.keystore
    * @param keystore The keystore instance to use to encrypt the message payload.
+   * @param keystore.receiverKeyId
+   * @param keystore.resolver
+   * @param senderKeyId.receiverKeyId
+   * @param senderKeyId.resolver
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(

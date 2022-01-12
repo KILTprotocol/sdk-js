@@ -84,6 +84,10 @@ jest.mock('../Did.chain', () => {
         capabilityDelegationKey: delKey.id,
         publicKeys: [authKey, encKey, attKey, delKey],
         lastTxCounter: new BN(0),
+        deposit: {
+          amount: new BN(2),
+          owner: didIdentifier,
+        },
       }
     }
   )

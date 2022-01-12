@@ -66,6 +66,10 @@ const existingDidDetails: IDidChainRecordJSON = {
       includedAt: new BN(0),
     },
   ],
+  deposit: {
+    amount: new BN(2),
+    owner: existingIdentifier,
+  },
 }
 
 const existingServiceEndpoints: DidServiceEndpoint[] = [

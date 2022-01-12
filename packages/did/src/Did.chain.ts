@@ -158,16 +158,29 @@ async function queryDepositAmountEncoded(): Promise<u128> {
 
 // ### DECODED QUERYING types
 
-export interface IDidChainRecordJSON {
+export type IChainDeposit = {
+  owner: IIdentity['address']
+  amount: BN
+}
+
+export type IDidChainRecordJSON = {
   authenticationKey: DidKey['id']
   keyAgreementKeys: Array<DidKey['id']>
   capabilityDelegationKey?: DidKey['id']
   assertionMethodKey?: DidKey['id']
   publicKeys: DidKey[]
   lastTxCounter: BN
+  deposit: IChainDeposit
 }
 
 // ### DECODED QUERYING (builds on top of raw querying)
+
+function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
+  return {
+    amount: new BN(encodedDeposit.amount.toString()),
+    owner: encodedDeposit.owner.toString(),
+  }
+}
 
 function decodeDidPublicKeyDetails(
   keyId: Hash,
@@ -202,6 +215,7 @@ function decodeDidChainRecord(
     authenticationKey: authenticationKeyId,
     keyAgreementKeys: keyAgreementKeyIds,
     lastTxCounter: didDetail.lastTxCounter.toBn(),
+    deposit: decodeDidDeposit(didDetail.deposit),
   }
   if (didDetail.delegationKey.isSome) {
     didRecord.capabilityDelegationKey = didDetail.delegationKey.unwrap().toHex()

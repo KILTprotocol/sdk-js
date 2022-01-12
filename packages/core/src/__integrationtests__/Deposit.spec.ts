@@ -9,19 +9,10 @@
  * @group integration/deposit
  */
 
-import {
-  createLightDidFromSeed,
-  createOnChainDidFromSeed,
-  DemoKeystore,
-  DidChain,
-  FullDidDetails,
-  SigningAlgorithms,
-} from '@kiltprotocol/did'
+import { DemoKeystore, DidChain, FullDidDetails } from '@kiltprotocol/did'
 import {
   IRequestForAttestation,
-  KeyRelationship,
   KeyringPair,
-  KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils, Keyring } from '@kiltprotocol/utils'
@@ -29,12 +20,14 @@ import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
 import {
-  createMinimalFullDidFromLightDid,
+  createFullDidFromLightDid,
   WS_ADDRESS,
   devFaucet,
   DriversLicense,
   endowAccounts,
   CtypeOnChain,
+  createMinimalLightDid,
+  createFullDidFromSeed,
 } from './utils'
 import { Balance } from '../balance'
 import { Attestation } from '../attestation/Attestation'
@@ -46,36 +39,27 @@ import { queryRaw } from '../attestation/Attestation.chain'
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
 let attestation: Attestation
-let storedEndpointsCount: number
+let storedEndpointsCount: BN
 
 async function checkDeleteFullDid(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   keystore: DemoKeystore
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.did)
+  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
 
-  const refreshedTxIndex = await fullDid.refreshTxIndex()
-
-  tx = await DidChain.generateDidAuthenticatedTx({
-    didIdentifier: identity.address,
-    txCounter: refreshedTxIndex.getNextTxIndex(),
-    call: deleteDid,
-    signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: fullDid.getKeys(KeyRelationship.authentication)[0]
-      .publicKeyHex,
-    alg: fullDid.getKeys(KeyRelationship.authentication)[0].type,
-    submitter: identity.address,
+  tx = await fullDid.authorizeExtrinsic(deleteDid, {
+    submitterAccount: identity.address,
+    signer: keystore,
   })
 
   const balanceBeforeDeleting = await Balance.getBalances(identity.address)
 
-  const didResult = await DidChain.queryDidEncoded(identity.address)
-  DecoderUtils.assertCodecIsType(didResult, ['Option<DidDidDetails>'])
-  const didDeposit = didResult.isSome
-    ? didResult.unwrap().deposit.amount.toBn()
-    : new BN(0)
+  const didResult = (await DidChain.queryDetails(
+    identity.address
+  )) as DidChain.IDidChainRecordJSON
+  const didDeposit = didResult.deposit
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -84,7 +68,7 @@ async function checkDeleteFullDid(
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
   return balanceBeforeDeleting.reserved
-    .sub(didDeposit)
+    .sub(didDeposit.amount)
     .eq(balanceAfterDeleting.reserved)
 }
 
@@ -92,7 +76,7 @@ async function checkReclaimFullDid(
   identity: KeyringPair,
   fullDid: FullDidDetails
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.did)
+  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
   tx = await DidChain.getReclaimDepositExtrinsic(
     identity.address,
     storedEndpointsCount
@@ -100,11 +84,10 @@ async function checkReclaimFullDid(
 
   const balanceBeforeRevoking = await Balance.getBalances(identity.address)
 
-  const didResult = await DidChain.queryDidEncoded(identity.address)
-  DecoderUtils.assertCodecIsType(didResult, ['Option<DidDidDetails>'])
-  const didDeposit = didResult.isSome
-    ? didResult.unwrap().deposit.amount.toBn()
-    : new BN(0)
+  const didResult = (await DidChain.queryDetails(
+    identity.address
+  )) as DidChain.IDidChainRecordJSON
+  const didDeposit = didResult.deposit
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -113,7 +96,7 @@ async function checkReclaimFullDid(
   const balanceAfterRevoking = await Balance.getBalances(identity.address)
 
   return balanceBeforeRevoking.reserved
-    .sub(didDeposit)
+    .sub(didDeposit.amount)
     .eq(balanceAfterRevoking.reserved)
 }
 
@@ -129,11 +112,10 @@ async function checkRemoveFullDidAttestation(
   )
 
   tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+    signer: keystore,
+    submitterAccount: identity.address,
+  })
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -155,11 +137,10 @@ async function checkRemoveFullDidAttestation(
   )
 
   tx = await attestation.remove(0)
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+    signer: keystore,
+    submitterAccount: identity.address,
+  })
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -184,11 +165,10 @@ async function checkReclaimFullDidAttestation(
   )
 
   tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+    signer: keystore,
+    submitterAccount: identity.address,
+  })
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -234,17 +214,16 @@ async function checkDeletedDidReclaimAttestation(
   )
 
   tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+    signer: keystore,
+    submitterAccount: identity.address,
+  })
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.did)
+  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
 
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
@@ -252,17 +231,10 @@ async function checkDeletedDidReclaimAttestation(
   )
 
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
-  const refreshedTxIndex = await fullDid.refreshTxIndex()
 
-  tx = await DidChain.generateDidAuthenticatedTx({
-    didIdentifier: identity.address,
-    txCounter: refreshedTxIndex.getNextTxIndex(),
-    call: deleteDid,
-    signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: fullDid.getKeys(KeyRelationship.authentication)[0]
-      .publicKeyHex,
-    alg: fullDid.getKeys(KeyRelationship.authentication)[0].type,
-    submitter: identity.address,
+  tx = await fullDid.authorizeExtrinsic(deleteDid, {
+    signer: keystore,
+    submitterAccount: identity.address,
   })
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
@@ -300,12 +272,9 @@ beforeAll(async () => {
   const claimerMnemonic = mnemonicGenerate()
 
   /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
-  const claimerLightDid = await createLightDidFromSeed(
-    keystore,
-    claimerMnemonic
-  )
+  const claimerLightDid = await createMinimalLightDid(keystore, claimerMnemonic)
 
-  const attester = await createOnChainDidFromSeed(
+  const attester = await createFullDidFromSeed(
     devFaucet,
     keystore,
     randomAsHex()
@@ -314,11 +283,10 @@ beforeAll(async () => {
   const ctypeExists = await CtypeOnChain(DriversLicense)
   if (!ctypeExists) {
     await attester
-      .authorizeExtrinsic(
-        await DriversLicense.store(),
-        keystore,
-        devFaucet.address
-      )
+      .authorizeExtrinsic(await DriversLicense.store(), {
+        signer: keystore,
+        submitterAccount: devFaucet.address,
+      })
       .then((val) =>
         BlockchainUtils.signAndSubmitTx(val, devFaucet, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -339,7 +307,11 @@ beforeAll(async () => {
   )
 
   requestForAttestation = RequestForAttestation.fromClaim(claim)
-  await requestForAttestation.signWithDid(keystore, claimerLightDid)
+  await requestForAttestation.signWithDidKey(
+    keystore,
+    claimerLightDid,
+    claimerLightDid.authenticationKey.id
+  )
 }, 120_000)
 
 describe('Different deposits scenarios', () => {
@@ -355,31 +327,11 @@ describe('Different deposits scenarios', () => {
   beforeAll(async () => {
     const [testDidFive, testDidSix, testDidSeven, testDidEight, testDidNine] =
       await Promise.all([
-        createLightDidFromSeed(
-          keystore,
-          testMnemonics[4],
-          SigningAlgorithms.Sr25519
-        ),
-        createLightDidFromSeed(
-          keystore,
-          testMnemonics[5],
-          SigningAlgorithms.Sr25519
-        ),
-        createLightDidFromSeed(
-          keystore,
-          testMnemonics[6],
-          SigningAlgorithms.Sr25519
-        ),
-        createLightDidFromSeed(
-          keystore,
-          testMnemonics[7],
-          SigningAlgorithms.Sr25519
-        ),
-        createLightDidFromSeed(
-          keystore,
-          testMnemonics[8],
-          SigningAlgorithms.Sr25519
-        ),
+        createMinimalLightDid(keystore, testMnemonics[4]),
+        createMinimalLightDid(keystore, testMnemonics[5]),
+        createMinimalLightDid(keystore, testMnemonics[6]),
+        createMinimalLightDid(keystore, testMnemonics[7]),
+        createMinimalLightDid(keystore, testMnemonics[8]),
       ])
 
     ;[
@@ -393,51 +345,16 @@ describe('Different deposits scenarios', () => {
       testFullDidEight,
       testFullDidNine,
     ] = await Promise.all([
-      createOnChainDidFromSeed(
-        testIdentities[0],
-        keystore,
-        testMnemonics[0],
-        SigningAlgorithms.Sr25519
-      ),
-      createOnChainDidFromSeed(
-        testIdentities[1],
-        keystore,
-        testMnemonics[1],
-        SigningAlgorithms.Sr25519
-      ),
-      createOnChainDidFromSeed(
-        testIdentities[2],
-        keystore,
-        testMnemonics[2],
-        SigningAlgorithms.Sr25519
-      ),
-      createOnChainDidFromSeed(
-        testIdentities[3],
-        keystore,
-        testMnemonics[3],
-        SigningAlgorithms.Sr25519
-      ),
-      createMinimalFullDidFromLightDid(
-        testIdentities[4],
-        testDidFive,
-        keystore
-      ),
-      createMinimalFullDidFromLightDid(testIdentities[5], testDidSix, keystore),
-      createMinimalFullDidFromLightDid(
-        testIdentities[6],
-        testDidSeven,
-        keystore
-      ),
-      createMinimalFullDidFromLightDid(
-        testIdentities[7],
-        testDidEight,
-        keystore
-      ),
-      createMinimalFullDidFromLightDid(
-        testIdentities[8],
-        testDidNine,
-        keystore
-      ),
+      createFullDidFromSeed(testIdentities[0], keystore, testMnemonics[0]),
+      createFullDidFromSeed(testIdentities[1], keystore, testMnemonics[1]),
+      createFullDidFromSeed(testIdentities[2], keystore, testMnemonics[2]),
+      createFullDidFromSeed(testIdentities[3], keystore, testMnemonics[3]),
+
+      createFullDidFromLightDid(testIdentities[4], testDidFive, keystore),
+      createFullDidFromLightDid(testIdentities[5], testDidSix, keystore),
+      createFullDidFromLightDid(testIdentities[6], testDidSeven, keystore),
+      createFullDidFromLightDid(testIdentities[7], testDidEight, keystore),
+      createFullDidFromLightDid(testIdentities[8], testDidNine, keystore),
     ])
   }, 240_000)
 

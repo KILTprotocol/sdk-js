@@ -98,6 +98,10 @@ jest.mock('../Did.chain', () => {
             keyAgreementKeys: [],
             publicKeys: [authKey],
             lastTxCounter: new BN(0),
+            deposit: {
+              amount: new BN(2),
+              owner: didIdentifier,
+            },
           }
         case identifierWithAllKeys:
           return {
@@ -107,6 +111,10 @@ jest.mock('../Did.chain', () => {
             capabilityDelegationKey: delKey.id,
             publicKeys: [authKey, encKey, attKey, delKey],
             lastTxCounter: new BN(0),
+            deposit: {
+              amount: new BN(2),
+              owner: didIdentifier,
+            },
           }
         case identifierWithServiceEndpoints:
           return {
@@ -114,6 +122,10 @@ jest.mock('../Did.chain', () => {
             keyAgreementKeys: [],
             publicKeys: [authKey],
             lastTxCounter: new BN(0),
+            deposit: {
+              amount: new BN(2),
+              owner: didIdentifier,
+            },
           }
         default:
           return null
