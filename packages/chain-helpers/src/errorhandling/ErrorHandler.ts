@@ -65,7 +65,7 @@ export function getExtrinsicError(
     try {
       return moduleError.registry.findMetaError(moduleError)
     } catch {
-      // handled below
+      // handled with last return
     }
   }
   return errorEvent || null

@@ -120,7 +120,6 @@ export function isRecoverableTxError(
   ) {
     const { status } = reason as ISubmittableResult
     if (status.isUsurped) return true
-    // if (status.isRetracted) return true
   }
   return false
 }
