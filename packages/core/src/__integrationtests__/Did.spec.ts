@@ -10,6 +10,7 @@
  */
 
 import { encodeAddress } from '@polkadot/keyring'
+import { BN } from '@polkadot/util'
 import {
   DemoKeystore,
   DidChain,
@@ -18,17 +19,25 @@ import {
   LightDidSupportedSigningKeyTypes,
   FullDidDetails,
   DidDetails,
+  EncryptionAlgorithms,
+  getDefaultMigrationHandler,
+  resolveDoc,
 } from '@kiltprotocol/did'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
+  BlockchainApiConnection,
+  BlockchainUtils,
+} from '@kiltprotocol/chain-helpers'
+import {
+  DidResolvedDetails,
   DidServiceEndpoint,
   KeyRelationship,
   KeyringPair,
   KeystoreSigner,
 } from '@kiltprotocol/types'
-import { BN } from '@polkadot/util'
-import { disconnect, init } from '../kilt'
+import { UUID } from '@kiltprotocol/utils'
 
+import { CType } from '../ctype'
+import { disconnect, init } from '../kilt'
 import { devAlice, devBob } from './utils'
 
 let paymentAccount: KeyringPair
@@ -39,7 +48,7 @@ beforeAll(async () => {
   paymentAccount = devAlice
 })
 
-it.skip('fetches the correct deposit amount', async () => {
+it('fetches the correct deposit amount', async () => {
   const depositAmount = await DidChain.queryDepositAmount()
   expect(depositAmount.toString()).toStrictEqual(
     new BN(2000000000000000).toString()
@@ -174,16 +183,14 @@ describe('write and didDeleteTx', () => {
     // 10 is an example value. It is not used here since we are testing another error
     let call = await DidChain.getDeleteDidExtrinsic(new BN(10))
 
-    let submittable = await DidChain.generateDidAuthenticatedTx({
-      didIdentifier: details.identifier,
-      txCounter: 1,
+    let submittable = await (details as FullDidDetails).authorizeExtrinsic(
       call,
-      signer: keystore as KeystoreSigner<string>,
-      signingPublicKey: details.authenticationKey.publicKey,
-      alg: details.authenticationKey.type,
-      // Use a different account than the submitter one
-      submitter: otherAccount.address,
-    })
+      {
+        signer: keystore,
+        // Use a different account than the submitter one
+        submitterAccount: otherAccount.address,
+      }
+    )
 
     await expect(
       BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
@@ -195,15 +202,9 @@ describe('write and didDeleteTx', () => {
     // We use 1 here and this should fail as there are two service endpoints stored.
     call = await DidChain.getDeleteDidExtrinsic(new BN(1))
 
-    submittable = await DidChain.generateDidAuthenticatedTx({
-      didIdentifier: details.identifier,
-      txCounter: 1,
-      call,
-      signer: keystore as KeystoreSigner<string>,
-      signingPublicKey: details.authenticationKey.publicKey,
-      alg: details.authenticationKey.type,
-      // We use the expected submitter's account
-      submitter: paymentAccount.address,
+    submittable = await (details as FullDidDetails).authorizeExtrinsic(call, {
+      signer: keystore,
+      submitterAccount: paymentAccount.address,
     })
 
     // Will fail because count provided is too low
@@ -226,19 +227,17 @@ describe('write and didDeleteTx', () => {
     )
     const call = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
 
-    const submittable = await DidChain.generateDidAuthenticatedTx({
-      didIdentifier: details.identifier,
-      txCounter: 2,
+    const submittable = await (details as FullDidDetails).authorizeExtrinsic(
       call,
-      signer: keystore as KeystoreSigner<string>,
-      signingPublicKey: details.authenticationKey.publicKey,
-      alg: details.authenticationKey.type,
-      submitter: paymentAccount.address,
-    })
+      {
+        signer: keystore,
+        submitterAccount: paymentAccount.address,
+      }
+    )
 
     // Check that DID is not blacklisted.
-    await expect(DidChain.queryDeletedDidIdentifiers()).resolves.toStrictEqual(
-      []
+    await expect(DidChain.queryDeletedDidIdentifiers()).resolves.not.toContain(
+      details.identifier
     )
     await expect(
       DidChain.queryDidDeletionStatus(details.identifier)
@@ -254,20 +253,20 @@ describe('write and didDeleteTx', () => {
     await expect(DidChain.queryDetails(details.identifier)).resolves.toBeNull()
 
     // Check that DID is now blacklisted.
-    await expect(DidChain.queryDeletedDidIdentifiers()).resolves.toStrictEqual([
-      details.identifier,
-    ])
+    await expect(DidChain.queryDeletedDidIdentifiers()).resolves.toContain(
+      details.identifier
+    )
     await expect(
       DidChain.queryDidDeletionStatus(details.identifier)
     ).resolves.toBeTruthy()
   }, 60_000)
 })
 
-it.only('creates and updates DID, and then reclaims the deposit back', async () => {
+it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { publicKey, alg } = await keystore.generateKeypair({
     alg: SigningAlgorithms.Ed25519,
   })
-  let newDetails = LightDidDetails.fromDetails({
+  const newDetails = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey,
       type: alg,
@@ -291,8 +290,13 @@ it.only('creates and updates DID, and then reclaims the deposit back', async () 
     })
   ).resolves.not.toThrow()
 
+  // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
+  let fullDetails = (await FullDidDetails.fromChainInfo(
+    newDetails.identifier
+  )) as FullDidDetails
+
   const newKeypair = await keystore.generateKeypair({
-    alg: SigningAlgorithms.Ed25519,
+    alg: SigningAlgorithms.Sr25519,
   })
   const newKeyDetails: DidChain.NewDidKey = {
     publicKey: newKeypair.publicKey,
@@ -303,17 +307,13 @@ it.only('creates and updates DID, and then reclaims the deposit back', async () 
     KeyRelationship.authentication,
     newKeyDetails
   )
-
-  const tx2 = await DidChain.generateDidAuthenticatedTx({
-    didIdentifier: newDetails.identifier,
-    txCounter: 1,
-    call: updateAuthenticationKeyCall,
-    signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: newDetails.authenticationKey.publicKey,
-    alg: newDetails.authenticationKey.type,
-    submitter: paymentAccount.address,
-  })
-
+  const tx2 = await fullDetails.authorizeExtrinsic(
+    updateAuthenticationKeyCall,
+    {
+      signer: keystore,
+      submitterAccount: paymentAccount.address,
+    }
+  )
   await expect(
     BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -322,10 +322,10 @@ it.only('creates and updates DID, and then reclaims the deposit back', async () 
   ).resolves.not.toThrow()
 
   // Authentication key changed, so details must be updated.
-  // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  newDetails = LightDidDetails.fromDetails({
-    authenticationKey: newKeyDetails,
-  })
+  // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
+  fullDetails = (await FullDidDetails.fromChainInfo(
+    fullDetails.identifier
+  )) as FullDidDetails
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
@@ -335,15 +335,9 @@ it.only('creates and updates DID, and then reclaims the deposit back', async () 
   }
   const updateEndpointCall = await DidChain.getAddEndpointExtrinsic(newEndpoint)
 
-  // TODO: This throws and it shouldn't
-  const tx3 = await DidChain.generateDidAuthenticatedTx({
-    didIdentifier: newDetails.identifier,
-    txCounter: 2,
-    call: updateEndpointCall,
-    signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: newDetails.authenticationKey.publicKey,
-    alg: newDetails.authenticationKey.type,
-    submitter: paymentAccount.address,
+  const tx3 = await fullDetails.authorizeExtrinsic(updateEndpointCall, {
+    signer: keystore,
+    submitterAccount: paymentAccount.address,
   })
   await expect(
     BlockchainUtils.signAndSubmitTx(tx3, paymentAccount, {
@@ -352,24 +346,17 @@ it.only('creates and updates DID, and then reclaims the deposit back', async () 
     })
   ).resolves.not.toThrow()
   await expect(
-    DidChain.queryServiceEndpoint(newDetails.identifier, newEndpoint.id)
+    DidChain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
   ).resolves.toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
   const removeEndpointCall = await DidChain.getRemoveEndpointExtrinsic(
     newEndpoint.id
   )
-
-  const tx4 = await DidChain.generateDidAuthenticatedTx({
-    didIdentifier: newDetails.identifier,
-    txCounter: 3,
-    call: removeEndpointCall,
-    signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: newDetails.authenticationKey.publicKey,
-    alg: newDetails.authenticationKey.type,
-    submitter: paymentAccount.address,
+  const tx4 = await fullDetails.authorizeExtrinsic(removeEndpointCall, {
+    signer: keystore,
+    submitterAccount: paymentAccount.address,
   })
-
   await expect(
     BlockchainUtils.signAndSubmitTx(tx4, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -379,15 +366,15 @@ it.only('creates and updates DID, and then reclaims the deposit back', async () 
 
   // There should not be any endpoint with the given ID now.
   await expect(
-    DidChain.queryServiceEndpoint(newDetails.identifier, newEndpoint.id)
+    DidChain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
   ).resolves.toBeNull()
 
   // Claim the deposit back
   const storedEndpointsCount = await DidChain.queryEndpointsCounts(
-    newDetails.identifier
+    fullDetails.identifier
   )
   const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
-    newDetails.identifier,
+    fullDetails.identifier,
     storedEndpointsCount
   )
   await expect(
@@ -397,347 +384,375 @@ it.only('creates and updates DID, and then reclaims the deposit back', async () 
     })
   ).resolves.not.toThrow()
   // Verify that the DID has been deleted
-  await expect(DidChain.queryDetails(newDetails.identifier)).resolves.toBeNull()
   await expect(
-    DidChain.queryServiceEndpoints(newDetails.identifier)
+    DidChain.queryDetails(fullDetails.identifier)
+  ).resolves.toBeNull()
+  await expect(
+    DidChain.queryServiceEndpoints(fullDetails.identifier)
   ).resolves.toHaveLength(0)
-  await expect(
-    DidChain.queryEndpointsCounts(newDetails.identifier)
-  ).resolves.toBe(0)
+  const newEndpointsCount = await DidChain.queryEndpointsCounts(
+    fullDetails.identifier
+  )
+  expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
 }, 80_000)
 
-// describe('DID migration', () => {
-//   it('migrates light DID with ed25519 auth key and encryption key', async () => {
-//     const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
-//       alg: SigningAlgorithms.Ed25519,
-//     })
-//     const didEncryptionKeyDetails = await keystore.generateKeypair({
-//       seed: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-//       alg: EncryptionAlgorithms.NaclBox,
-//     })
-//     const lightDidDetails = new LightDidDetails({
-//       authenticationKey: {
-//         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-//         type: DemoKeystore.getKeypairTypeForAlg(
-//           didEd25519AuthenticationKeyDetails.alg
-//         ),
-//       },
-//       encryptionKey: {
-//         publicKey: didEncryptionKeyDetails.publicKey,
-//         type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
-//       },
-//     })
-//     const { extrinsic, did } = await DidUtils.upgradeDid(
-//       lightDidDetails,
-//       paymentAccount.address,
-//       keystore
-//     )
+describe('DID migration', () => {
+  it('migrates light DID with ed25519 auth key and encryption key', async () => {
+    const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+    })
+    const didEncryptionKeyDetails = await keystore.generateKeypair({
+      seed: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      alg: EncryptionAlgorithms.NaclBox,
+    })
+    const lightDidDetails = LightDidDetails.fromDetails({
+      authenticationKey: {
+        publicKey: didEd25519AuthenticationKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(
+          didEd25519AuthenticationKeyDetails.alg
+        ),
+      },
+      encryptionKey: {
+        publicKey: didEncryptionKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
+      },
+    })
 
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+    const migratedFullDid = await lightDidDetails.migrate(
+      paymentAccount.address,
+      keystore,
+      getDefaultMigrationHandler(paymentAccount)
+    )
 
-//     await expect(
-//       DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
-//     ).resolves.not.toBeNull()
+    // The key id for the authentication and encryption keys are overwritten when a light
+    // DID is migrated, so we only need to check that the public key value is the same.
+    // We  use a set because keys might be returned in a different order.
+    const migratedDidKeys = new Set(
+      migratedFullDid.getKeys().map((k) => k.publicKey)
+    )
+    const lightDidKeys = new Set(
+      lightDidDetails.getKeys().map((k) => k.publicKey)
+    )
+    expect(migratedDidKeys).toStrictEqual(lightDidKeys)
+    // The same thing does NOT apply to service endpoints, so here we can simply check for
+    // equality.
+    expect(migratedFullDid.getEndpoints()).toStrictEqual(
+      lightDidDetails.getEndpoints()
+    )
+    // The main identifier should be left untouched
+    expect(migratedFullDid.identifier).toStrictEqual(lightDidDetails.identifier)
 
-//     const { details, metadata } = (await resolveDoc(
-//       lightDidDetails.did
-//     )) as DidResolvedDetails
+    await expect(
+      DidChain.queryDetails(migratedFullDid.identifier)
+    ).resolves.not.toBeNull()
 
-//     expect(details?.did).toStrictEqual(lightDidDetails.did)
+    const { metadata } = (await resolveDoc(
+      lightDidDetails.did
+    )) as DidResolvedDetails
 
-//     expect(metadata.canonicalId).toStrictEqual(did)
-//     expect(metadata.deactivated).toBeFalsy()
-//   })
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.deactivated).toBeFalsy()
+  })
 
-//   it('migrates light DID with sr25519 auth key', async () => {
-//     const didSr25519AuthenticationKeyDetails = await keystore.generateKeypair({
-//       alg: SigningAlgorithms.Sr25519,
-//     })
-//     const lightDidDetails = new LightDidDetails({
-//       authenticationKey: {
-//         publicKey: didSr25519AuthenticationKeyDetails.publicKey,
-//         type: DemoKeystore.getKeypairTypeForAlg(
-//           didSr25519AuthenticationKeyDetails.alg
-//         ),
-//       },
-//     })
-//     const { extrinsic, did } = await DidUtils.upgradeDid(
-//       lightDidDetails,
-//       paymentAccount.address,
-//       keystore
-//     )
+  it('migrates light DID with sr25519 auth key', async () => {
+    const didSr25519AuthenticationKeyDetails = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+    })
+    const lightDidDetails = LightDidDetails.fromDetails({
+      authenticationKey: {
+        publicKey: didSr25519AuthenticationKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(
+          didSr25519AuthenticationKeyDetails.alg
+        ),
+      },
+    })
 
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+    const migratedFullDid = await lightDidDetails.migrate(
+      paymentAccount.address,
+      keystore,
+      getDefaultMigrationHandler(paymentAccount)
+    )
 
-//     await expect(
-//       DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
-//     ).resolves.not.toBeNull()
+    // The key id for the authentication and encryption keys are overwritten when a light
+    // DID is migrated, so we only need to check that the public key value is the same.
+    // We  use a set because keys might be returned in a different order.
+    const migratedDidKeys = new Set(
+      migratedFullDid.getKeys().map((k) => k.publicKey)
+    )
+    const lightDidKeys = new Set(
+      lightDidDetails.getKeys().map((k) => k.publicKey)
+    )
+    expect(migratedDidKeys).toStrictEqual(lightDidKeys)
+    // The same thing does NOT apply to service endpoints, so here we can simply check for
+    // equality.
+    expect(migratedFullDid.getEndpoints()).toStrictEqual(
+      lightDidDetails.getEndpoints()
+    )
+    // The main identifier should be left untouched
+    expect(migratedFullDid.identifier).toStrictEqual(lightDidDetails.identifier)
 
-//     const { details, metadata } = (await resolveDoc(
-//       lightDidDetails.did
-//     )) as DidResolvedDetails
+    await expect(
+      DidChain.queryDetails(migratedFullDid.identifier)
+    ).resolves.not.toBeNull()
 
-//     expect(details?.did).toStrictEqual(lightDidDetails.did)
+    const { metadata } = (await resolveDoc(
+      lightDidDetails.did
+    )) as DidResolvedDetails
 
-//     expect(metadata.canonicalId).toStrictEqual(did)
-//     expect(metadata.deactivated).toBeFalsy()
-//   })
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.deactivated).toBeFalsy()
+  })
 
-//   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
-//     const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
-//       alg: SigningAlgorithms.Ed25519,
-//     })
-//     const didEncryptionKeyDetails = await keystore.generateKeypair({
-//       seed: '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-//       alg: EncryptionAlgorithms.NaclBox,
-//     })
-//     const serviceEndpoints: DidServiceEndpoint[] = [
-//       {
-//         id: 'id-1',
-//         types: ['type-1'],
-//         urls: ['url-1'],
-//       },
-//     ]
-//     const lightDidDetails = new LightDidDetails({
-//       authenticationKey: {
-//         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-//         type: DemoKeystore.getKeypairTypeForAlg(
-//           didEd25519AuthenticationKeyDetails.alg
-//         ),
-//       },
-//       encryptionKey: {
-//         publicKey: didEncryptionKeyDetails.publicKey,
-//         type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
-//       },
-//       serviceEndpoints,
-//     })
-//     const { extrinsic, did } = await DidUtils.upgradeDid(
-//       lightDidDetails,
-//       paymentAccount.address,
-//       keystore
-//     )
+  it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
+    const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+    })
+    const didEncryptionKeyDetails = await keystore.generateKeypair({
+      seed: '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      alg: EncryptionAlgorithms.NaclBox,
+    })
+    const serviceEndpoints: DidServiceEndpoint[] = [
+      {
+        id: 'id-1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+    ]
+    const lightDidDetails = LightDidDetails.fromDetails({
+      authenticationKey: {
+        publicKey: didEd25519AuthenticationKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(
+          didEd25519AuthenticationKeyDetails.alg
+        ),
+      },
+      encryptionKey: {
+        publicKey: didEncryptionKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
+      },
+      serviceEndpoints,
+    })
 
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+    const migratedFullDid = await lightDidDetails.migrate(
+      paymentAccount.address,
+      keystore,
+      getDefaultMigrationHandler(paymentAccount)
+    )
 
-//     let chainDetails = await DidChain.queryDidDetails(did)
+    // The key id for the authentication and encryption keys are overwritten when a light
+    // DID is migrated, so we only need to check that the public key value is the same.
+    // We  use a set because keys might be returned in a different order.
+    const migratedDidKeys = new Set(
+      migratedFullDid.getKeys().map((k) => k.publicKey)
+    )
+    const lightDidKeys = new Set(
+      lightDidDetails.getKeys().map((k) => k.publicKey)
+    )
+    expect(migratedDidKeys).toStrictEqual(lightDidKeys)
+    // The same thing does NOT apply to service endpoints, so here we can simply check for
+    // equality.
+    expect(migratedFullDid.getEndpoints()).toStrictEqual(
+      lightDidDetails.getEndpoints()
+    )
+    // The main identifier should be left untouched
+    expect(migratedFullDid.identifier).toStrictEqual(lightDidDetails.identifier)
 
-//     expect(chainDetails).not.toBeNull()
-//     expect(chainDetails?.authenticationKey).toBeDefined()
-//     expect(chainDetails?.keyAgreementKeys).toHaveLength(1)
-//     // The returned service endpoints will have the initial ID, prepended with the full DID identifier.
-//     await expect(DidChain.queryServiceEndpoints(did)).resolves.toMatchObject<
-//       DidServiceEndpoint[]
-//     >([
-//       {
-//         ...serviceEndpoints[0],
-//         id: DidUtils.assembleDidFragment(did, serviceEndpoints[0].id),
-//       },
-//     ])
+    await expect(
+      DidChain.queryDetails(migratedFullDid.identifier)
+    ).resolves.not.toBeNull()
 
-//     const { details, metadata } = (await resolveDoc(
-//       lightDidDetails.did
-//     )) as DidResolvedDetails
+    const { metadata } = (await resolveDoc(
+      lightDidDetails.did
+    )) as DidResolvedDetails
 
-//     expect(details?.did).toStrictEqual(lightDidDetails.did)
-//     // Verify service endpoints for light DID resolution
-//     expect(details?.getEndpoints()).toMatchObject(
-//       serviceEndpoints.map((service) => {
-//         return { ...service, id: `${lightDidDetails.did}#${service.id}` }
-//       })
-//     )
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.deactivated).toBeFalsy()
 
-//     expect(metadata.canonicalId).toStrictEqual(did)
-//     expect(metadata.deactivated).toBeFalsy()
+    // Remove and claim the deposit back
+    const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+      migratedFullDid.identifier
+    )
+    const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
+      migratedFullDid.identifier,
+      storedEndpointsCount
+    )
+    await expect(
+      BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
 
-//     // Remove and claim the deposit back
-//     const fullDidIdentifier = DidUtils.getIdentifierFromKiltDid(did)
-//     const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
-//     const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
-//       fullDidIdentifier,
-//       storedEndpointsCount
-//     )
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+    await expect(
+      DidChain.queryDetails(migratedFullDid.identifier)
+    ).resolves.toBeNull()
+    await expect(
+      DidChain.queryServiceEndpoints(migratedFullDid.identifier)
+    ).resolves.toStrictEqual([])
+    await expect(
+      DidChain.queryDidDeletionStatus(migratedFullDid.identifier)
+    ).resolves.toBeTruthy()
+  }, 60_000)
+})
 
-//     chainDetails = await DidChain.queryDidDetails(did)
+describe('DID authorization', () => {
+  // Light DIDs cannot authorise extrinsics
+  let didDetails: FullDidDetails
 
-//     expect(chainDetails).toBeNull()
-//     await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeTruthy()
-//   }, 60_000)
-// })
+  beforeAll(async () => {
+    const newKey: DidChain.NewDidKey = await keystore
+      .generateKeypair({
+        alg: SigningAlgorithms.Ed25519,
+      })
+      .then(({ publicKey, alg }) => {
+        return {
+          publicKey,
+          type: alg,
+        }
+      })
 
-// describe('DID authorization', () => {
-//   let didIdentifier: string
-//   let key: DidTypes.INewPublicKey
-//   let lastTxIndex = new BN(0)
-//   beforeAll(async () => {
-//     const { publicKey, alg } = await keystore.generateKeypair({
-//       alg: SigningAlgorithms.Ed25519,
-//     })
-//     didIdentifier = encodeAddress(publicKey, 38)
-//     key = { publicKey, type: alg }
-//     const tx = await DidChain.generateCreateTx({
-//       didIdentifier,
-//       submitter: paymentAccount.address,
-//       keys: {
-//         [KeyRelationship.assertionMethod]: key,
-//         [KeyRelationship.capabilityDelegation]: key,
-//       },
-//       signer: keystore as KeystoreSigner<string>,
-//       signingPublicKey: key.publicKey,
-//       alg: key.type,
-//     })
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+    const lightDidDetails = LightDidDetails.fromDetails({
+      authenticationKey: newKey,
+    })
+    const fullDidDetails = await lightDidDetails.migrate(
+      paymentAccount.address,
+      keystore,
+      getDefaultMigrationHandler(paymentAccount)
+    )
 
-//     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-//       Partial<DidTypes.IDidChainRecordJSON>
-//     >({
-//       identifier: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-//     })
-//   }, 60_000)
+    // TODO: these steps can be combined in one operation once we have a builder.
+    const newAssertionKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
+      KeyRelationship.assertionMethod,
+      newKey
+    )
+    let signedExtrinsic = await fullDidDetails.authorizeExtrinsic(
+      newAssertionKeyExtrinsic,
+      {
+        signer: keystore,
+        submitterAccount: paymentAccount.address,
+      }
+    )
+    await expect(
+      BlockchainUtils.signAndSubmitTx(signedExtrinsic, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
 
-//   beforeEach(async () => {
-//     lastTxIndex = await DidChain.queryLastTxCounter(
-//       DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
-//     )
-//   })
+    const newDelegationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
+      KeyRelationship.capabilityDelegation,
+      newKey
+    )
+    signedExtrinsic = await fullDidDetails.authorizeExtrinsic(
+      newDelegationKeyExtrinsic,
+      {
+        signer: keystore,
+        submitterAccount: paymentAccount.address,
+      }
+    )
+    await expect(
+      BlockchainUtils.signAndSubmitTx(signedExtrinsic, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
 
-//   it('authorizes ctype creation with DID signature', async () => {
-//     const ctype = CType.fromSchema({
-//       title: UUID.generate(),
-//       properties: {},
-//       type: 'object',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//     })
-//     const call = await ctype.store()
-//     const tx = await DidChain.generateDidAuthenticatedTx({
-//       didIdentifier,
-//       txCounter: lastTxIndex.addn(1),
-//       call,
-//       signer: keystore as KeystoreSigner<string>,
-//       signingPublicKey: key.publicKey,
-//       alg: key.type,
-//       submitter: paymentAccount.address,
-//     })
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+    didDetails = (await FullDidDetails.fromChainInfo(
+      fullDidDetails.identifier
+    )) as FullDidDetails
+  }, 60_000)
 
-//     await expect(ctype.verifyStored()).resolves.toEqual(true)
-//   }, 60_000)
+  it('authorizes ctype creation with DID signature', async () => {
+    const ctype = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const call = await ctype.store()
+    const tx = await didDetails.authorizeExtrinsic(call, {
+      signer: keystore,
+      submitterAccount: paymentAccount.address,
+    })
+    await expect(
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
 
-//   it.skip('authorizes batch with DID signature', async () => {
-//     const ctype1 = CType.fromSchema({
-//       title: UUID.generate(),
-//       properties: {},
-//       type: 'object',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//     })
-//     const ctype2 = CType.fromSchema({
-//       title: UUID.generate(),
-//       properties: {},
-//       type: 'object',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//     })
-//     const calls = await Promise.all([ctype1, ctype2].map((c) => c.store()))
-//     const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
-//       ({ api }) => api.tx.utility.batch(calls)
-//     )
-//     const tx = await DidChain.generateDidAuthenticatedTx({
-//       didIdentifier,
-//       txCounter: lastTxIndex.addn(1),
-//       call: batch,
-//       signer: keystore as KeystoreSigner<string>,
-//       signingPublicKey: key.publicKey,
-//       alg: key.type,
-//       submitter: paymentAccount.address,
-//     })
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+    await expect(ctype.verifyStored()).resolves.toEqual(true)
+  }, 60_000)
 
-//     await expect(ctype1.verifyStored()).resolves.toEqual(true)
-//     await expect(ctype2.verifyStored()).resolves.toEqual(true)
-//   }, 60_000)
+  it.skip('authorizes batch with DID signature', async () => {
+    const ctype1 = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const ctype2 = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const calls = await Promise.all([ctype1, ctype2].map((c) => c.store()))
+    const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
+      ({ api }) => api.tx.utility.batch(calls)
+    )
+    const tx = await didDetails.authorizeExtrinsic(batch, {
+      signer: keystore,
+      submitterAccount: paymentAccount.address,
+    })
+    await expect(
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
 
-//   it('no longer authorizes ctype creation after DID deletion', async () => {
-//     const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
-//     const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
-//     const deleteCall = await DidChain.getDeleteDidExtrinsic(
-//       storedEndpointsCount
-//     )
-//     const tx = await DidChain.generateDidAuthenticatedTx({
-//       didIdentifier,
-//       txCounter: lastTxIndex.addn(1),
-//       call: deleteCall,
-//       signer: keystore as KeystoreSigner<string>,
-//       signingPublicKey: key.publicKey,
-//       alg: key.type,
-//       submitter: paymentAccount.address,
-//     })
+    await expect(ctype1.verifyStored()).resolves.toEqual(true)
+    await expect(ctype2.verifyStored()).resolves.toEqual(true)
+  }, 60_000)
 
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).resolves.not.toThrow()
+  it('no longer authorizes ctype creation after DID deletion', async () => {
+    const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+      didDetails.identifier
+    )
+    const deleteCall = await DidChain.getDeleteDidExtrinsic(
+      storedEndpointsCount
+    )
+    const tx = await didDetails.authorizeExtrinsic(deleteCall, {
+      signer: keystore,
+      submitterAccount: paymentAccount.address,
+    })
+    await expect(
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
 
-//     const ctype = CType.fromSchema({
-//       title: UUID.generate(),
-//       properties: {},
-//       type: 'object',
-//       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-//     })
-//     const call = await ctype.store()
-//     const tx2 = await DidChain.generateDidAuthenticatedTx({
-//       didIdentifier,
-//       txCounter: lastTxIndex.addn(2),
-//       call,
-//       signer: keystore as KeystoreSigner<string>,
-//       signingPublicKey: key.publicKey,
-//       alg: key.type,
-//       submitter: paymentAccount.address,
-//     })
-//     await expect(
-//       BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     ).rejects.toThrow()
+    const ctype = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const call = await ctype.store()
+    const tx2 = await didDetails.authorizeExtrinsic(call, {
+      signer: keystore,
+      submitterAccount: paymentAccount.address,
+    })
+    await expect(
+      BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).rejects.toThrow()
 
-//     await expect(ctype.verifyStored()).resolves.toEqual(false)
-//   }, 60_000)
-// })
+    await expect(ctype.verifyStored()).resolves.toEqual(false)
+  }, 60_000)
+})
 
 afterAll(async () => disconnect())
