@@ -101,7 +101,7 @@ describe('Chain returns specific errors, that we check for', () => {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrow('outdated')
+    ).rejects.toThrow(BlockchainUtils.TxOutdated)
   }, 40000)
 
   it(`throws 'ERROR_TRANSACTION_USURPED' error if separate Tx was imported with identical nonce but higher priority while Tx is in pool`, async () => {
