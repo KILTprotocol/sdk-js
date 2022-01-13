@@ -368,13 +368,11 @@ describe('Deposit claiming', () => {
 })
 
 describe('handling queries to data not on chain', () => {
-  it('DelegationNode query on empty', async () => {
-    return expect(DelegationNode.query(randomAsHex(32))).resolves.toBeNull()
-  })
+  it('DelegationNode query on empty', async () =>
+    expect(DelegationNode.query(randomAsHex(32))).resolves.toBeNull())
 
-  it('getAttestationHashes on empty', async () => {
-    return expect(getAttestationHashes(randomAsHex(32))).resolves.toEqual([])
-  })
+  it('getAttestationHashes on empty', async () =>
+    expect(getAttestationHashes(randomAsHex(32))).resolves.toEqual([]))
 })
 
 describe('hierarchyDetails', () => {

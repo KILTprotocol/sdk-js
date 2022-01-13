@@ -62,11 +62,12 @@ export function addressFromRandom(): string {
 }
 
 export async function isCtypeOnChain(ctype: CType): Promise<boolean> {
-  return getOwner(ctype.hash)
-    .then((ownerAddress) => {
-      return ownerAddress !== null
-    })
-    .catch(() => false)
+  try {
+    const ownerAddress = await getOwner(ctype.hash).catch(() => false)
+    return ownerAddress !== null
+  } catch {
+    return false
+  }
 }
 
 export const driversLicenseCType = CType.fromSchema({
