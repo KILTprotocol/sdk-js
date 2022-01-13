@@ -6,11 +6,7 @@
  */
 
 export { ErrorHandler } from './errorhandling/index.js'
-export {
-  BlockchainApiConnection,
-  KILT_TYPES,
-  TypeRegistry,
-} from './blockchainApiConnection/index.js'
+export { BlockchainApiConnection } from './blockchainApiConnection/index.js'
 export {
   Blockchain,
   BlockchainUtils,
