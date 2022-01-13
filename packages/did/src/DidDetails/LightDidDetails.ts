@@ -53,9 +53,9 @@ export class LightDidDetails extends DidDetails {
 
   private constructor(
     identifier: IDidIdentifier,
-    creationDetails: DidCreationDetails
+    { did, keys, keyRelationships, serviceEndpoints = {} }: DidCreationDetails
   ) {
-    super(creationDetails)
+    super({ did, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
   }
@@ -94,23 +94,26 @@ export class LightDidDetails extends DidDetails {
     }
 
     // Authentication key always has the #authentication ID.
-    const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
+    const keys: PublicKeys = {
+      [authenticationKeyId]: authenticationKey,
+    }
+    // const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
     const keyRelationships: MapKeysToRelationship = {
       authentication: new Set([authenticationKeyId]),
     }
 
     // Encryption key always has the #encryption ID.
     if (encryptionKey) {
-      keys.set(encryptionKeyId, encryptionKey)
+      keys[encryptionKeyId] = encryptionKey
       keyRelationships.keyAgreement = new Set([encryptionKeyId])
     }
 
     const endpoints: ServiceEndpoints = serviceEndpoints.reduce(
       (res, service) => {
-        res.set(service.id, service)
+        res[service.id] = service
         return res
       },
-      new Map()
+      {}
     )
 
     return new LightDidDetails(id.substring(2), {

@@ -79,13 +79,13 @@ export async function createLocalDemoDidFromSeed(
       assertionMethod: new Set([attKey.id]),
       capabilityDelegation: new Set([delKey.id]),
     },
-    keys: new Map([
-      [authKey.id, authKey],
-      [encKey.id, encKey],
-      [attKey.id, attKey],
-      [delKey.id, delKey],
-    ]),
-    serviceEndpoints: new Map(),
+    keys: {
+      [authKey.id]: authKey,
+      [encKey.id]: encKey,
+      [attKey.id]: attKey,
+      [delKey.id]: delKey,
+    },
+    serviceEndpoints: {},
   }
 
   return new FullDidDetails({

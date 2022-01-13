@@ -23,7 +23,12 @@ import { Crypto } from '@kiltprotocol/utils'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { config, disconnect } from '../kilt'
-import { devFaucet, endowAccounts, keypairFromRandom, WS_ADDRESS } from './utils'
+import {
+  devFaucet,
+  endowAccounts,
+  keypairFromRandom,
+  WS_ADDRESS,
+} from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 

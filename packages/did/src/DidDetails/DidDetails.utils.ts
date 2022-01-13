@@ -32,7 +32,7 @@ export function checkDidCreationDetails({
       )
     }
   })
-  const keyIds = new Set<string>(keys.keys())
+  const keyIds = new Set<string>(Object.keys(keys))
   const keyReferences = new Set<string>()
 
   // TODO: Find a more efficient way to populate the keyReferences set

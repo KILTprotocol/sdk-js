@@ -16,9 +16,9 @@ export type MapKeysToRelationship = Partial<
   Record<KeyRelationship, Set<DidKey['id']>> & { none: Set<DidKey['id']> }
 >
 
-export type PublicKeys = Map<DidKey['id'], Omit<DidKey, 'id'>>
+export type PublicKeys = Record<DidKey['id'], Omit<DidKey, 'id'>>
 
-export type ServiceEndpoints = Map<
+export type ServiceEndpoints = Record<
   DidServiceEndpoint['id'],
   Omit<DidServiceEndpoint, 'id'>
 >
@@ -31,7 +31,7 @@ export type DidCreationDetails = {
   keys: PublicKeys
   keyRelationships: MapKeysToRelationship
   // Accepts a list of service endpoints where the ID does not include the DID URI.
-  serviceEndpoints: ServiceEndpoints
+  serviceEndpoints?: ServiceEndpoints
 }
 
 /**

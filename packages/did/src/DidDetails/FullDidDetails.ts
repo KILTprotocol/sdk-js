@@ -45,9 +45,12 @@ export class FullDidDetails extends DidDetails {
 
   public constructor({
     identifier,
-    ...creationDetails
+    did,
+    keys,
+    keyRelationships,
+    serviceEndpoints = {},
   }: DidCreationDetails & { identifier: IDidIdentifier }) {
-    super(creationDetails)
+    super({ did, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
   }
@@ -71,9 +74,9 @@ export class FullDidDetails extends DidDetails {
     } = didRec
 
     const keys: PublicKeys = publicKeys.reduce((res, key) => {
-      res.set(key.id, key)
+      res[key.id] = key
       return res
-    }, new Map())
+    }, {})
 
     const keyRelationships: MapKeysToRelationship = {
       authentication: new Set([authenticationKey]),
@@ -89,9 +92,9 @@ export class FullDidDetails extends DidDetails {
     const serviceEndpoints: ServiceEndpoints = (
       await queryServiceEndpoints(didIdentifier)
     ).reduce((res, service) => {
-      res.set(service.id, service)
+      res[service.id] = service
       return res
-    }, new Map())
+    }, {})
 
     return new FullDidDetails({
       identifier: didIdentifier,

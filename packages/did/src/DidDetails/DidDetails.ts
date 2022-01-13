@@ -18,34 +18,35 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { u8aToHex } from '@polkadot/util'
 
-import type {
-  DidCreationDetails,
-  MapKeysToRelationship,
-  PublicKeys,
-  ServiceEndpoints,
-} from '../types'
+import type { DidCreationDetails, MapKeysToRelationship } from '../types'
 import {
   checkDidCreationDetails,
   getSignatureAlgForKeyType,
 } from './DidDetails.utils'
 
+type PublicKeysInner = Map<DidKey['id'], Omit<DidKey, 'id'>>
+type ServiceEndpointsInner = Map<
+  DidServiceEndpoint['id'],
+  Omit<DidServiceEndpoint, 'id'>
+>
+
 export abstract class DidDetails implements IDidDetails {
   public readonly did: IDidDetails['did']
 
   // { key ID -> key details} - key ID does not include the DID subject
-  protected publicKeys: PublicKeys
+  protected publicKeys: PublicKeysInner
 
   // { key relationship -> set of key IDs}
   protected keyRelationships: MapKeysToRelationship
 
   // { service ID -> service details} - service ID does not include the DID subject
-  protected serviceEndpoints: ServiceEndpoints
+  protected serviceEndpoints: ServiceEndpointsInner
 
   protected constructor({
     did,
     keys,
     keyRelationships,
-    serviceEndpoints = new Map(),
+    serviceEndpoints = {},
   }: DidCreationDetails) {
     checkDidCreationDetails({
       did,
@@ -55,9 +56,9 @@ export abstract class DidDetails implements IDidDetails {
     })
 
     this.did = did
-    this.publicKeys = keys
+    this.publicKeys = new Map(Object.entries(keys))
     this.keyRelationships = keyRelationships
-    this.serviceEndpoints = serviceEndpoints
+    this.serviceEndpoints = new Map(Object.entries(serviceEndpoints))
   }
 
   public abstract get identifier(): IDidIdentifier

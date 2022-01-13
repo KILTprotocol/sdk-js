@@ -108,8 +108,7 @@ function createMinimalFullDidFromLightDid(
     keyRelationships: {
       authentication: new Set([authKey.id]),
     },
-    keys: new Map([[authKey.id, authKey]]),
-    serviceEndpoints: new Map(),
+    keys: { [authKey.id]: authKey },
   })
 }
 
@@ -284,13 +283,10 @@ describe('RequestForAttestation', () => {
           migratedAndDeletedLightDid.authenticationKey.id,
         ]),
       },
-      keys: new Map([
-        [
-          migratedAndDeletedLightDid.authenticationKey.id,
+      keys: {
+        [migratedAndDeletedLightDid.authenticationKey.id]:
           migratedAndDeletedLightDid.authenticationKey,
-        ],
-      ]),
-      serviceEndpoints: new Map(),
+      },
     })
 
     const credential = await buildCredential(

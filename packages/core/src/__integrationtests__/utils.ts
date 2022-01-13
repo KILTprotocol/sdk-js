@@ -23,7 +23,11 @@ import {
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { ISubmittableResult, KeyringPair, SubscriptionPromise } from '@kiltprotocol/types'
+import {
+  ISubmittableResult,
+  KeyringPair,
+  SubscriptionPromise,
+} from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { Balance } from '../balance'
@@ -134,10 +138,10 @@ export async function createFullDidFromLightDid(
       assertionMethod: new Set([lightDidForId.authenticationKey.id]),
       capabilityDelegation: new Set([lightDidForId.authenticationKey.id]),
     },
-    keys: new Map([
-      [lightDidForId.authenticationKey.id, lightDidForId.authenticationKey],
-    ]),
-    serviceEndpoints: new Map(),
+    keys: {
+      [lightDidForId.authenticationKey.id]: lightDidForId.authenticationKey,
+    },
+    serviceEndpoints: {},
   }
 
   const fullDid = new FullDidDetails({
