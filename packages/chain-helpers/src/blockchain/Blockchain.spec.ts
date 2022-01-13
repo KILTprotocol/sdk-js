@@ -21,8 +21,8 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import { createRegistryFromMetadata } from '@kiltprotocol/testing'
 import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
-import { TYPE_REGISTRY } from '../blockchainApiConnection/TypeRegistry'
 import { Blockchain } from './Blockchain'
 import {
   EXTRINSIC_FAILED,
@@ -34,6 +34,8 @@ import {
 } from './Blockchain.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+
+const TYPE_REGISTRY = createRegistryFromMetadata()
 
 describe('queries', () => {
   beforeAll(() => {

@@ -13,13 +13,11 @@ import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
-import {
-  TypeRegistry as TYPE_REGISTRY,
-  BlockchainUtils,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
+import { TypeRegistry } from '@polkadot/types'
 import {
   getBalances,
   listenToBalanceChanges,
@@ -51,7 +49,7 @@ describe('Balance', () => {
         miscFrozen: new BN(balance),
         feeFrozen: new BN(balance),
       } as AccountData,
-      nonce: new AccountIndex(TYPE_REGISTRY, 0),
+      nonce: new AccountIndex(new TypeRegistry(), 0),
     } as AccountInfo
   }
 

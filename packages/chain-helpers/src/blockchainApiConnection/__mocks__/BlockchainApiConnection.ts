@@ -57,7 +57,9 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from './BlockchainQuery'
-import { TYPE_REGISTRY } from '../TypeRegistry'
+import { createRegistryFromMetadata } from '@kiltprotocol/testing'
+
+const TYPE_REGISTRY = createRegistryFromMetadata()
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 

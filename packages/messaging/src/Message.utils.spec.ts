@@ -90,8 +90,6 @@ import * as MessageUtils from './Message.utils'
 
 import { Message } from './Message'
 
-import '../../../testingTools/jestErrorCodeMatcher'
-
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildCredential(
   claimer: IDidDetails,

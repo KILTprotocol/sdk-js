@@ -23,8 +23,6 @@ import { makeTransfer } from '../balance/Balance.chain'
 import { config, disconnect } from '../kilt'
 import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 let paymentAccount: KeyringPair
 let someDid: FullDidDetails
 const keystore = new DemoKeystore()

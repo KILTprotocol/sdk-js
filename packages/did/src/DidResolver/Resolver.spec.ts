@@ -11,7 +11,6 @@
  * @group unit/did
  */
 
-import { TypeRegistry } from '@kiltprotocol/chain-helpers'
 import {
   IDidKeyDetails,
   IDidResolutionDocumentMetadata,
@@ -22,6 +21,7 @@ import {
 import type { IDidResolvedDetails } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
+import { createRegistryFromMetadata } from '@kiltprotocol/testing'
 import { LightDidDetails } from '../DidDetails'
 import type { INewPublicKey } from '../types'
 import { IDidChainRecordJSON } from '../types'
@@ -31,6 +31,8 @@ import {
   getKiltDidFromIdentifier,
   parseDidUrl,
 } from '../Did.utils'
+
+const TYPE_REGISTRY = createRegistryFromMetadata()
 
 const fullDidPresentWithAuthenticationKey =
   'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
@@ -140,7 +142,7 @@ jest.mock('../Did.chain', () => {
             authenticationKey: authKeyId,
             keyAgreementKeys: [],
             publicKeys: [authKey],
-            lastTxCounter: TypeRegistry.createType('u64'),
+            lastTxCounter: TYPE_REGISTRY.createType('u64'),
           }
         case fullDidPresentWithAllKeys:
           return {
@@ -150,7 +152,7 @@ jest.mock('../Did.chain', () => {
             assertionMethodKey: attKeyId,
             capabilityDelegationKey: delKeyId,
             publicKeys: [authKey, encKey, attKey, delKey],
-            lastTxCounter: TypeRegistry.createType('u64'),
+            lastTxCounter: TYPE_REGISTRY.createType('u64'),
           }
         case fullDidPresentWithServiceEndpoints:
           return {
@@ -158,7 +160,7 @@ jest.mock('../Did.chain', () => {
             authenticationKey: authKeyId,
             keyAgreementKeys: [],
             publicKeys: [authKey],
-            lastTxCounter: TypeRegistry.createType('u64'),
+            lastTxCounter: TYPE_REGISTRY.createType('u64'),
           }
         default:
           return null

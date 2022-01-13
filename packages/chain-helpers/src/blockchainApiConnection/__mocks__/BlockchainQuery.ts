@@ -1,15 +1,14 @@
 import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-import { TYPE_REGISTRY } from '../TypeRegistry'
+import { createRegistryFromMetadata } from '@kiltprotocol/testing'
+
+const TYPE_REGISTRY = createRegistryFromMetadata()
 
 const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
 })
 TYPE_REGISTRY.setChainProperties(chainProperties)
-TYPE_REGISTRY.register({
-  AttestationAttestationsAttestationDetails: 'AttestationDetails',
-})
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
@@ -38,9 +37,13 @@ const chainQueryReturnTuples: {
   },
   delegation: {
     // Delegation hierarchies: root-id -> (ctype-hash)?
-    hierarchies: TYPE_REGISTRY.getOrUnknown('DelegationHierarchyDetails'),
+    hierarchies: TYPE_REGISTRY.getOrUnknown(
+      'DelegationDelegationHierarchyDelegationHierarchyDetails'
+    ),
     // Delegations: delegation-id -> (hierarchy-id, parent-id?, childrenIds, details)?
-    delegations: TYPE_REGISTRY.getOrUnknown('DelegationNode'),
+    delegations: TYPE_REGISTRY.getOrUnknown(
+      'DelegationDelegationHierarchyDelegationNode'
+    ),
   },
   attestation: {
     // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked, deposit)?
@@ -52,7 +55,7 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: TYPE_REGISTRY.getOrUnknown('DidRecord'),
+    dIDs: TYPE_REGISTRY.getOrUnknown('DidDidDetails'),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?

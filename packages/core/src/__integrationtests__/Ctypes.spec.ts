@@ -23,8 +23,6 @@ import { getOwner } from '../ctype/CType.chain'
 import { config, disconnect } from '../kilt'
 import { devFaucet, keypairFromRandom, WS_ADDRESS } from './utils'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
 })

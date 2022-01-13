@@ -26,8 +26,6 @@ import { Attestation } from './Attestation'
 import * as AttestationUtils from './Attestation.utils'
 import * as Kilt from '../kilt/Kilt'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 jest.mock(
   '@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection'
 )

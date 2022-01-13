@@ -33,7 +33,7 @@ describe('Chain returns specific errors, that we check for', () => {
     charlie = devCharlie
     const tx = await makeTransfer(testIdentity.address, new BN(10000), 0)
     await BlockchainUtils.signAndSubmitTx(tx, faucet, {
-      resolveOn: BlockchainUtils.IS_FINALIZED,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
   }, 40000)

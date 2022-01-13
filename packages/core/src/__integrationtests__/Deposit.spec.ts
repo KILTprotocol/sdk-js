@@ -78,7 +78,7 @@ async function checkDeleteFullDid(
     : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
@@ -107,7 +107,7 @@ async function checkReclaimFullDid(
     : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   const balanceAfterRevoking = await Balance.getBalances(identity.address)
@@ -136,7 +136,7 @@ async function checkRemoveFullDidAttestation(
   )
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   const attestationResult = await queryRaw(attestation.claimHash)
@@ -162,7 +162,7 @@ async function checkRemoveFullDidAttestation(
   )
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   const balanceAfterRemoving = await Balance.getBalances(identity.address)
@@ -191,7 +191,7 @@ async function checkReclaimFullDidAttestation(
   )
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
@@ -212,7 +212,7 @@ async function checkReclaimFullDidAttestation(
     : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
@@ -241,7 +241,7 @@ async function checkDeletedDidReclaimAttestation(
   )
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.did)
@@ -266,13 +266,13 @@ async function checkDeletedDidReclaimAttestation(
   })
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
   tx = await attestation.reclaimDeposit()
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 }
 

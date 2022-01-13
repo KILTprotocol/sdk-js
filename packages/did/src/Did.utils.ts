@@ -270,7 +270,7 @@ export function encodeDidAuthorizedCallOperation(
   }: IAuthorizeCallOptions
 ): DidAuthorizedCallOperation {
   return new (registry.getOrThrow<DidAuthorizedCallOperation>(
-    'DidAuthorizedCallOperation'
+    'DidDidDetailsDidAuthorizedCallOperation'
   ))(registry, {
     did: didIdentifier,
     txCounter,
@@ -317,9 +317,12 @@ export function encodeDidPublicKey(
       )}`
     )
   }
-  return new (registry.getOrThrow<DidPublicKey>('DidPublicKey'))(registry, {
-    [keyClass]: formatPublicKey(key),
-  })
+  return new (registry.getOrThrow<DidPublicKey>('DidDidDetailsDidPublicKey'))(
+    registry,
+    {
+      [keyClass]: formatPublicKey(key),
+    }
+  )
 }
 
 export function computeKeyId(publicKey: DidPublicKey): string {
