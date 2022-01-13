@@ -17,7 +17,7 @@ import type {
 
 import type {
   DidCreationDetails,
-  DidKeySelection,
+  DidKeySelectionHandler,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
@@ -133,7 +133,7 @@ export class FullDidDetails extends DidDetails {
     }: {
       signer: KeystoreSigner
       submitterAccount: IDidIdentifier
-      keySelection?: DidKeySelection
+      keySelection?: DidKeySelectionHandler
     }
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))

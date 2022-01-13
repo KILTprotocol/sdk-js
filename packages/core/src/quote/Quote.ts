@@ -30,7 +30,7 @@ import {
   DidUtils,
   DidResolver,
   DidDetails,
-  DidKeySelection,
+  DidKeySelectionHandler,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema'
 
@@ -110,10 +110,10 @@ export async function createAttesterSignature(
     keySelection = DidUtils.defaultDidKeySelection,
   }: {
     signer: KeystoreSigner
-    keySelection?: DidKeySelection
+    keySelection?: DidKeySelectionHandler
   }
 ): Promise<IQuoteAttesterSigned> {
-  const authenticationKey = keySelection(
+  const authenticationKey = await keySelection(
     attesterIdentity.getKeys(KeyRelationship.authentication)
   )
   if (!authenticationKey) {
@@ -155,7 +155,7 @@ export async function fromQuoteDataAndIdentity(
     keySelection = DidUtils.defaultDidKeySelection,
   }: {
     signer: KeystoreSigner
-    keySelection?: DidKeySelection
+    keySelection?: DidKeySelectionHandler
   }
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
@@ -188,7 +188,7 @@ export async function createQuoteAgreement(
     resolver = DidResolver,
   }: {
     signer: KeystoreSigner
-    keySelection?: DidKeySelection
+    keySelection?: DidKeySelectionHandler
     resolver?: IDidResolver
   }
 ): Promise<IQuoteAgreement> {
@@ -207,7 +207,7 @@ export async function createQuoteAgreement(
     resolver,
   })
 
-  const claimerAuthenticationKey = keySelection(
+  const claimerAuthenticationKey = await keySelection(
     claimerIdentity.getKeys(KeyRelationship.authentication)
   )
   if (!claimerAuthenticationKey) {

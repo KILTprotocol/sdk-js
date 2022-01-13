@@ -33,7 +33,7 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { DidKeySelection } from '@kiltprotocol/did'
+import type { DidKeySelectionHandler } from '@kiltprotocol/did'
 import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
@@ -289,7 +289,7 @@ export class DelegationNode implements IDelegationNode {
   public async delegeeSign(
     delegeeDid: DidDetails,
     signer: KeystoreSigner,
-    keySelection: DidKeySelection = DidUtils.defaultDidKeySelection
+    keySelection: DidKeySelectionHandler = DidUtils.defaultDidKeySelection
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
       delegeeDid.getKeys(KeyRelationship.authentication)

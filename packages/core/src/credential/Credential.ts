@@ -16,7 +16,7 @@
  * @module Credential
  */
 
-import { DidDetails, DidKeySelection, DidUtils } from '@kiltprotocol/did'
+import { DidDetails, DidKeySelectionHandler, DidUtils } from '@kiltprotocol/did'
 import type {
   ICredential,
   CompressedCredential,
@@ -232,7 +232,7 @@ export class Credential implements ICredential {
     signer: KeystoreSigner
     challenge?: string
     claimerDid: DidDetails
-    keySelection?: DidKeySelection
+    keySelection?: DidKeySelectionHandler
   }): Promise<Credential> {
     const credential = new Credential(
       // clone the attestation and request for attestation because properties will be deleted later.
@@ -251,12 +251,10 @@ export class Credential implements ICredential {
     credential.request.removeClaimProperties(excludedClaimProperties)
 
     const keys = claimerDid.getKeys(KeyRelationship.authentication)
-    const selectedKeyId = keySelection(keys)?.id
+    const selectedKeyId = (await keySelection(keys))?.id
 
     if (!selectedKeyId) {
-      throw new Error(
-        `No key matching the required key relationship ${keySelection}`
-      )
+      throw new Error('No key matching the required key relationship')
     }
 
     await credential.request.signWithDidKey(

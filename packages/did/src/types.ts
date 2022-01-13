@@ -23,7 +23,7 @@ export type ServiceEndpoints = Record<
   Omit<DidServiceEndpoint, 'id'>
 >
 
-export type DidKeySelection = (keys: DidKey[]) => DidKey | null
+export type DidKeySelectionHandler = (keys: DidKey[]) => Promise<DidKey | null>
 
 export type DidCreationDetails = {
   did: IDidDetails['did']
