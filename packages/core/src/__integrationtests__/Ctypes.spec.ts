@@ -23,7 +23,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { config, disconnect } from '../kilt'
-import { devFaucet, keypairFromRandom, WS_ADDRESS } from './utils'
+import { devFaucet, endowAccounts, keypairFromRandom, WS_ADDRESS } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
@@ -51,7 +51,12 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }
 
   beforeAll(async () => {
-    paymentAccount = devFaucet
+    paymentAccount = keypairFromRandom()
+    await endowAccounts(
+      devFaucet,
+      [paymentAccount.address],
+      BlockchainUtils.IS_IN_BLOCK
+    )
     const authKey = await keystore.generateKeypair({
       alg: SigningAlgorithms.Sr25519,
     })

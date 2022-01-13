@@ -23,13 +23,13 @@ import {
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { KeyringPair } from '@kiltprotocol/types'
+import { ISubmittableResult, KeyringPair, SubscriptionPromise } from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { Balance } from '../balance'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
-export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(1000)
+export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
 export const WS_ADDRESS = 'ws://127.0.0.1:9944'
 // Dev Faucet account seed phrase
@@ -91,13 +91,14 @@ export const IsOfficialLicenseAuthority = CType.fromSchema({
 
 export async function endowAccounts(
   faucet: KeyringPair,
-  addresses: string[]
+  addresses: string[],
+  resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = BlockchainUtils.IS_FINALIZED
 ): Promise<void> {
   await Promise.all(
     addresses.map((address) =>
       Balance.makeTransfer(address, ENDOWMENT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: BlockchainUtils.IS_FINALIZED,
+          resolveOn,
           reSign: true,
         }).catch((e) => console.log(e))
       )
@@ -156,6 +157,7 @@ export async function createFullDidFromLightDid(
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    reSign: true,
   })
 
   return FullDidDetails.fromChainInfo(

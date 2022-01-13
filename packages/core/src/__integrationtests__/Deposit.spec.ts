@@ -63,6 +63,7 @@ async function checkDeleteFullDid(
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
@@ -91,6 +92,7 @@ async function checkReclaimFullDid(
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   const balanceAfterRevoking = await Balance.getBalances(identity.address)
@@ -119,6 +121,7 @@ async function checkRemoveFullDidAttestation(
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   const attestationResult = await queryRaw(attestation.claimHash)
@@ -144,6 +147,7 @@ async function checkRemoveFullDidAttestation(
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   const balanceAfterRemoving = await Balance.getBalances(identity.address)
@@ -172,6 +176,7 @@ async function checkReclaimFullDidAttestation(
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
@@ -193,6 +198,7 @@ async function checkReclaimFullDidAttestation(
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
@@ -221,6 +227,7 @@ async function checkDeletedDidReclaimAttestation(
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
@@ -239,12 +246,14 @@ async function checkDeletedDidReclaimAttestation(
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   tx = await attestation.reclaimDeposit()
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 }
 

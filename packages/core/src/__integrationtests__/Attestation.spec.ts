@@ -30,6 +30,7 @@ import {
   keypairFromRandom,
   createMinimalLightDid,
   createFullDidFromLightDid,
+  endowAccounts,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
@@ -42,15 +43,20 @@ let claimer: FullDidDetails
 
 beforeAll(async () => {
   await init({ address: WS_ADDRESS })
-  tokenHolder = devFaucet
+  tokenHolder = keypairFromRandom()
+  await endowAccounts(
+    devFaucet,
+    [tokenHolder.address],
+    BlockchainUtils.IS_IN_BLOCK
+  )
   signer = new DemoKeystore()
   const attesterLightDid = await createMinimalLightDid(signer)
   const anotherAttesterLightDid = await createMinimalLightDid(signer)
-  const claimerightDid = await createMinimalLightDid(signer)
+  const claimerLightDid = await createMinimalLightDid(signer)
   ;[attester, anotherAttester, claimer] = await Promise.all([
     createFullDidFromLightDid(tokenHolder, attesterLightDid, signer),
     createFullDidFromLightDid(tokenHolder, anotherAttesterLightDid, signer),
-    createFullDidFromLightDid(tokenHolder, claimerightDid, signer),
+    createFullDidFromLightDid(tokenHolder, claimerLightDid, signer),
   ])
 }, 30_000)
 

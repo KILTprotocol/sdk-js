@@ -28,6 +28,8 @@ import {
   WS_ADDRESS,
   devBob,
   createFullDidFromSeed,
+  keypairFromRandom,
+  endowAccounts,
 } from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
@@ -98,7 +100,12 @@ async function addDelegation(
 
 beforeAll(async () => {
   await init({ address: WS_ADDRESS })
-  paymentAccount = devFaucet
+  paymentAccount = keypairFromRandom()
+  await endowAccounts(
+    devFaucet,
+    [paymentAccount.address],
+    BlockchainUtils.IS_IN_BLOCK
+  )
 
   signer = new DemoKeystore()
   ;[attester, root, claimer] = await Promise.all([
@@ -400,12 +407,14 @@ describe('Deposit claiming', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(depositClaimTx, devBob, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).rejects.toThrow()
 
     // Test removal success with the right account.
     await BlockchainUtils.signAndSubmitTx(depositClaimTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
     })
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
