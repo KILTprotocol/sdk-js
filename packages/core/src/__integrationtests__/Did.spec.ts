@@ -9,24 +9,19 @@
  * @group integration/did
  */
 
-import { encodeAddress } from '@polkadot/keyring'
 import { BN } from '@polkadot/util'
 import {
   DemoKeystore,
   DidChain,
   SigningAlgorithms,
   LightDidDetails,
-  LightDidSupportedSigningKeyTypes,
   FullDidDetails,
   DidDetails,
   EncryptionAlgorithms,
   getDefaultMigrationHandler,
   resolveDoc,
 } from '@kiltprotocol/did'
-import {
-  BlockchainApiConnection,
-  BlockchainUtils,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   DidResolvedDetails,
   DidServiceEndpoint,
@@ -37,15 +32,22 @@ import {
 import { UUID } from '@kiltprotocol/utils'
 
 import { CType } from '../ctype'
-import { disconnect, init } from '../kilt'
-import { devAlice, devBob } from './utils'
+import { disconnect } from '../kilt'
+import {
+  createEndowedTestAccount,
+  devBob,
+  createMinimalLightDidFromSeed,
+  initializeApi,
+  submitExtrinsicWithResign,
+  addressFromRandom,
+} from './utils'
 
 let paymentAccount: KeyringPair
 const keystore = new DemoKeystore()
 
 beforeAll(async () => {
-  await init({ address: 'ws://localhost:9944' })
-  paymentAccount = devAlice
+  await initializeApi()
+  paymentAccount = await createEndowedTestAccount()
 })
 
 it('fetches the correct deposit amount', async () => {
@@ -58,14 +60,7 @@ it('fetches the correct deposit amount', async () => {
 describe('write and didDeleteTx', () => {
   let details: DidDetails
   beforeAll(async () => {
-    const { publicKey } = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Ed25519,
-    })
-    const identifier = encodeAddress(publicKey, 38)
-    details = LightDidDetails.fromIdentifier(
-      identifier,
-      LightDidSupportedSigningKeyTypes.ed25519
-    )
+    details = await createMinimalLightDidFromSeed(keystore)
   })
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
@@ -81,10 +76,7 @@ describe('write and didDeleteTx', () => {
     )
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, paymentAccount)
     ).rejects.toThrow()
   }, 60_000)
 
@@ -116,10 +108,7 @@ describe('write and didDeleteTx', () => {
     )
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
     details = (await FullDidDetails.fromChainInfo(
@@ -154,26 +143,21 @@ describe('write and didDeleteTx', () => {
       },
     ])
 
-    const emptyAccount = paymentAccount
+    const emptyAccount = addressFromRandom()
 
     // Should be defined and have 0 elements
     await expect(
-      DidChain.queryServiceEndpoints(emptyAccount.address)
+      DidChain.queryServiceEndpoints(emptyAccount)
     ).resolves.toBeDefined()
     await expect(
-      DidChain.queryServiceEndpoints(emptyAccount.address)
+      DidChain.queryServiceEndpoints(emptyAccount)
     ).resolves.toHaveLength(0)
     // Should return null
     await expect(
-      DidChain.queryServiceEndpoint(
-        emptyAccount.address,
-        'non-existing-service-id'
-      )
+      DidChain.queryServiceEndpoint(emptyAccount, 'non-existing-service-id')
     ).resolves.toBeNull()
     // Should return 0
-    const endpointsCount = await DidChain.queryEndpointsCounts(
-      emptyAccount.address
-    )
+    const endpointsCount = await DidChain.queryEndpointsCounts(emptyAccount)
     expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
   }, 60_000)
 
@@ -193,10 +177,7 @@ describe('write and didDeleteTx', () => {
     )
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(submittable, paymentAccount)
     ).rejects.toThrow()
 
     // We use 1 here and this should fail as there are two service endpoints stored.
@@ -209,10 +190,7 @@ describe('write and didDeleteTx', () => {
 
     // Will fail because count provided is too low
     await expect(
-      BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(submittable, paymentAccount)
     ).rejects.toThrow()
   }, 60_000)
 
@@ -244,10 +222,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.toBeFalsy()
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(submittable, paymentAccount)
     ).resolves.not.toThrow()
 
     await expect(DidChain.queryDetails(details.identifier)).resolves.toBeNull()
@@ -284,10 +259,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
 
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    submitExtrinsicWithResign(tx, paymentAccount)
   ).resolves.not.toThrow()
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
@@ -315,10 +287,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     }
   )
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    submitExtrinsicWithResign(tx2, paymentAccount)
   ).resolves.not.toThrow()
 
   // Authentication key changed, so details must be updated.
@@ -340,10 +309,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     submitterAccount: paymentAccount.address,
   })
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx3, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    submitExtrinsicWithResign(tx3, paymentAccount)
   ).resolves.not.toThrow()
   await expect(
     DidChain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
@@ -358,10 +324,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     submitterAccount: paymentAccount.address,
   })
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx4, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    submitExtrinsicWithResign(tx4, paymentAccount)
   ).resolves.not.toThrow()
 
   // There should not be any endpoint with the given ID now.
@@ -378,10 +341,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     storedEndpointsCount
   )
   await expect(
-    BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    submitExtrinsicWithResign(reclaimDepositTx, paymentAccount)
   ).resolves.not.toThrow()
   // Verify that the DID has been deleted
   await expect(
@@ -576,10 +536,7 @@ describe('DID migration', () => {
       storedEndpointsCount
     )
     await expect(
-      BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(reclaimDepositTx, paymentAccount)
     ).resolves.not.toThrow()
 
     await expect(
@@ -632,10 +589,7 @@ describe('DID authorization', () => {
       }
     )
     await expect(
-      BlockchainUtils.signAndSubmitTx(signedExtrinsic, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(signedExtrinsic, paymentAccount)
     ).resolves.not.toThrow()
 
     const newDelegationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
@@ -650,10 +604,7 @@ describe('DID authorization', () => {
       }
     )
     await expect(
-      BlockchainUtils.signAndSubmitTx(signedExtrinsic, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(signedExtrinsic, paymentAccount)
     ).resolves.not.toThrow()
 
     didDetails = (await FullDidDetails.fromChainInfo(
@@ -674,10 +625,7 @@ describe('DID authorization', () => {
       submitterAccount: paymentAccount.address,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
     await expect(ctype.verifyStored()).resolves.toEqual(true)
@@ -705,10 +653,7 @@ describe('DID authorization', () => {
       submitterAccount: paymentAccount.address,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
     await expect(ctype1.verifyStored()).resolves.toEqual(true)
@@ -727,10 +672,7 @@ describe('DID authorization', () => {
       submitterAccount: paymentAccount.address,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
     const ctype = CType.fromSchema({
@@ -745,10 +687,7 @@ describe('DID authorization', () => {
       submitterAccount: paymentAccount.address,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx2, paymentAccount)
     ).rejects.toThrow()
 
     await expect(ctype.verifyStored()).resolves.toEqual(false)

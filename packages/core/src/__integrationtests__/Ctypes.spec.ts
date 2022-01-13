@@ -9,31 +9,25 @@
  * @group integration/ctype
  */
 
-import { ICType, KeyRelationship, KeyringPair } from '@kiltprotocol/types'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
-import {
-  FullDidDetails,
-  DemoKeystore,
-  SigningAlgorithms,
-  LightDidDetails,
-  getDefaultMigrationHandler,
-  DidChain,
-} from '@kiltprotocol/did'
+import { ICType, KeyringPair } from '@kiltprotocol/types'
+import { ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
-import { config, disconnect } from '../kilt'
+import { disconnect } from '../kilt'
 import {
-  devFaucet,
-  endowAccounts,
+  createEndowedTestAccount,
+  createFullDidFromSeed,
+  initializeApi,
   keypairFromRandom,
-  WS_ADDRESS,
+  submitExtrinsicWithResign,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
+  await initializeApi()
 })
 
 describe('When there is an CtypeCreator and a verifier', () => {
@@ -56,40 +50,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }
 
   beforeAll(async () => {
-    paymentAccount = keypairFromRandom()
-    await endowAccounts(
-      devFaucet,
-      [paymentAccount.address],
-      BlockchainUtils.IS_IN_BLOCK
-    )
-    const authKey = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Sr25519,
-    })
-    const newKey: DidChain.NewDidKey = { ...authKey, type: authKey.alg }
-    const lightDid = LightDidDetails.fromDetails({
-      authenticationKey: newKey,
-    })
-    // TODO: use a DID builder to combine multiple operations.
-    const fullDid = await lightDid.migrate(
-      paymentAccount.address,
-      keystore,
-      getDefaultMigrationHandler(paymentAccount)
-    )
-    const attestationKeyTx = await DidChain.getSetKeyExtrinsic(
-      KeyRelationship.assertionMethod,
-      newKey
-    )
-    const signedTx = await fullDid.authorizeExtrinsic(attestationKeyTx, {
-      submitterAccount: paymentAccount.address,
-      signer: keystore,
-    })
-    await BlockchainUtils.signAndSubmitTx(signedTx, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
-    ctypeCreator = (await FullDidDetails.fromChainInfo(
-      fullDid.identifier
-    )) as FullDidDetails
+    paymentAccount = await createEndowedTestAccount()
+    ctypeCreator = await createFullDidFromSeed(paymentAccount, keystore)
   }, 30_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
@@ -104,12 +66,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
             submitterAccount: bobbyBroke.address,
           })
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
     ).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20_000)
@@ -124,12 +81,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
           submitterAccount: paymentAccount.address,
         })
       )
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did),
       expect(ctype.verifyStored()).resolves.toBeTruthy(),
@@ -148,12 +100,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
           submitterAccount: paymentAccount.address,
         })
       )
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(
       ctype
         .store()
@@ -163,12 +110,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
             submitterAccount: paymentAccount.address,
           })
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toThrowErrorWithCode(
       ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
     )

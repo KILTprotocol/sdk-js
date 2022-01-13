@@ -10,14 +10,13 @@
  */
 
 import { BN } from '@polkadot/util'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 import {
   getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from '../balance/Balance.chain'
-import { config, disconnect } from '../kilt'
+import { disconnect } from '../kilt'
 import {
   addressFromRandom,
   EXISTENTIAL_DEPOSIT,
@@ -25,11 +24,12 @@ import {
   devAlice,
   devBob,
   devFaucet,
-  WS_ADDRESS,
+  initializeApi,
+  submitExtrinsicWithResign,
 } from './utils'
 
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
+  await initializeApi()
 })
 
 describe('when there is a dev chain with a faucet', () => {
@@ -73,10 +73,7 @@ describe('when there is a dev chain with a faucet', () => {
     listenToBalanceChanges(address, funny)
     const balanceBefore = await getBalances(faucet.address)
     await makeTransfer(address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, faucet, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, faucet)
     )
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalances(faucet.address),
@@ -105,10 +102,7 @@ describe('When there are haves and have-nots', () => {
 
   it('can transfer tokens from the rich to the poor', async () => {
     await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, richieRich, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, richieRich)
     )
     const balanceTo = await getBalances(stormyD.address)
     expect(balanceTo.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
@@ -118,10 +112,7 @@ describe('When there are haves and have-nots', () => {
     const originalBalance = await getBalances(stormyD.address)
     await expect(
       makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+        submitExtrinsicWithResign(tx, bobbyBroke)
       )
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
@@ -136,10 +127,7 @@ describe('When there are haves and have-nots', () => {
     const RichieBalance = await getBalances(richieRich.address)
     await expect(
       makeTransfer(bobbyBroke.address, RichieBalance.free).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, richieRich, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+        submitExtrinsicWithResign(tx, richieRich)
       )
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
@@ -154,16 +142,10 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, faucet, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, faucet)
     )
     await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, faucet, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, faucet)
     )
 
     expect(listener).toBeCalledWith(
@@ -179,16 +161,10 @@ describe('When there are haves and have-nots', () => {
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
       makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+        submitExtrinsicWithResign(tx, faucet)
       ),
       makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+        submitExtrinsicWithResign(tx, faucet)
       ),
     ])
     expect(listener).toBeCalledWith(

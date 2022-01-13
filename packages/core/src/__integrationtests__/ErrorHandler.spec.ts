@@ -19,9 +19,10 @@ import { makeTransfer } from '../balance/Balance.chain'
 import { config, disconnect } from '../kilt'
 import {
   addressFromRandom,
+  createEndowedTestAccount,
   createFullDidFromSeed,
-  devAlice,
-  WS_ADDRESS,
+  initializeApi,
+  submitExtrinsicWithResign,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
@@ -31,22 +32,15 @@ let someDid: FullDidDetails
 const keystore = new DemoKeystore()
 
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
-  paymentAccount = devAlice
-  someDid = await createFullDidFromSeed(
-    paymentAccount,
-    keystore,
-    randomAsHex(32)
-  )
+  await initializeApi()
+  paymentAccount = await createEndowedTestAccount()
+  someDid = await createFullDidFromSeed(paymentAccount, keystore)
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
     makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, paymentAccount)
     )
   ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
 }, 30_000)
@@ -68,10 +62,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     })
   )
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    submitExtrinsicWithResign(tx, paymentAccount)
   ).rejects.toThrowErrorWithCode(
     ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
   )

@@ -21,19 +21,19 @@ import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
 import {
   createFullDidFromLightDid,
-  WS_ADDRESS,
   devFaucet,
-  DriversLicense,
+  driversLicenseCType,
   endowAccounts,
-  CtypeOnChain,
-  createMinimalLightDid,
+  isCtypeOnChain,
+  createMinimalLightDidFromSeed,
   createFullDidFromSeed,
+  initializeApi,
 } from './utils'
 import { Balance } from '../balance'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { disconnect, init } from '../kilt'
+import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 
 let tx: SubmittableExtrinsic
@@ -264,7 +264,7 @@ let requestForAttestation: RequestForAttestation
 
 beforeAll(async () => {
   /* Initialize KILT SDK and set up node endpoint */
-  await init({ address: WS_ADDRESS })
+  await initializeApi()
   const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'sr25519' })
 
   for (let i = 0; i < 9; i += 1) {
@@ -281,7 +281,10 @@ beforeAll(async () => {
   const claimerMnemonic = mnemonicGenerate()
 
   /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
-  const claimerLightDid = await createMinimalLightDid(keystore, claimerMnemonic)
+  const claimerLightDid = await createMinimalLightDidFromSeed(
+    keystore,
+    claimerMnemonic
+  )
 
   const attester = await createFullDidFromSeed(
     devFaucet,
@@ -289,10 +292,10 @@ beforeAll(async () => {
     randomAsHex()
   )
 
-  const ctypeExists = await CtypeOnChain(DriversLicense)
+  const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
     await attester
-      .authorizeExtrinsic(await DriversLicense.store(), {
+      .authorizeExtrinsic(await driversLicenseCType.store(), {
         signer: keystore,
         submitterAccount: devFaucet.address,
       })
@@ -310,7 +313,7 @@ beforeAll(async () => {
   }
 
   const claim = Claim.fromCTypeAndClaimContents(
-    DriversLicense,
+    driversLicenseCType,
     rawClaim,
     claimerLightDid.did
   )
@@ -336,11 +339,11 @@ describe('Different deposits scenarios', () => {
   beforeAll(async () => {
     const [testDidFive, testDidSix, testDidSeven, testDidEight, testDidNine] =
       await Promise.all([
-        createMinimalLightDid(keystore, testMnemonics[4]),
-        createMinimalLightDid(keystore, testMnemonics[5]),
-        createMinimalLightDid(keystore, testMnemonics[6]),
-        createMinimalLightDid(keystore, testMnemonics[7]),
-        createMinimalLightDid(keystore, testMnemonics[8]),
+        createMinimalLightDidFromSeed(keystore, testMnemonics[4]),
+        createMinimalLightDidFromSeed(keystore, testMnemonics[5]),
+        createMinimalLightDidFromSeed(keystore, testMnemonics[6]),
+        createMinimalLightDidFromSeed(keystore, testMnemonics[7]),
+        createMinimalLightDidFromSeed(keystore, testMnemonics[8]),
       ])
 
     ;[

@@ -11,7 +11,6 @@
 
 import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
@@ -19,17 +18,16 @@ import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { Credential } from '..'
-import { disconnect, init } from '../kilt'
+import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {
-  CtypeOnChain,
-  DriversLicense,
-  devFaucet,
-  WS_ADDRESS,
+  isCtypeOnChain,
+  driversLicenseCType,
   devBob,
   createFullDidFromSeed,
-  keypairFromRandom,
-  endowAccounts,
+  initializeApi,
+  createEndowedTestAccount,
+  submitExtrinsicWithResign,
 } from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
@@ -57,12 +55,7 @@ async function writeHierarchy(
         submitterAccount: paymentAccount.address,
       })
     )
-    .then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
-    )
+    .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
 
   return rootNode
 }
@@ -89,24 +82,13 @@ async function addDelegation(
         submitterAccount: paymentAccount.address,
       })
     )
-    .then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
-    )
+    .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
   return delegationNode
 }
 
 beforeAll(async () => {
-  await init({ address: WS_ADDRESS })
-  paymentAccount = keypairFromRandom()
-  await endowAccounts(
-    devFaucet,
-    [paymentAccount.address],
-    BlockchainUtils.IS_IN_BLOCK
-  )
-
+  await initializeApi()
+  paymentAccount = await createEndowedTestAccount()
   signer = new DemoKeystore()
   ;[attester, root, claimer] = await Promise.all([
     createFullDidFromSeed(paymentAccount, signer),
@@ -114,20 +96,16 @@ beforeAll(async () => {
     createFullDidFromSeed(paymentAccount, signer),
   ])
 
-  if (!(await CtypeOnChain(DriversLicense))) {
-    await DriversLicense.store()
+  if (!(await isCtypeOnChain(driversLicenseCType))) {
+    await driversLicenseCType
+      .store()
       .then((tx) =>
         attester.authorizeExtrinsic(tx, {
           signer,
           submitterAccount: paymentAccount.address,
         })
       )
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
   }
 }, 30_000)
 
@@ -139,7 +117,7 @@ it('fetches the correct deposit amount', async () => {
 })
 
 it('should be possible to delegate attestation rights', async () => {
-  const rootNode = await writeHierarchy(root, DriversLicense.hash)
+  const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
   const delegatedNode = await addDelegation(
     rootNode.id,
     rootNode.id,
@@ -157,7 +135,7 @@ describe('and attestation rights have been delegated', () => {
   let delegatedNode: DelegationNode
 
   beforeAll(async () => {
-    rootNode = await writeHierarchy(root, DriversLicense.hash)
+    rootNode = await writeHierarchy(root, driversLicenseCType.hash)
     delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
@@ -177,7 +155,7 @@ describe('and attestation rights have been delegated', () => {
       age: 12,
     }
     const claim = Claim.fromCTypeAndClaimContents(
-      DriversLicense,
+      driversLicenseCType,
       content,
       claimer.did
     )
@@ -197,12 +175,7 @@ describe('and attestation rights have been delegated', () => {
           submitterAccount: paymentAccount.address,
         })
       )
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
 
     const credential = Credential.fromRequestAndAttestation(
       request,
@@ -220,12 +193,7 @@ describe('and attestation rights have been delegated', () => {
           submitterAccount: paymentAccount.address,
         })
       )
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(credential.verify()).resolves.toBeFalsy()
   }, 75_000)
 })
@@ -242,7 +210,7 @@ describe('revocation', () => {
   })
 
   it('delegator can revoke but not remove delegation', async () => {
-    const rootNode = await writeHierarchy(delegator, DriversLicense.hash)
+    const rootNode = await writeHierarchy(delegator, driversLicenseCType.hash)
     const delegationA = await addDelegation(
       rootNode.id,
       rootNode.id,
@@ -260,12 +228,7 @@ describe('revocation', () => {
             submitterAccount: paymentAccount.address,
           })
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).resolves.not.toThrow()
     await expect(delegationA.verify()).resolves.toBe(false)
 
@@ -281,12 +244,7 @@ describe('revocation', () => {
             submitterAccount: paymentAccount.address,
           })
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toThrow()
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
@@ -295,7 +253,10 @@ describe('revocation', () => {
   }, 60_000)
 
   it('delegee cannot revoke root but can revoke own delegation', async () => {
-    const delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
+    const delegationRoot = await writeHierarchy(
+      delegator,
+      driversLicenseCType.hash
+    )
     const delegationA = await addDelegation(
       delegationRoot.id,
       delegationRoot.id,
@@ -311,12 +272,7 @@ describe('revocation', () => {
             submitterAccount: paymentAccount.address,
           })
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toThrow()
     await expect(delegationRoot.verify()).resolves.toBe(true)
 
@@ -329,18 +285,16 @@ describe('revocation', () => {
             submitterAccount: paymentAccount.address,
           })
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).resolves.not.toThrow()
     await expect(delegationA.verify()).resolves.toBe(false)
   }, 60_000)
 
   it('delegator can revoke root, revoking all delegations in tree', async () => {
-    let delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
+    let delegationRoot = await writeHierarchy(
+      delegator,
+      driversLicenseCType.hash
+    )
     const delegationA = await addDelegation(
       delegationRoot.id,
       delegationRoot.id,
@@ -363,12 +317,7 @@ describe('revocation', () => {
             submitterAccount: paymentAccount.address,
           })
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).resolves.not.toThrow()
 
     await Promise.all([
@@ -382,7 +331,7 @@ describe('revocation', () => {
 describe('Deposit claiming', () => {
   it('deposit payer should be able to claim back its own deposit and delete any children', async () => {
     // Delegation nodes are written on the chain using `paymentAccount`.
-    const rootNode = await writeHierarchy(root, DriversLicense.hash)
+    const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
     const delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
@@ -405,17 +354,13 @@ describe('Deposit claiming', () => {
 
     // Test removal failure with an account that is not the deposit payer.
     await expect(
-      BlockchainUtils.signAndSubmitTx(depositClaimTx, devBob, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(depositClaimTx, devBob)
     ).rejects.toThrow()
 
     // Test removal success with the right account.
-    await BlockchainUtils.signAndSubmitTx(depositClaimTx, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    await expect(
+      submitExtrinsicWithResign(depositClaimTx, paymentAccount)
+    ).rejects.toThrow()
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
     await expect(DelegationNode.query(subDelegatedNode.id)).resolves.toBeNull()
@@ -434,7 +379,7 @@ describe('handling queries to data not on chain', () => {
 
 describe('hierarchyDetails', () => {
   it('can fetch hierarchyDetails', async () => {
-    const rootNode = await writeHierarchy(root, DriversLicense.hash)
+    const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
     const delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
@@ -444,7 +389,7 @@ describe('hierarchyDetails', () => {
 
     const details = await delegatedNode.getHierarchyDetails()
 
-    expect(details.cTypeHash).toBe(DriversLicense.hash)
+    expect(details.cTypeHash).toBe(driversLicenseCType.hash)
     expect(details.id).toBe(rootNode.id)
   }, 60_000)
 })
