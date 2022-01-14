@@ -15,12 +15,14 @@ import type {
   CompressedCredential,
   CompressedRequestForAttestation,
   IRequestForAttestation,
+  ICType,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
 import * as CredentialUtils from '../credential/Credential.utils'
 import * as ClaimUtils from '../claim/Claim.utils'
 import { RequestForAttestation } from './RequestForAttestation'
+import { CTypeUtils } from '../ctype'
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
@@ -140,4 +142,24 @@ export function decompress(
     legitimations: decompressLegitimation(reqForAtt[5]),
     delegationId: reqForAtt[6],
   }
+}
+
+/**
+ *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
+ *
+ * @param RequestForAttestation A [[RequestForAttestation]] object for the attester.
+ * @param ctype A [[CType]] to verify the [[Claim]] structure.
+ *
+ * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
+ */
+
+export function verifyStructure(
+  requestForAttestation: IRequestForAttestation,
+  ctype: ICType
+): boolean {
+  errorCheck(requestForAttestation)
+  return CTypeUtils.verifyClaimStructure(
+    requestForAttestation.claim.contents,
+    ctype.schema
+  )
 }
