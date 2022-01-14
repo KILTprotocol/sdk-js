@@ -266,12 +266,12 @@ export class DelegationNode implements IDelegationNode {
    *
    * @param delegeeDid The DID of the delegee.
    * @param signer The keystore responsible for signing the delegation creation details for the delegee.
-   * @param keySelection
+   * @param keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
    * @example
    * ```
    * // Sign the hash of the delegation node...
    * let myNewDelegation: DelegationNode
-   * let myDidDetails: IDidDetails
+   * let myDidDetails: DidDetails
    * let myKeyStore: Keystore
    * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
    *

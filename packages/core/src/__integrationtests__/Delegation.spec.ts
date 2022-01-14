@@ -377,25 +377,18 @@ describe('handling queries to data not on chain', () => {
 
 describe.only('hierarchyDetails', () => {
   it.only('can fetch hierarchyDetails', async () => {
-    console.log('a')
     const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
-    console.log('b')
     const delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
       root,
       attester
     )
-    console.log('c')
 
     const details = await delegatedNode.getHierarchyDetails()
 
-    console.log('d')
-
     expect(details.cTypeHash).toBe(driversLicenseCType.hash)
-    console.log('e')
     expect(details.id).toBe(rootNode.id)
-    console.log('f')
   }, 60_000)
 })
 

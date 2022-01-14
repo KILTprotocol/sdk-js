@@ -213,12 +213,11 @@ export class Credential implements ICredential {
    *
    * @param presentationOptions The additional options to use upon presentation generation.
    * @param presentationOptions.signer Keystore signer to sign the presentation.
-   * @param presentationOptions.claimerSigningKey If passed, this key is used for signing.
-   * @param presentationOptions.claimerDid If no signing key is passed, the authentication key is fetched from the claimerDid (mandatory in that case).
+   * @param presentationOptions.claimerDid The DID details of the presenter.
    * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
    * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
    * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
-   * @param presentationOptions.keySelection
+   * @param presentationOptions.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
    * @returns A deep copy of the Credential with all but `publicAttributes` removed.
    */
   public async createPresentation({
