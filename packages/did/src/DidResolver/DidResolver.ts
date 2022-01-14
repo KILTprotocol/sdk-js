@@ -16,14 +16,14 @@ import {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { LightDidDetails, FullDidDetails } from '../DidDetails'
+import { LightDidDetails, FullDidDetails } from '../DidDetails/index.js'
 import {
   queryDetails,
   queryDidDeletionStatus,
   queryKey,
   queryServiceEndpoint,
-} from '../Did.chain'
-import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils'
+} from '../Did.chain.js'
+import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
 
 /**
  * Resolve a DID URI to the details of the DID subject.

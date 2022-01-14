@@ -37,7 +37,7 @@ import type { DidKeySelectionHandler } from '@kiltprotocol/did'
 import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
-import { query as queryAttestation } from '../attestation/Attestation.chain'
+import { query as queryAttestation } from '../attestation/Attestation.chain.js'
 import {
   getChildren,
   getAttestationHashes,
@@ -48,10 +48,10 @@ import {
   storeAsDelegation,
   storeAsRoot,
   reclaimDeposit,
-} from './DelegationNode.chain'
-import { query as queryDetails } from './DelegationHierarchyDetails.chain'
-import * as DelegationNodeUtils from './DelegationNode.utils'
-import { Attestation } from '../attestation/Attestation'
+} from './DelegationNode.chain.js'
+import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
+import * as DelegationNodeUtils from './DelegationNode.utils.js'
+import { Attestation } from '../attestation/Attestation.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 

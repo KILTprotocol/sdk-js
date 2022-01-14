@@ -8,10 +8,10 @@
 import { DidKey } from '@kiltprotocol/types'
 import { blake2AsHex, blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
-import { getKiltDidFromIdentifier } from '../Did.utils'
-import { FullDidDetails } from '../DidDetails'
-import { DidCreationDetails } from '../types'
-import { DemoKeystore, SigningAlgorithms } from './DemoKeystore'
+import { getKiltDidFromIdentifier } from '../Did.utils.js'
+import { FullDidDetails } from '../DidDetails/index.js'
+import { DidCreationDetails } from '../types.js'
+import { DemoKeystore, SigningAlgorithms } from './DemoKeystore.js'
 
 /**
  * Creates an instance of [[FullDidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.

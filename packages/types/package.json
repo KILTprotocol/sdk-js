@@ -1,16 +1,25 @@
 {
   "name": "@kiltprotocol/types",
-  "version": "0.25.0-1",
+  "version": "0.25.0-3",
   "description": "",
-  "main": "./lib/index.js",
-  "typings": "./lib/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/esm/index.js",
+  "types": "./lib/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js"
+    }
+  },
   "files": [
     "lib/**/*"
   ],
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc --declaration -p tsconfig.build.json"
+    "build:ts": "yarn build:cjs && yarn build:esm",
+    "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
+    "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -28,7 +37,6 @@
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "ts-node": "^8.10.2",
-    "typescript": "^4.2.2"
+    "typescript": "^4.5.4"
   }
 }

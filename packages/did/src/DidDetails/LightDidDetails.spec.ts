@@ -21,7 +21,7 @@ import {
   getEncodingForSigningKeyType,
 } from './LightDidDetails.utils'
 
-import { LightDidDetails } from '.'
+import { LightDidDetails } from './index.js'
 
 /**
  * @group unit/did
@@ -88,6 +88,10 @@ describe('When creating an instance from the details', () => {
       encodedDetails
     )
     expect(lightDidDetails?.did).toStrictEqual(expectedDid)
+    // Verify base58 encoding
+    expect(lightDidDetails?.did).toStrictEqual(
+      `did:kilt:light:00${authKey.address}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jXcsesDnDNaBKXmjjT6weqynvXJAzQHvxhTt8j1uwMyBSxdANHdNN1NTjczhL5rVJYYqJ12kzneFWurNAzUstsQc3n9zZiFK4BdFV9SD5i5jE7AuTuUL3VraoFZ98CgpSP72ebtLFEH1SosdDT`
+    )
 
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
       id: 'authentication',
@@ -195,6 +199,10 @@ describe('When creating an instance from the details', () => {
       encodedDetails
     )
     expect(lightDidDetails?.did).toStrictEqual(expectedDid)
+    // Verify base58 encoding
+    expect(lightDidDetails?.did).toStrictEqual(
+      `did:kilt:light:01${authKey.address}:z1Ac9CMtYCTRWjetJfJqJoV7FcP9zdFudqUaupQkBCERoCQcnu2SUS5CGHdCXhWoxbihovMVymRperWSPpRc7mJ`
+    )
 
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
       id: 'authentication',
@@ -319,6 +327,10 @@ describe('When creating an instance from a URI', () => {
       expectedLightDidDetails
     )
 
+    // Verify base58 encoding
+    expect(builtLightDidDetails.did).toStrictEqual(
+      `did:kilt:light:00${expectedLightDidDetails.identifier}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jXcsesDnDNaBKXmjjT6weqynvXJAzQHvxhTt8j1uwMyBSxdANHdNN1NTjczhL5rVJYYqJ12kzneFWurNAzUstsQc3n9zZiFK4BdFV9SD5i5jE7AuTuUL3VraoFZ98CgpSP72ebtLFEH1SosdDT`
+    )
     expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
       'authentication'
     )

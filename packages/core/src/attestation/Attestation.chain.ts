@@ -21,7 +21,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
-import { Attestation } from './Attestation'
+import { Attestation } from './Attestation.js'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')

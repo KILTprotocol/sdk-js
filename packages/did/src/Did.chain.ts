@@ -42,7 +42,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto } from '@kiltprotocol/utils'
 
-import { DidDetails, getSignatureAlgForKeyType } from './DidDetails'
+import { DidDetails, getSignatureAlgForKeyType } from './DidDetails/index.js'
 
 // ### Chain type definitions
 

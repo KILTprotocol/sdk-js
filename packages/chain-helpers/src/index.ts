@@ -5,10 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { ExtrinsicError, ExtrinsicErrors, PalletIndex } from './errorhandling'
+export {
+  ExtrinsicError,
+  ExtrinsicErrors,
+  PalletIndex,
+} from './errorhandling/index.js'
 export {
   BlockchainApiConnection,
   KILT_TYPES,
   TypeRegistry,
-} from './blockchainApiConnection'
-export { Blockchain, BlockchainUtils, SubscriptionPromise } from './blockchain'
+} from './blockchainApiConnection/index.js'
+export {
+  Blockchain,
+  BlockchainUtils,
+  SubscriptionPromise,
+} from './blockchain/index.js'

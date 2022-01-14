@@ -33,9 +33,9 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
-import * as ClaimUtils from '../claim/Claim.utils'
-import { Credential } from '../credential/Credential'
-import * as RequestForAttestationUtils from './RequestForAttestation.utils'
+import * as ClaimUtils from '../claim/Claim.utils.js'
+import { Credential } from '../credential/Credential.js'
+import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
 
 function makeSigningData(
   input: IRequestForAttestation,

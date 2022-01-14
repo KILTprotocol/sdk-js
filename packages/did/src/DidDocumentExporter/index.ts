@@ -5,4 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './DidDocumentExporter'
+/**
+ * @packageDocumentation
+ * @module DID
+ */
+
+export * from './DidDocumentExporter.js'

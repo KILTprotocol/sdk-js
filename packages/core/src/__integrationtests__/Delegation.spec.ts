@@ -17,7 +17,7 @@ import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { Credential } from '..'
+import { Credential } from '../index'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {

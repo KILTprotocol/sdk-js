@@ -5,12 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './DidDetails'
-export { getSignatureAlgForKeyType } from './DidDetails.utils'
-export * from './LightDidDetails'
+export * from './DidDetails.js'
+export { getSignatureAlgForKeyType } from './DidDetails.utils.js'
+export * from './LightDidDetails.js'
 export {
   LightDidSupportedSigningKeyTypes,
   LightDidSupportedEncryptionKeyTypes,
   getDefaultMigrationHandler,
-} from './LightDidDetails.utils'
-export * from './FullDidDetails'
+} from './LightDidDetails.utils.js'
+export * from './FullDidDetails.js'

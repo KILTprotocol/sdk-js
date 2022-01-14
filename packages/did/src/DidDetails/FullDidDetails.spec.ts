@@ -17,7 +17,7 @@ import {
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 
-import { FullDidDetails } from '.'
+import { FullDidDetails } from './index.js'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 

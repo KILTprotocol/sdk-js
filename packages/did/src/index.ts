@@ -5,11 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './DemoKeystore'
-export * from './DidDetails'
-export * from './DidDocumentExporter'
-export * from './DidResolver'
-export * as DidChain from './Did.chain'
-export * as DidUtils from './Did.utils'
+export * from './DemoKeystore/index.js'
+export * from './DidDetails/index.js'
+export * from './DidDocumentExporter/index.js'
+export * from './DidResolver/index.js'
+export * as DidChain from './Did.chain.js'
+export * as DidUtils from './Did.utils.js'
 
-export * from './types'
+export * from './types.js'

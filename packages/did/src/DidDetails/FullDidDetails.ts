@@ -21,21 +21,21 @@ import type {
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
-} from '../types'
-import { methodMapping } from './FullDidDetails.utils'
-import { DidDetails } from './DidDetails'
-import { getSignatureAlgForKeyType } from './DidDetails.utils'
+} from '../types.js'
+import { methodMapping } from './FullDidDetails.utils.js'
+import { DidDetails } from './DidDetails.js'
+import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 import {
   generateDidAuthenticatedTx,
   queryDetails,
   queryNonce,
   queryServiceEndpoints,
-} from '../Did.chain'
+} from '../Did.chain.js'
 import {
   defaultDidKeySelection,
   FULL_DID_LATEST_VERSION,
   getKiltDidFromIdentifier,
-} from '../Did.utils'
+} from '../Did.utils.js'
 
 // Max nonce value is (2^64) - 1
 const maxNonceValue = new BN(new BN(2).pow(new BN(64))).subn(1)

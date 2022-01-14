@@ -13,7 +13,7 @@ import { BN } from '@polkadot/util'
 import { ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
-import { Attestation } from '..'
+import { Attestation } from '../index'
 import { makeTransfer } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
@@ -34,7 +34,7 @@ beforeAll(async () => {
   await initializeApi()
   paymentAccount = await createEndowedTestAccount()
   someDid = await createFullDidFromSeed(paymentAccount, keystore)
-})
+}, 60_000)
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(

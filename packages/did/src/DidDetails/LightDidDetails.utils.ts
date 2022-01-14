@@ -10,10 +10,11 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { KeyringPair } from '@kiltprotocol/types'
+import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
-import type { LightDidCreationDetails } from '../types'
-import { parseDidUri } from '../Did.utils'
-import { DidMigrationHandler } from './LightDidDetails'
+import type { LightDidCreationDetails } from '../types.js'
+import { parseDidUri } from '../Did.utils.js'
+import { DidMigrationHandler } from './LightDidDetails.js'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
@@ -105,12 +106,13 @@ export function checkLightDidCreationDetails(
 }
 
 /**
- * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.
+ * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm
+ * and encoding the result in Base58 format with a multibase prefix.
  *
  * @param details The light DID details to encode.
  * @param details.encryptionKey The DID encryption key.
  * @param details.serviceEndpoints The DID service endpoints.
- * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
+ * @returns The Base58-encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({
   encryptionKey,
@@ -130,7 +132,9 @@ export function serializeAndEncodeAdditionalLightDidDetails({
     return null
   }
 
-  return cborEncode(objectToSerialize).toString('base64')
+  const serialized = cborEncode(objectToSerialize)
+  // Add a flag to recognize the serialization algorithm. (Currently only custom object + cbor)
+  return base58Encode([0x0, ...serialized], true)
 }
 
 export function decodeAndDeserializeAdditionalLightDidDetails(
@@ -138,13 +142,17 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   version = 1
 ): Pick<LightDidCreationDetails, 'encryptionKey' | 'serviceEndpoints'> {
-  const decodedPayload: Map<string, unknown> = cborDecode(rawInput, {
-    encoding: 'base64',
-  })
+  const decoded = base58Decode(rawInput, true)
+  const serializationFlag = decoded[0]
+  if (serializationFlag !== 0x0) {
+    throw new Error('Serialization algorithm not supported')
+  }
+  const withoutFlag = decoded.slice(1)
+  const deserialized: Map<string, unknown> = cborDecode(withoutFlag)
 
   return {
-    encryptionKey: decodedPayload[ENCRYPTION_KEY_MAP_KEY],
-    serviceEndpoints: decodedPayload[SERVICES_KEY_MAP_KEY],
+    encryptionKey: deserialized[ENCRYPTION_KEY_MAP_KEY],
+    serviceEndpoints: deserialized[SERVICES_KEY_MAP_KEY],
   }
 }
 

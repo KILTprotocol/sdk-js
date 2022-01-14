@@ -24,8 +24,8 @@ import type {
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 
-import { DidResolver } from '.'
-import { LightDidDetails } from '..'
+import { DidResolver } from './index.js'
+import { LightDidDetails } from '../index.js'
 
 /**
  * @group unit/did

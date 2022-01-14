@@ -26,9 +26,9 @@ import type {
   IDidDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { CType as ICType } from '../ctype/CType'
-import * as CTypeUtils from '../ctype/CType.utils'
-import * as ClaimUtils from './Claim.utils'
+import { CType as ICType } from '../ctype/CType.js'
+import * as CTypeUtils from '../ctype/CType.utils.js'
+import * as ClaimUtils from './Claim.utils.js'
 
 function verifyClaim(
   claimContents: IClaim['contents'],

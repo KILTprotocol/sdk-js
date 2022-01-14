@@ -15,7 +15,7 @@ import {
   decodeDelegationHierarchyDetails,
   DelegationHierarchyDetailsRecord,
   IChainDelegationHierarchyDetails,
-} from './DelegationDecoder'
+} from './DelegationDecoder.js'
 
 /**
  * @packageDocumentation

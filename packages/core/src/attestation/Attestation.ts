@@ -34,9 +34,9 @@ import {
   remove,
   reclaimDeposit,
   queryDepositAmount,
-} from './Attestation.chain'
-import * as AttestationUtils from './Attestation.utils'
-import { DelegationNode } from '../delegation/DelegationNode'
+} from './Attestation.chain.js'
+import * as AttestationUtils from './Attestation.utils.js'
+import { DelegationNode } from '../delegation/DelegationNode.js'
 
 export class Attestation implements IAttestation {
   /**

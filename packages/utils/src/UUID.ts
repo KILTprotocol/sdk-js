@@ -15,7 +15,7 @@
  */
 
 import { v4 as uuid } from 'uuid'
-import { hashStr } from './Crypto'
+import { hashStr } from './Crypto.js'
 
 /**
  * Generates a H256 compliant UUID.

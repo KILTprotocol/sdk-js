@@ -18,8 +18,8 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import type { DidKeySelectionHandler } from './types'
-import { DidResolver } from './DidResolver'
+import type { DidKeySelectionHandler } from './types.js'
+import { DidResolver } from './DidResolver/index.js'
 
 /// The latest version for KILT light DIDs.
 export const LIGHT_DID_LATEST_VERSION = 1

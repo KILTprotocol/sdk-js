@@ -22,7 +22,7 @@ import type {
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
-} from '../types'
+} from '../types.js'
 import {
   checkLightDidCreationDetails,
   decodeAndDeserializeAdditionalLightDidDetails,
@@ -30,16 +30,16 @@ import {
   getSigningKeyTypeFromEncoding,
   LightDidSupportedSigningKeyTypes,
   serializeAndEncodeAdditionalLightDidDetails,
-} from './LightDidDetails.utils'
-import { DidDetails } from './DidDetails'
-import { getSignatureAlgForKeyType } from './DidDetails.utils'
-import { FullDidDetails } from './FullDidDetails'
+} from './LightDidDetails.utils.js'
+import { DidDetails } from './DidDetails.js'
+import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
+import { FullDidDetails } from './FullDidDetails.js'
 import {
   getKiltDidFromIdentifier,
   LIGHT_DID_LATEST_VERSION,
   parseDidUri,
-} from '../Did.utils'
-import { generateCreateTxFromDidDetails } from '../Did.chain'
+} from '../Did.utils.js'
+import { generateCreateTxFromDidDetails } from '../Did.chain.js'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'

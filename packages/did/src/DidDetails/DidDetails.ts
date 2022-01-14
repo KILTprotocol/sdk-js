@@ -18,11 +18,11 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { u8aToHex } from '@polkadot/util'
 
-import type { DidCreationDetails, MapKeysToRelationship } from '../types'
+import type { DidCreationDetails, MapKeysToRelationship } from '../types.js'
 import {
   checkDidCreationDetails,
   getSignatureAlgForKeyType,
-} from './DidDetails.utils'
+} from './DidDetails.utils.js'
 
 type PublicKeysInner = Map<DidKey['id'], Omit<DidKey, 'id'>>
 type ServiceEndpointsInner = Map<

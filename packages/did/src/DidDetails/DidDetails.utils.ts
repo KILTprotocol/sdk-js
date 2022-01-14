@@ -7,8 +7,8 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 
-import type { DidCreationDetails } from '../types'
-import { validateKiltDid } from '../Did.utils'
+import type { DidCreationDetails } from '../types.js'
+import { validateKiltDid } from '../Did.utils.js'
 
 export function checkDidCreationDetails({
   did,

@@ -21,9 +21,13 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
-import { makeSubscriptionPromise } from './SubscriptionPromise'
-import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
+import {
+  ErrorHandler,
+  ExtrinsicError,
+  ExtrinsicErrors,
+} from '../errorhandling/index.js'
+import { makeSubscriptionPromise } from './SubscriptionPromise.js'
+import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -118,7 +122,6 @@ export async function dispatchTx(
 /**
  * Checks the TxError for relevant ones and returns these as matched SDKError for recoverability.
  *
- *
  * @param reason Polkadot API returned error.
  * @returns If matched, a SDKError, else original reason.
  */
@@ -142,7 +145,6 @@ function matchTxError(reason: Error): SDKErrors.SDKError | Error {
  * @param opts [[SubscriptionPromise]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns ISubmittableResult that has led to its resolution.
- *
  */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,

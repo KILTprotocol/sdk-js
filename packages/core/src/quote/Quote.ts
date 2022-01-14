@@ -32,7 +32,7 @@ import {
   DidDetails,
   DidKeySelectionHandler,
 } from '@kiltprotocol/did'
-import { QuoteSchema } from './QuoteSchema'
+import { QuoteSchema } from './QuoteSchema.js'
 
 /**
  * Validates the quote against the meta schema and quote data against the provided schema.
