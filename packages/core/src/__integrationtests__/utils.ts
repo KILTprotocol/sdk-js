@@ -63,7 +63,7 @@ export function addressFromRandom(): string {
 
 export async function isCtypeOnChain(ctype: CType): Promise<boolean> {
   try {
-    const ownerAddress = await getOwner(ctype.hash).catch(() => false)
+    const ownerAddress = await getOwner(ctype.hash).catch(() => null)
     return ownerAddress !== null
   } catch {
     return false
