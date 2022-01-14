@@ -10,11 +10,7 @@
  */
 
 import { DemoKeystore, DidChain, FullDidDetails } from '@kiltprotocol/did'
-import {
-  IRequestForAttestation,
-  KeyringPair,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import { IRequestForAttestation, KeyringPair } from '@kiltprotocol/types'
 import { DecoderUtils, Keyring } from '@kiltprotocol/utils'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
@@ -36,20 +32,17 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 
-let tx: SubmittableExtrinsic
-let authorizedTx: SubmittableExtrinsic
-let attestation: Attestation
-let storedEndpointsCount: BN
-
 async function checkDeleteFullDid(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   keystore: DemoKeystore
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
+  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+    fullDid.identifier
+  )
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
 
-  tx = await fullDid.authorizeExtrinsic(deleteDid, {
+  const tx = await fullDid.authorizeExtrinsic(deleteDid, {
     submitterAccount: identity.address,
     signer: keystore,
   })
@@ -77,8 +70,10 @@ async function checkReclaimFullDid(
   identity: KeyringPair,
   fullDid: FullDidDetails
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
-  tx = await DidChain.getReclaimDepositExtrinsic(
+  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+    fullDid.identifier
+  )
+  const tx = await DidChain.getReclaimDepositExtrinsic(
     identity.address,
     storedEndpointsCount
   )
@@ -108,13 +103,13 @@ async function checkRemoveFullDidAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
+  let attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
 
-  tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+  let tx = await attestation.store()
+  let authorizedTx = await fullDid.authorizeExtrinsic(tx, {
     signer: keystore,
     submitterAccount: identity.address,
   })
@@ -163,13 +158,13 @@ async function checkReclaimFullDidAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
+  let attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
 
-  tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+  let tx = await attestation.store()
+  const authorizedTx = await fullDid.authorizeExtrinsic(tx, {
     signer: keystore,
     submitterAccount: identity.address,
   })
@@ -214,13 +209,13 @@ async function checkDeletedDidReclaimAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<void> {
-  attestation = Attestation.fromRequestAndDid(
+  let attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
 
-  tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+  let tx = await attestation.store()
+  const authorizedTx = await fullDid.authorizeExtrinsic(tx, {
     signer: keystore,
     submitterAccount: identity.address,
   })
@@ -230,7 +225,9 @@ async function checkDeletedDidReclaimAttestation(
     reSign: true,
   })
 
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
+  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+    fullDid.identifier
+  )
 
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
