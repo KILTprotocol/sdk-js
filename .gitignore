@@ -35,6 +35,7 @@ settings.json
 
 # misc
 /.idea
+.vscode
 
 # doc
 /docs/api
