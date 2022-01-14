@@ -375,8 +375,8 @@ describe('handling queries to data not on chain', () => {
     expect(getAttestationHashes(randomAsHex(32))).resolves.toEqual([]))
 })
 
-describe.only('hierarchyDetails', () => {
-  it.only('can fetch hierarchyDetails', async () => {
+describe('hierarchyDetails', () => {
+  it('can fetch hierarchyDetails', async () => {
     const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
     const delegatedNode = await addDelegation(
       rootNode.id,

@@ -30,7 +30,6 @@ import {
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
-import { getOwner } from '../ctype/CType.chain'
 import { Balance } from '../balance'
 import { init } from '../kilt'
 
@@ -62,12 +61,7 @@ export function addressFromRandom(): string {
 }
 
 export async function isCtypeOnChain(ctype: CType): Promise<boolean> {
-  try {
-    const ownerAddress = await getOwner(ctype.hash).catch(() => null)
-    return ownerAddress !== null
-  } catch {
-    return false
-  }
+  return ctype.verifyStored()
 }
 
 export const driversLicenseCType = CType.fromSchema({
