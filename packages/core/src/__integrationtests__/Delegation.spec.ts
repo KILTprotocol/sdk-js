@@ -360,7 +360,7 @@ describe('Deposit claiming', () => {
     // Test removal success with the right account.
     await expect(
       submitExtrinsicWithResign(depositClaimTx, paymentAccount)
-    ).rejects.toThrow()
+    ).resolves.not.toThrow()
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
     await expect(DelegationNode.query(subDelegatedNode.id)).resolves.toBeNull()
@@ -375,20 +375,27 @@ describe('handling queries to data not on chain', () => {
     expect(getAttestationHashes(randomAsHex(32))).resolves.toEqual([]))
 })
 
-describe('hierarchyDetails', () => {
-  it('can fetch hierarchyDetails', async () => {
+describe.only('hierarchyDetails', () => {
+  it.only('can fetch hierarchyDetails', async () => {
+    console.log('a')
     const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
+    console.log('b')
     const delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
       root,
       attester
     )
+    console.log('c')
 
     const details = await delegatedNode.getHierarchyDetails()
 
+    console.log('d')
+
     expect(details.cTypeHash).toBe(driversLicenseCType.hash)
+    console.log('e')
     expect(details.id).toBe(rootNode.id)
+    console.log('f')
   }, 60_000)
 })
 

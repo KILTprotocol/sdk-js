@@ -10,13 +10,12 @@
  */
 
 import { BN } from '@polkadot/util'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import { ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
-import { randomAsHex } from '@polkadot/util-crypto'
 import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
-import { config, disconnect } from '../kilt'
+import { disconnect } from '../kilt'
 import {
   addressFromRandom,
   createEndowedTestAccount,

@@ -45,11 +45,11 @@ export async function initializeApi(): Promise<void> {
 const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
 
 // Dev Faucet account seed phrase
-const FaucetSeed =
+const faucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 // endowed accounts on development chain spec
 // ids are ed25519 because the endowed accounts are
-export const devFaucet = keyring.createFromUri(FaucetSeed)
+export const devFaucet = keyring.createFromUri(faucetSeed)
 export const devAlice = keyring.createFromUri('//Alice')
 export const devBob = keyring.createFromUri('//Bob')
 export const devCharlie = keyring.createFromUri('//Charlie')
