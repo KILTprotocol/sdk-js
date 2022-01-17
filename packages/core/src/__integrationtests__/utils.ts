@@ -22,13 +22,13 @@ import {
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import {
+import type {
   ISubmittableResult,
-  KeyRelationship,
   KeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { Balance } from '../balance'
 import { init } from '../kilt'

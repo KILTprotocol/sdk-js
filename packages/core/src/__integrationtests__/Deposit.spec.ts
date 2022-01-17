@@ -10,20 +10,25 @@
  */
 
 import { DemoKeystore, DidChain, FullDidDetails } from '@kiltprotocol/did'
-import { IRequestForAttestation, KeyringPair } from '@kiltprotocol/types'
+import {
+  IRequestForAttestation,
+  KeyringPair,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { DecoderUtils, Keyring } from '@kiltprotocol/utils'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
 import {
   createFullDidFromLightDid,
+  createFullDidFromSeed,
+  createMinimalLightDidFromSeed,
   devFaucet,
   driversLicenseCType,
   endowAccounts,
-  isCtypeOnChain,
-  createMinimalLightDidFromSeed,
-  createFullDidFromSeed,
   initializeApi,
+  isCtypeOnChain,
+  submitExtrinsicWithResign,
 } from './utils'
 import { Balance } from '../balance'
 import { Attestation } from '../attestation/Attestation'
@@ -32,32 +37,30 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 
+let tx: SubmittableExtrinsic
+let authorizedTx: SubmittableExtrinsic
+let attestation: Attestation
+let storedEndpointsCount: BN
+
 async function checkDeleteFullDid(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   keystore: DemoKeystore
 ): Promise<boolean> {
-  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
-    fullDid.identifier
-  )
+  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
 
-  const tx = await fullDid.authorizeExtrinsic(deleteDid, {
-    submitterAccount: identity.address,
+  tx = await fullDid.authorizeExtrinsic(deleteDid, {
     signer: keystore,
+    submitterAccount: identity.address,
   })
 
   const balanceBeforeDeleting = await Balance.getBalances(identity.address)
 
-  const didResult = (await DidChain.queryDetails(
-    identity.address
-  )) as DidChain.IDidChainRecordJSON
-  const didDeposit = didResult.deposit
+  const didResult = await DidChain.queryDetails(fullDid.identifier)
+  const didDeposit = didResult!.deposit
 
-  await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
@@ -70,25 +73,18 @@ async function checkReclaimFullDid(
   identity: KeyringPair,
   fullDid: FullDidDetails
 ): Promise<boolean> {
-  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
-    fullDid.identifier
-  )
-  const tx = await DidChain.getReclaimDepositExtrinsic(
+  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
+  tx = await DidChain.getReclaimDepositExtrinsic(
     identity.address,
     storedEndpointsCount
   )
 
   const balanceBeforeRevoking = await Balance.getBalances(identity.address)
 
-  const didResult = (await DidChain.queryDetails(
-    identity.address
-  )) as DidChain.IDidChainRecordJSON
-  const didDeposit = didResult.deposit
+  const didResult = await DidChain.queryDetails(fullDid.identifier)
+  const didDeposit = didResult!.deposit
 
-  await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
   const balanceAfterRevoking = await Balance.getBalances(identity.address)
 
@@ -103,21 +99,22 @@ async function checkRemoveFullDidAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
-  let attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
 
-  let tx = await attestation.store()
-  let authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+  tx = await attestation.store()
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
     signer: keystore,
     submitterAccount: identity.address,
   })
 
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(
+    authorizedTx,
+    identity,
+    BlockchainUtils.IS_FINALIZED
+  )
 
   const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
@@ -140,10 +137,11 @@ async function checkRemoveFullDidAttestation(
     submitterAccount: identity.address,
   })
 
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(
+    authorizedTx,
+    identity,
+    BlockchainUtils.IS_FINALIZED
+  )
 
   const balanceAfterRemoving = await Balance.getBalances(identity.address)
 
@@ -158,21 +156,22 @@ async function checkReclaimFullDidAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
-  let attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
 
-  let tx = await attestation.store()
-  const authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+  tx = await attestation.store()
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
     signer: keystore,
     submitterAccount: identity.address,
   })
 
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(
+    authorizedTx,
+    identity,
+    BlockchainUtils.IS_FINALIZED
+  )
 
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
@@ -191,10 +190,7 @@ async function checkReclaimFullDidAttestation(
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
-  await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
@@ -209,25 +205,24 @@ async function checkDeletedDidReclaimAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<void> {
-  let attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
 
-  let tx = await attestation.store()
-  const authorizedTx = await fullDid.authorizeExtrinsic(tx, {
+  tx = await attestation.store()
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
     signer: keystore,
     submitterAccount: identity.address,
   })
 
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
-
-  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
-    fullDid.identifier
+  await submitExtrinsicWithResign(
+    authorizedTx,
+    identity,
+    BlockchainUtils.IS_FINALIZED
   )
+
+  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
 
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
@@ -235,23 +230,16 @@ async function checkDeletedDidReclaimAttestation(
   )
 
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
-
   tx = await fullDid.authorizeExtrinsic(deleteDid, {
     signer: keystore,
     submitterAccount: identity.address,
   })
 
-  await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
   tx = await attestation.reclaimDeposit()
 
-  await BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
+  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 }
 
 const testIdentities: KeyringPair[] = []
@@ -283,11 +271,7 @@ beforeAll(async () => {
     claimerMnemonic
   )
 
-  const attester = await createFullDidFromSeed(
-    devFaucet,
-    keystore,
-    randomAsHex()
-  )
+  const attester = await createFullDidFromSeed(devFaucet, keystore)
 
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
@@ -297,10 +281,7 @@ beforeAll(async () => {
         submitterAccount: devFaucet.address,
       })
       .then((val) =>
-        BlockchainUtils.signAndSubmitTx(val, devFaucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+        submitExtrinsicWithResign(val, devFaucet, BlockchainUtils.IS_IN_BLOCK)
       )
   }
 
@@ -358,7 +339,6 @@ describe('Different deposits scenarios', () => {
       createFullDidFromSeed(testIdentities[1], keystore, testMnemonics[1]),
       createFullDidFromSeed(testIdentities[2], keystore, testMnemonics[2]),
       createFullDidFromSeed(testIdentities[3], keystore, testMnemonics[3]),
-
       createFullDidFromLightDid(testIdentities[4], testDidFive, keystore),
       createFullDidFromLightDid(testIdentities[5], testDidSix, keystore),
       createFullDidFromLightDid(testIdentities[6], testDidSeven, keystore),

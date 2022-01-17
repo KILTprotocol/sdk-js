@@ -48,7 +48,7 @@ beforeAll(async () => {
     createFullDidFromSeed(tokenHolder, signer),
     createFullDidFromSeed(tokenHolder, signer),
   ])
-}, 30_000)
+}, 60_000)
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await Attestation.queryDepositAmount()

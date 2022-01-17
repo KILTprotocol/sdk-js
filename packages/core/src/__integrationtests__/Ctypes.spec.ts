@@ -52,7 +52,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   beforeAll(async () => {
     paymentAccount = await createEndowedTestAccount()
     ctypeCreator = await createFullDidFromSeed(paymentAccount, keystore)
-  }, 30_000)
+  }, 60_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
