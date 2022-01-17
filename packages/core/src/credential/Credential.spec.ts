@@ -695,4 +695,11 @@ describe('create presentation', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
     expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
   })
+
+  it('should verify the credential claims structure against the ctype', async () => {
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
+    cred.request.claim.contents.name = 123
+    expect(CredentialUtils.verifyStructure(cred, ctype)).toBeFalsy()
+  })
 })
