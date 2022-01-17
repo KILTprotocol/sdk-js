@@ -17,7 +17,7 @@ import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { Credential } from '../index'
+import { Credential } from '../index.js'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {
@@ -107,7 +107,7 @@ beforeAll(async () => {
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
   }
-}, 30_000)
+}, 60_000)
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DelegationNode.queryDepositAmount()

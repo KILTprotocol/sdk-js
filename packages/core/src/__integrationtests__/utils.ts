@@ -15,16 +15,16 @@ import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
   DemoKeystore,
   DidChain,
-  DidCreationDetails,
-  DidUtils,
   EncryptionAlgorithms,
   FullDidDetails,
+  getDefaultMigrationHandler,
   LightDidDetails,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   ISubmittableResult,
+  KeyRelationship,
   KeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
@@ -81,11 +81,12 @@ export const driversLicenseCType = CType.fromSchema({
 // Submits with resign = true by default and resolving when IS_IN_BLOCK
 export async function submitExtrinsicWithResign(
   extrinsic: SubmittableExtrinsic,
-  submitter: KeyringPair
+  submitter: KeyringPair,
+  resolveOn: SubscriptionPromise.ResultEvaluator = BlockchainUtils.IS_IN_BLOCK
 ): Promise<void> {
   await BlockchainUtils.signAndSubmitTx(extrinsic, submitter, {
     reSign: true,
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    resolveOn,
   })
 }
 
@@ -137,10 +138,17 @@ export async function createMinimalLightDidFromSeed(
     alg: EncryptionAlgorithms.NaclBox,
     seed: Crypto.hashStr(genSeed),
   })
-  return LightDidDetails.fromDetails({
-    authenticationKey: { ...authKey, type: authKey.alg },
-    encryptionKey: { ...encKey, type: 'x25519' },
+  const details = LightDidDetails.fromDetails({
+    authenticationKey: {
+      publicKey: authKey.publicKey,
+      type: authKey.alg,
+    },
+    encryptionKey: {
+      publicKey: encKey.publicKey,
+      type: 'x25519',
+    },
   })
+  return details
 }
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
@@ -149,34 +157,31 @@ export async function createFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
 ): Promise<FullDidDetails> {
-  const fullDidCreationDetails: DidCreationDetails = {
-    did: DidUtils.getKiltDidFromIdentifier(lightDidForId.identifier, 'full'),
-    keyRelationships: {
-      authentication: new Set([lightDidForId.authenticationKey.id]),
-      assertionMethod: new Set([lightDidForId.authenticationKey.id]),
-      capabilityDelegation: new Set([lightDidForId.authenticationKey.id]),
-    },
-    keys: {
-      [lightDidForId.authenticationKey.id]: lightDidForId.authenticationKey,
-    },
-  }
-
-  const fullDid = new FullDidDetails({
-    identifier: lightDidForId.identifier,
-    ...fullDidCreationDetails,
-  })
-
-  const didCreationTx = await DidChain.generateCreateTxFromDidDetails(
-    fullDid,
+  const fullDid = await lightDidForId.migrate(
     identity.address,
-    {
-      alg: lightDidForId.authenticationKey.type,
-      signer: keystore,
-      signingPublicKey: lightDidForId.authenticationKey.publicKey,
-    }
+    keystore,
+    getDefaultMigrationHandler(identity)
   )
 
-  await submitExtrinsicWithResign(didCreationTx, identity)
+  let addExtrinsic = await DidChain.getSetKeyExtrinsic(
+    KeyRelationship.assertionMethod,
+    fullDid.authenticationKey
+  )
+  let authenticatedExtrinsic = await fullDid.authorizeExtrinsic(addExtrinsic, {
+    signer: keystore,
+    submitterAccount: identity.address,
+  })
+  await submitExtrinsicWithResign(authenticatedExtrinsic, identity)
+
+  addExtrinsic = await DidChain.getSetKeyExtrinsic(
+    KeyRelationship.capabilityDelegation,
+    fullDid.authenticationKey
+  )
+  authenticatedExtrinsic = await fullDid.authorizeExtrinsic(addExtrinsic, {
+    signer: keystore,
+    submitterAccount: identity.address,
+  })
+  await submitExtrinsicWithResign(authenticatedExtrinsic, identity)
 
   return FullDidDetails.fromChainInfo(
     fullDid.identifier
