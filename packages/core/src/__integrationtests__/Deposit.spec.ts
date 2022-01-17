@@ -24,7 +24,7 @@ import {
   createFullDidFromSeed,
   createMinimalLightDidFromSeed,
   devFaucet,
-  driversLicenseCType,
+  driversLicenseCTypeForDeposit as driversLicenseCType,
   endowAccounts,
   initializeApi,
   isCtypeOnChain,

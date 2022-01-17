@@ -78,6 +78,23 @@ export const driversLicenseCType = CType.fromSchema({
   type: 'object',
 })
 
+export const driversLicenseCTypeForDeposit = CType.fromSchema({
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'Drivers License for deposit test',
+  properties: {
+    name: {
+      type: 'string',
+    },
+    age: {
+      type: 'integer',
+    },
+    location: {
+      type: 'string',
+    },
+  },
+  type: 'object',
+})
+
 // Submits with resign = true by default and resolving when IS_IN_BLOCK
 export async function submitExtrinsicWithResign(
   extrinsic: SubmittableExtrinsic,
