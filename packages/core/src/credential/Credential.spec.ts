@@ -39,6 +39,7 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
+import '../../../../testingTools/jestErrorCodeMatcher'
 
 jest.mock('../attestation/Attestation.chain')
 
@@ -709,13 +710,13 @@ describe('create presentation', () => {
     expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
   })
 
-  it('should verify the credential claims structure against the ctype', async () => {
+  it('should verify the credential claims structure against the ctype', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
     expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
 
-    expect(() => {
+    expect(() =>
       CredentialUtils.verifyStructure(cred, ctype)
-    }).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 })
