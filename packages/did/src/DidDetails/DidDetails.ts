@@ -87,7 +87,7 @@ export abstract class DidDetails implements IDidDetails {
     return this.getKeys(KeyRelationship.capabilityDelegation)[0]
   }
 
-  public getKey(id: string): DidKey | undefined {
+  public getKey(id: DidKey['id']): DidKey | undefined {
     const keyDetails = this.publicKeys.get(id)
     if (!keyDetails) {
       return undefined
@@ -105,7 +105,9 @@ export abstract class DidDetails implements IDidDetails {
     return [...keyIds].map((keyId) => this.getKey(keyId) as DidKey)
   }
 
-  public getEndpoint(id: string): DidServiceEndpoint | undefined {
+  public getEndpoint(
+    id: DidServiceEndpoint['id']
+  ): DidServiceEndpoint | undefined {
     const endpointDetails = this.serviceEndpoints.get(id)
     if (!endpointDetails) {
       return undefined

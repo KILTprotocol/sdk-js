@@ -92,7 +92,7 @@ export interface IDidDetails {
    * @param id The key ID, without the leading DID URI.
    * @returns [[IDidKey]] or undefined if no key with this id is present.
    */
-  getKey(id: string): DidKey | undefined
+  getKey(id: DidKey['id']): DidKey | undefined
   /**
    * Retrieves public key details from the [[IDid]], optionally filtering by [[KeyRelationship]].
    *
@@ -106,7 +106,7 @@ export interface IDidDetails {
    *
    * @param id The identifier of the service endpoint, without the DID prefix.
    */
-  getEndpoint(id: string): DidServiceEndpoint | undefined
+  getEndpoint(id: DidServiceEndpoint['id']): DidServiceEndpoint | undefined
   /**
    * Retrieves all the service endpoints associated with the DID.
    *
@@ -118,4 +118,7 @@ export interface IDidDetails {
 /**
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
-export type DidSignature = { keyId: DidPublicKey['id']; signature: string }
+export type DidSignature = {
+  keyId: DidPublicKey['id']
+  signature: string
+}
