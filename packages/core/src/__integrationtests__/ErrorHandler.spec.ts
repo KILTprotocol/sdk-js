@@ -18,7 +18,7 @@ import {
   FullDidDetails,
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { Attestation } from '..'
+import { Attestation } from '../index'
 import { makeTransfer } from '../balance/Balance.chain'
 import { config, disconnect } from '../kilt'
 import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'

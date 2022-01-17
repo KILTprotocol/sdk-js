@@ -1,10 +1,16 @@
-/* eslint-disable */
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable no-console */
 
 import { BN, hexToU8a } from '@polkadot/util'
 import { Keyring } from '@kiltprotocol/utils'
 import { randomAsU8a } from '@polkadot/util-crypto'
-import { CType } from '../ctype/CType'
-import { getOwner } from '../ctype/CType.chain'
 import {
   DefaultResolver,
   DemoKeystore,
@@ -13,13 +19,15 @@ import {
   FullDidDetails,
   LightDidDetails,
 } from '@kiltprotocol/did'
-import { Balance } from '../balance'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   KeyRelationship,
   KeyringPair,
   KeystoreSigner,
 } from '@kiltprotocol/types'
+import { CType } from '../ctype/CType'
+import { getOwner } from '../ctype/CType.chain'
+import { Balance } from '../balance'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(1000)
@@ -84,7 +92,7 @@ export const IsOfficialLicenseAuthority = CType.fromSchema({
 
 export async function endowAccounts(
   faucet: KeyringPair,
-  addresses: Array<string>
+  addresses: string[]
 ): Promise<void> {
   await Promise.all(
     addresses.map((address) =>
@@ -118,9 +126,9 @@ export async function createMinimalFullDidFromLightDid(
 
   const key = {
     publicKey: hexToU8a(
-      queried.details.getKeys(KeyRelationship.authentication)[0].publicKeyHex
+      queried.details!.getKeys(KeyRelationship.authentication)[0].publicKeyHex
     ),
-    type: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+    type: queried.details!.getKeys(KeyRelationship.authentication)[0].type,
   }
 
   const addExtrinsic = await DidChain.getSetKeyExtrinsic(
@@ -133,9 +141,10 @@ export async function createMinimalFullDidFromLightDid(
     txCounter: (queried.details as FullDidDetails).getNextTxIndex(),
     call: addExtrinsic,
     signer: keystore as KeystoreSigner<string>,
-    signingPublicKey: queried.details.getKeys(KeyRelationship.authentication)[0]
-      .publicKeyHex,
-    alg: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+    signingPublicKey: queried.details!.getKeys(
+      KeyRelationship.authentication
+    )[0].publicKeyHex,
+    alg: queried.details!.getKeys(KeyRelationship.authentication)[0].type,
     submitter: identity.address,
   })
 

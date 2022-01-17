@@ -24,7 +24,7 @@ import {
   KILT_CREDENTIAL_CONTEXT_URL,
   KILT_VERIFIABLECREDENTIAL_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,
-} from './constants'
+} from './constants.js'
 import type {
   AttestedProof,
   CredentialDigestProof,
@@ -32,7 +32,7 @@ import type {
   Proof,
   SelfSignedProof,
   VerifiableCredential,
-} from './types'
+} from './types.js'
 
 export function fromCredentialIRI(credentialId: string): string {
   const hexString = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)

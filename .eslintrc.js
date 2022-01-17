@@ -21,19 +21,24 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'prettier', 'jsdoc', 'license-header'],
+  plugins: [
+    '@typescript-eslint',
+    'prettier',
+    'jsdoc',
+    'license-header',
+    'import',
+  ],
   rules: {
-    'import/no-cycle': 2,
+    'import/no-cycle': 'off', // TODO: This rule does not seem to be working atm.
     'import/extensions': [
       'error',
       'ignorePackages',
       {
-        js: 'never',
-        jsx: 'never',
-        ts: 'never',
-        tsx: 'never',
+        utils: 'never',
+        chain: 'never',
       },
     ],
+    'no-restricted-imports': ['error', '.', '..'],
     // Taken care of by typescript
     'import/no-unresolved': 'off',
     'prettier/prettier': 'error',
@@ -78,6 +83,8 @@ module.exports = {
       },
     ],
     'jsdoc/check-alignment': 'off',
+    'jsdoc/no-multi-asterisks': 'off',
+    'jsdoc/tag-lines': 'off',
     'license-header/header': ['error', './license-header.js'],
     'import/prefer-default-export': 'off',
     'import/no-default-export': 'error',
@@ -87,11 +94,12 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['**/*.spec.ts', '**/*.spec.ts'],
+      files: ['**/*.spec.ts'],
       env: {
         jest: true,
       },
       rules: {
+        'import/extensions': 'off',
         '@typescript-eslint/no-object-literal-type-assertion': 'off',
         'no-underscore-dangle': 'off',
         'global-require': 'off',
@@ -106,12 +114,11 @@ module.exports = {
         '@typescript-eslint/explicit-function-return-type': 'off',
       },
     },
-  ],
-  settings: {
-    'import/resolver': {
-      node: {
-        extensions: ['.js', '.ts'],
+    {
+      files: ['**/__integrationtests__/*.ts'],
+      rules: {
+        'import/extensions': 'off',
       },
     },
-  },
+  ],
 }

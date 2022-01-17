@@ -23,7 +23,7 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import * as BalanceUtils from './Balance.utils'
+import * as BalanceUtils from './Balance.utils.js'
 
 /**
  * Fetches the current balances of the account with [accountAddress].

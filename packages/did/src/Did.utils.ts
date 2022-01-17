@@ -21,7 +21,7 @@ import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { hexToU8a, isHex } from '@polkadot/util'
 import type { Registry } from '@polkadot/types/types'
 import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
-import { DefaultResolver } from './DidResolver/DefaultResolver'
+import { DefaultResolver } from './DidResolver/DefaultResolver.js'
 import type {
   PublicKeyEnum,
   IDidCreationOptions,
@@ -34,8 +34,8 @@ import type {
   IDidParsingResult,
   IServiceEndpointChainRecordCodec,
 } from './types'
-import { generateCreateTx } from './Did.chain'
-import { LightDidDetails } from '.'
+import { generateCreateTx } from './Did.chain.js'
+import { LightDidDetails } from './DidDetails/index.js'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -43,7 +43,7 @@ export const KILT_DID_PREFIX = 'did:kilt:'
 // - did:kilt:<kilt_address>
 // - did:kilt:<kilt_address>#<fragment>
 export const FULL_KILT_DID_REGEX =
-  /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
 // - did:kilt:light:00<kilt_address>
@@ -51,7 +51,7 @@ export const FULL_KILT_DID_REGEX =
 // - did:kilt:light:10<kilt_address>#<fragment>
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
 export const LIGHT_KILT_DID_REGEX =
-  /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48,49})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
 export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
   ed25519 = 'ed25519',
@@ -381,25 +381,39 @@ export async function verifyDidSignature({
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
   // resolveDoc can accept a key ID, but it will always return the DID details.
-  const details = await resolver.resolveDoc(keyId)
-  // If no details can be resolved, it is clearly an error, so we return false
-  if (!details) {
+  const resolutionDetails = await resolver.resolveDoc(keyId)
+  // Verification fails if the DID does not exist at all.
+  if (!resolutionDetails) {
     return {
       verified: false,
     }
   }
-  // Returns false also if the migrated full DID has been deleted.
-  if (details.metadata?.deleted) {
+  // Verification also fails if the DID has been deleted.
+  if (resolutionDetails.metadata.deactivated) {
     return {
       verified: false,
     }
   }
+  // Verification also fails if the signer is a migrated light DID.
+  if (resolutionDetails.metadata.canonicalId) {
+    return {
+      verified: false,
+    }
+  }
+  // Otherwise, the details used are either the migrated full DID details or the light DID details.
+  const didDetails = (
+    resolutionDetails.metadata.canonicalId
+      ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
+          ?.details
+      : resolutionDetails.details
+  ) as IDidDetails
+
   return verifyDidSignatureFromDetails({
     message,
     signature,
     keyId,
     keyRelationship,
-    didDetails: details.details,
+    didDetails,
   })
 }
 

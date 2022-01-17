@@ -22,10 +22,16 @@ import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { Credential } from '..'
+import { Credential } from '../index'
 import { disconnect, init } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
-import { CtypeOnChain, DriversLicense, devFaucet, WS_ADDRESS } from './utils'
+import {
+  CtypeOnChain,
+  DriversLicense,
+  devFaucet,
+  WS_ADDRESS,
+  devBob,
+} from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
@@ -336,6 +342,47 @@ describe('revocation', () => {
       expect(delegationA.verify()).resolves.toBe(false),
       expect(delegationB.verify()).resolves.toBe(false),
     ])
+  }, 60_000)
+})
+
+describe('Deposit claiming', () => {
+  it('deposit payer should be able to claim back its own deposit and delete any children', async () => {
+    // Delegation nodes are written on the chain using `paymentAccount`.
+    const rootNode = await writeHierarchy(root, DriversLicense.hash)
+    const delegatedNode = await addDelegation(
+      rootNode.id,
+      rootNode.id,
+      root,
+      root
+    )
+    const subDelegatedNode = await addDelegation(
+      rootNode.id,
+      delegatedNode.id,
+      root,
+      root
+    )
+
+    await expect(DelegationNode.query(delegatedNode.id)).resolves.not.toBeNull()
+    await expect(
+      DelegationNode.query(subDelegatedNode.id)
+    ).resolves.not.toBeNull()
+
+    const depositClaimTx = await delegatedNode.reclaimDeposit()
+
+    // Test removal failure with an account that is not the deposit payer.
+    await expect(
+      BlockchainUtils.signAndSubmitTx(depositClaimTx, devBob, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).rejects.toThrow()
+
+    // Test removal success with the right account.
+    await BlockchainUtils.signAndSubmitTx(depositClaimTx, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+
+    await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
+    await expect(DelegationNode.query(subDelegatedNode.id)).resolves.toBeNull()
   }, 60_000)
 })
 

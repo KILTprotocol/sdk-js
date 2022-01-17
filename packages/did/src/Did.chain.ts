@@ -42,7 +42,7 @@ import {
   encodeServiceEndpoint,
   parseDidUrl,
   assembleDidFragment,
-} from './Did.utils'
+} from './Did.utils.js'
 
 // ### RAW QUERYING (lowest layer)
 
@@ -418,8 +418,10 @@ export async function getAddEndpointExtrinsic(
   return api.tx.did.addServiceEndpoint(encoded)
 }
 
+// The endpointId parameter is the service endpoint ID without the DID prefix.
+// So for a endpoint of the form did:kilt:<identifier>#<endpoint_id>, only <endpoint_id> must be passed as parameter here.
 export async function getRemoveEndpointExtrinsic(
-  endpointId: IDidServiceEndpoint['id']
+  endpointId: string
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.did.removeServiceEndpoint(endpointId)

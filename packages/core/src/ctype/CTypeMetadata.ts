@@ -12,8 +12,8 @@
 
 import type { ICTypeMetadata } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import * as CTypeUtils from './CType.utils'
-import { MetadataModel } from './CTypeSchema'
+import * as CTypeUtils from './CType.utils.js'
+import { MetadataModel } from './CTypeSchema.js'
 
 export class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']

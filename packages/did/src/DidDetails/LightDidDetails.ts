@@ -13,13 +13,13 @@ import {
   assembleDidFragment,
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
-} from '../Did.utils'
+} from '../Did.utils.js'
 import type { LightDidDetailsCreationOpts } from '../types'
-import { DidDetails } from './DidDetails'
+import { DidDetails } from './DidDetails.js'
 import {
   serializeAndEncodeAdditionalLightDidDetails,
   checkLightDidCreationOptions,
-} from './LightDidDetails.utils'
+} from './LightDidDetails.utils.js'
 
 export class LightDidDetails extends DidDetails {
   /// The latest version for KILT light DIDs.

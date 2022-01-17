@@ -19,7 +19,7 @@ import type {
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KILT_SELF_SIGNED_PROOF_TYPE,
-} from './constants'
+} from './constants.js'
 
 export interface Proof {
   type: string

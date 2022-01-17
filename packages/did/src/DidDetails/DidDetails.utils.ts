@@ -16,7 +16,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import type { TypeRegistry } from '@polkadot/types'
 import type { PublicKeyRoleAssignment } from '../types'
-import { generateCreateTx } from '../Did.chain'
+import { generateCreateTx } from '../Did.chain.js'
 import {
   computeKeyId,
   encodeDidPublicKey,
@@ -24,7 +24,7 @@ import {
   getSignatureAlgForKeyType,
   getIdentifierFromKiltDid,
   assembleDidFragment,
-} from '../Did.utils'
+} from '../Did.utils.js'
 
 /**
  * Write on the KILT blockchain a new (full) DID with the provided details.

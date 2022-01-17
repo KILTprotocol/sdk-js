@@ -12,7 +12,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { ISubmittableResult } from '@kiltprotocol/types'
 import { DispatchError, EventRecord } from '@polkadot/types/interfaces'
-import { ErrorHandler, PalletIndex } from '.'
+import { ErrorHandler, PalletIndex } from './index'
 import { ExtrinsicError, ExtrinsicErrors } from './ExtrinsicError'
 import { TypeRegistry } from '../blockchainApiConnection'
 
