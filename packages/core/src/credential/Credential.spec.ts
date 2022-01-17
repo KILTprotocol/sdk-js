@@ -31,7 +31,7 @@ import {
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
-import { UUID } from '@kiltprotocol/utils'
+import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
@@ -713,6 +713,8 @@ describe('create presentation', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
     expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
-    expect(CredentialUtils.verifyStructure(cred, ctype)).toBeFalsy()
+    expect(CredentialUtils.verifyStructure(cred, ctype)).toThrowErrorWithCode(
+      SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
+    )
   })
 })
