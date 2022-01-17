@@ -54,7 +54,7 @@ export function keypairFromRandom(): KeyringPair {
   return keyring.addFromSeed(randomAsU8a(32))
 }
 
-export async function CtypeOnChain(ctype: CType): Promise<boolean> {
+export async function ctypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
     .then((ownerAddress) => {
       return ownerAddress !== null

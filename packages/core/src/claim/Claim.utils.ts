@@ -32,7 +32,7 @@ const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
  * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]]'s ['contents'].
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] in case the claim's ['cTypeHash'] property is undefined.
  */
-function JsonLDcontents(
+function jsonLDcontents(
   claim: PartialClaim,
   expanded = true
 ): Record<string, unknown> {
@@ -67,7 +67,7 @@ export function toJsonLD(
   claim: PartialClaim,
   expanded = true
 ): Record<string, unknown> {
-  const credentialSubject = JsonLDcontents(claim, expanded)
+  const credentialSubject = jsonLDcontents(claim, expanded)
   const prefix = expanded ? VC_VOCAB : ''
   const result = {
     [`${prefix}credentialSubject`]: credentialSubject,
@@ -80,7 +80,7 @@ export function toJsonLD(
 }
 
 function makeStatementsJsonLD(claim: PartialClaim): string[] {
-  const normalized = JsonLDcontents(claim, true)
+  const normalized = jsonLDcontents(claim, true)
   return Object.entries(normalized).map(([key, value]) =>
     JSON.stringify({ [key]: value })
   )

@@ -26,7 +26,7 @@ import { Credential } from '../index'
 import { disconnect, init } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {
-  CtypeOnChain,
+  ctypeOnChain,
   DriversLicense,
   devFaucet,
   WS_ADDRESS,
@@ -104,7 +104,7 @@ beforeAll(async () => {
     createOnChainDidFromSeed(paymentAccount, signer, randomAsHex()),
   ])
 
-  if (!(await CtypeOnChain(DriversLicense))) {
+  if (!(await ctypeOnChain(DriversLicense))) {
     await DriversLicense.store()
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)

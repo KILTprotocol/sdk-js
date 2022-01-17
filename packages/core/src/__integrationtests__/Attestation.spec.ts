@@ -27,7 +27,7 @@ import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import {
-  CtypeOnChain,
+  ctypeOnChain,
   DriversLicense,
   IsOfficialLicenseAuthority,
   devFaucet,
@@ -106,7 +106,7 @@ describe('handling attestations that do not exist', () => {
 
 describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
-    const ctypeExists = await CtypeOnChain(DriversLicense)
+    const ctypeExists = await ctypeOnChain(DriversLicense)
     if (!ctypeExists) {
       await attester
         .authorizeExtrinsic(
@@ -369,7 +369,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
   describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
-      if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
+      if (!(await ctypeOnChain(IsOfficialLicenseAuthority))) {
         await IsOfficialLicenseAuthority.store()
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
@@ -381,7 +381,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             })
           )
       }
-      await expect(CtypeOnChain(IsOfficialLicenseAuthority)).resolves.toBe(true)
+      await expect(ctypeOnChain(IsOfficialLicenseAuthority)).resolves.toBe(true)
     }, 45_000)
 
     it('can be included in a claim as a legitimation', async () => {

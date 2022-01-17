@@ -34,7 +34,7 @@ import {
   devFaucet,
   DriversLicense,
   endowAccounts,
-  CtypeOnChain,
+  ctypeOnChain,
 } from './utils'
 import { Balance } from '../balance'
 import { Attestation } from '../attestation/Attestation'
@@ -311,7 +311,7 @@ beforeAll(async () => {
     randomAsHex()
   )
 
-  const ctypeExists = await CtypeOnChain(DriversLicense)
+  const ctypeExists = await ctypeOnChain(DriversLicense)
   if (!ctypeExists) {
     await attester
       .authorizeExtrinsic(
