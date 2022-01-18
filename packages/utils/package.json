@@ -19,7 +19,7 @@
     "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm && yarn copy:jsonabc",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
+    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
     "copy:jsonabc": "cp -f ./src/jsonabc.* ./lib/cjs && cp -f ./src/jsonabc.cjs ./lib/esm/jsonabc.cjs"
   },
   "repository": "github:kiltprotocol/sdk-js",
