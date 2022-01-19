@@ -1221,9 +1221,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/testing@workspace:packages/testing"
   dependencies:
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^6.11.1
     "@polkadot/types": ^6.11.1
+    "@polkadot/types-support": ^6.11.1
+    "@polkadot/util": ^8.1.2
     rimraf: ^3.0.2
     typescript: ^4.5.4
     yargs: ^16.2.0
@@ -1420,6 +1423,16 @@ __metadata:
     "@polkadot/types": 6.11.1
     "@polkadot/util": ^8.1.2
   checksum: a08dfdad474d94238edc7aa75b3684916a2faca0025d98fb088f9dbfc5759f8816ec4291b0c65797dd0a7460898f6efa00aa5c8eaf0a3f37327394bbca331e8b
+  languageName: node
+  linkType: hard
+
+"@polkadot/types-support@npm:^6.11.1":
+  version: 6.12.1
+  resolution: "@polkadot/types-support@npm:6.12.1"
+  dependencies:
+    "@babel/runtime": ^7.16.3
+    "@polkadot/util": ^8.1.2
+  checksum: bf681ebfeec255b1bceade728b44f1e6cd844123f1a0fc05d5227d881112d65b5e47e4d3ae5562e16043708c44d000a64d167c8257d39f62736ea1dfbfa6736d
   languageName: node
   linkType: hard
 

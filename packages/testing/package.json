@@ -32,9 +32,12 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
+    "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@polkadot/api": "^6.11.1",
-    "@polkadot/types": "^6.11.1"
+    "@polkadot/types": "^6.11.1",
+    "@polkadot/types-support": "^6.11.1",
+    "@polkadot/util": "^8.1.2"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",

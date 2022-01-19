@@ -11,3 +11,5 @@ export {
 } from './typeRegistry.js'
 export { getMockedApi, MockApiPromise } from './mockedApi.js'
 export { mockChainQueryReturn } from './mockedApi.utils.js'
+export { MockProvider } from './MockProvider.js'
+export * as Meta from './metadata/index.js'
