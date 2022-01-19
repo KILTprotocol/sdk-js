@@ -80,7 +80,7 @@ describe('write and didDeleteTx', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ isBadOrigin: true })
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
@@ -181,7 +181,7 @@ describe('write and didDeleteTx', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
     call = await DidChain.getDeleteDidExtrinsic(1)
@@ -203,7 +203,10 @@ describe('write and didDeleteTx', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'did',
+      name: 'StoredEndpointsCountTooLarge',
+    })
   }, 60_000)
 
   it('deletes DID from previous step', async () => {
@@ -228,7 +231,7 @@ describe('write and didDeleteTx', () => {
     })
 
     // Check that DID is not blacklisted.
-    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([])
+    await expect(DidChain.queryDeletedDids()).resolves.not.toContain(did)
     await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeFalsy()
 
     await expect(
@@ -241,7 +244,7 @@ describe('write and didDeleteTx', () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toBe(null)
 
     // Check that DID is now blacklisted.
-    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([did])
+    await expect(DidChain.queryDeletedDids()).resolves.toContain(did)
     await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeTruthy()
   }, 60_000)
 })
@@ -633,7 +636,7 @@ describe('DID authorization', () => {
     await expect(ctype.verifyStored()).resolves.toEqual(true)
   }, 60_000)
 
-  it.skip('authorizes batch with DID signature', async () => {
+  it('authorizes batch with DID signature', async () => {
     const ctype1 = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
@@ -714,7 +717,7 @@ describe('DID authorization', () => {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
 
     await expect(ctype.verifyStored()).resolves.toEqual(false)
   }, 60_000)

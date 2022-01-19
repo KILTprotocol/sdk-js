@@ -10,7 +10,7 @@
  */
 
 import { BN } from '@polkadot/util'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 import {
   createOnChainDidFromSeed,
@@ -39,7 +39,7 @@ beforeAll(async () => {
   )
 })
 
-it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
+it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
     makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -47,7 +47,7 @@ it('records an unknown extrinsic error when transferring less than the existenti
         reSign: true,
       })
     )
-  ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
+  ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
@@ -70,9 +70,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
-  ).rejects.toThrowErrorWithCode(
-    ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
-  )
+  ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
 }, 30_000)
 
 afterAll(() => {
