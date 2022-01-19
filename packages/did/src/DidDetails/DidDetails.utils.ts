@@ -25,10 +25,10 @@ export function checkDidCreationDetails({
     ...Object.values(KeyRelationship),
     'none',
   ])
-  Object.keys(keyRelationships).forEach((kr) => {
-    if (!allowedKeyRelationships.has(kr)) {
+  Object.keys(keyRelationships).forEach((keyRel) => {
+    if (!allowedKeyRelationships.has(keyRel)) {
       throw Error(
-        `key relationship ${kr} is not recognized. Allowed: ${KeyRelationship}`
+        `key relationship ${keyRel} is not recognized. Allowed: ${KeyRelationship}`
       )
     }
   })
