@@ -3,5 +3,6 @@ jsonabc.d.ts
 dist
 lib
 *.json
+!package.json
 jest.*
 coverage

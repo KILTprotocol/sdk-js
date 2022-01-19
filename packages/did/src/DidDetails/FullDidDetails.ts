@@ -17,14 +17,14 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import { generateDidAuthenticatedTx, queryLastTxCounter } from '../Did.chain'
-import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
+import { generateDidAuthenticatedTx, queryLastTxCounter } from '../Did.chain.js'
+import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils.js'
 import {
   getSignatureAlgForKeyType,
   getIdentifierFromKiltDid,
   parseDidUrl,
-} from '../Did.utils'
-import { DidDetails } from './DidDetails'
+} from '../Did.utils.js'
+import { DidDetails } from './DidDetails.js'
 import type { FullDidDetailsCreationOpts } from '../types'
 
 function errorCheck({

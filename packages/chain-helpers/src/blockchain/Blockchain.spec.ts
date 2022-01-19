@@ -10,7 +10,7 @@
  */
 
 /* eslint-disable dot-notation */
-import { SDKErrors, Keyring } from '@kiltprotocol/utils'
+import { Keyring } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
 import type { SignerPayload } from '@polkadot/types/interfaces/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
@@ -26,9 +26,9 @@ import { TYPE_REGISTRY } from '../blockchainApiConnection/TypeRegistry'
 import { Blockchain } from './Blockchain'
 import {
   EXTRINSIC_FAILED,
+  isRecoverableTxError,
   IS_ERROR,
   IS_FINALIZED,
-  IS_USURPED,
   parseSubscriptionOptions,
   submitSignedTx,
 } from './Blockchain.utils'
@@ -254,28 +254,32 @@ describe('Tx logic', () => {
   })
 
   describe('utils exported function submitSignedTx', () => {
-    it('catches ERROR_TRANSACTION_USURPED and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
+    it('catches ERROR_TRANSACTION_USURPED and discovers as recoverable', async () => {
       setDefault({ isUsurped: true })
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
 
-    it('catches priority error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
+    it('catches priority error and discovers as recoverable', async () => {
       setDefault()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
       tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
 
-    it('catches Already Imported error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
+    it('catches Already Imported error and discovers as recoverable', async () => {
       setDefault()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
@@ -284,11 +288,13 @@ describe('Tx logic', () => {
         .fn()
         .mockRejectedValue(Error('Transaction Already Imported'))
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
 
-    it('catches Outdated/Stale Tx error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
+    it('catches Outdated/Stale Tx error and discovers as recoverable', async () => {
       setDefault()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
@@ -299,8 +305,10 @@ describe('Tx logic', () => {
           Error('1010: Invalid Transaction: Transaction is outdated')
         )
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
   })
 
@@ -315,9 +323,11 @@ describe('Tx logic', () => {
         .mockImplementation(async (id, Tx) => {
           return Tx
         })
-      await expect(chain.submitSignedTxWithReSign(tx, alice)).rejects.toThrow(
-        SDKErrors.ERROR_TRANSACTION_RECOVERABLE()
-      )
+      await expect(
+        chain
+          .submitSignedTxWithReSign(tx, alice)
+          .catch((e) => isRecoverableTxError(e))
+      ).resolves.toBe(true)
 
       expect(reSignSpy).toHaveBeenCalledTimes(2)
     })
@@ -331,7 +341,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: IS_FINALIZED,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: undefined,
       })
     )
@@ -341,7 +351,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: testfunction,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: undefined,
       })
     )
@@ -370,7 +380,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: testfunction,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: 10,
       })
     )
@@ -384,7 +394,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: IS_FINALIZED,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: 10,
       })
     )

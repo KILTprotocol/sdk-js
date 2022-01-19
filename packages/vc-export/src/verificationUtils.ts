@@ -21,15 +21,15 @@ import {
   KILT_SELF_SIGNED_PROOF_TYPE,
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
-} from './constants'
+} from './constants.js'
 import type {
   VerifiableCredential,
   SelfSignedProof,
   AttestedProof,
   CredentialDigestProof,
   IPublicKeyRecord,
-} from './types'
-import { fromCredentialIRI } from './exportToVerifiableCredential'
+} from './types.js'
+import { fromCredentialIRI } from './exportToVerifiableCredential.js'
 
 export interface VerificationResult {
   verified: boolean
@@ -128,7 +128,7 @@ export async function verifySelfSignedProof(
     return result
   } catch (e) {
     result.verified = false
-    result.errors = [e]
+    result.errors = [e as Error]
     return result
   }
 }
@@ -202,7 +202,7 @@ export async function verifyAttestedProof(
   } catch (e) {
     return {
       verified: false,
-      errors: [e],
+      errors: [e as Error],
       status,
     }
   }
@@ -294,7 +294,7 @@ export async function verifyCredentialDigestProof(
     )
   } catch (e) {
     result.verified = false
-    result.errors = [e]
+    result.errors = [e as Error]
     return result
   }
 }

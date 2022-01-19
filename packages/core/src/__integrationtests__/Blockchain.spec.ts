@@ -11,7 +11,6 @@
 
 import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import { BN } from '@polkadot/util'
-import { SDKErrors } from '@kiltprotocol/utils'
 import type { IBlockchainApi, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { makeTransfer } from '../balance/Balance.chain'
@@ -151,7 +150,7 @@ describe('Chain returns specific errors, that we check for', () => {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_USURPED())
+    ).rejects.toHaveProperty('status.isUsurped', true)
 
     const { signature: errorSignature } = blockchain.api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {

@@ -18,7 +18,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import type { MapKeyToRelationship } from '../types'
-import { FullDidDetails } from './FullDidDetails'
+import { FullDidDetails } from './FullDidDetails.js'
 
 interface MethodMapping<V extends string> {
   default: V

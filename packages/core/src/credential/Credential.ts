@@ -27,9 +27,9 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation/Attestation'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import * as CredentialUtils from './Credential.utils'
+import { Attestation } from '../attestation/Attestation.js'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation.js'
+import * as CredentialUtils from './Credential.utils.js'
 
 export class Credential implements ICredential {
   /**

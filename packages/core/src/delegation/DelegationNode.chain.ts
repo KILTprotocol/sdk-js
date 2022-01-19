@@ -18,9 +18,12 @@ import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
-import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
-import { DelegationNode } from './DelegationNode'
-import { permissionsAsBitset } from './DelegationNode.utils'
+import {
+  decodeDelegationNode,
+  IChainDelegationNode,
+} from './DelegationDecoder.js'
+import { DelegationNode } from './DelegationNode.js'
+import { permissionsAsBitset } from './DelegationNode.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -121,7 +124,7 @@ export async function revoke(
  * Generate the extrinsic to remove a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
  *
  * @param delegationId The identifier of the delegation node to remove.
- * @param maxRevocations The max number of children nodes that will be removed as part of the revocation operation. This value does not include the node itself being removed.
+ * @param maxRevocations The max number of children nodes that will be removed as part of the removal operation. This value does not include the node itself being removed.
  * @returns The [[SubmittableExtrinsic]] for the `removeDelegation` call.
  */
 export async function remove(
@@ -131,6 +134,27 @@ export async function remove(
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic =
     blockchain.api.tx.delegation.removeDelegation(delegationId, maxRevocations)
+  return tx
+}
+
+/**
+ * Generate the extrinsic to reclaim the deposit for a given delegation node.
+ *
+ * The generated extrinsic can only be successfully executed if the submitter is the original payer of the delegation deposit.
+ *
+ * @param delegationId The identifier of the delegation node to claim back deposit for.
+ * @param maxRemovals The max number of children nodes that will be removed as part of the operation. This value does not include the node itself being removed.
+ * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ */
+export async function reclaimDeposit(
+  delegationId: IDelegationNode['id'],
+  maxRemovals: number
+): Promise<SubmittableExtrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const tx: SubmittableExtrinsic = api.tx.delegation.reclaimDeposit(
+    delegationId,
+    maxRemovals
+  )
   return tx
 }
 

@@ -45,16 +45,16 @@ describe('Messaging', () => {
       did: string
     ): Promise<IDidResolvedDetails | null> => {
       if (did.startsWith(identityAlice.did)) {
-        return { details: identityAlice }
+        return { details: identityAlice, metadata: { deactivated: false } }
       }
       if (did.startsWith(identityBob.did)) {
-        return { details: identityBob }
+        return { details: identityBob, metadata: { deactivated: false } }
       }
       return null
     }
     const resolveKey = async (did: string): Promise<IDidKeyDetails | null> => {
       const details = await resolveDoc(did)
-      return details?.details.getKey(did) || null
+      return details?.details?.getKey(did) || null
     }
     mockResolver = {
       resolve: async (did) => {

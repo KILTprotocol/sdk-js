@@ -17,6 +17,7 @@ import type {
   ICType,
   IDidDetails,
   IDidResolver,
+  IDidResolvedDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import {
@@ -30,7 +31,7 @@ import {
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
-import { UUID } from '@kiltprotocol/utils'
+import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
@@ -38,6 +39,7 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
+import '../../../../testingTools/jestErrorCodeMatcher'
 
 jest.mock('../attestation/Attestation.chain')
 
@@ -137,28 +139,32 @@ describe('RequestForAttestation', () => {
   let migratedAndDeletedFullDid: IDidDetails
 
   const mockResolver: IDidResolver = (() => {
-    const resolve = async (didUri: string) => {
+    const resolve = async (
+      didUri: string
+    ): Promise<IDidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
         case identityAlice.did:
-          return { details: identityAlice }
+          return { details: identityAlice, metadata: { deactivated: false } }
         case identityBob.did:
-          return { details: identityBob }
+          return { details: identityBob, metadata: { deactivated: false } }
         case identityCharlie.did:
-          return { details: identityCharlie }
+          return { details: identityCharlie, metadata: { deactivated: false } }
         case identityDave.did:
-          return { details: identityDave }
+          return { details: identityDave, metadata: { deactivated: false } }
         case migratedAndDeletedLightDid.did:
           return {
-            details: migratedAndDeletedLightDid,
             metadata: {
-              canonicalId: migratedAndDeletedFullDid.did,
-              deleted: true,
+              deactivated: true,
             },
           }
         case migratedAndDeletedFullDid.did:
-          return null
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
         default:
           return null
       }
@@ -382,7 +388,9 @@ describe('create presentation', () => {
   let attestation: Attestation
 
   const mockResolver: IDidResolver = (() => {
-    const resolve = async (didUri: string) => {
+    const resolve = async (
+      didUri: string
+    ): Promise<IDidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
@@ -391,25 +399,33 @@ describe('create presentation', () => {
             details: migratedClaimerLightDid,
             metadata: {
               canonicalId: migratedClaimerFullDid.did,
-              deleted: false,
+              deactivated: false,
             },
           }
         case migratedThenDeletedClaimerLightDid.did:
           return {
-            details: migratedThenDeletedClaimerLightDid,
             metadata: {
-              canonicalId: migratedThenDeletedClaimerFullDid.did,
-              deleted: true,
+              deactivated: true,
             },
           }
         case migratedThenDeletedClaimerFullDid.did:
-          return null
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
         case unmigratedClaimerLightDid.did:
-          return { details: unmigratedClaimerLightDid }
+          return {
+            details: unmigratedClaimerLightDid,
+            metadata: { deactivated: false },
+          }
         case migratedClaimerFullDid.did:
-          return { details: migratedClaimerFullDid }
+          return {
+            details: migratedClaimerFullDid,
+            metadata: { deactivated: false },
+          }
         case attester.did:
-          return { details: attester }
+          return { details: attester, metadata: { deactivated: false } }
         default:
           return null
       }
@@ -640,9 +656,7 @@ describe('create presentation', () => {
       Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"Addresses expected to be equal mismatched"'
-    )
+    ).resolves.toBeFalsy()
   })
 
   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
@@ -694,5 +708,15 @@ describe('create presentation', () => {
   it('should get attribute keys', async () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
     expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
+  })
+
+  it('should verify the credential claims structure against the ctype', () => {
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
+    cred.request.claim.contents.name = 123
+
+    expect(() =>
+      CredentialUtils.verifyStructure(cred, ctype)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 })

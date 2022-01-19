@@ -18,10 +18,13 @@ import type {
   VerificationResult,
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
-import type { AttestedProof } from '../../types'
-import { verifyAttestedProof, AttestationStatus } from '../../verificationUtils'
-import { KILT_ATTESTED_PROOF_TYPE } from '../../constants'
-import { KiltAbstractSuite } from './KiltAbstractSuite'
+import type { AttestedProof } from '../../types.js'
+import {
+  verifyAttestedProof,
+  AttestationStatus,
+} from '../../verificationUtils.js'
+import { KILT_ATTESTED_PROOF_TYPE } from '../../constants.js'
+import { KiltAbstractSuite } from './KiltAbstractSuite.js'
 
 class AttestationError extends Error {
   public readonly attestationStatus: AttestationStatus

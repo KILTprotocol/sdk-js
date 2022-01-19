@@ -36,7 +36,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
-import { query as queryAttestation } from '../attestation/Attestation.chain'
+import { query as queryAttestation } from '../attestation/Attestation.chain.js'
 import {
   getChildren,
   getAttestationHashes,
@@ -46,10 +46,11 @@ import {
   revoke,
   storeAsDelegation,
   storeAsRoot,
-} from './DelegationNode.chain'
-import { query as queryDetails } from './DelegationHierarchyDetails.chain'
-import * as DelegationNodeUtils from './DelegationNode.utils'
-import { Attestation } from '../attestation/Attestation'
+  reclaimDeposit,
+} from './DelegationNode.chain.js'
+import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
+import * as DelegationNodeUtils from './DelegationNode.utils.js'
+import { Attestation } from '../attestation/Attestation.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -64,7 +65,7 @@ export class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
-  public readonly childrenIds: Array<IDelegationNode['id']> = []
+  private childrenIdentifiers: Array<IDelegationNode['id']> = []
   public readonly account: IDidDetails['did']
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
@@ -87,11 +88,15 @@ export class DelegationNode implements IDelegationNode {
     this.id = id
     this.hierarchyId = hierarchyId
     this.parentId = parentId
-    this.childrenIds = childrenIds
+    this.childrenIdentifiers = childrenIds
     this.account = account
     this.permissions = permissions
     this.revoked = revoked
     DelegationNodeUtils.errorCheck(this)
+  }
+
+  public get childrenIds(): Array<IDelegationNode['id']> {
+    return this.childrenIdentifiers
   }
 
   /**
@@ -195,6 +200,11 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
+    const refreshedNodeDetails = await query(this.id)
+    // Updates the children info with the latest information available on chain.
+    if (refreshedNodeDetails) {
+      this.childrenIdentifiers = refreshedNodeDetails.childrenIds
+    }
     return getChildren(this)
   }
 
@@ -410,6 +420,19 @@ export class DelegationNode implements IDelegationNode {
     const childCount = await this.subtreeNodeCount()
     log.debug(`:: remove(${this.id}) with maxRevocations=${childCount}`)
     return remove(this.id, childCount)
+  }
+
+  /**
+   * [ASYNC] Reclaims the deposit of a delegation and removes the delegation and all its children.
+   *
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the delegation deposit.
+   *
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
+    const childCount = await this.subtreeNodeCount()
+    log.debug(`:: reclaimDeposit(${this.id}) with maxRemovals=${childCount}`)
+    return reclaimDeposit(this.id, childCount)
   }
 
   /**

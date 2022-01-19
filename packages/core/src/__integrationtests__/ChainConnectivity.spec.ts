@@ -32,17 +32,17 @@ describe('Blockchain', () => {
     })
   })
 
-  it('should listen to blocks', async (done) => {
-    const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  it('should listen to blocks', (done) => {
     const listener = (header: Header): void => {
       // console.log(`Best block number ${header.number}`)
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)
       done()
     }
-    expect(blockchain).not.toBeUndefined()
-    await blockchain!.listenToBlocks(listener)
-    // const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
-    // console.log(`Subscription Id: ${subscriptionId}`)
+
+    BlockchainApiConnection.getConnectionOrConnect().then((blockchain) => {
+      expect(blockchain).not.toBeUndefined()
+      blockchain!.listenToBlocks(listener)
+    })
   }, 5000)
 })
 

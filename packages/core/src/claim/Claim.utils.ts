@@ -19,7 +19,7 @@ import type {
 } from '@kiltprotocol/types'
 import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import { getIdForCTypeHash } from '../ctype/CType.utils'
+import { getIdForCTypeHash } from '../ctype/CType.utils.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 

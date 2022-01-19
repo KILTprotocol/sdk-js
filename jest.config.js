@@ -37,6 +37,7 @@ module.exports = {
     '!did/src/DidDetails/DidDetails.utils.ts',
     '!did/src/DidDetails/FullDidDetails.utils.ts',
   ],
+  resolver: "ts-jest-resolver",
   rootDir: 'packages',
   coverageDirectory: 'coverage',
   moduleDirectories: [

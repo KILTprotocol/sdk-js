@@ -99,7 +99,7 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       return {
         id: service.id,
         type: service.types,
-        serviceEndpoints: service.urls,
+        serviceEndpoint: service.urls,
       }
     })
   }

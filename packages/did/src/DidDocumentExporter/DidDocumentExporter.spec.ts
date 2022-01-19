@@ -160,12 +160,12 @@ describe('Full DID Document exporting tests', () => {
         {
           id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-1',
           type: ['type-1'],
-          serviceEndpoints: ['url-1'],
+          serviceEndpoint: ['url-1'],
         },
         {
           id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-2',
           type: ['type-2'],
-          serviceEndpoints: ['url-2'],
+          serviceEndpoint: ['url-2'],
         },
       ],
     })
@@ -250,12 +250,12 @@ describe('Full DID Document exporting tests', () => {
         {
           id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-1',
           type: ['type-1'],
-          serviceEndpoints: ['url-1'],
+          serviceEndpoint: ['url-1'],
         },
         {
           id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#id-2',
           type: ['type-2'],
-          serviceEndpoints: ['url-2'],
+          serviceEndpoint: ['url-2'],
         },
       ],
     })
@@ -330,12 +330,12 @@ describe('Light DID Document exporting tests', () => {
         {
           id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:z13nCdN4Pm2E11EsvuHFWcHY4c82dCFRxZP7MYtJD6ctPRrXzup7Cv8Wap18LHQaJYDnbvFdXQrpYjuXsoxKb2PhKXujiGAE5pFDyFGKjL8AJLGB2hXGSZyarmzeqjjYmEHSuHgCfH1cYPRHRCUaEAtehQvv6ZCpoPjChqcm7XaetboiWDisJ42smzR#id-1',
           type: ['type-1'],
-          serviceEndpoints: ['url-1'],
+          serviceEndpoint: ['url-1'],
         },
         {
           id: 'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:z13nCdN4Pm2E11EsvuHFWcHY4c82dCFRxZP7MYtJD6ctPRrXzup7Cv8Wap18LHQaJYDnbvFdXQrpYjuXsoxKb2PhKXujiGAE5pFDyFGKjL8AJLGB2hXGSZyarmzeqjjYmEHSuHgCfH1cYPRHRCUaEAtehQvv6ZCpoPjChqcm7XaetboiWDisJ42smzR#id-2',
           type: ['type-2'],
-          serviceEndpoints: ['url-2'],
+          serviceEndpoint: ['url-2'],
         },
       ],
     })
