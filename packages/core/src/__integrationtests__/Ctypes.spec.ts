@@ -10,7 +10,6 @@
  */
 
 import { ICType, KeyringPair } from '@kiltprotocol/types'
-import { ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { CType } from '../ctype/CType'
@@ -111,9 +110,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
           })
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
-    ).rejects.toThrowErrorWithCode(
-      ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
-    )
+    ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did)
   }, 45_000)

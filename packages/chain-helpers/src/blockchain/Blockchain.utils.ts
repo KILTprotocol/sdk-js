@@ -11,7 +11,6 @@
  * @typedef {SubscriptionPromise.Options} Options
  */
 
-import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
   IIdentity,
@@ -21,11 +20,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import {
-  ErrorHandler,
-  ExtrinsicError,
-  ExtrinsicErrors,
-} from '../errorhandling/index.js'
+import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
 import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection.js'
 
@@ -34,17 +29,7 @@ const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 export const TxOutdated = 'Transaction is outdated'
 export const TxPriority = 'Priority is too low:'
 export const TxDuplicate = 'Transaction Already Imported'
-export const RelevantSDKErrors = [
-  SDKErrors.ErrorCode.ERROR_TRANSACTION_DUPLICATE,
-  SDKErrors.ErrorCode.ERROR_TRANSACTION_OUTDATED,
-  SDKErrors.ErrorCode.ERROR_TRANSACTION_PRIORITY,
-  SDKErrors.ErrorCode.ERROR_TRANSACTION_USURPED,
-]
-export const IS_RELEVANT_ERROR: SubscriptionPromise.ErrorEvaluator = (
-  err: Error | SDKErrors.SDKError
-) => {
-  return SDKErrors.isSDKError(err) && RelevantSDKErrors.includes(err.errorCode)
-}
+
 export const IS_READY: SubscriptionPromise.ResultEvaluator = (result) =>
   result.status.isReady
 export const IS_IN_BLOCK: SubscriptionPromise.ResultEvaluator = (result) =>
@@ -54,22 +39,11 @@ export const EXTRINSIC_EXECUTED: SubscriptionPromise.ResultEvaluator = (
 ) => ErrorHandler.extrinsicSuccessful(result)
 export const IS_FINALIZED: SubscriptionPromise.ResultEvaluator = (result) =>
   result.isFinalized
-export const IS_USURPED: SubscriptionPromise.ResultEvaluator = (result) =>
-  result.status.isUsurped && SDKErrors.ERROR_TRANSACTION_USURPED()
-export const IS_ERROR: SubscriptionPromise.ResultEvaluator = (result) => {
-  return (
-    (result.status.isDropped && Error('isDropped')) ||
-    (result.status.isInvalid && Error('isInvalid')) ||
-    (result.status.isFinalityTimeout && Error('isFinalityTimeout'))
-  )
-}
+
+export const IS_ERROR: SubscriptionPromise.ResultEvaluator = (result) =>
+  result.isError
 export const EXTRINSIC_FAILED: SubscriptionPromise.ResultEvaluator = (result) =>
-  ErrorHandler.extrinsicFailed(result) &&
-  (ErrorHandler.getExtrinsicError(result) ||
-    new ExtrinsicError(
-      ExtrinsicErrors.UNKNOWN_ERROR.code,
-      ExtrinsicErrors.UNKNOWN_ERROR.message
-    ))
+  ErrorHandler.extrinsicFailed(result)
 
 /**
  * Parses potentially incomplete or undefined options and returns complete [[Options]].
@@ -83,7 +57,7 @@ export function parseSubscriptionOptions(
   const {
     resolveOn = IS_FINALIZED,
     rejectOn = (result: ISubmittableResult) =>
-      IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+      EXTRINSIC_FAILED(result) || IS_ERROR(result),
     timeout,
   } = { ...opts }
 
@@ -106,7 +80,7 @@ export function parseSubscriptionOptions(
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  */
-export async function dispatchTx(
+export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   opts?: Partial<SubscriptionPromise.Options>
 ): Promise<ISubmittableResult> {
@@ -116,48 +90,40 @@ export async function dispatchTx(
 
   const unsubscribe = await tx.send(subscription)
 
-  return promise.finally(() => unsubscribe())
+  return promise
+    .catch((e) => Promise.reject(ErrorHandler.getExtrinsicError(e) || e))
+    .finally(() => unsubscribe())
 }
+export const dispatchTx = submitSignedTx
 
 /**
- * Checks the TxError for relevant ones and returns these as matched SDKError for recoverability.
+ * Checks the TxError/TxStatus for issues that may be resolved via resigning.
  *
- * @param reason Polkadot API returned error.
- * @returns If matched, a SDKError, else original reason.
+ * @param reason Polkadot API returned error or ISubmittableResult.
+ * @returns Whether or not this issue may be resolved via resigning.
  */
-function matchTxError(reason: Error): SDKErrors.SDKError | Error {
-  switch (true) {
-    case reason.message.includes(TxOutdated):
-      return SDKErrors.ERROR_TRANSACTION_OUTDATED()
-    case reason.message.includes(TxPriority):
-      return SDKErrors.ERROR_TRANSACTION_PRIORITY()
-    case reason.message.includes(TxDuplicate):
-      return SDKErrors.ERROR_TRANSACTION_DUPLICATE()
-    default:
-      return reason
+export function isRecoverableTxError(
+  reason: Error | ISubmittableResult
+): boolean {
+  if (reason instanceof Error) {
+    return (
+      reason.message.includes(TxOutdated) ||
+      reason.message.includes(TxPriority) ||
+      reason.message.includes(TxDuplicate) ||
+      false
+    )
   }
+  if (
+    reason &&
+    typeof reason === 'object' &&
+    typeof reason.status === 'object'
+  ) {
+    const { status } = reason as ISubmittableResult
+    if (status.isUsurped) return true
+  }
+  return false
 }
 
-/**
- * [ASYNC] Rejects a tx that can be re-signed with  an [[ERROR_TRANSACTION_RECOVERABLE]].
- *
- * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts [[SubscriptionPromise]]: Criteria for resolving/rejecting the promise.
- * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns ISubmittableResult that has led to its resolution.
- */
-export async function submitSignedTx(
-  tx: SubmittableExtrinsic,
-  opts?: Partial<SubscriptionPromise.Options>
-): Promise<ISubmittableResult> {
-  return dispatchTx(tx, opts).catch((reason: Error) => {
-    const error = matchTxError(reason)
-    if (IS_RELEVANT_ERROR(error)) {
-      return Promise.reject(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
-    }
-    return Promise.reject(error)
-  })
-}
 /**
  * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *

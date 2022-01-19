@@ -77,7 +77,7 @@ describe('write and didDeleteTx', () => {
 
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ isBadOrigin: true })
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
@@ -178,7 +178,7 @@ describe('write and didDeleteTx', () => {
 
     await expect(
       submitExtrinsicWithResign(submittable, paymentAccount)
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
     call = await DidChain.getDeleteDidExtrinsic(new BN(1))
@@ -191,7 +191,10 @@ describe('write and didDeleteTx', () => {
     // Will fail because count provided is too low
     await expect(
       submitExtrinsicWithResign(submittable, paymentAccount)
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'did',
+      name: 'StoredEndpointsCountTooLarge',
+    })
   }, 60_000)
 
   it('deletes DID from previous step', async () => {
@@ -631,7 +634,7 @@ describe('DID authorization', () => {
     await expect(ctype.verifyStored()).resolves.toEqual(true)
   }, 60_000)
 
-  it.skip('authorizes batch with DID signature', async () => {
+  it('authorizes batch with DID signature', async () => {
     const ctype1 = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
@@ -688,7 +691,7 @@ describe('DID authorization', () => {
     })
     await expect(
       submitExtrinsicWithResign(tx2, paymentAccount)
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
 
     await expect(ctype.verifyStored()).resolves.toEqual(false)
   }, 60_000)

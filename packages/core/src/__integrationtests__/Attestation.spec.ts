@@ -9,8 +9,7 @@
  * @group integration/attestation
  */
 
-import type { IClaim, ICredential, KeyringPair } from '@kiltprotocol/types'
-import { ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import type { ICredential, IClaim, KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
@@ -65,28 +64,30 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke(claimHash, 0)
-        .then((tx) =>
-          attester.authorizeExtrinsic(tx, {
-            signer,
-            submitterAccount: tokenHolder.address,
-          })
-        )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
-    ).rejects.toThrow()
+      Attestation.revoke(claimHash, 0).then((tx) =>
+        attester.authorizeExtrinsic(tx, {
+          signer,
+          submitterAccount: tokenHolder.address,
+        })
+      )
+    ).rejects.toMatchObject({
+      section: 'attestation',
+      name: 'AttestationNotFound',
+    })
   }, 30_000)
 
   it('Attestation.remove', async () => {
     return expect(
-      Attestation.remove(claimHash, 0)
-        .then((tx) =>
-          attester.authorizeExtrinsic(tx, {
-            signer,
-            submitterAccount: tokenHolder.address,
-          })
-        )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
-    ).rejects.toThrow()
+      Attestation.remove(claimHash, 0).then((tx) =>
+        attester.authorizeExtrinsic(tx, {
+          signer,
+          submitterAccount: tokenHolder.address,
+        })
+      )
+    ).rejects.toMatchObject({
+      section: 'attestation',
+      name: 'AttestationNotFound',
+    })
   }, 30_000)
 })
 
@@ -173,16 +174,15 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const bobbyBroke = keypairFromRandom()
 
     await expect(
-      attestation
-        .store()
-        .then((call) =>
-          attester.authorizeExtrinsic(call, {
-            signer,
-            submitterAccount: bobbyBroke.address,
-          })
-        )
-        .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
-    ).rejects.toThrow()
+      attestation.store().then((call) =>
+        attester.authorizeExtrinsic(call, {
+          signer,
+          submitterAccount: bobbyBroke.address,
+        })
+      )
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low"`
+    )
     const credential = Credential.fromRequestAndAttestation(
       request,
       attestation
@@ -216,18 +216,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const request = RequestForAttestation.fromClaim(claim)
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await expect(
-      attestation
-        .store()
-        .then((call) =>
-          attester.authorizeExtrinsic(call, {
-            signer,
-            submitterAccount: tokenHolder.address,
-          })
-        )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
-    ).rejects.toThrowErrorWithCode(
-      ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
-    )
+      attestation.store().then((call) =>
+        attester.authorizeExtrinsic(call, {
+          signer,
+          submitterAccount: tokenHolder.address,
+        })
+      )
+    ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
@@ -262,18 +257,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible to attest the same claim twice', async () => {
       await expect(
-        credential.attestation
-          .store()
-          .then((call) =>
-            attester.authorizeExtrinsic(call, {
-              signer,
-              submitterAccount: tokenHolder.address,
-            })
-          )
-          .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
-      ).rejects.toThrowErrorWithCode(
-        ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED.code
-      )
+        credential.attestation.store().then((call) =>
+          attester.authorizeExtrinsic(call, {
+            signer,
+            submitterAccount: tokenHolder.address,
+          })
+        )
+      ).rejects.toMatchObject({
+        section: 'attestation',
+        name: 'AlreadyAttested',
+      })
     }, 15_000)
 
     it('should not be possible to use attestation for different claim', async () => {
@@ -299,15 +292,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(credential.getHash(), 0)
-          .then((call) =>
-            claimer.authorizeExtrinsic(call, {
-              signer,
-              submitterAccount: tokenHolder.address,
-            })
-          )
-          .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
-      ).rejects.toThrowError('not permitted')
+        revoke(credential.getHash(), 0).then((call) =>
+          claimer.authorizeExtrinsic(call, {
+            signer,
+            submitterAccount: tokenHolder.address,
+          })
+        )
+      ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
       await expect(credential.verify()).resolves.toBe(true)
     }, 45_000)
 

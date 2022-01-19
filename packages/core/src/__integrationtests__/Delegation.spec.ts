@@ -29,7 +29,10 @@ import {
   createEndowedTestAccount,
   submitExtrinsicWithResign,
 } from './utils'
-import { getAttestationHashes } from '../delegation/DelegationNode.chain'
+import {
+  getAttestationHashes,
+  revoke,
+} from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
 let signer: DemoKeystore
@@ -264,8 +267,7 @@ describe('revocation', () => {
       firstDelegee
     )
     await expect(
-      delegationRoot
-        .revoke(firstDelegee.did)
+      revoke(delegationRoot.id, 1, 1)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, {
             signer,
@@ -273,7 +275,10 @@ describe('revocation', () => {
           })
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'delegation',
+      name: 'UnauthorizedRevocation',
+    })
     await expect(delegationRoot.verify()).resolves.toBe(true)
 
     await expect(
@@ -355,7 +360,10 @@ describe('Deposit claiming', () => {
     // Test removal failure with an account that is not the deposit payer.
     await expect(
       submitExtrinsicWithResign(depositClaimTx, devBob)
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'delegation',
+      name: 'UnauthorizedRemoval',
+    })
 
     // Test removal success with the right account.
     await expect(

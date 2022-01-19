@@ -44,14 +44,11 @@ export function makeSubscriptionPromise<SubscriptionType>(
   const subscription: (value: SubscriptionType) => void =
     typeof rejectOn === 'function'
       ? (value) => {
-          const rejectedReason = rejectOn(value)
-          if (rejectedReason) reject(rejectedReason)
-          const resolved = resolveOn(value)
-          if (resolved) resolve(value)
+          if (rejectOn(value)) reject(value)
+          if (resolveOn(value)) resolve(value)
         }
       : (value) => {
-          const resolved = resolveOn(value)
-          if (resolved) resolve(value)
+          if (resolveOn(value)) resolve(value)
         }
   if (timeout)
     setTimeout(() => {

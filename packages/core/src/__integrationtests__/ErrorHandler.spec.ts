@@ -10,7 +10,6 @@
  */
 
 import { BN } from '@polkadot/util'
-import { ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { Attestation } from '../index'
@@ -36,12 +35,12 @@ beforeAll(async () => {
   someDid = await createFullDidFromSeed(paymentAccount, keystore)
 }, 60_000)
 
-it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
+it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
     makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
       submitExtrinsicWithResign(tx, paymentAccount)
     )
-  ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
+  ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
@@ -62,9 +61,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
   )
   await expect(
     submitExtrinsicWithResign(tx, paymentAccount)
-  ).rejects.toThrowErrorWithCode(
-    ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
-  )
+  ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
 }, 30_000)
 
 afterAll(() => {
