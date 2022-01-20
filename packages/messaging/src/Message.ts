@@ -207,8 +207,8 @@ export class Message implements IMessage {
    * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
    *
    * @param body The body of the message.
-   * @param sender The [[PublicIdentity]] of the sender.
-   * @param receiver The [[PublicIdentity]] of the receiver.
+   * @param sender The [[IDidDetails['did']]] of the sender.
+   * @param receiver The [[IDidDetails['did']]] of the receiver.
    */
   public constructor(
     body: MessageBody | CompressedMessageBody,
