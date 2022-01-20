@@ -21,7 +21,7 @@ import {
 import type { IDidResolvedDetails } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
-import { createRegistryFromMetadata } from '@kiltprotocol/testing'
+import { ApiMocks } from '@kiltprotocol/testing'
 import { LightDidDetails } from '../DidDetails'
 import type { INewPublicKey } from '../types'
 import { IDidChainRecordJSON } from '../types'
@@ -32,7 +32,7 @@ import {
   parseDidUrl,
 } from '../Did.utils'
 
-const TYPE_REGISTRY = createRegistryFromMetadata()
+const TYPE_REGISTRY = ApiMocks.createRegistryFromMetadata()
 
 const fullDidPresentWithAuthenticationKey =
   'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'

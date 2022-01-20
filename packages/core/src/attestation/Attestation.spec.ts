@@ -17,21 +17,28 @@ import type {
   ICType,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { DidUtils } from '@kiltprotocol/did'
+import { ApiMocks } from '@kiltprotocol/testing'
+import {
+  Blockchain,
+  BlockchainApiConnection,
+} from '@kiltprotocol/chain-helpers'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { Attestation } from './Attestation'
 import * as AttestationUtils from './Attestation.utils'
-import * as Kilt from '../kilt/Kilt'
 
-jest.mock(
-  '@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection'
-)
+let mockedApi: any
+let blockchain: Blockchain
+
+beforeAll(() => {
+  mockedApi = ApiMocks.getMockedApi()
+  blockchain = new Blockchain(mockedApi)
+  BlockchainApiConnection.setConnection(Promise.resolve(blockchain))
+})
 
 describe('Attestation', () => {
-  Kilt.config({ address: 'ws://testString' })
   const identityAlice =
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
   const identityBob =
@@ -41,8 +48,6 @@ describe('Attestation', () => {
   let testcontents: any
   let testClaim: Claim
   let requestForAttestation: RequestForAttestation
-  const blockchainApi =
-    require('@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection').__mocked_api
 
   beforeAll(async () => {
     rawCTypeSchema = {
@@ -67,8 +72,8 @@ describe('Attestation', () => {
   })
 
   it('stores attestation', async () => {
-    blockchainApi.query.attestation.attestations.mockReturnValue(
-      mockChainQueryReturn('attestation', 'attestations', [
+    mockedApi.query.attestation.attestations.mockReturnValue(
+      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
         DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,
@@ -85,8 +90,8 @@ describe('Attestation', () => {
   })
 
   it('verify attestations not on chain', async () => {
-    blockchainApi.query.attestation.attestations.mockReturnValue(
-      mockChainQueryReturn('attestation', 'attestations')
+    mockedApi.query.attestation.attestations.mockReturnValue(
+      ApiMocks.mockChainQueryReturn('attestation', 'attestations')
     )
 
     const attestation: Attestation = Attestation.fromAttestation({
@@ -100,8 +105,8 @@ describe('Attestation', () => {
   })
 
   it('verify attestation revoked', async () => {
-    blockchainApi.query.attestation.attestations.mockReturnValue(
-      mockChainQueryReturn('attestation', 'attestations', [
+    mockedApi.query.attestation.attestations.mockReturnValue(
+      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
         DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,

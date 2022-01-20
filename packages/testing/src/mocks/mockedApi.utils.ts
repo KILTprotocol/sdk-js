@@ -1,7 +1,14 @@
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-import { createRegistryFromMetadata } from '@kiltprotocol/testing'
+import { createRegistryFromMetadata } from './typeRegistry.js'
 
 const TYPE_REGISTRY = createRegistryFromMetadata()
 
@@ -24,7 +31,7 @@ type ChainQueryTypes = {
  * Legend:
  * - ? === Option
  * - (...) === Tuple
- * - [...] === Vec
+ * - [...] === Vec.
  */
 const chainQueryReturnTuples: {
   [K in keyof ChainQueryTypes]: {
@@ -99,7 +106,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     chainQueryReturnTuples[outerQuery as string][innerQuery]
 
   // helper function to wrap values into a vector
-  function wrapInVec() {
+  function wrapInVec(): Vec<Codec> {
     return new Vec(
       TYPE_REGISTRY,
       chainQueryReturnTuple,
@@ -107,7 +114,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     )
   }
   // helper function to wrap values into an option
-  function wrapInOption() {
+  function wrapInOption(): Option<Codec> {
     return new Option(TYPE_REGISTRY, chainQueryReturnTuple, mockValue)
   }
   // check cases

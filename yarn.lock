@@ -1142,6 +1142,7 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^6.11.1
@@ -1219,6 +1220,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/testing@workspace:packages/testing"
   dependencies:
+    "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^6.11.1
     "@polkadot/types": ^6.11.1
     rimraf: ^3.0.2

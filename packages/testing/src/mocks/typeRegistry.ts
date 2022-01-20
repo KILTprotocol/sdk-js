@@ -8,7 +8,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { Metadata, TypeRegistry } from '@polkadot/types'
 
-import metaStatic from './metadata.json'
+import metaStatic from './metadata/spiritnet.json'
 
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
 export type StaticMetadata =

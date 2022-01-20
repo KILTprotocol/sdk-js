@@ -5,7 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export {
-  createAugmentedApi,
-  createRegistryFromMetadata,
-} from './typeRegistry.js'
+export * as ApiMocks from './mocks/index.js'
