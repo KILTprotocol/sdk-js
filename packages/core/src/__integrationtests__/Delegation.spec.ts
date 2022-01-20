@@ -252,12 +252,12 @@ describe('revocation', () => {
     ).resolves.not.toThrow()
     await expect(delegationA.verify()).resolves.toBe(false)
 
-    // Test removal with deposit payer's account.
+    // Test removal with delegee's did.
     await expect(
       delegationA
         .remove()
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
