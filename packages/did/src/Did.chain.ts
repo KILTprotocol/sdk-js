@@ -236,7 +236,7 @@ export async function queryDetails(
   return decodeDidChainRecord(result.unwrap())
 }
 
-//TODO: Find a better way to not decode the whole details struct to only fetch one key.
+// TODO: Find a better way to not decode the whole details struct to only fetch one key.
 export async function queryKey(
   didIdentifier: IDidIdentifier,
   keyId: DidKey['id']
@@ -316,14 +316,6 @@ export async function queryDeletedDidIdentifiers(): Promise<IDidIdentifier[]> {
 
 export type PublicKeyEnum = Record<string, Uint8Array>
 export type SignatureEnum = Record<string, Uint8Array>
-
-interface IDidCreationDetails extends Struct {
-  did: IDidIdentifier
-  newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
-  newAttestationKey: Option<DidVerificationKey>
-  newDelegationKey: Option<DidVerificationKey>
-  newServiceDetails: Vec<IServiceEndpointChainRecordCodec>
-}
 
 export type AuthorizeCallInput = {
   didIdentifier: IDidIdentifier
