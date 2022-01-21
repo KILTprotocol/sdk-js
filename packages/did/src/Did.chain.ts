@@ -293,9 +293,11 @@ export async function queryDidDeletionStatus(
   didIdentifier: IDidIdentifier
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
   const encodedStorageHash = await api.query.did.didBlacklist.hash(
     didIdentifier
   )
+  // isEmpty returns true if there is no entry for the given key -> the function should return false.
   return !encodedStorageHash.isEmpty
 }
 
