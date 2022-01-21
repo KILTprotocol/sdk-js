@@ -11,6 +11,7 @@ import { BN } from '@polkadot/util'
 import type {
   DidKey,
   IDidIdentifier,
+  IIdentity,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -132,7 +133,7 @@ export class FullDidDetails extends DidDetails {
       keySelection = defaultDidKeySelection,
     }: {
       signer: KeystoreSigner
-      submitterAccount: IDidIdentifier
+      submitterAccount: IIdentity['address']
       keySelection?: DidKeySelectionHandler
     }
   ): Promise<SubmittableExtrinsic> {
