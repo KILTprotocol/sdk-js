@@ -154,7 +154,8 @@ export function validateKiltDid(
   return true
 }
 
-export function validateDidSignature(signature: DidSignature): boolean {
+export function validateDidSignature(input: unknown): input is DidSignature {
+  const signature = input as DidSignature
   try {
     if (
       !isHex(signature.signature) ||
@@ -277,7 +278,7 @@ export async function verifyDidSignature({
   const details = (
     resolutionDetails.metadata.canonicalId
       ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
-          ?.details
+        ?.details
       : resolutionDetails.details
   ) as IDidDetails
 
