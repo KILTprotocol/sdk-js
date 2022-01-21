@@ -236,6 +236,7 @@ export async function queryDetails(
   return decodeDidChainRecord(result.unwrap())
 }
 
+//TODO: Find a better way to not decode the whole details struct to only fetch one key.
 export async function queryKey(
   didIdentifier: IDidIdentifier,
   keyId: DidKey['id']
