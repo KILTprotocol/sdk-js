@@ -366,21 +366,15 @@ export async function generateCreateTxFromDidDetails(
 
   // For now, it only takes the first attestation key, if present.
   const newAttestationKey: PublicKeyEnum | undefined =
-    did
-      .getKeys(KeyRelationship.assertionMethod)
-      .map((key) => {
-        return formatPublicKey(key)
-      })
-      .pop() || undefined
+    did.getKeys(KeyRelationship.assertionMethod).map((key) => {
+      return formatPublicKey(key)
+    })[0] || undefined
 
   // For now, it only takes the first delegation key, if present.
   const newDelegationKey: PublicKeyEnum | undefined =
-    did
-      .getKeys(KeyRelationship.capabilityDelegation)
-      .map((key) => {
-        return formatPublicKey(key)
-      })
-      .pop() || undefined
+    did.getKeys(KeyRelationship.capabilityDelegation).map((key) => {
+      return formatPublicKey(key)
+    })[0] || undefined
 
   const newServiceDetails = did.getEndpoints().map((service) => {
     const { id, urls } = service
