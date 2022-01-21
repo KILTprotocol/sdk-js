@@ -390,10 +390,10 @@ export async function generateCreateTxFromDidDetails(
     newServiceDetails,
   }
 
-  const encodedDidCreationDetails =
-    new (api.registry.getOrThrow<IDidCreationDetails>(
-      'DidDidDetailsDidCreationDetails'
-    ))(api.registry, rawCreationDetails)
+  const encodedDidCreationDetails = api.registry.createType(
+    api.tx.did.create.meta.args[0].type.toString(),
+    rawCreationDetails
+  )
 
   const signature = await signer.sign({
     data: encodedDidCreationDetails.toU8a(),
@@ -478,14 +478,11 @@ export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedEndpoint =
-    new (api.registry.getOrThrow<IServiceEndpointChainRecordCodec>(
-      'DidServiceEndpointsDidEndpoint'
-    ))(api.registry, {
-      serviceTypes: endpoint.types,
-      ...endpoint,
-    })
-  return api.tx.did.addServiceEndpoint(encodedEndpoint)
+
+  return api.tx.did.addServiceEndpoint({
+    serviceTypes: endpoint.types,
+    ...endpoint,
+  })
 }
 
 // The endpointId parameter is the service endpoint ID without the DID prefix.
