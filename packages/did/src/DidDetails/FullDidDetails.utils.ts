@@ -17,6 +17,7 @@ type SectionMapping<V extends string> = Record<string, MethodMapping<V>>
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
+// TODO: Should have an RPC or something similar to avoid inconsistencies in the future.
 export const methodMapping: SectionMapping<
   VerificationKeyRelationship | 'paymentAccount'
 > = {
