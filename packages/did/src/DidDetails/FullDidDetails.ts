@@ -117,7 +117,7 @@ export class FullDidDetails extends DidDetails {
       : this.getKeys(keyRelationship)
   }
 
-  async getNextNonce(): Promise<BN> {
+  public async getNextNonce(): Promise<BN> {
     const currentNonce = await queryNonce(this.identifier)
     // Wrap around the max u64 value when reached.
     // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
