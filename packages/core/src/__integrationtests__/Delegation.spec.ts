@@ -267,7 +267,10 @@ describe('revocation', () => {
             reSign: true,
           })
         )
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'delegation',
+      name: 'UnauthorizedRemoval',
+    })
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
     await expect(delegationA.verify()).resolves.toBeFalsy()
@@ -393,7 +396,7 @@ describe('Deposit claiming', () => {
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
     await expect(DelegationNode.query(subDelegatedNode.id)).resolves.toBeNull()
-  }, 60_000)
+  }, 80_000)
 })
 
 describe('handling queries to data not on chain', () => {
