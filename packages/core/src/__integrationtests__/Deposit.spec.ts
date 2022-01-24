@@ -93,7 +93,7 @@ async function checkReclaimFullDid(
   fullDid: FullDidDetails
 ): Promise<boolean> {
   storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.did)
-  tx = await DidChain.getReclaimDepositExtrinsic(
+  tx = await DidChain.getgetReclaimDepositTxExtrinsic(
     identity.address,
     storedEndpointsCount
   )
@@ -200,7 +200,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.reclaimDeposit()
+  tx = await attestation.getReclaimDepositTx()
 
   const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
@@ -269,7 +269,7 @@ async function checkDeletedDidReclaimAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  tx = await attestation.reclaimDeposit()
+  tx = await attestation.getReclaimDepositTx()
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,

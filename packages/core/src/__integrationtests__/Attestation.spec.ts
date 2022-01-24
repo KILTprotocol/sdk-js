@@ -174,8 +174,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     expect(credential.verifyData()).toBe(true)
     await expect(credential.verify()).resolves.toBe(true)
 
-    // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
-    await attestation.reclaimDeposit().then((tx) =>
+    // Claim the deposit back by submitting the getReclaimDepositTx extrinsic with the deposit payer's account.
+    await attestation.getReclaimDepositTx().then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,

@@ -219,7 +219,7 @@ const __mocked_api: any = {
       remove: jest.fn((claimHash: string) => {
         return __getMockSubmittableExtrinsic()
       }),
-      reclaimDeposit: jest.fn((claimHash: string) => {
+      getReclaimDepositTx: jest.fn((claimHash: string) => {
         return __getMockSubmittableExtrinsic()
       }),
     },

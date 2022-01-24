@@ -31,7 +31,7 @@ import {
   query,
   store,
   remove,
-  reclaimDeposit,
+  getReclaimDepositTx,
   queryDepositAmount,
 } from './Attestation.chain.js'
 import * as AttestationUtils from './Attestation.utils.js'
@@ -113,7 +113,7 @@ export class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to remove and its deposit to be returned to the original payer.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * Attestation.reclaimDeposit('0xd8024cdc147c4fa9221cd177').then(
+   * Attestation.getReclaimDepositTx('0xd8024cdc147c4fa9221cd177').then(
    *   (claimExtrinsic) => {
    *     // The deposit claiming tx was created, and it can now be submitted by the attestation deposit payer ONLY.
    *     BlockchainUtils.signAndSendTx(claimExtrinsic, submitter);
@@ -121,10 +121,10 @@ export class Attestation implements IAttestation {
    * );
    * ```
    */
-  public static async reclaimDeposit(
+  public static async getReclaimDepositTx(
     claimHash: string
   ): Promise<SubmittableExtrinsic> {
-    return reclaimDeposit(claimHash)
+    return getReclaimDepositTx(claimHash)
   }
 
   /**
@@ -308,14 +308,14 @@ export class Attestation implements IAttestation {
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * attestation.reclaimDeposit().then((claimExtrinsic) => {
+   * attestation.getReclaimDepositTx().then((claimExtrinsic) => {
    *   // The deposit claiming tx was created, and it can now be submitted by the attestation deposit payer ONLY.
    *   BlockchainUtils.signAndSendTx(claimExtrinsic, submitter);
    * });
    * ```
    */
-  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
-    return reclaimDeposit(this.claimHash)
+  public async getReclaimDepositTx(): Promise<SubmittableExtrinsic> {
+    return getReclaimDepositTx(this.claimHash)
   }
 
   /**

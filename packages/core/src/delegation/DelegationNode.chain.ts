@@ -144,14 +144,14 @@ export async function remove(
  *
  * @param delegationId The identifier of the delegation node to claim back deposit for.
  * @param maxRemovals The max number of children nodes that will be removed as part of the operation. This value does not include the node itself being removed.
- * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ * @returns The [[SubmittableExtrinsic]] for the `getReclaimDepositTx` call.
  */
-export async function reclaimDeposit(
+export async function getReclaimDepositTx(
   delegationId: IDelegationNode['id'],
   maxRemovals: number
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = api.tx.delegation.reclaimDeposit(
+  const tx: SubmittableExtrinsic = api.tx.delegation.getReclaimDepositTx(
     delegationId,
     maxRemovals
   )

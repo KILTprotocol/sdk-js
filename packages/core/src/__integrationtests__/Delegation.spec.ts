@@ -372,7 +372,7 @@ describe('Deposit claiming', () => {
       DelegationNode.query(subDelegatedNode.id)
     ).resolves.not.toBeNull()
 
-    const depositClaimTx = await delegatedNode.reclaimDeposit()
+    const depositClaimTx = await delegatedNode.getReclaimDepositTx()
 
     // Test removal failure with an account that is not the deposit payer.
     await expect(

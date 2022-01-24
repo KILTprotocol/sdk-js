@@ -434,12 +434,12 @@ export async function getDeleteDidExtrinsic(
   return api.tx.did.delete(endpointsCount)
 }
 
-export async function getReclaimDepositExtrinsic(
+export async function getgetReclaimDepositTxExtrinsic(
   didIdentifier: IIdentity['address'],
   endpointsCount: number
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)
+  return api.tx.did.getReclaimDepositTx(didIdentifier, endpointsCount)
 }
 
 // The block number can either be provided by the DID subject,

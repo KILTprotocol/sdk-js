@@ -46,7 +46,7 @@ import {
   revoke,
   storeAsDelegation,
   storeAsRoot,
-  reclaimDeposit,
+  getReclaimDepositTx,
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
@@ -429,10 +429,10 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    */
-  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
+  public async getReclaimDepositTx(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
-    log.debug(`:: reclaimDeposit(${this.id}) with maxRemovals=${childCount}`)
-    return reclaimDeposit(this.id, childCount)
+    log.debug(`:: getReclaimDepositTx(${this.id}) with maxRemovals=${childCount}`)
+    return getReclaimDepositTx(this.id, childCount)
   }
 
   /**

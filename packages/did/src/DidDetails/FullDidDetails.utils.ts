@@ -39,7 +39,7 @@ const mapping: SectionMapping<VerificationKeyRelationship | 'paymentAccount'> =
       default: KeyRelationship.authentication,
       create: 'paymentAccount',
       submitDidCall: 'paymentAccount',
-      reclaimDeposit: 'paymentAccount',
+      getReclaimDepositTx: 'paymentAccount',
     },
     default: { default: 'paymentAccount' },
   }

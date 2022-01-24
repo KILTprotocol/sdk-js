@@ -373,12 +373,12 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // Claim the deposit back
   const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
-  const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
+  const getReclaimDepositTxTx = await DidChain.getgetReclaimDepositTxExtrinsic(
     didIdentifier,
     storedEndpointsCount
   )
   await expect(
-    BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+    BlockchainUtils.signAndSubmitTx(getReclaimDepositTxTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
@@ -550,12 +550,13 @@ describe('DID migration', () => {
     // Remove and claim the deposit back
     const fullDidIdentifier = DidUtils.getIdentifierFromKiltDid(did)
     const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
-    const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
-      fullDidIdentifier,
-      storedEndpointsCount
-    )
+    const getReclaimDepositTxTx =
+      await DidChain.getgetReclaimDepositTxExtrinsic(
+        fullDidIdentifier,
+        storedEndpointsCount
+      )
     await expect(
-      BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+      BlockchainUtils.signAndSubmitTx(getReclaimDepositTxTx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
