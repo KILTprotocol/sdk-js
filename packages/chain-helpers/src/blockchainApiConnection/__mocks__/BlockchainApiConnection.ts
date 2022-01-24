@@ -210,13 +210,13 @@ const __mocked_api: any = {
   },
   tx: {
     attestation: {
-      add: jest.fn((claimHash, _cTypeHash) => {
+      getStoreTx: jest.fn((claimHash, _cTypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
-      revoke: jest.fn((claimHash: string) => {
+      getRevokeTx: jest.fn((claimHash: string) => {
         return __getMockSubmittableExtrinsic()
       }),
-      remove: jest.fn((claimHash: string) => {
+      getRemoveTx: jest.fn((claimHash: string) => {
         return __getMockSubmittableExtrinsic()
       }),
       getReclaimDepositTx: jest.fn((claimHash: string) => {
@@ -248,7 +248,7 @@ const __mocked_api: any = {
       add: jest.fn((sign_key, box_key, doc_ref) => {
         return __getMockSubmittableExtrinsic()
       }),
-      remove: jest.fn(() => {
+      getRemoveTx: jest.fn(() => {
         return __getMockSubmittableExtrinsic()
       }),
     },
