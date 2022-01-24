@@ -111,7 +111,7 @@ async function setup(): Promise<{
   // Also note, that the same ctype can only be stored once on the blockchain.
   try {
     await ctype
-      .store()
+      .getStoreTx()
       .then((tx) =>
         attesterFullDid.authorizeExtrinsic(tx, keystore, attester.address)
       )

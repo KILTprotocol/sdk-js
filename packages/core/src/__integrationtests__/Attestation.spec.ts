@@ -116,7 +116,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     if (!ctypeExists) {
       await attester
         .authorizeExtrinsic(
-          await DriversLicense.store(),
+          await DriversLicense.getStoreTx(),
           signer,
           tokenHolder.address
         )
@@ -377,7 +377,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
-        await IsOfficialLicenseAuthority.store()
+        await IsOfficialLicenseAuthority.getStoreTx()
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
           )

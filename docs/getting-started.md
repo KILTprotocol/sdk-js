@@ -355,7 +355,7 @@ Before you can store the CTYPE on the blockchain, you have to configure your blo
 To store the CTYPE on the blockchain with the attester, you have to call:
 
 ```typescript
-const tx = await ctype.store()
+const tx = await ctype.getStoreTx()
 
 const authorizedExtrinsic = await attesterFullDid.authorizeExtrinsic(
   tx,
@@ -593,7 +593,7 @@ Attestation {
 Now the Attester must store the attestation on the blockchain, which also costs tokens:
 
 ```typescript
-const tx = await attestation.store()
+const tx = await attestation.getStoreTx()
 const authorizedExtrinsic = attesterFullDid.authorizeExtrinsic(
   tx,
   keystore,

@@ -108,7 +108,7 @@ beforeAll(async () => {
   ])
 
   if (!(await CtypeOnChain(DriversLicense))) {
-    await DriversLicense.store()
+    await DriversLicense.getStoreTx()
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )

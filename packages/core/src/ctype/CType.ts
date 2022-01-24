@@ -24,7 +24,7 @@ import type {
   CTypeSchemaWithoutId,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { store } from './CType.chain.js'
+import { getStoreTx } from './CType.chain.js'
 import * as CTypeUtils from './CType.utils.js'
 
 export class CType implements ICType {
@@ -97,8 +97,8 @@ export class CType implements ICType {
    *
    * @returns A promise of a unsigned SubmittableExtrinsic.
    */
-  public async store(): Promise<SubmittableExtrinsic> {
-    return store(this)
+  public async getStoreTx(): Promise<SubmittableExtrinsic> {
+    return getStoreTx(this)
   }
 
   /**

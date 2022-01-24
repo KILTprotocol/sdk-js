@@ -89,7 +89,7 @@ async function main(): Promise<void> {
     Kilt.Did.SigningAlgorithms.Ed25519
   )
 
-  tx = await ctype.store()
+  tx = await ctype.getStoreTx()
   authorizedTx = await fullDid.authorizeExtrinsic(tx, keystore, account.address)
   await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, account, {
     resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,

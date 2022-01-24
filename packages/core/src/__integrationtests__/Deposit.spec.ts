@@ -315,7 +315,7 @@ beforeAll(async () => {
   if (!ctypeExists) {
     await attester
       .authorizeExtrinsic(
-        await DriversLicense.store(),
+        await DriversLicense.getStoreTx(),
         keystore,
         devFaucet.address
       )
