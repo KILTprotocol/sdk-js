@@ -96,7 +96,7 @@ export async function endowAccounts(
 ): Promise<void> {
   await Promise.all(
     addresses.map((address) =>
-      Balance.makeTransfer(address, ENDOWMENT).then((tx) =>
+      Balance.getMakeTransferTx(address, ENDOWMENT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_FINALIZED,
           reSign: true,

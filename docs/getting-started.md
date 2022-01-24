@@ -228,7 +228,7 @@ Providing the attester with funds from the endowed account in order to write tra
 import * as Kilt from '@kiltprotocol/sdk-js'
 
 const transferAmount = '1000000000000000'
-await Kilt.Balance.makeTransfer(attester.address, transferAmount).then((tx) =>
+await Kilt.Balance.getMakeTransferTx(attester.address, transferAmount).then((tx) =>
   Kilt.BlockchainUtils.signAndSubmitTx(tx, account, {
     resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
     reSign: true,

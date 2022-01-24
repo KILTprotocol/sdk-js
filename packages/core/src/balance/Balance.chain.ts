@@ -124,7 +124,7 @@ export async function listenToBalanceChanges(
  * const address = ...
  * const amount: BN = new BN(42)
  * const blockchain = await sdk.getConnectionOrConnect()
- * sdk.Balance.makeTransfer(address, amount, 0) //
+ * sdk.Balance.getMakeTransferTx(address, amount, 0) //
  *   .then(tx => BlockchainUtils.signAndSendTx(tx, identity))
  *   .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
  *   .catch(err => {
@@ -132,7 +132,7 @@ export async function listenToBalanceChanges(
  *   })
  * ```
  */
-export async function makeTransfer(
+export async function getMakeTransferTx(
   accountAddressTo: KeyringPair['address'],
   amount: BN,
   exponent = -15

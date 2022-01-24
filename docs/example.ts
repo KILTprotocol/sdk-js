@@ -260,7 +260,7 @@ async function doAttestation(
   )
   console.log('the attestation: ', attestation)
   await attestation
-    .store()
+    .getStoreTx()
     .then((tx) =>
       attesterFullDid.authorizeExtrinsic(tx, keystore, attester.address)
     )
@@ -445,7 +445,7 @@ async function example(): Promise<boolean> {
   await doVerification(claimerLightDid, credential, keystore)
 
   // revoke
-  await Kilt.Attestation.revoke(credential.getHash(), 0)
+  await Kilt.Attestation.getRevokeTx(credential.getHash(), 0)
 
   // should fail
   await doVerification(claimerLightDid, credential, keystore)

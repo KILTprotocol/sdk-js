@@ -15,7 +15,7 @@ import type { KeyringPair } from '@kiltprotocol/types'
 import {
   getBalances,
   listenToBalanceChanges,
-  makeTransfer,
+  getMakeTransferTx,
 } from '../balance/Balance.chain'
 import { config, disconnect } from '../kilt'
 import {
@@ -72,7 +72,7 @@ describe('when there is a dev chain with a faucet', () => {
     const funny = jest.fn()
     listenToBalanceChanges(address, funny)
     const balanceBefore = await getBalances(faucet.address)
-    await makeTransfer(address, EXISTENTIAL_DEPOSIT).then((tx) =>
+    await getMakeTransferTx(address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -104,7 +104,7 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+    await getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, richieRich, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -117,7 +117,7 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = await getBalances(stormyD.address)
     await expect(
-      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -135,7 +135,7 @@ describe('When there are haves and have-nots', () => {
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalances(richieRich.address)
     await expect(
-      makeTransfer(bobbyBroke.address, RichieBalance.free).then((tx) =>
+      getMakeTransferTx(bobbyBroke.address, RichieBalance.free).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, richieRich, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -153,13 +153,14 @@ describe('When there are haves and have-nots', () => {
   it('should be able to make a new transaction once the last is ready', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
-    await makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, faucet, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+    await getMakeTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then(
+      (tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, faucet, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
     )
-    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+    await getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -178,13 +179,13 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
-      makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      getMakeTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
       ),
-      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,

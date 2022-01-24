@@ -19,7 +19,7 @@ import {
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { Attestation } from '../index'
-import { makeTransfer } from '../balance/Balance.chain'
+import { getMakeTransferTx } from '../balance/Balance.chain'
 import { config, disconnect } from '../kilt'
 import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'
 
@@ -41,7 +41,7 @@ beforeAll(async () => {
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
-    makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
+    getMakeTransferTx(addressFromRandom(), new BN(1)).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,

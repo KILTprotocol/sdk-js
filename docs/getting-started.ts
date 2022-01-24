@@ -186,7 +186,7 @@ async function main(): Promise<void> {
     console.log(attestation)
 
     /* Now the Attester can store and authorize the attestation on the blockchain, which also costs tokens: */
-    tx = await attestation.store()
+    tx = await attestation.getStoreTx()
     authorizedTx = await fullDid.authorizeExtrinsic(
       tx,
       keystore,

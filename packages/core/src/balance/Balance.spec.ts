@@ -23,7 +23,7 @@ import { Keyring } from '@kiltprotocol/utils'
 import {
   getBalances,
   listenToBalanceChanges,
-  makeTransfer,
+  getMakeTransferTx,
 } from './Balance.chain'
 import * as BalanceUtils from './Balance.utils'
 import * as Kilt from '../kilt/Kilt'
@@ -91,8 +91,8 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const status = await makeTransfer(bob.address, new BN(100)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+    const status = await getMakeTransferTx(bob.address, new BN(100)).then(
+      (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
     )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
@@ -104,7 +104,7 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await makeTransfer(bob.address, amount, exponent).then(
+    const status = await getMakeTransferTx(bob.address, amount, exponent).then(
       (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
     )
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(

@@ -13,7 +13,7 @@ import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import { BN } from '@polkadot/util'
 import type { IBlockchainApi, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { makeTransfer } from '../balance/Balance.chain'
+import { getMakeTransferTx } from '../balance/Balance.chain'
 import { devFaucet, devCharlie, WS_ADDRESS, keypairFromRandom } from './utils'
 import { config, connect, disconnect } from '../kilt'
 
@@ -31,7 +31,7 @@ describe('Chain returns specific errors, that we check for', () => {
     faucet = devFaucet
     testIdentity = keypairFromRandom()
     charlie = devCharlie
-    const tx = await makeTransfer(testIdentity.address, new BN(10000), 0)
+    const tx = await getMakeTransferTx(testIdentity.address, new BN(10000), 0)
     await BlockchainUtils.signAndSubmitTx(tx, faucet, {
       resolveOn: BlockchainUtils.IS_FINALIZED,
       reSign: true,
