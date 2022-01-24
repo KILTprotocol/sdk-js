@@ -34,7 +34,7 @@ import {
 } from './utils'
 import {
   getAttestationHashes,
-  revoke,
+  getRevokeTx,
 } from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
@@ -54,7 +54,7 @@ async function writeHierarchy(
   })
 
   await rootNode
-    .store()
+    .getStoreTx()
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
@@ -83,7 +83,7 @@ async function addDelegation(
   })
   const signature = await delegationNode.delegeeSign(delegee, signer)
   await delegationNode
-    .store(signature)
+    .getStoreTx(signature)
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
@@ -239,7 +239,7 @@ describe('revocation', () => {
     // Test revocation
     await expect(
       delegationA
-        .revoke(delegator.did)
+        .getRevokeTx(delegator.did)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -255,7 +255,7 @@ describe('revocation', () => {
     // Test removal with deposit payer's account.
     await expect(
       delegationA
-        .remove()
+        .getRemoveTx()
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -281,7 +281,7 @@ describe('revocation', () => {
       firstDelegee
     )
     await expect(
-      revoke(delegationRoot.id, 1, 1)
+      getRevokeTx(delegationRoot.id, 1, 1)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -299,7 +299,7 @@ describe('revocation', () => {
 
     await expect(
       delegationA
-        .revoke(firstDelegee.did)
+        .getRevokeTx(firstDelegee.did)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -330,7 +330,7 @@ describe('revocation', () => {
     delegationRoot = await delegationRoot.getLatestState()
     await expect(
       delegationRoot
-        .revoke(delegator.did)
+        .getRevokeTx(delegator.did)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
