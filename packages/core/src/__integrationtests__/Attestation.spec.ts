@@ -64,12 +64,14 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke(claimHash, 0).then((tx) =>
-        attester.authorizeExtrinsic(tx, {
-          signer,
-          submitterAccount: tokenHolder.address,
-        })
-      )
+      Attestation.revoke(claimHash, 0)
+        .then((tx) =>
+          attester.authorizeExtrinsic(tx, {
+            signer,
+            submitterAccount: tokenHolder.address,
+          })
+        )
+        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
     ).rejects.toMatchObject({
       section: 'attestation',
       name: 'AttestationNotFound',
@@ -78,12 +80,14 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.remove', async () => {
     return expect(
-      Attestation.remove(claimHash, 0).then((tx) =>
-        attester.authorizeExtrinsic(tx, {
-          signer,
-          submitterAccount: tokenHolder.address,
-        })
-      )
+      Attestation.remove(claimHash, 0)
+        .then((tx) =>
+          attester.authorizeExtrinsic(tx, {
+            signer,
+            submitterAccount: tokenHolder.address,
+          })
+        )
+        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
     ).rejects.toMatchObject({
       section: 'attestation',
       name: 'AttestationNotFound',
@@ -174,12 +178,15 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const bobbyBroke = keypairFromRandom()
 
     await expect(
-      attestation.store().then((call) =>
-        attester.authorizeExtrinsic(call, {
-          signer,
-          submitterAccount: bobbyBroke.address,
-        })
-      )
+      attestation
+        .store()
+        .then((call) =>
+          attester.authorizeExtrinsic(call, {
+            signer,
+            submitterAccount: bobbyBroke.address,
+          })
+        )
+        .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low"`
     )
@@ -216,12 +223,15 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const request = RequestForAttestation.fromClaim(claim)
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await expect(
-      attestation.store().then((call) =>
-        attester.authorizeExtrinsic(call, {
-          signer,
-          submitterAccount: tokenHolder.address,
-        })
-      )
+      attestation
+        .store()
+        .then((call) =>
+          attester.authorizeExtrinsic(call, {
+            signer,
+            submitterAccount: tokenHolder.address,
+          })
+        )
+        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
   }, 60_000)
 
@@ -257,12 +267,15 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible to attest the same claim twice', async () => {
       await expect(
-        credential.attestation.store().then((call) =>
-          attester.authorizeExtrinsic(call, {
-            signer,
-            submitterAccount: tokenHolder.address,
-          })
-        )
+        credential.attestation
+          .store()
+          .then((call) =>
+            attester.authorizeExtrinsic(call, {
+              signer,
+              submitterAccount: tokenHolder.address,
+            })
+          )
+          .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
       ).rejects.toMatchObject({
         section: 'attestation',
         name: 'AlreadyAttested',
@@ -292,12 +305,14 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(credential.getHash(), 0).then((call) =>
-          claimer.authorizeExtrinsic(call, {
-            signer,
-            submitterAccount: tokenHolder.address,
-          })
-        )
+        revoke(credential.getHash(), 0)
+          .then((call) =>
+            claimer.authorizeExtrinsic(call, {
+              signer,
+              submitterAccount: tokenHolder.address,
+            })
+          )
+          .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
       ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
       await expect(credential.verify()).resolves.toBe(true)
     }, 45_000)
