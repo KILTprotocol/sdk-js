@@ -651,8 +651,9 @@ describe('DID authorization', () => {
     const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
       ({ api }) => api.tx.utility.batch(calls)
     )
-    const tx = await didDetails.authorizeExtrinsic(batch, {
+    const tx = await didDetails.authorizeBatch(batch, {
       signer: keystore,
+      keyRelationship: KeyRelationship.assertionMethod,
       submitterAccount: paymentAccount.address,
     })
     await expect(

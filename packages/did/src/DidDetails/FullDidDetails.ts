@@ -12,6 +12,7 @@ import type {
   DidKey,
   IDidIdentifier,
   IIdentity,
+  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -149,6 +150,45 @@ export class FullDidDetails extends DidDetails {
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
+      txCounter: await this.getNextNonce(),
+      submitter: submitterAccount,
+    })
+  }
+
+  public async authorizeBatch(
+    batchExtrinsic: Extrinsic,
+    {
+      signer,
+      submitterAccount,
+      keyRelationship,
+      keySelection = defaultDidKeySelection,
+    }: {
+      signer: KeystoreSigner
+      submitterAccount: IIdentity['address']
+      keyRelationship: KeyRelationship
+      keySelection?: DidKeySelectionHandler
+    }
+  ): Promise<SubmittableExtrinsic> {
+    const signingKey = await keySelection(this.getKeys(keyRelationship))
+    if (
+      batchExtrinsic.method.section !== 'utility' &&
+      batchExtrinsic.method.method !== 'batch'
+    ) {
+      throw new Error(
+        'authorizeBatch can only be used to sign utility.batch extrinsics.'
+      )
+    }
+    if (!signingKey) {
+      throw new Error(
+        `The details for did ${this.did} do not contain the required keys for this operation`
+      )
+    }
+    return generateDidAuthenticatedTx({
+      didIdentifier: this.identifier,
+      signingPublicKey: signingKey.publicKey,
+      alg: getSignatureAlgForKeyType(signingKey.type),
+      signer,
+      call: batchExtrinsic,
       txCounter: await this.getNextNonce(),
       submitter: submitterAccount,
     })
