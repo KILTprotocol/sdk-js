@@ -172,6 +172,25 @@ export function getIdentifierFromKiltDid(did: string): string {
   return parseDidUrl(did).identifier
 }
 
+// Returns true if both didA and didB refer to the same DID subject, i.e., whether they have the same identifier as specified in the method spec.
+export function isSameSubject(
+  didA: IDidDetails['did'],
+  didB: IDidDetails['did']
+): boolean {
+  // eslint-disable-next-line prefer-const
+  let { identifier: identifierA, type: typeA } = parseDidUrl(didA)
+  // eslint-disable-next-line prefer-const
+  let { identifier: identifierB, type: typeB } = parseDidUrl(didB)
+  // Skip key encoding part
+  if (typeA === 'light') {
+    identifierA = identifierA.substring(2)
+  }
+  if (typeB === 'light') {
+    identifierB = identifierB.substring(2)
+  }
+  return identifierA === identifierB
+}
+
 export function validateKiltDid(
   input: unknown,
   allowFragment = false

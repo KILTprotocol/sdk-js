@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DefaultResolver } from '@kiltprotocol/did'
+import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -49,12 +49,12 @@ export class Message implements IMessage {
   public static readonly BodyType = MessageBodyType
 
   /**
-   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's public keys match.
+   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
    *
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.sender The sender's DID taken from the [[IMessage]].
-   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender does not match the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
+   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender is not the same subject as the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
@@ -62,8 +62,10 @@ export class Message implements IMessage {
         {
           const requestAttestation = body
           if (
-            requestAttestation.content.requestForAttestation.claim.owner !==
-            sender
+            !DidUtils.isSameSubject(
+              requestAttestation.content.requestForAttestation.claim.owner,
+              sender
+            )
           ) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
@@ -72,7 +74,12 @@ export class Message implements IMessage {
       case Message.BodyType.SUBMIT_ATTESTATION:
         {
           const submitAttestation = body
-          if (submitAttestation.content.attestation.owner !== sender) {
+          if (
+            !DidUtils.isSameSubject(
+              submitAttestation.content.attestation.owner,
+              sender
+            )
+          ) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
@@ -81,7 +88,7 @@ export class Message implements IMessage {
         {
           const submitClaimsForCtype: ISubmitCredential = body
           submitClaimsForCtype.content.forEach((claim) => {
-            if (claim.request.claim.owner !== sender) {
+            if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
