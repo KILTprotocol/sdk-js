@@ -61,7 +61,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     revoked: false,
   })
   const tx = await attestation
-    .store()
+    .getStoreTx()
     .then((ex) =>
       someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
     )

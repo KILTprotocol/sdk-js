@@ -32,7 +32,7 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
  * @param attestation The attestation to write on the blockchain.
  * @returns The [[SubmittableExtrinsic]] for the `add` call.
  */
-export async function store(
+export async function getStoreTx(
   attestation: IAttestation
 ): Promise<SubmittableExtrinsic> {
   const { claimHash, cTypeHash, delegationId } = attestation
@@ -112,7 +112,7 @@ export async function query(claimHash: string): Promise<Attestation | null> {
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
  * @returns The [[SubmittableExtrinsic]] for the `revoke` call.
  */
-export async function revoke(
+export async function getRevokeTx(
   claimHash: string,
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
@@ -132,7 +132,7 @@ export async function revoke(
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the removal.
  * @returns The [[SubmittableExtrinsic]] for the `remove` call.
  */
-export async function remove(
+export async function getRemoveTx(
   claimHash: string,
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {

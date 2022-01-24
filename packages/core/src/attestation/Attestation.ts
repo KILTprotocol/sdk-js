@@ -27,10 +27,10 @@ import type {
 } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import {
-  revoke,
+  getRevokeTx,
   query,
-  store,
-  remove,
+  getStoreTx,
+  getRemoveTx,
   getReclaimDepositTx,
   queryDepositAmount,
 } from './Attestation.chain.js'
@@ -60,7 +60,7 @@ export class Attestation implements IAttestation {
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * Attestation.revoke('0xd8024cdc147c4fa9221cd177', 3).then(
+   * Attestation.getRevokeTx('0xd8024cdc147c4fa9221cd177', 3).then(
    *   (revocationExtrinsic) => {
    *     // The attestation revocation tx was created, and it can now be signed by the attestation owner.
    *     attestationOwnerDid
@@ -73,11 +73,11 @@ export class Attestation implements IAttestation {
    * );
    * ```
    */
-  public static async revoke(
+  public static async getRevokeTx(
     claimHash: string,
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
-    return revoke(claimHash, maxDepth)
+    return getRevokeTx(claimHash, maxDepth)
   }
 
   /**
@@ -87,7 +87,7 @@ export class Attestation implements IAttestation {
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * Attestation.remove('0xd8024cdc147c4fa9221cd177', 3).then((removalExtrinsic) => {
+   * Attestation.getRemoveTx('0xd8024cdc147c4fa9221cd177', 3).then((removalExtrinsic) => {
    *   // The attestation removal tx was created, and it can now be signed by the attestation owner.
    *   attestationOwnerDid
    *     .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
@@ -98,11 +98,11 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
-  public static async remove(
+  public static async getRemoveTx(
     claimHash: string,
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
-    return remove(claimHash, maxDepth)
+    return getRemoveTx(claimHash, maxDepth)
   }
 
   /**
@@ -236,7 +236,7 @@ export class Attestation implements IAttestation {
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
    * // Use `store` to store an attestation on chain, and to create a `Credential` upon success:
-   * attestation.store().then((creationExtrinsic) => {
+   * attestation.getStoreTx().then((creationExtrinsic) => {
    *   // the attestation store tx was successfully prepared, so now we can sign and send it and subsequently create a `Credential`.
    *   attestationOwnerDid
    *     .authorizeExtrinsic(creationExtrinsic, keystore, submitter.address)
@@ -255,8 +255,8 @@ export class Attestation implements IAttestation {
    * BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
    * ```
    */
-  public async store(): Promise<SubmittableExtrinsic> {
-    return store(this)
+  public async getStoreTx(): Promise<SubmittableExtrinsic> {
+    return getStoreTx(this)
   }
 
   /**
@@ -265,7 +265,7 @@ export class Attestation implements IAttestation {
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * attestation.revoke(3).then((revocationExtrinsic) => {
+   * attestation.getRevokeTx(3).then((revocationExtrinsic) => {
    *   // The attestation revocation tx was created, and it can now be signed by the attestation owner.
    *   attestationOwnerDid
    *     .authorizeExtrinsic(revocationExtrinsic, keystore, submitter.address)
@@ -276,8 +276,8 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
-  public async revoke(maxDepth: number): Promise<SubmittableExtrinsic> {
-    return revoke(this.claimHash, maxDepth)
+  public async getRevokeTx(maxDepth: number): Promise<SubmittableExtrinsic> {
+    return getRevokeTx(this.claimHash, maxDepth)
   }
 
   /**
@@ -286,7 +286,7 @@ export class Attestation implements IAttestation {
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * attestation.remove(3).then((removalExtrinsic) => {
+   * attestation.getRemoveTx(3).then((removalExtrinsic) => {
    *   // The attestation removal tx was created, and it can now be signed by the attestation owner.
    *   attestationOwnerDid
    *     .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
@@ -297,8 +297,8 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
-  public async remove(maxDepth: number): Promise<SubmittableExtrinsic> {
-    return remove(this.claimHash, maxDepth)
+  public async getRemoveTx(maxDepth: number): Promise<SubmittableExtrinsic> {
+    return getRemoveTx(this.claimHash, maxDepth)
   }
 
   /**

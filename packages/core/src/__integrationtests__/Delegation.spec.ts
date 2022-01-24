@@ -184,7 +184,7 @@ describe('and attestation rights have been delegated', () => {
 
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation
-      .store()
+      .getStoreTx()
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -204,7 +204,7 @@ describe('and attestation rights have been delegated', () => {
 
     // revoke attestation through root
     await credential.attestation
-      .revoke(1)
+      .getRevokeTx(1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {

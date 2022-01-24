@@ -128,7 +128,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await attestation.getStoreTx()
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -154,7 +154,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.remove(0)
+  tx = await attestation.getRemoveTx(0)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -183,7 +183,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await attestation.getStoreTx()
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -233,7 +233,7 @@ async function checkDeletedDidReclaimAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await attestation.getStoreTx()
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,

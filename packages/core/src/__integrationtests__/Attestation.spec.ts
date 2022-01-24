@@ -20,7 +20,7 @@ import { BN } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { Attestation } from '../attestation/Attestation'
-import { revoke, remove } from '../attestation/Attestation.chain'
+import { getRevokeTx, getRemoveTx } from '../attestation/Attestation.chain'
 import { Credential } from '../credential/Credential'
 import { disconnect, init } from '../kilt'
 import { Claim } from '../claim/Claim'
@@ -75,7 +75,7 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke(claimHash, 0)
+      Attestation.getRemoveTx(claimHash, 0)
         .then((tx) =>
           attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
         )
@@ -93,7 +93,7 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.remove', async () => {
     return expect(
-      Attestation.remove(claimHash, 0)
+      Attestation.getRemoveTx(claimHash, 0)
         .then((tx) =>
           attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
         )
@@ -157,7 +157,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(request.verifySignature()).resolves.toBe(true)
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation
-      .store()
+      .getStoreTx()
       .then((call) =>
         attester.authorizeExtrinsic(call, signer, tokenHolder.address)
       )
@@ -205,7 +205,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     await expect(
       attestation
-        .store()
+        .getStoreTx()
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, bobbyBroke.address)
         )
@@ -252,7 +252,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await expect(
       attestation
-        .store()
+        .getStoreTx()
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
@@ -279,7 +279,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await request.signWithDid(signer, claimer)
       const attestation = Attestation.fromRequestAndDid(request, attester.did)
       await attestation
-        .store()
+        .getStoreTx()
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
@@ -296,7 +296,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     it('should not be possible to attest the same claim twice', async () => {
       await expect(
         credential.attestation
-          .store()
+          .getStoreTx()
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
@@ -331,7 +331,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(credential.getHash(), 0)
+        getRevokeTx(credential.getHash(), 0)
           .then((call) =>
             claimer.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
@@ -347,7 +347,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(credential.verify()).resolves.toBe(true)
-      await revoke(credential.getHash(), 0)
+      await getRevokeTx(credential.getHash(), 0)
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
@@ -361,7 +361,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
-      await remove(credential.getHash(), 0)
+      await getRemoveTx(credential.getHash(), 0)
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
@@ -408,7 +408,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         anotherAttester.did
       )
       await licenseAuthorizationGranted
-        .store()
+        .getStoreTx()
         .then((call) =>
           anotherAttester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
@@ -437,7 +437,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         request2,
         attester.did
       )
-      await LicenseGranted.store()
+      await LicenseGranted.getStoreTx()
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
