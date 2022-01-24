@@ -611,7 +611,6 @@ describe('Messaging', () => {
     ).not.toThrow()
 
     // Should not throw if the sender is the full DID version of the owner.
-
     expect(() =>
       Message.ensureOwnerIsSender(
         new Message(
