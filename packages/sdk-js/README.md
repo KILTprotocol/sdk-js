@@ -22,7 +22,7 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
 - [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
-- [Getting started guide](http://dev.kilt.oo/docs/sdk/getting-started/getting-started) 👈 Start here if you'd like to include KILT in your project
+- [Getting started guide](http://dev.kilt.io/docs/sdk/getting-started/getting-started) 👈 Start here if you'd like to include KILT in your project
 - [KILT Developer overview](https://dev.kilt.io/) 👈 Checkout for an overview of the codebase, infrastructure and deployed KILT instances.
 - [API documentation](https://kiltprotocol.github.io/sdk-js)
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
@@ -57,7 +57,7 @@ You can find the library on `window.kilt`, and use it completely dependency free
 
 ## Example
 
-Please have a look at our examples within our [getting started guide](http://dev.kilt.oo/docs/sdk/getting-started/getting-started).
+Please have a look at our examples within our [getting started guide](http://dev.kilt.io/docs/sdk/getting-started/getting-started).
 
 A claim type (CTYPE) can be a credential of any kind, e.g. a drivers license, a sports club membership or even a fairtrade certificate for chocolate.
 
