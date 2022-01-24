@@ -248,7 +248,10 @@ describe('revocation', () => {
           })
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({
+      section: 'delegation',
+      name: 'UnauthorizedRemoval',
+    })
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
     await expect(delegationA.verify()).resolves.toBeFalsy()
