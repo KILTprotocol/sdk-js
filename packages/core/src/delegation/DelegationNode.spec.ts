@@ -575,7 +575,7 @@ describe('DelegationHierarchy', () => {
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
-    await rootDelegation.store()
+    await rootDelegation.getStoreTx()
 
     const rootNode = await DelegationNode.query(ROOT_IDENTIFIER)
     if (rootNode) {
@@ -602,7 +602,7 @@ describe('DelegationHierarchy', () => {
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
-    await aDelegationRootNode.revoke(didAlice)
+    await aDelegationRootNode.getRevokeTx(didAlice)
     const fetchedNodeRevocationStatus = DelegationNode.query(
       ROOT_IDENTIFIER
     ).then((node: DelegationNode | null) => node?.revoked)
