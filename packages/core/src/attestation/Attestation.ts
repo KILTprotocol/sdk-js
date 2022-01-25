@@ -87,7 +87,8 @@ export class Attestation implements IAttestation {
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * Attestation.getRemoveTx('0xd8024cdc147c4fa9221cd177', 3).then((removalExtrinsic) => {
+   * Attestation.getRemoveTx('0xd8024cdc147c4fa9221cd177', 3).then(
+   *   (removalExtrinsic) => {
    *     // The attestation removal tx was created, and it can now be signed by the attestation owner.
    *     attestationOwnerDid
    *       .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)

@@ -30,14 +30,14 @@ jest.mock('./DelegationNode.chain', () => {
       node.childrenIds.map((id) => nodes[id] || null)
     ),
     query: jest.fn(async (id: string) => nodes[id] || null),
-    storeAsRoot: jest.fn(async (node: DelegationNode) => {
+    getStoreAsRootTx: jest.fn(async (node: DelegationNode) => {
       nodes[node.id] = node
       hierarchiesDetails[node.id] = {
         id: node.id,
         cTypeHash: await node.getCTypeHash(),
       }
     }),
-    revoke: jest.fn(
+    getRevokeTx: jest.fn(
       async (
         nodeId: IDelegationNode['id'],
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
