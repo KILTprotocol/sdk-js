@@ -130,9 +130,9 @@ export function isSameSubject(
   didB: IDidDetails['did']
 ): boolean {
   // eslint-disable-next-line prefer-const
-  let { identifier: identifierA, type: typeA } = parseDidUrl(didA)
+  let { identifier: identifierA, type: typeA } = parseDidUri(didA)
   // eslint-disable-next-line prefer-const
-  let { identifier: identifierB, type: typeB } = parseDidUrl(didB)
+  let { identifier: identifierB, type: typeB } = parseDidUri(didB)
   // Skip key encoding part
   if (typeA === 'light') {
     identifierA = identifierA.substring(2)

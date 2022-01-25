@@ -85,12 +85,12 @@ describe('Claim', () => {
   beforeAll(async () => {
     keystore = new DemoKeystore()
 
-    claimerIdentity = await DemoKeystoreUtils.createLocalDemoDidFromSeed(
+    claimerIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Alice',
       SigningAlgorithms.Ed25519
     )
-    attesterIdentity = await DemoKeystoreUtils.createLocalDemoDidFromSeed(
+    attesterIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Bob',
       SigningAlgorithms.Ed25519

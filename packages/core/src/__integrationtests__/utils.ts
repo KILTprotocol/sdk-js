@@ -10,16 +10,15 @@
 
 import { BN } from '@polkadot/util'
 
-import { Crypto, Keyring } from '@kiltprotocol/utils'
+import { Keyring } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
   DemoKeystore,
+  DemoKeystoreUtils,
   DidChain,
-  EncryptionAlgorithms,
   FullDidDetails,
   getDefaultMigrationHandler,
   LightDidDetails,
-  SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import type {
@@ -141,33 +140,6 @@ export async function createEndowedTestAccount(
   return keypair
 }
 
-// Given a seed, creates a light DID with an authentication and an encryption key.
-export async function createMinimalLightDidFromSeed(
-  keystore: DemoKeystore,
-  seed?: string
-): Promise<LightDidDetails> {
-  const genSeed = seed || randomAsHex(32)
-  const authKey = await keystore.generateKeypair({
-    alg: SigningAlgorithms.Sr25519,
-    seed: genSeed,
-  })
-  const encKey = await keystore.generateKeypair({
-    alg: EncryptionAlgorithms.NaclBox,
-    seed: Crypto.hashStr(genSeed),
-  })
-  const details = LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: authKey.publicKey,
-      type: authKey.alg,
-    },
-    encryptionKey: {
-      publicKey: encKey.publicKey,
-      type: 'x25519',
-    },
-  })
-  return details
-}
-
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
   identity: KeyringPair,
@@ -210,6 +182,9 @@ export async function createFullDidFromSeed(
   keystore: DemoKeystore,
   seed: string = randomAsHex()
 ): Promise<FullDidDetails> {
-  const lightDid = await createMinimalLightDidFromSeed(keystore, seed)
+  const lightDid = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
+    keystore,
+    seed
+  )
   return createFullDidFromLightDid(identity, lightDid, keystore)
 }

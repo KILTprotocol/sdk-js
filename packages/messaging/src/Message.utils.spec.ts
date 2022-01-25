@@ -83,10 +83,14 @@ import {
   Quote,
   RequestForAttestation,
 } from '@kiltprotocol/core'
-import { DemoKeystore, DidDetails, DidUtils } from '@kiltprotocol/did'
+import {
+  DemoKeystore,
+  DemoKeystoreUtils,
+  DidDetails,
+  DidUtils,
+} from '@kiltprotocol/did'
 
 import * as MessageUtils from './Message.utils'
-import { generateAliceDid, generateBobDid } from './Message.spec'
 import { Message } from './Message'
 
 import '../../../testingTools/jestErrorCodeMatcher'
@@ -216,8 +220,14 @@ describe('Messaging Utilities', () => {
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
-    identityAlice = await generateAliceDid(keystore)
-    identityBob = await generateBobDid(keystore)
+    identityAlice = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+      keystore,
+      'Alice'
+    )
+    identityBob = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+      keystore,
+      'Bob'
+    )
     date = new Date(2019, 11, 10).toISOString()
     claimContents = {
       name: 'Bob',

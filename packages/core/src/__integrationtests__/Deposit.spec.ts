@@ -9,7 +9,12 @@
  * @group integration/deposit
  */
 
-import { DemoKeystore, DidChain, FullDidDetails } from '@kiltprotocol/did'
+import {
+  DemoKeystore,
+  DemoKeystoreUtils,
+  DidChain,
+  FullDidDetails,
+} from '@kiltprotocol/did'
 import {
   IRequestForAttestation,
   KeyringPair,
@@ -22,7 +27,6 @@ import { BN } from '@polkadot/util'
 import {
   createFullDidFromLightDid,
   createFullDidFromSeed,
-  createMinimalLightDidFromSeed,
   devFaucet,
   driversLicenseCTypeForDeposit as driversLicenseCType,
   endowAccounts,
@@ -266,7 +270,7 @@ beforeAll(async () => {
   const claimerMnemonic = mnemonicGenerate()
 
   /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
-  const claimerLightDid = await createMinimalLightDidFromSeed(
+  const claimerLightDid = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
     keystore,
     claimerMnemonic
   )
@@ -317,11 +321,26 @@ describe('Different deposits scenarios', () => {
   beforeAll(async () => {
     const [testDidFive, testDidSix, testDidSeven, testDidEight, testDidNine] =
       await Promise.all([
-        createMinimalLightDidFromSeed(keystore, testMnemonics[4]),
-        createMinimalLightDidFromSeed(keystore, testMnemonics[5]),
-        createMinimalLightDidFromSeed(keystore, testMnemonics[6]),
-        createMinimalLightDidFromSeed(keystore, testMnemonics[7]),
-        createMinimalLightDidFromSeed(keystore, testMnemonics[8]),
+        DemoKeystoreUtils.createMinimalLightDidFromSeed(
+          keystore,
+          testMnemonics[4]
+        ),
+        DemoKeystoreUtils.createMinimalLightDidFromSeed(
+          keystore,
+          testMnemonics[5]
+        ),
+        DemoKeystoreUtils.createMinimalLightDidFromSeed(
+          keystore,
+          testMnemonics[6]
+        ),
+        DemoKeystoreUtils.createMinimalLightDidFromSeed(
+          keystore,
+          testMnemonics[7]
+        ),
+        DemoKeystoreUtils.createMinimalLightDidFromSeed(
+          keystore,
+          testMnemonics[8]
+        ),
       ])
 
     ;[

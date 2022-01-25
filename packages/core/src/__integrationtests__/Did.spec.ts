@@ -20,6 +20,7 @@ import {
   EncryptionAlgorithms,
   getDefaultMigrationHandler,
   resolveDoc,
+  DemoKeystoreUtils,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
@@ -36,7 +37,6 @@ import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
   devBob,
-  createMinimalLightDidFromSeed,
   initializeApi,
   submitExtrinsicWithResign,
   addressFromRandom,
@@ -60,7 +60,7 @@ it('fetches the correct deposit amount', async () => {
 describe('write and didDeleteTx', () => {
   let details: DidDetails
   beforeAll(async () => {
-    details = await createMinimalLightDidFromSeed(keystore)
+    details = await DemoKeystoreUtils.createMinimalLightDidFromSeed(keystore)
   })
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {

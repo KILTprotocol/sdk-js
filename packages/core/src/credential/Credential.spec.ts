@@ -164,15 +164,15 @@ describe('RequestForAttestation', () => {
   beforeAll(async () => {
     keystore = new DemoKeystore()
 
-    identityAlice = await DemoKeystoreUtils.createLocalDemoDidFromSeed(
+    identityAlice = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Alice'
     )
-    identityBob = await DemoKeystoreUtils.createLocalDemoDidFromSeed(
+    identityBob = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Bob'
     )
-    identityCharlie = await DemoKeystoreUtils.createLocalDemoDidFromSeed(
+    identityCharlie = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Charlie'
     )
@@ -456,7 +456,7 @@ describe('create presentation', () => {
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
-    attester = await DemoKeystoreUtils.createLocalDemoDidFromSeed(
+    attester = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Attester'
     )
