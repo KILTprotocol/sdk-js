@@ -151,7 +151,7 @@ export async function getReclaimDepositTx(
   maxRemovals: number
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = api.tx.delegation.getReclaimDepositTx(
+  const tx: SubmittableExtrinsic = api.tx.delegation.reclaimDeposit(
     delegationId,
     maxRemovals
   )
