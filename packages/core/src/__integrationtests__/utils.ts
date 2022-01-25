@@ -20,7 +20,10 @@ import {
   getDefaultMigrationHandler,
   LightDidDetails,
 } from '@kiltprotocol/did'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import {
+  BlockchainApiConnection,
+  BlockchainUtils,
+} from '@kiltprotocol/chain-helpers'
 import type {
   ISubmittableResult,
   KeyringPair,
@@ -152,25 +155,28 @@ export async function createFullDidFromLightDid(
     getDefaultMigrationHandler(identity)
   )
 
-  let addExtrinsic = await DidChain.getSetKeyExtrinsic(
+  const addAttestationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
     KeyRelationship.assertionMethod,
     fullDid.authenticationKey
   )
-  let authenticatedExtrinsic = await fullDid.authorizeExtrinsic(addExtrinsic, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
-  await submitExtrinsicWithResign(authenticatedExtrinsic, identity)
-
-  addExtrinsic = await DidChain.getSetKeyExtrinsic(
+  const addDelegationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
     KeyRelationship.capabilityDelegation,
     fullDid.authenticationKey
   )
-  authenticatedExtrinsic = await fullDid.authorizeExtrinsic(addExtrinsic, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
-  await submitExtrinsicWithResign(authenticatedExtrinsic, identity)
+
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const authenticatedBatch = await fullDid.authorizeBatch(
+    api.tx.utility.batch([
+      addAttestationKeyExtrinsic,
+      addDelegationKeyExtrinsic,
+    ]),
+    {
+      signer: keystore,
+      keyRelationship: KeyRelationship.authentication,
+      submitterAccount: identity.address,
+    }
+  )
+  await submitExtrinsicWithResign(authenticatedBatch, identity)
 
   return FullDidDetails.fromChainInfo(
     fullDid.identifier
