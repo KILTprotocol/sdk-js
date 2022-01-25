@@ -88,14 +88,15 @@ export class Attestation implements IAttestation {
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
    * Attestation.getRemoveTx('0xd8024cdc147c4fa9221cd177', 3).then((removalExtrinsic) => {
-   *   // The attestation removal tx was created, and it can now be signed by the attestation owner.
-   *   attestationOwnerDid
-   *     .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
-   *     .then((authorizedExtrinsic) => {
-   *       // The DID-authorized tx is ready to be submitted!
-   *       BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
-   *     });
-   * });
+   *     // The attestation removal tx was created, and it can now be signed by the attestation owner.
+   *     attestationOwnerDid
+   *       .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
+   *       .then((authorizedExtrinsic) => {
+   *         // The DID-authorized tx is ready to be submitted!
+   *         BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
+   *       });
+   *   }
+   * );
    * ```
    */
   public static async getRemoveTx(
