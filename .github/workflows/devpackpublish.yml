@@ -58,6 +58,7 @@ jobs:
             'KILTprotocol/kilt-workshop-101',
             'KILTprotocol/demo-client',
             'KILTprotocol/prototype-services',
+            'KILTprotocol/docs',
           ]
     runs-on: ubuntu-latest
     steps:
