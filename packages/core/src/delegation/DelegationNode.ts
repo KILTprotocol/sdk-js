@@ -299,10 +299,11 @@ export class DelegationNode implements IDelegationNode {
         `Delegee ${delegeeDid.did} does not have any authentication key.`
       )
     }
-    const delegeeSignature = await delegeeDid.signPayload(this.generateHash(), {
+    const delegeeSignature = await delegeeDid.signPayload(
+      this.generateHash(),
       signer,
-      keyId: authenticationKey.id,
-    })
+      authenticationKey.id
+    )
     return DidChain.encodeDidSignature(authenticationKey, delegeeSignature)
   }
 

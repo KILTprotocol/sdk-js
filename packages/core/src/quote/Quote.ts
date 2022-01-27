@@ -105,13 +105,12 @@ export async function fromAttesterSignedInput(
 export async function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
+  signer: KeystoreSigner,
   {
-    signer,
     keySelection = DidUtils.defaultDidKeySelection,
   }: {
-    signer: KeystoreSigner
     keySelection?: DidKeySelectionHandler
-  }
+  } = {}
 ): Promise<IQuoteAttesterSigned> {
   const authenticationKey = await keySelection(
     attesterIdentity.getKeys(KeyRelationship.authentication)
@@ -123,10 +122,8 @@ export async function createAttesterSignature(
   }
   const signature = await attesterIdentity.signPayload(
     Crypto.hashObjectAsStr(quoteInput),
-    {
-      signer,
-      keyId: authenticationKey.id,
-    }
+    signer,
+    authenticationKey.id
   )
   return {
     ...quoteInput,
@@ -150,19 +147,17 @@ export async function createAttesterSignature(
 export async function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
+  signer: KeystoreSigner,
   {
-    signer,
     keySelection = DidUtils.defaultDidKeySelection,
   }: {
-    signer: KeystoreSigner
     keySelection?: DidKeySelectionHandler
-  }
+  } = {}
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
-  return createAttesterSignature(quoteInput, attesterIdentity, {
-    signer,
+  return createAttesterSignature(quoteInput, attesterIdentity, signer, {
     keySelection,
   })
 }
@@ -182,15 +177,14 @@ export async function createQuoteAgreement(
   requestRootHash: string,
   attesterIdentity: IDidDetails['did'],
   claimerIdentity: DidDetails,
+  signer: KeystoreSigner,
   {
-    signer,
     keySelection = DidUtils.defaultDidKeySelection,
     resolver = DidResolver,
   }: {
-    signer: KeystoreSigner
     keySelection?: DidKeySelectionHandler
     resolver?: IDidResolver
-  }
+  } = {}
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
@@ -218,10 +212,8 @@ export async function createQuoteAgreement(
 
   const signature = await claimerIdentity.signPayload(
     Crypto.hashObjectAsStr(attesterSignedQuote),
-    {
-      signer,
-      keyId: claimerAuthenticationKey.id,
-    }
+    signer,
+    claimerAuthenticationKey.id
   )
 
   return {

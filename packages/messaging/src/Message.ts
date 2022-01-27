@@ -104,9 +104,9 @@ export class Message implements IMessage {
    * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
    *
    * @param encrypted The encrypted message.
+   * @param keystore The keystore used to perform the cryptographic operations.
+   * @param receiverDetails The DID details of the receiver.
    * @param decryptionOptions Options to perform the decryption operation.
-   * @param decryptionOptions.keystore The keystore used to perform the cryptographic operations.
-   * @param decryptionOptions.receiverDetails The DID details of the receiver.
    * @param decryptionOptions.resolver The DID resolver to use.
    *
    * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
@@ -115,15 +115,13 @@ export class Message implements IMessage {
    */
   public static async decrypt(
     encrypted: IEncryptedMessage,
+    keystore: Pick<NaclBoxCapable, 'decrypt'>,
+    receiverDetails: DidDetails,
     {
-      keystore,
-      receiverDetails,
       resolver = DidResolver,
     }: {
-      keystore: Pick<NaclBoxCapable, 'decrypt'>
-      receiverDetails: DidDetails
       resolver?: IDidResolver
-    }
+    } = {}
   ): Promise<IMessage> {
     const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
       encrypted
@@ -244,24 +242,23 @@ export class Message implements IMessage {
    *
    * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
    * @param senderDetails The sender's DID to use to fetch the right encryption key.
+   * @param keystore The keystore used to perform the cryptographic operations.
+   * @param receiverKeyId The full ket ID of the receiver.
    * @param encryptionOptions Options to perform the encryption operation.
-   * @param encryptionOptions.keystore The keystore used to perform the cryptographic operations.
-   * @param encryptionOptions.receiverKeyId The full ket ID of the receiver.
    * @param encryptionOptions.resolver The DID resolver to use.
+   *
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
     senderKeyId: DidKey['id'],
     senderDetails: DidDetails,
+    keystore: Pick<NaclBoxCapable, 'encrypt'>,
+    receiverKeyId: DidPublicKey['id'],
     {
-      keystore,
-      receiverKeyId,
       resolver = DidResolver,
     }: {
-      keystore: Pick<NaclBoxCapable, 'encrypt'>
-      receiverKeyId: DidPublicKey['id']
       resolver?: IDidResolver
-    }
+    } = {}
   ): Promise<IEncryptedMessage> {
     const receiverKey = await resolver.resolveKey(receiverKeyId)
     if (!receiverKey) {

@@ -382,9 +382,7 @@ describe('Messaging Utilities', () => {
     quoteAttesterSigned = await Quote.createAttesterSignature(
       quoteData,
       identityAlice,
-      {
-        signer: keystore,
-      }
+      keystore
     )
     // Compressed Quote Attester Signed quote
     compressedResultAttesterSignedQuote = [
@@ -409,8 +407,8 @@ describe('Messaging Utilities', () => {
       legitimation.request.rootHash,
       identityAlice.did,
       identityBob,
+      keystore,
       {
-        signer: keystore,
         resolver: mockResolver,
       }
     )
@@ -544,10 +542,11 @@ describe('Messaging Utilities', () => {
       },
       metaData: {},
       signatures: {
-        inviter: await identityAlice.signPayload('signature', {
-          signer: keystore,
-          keyId: identityAlice.authenticationKey.id,
-        }),
+        inviter: await identityAlice.signPayload(
+          'signature',
+          keystore,
+          identityAlice.authenticationKey.id
+        ),
       },
     }
     // Compressed Request accept delegation content
@@ -575,14 +574,16 @@ describe('Messaging Utilities', () => {
         isPCR: false,
       },
       signatures: {
-        inviter: await identityAlice.signPayload('signature', {
-          signer: keystore,
-          keyId: identityAlice.authenticationKey.id,
-        }),
-        invitee: await identityBob.signPayload('signature', {
-          signer: keystore,
-          keyId: identityBob.authenticationKey.id,
-        }),
+        inviter: await identityAlice.signPayload(
+          'signature',
+          keystore,
+          identityAlice.authenticationKey.id
+        ),
+        invitee: await identityBob.signPayload(
+          'signature',
+          keystore,
+          identityBob.authenticationKey.id
+        ),
       },
     }
     // Compressed Submit accept delegation content

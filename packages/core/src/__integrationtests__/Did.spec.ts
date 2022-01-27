@@ -120,7 +120,7 @@ describe('write and didDeleteTx', () => {
     // The ID changes as on chain is the has of the public key, so we can't compare for key ID equality.
     expect(
       details?.authenticationKey.publicKey ===
-        newDetails.authenticationKey.publicKey
+      newDetails.authenticationKey.publicKey
     )
     expect(
       details?.authenticationKey.type === newDetails.authenticationKey.type
@@ -651,11 +651,11 @@ describe('DID authorization', () => {
     const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
       ({ api }) => api.tx.utility.batch(calls)
     )
-    const tx = await didDetails.authorizeBatch(batch, {
-      signer: keystore,
-      keyRelationship: KeyRelationship.assertionMethod,
-      submitterAccount: paymentAccount.address,
-    })
+    const tx = await didDetails.authorizeBatch(batch,
+      keystore,
+      paymentAccount.address,
+      KeyRelationship.assertionMethod
+    )
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()

@@ -121,8 +121,8 @@ export abstract class DidDetails implements IDidDetails {
   public getEndpoints(type?: string): DidServiceEndpoint[] {
     const serviceEndpointsEntries = type
       ? [...this.serviceEndpoints.entries()].filter(([, details]) => {
-          return details.types.includes(type)
-        })
+        return details.types.includes(type)
+      })
       : [...this.serviceEndpoints.entries()]
 
     return serviceEndpointsEntries.map(([id, details]) => {
@@ -145,21 +145,15 @@ export abstract class DidDetails implements IDidDetails {
    * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
    *
    * @param payload The byte array or HEX-encoded payload to sign.
-   * @param signingOptions The signing options.
-   * @param signingOptions.signer The keystore signer to use for the signing operation.
-   * @param signingOptions.keyId The key ID to use to generate the signature.
+   * @param signer The keystore signer to use for the signing operation.
+   * @param keyId The key ID to use to generate the signature.
    *
    * @returns The resulting [[DidSignature]].
    */
   public async signPayload(
     payload: Uint8Array | string,
-    {
-      signer,
-      keyId,
-    }: {
-      signer: KeystoreSigner
-      keyId: DidPublicKey['id']
-    }
+    signer: KeystoreSigner,
+    keyId: DidPublicKey['id']
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
     if (!key) {

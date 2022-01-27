@@ -311,10 +311,8 @@ export class RequestForAttestation implements IRequestForAttestation {
   ): Promise<this> {
     const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
       makeSigningData(this, challenge),
-      {
-        signer,
-        keyId,
-      }
+      signer,
+      keyId
     )
     return this.addSignature(signature, signatureKeyId, challenge)
   }

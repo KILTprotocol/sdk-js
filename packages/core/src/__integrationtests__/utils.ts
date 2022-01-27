@@ -181,11 +181,9 @@ export async function createFullDidFromLightDid(
       addAttestationKeyExtrinsic,
       addDelegationKeyExtrinsic,
     ]),
-    {
-      signer: keystore,
-      keyRelationship: KeyRelationship.authentication,
-      submitterAccount: identity.address,
-    }
+    keystore,
+    identity.address,
+    KeyRelationship.authentication
   )
   await submitExtrinsicWithResign(authenticatedBatch, identity)
 

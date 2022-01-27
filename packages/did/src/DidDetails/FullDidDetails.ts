@@ -166,23 +166,21 @@ export class FullDidDetails extends DidDetails {
    * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will return an error.
    *
    * @param extrinsic The unsigned extrinsic to sign.
+   * @param signer The keystore signer to use.
+   * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
    * @param signingOptions The signing options.
-   * @param signingOptions.signer The kestore signer to use.
-   * @param signingOptions.submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
    * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
    * @returns The DID-signed submittable extrinsic.
    */
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
+    signer: KeystoreSigner,
+    submitterAccount: IIdentity['address'],
     {
-      signer,
-      submitterAccount,
       keySelection = defaultDidKeySelection,
     }: {
-      signer: KeystoreSigner
-      submitterAccount: IIdentity['address']
       keySelection?: DidKeySelectionHandler
-    }
+    } = {}
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
@@ -206,26 +204,23 @@ export class FullDidDetails extends DidDetails {
    * The generated signature will fail to verify successfully by the blockchain if any two operations in the batch require a different key type, or if the key type specified is not the expected one for the operations in the batch.
    *
    * @param batchExtrinsic The unsigned extrinsic batch to sign.
+   * @param signer The keystore signer to use.
+   * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
+   * @param keyRelationship The key relationship (e.g., authentication or attestation) to use when fetching the keys to use for signing the batch.
    * @param signingOptions The signing options.
-   * @param signingOptions.signer The keystore signer to use.
-   * @param signingOptions.submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
-   * @param signingOptions.keyRelationship The key relationship (e.g., authentication or attestation) to use when fetching the keys to use for signing the batch.
    * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
    * @returns The DID-signed submittable extrinsic.
    */
   public async authorizeBatch(
     batchExtrinsic: Extrinsic,
+    signer: KeystoreSigner,
+    submitterAccount: IIdentity['address'],
+    keyRelationship: KeyRelationship,
     {
-      signer,
-      submitterAccount,
-      keyRelationship,
       keySelection = defaultDidKeySelection,
     }: {
-      signer: KeystoreSigner
-      submitterAccount: IIdentity['address']
-      keyRelationship: KeyRelationship
       keySelection?: DidKeySelectionHandler
-    }
+    } = {}
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeys(keyRelationship))
     if (

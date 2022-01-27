@@ -178,11 +178,14 @@ describe('Messaging', () => {
       }
     )
 
-    const decryptedMessage = await Message.decrypt(encryptedMessage, {
+    const decryptedMessage = await Message.decrypt(
+      encryptedMessage,
       keystore,
-      receiverDetails: bobLightDid,
-      resolver: mockResolver,
-    })
+      bobLightDid,
+      {
+        resolver: mockResolver,
+      }
+    )
     expect(JSON.stringify(message.body)).toEqual(
       JSON.stringify(decryptedMessage.body)
     )
@@ -197,9 +200,7 @@ describe('Messaging', () => {
     encryptedMessageWrongContent.ciphertext = u8aToHex(messedUpContent)
 
     await expect(() =>
-      Message.decrypt(encryptedMessageWrongContent, {
-        keystore,
-        receiverDetails: bobLightDid,
+      Message.decrypt(encryptedMessageWrongContent, keystore, bobLightDid, {
         resolver: mockResolver,
       })
     ).rejects.toThrowError(SDKErrors.ERROR_DECODING_MESSAGE())
@@ -217,9 +218,7 @@ describe('Messaging', () => {
       receiverKeyId: bobLightDid.assembleKeyId(bobLightDid.encryptionKey!.id),
     }
     await expect(() =>
-      Message.decrypt(encryptedMessageWrongBody, {
-        keystore,
-        receiverDetails: bobLightDid,
+      Message.decrypt(encryptedMessageWrongBody, keystore, bobLightDid, {
         resolver: mockResolver,
       })
     ).rejects.toThrowError(SDKErrors.ERROR_PARSING_MESSAGE())
@@ -248,17 +247,15 @@ describe('Messaging', () => {
     const quoteAttesterSigned = await Quote.createAttesterSignature(
       quoteData,
       bobFullDid,
-      {
-        signer: keystore,
-      }
+      keystore
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
       bobFullDid.did,
       aliceFullDid,
+      keystore,
       {
-        signer: keystore,
         resolver: mockResolver,
       }
     )
@@ -386,17 +383,15 @@ describe('Messaging', () => {
     const quoteAttesterSigned = await Quote.createAttesterSignature(
       quoteData,
       bobLightDid,
-      {
-        signer: keystore,
-      }
+      keystore
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
       bobLightDid.did,
       aliceLightDid,
+      keystore,
       {
-        signer: keystore,
         resolver: mockResolver,
       }
     )
@@ -431,17 +426,15 @@ describe('Messaging', () => {
       await Quote.createAttesterSignature(
         quoteDataEncodedDetails,
         bobLightDidWithDetails,
-        {
-          signer: keystore,
-        }
+        keystore
       )
     const bothSignedEncodedDetails = await Quote.createQuoteAgreement(
       quoteAttesterSignedEncodedDetails,
       content.rootHash,
       bobLightDidWithDetails.did,
       aliceLightDidWithDetails,
+      keystore,
       {
-        signer: keystore,
         resolver: mockResolver,
       }
     )
