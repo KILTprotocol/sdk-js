@@ -64,6 +64,17 @@ export class LightDidDetails extends DidDetails {
     return getEncodingForSigningKeyType(this.authenticationKey.type) as string
   }
 
+  /**
+   * Create a new instance of [[LightDidDetails]] from the provided details.
+   * Private keys are assumed to already live in the keystore to be used with this DID instance, as it contains reference only to public keys.
+   *
+   * @param details The DID creation details.
+   * @param details.authenticationKey The light DID authentication key.
+   * @param details.encryptionKey The optional light DID encryption key.
+   * @param details.serviceEndpoints The optional light DID service endpoints.
+   *
+   * @returns The resulting [[LightDidDetails]].
+   */
   public static fromDetails({
     authenticationKey,
     encryptionKey = undefined,
@@ -124,6 +135,16 @@ export class LightDidDetails extends DidDetails {
     })
   }
 
+  /**
+   * Create a new instance of [[LightDidDetails]] by parsing the provided input URI.
+   * This is possible because of the self-describing and self-containing nature of light DIDs.
+   * Private keys are assumed to already live in the keystore to be used with this DID instance, as it contains reference only to public keys.
+   *
+   * @param uri The DID URI to parse.
+   * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
+   *
+   * @returns The resulting [[LightDidDetails]].
+   */
   public static fromUri(
     uri: IDidDetails['did'],
     failIfFragmentPresent = true
@@ -165,6 +186,15 @@ export class LightDidDetails extends DidDetails {
     })
   }
 
+  /**
+   * Create a new instance of [[LightDidDetails]] from the provided KILT address.
+   * The resulting DID will only have an authentication key, and no encryption key nor service endpoints.
+   *
+   * @param identifier The KILT address to generate the DID from.
+   * @param keyType One of the [[LightDidSupportedSigningKeyTypes]] to set the type of the authentication key derived from the provided address. It defaults to Sr25519.
+   *
+   * @returns The resulting [[LightDidDetails]].
+   */
   public static fromIdentifier(
     identifier: IDidIdentifier,
     keyType: LightDidSupportedSigningKeyTypes = LightDidSupportedSigningKeyTypes.sr25519
@@ -178,6 +208,15 @@ export class LightDidDetails extends DidDetails {
     })
   }
 
+  /**
+   * Migrate a light DID to a full DID, while maintaining the same keys and service endpoints.
+   *
+   * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
+   * @param signer The keystore signer to sign the operation.
+   * @param migrationHandler A user-provided closure to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
+   *
+   * @returns The migrated [[FullDidDetails]] if the user-provided handler successfully writes the full DID on the chain. It throws an error otherwise.
+   */
   public async migrate(
     submitterAddress: IIdentity['address'],
     signer: KeystoreSigner,

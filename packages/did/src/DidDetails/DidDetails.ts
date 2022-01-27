@@ -130,11 +130,27 @@ export abstract class DidDetails implements IDidDetails {
     })
   }
 
+  /**
+   * Compute the full identifier (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
+   *
+   * @param keyId The key ID, without the leading subject's DID prefix.
+   *
+   * @returns The full [[DidPublicKey['id']]], which includes the subject's DID and the provided key ID.
+   */
   public assembleKeyId(keyId: DidKey['id']): DidPublicKey['id'] {
     return `${this.did}#${keyId}`
   }
 
-  // Generates a DID signature over a given input using the key with the given ID.
+  /**
+   * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
+   *
+   * @param payload The byte array or HEX-encoded payload to sign.
+   * @param signingOptions The signing options.
+   * @param signingOptions.signer The keystore signer to use for the signing operation.
+   * @param signingOptions.keyId The key ID to use to generate the signature.
+   *
+   * @returns The resulting [[DidSignature]].
+   */
   public async signPayload(
     payload: Uint8Array | string,
     {
