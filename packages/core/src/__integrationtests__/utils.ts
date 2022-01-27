@@ -16,8 +16,8 @@ import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidChain,
+  DidMigrationHandler,
   FullDidDetails,
-  getDefaultMigrationHandler,
   LightDidDetails,
 } from '@kiltprotocol/did'
 import {
@@ -141,6 +141,17 @@ export async function createEndowedTestAccount(
   const keypair = keypairFromRandom()
   await fundAccount(keypair.address, amount)
   return keypair
+}
+
+export function getDefaultMigrationHandler(
+  submitter: KeyringPair
+): DidMigrationHandler {
+  return async (e) => {
+    await BlockchainUtils.signAndSubmitTx(e, submitter, {
+      reSign: true,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+  }
 }
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.

@@ -18,7 +18,6 @@ import {
   FullDidDetails,
   DidDetails,
   EncryptionAlgorithms,
-  getDefaultMigrationHandler,
   resolveDoc,
   DemoKeystoreUtils,
 } from '@kiltprotocol/did'
@@ -40,6 +39,7 @@ import {
   initializeApi,
   submitExtrinsicWithResign,
   addressFromRandom,
+  getDefaultMigrationHandler,
 } from './utils'
 
 let paymentAccount: KeyringPair

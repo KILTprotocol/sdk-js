@@ -11,6 +11,5 @@ export * from './LightDidDetails.js'
 export {
   LightDidSupportedSigningKeyTypes,
   LightDidSupportedEncryptionKeyTypes,
-  getDefaultMigrationHandler,
 } from './LightDidDetails.utils.js'
 export * from './FullDidDetails.js'
