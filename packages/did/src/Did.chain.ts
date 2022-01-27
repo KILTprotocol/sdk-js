@@ -40,7 +40,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { DidDetails, getSignatureAlgForKeyType } from './DidDetails/index.js'
 
@@ -412,7 +412,7 @@ export async function getSetKeyExtrinsic(
     case KeyRelationship.assertionMethod:
       return api.tx.did.setAttestationKey(keyAsEnum)
     default:
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `setting a key is only allowed for the following key types: ${[
           KeyRelationship.authentication,
           KeyRelationship.capabilityDelegation,
@@ -434,13 +434,13 @@ export async function getRemoveKeyExtrinsic(
       return api.tx.did.removeAttestationKey()
     case KeyRelationship.keyAgreement:
       if (!keyId) {
-        throw new Error(
+        throw SDKErrors.ERROR_DID_ERROR(
           `When removing a ${KeyRelationship.keyAgreement} key it is required to specify the id of the key to be removed.`
         )
       }
       return api.tx.did.removeKeyAgreementKey(keyId)
     default:
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `key removal is only allowed for the following key types: ${[
           KeyRelationship.keyAgreement,
           KeyRelationship.capabilityDelegation,
@@ -459,7 +459,7 @@ export async function getAddKeyExtrinsic(
   if (keyRelationship === KeyRelationship.keyAgreement) {
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
-  throw new Error(
+  throw SDKErrors.ERROR_DID_ERROR(
     `adding to the key set is only allowed for the following key types:  ${[
       KeyRelationship.keyAgreement,
     ]}`
@@ -550,7 +550,7 @@ export function encodeDidSignature(
 ): SignatureEnum {
   const alg = getSignatureAlgForKeyType(key.type)
   if (!alg) {
-    throw new Error(
+    throw SDKErrors.ERROR_DID_ERROR(
       `The provided type ${key.type} does not match any known algorithm.`
     )
   }

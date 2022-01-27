@@ -295,7 +295,7 @@ export class DelegationNode implements IDelegationNode {
       delegeeDid.getKeys(KeyRelationship.authentication)
     )
     if (!authenticationKey) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Delegee ${delegeeDid.did} does not have any authentication key.`
       )
     }

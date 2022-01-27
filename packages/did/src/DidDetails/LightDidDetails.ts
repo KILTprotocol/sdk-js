@@ -15,6 +15,8 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
+import { SDKErrors } from '@kiltprotocol/utils'
+
 import type {
   DidCreationDetails,
   LightDidCreationDetails,
@@ -153,12 +155,12 @@ export class LightDidDetails extends DidDetails {
       parseDidUri(uri)
 
     if (type !== 'light') {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Cannot build a light DID from the provided URI ${uri} because it does not refer to a light DID.`
       )
     }
     if (fragment && failIfFragmentPresent) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
       )
     }
@@ -166,7 +168,7 @@ export class LightDidDetails extends DidDetails {
     const decodedAuthKeyType =
       getSigningKeyTypeFromEncoding(authKeyTypeEncoding)
     if (!decodedAuthKeyType) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type.`
       )
     }
@@ -234,7 +236,9 @@ export class LightDidDetails extends DidDetails {
     await migrationHandler(creationTx)
     const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
     if (!fullDidDetails) {
-      throw new Error('Something went wrong during the migration.')
+      throw SDKErrors.ERROR_DID_ERROR(
+        'Something went wrong during the migration.'
+      )
     }
     return fullDidDetails
   }

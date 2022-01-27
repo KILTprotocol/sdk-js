@@ -130,15 +130,21 @@ export class Message implements IMessage {
 
     const senderKeyDetails = await resolver.resolveKey(senderKeyId)
     if (!senderKeyDetails) {
-      throw new Error(`Could not resolve sender key ${senderKeyId}`)
+      throw SDKErrors.ERROR_DID_ERROR(
+        `Could not resolve sender key ${senderKeyId}`
+      )
     }
     const { fragment } = DidUtils.parseDidUri(receiverKeyId)
     if (!fragment) {
-      throw new Error(`No fragment for the receiver key ID ${receiverKeyId}`)
+      throw SDKErrors.ERROR_DID_ERROR(
+        `No fragment for the receiver key ID ${receiverKeyId}`
+      )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
     if (!receiverKeyDetails) {
-      throw new Error(`Could not resolve receiver key ${receiverKeyId}`)
+      throw SDKErrors.ERROR_DID_ERROR(
+        `Could not resolve receiver key ${receiverKeyId}`
+      )
     }
 
     // check key type
@@ -259,7 +265,7 @@ export class Message implements IMessage {
   ): Promise<IEncryptedMessage> {
     const receiverKey = await resolver.resolveKey(receiverKeyId)
     if (!receiverKey) {
-      throw new Error(`Cannot resolve key ${receiverKeyId}`)
+      throw SDKErrors.ERROR_DID_ERROR(`Cannot resolve key ${receiverKeyId}`)
     }
     if (this.receiver !== receiverKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
@@ -269,7 +275,7 @@ export class Message implements IMessage {
     }
     const senderKey = senderDetails.getKey(senderKeyId)
     if (!senderKey) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Cannot find key with ID ${senderKeyId} for the sender DID.`
       )
     }

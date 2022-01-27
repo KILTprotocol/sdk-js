@@ -117,7 +117,7 @@ export async function createAttesterSignature(
     attesterIdentity.getKeys(KeyRelationship.authentication)
   )
   if (!authenticationKey) {
-    throw new Error(
+    throw SDKErrors.ERROR_DID_ERROR(
       `The attester ${attesterIdentity.did} does not have a valid authentication key.`
     )
   }
@@ -211,7 +211,7 @@ export async function createQuoteAgreement(
     claimerIdentity.getKeys(KeyRelationship.authentication)
   )
   if (!claimerAuthenticationKey) {
-    throw new Error(
+    throw SDKErrors.ERROR_DID_ERROR(
       `Claimer DID ${claimerIdentity.did} does not have an authentication key.`
     )
   }

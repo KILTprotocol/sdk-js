@@ -25,7 +25,7 @@ import type {
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
-import { Crypto, Keyring } from '@kiltprotocol/utils'
+import { Crypto, Keyring, SDKErrors } from '@kiltprotocol/utils'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -77,15 +77,21 @@ export class DemoKeystore
 
   private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
     if (!signingSupported(alg))
-      throw new Error(`alg ${alg} is not supported for signing`)
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        `alg ${alg} is not supported for signing`
+      )
     const keyType = DemoKeystore.getKeypairTypeForAlg(alg)
     try {
       const keypair = this.signingKeyring.getPair(publicKey)
       if (keypair && keyType === keypair.type) return keypair
     } catch {
-      throw Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        `no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`
+      )
     }
-    throw Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
+    throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      `no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`
+    )
   }
 
   private getEncryptionKeyPair(
@@ -93,7 +99,9 @@ export class DemoKeystore
     alg: string
   ): NaclKeypair {
     if (!encryptionSupported(alg))
-      throw new Error(`alg ${alg} is not supported for encryption`)
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        `alg ${alg} is not supported for encryption`
+      )
     const publicKeyHex = Crypto.u8aToHex(publicKey)
     const keypair = this.encryptionKeypairs.get(publicKeyHex)
     if (!keypair) throw Error(`no key ${publicKeyHex} for alg ${alg}`)
@@ -147,7 +155,7 @@ export class DemoKeystore
     if (encryptionSupported(alg)) {
       return this.generateEncryptionKeypair({ alg, seed })
     }
-    throw new Error(`alg ${alg} is not supported`)
+    throw SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
   }
 
   private async addSigningKeypair<T extends SigningAlgorithms>({
@@ -160,7 +168,7 @@ export class DemoKeystore
   }> {
     await cryptoWaitReady()
     if (this.signingKeyring.publicKeys.some((i) => u8aEq(publicKey, i)))
-      throw new Error('public key already stored')
+      throw SDKErrors.ERROR_KEYSTORE_ERROR('public key already stored')
     const keypairType = DemoKeystore.getKeypairTypeForAlg(alg)
     const keypair = this.signingKeyring.addFromPair(
       { publicKey, secretKey },
@@ -181,7 +189,7 @@ export class DemoKeystore
     const { publicKey } = keypair
     const publicKeyHex = Crypto.u8aToHex(publicKey)
     if (this.encryptionKeypairs.has(publicKeyHex))
-      throw new Error('public key already used')
+      throw SDKErrors.ERROR_KEYSTORE_ERROR('public key already used')
     this.encryptionKeypairs.set(publicKeyHex, keypair)
     return { alg, publicKey }
   }
@@ -200,7 +208,7 @@ export class DemoKeystore
     if (encryptionSupported(alg)) {
       return this.addEncryptionKeypair({ alg, publicKey, secretKey })
     }
-    throw new Error(`alg ${alg} is not supported`)
+    throw SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
   }
 
   public async sign<A extends SigningAlgorithms>({
@@ -241,7 +249,9 @@ export class DemoKeystore
     // this is an alias for tweetnacl nacl.box.open
     const decrypted = naclOpen(data, nonce, peerPublicKey, keypair.secretKey)
     if (!decrypted)
-      return Promise.reject(new Error('failed to decrypt with given key'))
+      return Promise.reject(
+        SDKErrors.ERROR_KEYSTORE_ERROR('failed to decrypt with given key')
+      )
     return { data: decrypted, alg }
   }
 

@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { SDKErrors } from '@kiltprotocol/utils'
 import { KeyRelationship } from '@kiltprotocol/types'
 
 import type { DidCreationDetails } from '../types.js'
@@ -42,7 +43,8 @@ export function checkDidCreationDetails({
     })
   })
   keyReferences.forEach((id) => {
-    if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
+    if (!keyIds.has(id))
+      throw SDKErrors.ERROR_DID_ERROR(`No key with id ${id} in "keys"`)
   })
 }
 

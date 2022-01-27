@@ -64,7 +64,7 @@ export function checkLightDidCreationDetails(
 
   if (details.encryptionKey?.type) {
     if (!supportedEncryptionKeyTypes.has(details.encryptionKey.type)) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Encryption key type ${details.encryptionKey.type} is not supported.`
       )
     }
@@ -89,13 +89,13 @@ export function checkLightDidCreationDetails(
     }
 
     if (isServiceIdADid) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
       )
     }
     // A service ID cannot have a reserved ID that is used for key IDs.
     if (service.id === 'authentication' || service.id === 'encryption') {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
       )
     }
@@ -142,7 +142,7 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   const decoded = base58Decode(rawInput, true)
   const serializationFlag = decoded[0]
   if (serializationFlag !== 0x0) {
-    throw new Error('Serialization algorithm not supported')
+    throw SDKErrors.ERROR_DID_ERROR('Serialization algorithm not supported')
   }
   const withoutFlag = decoded.slice(1)
   const deserialized: Map<string, unknown> = cborDecode(withoutFlag)

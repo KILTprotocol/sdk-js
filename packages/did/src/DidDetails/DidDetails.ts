@@ -15,7 +15,7 @@ import type {
   KeystoreSigner,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { u8aToHex } from '@polkadot/util'
 
 import type { DidCreationDetails, MapKeysToRelationship } from '../types.js'
@@ -68,7 +68,7 @@ export abstract class DidDetails implements IDidDetails {
       KeyRelationship.authentication
     )[0]
     if (!firstAuthenticationKey) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         'Unexpected error. Any DID should always have at least one authentication key.'
       )
     }
@@ -167,7 +167,9 @@ export abstract class DidDetails implements IDidDetails {
     }
     const alg = getSignatureAlgForKeyType(key.type)
     if (!alg) {
-      throw new Error(`No algorithm found for key type ${key.type}`)
+      throw SDKErrors.ERROR_DID_ERROR(
+        `No algorithm found for key type ${key.type}`
+      )
     }
     const { data: signature } = await signer.sign({
       publicKey: key.publicKey,

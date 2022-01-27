@@ -253,7 +253,7 @@ export class Credential implements ICredential {
     const selectedKeyId = (await keySelection(keys))?.id
 
     if (!selectedKeyId) {
-      throw new Error('No key matching the required key relationship')
+      throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
     }
 
     await credential.request.signWithDidKey(

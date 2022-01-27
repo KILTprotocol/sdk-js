@@ -17,6 +17,8 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
+import { SDKErrors } from '@kiltprotocol/utils'
+
 import type {
   DidCreationDetails,
   DidKeySelectionHandler,
@@ -184,7 +186,7 @@ export class FullDidDetails extends DidDetails {
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `The details for did ${this.did} do not contain the required keys for this operation`
       )
     }
@@ -230,12 +232,12 @@ export class FullDidDetails extends DidDetails {
       batchExtrinsic.method.section !== 'utility' &&
       batchExtrinsic.method.method !== 'batch'
     ) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         'authorizeBatch can only be used to sign utility.batch extrinsics.'
       )
     }
     if (!signingKey) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `The details for did ${this.did} do not contain the required keys for this operation`
       )
     }

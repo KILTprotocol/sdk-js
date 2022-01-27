@@ -18,6 +18,7 @@ import {
   VerificationKeyTypesMap,
   EncryptionKeyTypesMap,
 } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 /**
  * @packageDocumentation
@@ -128,7 +129,7 @@ export function exportToDidDocument(
     case 'application/ld+json':
       return exportToJsonLdDidDocument(details)
     default:
-      throw new Error(
+      throw SDKErrors.ERROR_DID_EXPORTER_ERROR(
         `${mimeType} not supported by any of the available exporters.`
       )
   }
