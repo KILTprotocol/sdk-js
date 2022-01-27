@@ -38,11 +38,14 @@ import type {
   KeystoreSigningOptions,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import { ConfigService } from '@kiltprotocol/config'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { DidDetails, getSignatureAlgForKeyType } from './DidDetails/index.js'
+
+const log = ConfigService.LoggingFactory.getLogger('Did')
 
 // ### Chain type definitions
 
@@ -357,16 +360,26 @@ export async function generateCreateTxFromDidDetails(
     })
 
   // For now, it only takes the first attestation key, if present.
-  const newAttestationKey: PublicKeyEnum | undefined =
-    did.getKeys(KeyRelationship.assertionMethod).map((key) => {
-      return formatPublicKey(key)
-    })[0] || undefined
+  const attestationKeys = did.getKeys(KeyRelationship.assertionMethod)
+  if (attestationKeys.length > 1) {
+    log.warn(
+      `More than one attestation key (${attestationKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const newAttestationKey: PublicKeyEnum | undefined = attestationKeys[0]
+    ? formatPublicKey(attestationKeys[0])
+    : undefined
 
   // For now, it only takes the first delegation key, if present.
-  const newDelegationKey: PublicKeyEnum | undefined =
-    did.getKeys(KeyRelationship.capabilityDelegation).map((key) => {
-      return formatPublicKey(key)
-    })[0] || undefined
+  const delegationKeys = did.getKeys(KeyRelationship.capabilityDelegation)
+  if (delegationKeys.length > 1) {
+    log.warn(
+      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const newDelegationKey: PublicKeyEnum | undefined = delegationKeys[0]
+    ? formatPublicKey(delegationKeys[0])
+    : undefined
 
   const newServiceDetails = did.getEndpoints().map((service) => {
     const { id, urls } = service
