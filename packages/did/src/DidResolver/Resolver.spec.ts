@@ -5,197 +5,168 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { BN } from '@polkadot/util'
+import { decodeAddress } from '@polkadot/util-crypto'
+import Keyring from '@polkadot/keyring'
+
+import type {
+  DidKey,
+  DidResolutionDocumentMetadata,
+  DidResolvedDetails,
+  DidServiceEndpoint,
+  IDidDetails,
+  IDidIdentifier,
+  KeyringPair,
+  ResolvedDidKey,
+  ResolvedDidServiceEndpoint,
+} from '@kiltprotocol/types'
+
+import type { IDidChainRecordJSON } from '../Did.chain'
+import { getKiltDidFromIdentifier } from '../Did.utils'
+
+import { DidResolver } from './index.js'
+import { LightDidDetails } from '../index.js'
 
 /**
  * @group unit/did
  */
 
-import { TypeRegistry } from '@kiltprotocol/chain-helpers'
-import {
-  IDidKeyDetails,
-  IDidResolutionDocumentMetadata,
-  IDidServiceEndpoint,
-  IIdentity,
-  KeyringPair,
-} from '@kiltprotocol/types'
-import type { IDidResolvedDetails } from '@kiltprotocol/types'
-import { Keyring } from '@kiltprotocol/utils'
-import { hexToU8a, u8aToHex } from '@polkadot/util'
-import { LightDidDetails } from '../DidDetails'
-import type { INewPublicKey } from '../types'
-import { IDidChainRecordJSON } from '../types'
-import { DefaultResolver } from './DefaultResolver'
-import {
-  getIdentifierFromKiltDid,
-  getKiltDidFromIdentifier,
-  parseDidUrl,
-} from '../Did.utils'
+const identifierWithAuthenticationKey =
+  '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+const identifierWithAllKeys = '4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp'
+const identifierWithServiceEndpoints =
+  '4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN'
+const deletedIdentifier = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
 
-const fullDidPresentWithAuthenticationKey =
-  'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-const fullDidPresentWithAllKeys =
-  'did:kilt:4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp'
-const fullDidPresentWithServiceEndpoints =
-  'did:kilt:4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN'
-const deletedDid = 'did:kilt:4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
-const migratedUndeletedLightDid = `did:kilt:light:00${getIdentifierFromKiltDid(
-  fullDidPresentWithAuthenticationKey
-)}`
-const migratedDeletedLightDid = `did:kilt:light:00${getIdentifierFromKiltDid(
-  deletedDid
-)}`
-
-function generateAuthenticationKeyDetails(
-  didIdentifier: IIdentity['address']
-): [string, IDidKeyDetails] {
-  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
-  return [
-    `${didUri}#auth`,
-    {
-      id: `${didUri}#auth`,
-      type: 'ed25519',
-      controller: didUri,
-      publicKeyHex:
-        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      includedAt: 200,
-    },
-  ]
-}
-
-function generateEncryptionKeyDetails(
-  didIdentifier: IIdentity['address']
-): [string, IDidKeyDetails] {
-  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
-  return [
-    `${didUri}#enc`,
-    {
-      id: `${didUri}#enc`,
-      type: 'x25519',
-      controller: didUri,
-      publicKeyHex:
-        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-      includedAt: 250,
-    },
-  ]
-}
-
-function generateAttestationKeyDetails(
-  didIdentifier: IIdentity['address']
-): [string, IDidKeyDetails] {
-  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
-  return [
-    `${didUri}#att`,
-    {
-      id: `${didUri}#att`,
-      type: 'sr25519',
-      controller: didUri,
-      publicKeyHex:
-        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-      includedAt: 300,
-    },
-  ]
-}
-
-function generateDelegationKeyDetails(
-  didIdentifier: IIdentity['address']
-): [string, IDidKeyDetails] {
-  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
-  return [
-    `${didUri}#del`,
-    {
-      id: `${didUri}#del`,
-      type: 'ed25519',
-      controller: didUri,
-      publicKeyHex:
-        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
-      includedAt: 350,
-    },
-  ]
-}
-
-function generateServiceEndpointDetails(
-  didIdentifier: IIdentity['address'],
-  serviceId: string
-): IDidServiceEndpoint {
-  const didUri = getKiltDidFromIdentifier(didIdentifier, 'full')
+function generateAuthenticationKeyDetails(): DidKey {
   return {
-    id: `${didUri}#${serviceId}`,
+    id: 'auth',
+    type: 'ed25519',
+    publicKey: new Uint8Array(32).fill(0),
+  }
+}
+
+function generateEncryptionKeyDetails(): DidKey {
+  return {
+    id: 'enc',
+    type: 'x25519',
+    publicKey: new Uint8Array(32).fill(1),
+    includedAt: new BN(15),
+  }
+}
+
+function generateAttestationKeyDetails(): DidKey {
+  return {
+    id: 'att',
+    type: 'sr25519',
+    publicKey: new Uint8Array(32).fill(2),
+    includedAt: new BN(20),
+  }
+}
+
+function generateDelegationKeyDetails(): DidKey {
+  return {
+    id: 'del',
+    type: 'ecdsa',
+    publicKey: new Uint8Array(32).fill(3),
+    includedAt: new BN(25),
+  }
+}
+
+function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
+  return {
+    id: serviceId,
     types: [`type-${serviceId}`],
-    urls: [`urls-${serviceId}`],
+    urls: [`url-${serviceId}`],
   }
 }
 
 jest.mock('../Did.chain', () => {
-  const queryByDID = jest.fn(
-    async (did: string): Promise<IDidChainRecordJSON | null> => {
-      const [authKeyId, authKey] = generateAuthenticationKeyDetails(did)
-      const [encKeyId, encKey] = generateEncryptionKeyDetails(did)
-      const [attKeyId, attKey] = generateAttestationKeyDetails(did)
-      const [delKeyId, delKey] = generateDelegationKeyDetails(did)
-      switch (did) {
-        case fullDidPresentWithAuthenticationKey:
+  const queryDetails = jest.fn(
+    async (
+      didIdentifier: IDidIdentifier
+    ): Promise<IDidChainRecordJSON | null> => {
+      const authKey = generateAuthenticationKeyDetails()
+      const encKey = generateEncryptionKeyDetails()
+      const attKey = generateAttestationKeyDetails()
+      const delKey = generateDelegationKeyDetails()
+
+      switch (didIdentifier) {
+        case identifierWithAuthenticationKey:
           return {
-            did,
-            authenticationKey: authKeyId,
+            authenticationKey: authKey.id,
             keyAgreementKeys: [],
             publicKeys: [authKey],
-            lastTxCounter: TypeRegistry.createType('u64'),
+            lastTxCounter: new BN(0),
+            deposit: {
+              amount: new BN(2),
+              owner: didIdentifier,
+            },
           }
-        case fullDidPresentWithAllKeys:
+        case identifierWithAllKeys:
           return {
-            did,
-            authenticationKey: authKeyId,
-            keyAgreementKeys: [encKeyId],
-            assertionMethodKey: attKeyId,
-            capabilityDelegationKey: delKeyId,
+            authenticationKey: authKey.id,
+            keyAgreementKeys: [encKey.id],
+            assertionMethodKey: attKey.id,
+            capabilityDelegationKey: delKey.id,
             publicKeys: [authKey, encKey, attKey, delKey],
-            lastTxCounter: TypeRegistry.createType('u64'),
+            lastTxCounter: new BN(0),
+            deposit: {
+              amount: new BN(2),
+              owner: didIdentifier,
+            },
           }
-        case fullDidPresentWithServiceEndpoints:
+        case identifierWithServiceEndpoints:
           return {
-            did,
-            authenticationKey: authKeyId,
+            authenticationKey: authKey.id,
             keyAgreementKeys: [],
             publicKeys: [authKey],
-            lastTxCounter: TypeRegistry.createType('u64'),
+            lastTxCounter: new BN(0),
+            deposit: {
+              amount: new BN(2),
+              owner: didIdentifier,
+            },
           }
         default:
           return null
       }
     }
   )
-  const queryDidKey = jest.fn(
-    async (didUri: string): Promise<IDidKeyDetails | null> => {
-      const { identifier } = parseDidUrl(didUri)
-      const subjectDid = getKiltDidFromIdentifier(identifier, 'full')
-      const details = await queryByDID(subjectDid)
-      return details?.publicKeys.find((key) => key.id === didUri) || null
+  const queryKey = jest.fn(
+    async (
+      didIdentifier: IDidIdentifier,
+      keyId: DidKey['id']
+    ): Promise<DidKey | null> => {
+      const details = await queryDetails(didIdentifier)
+      return details?.publicKeys.find((key) => key.id === keyId) || null
     }
   )
   const queryServiceEndpoint = jest.fn(
-    async (didUri: string): Promise<IDidServiceEndpoint | null> => {
-      const { identifier, fragment } = parseDidUrl(didUri)
-      const subjectDid = getKiltDidFromIdentifier(identifier, 'full')
-      switch (subjectDid) {
-        case fullDidPresentWithServiceEndpoints:
-          return generateServiceEndpointDetails(identifier, fragment as string)
+    async (
+      didIdentifier: IDidIdentifier,
+      serviceId: DidServiceEndpoint['id']
+    ): Promise<DidServiceEndpoint | null> => {
+      switch (didIdentifier) {
+        case identifierWithServiceEndpoints:
+          return generateServiceEndpointDetails(serviceId)
         default:
           return null
       }
     }
   )
   const queryServiceEndpoints = jest.fn(
-    async (didUri: string): Promise<IDidServiceEndpoint[]> => {
-      switch (didUri) {
-        case fullDidPresentWithServiceEndpoints:
+    async (didIdentifier: IDidIdentifier): Promise<DidServiceEndpoint[]> => {
+      switch (didIdentifier) {
+        case identifierWithServiceEndpoints:
           return [
             (await queryServiceEndpoint(
-              `${didUri}#id-1`
-            )) as IDidServiceEndpoint,
+              didIdentifier,
+              'id-1'
+            )) as DidServiceEndpoint,
             (await queryServiceEndpoint(
-              `${didUri}#id-2`
-            )) as IDidServiceEndpoint,
+              didIdentifier,
+              'id-2'
+            )) as DidServiceEndpoint,
           ]
         default:
           return []
@@ -203,471 +174,386 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryDidDeletionStatus = jest.fn(
-    async (did: string): Promise<boolean> => {
-      switch (did) {
-        case deletedDid:
-          return true
-        default:
-          return false
-      }
+    async (didIdentifier: IDidIdentifier): Promise<boolean> => {
+      return didIdentifier === deletedIdentifier
     }
   )
   return {
-    queryByDID,
-    queryById: jest.fn(
-      async (id: string): Promise<IDidChainRecordJSON | null> =>
-        queryByDID(getKiltDidFromIdentifier(id, 'full'))
-    ),
-    queryDidKey,
+    queryDetails,
+    queryKey,
     queryServiceEndpoint,
     queryServiceEndpoints,
     queryDidDeletionStatus,
   }
 })
 
-describe('Key resolution', () => {
-  it('Correctly resolves a key given its ID', async () => {
-    const key = (await DefaultResolver.resolveKey(
-      `${fullDidPresentWithAllKeys}#auth`
-    )) as IDidKeyDetails
-    expect(key).toMatchObject<Partial<IDidKeyDetails>>({
-      id: `${fullDidPresentWithAllKeys}#auth`,
+describe('When resolving a key', () => {
+  it('correctly resolves it for a full DID if both the DID and the key exist', async () => {
+    const fullDid = getKiltDidFromIdentifier(
+      identifierWithAuthenticationKey,
+      'full'
+    )
+    const keyIdUri = `${fullDid}#auth`
+
+    await expect(
+      DidResolver.resolveKey(keyIdUri)
+    ).resolves.toStrictEqual<ResolvedDidKey>({
+      controller: fullDid,
+      publicKey: new Uint8Array(32).fill(0),
+      id: keyIdUri,
       type: 'ed25519',
-      controller: fullDidPresentWithAllKeys,
     })
+  })
+
+  it('returns null if either the DID or the key do not exist', async () => {
+    const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
+    let keyIdUri = `${deletedFullDid}#enc`
+
+    await expect(DidResolver.resolveKey(keyIdUri)).resolves.toBeNull()
+
+    const didWithNoEncryptionKey = getKiltDidFromIdentifier(
+      identifierWithAuthenticationKey,
+      'full'
+    )
+    keyIdUri = `${didWithNoEncryptionKey}#enc`
+
+    await expect(DidResolver.resolveKey(keyIdUri)).resolves.toBeNull()
+  })
+
+  it('throws for invalid URIs', async () => {
+    const uriWithoutFragment = getKiltDidFromIdentifier(
+      deletedIdentifier,
+      'full'
+    )
+    await expect(DidResolver.resolveKey(uriWithoutFragment)).rejects.toThrow()
+
+    const invalidUri = 'invalid-uri'
+    await expect(DidResolver.resolveKey(invalidUri)).rejects.toThrow()
   })
 })
 
-describe('Service endpoint resolution', () => {
-  it('Correctly resolves a service endpoint given its ID', async () => {
-    const serviceEndpoint = (await DefaultResolver.resolveServiceEndpoint(
-      `${fullDidPresentWithServiceEndpoints}#id-1`
-    )) as IDidServiceEndpoint
-    expect(serviceEndpoint).toMatchObject<IDidServiceEndpoint>({
-      id: `${fullDidPresentWithServiceEndpoints}#id-1`,
-      types: ['type-id-1'],
-      urls: ['urls-id-1'],
+describe('When resolving a service endpoint', () => {
+  it('correctly resolves it for a full DID if both the DID and the endpoint exist', async () => {
+    const fullDid = getKiltDidFromIdentifier(
+      identifierWithServiceEndpoints,
+      'full'
+    )
+    const serviceIdUri = `${fullDid}#service-1`
+
+    await expect(
+      DidResolver.resolveServiceEndpoint(serviceIdUri)
+    ).resolves.toStrictEqual<ResolvedDidServiceEndpoint>({
+      id: serviceIdUri,
+      type: [`type-service-1`],
+      serviceEndpoint: [`url-service-1`],
     })
+  })
+
+  it('returns null if either the DID or the service do not exist', async () => {
+    const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
+    let serviceIdUri = `${deletedFullDid}#service-1`
+
+    await expect(
+      DidResolver.resolveServiceEndpoint(serviceIdUri)
+    ).resolves.toBeNull()
+
+    const didWithNoServiceEndpoints = getKiltDidFromIdentifier(
+      identifierWithAuthenticationKey,
+      'full'
+    )
+    serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
+
+    await expect(
+      DidResolver.resolveServiceEndpoint(serviceIdUri)
+    ).resolves.toBeNull()
+  })
+
+  it('throws for invalid URIs', async () => {
+    const uriWithoutFragment = getKiltDidFromIdentifier(
+      deletedIdentifier,
+      'full'
+    )
+    await expect(
+      DidResolver.resolveServiceEndpoint(uriWithoutFragment)
+    ).rejects.toThrow()
+
+    const invalidUri = 'invalid-uri'
+    await expect(
+      DidResolver.resolveServiceEndpoint(invalidUri)
+    ).rejects.toThrow()
   })
 })
 
-describe('Full DID resolution', () => {
-  it('Correctly resolves full DID details with authentication key', async () => {
-    const { details, metadata } = (await DefaultResolver.resolve(
-      fullDidPresentWithAuthenticationKey
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+describe('When resolving a full DID', () => {
+  it('correctly resolves the details with an authentication key', async () => {
+    const fullDidWithAuthenticationKey = getKiltDidFromIdentifier(
+      identifierWithAuthenticationKey,
+      'full'
+    )
+    const { details, metadata } = (await DidResolver.resolve(
+      fullDidWithAuthenticationKey
+    )) as DidResolvedDetails
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual(fullDidPresentWithAuthenticationKey)
-    expect(details?.getKeys()).toStrictEqual([
+    expect(details?.did).toStrictEqual<IDidDetails['did']>(
+      fullDidWithAuthenticationKey
+    )
+    expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
-        id: `${fullDidPresentWithAuthenticationKey}#auth`,
+        id: 'auth',
         type: 'ed25519',
-        controller: fullDidPresentWithAuthenticationKey,
-        publicKeyHex:
-          '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        includedAt: 200,
+        publicKey: new Uint8Array(32).fill(0),
       },
     ])
   })
 
-  it('Correctly resolves full DID details with all keys', async () => {
-    const { details, metadata } = (await DefaultResolver.resolve(
-      fullDidPresentWithAllKeys
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+  it('correctly resolves the details with all keys', async () => {
+    const fullDidWithAllKeys = getKiltDidFromIdentifier(
+      identifierWithAllKeys,
+      'full'
+    )
+    const { details, metadata } = (await DidResolver.resolve(
+      fullDidWithAllKeys
+    )) as DidResolvedDetails
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual(fullDidPresentWithAllKeys)
-    expect(details?.getKeys()).toStrictEqual([
+    expect(details?.did).toStrictEqual<IDidDetails['did']>(fullDidWithAllKeys)
+    expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
-        id: `${fullDidPresentWithAllKeys}#auth`,
+        id: 'auth',
         type: 'ed25519',
-        controller: fullDidPresentWithAllKeys,
-        publicKeyHex:
-          '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        includedAt: 200,
+        publicKey: new Uint8Array(32).fill(0),
       },
       {
-        id: `${fullDidPresentWithAllKeys}#enc`,
+        id: 'enc',
         type: 'x25519',
-        controller: fullDidPresentWithAllKeys,
-        publicKeyHex:
-          '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-        includedAt: 250,
+        publicKey: new Uint8Array(32).fill(1),
+        includedAt: new BN(15),
       },
       {
-        id: `${fullDidPresentWithAllKeys}#att`,
+        id: 'att',
         type: 'sr25519',
-        controller: fullDidPresentWithAllKeys,
-        publicKeyHex:
-          '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-        includedAt: 300,
+        publicKey: new Uint8Array(32).fill(2),
+        includedAt: new BN(20),
       },
       {
-        id: `${fullDidPresentWithAllKeys}#del`,
-        type: 'ed25519',
-        controller: fullDidPresentWithAllKeys,
-        publicKeyHex:
-          '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
-        includedAt: 350,
+        id: 'del',
+        type: 'ecdsa',
+        publicKey: new Uint8Array(32).fill(3),
+        includedAt: new BN(25),
       },
     ])
   })
 
-  it('Correctly resolves full DID details with service endpoints', async () => {
-    const { details, metadata } = (await DefaultResolver.resolve(
-      fullDidPresentWithServiceEndpoints
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+  it('correctly resolves the details with service endpoints', async () => {
+    const fullDidWithServiceEndpoints = getKiltDidFromIdentifier(
+      identifierWithServiceEndpoints,
+      'full'
+    )
+    const { details, metadata } = (await DidResolver.resolve(
+      fullDidWithServiceEndpoints
+    )) as DidResolvedDetails
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual(fullDidPresentWithServiceEndpoints)
-    expect(details?.getKeys()).toStrictEqual([
+    expect(details?.did).toStrictEqual<IDidDetails['did']>(
+      fullDidWithServiceEndpoints
+    )
+    expect(details?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
       {
-        id: `${fullDidPresentWithServiceEndpoints}#auth`,
-        type: 'ed25519',
-        controller: fullDidPresentWithServiceEndpoints,
-        publicKeyHex:
-          '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        includedAt: 200,
-      },
-    ])
-    expect(details?.getEndpoints()).toStrictEqual([
-      {
-        id: `${fullDidPresentWithServiceEndpoints}#id-1`,
+        id: 'id-1',
         types: ['type-id-1'],
-        urls: ['urls-id-1'],
+        urls: ['url-id-1'],
       },
       {
-        id: `${fullDidPresentWithServiceEndpoints}#id-2`,
+        id: 'id-2',
         types: ['type-id-2'],
-        urls: ['urls-id-2'],
+        urls: ['url-id-2'],
       },
     ])
   })
 
-  it('Correctly resolves a full DID that does not exist', async () => {
-    const { details, metadata } = (await DefaultResolver.resolve(
+  it('correctly resolves a non-existing DID', async () => {
+    const randomIdentifier = new Keyring({ ss58Format: 38 }).addFromSeed(
+      new Uint8Array(32).fill(32)
+    ).address
+    const randomDid = getKiltDidFromIdentifier(randomIdentifier, 'full')
+
+    await expect(DidResolver.resolveDoc(randomDid)).resolves.toBeNull()
+  })
+
+  it('correctly resolves a deleted DID', async () => {
+    const deletedDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
+    const { details, metadata } = (await DidResolver.resolve(
       deletedDid
-    )) as IDidResolvedDetails
-    expect(details).toBeUndefined()
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    )) as DidResolvedDetails
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: true,
     })
+    expect(details).toBeUndefined()
   })
 
-  it('Correctly resolves a full DID given a key ID', async () => {
-    const { details, metadata } = (await DefaultResolver.resolveDoc(
-      `${fullDidPresentWithAuthenticationKey}#auth`
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
-      deactivated: false,
-    })
-    expect(details?.did).toStrictEqual(fullDidPresentWithAuthenticationKey)
-    expect(details?.getKeys()).toStrictEqual([
-      {
-        id: `${fullDidPresentWithAuthenticationKey}#auth`,
-        type: 'ed25519',
-        controller: fullDidPresentWithAuthenticationKey,
-        publicKeyHex:
-          '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        includedAt: 200,
-      },
-    ])
-  })
+  it('correctly resolves DID details given a fragment', async () => {
+    const fullDidWithAuthenticationKey = getKiltDidFromIdentifier(
+      identifierWithAuthenticationKey,
+      'full'
+    )
+    const keyIdUri = `${fullDidWithAuthenticationKey}#auth`
+    const { details, metadata } = (await DidResolver.resolveDoc(
+      keyIdUri
+    )) as DidResolvedDetails
 
-  it('Correctly resolves a full DID given a service ID', async () => {
-    const { details, metadata } = (await DefaultResolver.resolveDoc(
-      `${fullDidPresentWithServiceEndpoints}#id-1`
-    )) as IDidResolvedDetails
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual(fullDidPresentWithServiceEndpoints)
-    expect(details?.getKeys()).toStrictEqual([
-      {
-        id: `${fullDidPresentWithServiceEndpoints}#auth`,
-        type: 'ed25519',
-        controller: fullDidPresentWithServiceEndpoints,
-        publicKeyHex:
-          '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        includedAt: 200,
-      },
-    ])
-    expect(details?.getEndpoints()).toStrictEqual([
-      {
-        id: `${fullDidPresentWithServiceEndpoints}#id-1`,
-        types: ['type-id-1'],
-        urls: ['urls-id-1'],
-      },
-      {
-        id: `${fullDidPresentWithServiceEndpoints}#id-2`,
-        types: ['type-id-2'],
-        urls: ['urls-id-2'],
-      },
-    ])
+    expect(details?.did).toStrictEqual<IDidDetails['did']>(
+      fullDidWithAuthenticationKey
+    )
   })
 })
 
-describe('Light DID resolution', () => {
-  const mnemonic = 'testMnemonic'
-
+describe('When resolving a light DID', () => {
   const keyring: Keyring = new Keyring({ ss58Format: 38 })
-  let keypair: KeyringPair
-  let publicAuthKey: INewPublicKey
-  let encryptionKey: INewPublicKey
-  let serviceEndpoints: IDidServiceEndpoint[]
+  const authKey: KeyringPair = keyring.addFromMnemonic('auth')
+  const encryptionKey: KeyringPair = keyring.addFromMnemonic('enc')
 
-  it('Correctly resolves a light DID created with only an ed25519 authentication key', async () => {
-    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
-    publicAuthKey = {
-      publicKey: keypair.publicKey,
-      type: 'ed25519',
-    }
-    const lightDID = new LightDidDetails({
-      authenticationKey: publicAuthKey,
+  it('correctly resolves the details with an authentication key', async () => {
+    const lightDidWithAuthenticationKey = LightDidDetails.fromDetails({
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
     })
-    const { details, metadata } = (await DefaultResolver.resolve(
-      lightDID.did
-    )) as IDidResolvedDetails
+    const { details, metadata } = (await DidResolver.resolve(
+      lightDidWithAuthenticationKey.did
+    )) as DidResolvedDetails
 
-    expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
-      Partial<IDidKeyDetails>
-    >({
-      id: `${lightDID.did}#authentication`,
-      controller: lightDID.did,
-      publicKeyHex: u8aToHex(publicAuthKey.publicKey),
-    })
-
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-  })
-
-  it('Correctly resolves a light DID created with only an sr25519 authentication key', async () => {
-    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'sr25519')
-    publicAuthKey = {
-      publicKey: keypair.publicKey,
-      type: 'sr25519',
-    }
-    const lightDID = new LightDidDetails({
-      authenticationKey: publicAuthKey,
-    })
-    const { details, metadata } = (await DefaultResolver.resolve(
-      lightDID.did
-    )) as IDidResolvedDetails
-
-    expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
-      Partial<IDidKeyDetails>
-    >({
-      id: `${lightDID.did}#authentication`,
-      controller: lightDID.did,
-      publicKeyHex: u8aToHex(publicAuthKey.publicKey),
-    })
-
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
-      deactivated: false,
-    })
-  })
-
-  it('Correctly resolves a light DID created with an authentication, an encryption key, and three service endpoints', async () => {
-    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
-    publicAuthKey = {
-      publicKey: keypair.publicKey,
-      type: 'sr25519',
-    }
-    encryptionKey = {
-      publicKey: hexToU8a(
-        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-      ),
-      type: 'x25519',
-    }
-    serviceEndpoints = [
+    expect(details?.did).toStrictEqual<IDidDetails['did']>(
+      lightDidWithAuthenticationKey.did
+    )
+    expect(lightDidWithAuthenticationKey?.getKeys()).toStrictEqual<DidKey[]>([
       {
-        id: 'id-1',
-        types: ['type-1'],
-        urls: ['url-1'],
-      },
-      {
-        id: 'id-2',
-        types: ['type-2'],
-        urls: ['url-2'],
-      },
-      {
-        id: 'id-3',
-        types: ['type-3'],
-        urls: ['url-3'],
-      },
-    ]
-    const lightDID = new LightDidDetails({
-      authenticationKey: publicAuthKey,
-      encryptionKey,
-      serviceEndpoints,
-    })
-    const { details, metadata } = (await DefaultResolver.resolve(
-      lightDID.did
-    )) as IDidResolvedDetails
-
-    expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
-      Partial<IDidKeyDetails>
-    >({
-      id: `${lightDID.did}#authentication`,
-      controller: lightDID.did,
-      publicKeyHex: u8aToHex(publicAuthKey.publicKey),
-    })
-    expect(details?.getKey(`${lightDID.did}#encryption`)).toMatchObject<
-      Partial<IDidKeyDetails>
-    >({
-      id: `${lightDID.did}#encryption`,
-      controller: lightDID.did,
-      publicKeyHex: u8aToHex(encryptionKey.publicKey),
-    })
-    expect(details?.getEndpoints()).toStrictEqual<IDidServiceEndpoint[]>([
-      {
-        id: `${lightDID.did}#id-1`,
-        types: ['type-1'],
-        urls: ['url-1'],
-      },
-      {
-        id: `${lightDID.did}#id-2`,
-        types: ['type-2'],
-        urls: ['url-2'],
-      },
-      {
-        id: `${lightDID.did}#id-3`,
-        types: ['type-3'],
-        urls: ['url-3'],
+        id: 'authentication',
+        type: authKey.type,
+        publicKey: authKey.publicKey,
       },
     ])
-
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
-      deactivated: false,
-    })
   })
 
-  it('Correctly resolves a light DID using a key ID', async () => {
-    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'sr25519')
-    publicAuthKey = {
-      publicKey: keypair.publicKey,
-      type: 'sr25519',
-    }
-    const lightDID = new LightDidDetails({
-      authenticationKey: publicAuthKey,
+  it('correctly resolves the details with authentication key, encryption key, and two service endpoints', async () => {
+    const lightDid = LightDidDetails.fromDetails({
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+      encryptionKey: {
+        publicKey: encryptionKey.publicKey,
+        type: 'x25519',
+      },
+      serviceEndpoints: [
+        generateServiceEndpointDetails('service-1'),
+        generateServiceEndpointDetails('service-2'),
+      ],
     })
-    const { details, metadata } = (await DefaultResolver.resolveDoc(
-      `${lightDID.did}#auth`
-    )) as IDidResolvedDetails
+    const { details, metadata } = (await DidResolver.resolve(
+      lightDid.did
+    )) as DidResolvedDetails
 
-    expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
-      Partial<IDidKeyDetails>
-    >({
-      id: `${lightDID.did}#authentication`,
-      controller: lightDID.did,
-      publicKeyHex: u8aToHex(publicAuthKey.publicKey),
-    })
-
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-  })
-
-  it('Correctly resolves a light DID using a service ID', async () => {
-    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
-    publicAuthKey = {
-      publicKey: keypair.publicKey,
-      type: 'sr25519',
-    }
-    encryptionKey = {
-      publicKey: hexToU8a(
-        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-      ),
-      type: 'x25519',
-    }
-    serviceEndpoints = [
+    expect(details?.did).toStrictEqual<IDidDetails['did']>(lightDid.did)
+    expect(lightDid?.getKeys()).toStrictEqual<DidKey[]>([
       {
-        id: 'id-1',
-        types: ['type-1'],
-        urls: ['url-1'],
+        id: 'authentication',
+        type: authKey.type,
+        publicKey: authKey.publicKey,
       },
       {
-        id: 'id-2',
-        types: ['type-2'],
-        urls: ['url-2'],
-      },
-      {
-        id: 'id-3',
-        types: ['type-3'],
-        urls: ['url-3'],
-      },
-    ]
-    const lightDID = new LightDidDetails({
-      authenticationKey: publicAuthKey,
-      encryptionKey,
-      serviceEndpoints,
-    })
-    const { details, metadata } = (await DefaultResolver.resolveDoc(
-      `${lightDID.did}#id-1`
-    )) as IDidResolvedDetails
-
-    expect(details?.getKey(`${lightDID.did}#authentication`)).toMatchObject<
-      Partial<IDidKeyDetails>
-    >({
-      id: `${lightDID.did}#authentication`,
-      controller: lightDID.did,
-      publicKeyHex: u8aToHex(publicAuthKey.publicKey),
-    })
-    expect(details?.getKey(`${lightDID.did}#encryption`)).toMatchObject<
-      Partial<IDidKeyDetails>
-    >({
-      id: `${lightDID.did}#encryption`,
-      controller: lightDID.did,
-      publicKeyHex: u8aToHex(encryptionKey.publicKey),
-    })
-    expect(details?.getEndpoints()).toStrictEqual<IDidServiceEndpoint[]>([
-      {
-        id: `${lightDID.did}#id-1`,
-        types: ['type-1'],
-        urls: ['url-1'],
-      },
-      {
-        id: `${lightDID.did}#id-2`,
-        types: ['type-2'],
-        urls: ['url-2'],
-      },
-      {
-        id: `${lightDID.did}#id-3`,
-        types: ['type-3'],
-        urls: ['url-3'],
+        id: 'encryption',
+        type: 'x25519',
+        publicKey: encryptionKey.publicKey,
       },
     ])
-
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
-      deactivated: false,
-    })
-  })
-})
-
-describe('Migrated DID resolution', () => {
-  it('Correctly resolves a migrated light DID that has not been deleted', async () => {
-    const { details, metadata } = (await DefaultResolver.resolve(
-      migratedUndeletedLightDid
-    )) as IDidResolvedDetails
-    expect(details).toBeDefined()
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
-      deactivated: false,
-      canonicalId: fullDidPresentWithAuthenticationKey,
-    })
+    expect(lightDid?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
+      {
+        id: 'service-1',
+        types: ['type-service-1'],
+        urls: ['url-service-1'],
+      },
+      {
+        id: 'service-2',
+        types: ['type-service-2'],
+        urls: ['url-service-2'],
+      },
+    ])
   })
 
-  it('Correctly resolves a migrated light DID that has been deleted', async () => {
-    const { details, metadata } = (await DefaultResolver.resolve(
-      migratedDeletedLightDid
-    )) as IDidResolvedDetails
-    expect(details).toBeUndefined()
-    expect(metadata).toStrictEqual<IDidResolutionDocumentMetadata>({
+  it('correctly resolves a migrated and not deleted DID', async () => {
+    const migratedDid = getKiltDidFromIdentifier(
+      '00'.concat(identifierWithAuthenticationKey),
+      'light'
+    )
+    const { details, metadata } = (await DidResolver.resolve(
+      migratedDid
+    )) as DidResolvedDetails
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+      canonicalId: getKiltDidFromIdentifier(
+        identifierWithAuthenticationKey,
+        'full'
+      ),
+    })
+    expect(details?.did).toStrictEqual<IDidIdentifier>(migratedDid)
+    expect(details?.getKeys()).toStrictEqual<DidKey[]>([
+      {
+        id: 'authentication',
+        type: 'sr25519',
+        publicKey: decodeAddress(identifierWithAuthenticationKey, false, 38),
+      },
+    ])
+  })
+
+  it('correctly resolves a migrated and deleted DID', async () => {
+    const migratedDid = getKiltDidFromIdentifier(
+      '00'.concat(deletedIdentifier),
+      'light'
+    )
+    const { details, metadata } = (await DidResolver.resolve(
+      migratedDid
+    )) as DidResolvedDetails
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: true,
     })
+    expect(details).toBeUndefined()
+  })
+
+  it('correctly resolves DID details given a fragment', async () => {
+    const lightDid = LightDidDetails.fromDetails({
+      authenticationKey: {
+        publicKey: authKey.publicKey,
+        type: authKey.type,
+      },
+    })
+    const keyIdUri = `${lightDid.did}#auth`
+    const { details, metadata } = (await DidResolver.resolveDoc(
+      keyIdUri
+    )) as DidResolvedDetails
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+    })
+    expect(details?.did).toStrictEqual<IDidDetails['did']>(lightDid.did)
   })
 })

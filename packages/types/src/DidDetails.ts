@@ -5,8 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
-import type { Metadata } from '@polkadot/types'
+import type { BN } from '@polkadot/util'
+
+import type { DidPublicKey } from './DidDocumentExporter'
+import type { IIdentity } from './Identity'
+
+/**
+ * A DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
+ */
+export type IDidIdentifier = IIdentity['address']
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
@@ -31,14 +38,12 @@ export type VerificationKeyRelationship =
  */
 export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
 
-export type CallMeta = { section: string; method: string }
-
 /**
- * A public key record associated with a DID record.
+ * The SDK-specific details of a new DID public key.
  */
-export interface IDidKeyDetails<T extends string = string> {
+export type DidKey<T extends string = string> = {
   /**
-   * Key id, which is a URI consisting of did:kilt:<did identifier>#<key identifier>.
+   * Key id without the leading did:kilt:<did_identifier> prefix.
    */
   id: string
   /**
@@ -46,26 +51,21 @@ export interface IDidKeyDetails<T extends string = string> {
    */
   type: T
   /**
-   * The DID with which this public key is associated.
+   * The public key material.
    */
-  // eslint-disable-next-line no-use-before-define
-  controller: IDidDetails['did']
+  publicKey: Uint8Array
   /**
-   * The public key material encoded as hex.
+   * The inclusion block of the key, if stored on chain.
    */
-  publicKeyHex: string
-  /**
-   * Can be used to indicate the block at which this key was added to the on-chain DID record.
-   */
-  includedAt?: number
+  includedAt?: BN
 }
 
 /**
- * A single service endpoint.
+ * The SDK-specific details of a new DID service endpoint.
  */
-export interface IDidServiceEndpoint {
+export type DidServiceEndpoint = {
   /**
-   * The identifier of the endpoint in the form <did_identifier>#<endpoint_id>.
+   * The identifier of the endpoint, without the leading did:kilt:<did_identifier> prefix.
    */
   id: string
   /**
@@ -89,49 +89,36 @@ export interface IDidDetails {
   /**
    * Retrieves a particular public key record via its id.
    *
-   * @param id Key id, which is a URI consisting of did:kilt:<did identifier>#<key identifier>.
-   * @returns [[IDidKeyDetails]] or undefined if no key with this id is present in the [[IDidDetails]].
+   * @param id The key ID, without the leading DID URI.
+   * @returns [[IDidKey]] or undefined if no key with this id is present.
    */
-  getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined
+  getKey(id: DidKey['id']): DidKey | undefined
   /**
-   * Retrieves public key ids from the [[IDidDetails]], optionally filtering by [[KeyRelationship]].
-   *
-   * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
-   * relationship, undefined to return all key ids.
-   * @returns An array of all or selected key ids, depending on the `relationship` parameter.
-   */
-  getKeyIds(
-    relationship?: KeyRelationship | 'none'
-  ): Array<IDidKeyDetails['id']>
-  /**
-   * Retrieves public key details from the [[IDidDetails]], optionally filtering by [[KeyRelationship]].
+   * Retrieves public key details from the [[IDid]], optionally filtering by [[KeyRelationship]].
    *
    * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
    * relationship, undefined to return all keys.
-   * @returns An array of all or selected [[IDidKeyDetails]], depending on the `relationship` parameter.
+   * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
    */
-  getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[]
+  getKeys(relationship?: KeyRelationship | 'none'): DidKey[]
   /**
    * Retrieves the service endpoint associated with the DID, if any.
    *
    * @param id The identifier of the service endpoint, without the DID prefix.
    */
-  getEndpointById(id: string): IDidServiceEndpoint | undefined
-  /**
-   * Retrieves all the service endpoints matching a given type.
-   *
-   * @param id The type of the service endpoints to retrieve.
-   */
-  getEndpointsByType(type: string): IDidServiceEndpoint[]
+  getEndpoint(id: DidServiceEndpoint['id']): DidServiceEndpoint | undefined
   /**
    * Retrieves all the service endpoints associated with the DID.
+   *
+   * @param type The type of the service endpoints to filter and include in the result.
    */
-  getEndpoints(): IDidServiceEndpoint[]
+  getEndpoints(type?: string): DidServiceEndpoint[]
 }
-
-export type ApiOrMetadata = ApiPromise | Metadata
 
 /**
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
-export type DidSignature = { keyId: string; signature: string }
+export type DidSignature = {
+  keyId: DidPublicKey['id']
+  signature: string
+}
