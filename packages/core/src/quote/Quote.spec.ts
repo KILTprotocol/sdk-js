@@ -257,10 +257,9 @@ describe('Claim', () => {
       )
     ).toBeTruthy()
     expect(
-      await Quote.fromAttesterSignedInput(
-        validAttesterSignedQuote,
-        mockResolver
-      )
+      await Quote.fromAttesterSignedInput(validAttesterSignedQuote, {
+        resolver: mockResolver,
+      })
     ).toEqual(validAttesterSignedQuote)
     expect(
       await Quote.fromQuoteDataAndIdentity(
