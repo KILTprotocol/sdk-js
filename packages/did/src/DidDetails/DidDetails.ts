@@ -121,8 +121,8 @@ export abstract class DidDetails implements IDidDetails {
   public getEndpoints(type?: string): DidServiceEndpoint[] {
     const serviceEndpointsEntries = type
       ? [...this.serviceEndpoints.entries()].filter(([, details]) => {
-        return details.types.includes(type)
-      })
+          return details.types.includes(type)
+        })
       : [...this.serviceEndpoints.entries()]
 
     return serviceEndpointsEntries.map(([id, details]) => {

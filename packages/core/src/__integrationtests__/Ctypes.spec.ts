@@ -60,10 +60,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctype
         .store()
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, {
-            signer: keystore,
-            submitterAccount: bobbyBroke.address,
-          })
+          ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
     ).rejects.toThrowError()
@@ -75,10 +72,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await ctype
       .store()
       .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, {
-          signer: keystore,
-          submitterAccount: paymentAccount.address,
-        })
+        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await Promise.all([
@@ -94,20 +88,14 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await ctype
       .store()
       .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, {
-          signer: keystore,
-          submitterAccount: paymentAccount.address,
-        })
+        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(
       ctype
         .store()
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, {
-            signer: keystore,
-            submitterAccount: paymentAccount.address,
-          })
+          ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })

@@ -53,10 +53,7 @@ async function writeHierarchy(
   await rootNode
     .store()
     .then((tx) =>
-      delegator.authorizeExtrinsic(tx, {
-        signer,
-        submitterAccount: paymentAccount.address,
-      })
+      delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
     .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
 
@@ -80,10 +77,7 @@ async function addDelegation(
   await delegationNode
     .store(signature)
     .then((tx) =>
-      delegator.authorizeExtrinsic(tx, {
-        signer,
-        submitterAccount: paymentAccount.address,
-      })
+      delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
     .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
   return delegationNode
@@ -103,10 +97,7 @@ beforeAll(async () => {
     await driversLicenseCType
       .store()
       .then((tx) =>
-        attester.authorizeExtrinsic(tx, {
-          signer,
-          submitterAccount: paymentAccount.address,
-        })
+        attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
   }
@@ -173,10 +164,7 @@ describe('and attestation rights have been delegated', () => {
     await attestation
       .store()
       .then((tx) =>
-        attester.authorizeExtrinsic(tx, {
-          signer,
-          submitterAccount: paymentAccount.address,
-        })
+        attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
 
@@ -190,12 +178,7 @@ describe('and attestation rights have been delegated', () => {
     // revoke attestation through root
     await credential.attestation
       .revoke(1)
-      .then((tx) =>
-        root.authorizeExtrinsic(tx, {
-          signer,
-          submitterAccount: paymentAccount.address,
-        })
-      )
+      .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(credential.verify()).resolves.toBeFalsy()
   }, 75_000)
@@ -226,10 +209,7 @@ describe('revocation', () => {
       delegationA
         .revoke(delegator.did)
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, {
-            signer,
-            submitterAccount: paymentAccount.address,
-          })
+          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).resolves.not.toThrow()
@@ -242,10 +222,7 @@ describe('revocation', () => {
       delegationA
         .remove()
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, {
-            signer,
-            submitterAccount: paymentAccount.address,
-          })
+          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toMatchObject({
@@ -272,10 +249,7 @@ describe('revocation', () => {
     await expect(
       revoke(delegationRoot.id, 1, 1)
         .then((tx) =>
-          firstDelegee.authorizeExtrinsic(tx, {
-            signer,
-            submitterAccount: paymentAccount.address,
-          })
+          firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toMatchObject({
@@ -288,10 +262,7 @@ describe('revocation', () => {
       delegationA
         .revoke(firstDelegee.did)
         .then((tx) =>
-          firstDelegee.authorizeExtrinsic(tx, {
-            signer,
-            submitterAccount: paymentAccount.address,
-          })
+          firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).resolves.not.toThrow()
@@ -320,10 +291,7 @@ describe('revocation', () => {
       delegationRoot
         .revoke(delegator.did)
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, {
-            signer,
-            submitterAccount: paymentAccount.address,
-          })
+          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).resolves.not.toThrow()

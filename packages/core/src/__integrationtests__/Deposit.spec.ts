@@ -54,10 +54,7 @@ async function checkDeleteFullDid(
   storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
 
-  tx = await fullDid.authorizeExtrinsic(deleteDid, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
+  tx = await fullDid.authorizeExtrinsic(deleteDid, keystore, identity.address)
 
   const balanceBeforeDeleting = await Balance.getBalances(identity.address)
 
@@ -109,10 +106,11 @@ async function checkRemoveFullDidAttestation(
   )
 
   tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
 
   await submitExtrinsicWithResign(
     authorizedTx,
@@ -136,10 +134,11 @@ async function checkRemoveFullDidAttestation(
   )
 
   tx = await attestation.remove(0)
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
 
   await submitExtrinsicWithResign(
     authorizedTx,
@@ -166,10 +165,11 @@ async function checkReclaimFullDidAttestation(
   )
 
   tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
 
   await submitExtrinsicWithResign(
     authorizedTx,
@@ -215,10 +215,11 @@ async function checkDeletedDidReclaimAttestation(
   )
 
   tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
 
   await submitExtrinsicWithResign(
     authorizedTx,
@@ -234,10 +235,7 @@ async function checkDeletedDidReclaimAttestation(
   )
 
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
-  tx = await fullDid.authorizeExtrinsic(deleteDid, {
-    signer: keystore,
-    submitterAccount: identity.address,
-  })
+  tx = await fullDid.authorizeExtrinsic(deleteDid, keystore, identity.address)
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
@@ -280,10 +278,11 @@ beforeAll(async () => {
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
     await attester
-      .authorizeExtrinsic(await driversLicenseCType.store(), {
-        signer: keystore,
-        submitterAccount: devFaucet.address,
-      })
+      .authorizeExtrinsic(
+        await driversLicenseCType.store(),
+        keystore,
+        devFaucet.address
+      )
       .then((val) =>
         submitExtrinsicWithResign(val, devFaucet, BlockchainUtils.IS_IN_BLOCK)
       )

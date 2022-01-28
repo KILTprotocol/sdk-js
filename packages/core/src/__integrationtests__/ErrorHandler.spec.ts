@@ -53,12 +53,11 @@ it('records an extrinsic error when ctype does not exist', async () => {
     owner: someDid.did,
     revoked: false,
   })
-  const tx = await attestation.store().then((ex) =>
-    someDid.authorizeExtrinsic(ex, {
-      signer: keystore,
-      submitterAccount: paymentAccount.address,
-    })
-  )
+  const tx = await attestation
+    .store()
+    .then((ex) =>
+      someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
+    )
   await expect(
     submitExtrinsicWithResign(tx, paymentAccount)
   ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })

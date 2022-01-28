@@ -171,9 +171,9 @@ describe('Messaging', () => {
     const encryptedMessage = await message.encrypt(
       'encryption',
       aliceLightDid,
+      keystore,
+      `${bobLightDid.did}#encryption`,
       {
-        keystore,
-        receiverKeyId: `${bobLightDid.did}#encryption`,
         resolver: mockResolver,
       }
     )

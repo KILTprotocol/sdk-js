@@ -263,9 +263,11 @@ describe('Claim', () => {
       )
     ).toEqual(validAttesterSignedQuote)
     expect(
-      await Quote.fromQuoteDataAndIdentity(validQuoteData, attesterIdentity, {
-        signer: keystore,
-      })
+      await Quote.fromQuoteDataAndIdentity(
+        validQuoteData,
+        attesterIdentity,
+        keystore
+      )
     ).toEqual(validAttesterSignedQuote)
   })
   it('validates created quotes against QuoteSchema', () => {

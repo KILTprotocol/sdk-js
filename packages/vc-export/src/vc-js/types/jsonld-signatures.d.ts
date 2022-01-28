@@ -43,7 +43,7 @@ declare module 'jsonld-signatures' {
         }
       ): Promise<boolean>
     }
-    export class AssertionProofPurpose extends ProofPurpose { }
+    export class AssertionProofPurpose extends ProofPurpose {}
   }
   export namespace suites {
     abstract class LinkedDataProof {

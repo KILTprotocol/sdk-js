@@ -120,7 +120,7 @@ describe('write and didDeleteTx', () => {
     // The ID changes as on chain is the has of the public key, so we can't compare for key ID equality.
     expect(
       details?.authenticationKey.publicKey ===
-      newDetails.authenticationKey.publicKey
+        newDetails.authenticationKey.publicKey
     )
     expect(
       details?.authenticationKey.type === newDetails.authenticationKey.type
@@ -169,11 +169,9 @@ describe('write and didDeleteTx', () => {
 
     let submittable = await (details as FullDidDetails).authorizeExtrinsic(
       call,
-      {
-        signer: keystore,
-        // Use a different account than the submitter one
-        submitterAccount: otherAccount.address,
-      }
+      keystore,
+      // Use a different account than the submitter one
+      otherAccount.address
     )
 
     await expect(
@@ -183,10 +181,11 @@ describe('write and didDeleteTx', () => {
     // We use 1 here and this should fail as there are two service endpoints stored.
     call = await DidChain.getDeleteDidExtrinsic(new BN(1))
 
-    submittable = await (details as FullDidDetails).authorizeExtrinsic(call, {
-      signer: keystore,
-      submitterAccount: paymentAccount.address,
-    })
+    submittable = await (details as FullDidDetails).authorizeExtrinsic(
+      call,
+      keystore,
+      paymentAccount.address
+    )
 
     // Will fail because count provided is too low
     await expect(
@@ -210,10 +209,8 @@ describe('write and didDeleteTx', () => {
 
     const submittable = await (details as FullDidDetails).authorizeExtrinsic(
       call,
-      {
-        signer: keystore,
-        submitterAccount: paymentAccount.address,
-      }
+      keystore,
+      paymentAccount.address
     )
 
     // Check that DID is not blacklisted.
@@ -284,10 +281,8 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
   const tx2 = await fullDetails.authorizeExtrinsic(
     updateAuthenticationKeyCall,
-    {
-      signer: keystore,
-      submitterAccount: paymentAccount.address,
-    }
+    keystore,
+    paymentAccount.address
   )
   await expect(
     submitExtrinsicWithResign(tx2, paymentAccount)
@@ -307,10 +302,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   }
   const updateEndpointCall = await DidChain.getAddEndpointExtrinsic(newEndpoint)
 
-  const tx3 = await fullDetails.authorizeExtrinsic(updateEndpointCall, {
-    signer: keystore,
-    submitterAccount: paymentAccount.address,
-  })
+  const tx3 = await fullDetails.authorizeExtrinsic(
+    updateEndpointCall,
+    keystore,
+    paymentAccount.address
+  )
   await expect(
     submitExtrinsicWithResign(tx3, paymentAccount)
   ).resolves.not.toThrow()
@@ -322,10 +318,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const removeEndpointCall = await DidChain.getRemoveEndpointExtrinsic(
     newEndpoint.id
   )
-  const tx4 = await fullDetails.authorizeExtrinsic(removeEndpointCall, {
-    signer: keystore,
-    submitterAccount: paymentAccount.address,
-  })
+  const tx4 = await fullDetails.authorizeExtrinsic(
+    removeEndpointCall,
+    keystore,
+    paymentAccount.address
+  )
   await expect(
     submitExtrinsicWithResign(tx4, paymentAccount)
   ).resolves.not.toThrow()
@@ -586,10 +583,8 @@ describe('DID authorization', () => {
     )
     let signedExtrinsic = await fullDidDetails.authorizeExtrinsic(
       newAssertionKeyExtrinsic,
-      {
-        signer: keystore,
-        submitterAccount: paymentAccount.address,
-      }
+      keystore,
+      paymentAccount.address
     )
     await expect(
       submitExtrinsicWithResign(signedExtrinsic, paymentAccount)
@@ -601,10 +596,8 @@ describe('DID authorization', () => {
     )
     signedExtrinsic = await fullDidDetails.authorizeExtrinsic(
       newDelegationKeyExtrinsic,
-      {
-        signer: keystore,
-        submitterAccount: paymentAccount.address,
-      }
+      keystore,
+      paymentAccount.address
     )
     await expect(
       submitExtrinsicWithResign(signedExtrinsic, paymentAccount)
@@ -623,10 +616,11 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await ctype.store()
-    const tx = await didDetails.authorizeExtrinsic(call, {
-      signer: keystore,
-      submitterAccount: paymentAccount.address,
-    })
+    const tx = await didDetails.authorizeExtrinsic(
+      call,
+      keystore,
+      paymentAccount.address
+    )
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
@@ -651,7 +645,8 @@ describe('DID authorization', () => {
     const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
       ({ api }) => api.tx.utility.batch(calls)
     )
-    const tx = await didDetails.authorizeBatch(batch,
+    const tx = await didDetails.authorizeBatch(
+      batch,
       keystore,
       paymentAccount.address,
       KeyRelationship.assertionMethod
@@ -671,10 +666,11 @@ describe('DID authorization', () => {
     const deleteCall = await DidChain.getDeleteDidExtrinsic(
       storedEndpointsCount
     )
-    const tx = await didDetails.authorizeExtrinsic(deleteCall, {
-      signer: keystore,
-      submitterAccount: paymentAccount.address,
-    })
+    const tx = await didDetails.authorizeExtrinsic(
+      deleteCall,
+      keystore,
+      paymentAccount.address
+    )
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
@@ -686,10 +682,11 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await ctype.store()
-    const tx2 = await didDetails.authorizeExtrinsic(call, {
-      signer: keystore,
-      submitterAccount: paymentAccount.address,
-    })
+    const tx2 = await didDetails.authorizeExtrinsic(
+      call,
+      keystore,
+      paymentAccount.address
+    )
     await expect(
       submitExtrinsicWithResign(tx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
