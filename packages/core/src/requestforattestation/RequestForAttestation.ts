@@ -24,15 +24,15 @@ import type {
   IDelegationNode,
   IClaim,
   ICredential,
-  IDidKeyDetails,
+  DidKey,
   KeystoreSigner,
-  IDidDetails,
   IDidResolver,
   DidSignature,
+  DidPublicKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
+import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import { Credential } from '../credential/Credential.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
@@ -243,7 +243,7 @@ export class RequestForAttestation implements IRequestForAttestation {
    *
    * @param input - The [[RequestForAttestation]].
    * @param verificationOpts Additional options to retrieve the details from the identifiers inside the request for attestation.
-   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to the [[DefaultResolver]].
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
    * @returns Whether the signature is correct.
@@ -257,10 +257,10 @@ export class RequestForAttestation implements IRequestForAttestation {
     input: IRequestForAttestation,
     {
       challenge,
-      resolver = DefaultResolver,
+      resolver = DidResolver,
     }: {
-      resolver?: IDidResolver
       challenge?: string
+      resolver?: IDidResolver
     } = {}
   ): Promise<boolean> {
     const { claimerSignature } = input
@@ -268,9 +268,9 @@ export class RequestForAttestation implements IRequestForAttestation {
     if (challenge && challenge !== claimerSignature.challenge) return false
     const verifyData = makeSigningData(input, claimerSignature.challenge)
     const { verified } = await DidUtils.verifyDidSignature({
-      ...claimerSignature,
+      signature: claimerSignature,
       message: verifyData,
-      keyRelationship: KeyRelationship.authentication,
+      expectedVerificationMethod: KeyRelationship.authentication,
       resolver,
     })
     return verified
@@ -295,39 +295,34 @@ export class RequestForAttestation implements IRequestForAttestation {
 
   public async addSignature(
     sig: string | Uint8Array,
-    keyId: string,
-    challenge?: string
+    keyId: DidPublicKey['id'],
+    {
+      challenge,
+    }: {
+      challenge?: string
+    } = {}
   ): Promise<this> {
     const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
     this.claimerSignature = { signature, keyId, challenge }
     return this
   }
 
-  public async signWithDid(
+  public async signWithDidKey(
     signer: KeystoreSigner,
-    did: IDidDetails,
-    challenge?: string
+    didDetails: DidDetails,
+    keyId: DidKey['id'],
+    {
+      challenge,
+    }: {
+      challenge?: string
+    } = {}
   ): Promise<this> {
-    const { signature, keyId } = await DidUtils.signWithDid(
+    const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
       makeSigningData(this, challenge),
-      did,
       signer,
-      KeyRelationship.authentication
+      keyId
     )
-    return this.addSignature(signature, keyId, challenge)
-  }
-
-  public async signWithKey(
-    signer: KeystoreSigner<string>,
-    key: IDidKeyDetails,
-    challenge?: string
-  ): Promise<this> {
-    const { signature } = await DidUtils.signWithKey(
-      makeSigningData(this, challenge),
-      key,
-      signer
-    )
-    return this.addSignature(signature, key.id, challenge)
+    return this.addSignature(signature, signatureKeyId, { challenge })
   }
 
   private static getHashLeaves(

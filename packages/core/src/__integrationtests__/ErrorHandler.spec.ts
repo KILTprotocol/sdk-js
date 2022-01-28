@@ -10,40 +10,33 @@
  */
 
 import { BN } from '@polkadot/util'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
-import {
-  createOnChainDidFromSeed,
-  DemoKeystore,
-  FullDidDetails,
-} from '@kiltprotocol/did'
-import { randomAsHex } from '@polkadot/util-crypto'
+import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { Attestation } from '../index'
 import { makeTransfer } from '../balance/Balance.chain'
-import { config, disconnect } from '../kilt'
-import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'
+import { disconnect } from '../kilt'
+import {
+  addressFromRandom,
+  createEndowedTestAccount,
+  createFullDidFromSeed,
+  initializeApi,
+  submitExtrinsicWithResign,
+} from './utils'
 
 let paymentAccount: KeyringPair
 let someDid: FullDidDetails
 const keystore = new DemoKeystore()
 
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
-  paymentAccount = devAlice
-  someDid = await createOnChainDidFromSeed(
-    paymentAccount,
-    keystore,
-    randomAsHex(32)
-  )
-})
+  await initializeApi()
+  paymentAccount = await createEndowedTestAccount()
+  someDid = await createFullDidFromSeed(paymentAccount, keystore)
+}, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
     makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+      submitExtrinsicWithResign(tx, paymentAccount)
     )
   ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
 }, 30_000)
@@ -64,10 +57,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
       someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
     )
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
+    submitExtrinsicWithResign(tx, paymentAccount)
   ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
 }, 30_000)
 
