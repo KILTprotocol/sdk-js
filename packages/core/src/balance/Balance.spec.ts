@@ -21,7 +21,6 @@ import {
 
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
-import { TypeRegistry } from '@polkadot/types'
 import { ApiMocks } from '@kiltprotocol/testing'
 import {
   getBalances,
@@ -50,7 +49,7 @@ describe('Balance', () => {
         miscFrozen: new BN(balance),
         feeFrozen: new BN(balance),
       } as AccountData,
-      nonce: new AccountIndex(new TypeRegistry(), 0),
+      nonce: new AccountIndex(mockedApi.registry, 0),
     } as AccountInfo
   }
 
