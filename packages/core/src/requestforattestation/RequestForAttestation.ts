@@ -296,7 +296,11 @@ export class RequestForAttestation implements IRequestForAttestation {
   public async addSignature(
     sig: string | Uint8Array,
     keyId: DidPublicKey['id'],
-    challenge?: string
+    {
+      challenge,
+    }: {
+      challenge?: string
+    } = {}
   ): Promise<this> {
     const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
     this.claimerSignature = { signature, keyId, challenge }
@@ -307,14 +311,18 @@ export class RequestForAttestation implements IRequestForAttestation {
     signer: KeystoreSigner,
     didDetails: DidDetails,
     keyId: DidKey['id'],
-    challenge?: string
+    {
+      challenge,
+    }: {
+      challenge?: string
+    } = {}
   ): Promise<this> {
     const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
       makeSigningData(this, challenge),
       signer,
       keyId
     )
-    return this.addSignature(signature, signatureKeyId, challenge)
+    return this.addSignature(signature, signatureKeyId, { challenge })
   }
 
   private static getHashLeaves(

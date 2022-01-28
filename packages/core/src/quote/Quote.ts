@@ -73,7 +73,11 @@ export function validateQuoteSchema(
 
 export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
-  resolver: IDidResolver = DidResolver
+  {
+    resolver = DidResolver,
+  }: {
+    resolver?: IDidResolver
+  } = {}
 ): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
   await DidUtils.verifyDidSignature({

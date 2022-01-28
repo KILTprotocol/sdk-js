@@ -266,7 +266,8 @@ export class DelegationNode implements IDelegationNode {
    *
    * @param delegeeDid The DID of the delegee.
    * @param signer The keystore responsible for signing the delegation creation details for the delegee.
-   * @param keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
+   * @param options The additional signing options.
+   * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
    * @example
    * ```
    * // Sign the hash of the delegation node...
@@ -289,7 +290,11 @@ export class DelegationNode implements IDelegationNode {
   public async delegeeSign(
     delegeeDid: DidDetails,
     signer: KeystoreSigner,
-    keySelection: DidKeySelectionHandler = DidUtils.defaultDidKeySelection
+    {
+      keySelection = DidUtils.defaultDidKeySelection,
+    }: {
+      keySelection?: DidKeySelectionHandler
+    } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
       delegeeDid.getKeys(KeyRelationship.authentication)
