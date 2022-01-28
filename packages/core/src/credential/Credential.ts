@@ -256,12 +256,9 @@ export class Credential implements ICredential {
       throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
     }
 
-    await credential.request.signWithDidKey(
-      signer,
-      claimerDid,
-      selectedKeyId,
-      challenge
-    )
+    await credential.request.signWithDidKey(signer, claimerDid, selectedKeyId, {
+      challenge,
+    })
 
     return credential
   }
