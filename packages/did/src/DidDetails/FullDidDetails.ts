@@ -165,6 +165,7 @@ export class FullDidDetails extends DidDetails {
    * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
    * @param signingOptions The signing options.
    * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
+   * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
    * @returns The DID-signed submittable extrinsic.
    */
   public async authorizeExtrinsic(
@@ -173,8 +174,10 @@ export class FullDidDetails extends DidDetails {
     submitterAccount: IIdentity['address'],
     {
       keySelection = defaultDidKeySelection,
+      txCounter,
     }: {
       keySelection?: DidKeySelectionHandler
+      txCounter?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
@@ -189,7 +192,7 @@ export class FullDidDetails extends DidDetails {
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
-      txCounter: await this.getNextNonce(),
+      txCounter: txCounter || (await this.getNextNonce()),
       submitter: submitterAccount,
     })
   }
@@ -204,6 +207,7 @@ export class FullDidDetails extends DidDetails {
    * @param keyRelationship The key relationship (e.g., authentication or attestation) to use when fetching the keys to use for signing the batch.
    * @param signingOptions The signing options.
    * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
+   * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
    * @returns The DID-signed submittable extrinsic.
    */
   public async authorizeBatch(
@@ -213,8 +217,10 @@ export class FullDidDetails extends DidDetails {
     keyRelationship: KeyRelationship,
     {
       keySelection = defaultDidKeySelection,
+      txCounter,
     }: {
       keySelection?: DidKeySelectionHandler
+      txCounter?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeys(keyRelationship))
@@ -237,7 +243,7 @@ export class FullDidDetails extends DidDetails {
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: batchExtrinsic,
-      txCounter: await this.getNextNonce(),
+      txCounter: txCounter || (await this.getNextNonce()),
       submitter: submitterAccount,
     })
   }
