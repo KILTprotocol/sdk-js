@@ -26,7 +26,7 @@ import type {
   PublicKeys,
   ServiceEndpoints,
 } from '../types.js'
-import { methodMapping } from './FullDidDetails.utils.js'
+import { getKeyRelationshipForExtrinsic } from './FullDidDetails.utils.js'
 import { DidDetails } from './DidDetails.js'
 import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 import {
@@ -138,12 +138,7 @@ export class FullDidDetails extends DidDetails {
    * @returns All the keys under the full DID that could be used to generate valid signatures to submit the provided extrinsic.
    */
   public getKeysForExtrinsic(extrinsic: Extrinsic): DidKey[] {
-    const callMethod = extrinsic.method
-    const { section, method } = callMethod
-    const keyRelationship =
-      methodMapping[section][method] ||
-      methodMapping[section].default ||
-      methodMapping.default.default
+    const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
     return keyRelationship === 'paymentAccount'
       ? []
       : this.getKeys(keyRelationship)
