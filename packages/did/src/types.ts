@@ -176,6 +176,12 @@ export interface DidAuthorizedCallOperation extends Struct {
   blockNumber: AnyNumber
 }
 
+export interface UnickOwner extends Struct {
+  owner: DidIdentifier
+  claimedAt: BlockNumber
+  deposit: Deposit
+}
+
 export type JsonDidDocument = {
   id: IDidDetails['did']
   verificationMethod: Pick<IDidKeyDetails, 'id' | 'controller' | 'type'> & {

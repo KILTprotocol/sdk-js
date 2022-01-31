@@ -8,10 +8,11 @@
 import { SubmittableExtrinsic, IDidDetails } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
 
 import type { Option, Bytes } from '@polkadot/types'
-import type { AccountId } from '@polkadot/types/interfaces'
+// import type { AccountId } from '@polkadot/types/interfaces'
+
+import { DidUtils, DidTypes } from '../index.js'
 
 /**
  *  Unick is the type of a nickname for a DID.
@@ -89,11 +90,12 @@ export async function getUnbanTx(nick: Unick): Promise<SubmittableExtrinsic> {
  * @returns The registered unick for this DID if any.
  */
 export async function queryUnickForDid(didUri: string): Promise<Unick | null> {
+  const didDetails = DidUtils.parseDidUrl(didUri)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.unicks.unicks<Option<Bytes>>(
-    didUri
+    didDetails.identifier
   )
-  DecoderUtils.assertCodecIsType(encoded, ['Option<Vec<u8>>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
   return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
 
@@ -107,11 +109,17 @@ export async function queryDidForUnick(
   nick: Unick
 ): Promise<IDidDetails['did'] | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.unicks.owner<Option<AccountId>>(
-    nick
-  )
-  DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
+  const encoded = await blockchain.api.query.unicks.owner<
+    Option<DidTypes.UnickOwner>
+  >(nick)
+  DecoderUtils.assertCodecIsType(encoded, [
+    'Option<PalletUnicksUnickUnickOwnership>',
+  ])
+
   return encoded.isSome
-    ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
+    ? DidUtils.getKiltDidFromIdentifier(
+        encoded.unwrap().owner.toString(),
+        'full'
+      )
     : null
 }
