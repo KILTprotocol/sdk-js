@@ -8,10 +8,11 @@
 import { SubmittableExtrinsic, IDidDetails } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
 
 import type { Option, Bytes } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
+
+import { DidUtils } from '../index.js'
 
 /**
  *  Unick is the type of a nickname for a DID.
