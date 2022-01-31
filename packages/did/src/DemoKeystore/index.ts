@@ -5,9 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DID
- */
-
-export * from './DidDocumentExporter.js'
+export * from './DemoKeystore.js'
+export * as DemoKeystoreUtils from './DemoKeystore.utils.js'

@@ -9,15 +9,19 @@
  * @group unit/vc-export
  */
 
-import type { IRequestForAttestation } from '@kiltprotocol/types'
+import {
+  DidDocumentPublicKeyType,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 import { Attestation, Credential, CType } from '@kiltprotocol/core'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
+import { base58Encode } from '@polkadot/util-crypto'
 import * as toVC from './exportToVerifiableCredential'
 import * as verificationUtils from './verificationUtils'
 import * as presentationUtils from './presentationUtils'
-import type { VerifiableCredential } from './types'
+import type { IPublicKeyRecord, VerifiableCredential } from './types'
 import {
   KILT_VERIFIABLECREDENTIAL_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
@@ -201,13 +205,12 @@ describe('proofs', () => {
   beforeAll(() => {
     VC = toVC.fromCredential(credential)
     const keyId: string = VC.proof[0].verificationMethod
-    const publicKeyHex = Crypto.u8aToHex(
-      Crypto.decodeAddress(DidUtils.parseDidUrl(keyId).identifier)
-    )
-    const verificationMethod = {
+    const verificationMethod: IPublicKeyRecord = {
       id: keyId,
-      publicKeyHex,
-      type: 'Ed25519VerificationKey2018',
+      type: DidDocumentPublicKeyType.Ed25519VerificationKey,
+      publicKeyBase58: base58Encode(
+        Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)
+      ),
       controller: VC.credentialSubject['@id'] as string,
     }
     documentLoader = (url) => {

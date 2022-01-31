@@ -11,18 +11,19 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types'
-import type { DidSignature, IDidDetails, IDidKeyDetails } from './DidDetails'
-import type { CompressedAttestation, IAttestation } from './Attestation'
-import type { CompressedCredential, ICredential } from './Credential'
-import type { IClaim, IClaimContents, PartialClaim } from './Claim'
-import type { ICType } from './CType'
-import type { IDelegationNode } from './Delegation'
-import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
+import type { DidSignature, IDidDetails } from './DidDetails.js'
+import type { CompressedAttestation, IAttestation } from './Attestation.js'
+import type { CompressedCredential, ICredential } from './Credential.js'
+import type { IClaim, PartialClaim } from './Claim.js'
+import type { ICType } from './CType.js'
+import type { IDelegationNode } from './Delegation.js'
+import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote.js'
 import type {
   CompressedRequestForAttestation,
   IRequestForAttestation,
-} from './RequestForAttestation'
-import type { CompressedTerms, ITerms } from './Terms'
+} from './RequestForAttestation.js'
+import type { CompressedTerms, ITerms } from './Terms.js'
+import type { DidPublicKey, IClaimContents } from './index.js'
 
 export enum MessageBodyType {
   ERROR = 'error',
@@ -402,8 +403,8 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: IDidKeyDetails['id']
-  senderKeyId: IDidKeyDetails['id']
+  receiverKeyId: DidPublicKey['id']
+  senderKeyId: DidPublicKey['id']
   ciphertext: string
   nonce: string
 }
