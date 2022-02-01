@@ -5,15 +5,24 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import type { DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 
 import {
-  DidKey,
-  DidServiceEndpoint,
-  KeyRelationship,
-} from '@kiltprotocol/types'
+  NewDidKey,
+  SupportedEncryptionKeys,
+  SupportedSignatureKeys,
+} from '../Did.chain.js'
 
 import { DidDetails } from '../DidDetails/DidDetails.js'
+
+export type NewDidVerificationKey = Pick<DidKey, 'publicKey'> & {
+  type: SupportedSignatureKeys
+}
+export type NewDidEncryptionKey = Pick<DidKey, 'publicKey'> & {
+  type: SupportedEncryptionKeys
+}
 
 export type FullDidBuilderCreationDetails = {
   keyAgreementKeys?: DidKey[]
@@ -22,14 +31,33 @@ export type FullDidBuilderCreationDetails = {
   serviceEndpoints?: DidServiceEndpoint[]
 }
 
-type KeyAction = {
+type VerificationKeyAction = {
   action: 'delete' | 'update' | 'ignore'
-  newKey?: DidKey
+  newKey?: NewDidVerificationKey
+}
+
+function computeEncryptionKeyId(key: NewDidEncryptionKey) {
+  const keyClass = 'PublicEncryptionKey'
+}
+
+function computeVerificationKeyId(key: NewDidVerificationKey) {
+  const keyClass = 'PublicVerificationKey'
+}
+
+async function computePublicKeyId(keyClass: 'PublicVerificationKey' | 'PublicEncryptionKey', key: NewDidKey): string {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+
+  if (typeof (key) === 'NewDidEncryptionKey') {
+
+  }
+
+  const encodedKey = api.registry.createType(
+    api.tx.did.add_key_agreement_key.meta.args[0].type.toRawType(),
+    { [keyType]: { [key.type]: key } }
+  )
 }
 
 export class FullDidBuilder {
-  private api: ApiPromise
-
   // Old key agreement key as {id -> details}
   protected oldKeyAgreementKeys: Map<DidKey['id'], Omit<DidKey, 'id'>> =
     new Map()
@@ -46,8 +74,7 @@ export class FullDidBuilder {
   protected oldDelegationKey: DidKey | undefined
 
   // New key agreement keys to set as {id -> details}
-  protected newKeyAgreementKeys: Map<DidKey['id'], Omit<DidKey, 'id'>> =
-    new Map()
+  protected newKeyAgreementKeys: Map<DidKey['id'], NewDidKey> = new Map()
 
   // New service endpoints to set as {id -> details}
   protected newServiceEndpoints: Map<
@@ -58,19 +85,14 @@ export class FullDidBuilder {
   // Key agreement keys to delete, by their ID.
   protected keyAgreementKeysToDelete: Set<DidKey['id']> = new Set()
   // Assertion key action, either ignore, update, or delete. Ignore by default.
-  protected newAssertionKey: KeyAction = { action: 'ignore' }
+  protected newAssertionKey: VerificationKeyAction = { action: 'ignore' }
   // Delegation key action, either ignore, update, or delete. Ignore by default.
-  protected newDelegationKey: KeyAction = { action: 'ignore' }
+  protected newDelegationKey: VerificationKeyAction = { action: 'ignore' }
 
   // Service endpoints to delete, by their ID.
   protected serviceEndpointsToDelete: Set<DidServiceEndpoint['id']> = new Set()
 
-  public constructor(
-    api: ApiPromise,
-    details: FullDidBuilderCreationDetails = {}
-  ) {
-    this.api = api
-
+  public constructor(details: FullDidBuilderCreationDetails = {}) {
     details.keyAgreementKeys?.forEach(({ id, ...keyDetails }) => {
       this.oldKeyAgreementKeys.set(id, keyDetails)
     })
@@ -81,7 +103,7 @@ export class FullDidBuilder {
     })
   }
 
-  public static fromDid(api: ApiPromise, did: DidDetails): FullDidBuilder {
+  public static fromDid(did: DidDetails): FullDidBuilder {
     const keyAgreementKeys = did.getKeys(KeyRelationship.keyAgreement)
     const assertionKeys = did.getKeys(KeyRelationship.assertionMethod)
     if (assertionKeys.length && assertionKeys.length > 1) {
@@ -93,7 +115,7 @@ export class FullDidBuilder {
     }
     const serviceEndpoints = did.getEndpoints()
 
-    return new FullDidBuilder(api, {
+    return new FullDidBuilder({
       keyAgreementKeys,
       assertionKey: assertionKeys.pop(),
       delegationKey: delegationKeys.pop(),
@@ -101,10 +123,15 @@ export class FullDidBuilder {
     })
   }
 
-  public addEncryptionKey(key: DidKey): FullDidBuilder {
-    const { id, ...details } = key
+  public addEncryptionKey(key: NewDidKey): FullDidBuilder {
+    const computedKeyId = FullDid
+    const { id, type, publicKey } = key
     // 1. Check if the key is already present in the DID.
-    if (this.oldKeyAgreementKeys.has(id)) {
+    if (
+      [...this.oldKeyAgreementKeys.values()].find(
+        (oldKeyAgreementKey) => oldKeyAgreementKey.publicKey === publicKey
+      )
+    ) {
       throw new Error(
         `Key agreement key with ID ${id} already present under the full DID.`
       )

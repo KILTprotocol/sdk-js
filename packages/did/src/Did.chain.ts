@@ -52,8 +52,8 @@ const log = ConfigService.LoggingFactory.getLogger('Did')
 type KeyId = Hash
 type DidKeyAgreementKeys = BTreeSet<KeyId>
 
-type SupportedSignatureKeys = 'sr25519' | 'ed25519' | 'ecdsa'
-type SupportedEncryptionKeys = 'x25519'
+export type SupportedSignatureKeys = 'sr25519' | 'ed25519' | 'ecdsa'
+export type SupportedEncryptionKeys = 'x25519'
 
 interface DidVerificationKey<T extends string = SupportedSignatureKeys>
   extends Enum {
@@ -328,7 +328,9 @@ export type AuthorizeCallInput = {
   blockNumber?: AnyNumber
 }
 
-export type NewDidKey = Pick<DidKey, 'type' | 'publicKey'>
+export type NewDidKey = Pick<DidKey, 'publicKey'> & {
+  type: SupportedSignatureKeys | SupportedEncryptionKeys
+}
 
 interface IDidAuthorizedCallOperation extends Struct {
   did: IDidIdentifier
@@ -340,7 +342,7 @@ interface IDidAuthorizedCallOperation extends Struct {
 
 // ### EXTRINSICS
 
-function formatPublicKey(key: NewDidKey): PublicKeyEnum {
+export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   const { type, publicKey } = key
   return { [type]: publicKey }
 }
@@ -355,8 +357,8 @@ export async function generateCreateTxFromDidDetails(
 
   const newKeyAgreementKeys: PublicKeyEnum[] = did
     .getKeys(KeyRelationship.keyAgreement)
-    .map((key) => {
-      return formatPublicKey(key)
+    .map(({ publicKey }) => {
+      return formatPublicKey({ type: 'x25519', publicKey })
     })
 
   // For now, it only takes the first attestation key, if present.
