@@ -33,7 +33,8 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { DidTypes, DidUtils } from '@kiltprotocol/did'
+import type { DidKeySelectionHandler } from '@kiltprotocol/did'
+import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain.js'
@@ -265,11 +266,13 @@ export class DelegationNode implements IDelegationNode {
    *
    * @param delegeeDid The DID of the delegee.
    * @param signer The keystore responsible for signing the delegation creation details for the delegee.
+   * @param options The additional signing options.
+   * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
    * @example
    * ```
    * // Sign the hash of the delegation node...
    * let myNewDelegation: DelegationNode
-   * let myDidDetails: IDidDetails
+   * let myDidDetails: DidDetails
    * let myKeyStore: Keystore
    * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
    *
@@ -285,16 +288,28 @@ export class DelegationNode implements IDelegationNode {
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegeeSign(
-    delegeeDid: IDidDetails,
-    signer: KeystoreSigner
-  ): Promise<DidTypes.SignatureEnum> {
-    const { alg, signature } = await DidUtils.signWithDid(
-      Crypto.coToUInt8(this.generateHash()),
-      delegeeDid,
-      signer,
-      KeyRelationship.authentication
+    delegeeDid: DidDetails,
+    signer: KeystoreSigner,
+    {
+      keySelection = DidUtils.defaultDidKeySelection,
+    }: {
+      keySelection?: DidKeySelectionHandler
+    } = {}
+  ): Promise<DidChain.SignatureEnum> {
+    const authenticationKey = await keySelection(
+      delegeeDid.getKeys(KeyRelationship.authentication)
     )
-    return { [alg]: signature }
+    if (!authenticationKey) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `Delegee ${delegeeDid.did} does not have any authentication key.`
+      )
+    }
+    const delegeeSignature = await delegeeDid.signPayload(
+      this.generateHash(),
+      signer,
+      authenticationKey.id
+    )
+    return DidChain.encodeDidSignature(authenticationKey, delegeeSignature)
   }
 
   /**
@@ -317,17 +332,15 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async getStoreTx(
-    signature?: DidTypes.SignatureEnum
+    signature?: DidChain.SignatureEnum
   ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
       return getStoreAsRootTx(this)
-      // eslint-disable-next-line no-else-return
-    } else {
-      if (!signature) {
-        throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
-      }
-      return getStoreAsDelegationTx(this, signature)
     }
+    if (!signature) {
+      throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
+    }
+    return getStoreAsDelegationTx(this, signature)
   }
 
   isRoot(): boolean {

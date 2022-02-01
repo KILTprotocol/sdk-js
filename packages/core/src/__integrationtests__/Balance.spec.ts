@@ -10,14 +10,13 @@
  */
 
 import { BN } from '@polkadot/util'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
 import {
   getBalances,
   listenToBalanceChanges,
-  getMakeTransferTx,
+  getTransferTx,
 } from '../balance/Balance.chain'
-import { config, disconnect } from '../kilt'
+import { disconnect } from '../kilt'
 import {
   addressFromRandom,
   EXISTENTIAL_DEPOSIT,
@@ -25,11 +24,12 @@ import {
   devAlice,
   devBob,
   devFaucet,
-  WS_ADDRESS,
+  initializeApi,
+  submitExtrinsicWithResign,
 } from './utils'
 
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
+  await initializeApi()
 })
 
 describe('when there is a dev chain with a faucet', () => {
@@ -72,11 +72,8 @@ describe('when there is a dev chain with a faucet', () => {
     const funny = jest.fn()
     listenToBalanceChanges(address, funny)
     const balanceBefore = await getBalances(faucet.address)
-    await getMakeTransferTx(address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, faucet, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+    await getTransferTx(address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      submitExtrinsicWithResign(tx, faucet)
     )
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalances(faucet.address),
@@ -104,11 +101,8 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, richieRich, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+    await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      submitExtrinsicWithResign(tx, richieRich)
     )
     const balanceTo = await getBalances(stormyD.address)
     expect(balanceTo.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
@@ -117,11 +111,8 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = await getBalances(stormyD.address)
     await expect(
-      getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+      getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+        submitExtrinsicWithResign(tx, bobbyBroke)
       )
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
@@ -135,11 +126,8 @@ describe('When there are haves and have-nots', () => {
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalances(richieRich.address)
     await expect(
-      getMakeTransferTx(bobbyBroke.address, RichieBalance.free).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, richieRich, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+      getTransferTx(bobbyBroke.address, RichieBalance.free).then((tx) =>
+        submitExtrinsicWithResign(tx, richieRich)
       )
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
@@ -153,18 +141,11 @@ describe('When there are haves and have-nots', () => {
   it('should be able to make a new transaction once the last is ready', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
-    await getMakeTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then(
-      (tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+    await getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      submitExtrinsicWithResign(tx, faucet)
     )
-    await getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, faucet, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+    await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      submitExtrinsicWithResign(tx, faucet)
     )
 
     expect(listener).toBeCalledWith(
@@ -179,17 +160,11 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
-      getMakeTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+      getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+        submitExtrinsicWithResign(tx, faucet)
       ),
-      getMakeTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
+      getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+        submitExtrinsicWithResign(tx, faucet)
       ),
     ])
     expect(listener).toBeCalledWith(

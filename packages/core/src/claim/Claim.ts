@@ -104,7 +104,7 @@ export class Claim implements IClaim {
   public static fromCTypeAndClaimContents(
     ctypeInput: ICType,
     claimContents: IClaim['contents'],
-    claimOwner: string
+    claimOwner: IDidDetails['did']
   ): Claim {
     if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {

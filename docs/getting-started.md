@@ -111,8 +111,8 @@ initializes the SDK _and_ sets the config, so it is related to the second approa
 There are of KILT chains which you can use, each one having a different address:
 
 1. A local node: `ws://127.0.0.1:9944`
-2. The test-net: `wss://peregrine.kilt.io`
-3. The dev-net: `wss://kilt-peregrine-stg.kilt.io`
+2. The test-net: `wss://peregrine.kilt.io/parachain-public-ws`
+3. The dev-net: `wss://peregrine-stg.kilt.io/para`
 4. The live-net: `wss://spiritnet.kilt.io`
 
 In case you go with option #1, #2 or #3, you have to request test money **since storing a CTYPE on the chain requires tokens and a full did** as transaction fee and deposit.

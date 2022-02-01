@@ -79,6 +79,9 @@ export enum ErrorCode {
   ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
   ERROR_CTYPE_PROPERTIES_NOT_MATCHING = 30013,
   ERROR_UNSUPPORTED_KEY = 30014,
+  ERROR_DID_ERROR = 30014,
+  ERROR_KEYSTORE_ERROR = 30015,
+  ERROR_DID_EXPORTER_ERROR = 30016,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -148,6 +151,19 @@ export const ERROR_UNSUPPORTED_KEY: (keyType: string) => SDKError = (
     ErrorCode.ERROR_UNSUPPORTED_KEY,
     `The provided key type "${keyType}" is currently not supported.`
   )
+}
+export const ERROR_DID_ERROR: (input: string) => SDKError = (input: string) => {
+  return new SDKError(ErrorCode.ERROR_DID_ERROR, input)
+}
+export const ERROR_KEYSTORE_ERROR: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(ErrorCode.ERROR_KEYSTORE_ERROR, input)
+}
+export const ERROR_DID_EXPORTER_ERROR: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(ErrorCode.ERROR_DID_EXPORTER_ERROR, input)
 }
 
 export const ERROR_CLAIM_HASH_NOT_PROVIDED: () => SDKError = () => {

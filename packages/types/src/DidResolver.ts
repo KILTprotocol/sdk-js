@@ -5,20 +5,20 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  IDidDetails,
-  IDidKeyDetails,
-  IDidServiceEndpoint,
-} from './DidDetails'
+import {
+  DidPublicKey,
+  DidPublicServiceEndpoint,
+} from './DidDocumentExporter.js'
+import type { IDidDetails, DidKey } from './DidDetails.js'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
  */
-export type IDidResolutionDocumentMetadata = {
+export type DidResolutionDocumentMetadata = {
   /**
    * If present, it indicates that the resolved by DID should be treated as if it were the DID as specified in this property.
    */
-  canonicalId?: string
+  canonicalId?: IDidDetails['did']
   /**
    * A boolean flag indicating wheather the resolved DID has been deactivated.
    */
@@ -30,7 +30,7 @@ export type IDidResolutionDocumentMetadata = {
  *
  * It includes the DID details, and optional document resolution metadata.
  */
-export type IDidResolvedDetails = {
+export type DidResolvedDetails = {
   /**
    * The resolved DID details. It is undefined if the DID has been deleted.
    */
@@ -38,8 +38,16 @@ export type IDidResolvedDetails = {
   /**
    * The DID resolution metadata.
    */
-  metadata: IDidResolutionDocumentMetadata
+  metadata: DidResolutionDocumentMetadata
 }
+
+export type ResolvedDidKey = Pick<DidPublicKey, 'id' | 'controller'> & {
+  publicKey: DidKey['publicKey']
+  type: DidKey['type']
+  includedAt?: DidKey['includedAt']
+}
+
+export type ResolvedDidServiceEndpoint = DidPublicServiceEndpoint
 
 export interface IDidResolver {
   /**
@@ -50,9 +58,12 @@ export interface IDidResolver {
    * if didUri contains a fragment (i.e., did:kilt:<identifier>#<fragment>) null if a resource cannot be resolved.
    */
   resolve: (
-    didUri: string
+    didUri:
+      | IDidDetails['did']
+      | DidPublicKey['id']
+      | DidPublicServiceEndpoint['id']
   ) => Promise<
-    IDidResolvedDetails | IDidKeyDetails | IDidServiceEndpoint | null
+    DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
   >
   /**
    * Resolves a DID (or DID URI), returning the full contents of the DID document.
@@ -62,7 +73,7 @@ export interface IDidResolver {
    * @returns A promise of a [[IDidResolvedDetails]] object representing the DID document or null if the DID
    * cannot be resolved.
    */
-  resolveDoc: (did: IDidDetails['did']) => Promise<IDidResolvedDetails | null>
+  resolveDoc: (did: IDidDetails['did']) => Promise<DidResolvedDetails | null>
   /**
    * Resolves a DID URI identifying a public key associated with a DID.
    *
@@ -71,7 +82,7 @@ export interface IDidResolver {
    * @returns A promise of a [[IDidKeyDetails]] object representing the DID public key or null if
    * the DID or key URI cannot be resolved.
    */
-  resolveKey: (didUri: IDidKeyDetails['id']) => Promise<IDidKeyDetails | null>
+  resolveKey: (didUri: DidPublicKey['id']) => Promise<ResolvedDidKey | null>
   /**
    * Resolves a DID URI identifying a service endpoint associated with a DID.
    *
@@ -81,6 +92,6 @@ export interface IDidResolver {
    * the DID or service endpoint URI cannot be resolved.
    */
   resolveServiceEndpoint: (
-    didUri: IDidServiceEndpoint['id']
-  ) => Promise<IDidServiceEndpoint | null>
+    didUri: DidPublicServiceEndpoint['id']
+  ) => Promise<ResolvedDidServiceEndpoint | null>
 }

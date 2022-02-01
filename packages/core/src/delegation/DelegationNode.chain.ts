@@ -16,7 +16,8 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import { DidTypes, DidUtils } from '@kiltprotocol/did'
+import type { DidChain } from '@kiltprotocol/did'
+import { DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import {
   decodeDelegationNode,
@@ -56,7 +57,7 @@ export async function getStoreAsRootTx(
  */
 export async function getStoreAsDelegationTx(
   delegation: DelegationNode,
-  signature: DidTypes.SignatureEnum
+  signature: DidChain.SignatureEnum
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
