@@ -11,18 +11,25 @@ const { argv } = yargs
     type: 'string',
     default: 'json',
     choices: ['hex', 'json'],
+    requiresArg: true,
+    // if arg is set multiple times, make the last value count
+    coerce: (val) => (Array.isArray(val) ? val.pop() : val),
   })
   .option('endpoint', {
     alias: 'e',
     description: 'http or ws endpoint from which to fetch metadata',
     type: 'string',
     demandOption: true,
+    requiresArg: true,
+    coerce: (val) => (Array.isArray(val) ? val.pop() : val),
   })
   .option('outfile', {
     alias: 'o',
     description: 'path to output file',
     type: 'string',
     demandOption: true,
+    requiresArg: true,
+    coerce: (val) => (Array.isArray(val) ? val.pop() : val),
   })
   .help()
   .alias('help', 'h')
