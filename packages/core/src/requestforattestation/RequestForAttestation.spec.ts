@@ -29,8 +29,6 @@ import { CType } from '../ctype/CType'
 import { RequestForAttestation } from './RequestForAttestation'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 const rawCType: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',

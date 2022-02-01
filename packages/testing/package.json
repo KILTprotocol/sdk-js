@@ -1,6 +1,7 @@
 {
-  "name": "@kiltprotocol/types",
-  "version": "0.26.0-4",
+  "name": "@kiltprotocol/testing",
+  "private": true,
+  "version": "0.26.0-2",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -15,12 +16,12 @@
     "lib/**/*"
   ],
   "scripts": {
+    "updateMetadata": "node ./scripts/fetchMetadata.js -o './src/mocks/metadata/spiritnet.json' -e 'https://spiritnet.api.onfinality.io/public-http'",
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
-    "build:fast": "esbuild src/**/!(*.spec).ts --format=cjs --outdir=./lib/cjs --tsconfig=tsconfig.build.json"
+    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -31,14 +32,13 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
+    "@kiltprotocol/types": "workspace:*",
     "@polkadot/api": "^6.11.1",
-    "@polkadot/keyring": "^8.1.2",
-    "@polkadot/types": "^6.11.1",
-    "tweetnacl": "^1.0.3"
+    "@polkadot/types": "^6.11.1"
   },
   "devDependencies": {
-    "esbuild": "^0.14.2",
     "rimraf": "^3.0.2",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.4",
+    "yargs": "^16.2.0"
   }
 }

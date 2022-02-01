@@ -1111,7 +1111,7 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/type-definitions": 0.1.23
+    "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^6.11.1
@@ -1144,6 +1144,7 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^6.11.1
@@ -1167,6 +1168,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^6.11.1
@@ -1221,12 +1223,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/type-definitions@npm:0.1.23":
-  version: 0.1.23
-  resolution: "@kiltprotocol/type-definitions@npm:0.1.23"
-  checksum: 34713c27b38bb7b8f341afb972bd5c6d4d89860f891238c016170499fae4e8d473ff2d7bf54c081144021c762762f4c695be65d533167592c427d72fb03ab518
-  languageName: node
-  linkType: hard
+"@kiltprotocol/testing@workspace:*, @kiltprotocol/testing@workspace:packages/testing":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/testing@workspace:packages/testing"
+  dependencies:
+    "@kiltprotocol/types": "workspace:*"
+    "@polkadot/api": ^6.11.1
+    "@polkadot/types": ^6.11.1
+    rimraf: ^3.0.2
+    typescript: ^4.5.4
+    yargs: ^16.2.0
+  languageName: unknown
+  linkType: soft
 
 "@kiltprotocol/types@workspace:*, @kiltprotocol/types@workspace:packages/types":
   version: 0.0.0-use.local
@@ -1246,6 +1254,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
+    "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/keyring": ^8.1.2
     "@polkadot/types": ^6.11.1

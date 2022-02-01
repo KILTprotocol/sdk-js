@@ -23,7 +23,6 @@ import { Claim } from '../claim/Claim'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { CType } from './CType'
 import * as CTypeUtils from './CType.utils'
-import * as Kilt from '../kilt/Kilt'
 import { getOwner, isStored } from './CType.chain'
 
 jest.mock('./CType.chain')
@@ -38,7 +37,6 @@ describe('CType', () => {
   let claimContents: any
   let claim: Claim
   let compressedCType: CompressedCType
-  Kilt.config({ address: 'ws://testString' })
   beforeAll(async () => {
     rawCType = {
       $id: 'kilt:ctype:0x2',
