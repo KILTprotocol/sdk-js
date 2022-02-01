@@ -21,6 +21,7 @@
     "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
     "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
+    "build:fast": "esbuild src/**/!(*.spec).ts --format=cjs --outdir=./lib/cjs --tsconfig=tsconfig.build.json",
     "bundle": "rimraf ./dist && webpack --config webpack.config.js"
   },
   "repository": "github:kiltprotocol/sdk-js",
@@ -34,6 +35,7 @@
   "devDependencies": {
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
+    "esbuild": "^0.14.2",
     "process": "^0.11.10",
     "rimraf": "^3.0.2",
     "stream-browserify": "^3.0.0",

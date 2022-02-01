@@ -10,6 +10,7 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "build": "yarn workspaces foreach -pt --no-private run build",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
+    "build:fast": "yarn workspaces foreach -p --no-private run build:fast",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
     "clean": "yarn workspaces foreach -p --no-private run clean",
     "clean:docs": "rm -rf docs/api",
