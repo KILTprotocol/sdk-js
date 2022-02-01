@@ -1,12 +1,7 @@
-name: Lint and Test
+name: Lint and Test (fast)
 
 on:
   push:
-    branches:
-      - develop
-      - master
-    tags:
-      - '*'
     paths-ignore:
       - '**/*.md'
       - 'LICENSE'
@@ -14,6 +9,10 @@ on:
       - 'docker-compose.yml'
       - 'dc.build.node.yml'
       - '.github/workflows/*publish.yml'
+  pull_request:
+    branches:
+      - develop
+      - master
 
 jobs:
   check_skip:
@@ -51,7 +50,7 @@ jobs:
       - name: yarn install
         run: yarn install --immutable
       - name: yarn build
-        run: yarn build
+        run: yarn build:fast
       - name: zip build
         run: zip -r build.zip .
       - name: upload build
@@ -72,6 +71,8 @@ jobs:
         run: unzip build.zip -d .
       - name: lint
         run: yarn lint
+      - name: type check
+        run: yarn check
 
   test:
     runs-on: ubuntu-latest
