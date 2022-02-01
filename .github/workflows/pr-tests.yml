@@ -1,7 +1,10 @@
 name: Lint and Test (fast)
 
 on:
-  push:
+  pull_request:
+    branches:
+      - develop
+      - master
     paths-ignore:
       - '**/*.md'
       - 'LICENSE'
@@ -9,10 +12,6 @@ on:
       - 'docker-compose.yml'
       - 'dc.build.node.yml'
       - '.github/workflows/*publish.yml'
-  pull_request:
-    branches:
-      - develop
-      - master
 
 jobs:
   check_skip:
