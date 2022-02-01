@@ -17,7 +17,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { ConfigService } from '@kiltprotocol/config'
 import { Blockchain } from '../blockchain/Blockchain.js'
-import { TYPE_REGISTRY } from './TypeRegistry.js'
 
 let instance: Promise<Blockchain> | null
 
@@ -32,7 +31,6 @@ export async function buildConnection(
 ): Promise<Blockchain> {
   const provider = new WsProvider(host)
   const api: ApiPromise = await ApiPromise.create({
-    registry: TYPE_REGISTRY,
     provider,
   })
   return new Blockchain(api)
