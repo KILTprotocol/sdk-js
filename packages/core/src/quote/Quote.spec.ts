@@ -11,6 +11,8 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import { u8aToHex } from '@polkadot/util'
+
 import type {
   IClaim,
   ICType,
@@ -22,13 +24,14 @@ import type {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  IDidDetails,
+  DidResolvedDetails,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import {
   DemoKeystore,
+  DemoKeystoreUtils,
+  DidDetails,
   DidUtils,
-  createLocalDemoDidFromSeed,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { CType } from '../ctype/CType'
@@ -38,8 +41,8 @@ import * as QuoteUtils from './Quote.utils'
 import { QuoteSchema } from './QuoteSchema'
 
 describe('Claim', () => {
-  let claimerIdentity: IDidDetails
-  let attesterIdentity: IDidDetails
+  let claimerIdentity: DidDetails
+  let attesterIdentity: DidDetails
   let keystore: DemoKeystore
   let invalidCost: ICostBreakdown
   let date: string
@@ -59,14 +62,16 @@ describe('Claim', () => {
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
   const mockResolver: IDidResolver = (() => {
-    const resolve = async (didUri: string) => {
+    const resolve = async (
+      didUri: string
+    ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
-        case claimerIdentity.did:
-          return { details: claimerIdentity }
-        case attesterIdentity.did:
-          return { details: attesterIdentity }
+        case claimerIdentity?.did:
+          return { details: claimerIdentity, metadata: { deactivated: false } }
+        case attesterIdentity?.did:
+          return { details: attesterIdentity, metadata: { deactivated: false } }
         default:
           return null
       }
@@ -80,12 +85,12 @@ describe('Claim', () => {
   beforeAll(async () => {
     keystore = new DemoKeystore()
 
-    claimerIdentity = await createLocalDemoDidFromSeed(
+    claimerIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Alice',
       SigningAlgorithms.Ed25519
     )
-    attesterIdentity = await createLocalDemoDidFromSeed(
+    attesterIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Bob',
       SigningAlgorithms.Ed25519
@@ -161,7 +166,9 @@ describe('Claim', () => {
       attesterIdentity.did,
       claimerIdentity,
       keystore,
-      mockResolver
+      {
+        resolver: mockResolver,
+      }
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
     invalidCostQuote = invalidCostQuoteData
@@ -222,12 +229,16 @@ describe('Claim', () => {
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.did)
     await expect(
-      DidUtils.getDidAuthenticationSignature(
+      claimerIdentity.signPayload(
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimerIdentity,
-        keystore
+        keystore,
+        claimerIdentity.authenticationKey.id
       )
     ).resolves.toEqual(quoteBothAgreed.claimerSignature)
+
+    const { fragment: attesterKeyId } = DidUtils.parseDidUri(
+      validAttesterSignedQuote.attesterSignature.keyId
+    )
 
     expect(
       Crypto.verify(
@@ -240,16 +251,15 @@ describe('Claim', () => {
           termsAndConditions: validQuoteData.termsAndConditions,
         }),
         validAttesterSignedQuote.attesterSignature.signature,
-        attesterIdentity.getKey(
-          validAttesterSignedQuote.attesterSignature.keyId
-        )?.publicKeyHex || ''
+        u8aToHex(
+          attesterIdentity.getKey(attesterKeyId!)?.publicKey || new Uint8Array()
+        )
       )
     ).toBeTruthy()
     expect(
-      await Quote.fromAttesterSignedInput(
-        validAttesterSignedQuote,
-        mockResolver
-      )
+      await Quote.fromAttesterSignedInput(validAttesterSignedQuote, {
+        resolver: mockResolver,
+      })
     ).toEqual(validAttesterSignedQuote)
     expect(
       await Quote.fromQuoteDataAndIdentity(

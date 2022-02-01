@@ -24,6 +24,7 @@ import type {
   IDelegationHierarchyDetails,
   IRequestForAttestation,
   CompressedAttestation,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import {
@@ -33,9 +34,9 @@ import {
   remove,
   reclaimDeposit,
   queryDepositAmount,
-} from './Attestation.chain'
-import * as AttestationUtils from './Attestation.utils'
-import { DelegationNode } from '../delegation/DelegationNode'
+} from './Attestation.chain.js'
+import * as AttestationUtils from './Attestation.utils.js'
+import { DelegationNode } from '../delegation/DelegationNode.js'
 
 export class Attestation implements IAttestation {
   /**
@@ -155,7 +156,7 @@ export class Attestation implements IAttestation {
    */
   public static fromRequestAndDid(
     request: IRequestForAttestation,
-    attesterDid: string
+    attesterDid: IDidDetails['did']
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,

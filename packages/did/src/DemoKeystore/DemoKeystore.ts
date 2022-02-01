@@ -5,21 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import {
   randomAsU8a,
   cryptoWaitReady,
-  naclBoxKeypairFromSecret,
+  naclBoxPairFromSecret,
   naclOpen,
   naclSeal,
   randomAsHex,
   blake2AsU8a,
-  blake2AsHex,
-  encodeAddress,
 } from '@polkadot/util-crypto'
-import { Crypto, Keyring } from '@kiltprotocol/utils'
-import {
-  IDidKeyDetails,
-  KeyRelationship,
+import { u8aEq } from '@polkadot/util'
+
+import type {
   KeyringPair,
   Keystore,
   KeystoreSigningData,
@@ -27,14 +25,7 @@ import {
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { KeypairType } from '@polkadot/util-crypto/types'
-import { u8aEq } from '@polkadot/util'
-import { getKiltDidFromIdentifier } from '../Did.utils'
-import { FullDidDetails, LightDidDetails } from '../DidDetails'
-import { DefaultResolver, DidUtils } from '..'
-import { INewPublicKey, PublicKeyRoleAssignment } from '../types'
-import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils'
+import { Crypto, Keyring, SDKErrors } from '@kiltprotocol/utils'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -86,15 +77,21 @@ export class DemoKeystore
 
   private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
     if (!signingSupported(alg))
-      throw new Error(`alg ${alg} is not supported for signing`)
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        `alg ${alg} is not supported for signing`
+      )
     const keyType = DemoKeystore.getKeypairTypeForAlg(alg)
     try {
       const keypair = this.signingKeyring.getPair(publicKey)
       if (keypair && keyType === keypair.type) return keypair
     } catch {
-      throw Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        `no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`
+      )
     }
-    throw Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
+    throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      `no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`
+    )
   }
 
   private getEncryptionKeyPair(
@@ -102,7 +99,9 @@ export class DemoKeystore
     alg: string
   ): NaclKeypair {
     if (!encryptionSupported(alg))
-      throw new Error(`alg ${alg} is not supported for encryption`)
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        `alg ${alg} is not supported for encryption`
+      )
     const publicKeyHex = Crypto.u8aToHex(publicKey)
     const keypair = this.encryptionKeypairs.get(publicKeyHex)
     if (!keypair) throw Error(`no key ${publicKeyHex} for alg ${alg}`)
@@ -135,8 +134,8 @@ export class DemoKeystore
     alg: T
   }> {
     const { seed, alg } = opts
-    const { secretKey, publicKey } = naclBoxKeypairFromSecret(
-      seed ? blake2AsU8a(seed, 32 * 8) : randomAsU8a(32)
+    const { secretKey, publicKey } = naclBoxPairFromSecret(
+      seed ? blake2AsU8a(seed, 256) : randomAsU8a(32)
     )
     return this.addEncryptionKeypair({ alg, secretKey, publicKey })
   }
@@ -156,7 +155,7 @@ export class DemoKeystore
     if (encryptionSupported(alg)) {
       return this.generateEncryptionKeypair({ alg, seed })
     }
-    throw new Error(`alg ${alg} is not supported`)
+    throw SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
   }
 
   private async addSigningKeypair<T extends SigningAlgorithms>({
@@ -169,7 +168,7 @@ export class DemoKeystore
   }> {
     await cryptoWaitReady()
     if (this.signingKeyring.publicKeys.some((i) => u8aEq(publicKey, i)))
-      throw new Error('public key already stored')
+      throw SDKErrors.ERROR_KEYSTORE_ERROR('public key already stored')
     const keypairType = DemoKeystore.getKeypairTypeForAlg(alg)
     const keypair = this.signingKeyring.addFromPair(
       { publicKey, secretKey },
@@ -186,11 +185,11 @@ export class DemoKeystore
     publicKey: Uint8Array
     alg: T
   }> {
-    const keypair = naclBoxKeypairFromSecret(secretKey)
+    const keypair = naclBoxPairFromSecret(secretKey)
     const { publicKey } = keypair
     const publicKeyHex = Crypto.u8aToHex(publicKey)
     if (this.encryptionKeypairs.has(publicKeyHex))
-      throw new Error('public key already used')
+      throw SDKErrors.ERROR_KEYSTORE_ERROR('public key already used')
     this.encryptionKeypairs.set(publicKeyHex, keypair)
     return { alg, publicKey }
   }
@@ -209,7 +208,7 @@ export class DemoKeystore
     if (encryptionSupported(alg)) {
       return this.addEncryptionKeypair({ alg, publicKey, secretKey })
     }
-    throw new Error(`alg ${alg} is not supported`)
+    throw SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
   }
 
   public async sign<A extends SigningAlgorithms>({
@@ -250,7 +249,9 @@ export class DemoKeystore
     // this is an alias for tweetnacl nacl.box.open
     const decrypted = naclOpen(data, nonce, peerPublicKey, keypair.secretKey)
     if (!decrypted)
-      return Promise.reject(new Error('failed to decrypt with given key'))
+      return Promise.reject(
+        SDKErrors.ERROR_KEYSTORE_ERROR('failed to decrypt with given key')
+      )
     return { data: decrypted, alg }
   }
 
@@ -274,138 +275,4 @@ export class DemoKeystore
   public static getKeypairTypeForAlg(alg: string): KeypairType {
     return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
   }
-}
-
-/**
- * Creates an instance of [[FullDidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.
- *
- * @param keystore The keystore to generate and store the DID private keys.
- * @param mnemonicOrHexSeed The mnemonic phrase or HEX seed for key generation.
- * @param signingKeyType One of the supported [[SigningAlgorithms]] to generate the DID authentication key.
- *
- * @returns A promise resolving to a [[FullDidDetails]] object. The resulting object is NOT stored on chain.
- */
-export async function createLocalDemoDidFromSeed(
-  keystore: DemoKeystore,
-  mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Ed25519
-): Promise<FullDidDetails> {
-  const did = getKiltDidFromIdentifier(
-    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38),
-    'full'
-  )
-
-  const generateKeypairForDid = async (
-    derivation: string,
-    alg: string,
-    keytype: string
-  ): Promise<IDidKeyDetails> => {
-    const seed = derivation
-      ? `${mnemonicOrHexSeed}//${derivation}`
-      : mnemonicOrHexSeed
-    const keyId = `${did}#${blake2AsHex(seed, 64)}`
-    const { publicKey } = await keystore.generateKeypair<any>({
-      alg,
-      seed,
-    })
-    return {
-      id: keyId,
-      controller: did,
-      type: keytype,
-      publicKeyHex: Crypto.u8aToHex(publicKey),
-    }
-  }
-
-  return newFullDidDetailsfromKeys({
-    [KeyRelationship.authentication]: await generateKeypairForDid(
-      '',
-      signingKeyType,
-      signingKeyType
-    ),
-    [KeyRelationship.assertionMethod]: await generateKeypairForDid(
-      'assertionMethod',
-      signingKeyType,
-      signingKeyType
-    ),
-    [KeyRelationship.capabilityDelegation]: await generateKeypairForDid(
-      'capabilityDelegation',
-      signingKeyType,
-      signingKeyType
-    ),
-    [KeyRelationship.keyAgreement]: await generateKeypairForDid(
-      'keyAgreement',
-      EncryptionAlgorithms.NaclBox,
-      'x25519'
-    ),
-  })
-}
-
-export async function createLightDidFromSeed(
-  keystore: DemoKeystore,
-  mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Sr25519
-): Promise<LightDidDetails> {
-  const authenticationPublicKey = await keystore.generateKeypair({
-    alg: signingKeyType,
-    seed: mnemonicOrHexSeed,
-  })
-
-  return new LightDidDetails({
-    authenticationKey: {
-      publicKey: authenticationPublicKey.publicKey,
-      type: authenticationPublicKey.alg,
-    },
-  })
-}
-
-export async function createOnChainDidFromSeed(
-  paymentAccount: KeyringPair,
-  keystore: DemoKeystore,
-  mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Ed25519
-): Promise<FullDidDetails> {
-  const makeKey = (
-    seed: string,
-    alg: SigningAlgorithms | EncryptionAlgorithms
-  ): Promise<INewPublicKey> =>
-    keystore
-      .generateKeypair({
-        alg,
-        seed,
-      })
-      .then((key) => ({ ...key, type: DemoKeystore.getKeypairTypeForAlg(alg) }))
-
-  const keys: PublicKeyRoleAssignment = {
-    [KeyRelationship.authentication]: await makeKey(
-      mnemonicOrHexSeed,
-      signingKeyType
-    ),
-    [KeyRelationship.assertionMethod]: await makeKey(
-      `${mnemonicOrHexSeed}//assertionMethod`,
-      signingKeyType
-    ),
-    [KeyRelationship.capabilityDelegation]: await makeKey(
-      `${mnemonicOrHexSeed}//capabilityDelegation`,
-      signingKeyType
-    ),
-    [KeyRelationship.keyAgreement]: await makeKey(
-      `${mnemonicOrHexSeed}//keyAgreement`,
-      EncryptionAlgorithms.NaclBox
-    ),
-  }
-
-  const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
-    keystore,
-    paymentAccount.address,
-    keys
-  )
-  await BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
-    reSign: true,
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
-  })
-  const queried = await DefaultResolver.resolveDoc(did)
-  if (queried) {
-    return queried.details as FullDidDetails
-  }
-  throw Error(`failed to write Did${did}`)
 }

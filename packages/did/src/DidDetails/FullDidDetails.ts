@@ -6,178 +6,244 @@
  */
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { BN } from '@polkadot/util'
+
 import type {
-  IDidKeyDetails,
+  DidKey,
+  IDidIdentifier,
+  IIdentity,
+  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
-  ApiOrMetadata,
-  CallMeta,
-  IIdentity,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
-import { BN } from '@polkadot/util'
-import { generateDidAuthenticatedTx, queryLastTxCounter } from '../Did.chain'
-import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
-import {
-  getSignatureAlgForKeyType,
-  getIdentifierFromKiltDid,
-  parseDidUrl,
-} from '../Did.utils'
-import { DidDetails } from './DidDetails'
-import type { FullDidDetailsCreationOpts } from '../types'
 
-function errorCheck({
-  did,
-  keys,
-  keyRelationships,
-}: Required<FullDidDetailsCreationOpts>): void {
-  if (!did) {
-    throw Error('did is required for FullDidDetails')
-  }
-  const { type } = parseDidUrl(did)
-  if (type !== 'full') {
-    throw Error('Only a full DID URI is allowed.')
-  }
-  const keyIds = new Set(keys.map((key) => key.id))
-  if (keyRelationships[KeyRelationship.authentication]?.length !== 1) {
-    throw Error(
-      `One and only one ${KeyRelationship.authentication} key is required on FullDidDetails`
-    )
-  }
-  const allowedKeyRelationships: string[] = [
-    ...Object.values(KeyRelationship),
-    'none',
-  ]
-  Object.keys(keyRelationships).forEach((kr) => {
-    if (!allowedKeyRelationships.includes(kr)) {
-      throw Error(
-        `key relationship ${kr} is not recognized. Allowed: ${KeyRelationship}`
-      )
-    }
-  })
-  const keyReferences = new Set<string>(
-    Array.prototype.concat(...Object.values(keyRelationships))
-  )
-  keyReferences.forEach((id) => {
-    if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
-  })
-}
+import { SDKErrors } from '@kiltprotocol/utils'
+
+import type {
+  DidCreationDetails,
+  DidKeySelectionHandler,
+  MapKeysToRelationship,
+  PublicKeys,
+  ServiceEndpoints,
+} from '../types.js'
+import { methodMapping } from './FullDidDetails.utils.js'
+import { DidDetails } from './DidDetails.js'
+import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
+import {
+  generateDidAuthenticatedTx,
+  queryDetails,
+  queryNonce,
+  queryServiceEndpoints,
+} from '../Did.chain.js'
+import {
+  defaultDidKeySelection,
+  FULL_DID_LATEST_VERSION,
+  getKiltDidFromIdentifier,
+} from '../Did.utils.js'
+
+// Max nonce value is (2^64) - 1
+const maxNonceValue = new BN(new BN(2).pow(new BN(64))).subn(1)
 
 export class FullDidDetails extends DidDetails {
-  /// The latest version for KILT full DIDs.
-  public static readonly FULL_DID_LATEST_VERSION = 1
+  public readonly identifier: IDidIdentifier
 
-  private lastTxIndex: BN
-
-  constructor({
+  /**
+   * Create an instance of [[FullDidDetails]] with the provided details.
+   * This is not to be used to create new DIDs, but it should only be used to serialize-deserialize full DID information to and from storage.
+   * Creating an instance of a full DID in this way without writing the information on the blockchain, will render the DID useless.
+   *
+   * @param creationDetails The creation details.
+   * @param creationDetails.identifier The DID subject identifier.
+   * @param creationDetails.did The full DID identifier.
+   * @param creationDetails.keys The set of public keys associated with the given full DID.
+   * @param creationDetails.keyRelationships The map of key ID -> relationship (e.g., authentication, attestation).
+   * @param creationDetails.serviceEndpoints The set of service endpoints controlled by the specified DID.
+   */
+  public constructor({
+    identifier,
     did,
     keys,
-    keyRelationships = {},
-    lastTxIndex,
-    serviceEndpoints = [],
-  }: FullDidDetailsCreationOpts) {
-    errorCheck({
-      did,
+    keyRelationships,
+    serviceEndpoints = {},
+  }: DidCreationDetails & { identifier: IDidIdentifier }) {
+    super({ did, keys, keyRelationships, serviceEndpoints })
+
+    this.identifier = identifier
+  }
+
+  /**
+   * Create a new instance of [[FullDidDetails]] after fetching the relevant information from the blockchain.
+   * Private keys are assumed to already live in the keystore to be used with this DID instance, as only the public keys are retrieved from the blockchain.
+   *
+   * @param didIdentifier The identifier of the DID to reconstruct.
+   * @param version The version of the DID to recreate. It defaults to the latest version supported by the SDK.
+   *
+   * @returns The reconstructed [[FullDidDetails]], or null if not DID with the provided identifier exists.
+   */
+  public static async fromChainInfo(
+    didIdentifier: IDidIdentifier,
+    version: number = FULL_DID_LATEST_VERSION
+  ): Promise<FullDidDetails | null> {
+    const didRec = await queryDetails(didIdentifier)
+    if (!didRec) return null
+
+    const didUri = getKiltDidFromIdentifier(didIdentifier, 'full', version)
+
+    const {
+      publicKeys,
+      assertionMethodKey,
+      authenticationKey,
+      capabilityDelegationKey,
+      keyAgreementKeys,
+    } = didRec
+
+    const keys: PublicKeys = publicKeys.reduce((res, key) => {
+      res[key.id] = key
+      return res
+    }, {})
+
+    const keyRelationships: MapKeysToRelationship = {
+      authentication: new Set([authenticationKey]),
+      keyAgreement: new Set(keyAgreementKeys),
+    }
+    if (assertionMethodKey) {
+      keyRelationships.assertionMethod = new Set([assertionMethodKey])
+    }
+    if (capabilityDelegationKey) {
+      keyRelationships.capabilityDelegation = new Set([capabilityDelegationKey])
+    }
+
+    const serviceEndpoints: ServiceEndpoints = (
+      await queryServiceEndpoints(didIdentifier)
+    ).reduce((res, service) => {
+      res[service.id] = service
+      return res
+    }, {})
+
+    return new FullDidDetails({
+      identifier: didIdentifier,
+      did: didUri,
       keys,
       keyRelationships,
-      lastTxIndex,
       serviceEndpoints,
     })
-
-    const id = getIdentifierFromKiltDid(did)
-    super(did, id, serviceEndpoints)
-
-    this.keys = new Map(keys.map((key) => [key.id, key]))
-    this.lastTxIndex = lastTxIndex
-    this.keyRelationships = keyRelationships
-    this.keyRelationships.none = []
-    const keysWithRelationship = new Set<string>(
-      Array.prototype.concat(...Object.values(keyRelationships))
-    )
-    this.keys.forEach((_, keyId) => {
-      if (!keysWithRelationship.has(keyId)) {
-        this.keyRelationships.none?.push(keyId)
-      }
-    })
   }
 
   /**
-   * Gets the next nonce/transaction index required for DID authorized blockchain transactions.
+   * Returns all the DID keys that could be used to sign the provided extrinsic for submission.
+   * This function should never be used directly by SDK users, who should rather call [[FulLDidDetails.authorizeExtrinsic]].
    *
-   * @param increment Flag indicating whether the retrieved tx index should be increased.
-   * @returns A [[BN]] indicating the next transaction index.
+   * @param extrinsic The unsigned extrinsic to perform the lookup.
+   *
+   * @returns All the keys under the full DID that could be used to generate valid signatures to submit the provided extrinsic.
    */
-  public getNextTxIndex(increment = true): BN {
-    const nextIndex = this.lastTxIndex.addn(1)
-    if (increment) this.lastTxIndex = nextIndex
-    return nextIndex
+  public getKeysForExtrinsic(extrinsic: Extrinsic): DidKey[] {
+    const callMethod = extrinsic.method
+    const { section, method } = callMethod
+    const keyRelationship =
+      methodMapping[section][method] ||
+      methodMapping[section].default ||
+      methodMapping.default.default
+    return keyRelationship === 'paymentAccount'
+      ? []
+      : this.getKeys(keyRelationship)
   }
 
   /**
-   * Returns all the DID keys that could be used to authorize the submission of the provided call.
+   * Returns the next nonce to use to sign a DID operation.
+   * Normally, this function should not be called directly by SDK users. Nevertheless, in advanced cases where there might be race conditions, this function can be used as the basis on which to build parallel operation queues.
    *
-   * @param call The call to submit.
-   * @returns The set of keys that could be used to sign the call.
+   * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
    */
-  public getKeysForCall(call: CallMeta): IDidKeyDetails[] {
-    return getKeysForCall(this, call)
-  }
-
-  /**
-   * Returns all the DID keys that could be used to authorize the submission of the provided extrinsic.
-   *
-   * @param apiOrMetadata The node runtime information to use to retrieve the required information.
-   * @param extrinsic The extrinsic to submit.
-   * @returns The set of keys that could be used to sign the extrinsic.
-   */
-  public getKeysForExtrinsic(
-    apiOrMetadata: ApiOrMetadata,
-    extrinsic: Extrinsic
-  ): IDidKeyDetails[] {
-    return getKeysForExtrinsic(apiOrMetadata, this, extrinsic)
+  public async getNextNonce(): Promise<BN> {
+    const currentNonce = await queryNonce(this.identifier)
+    // Wrap around the max u64 value when reached.
+    // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
+    return currentNonce === maxNonceValue ? new BN(0) : currentNonce.addn(1)
   }
 
   /**
    * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will return an error.
    *
    * @param extrinsic The unsigned extrinsic to sign.
-   * @param signer The keystore to be used to sign the encoded extrinsic.
+   * @param signer The keystore signer to use.
    * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
-   * @param incrementTxIndex Flag indicating whether the DID nonce should be increased before submitting the operation or not.
+   * @param signingOptions The signing options.
+   * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
    * @returns The DID-signed submittable extrinsic.
    */
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
     signer: KeystoreSigner,
     submitterAccount: IIdentity['address'],
-    incrementTxIndex = true
+    {
+      keySelection = defaultDidKeySelection,
+    }: {
+      keySelection?: DidKeySelectionHandler
+    } = {}
   ): Promise<SubmittableExtrinsic> {
-    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-    const [signingKey] = this.getKeysForExtrinsic(api, extrinsic)
+    const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
-      throw new Error(
+      throw SDKErrors.ERROR_DID_ERROR(
         `The details for did ${this.did} do not contain the required keys for this operation`
       )
     }
     return generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
-      signingPublicKey: signingKey.publicKeyHex,
+      signingPublicKey: signingKey.publicKey,
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
-      txCounter: this.getNextTxIndex(incrementTxIndex),
+      txCounter: await this.getNextNonce(),
       submitter: submitterAccount,
     })
   }
 
   /**
-   * Retrieve from the chain the last used nonce for the DID.
+   * Signs and returns the provided unsigned extrinsic batch with the right DID key, if present. Otherwise, it will return an error.
+   * The generated signature will fail to verify successfully by the blockchain if any two operations in the batch require a different key type, or if the key type specified is not the expected one for the operations in the batch.
    *
-   * @returns The last used nonce.
+   * @param batchExtrinsic The unsigned extrinsic batch to sign.
+   * @param signer The keystore signer to use.
+   * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
+   * @param keyRelationship The key relationship (e.g., authentication or attestation) to use when fetching the keys to use for signing the batch.
+   * @param signingOptions The signing options.
+   * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
+   * @returns The DID-signed submittable extrinsic.
    */
-  public async refreshTxIndex(): Promise<this> {
-    this.lastTxIndex = await queryLastTxCounter(this.did)
-    return this
+  public async authorizeBatch(
+    batchExtrinsic: Extrinsic,
+    signer: KeystoreSigner,
+    submitterAccount: IIdentity['address'],
+    keyRelationship: KeyRelationship,
+    {
+      keySelection = defaultDidKeySelection,
+    }: {
+      keySelection?: DidKeySelectionHandler
+    } = {}
+  ): Promise<SubmittableExtrinsic> {
+    const signingKey = await keySelection(this.getKeys(keyRelationship))
+    if (
+      batchExtrinsic.method.section !== 'utility' &&
+      batchExtrinsic.method.method !== 'batch'
+    ) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        'authorizeBatch can only be used to sign utility.batch extrinsics.'
+      )
+    }
+    if (!signingKey) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `The details for did ${this.did} do not contain the required keys for this operation`
+      )
+    }
+    return generateDidAuthenticatedTx({
+      didIdentifier: this.identifier,
+      signingPublicKey: signingKey.publicKey,
+      alg: getSignatureAlgForKeyType(signingKey.type),
+      signer,
+      call: batchExtrinsic,
+      txCounter: await this.getNextNonce(),
+      submitter: submitterAccount,
+    })
   }
 }

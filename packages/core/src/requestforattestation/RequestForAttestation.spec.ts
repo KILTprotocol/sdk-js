@@ -31,22 +31,22 @@ import * as RequestForAttestationUtils from './RequestForAttestation.utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
+const rawCType: ICType['schema'] = {
+  $id: 'kilt:ctype:0x2',
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'raw ctype',
+  properties: {
+    name: { type: 'string' },
+  },
+  type: 'object',
+}
+
 function buildRequestForAttestation(
   claimerDid: string,
   contents: IClaimContents,
   legitimations: Credential[]
 ): RequestForAttestation {
   // create claim
-
-  const rawCType: ICType['schema'] = {
-    $id: 'kilt:ctype:0x2',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'raw ctype',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
 
   const testCType: CType = CType.fromSchema(rawCType)
 
@@ -416,5 +416,25 @@ describe('RequestForAttestation', () => {
       []
     )
     expect(builtRequest instanceof RequestForAttestation).toEqual(true)
+  })
+
+  it('should verify the Request for attestation claims structure against the ctype', async () => {
+    const testCType: CType = CType.fromSchema(rawCType)
+    const builtRequest = buildRequestForAttestation(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    expect(
+      RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
+    ).toBeTruthy()
+    builtRequest.claim.contents.name = 123
+    expect(() =>
+      RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 })

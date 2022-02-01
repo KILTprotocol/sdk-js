@@ -5,17 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { Attestation, AttestationUtils } from './attestation'
-export { Credential, CredentialUtils } from './credential'
-export { Balance, BalanceUtils } from './balance'
-export { Claim, ClaimUtils } from './claim'
-export { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype'
-export { DelegationNode, DelegationNodeUtils } from './delegation'
-export { Quote, QuoteSchema, QuoteUtils } from './quote'
+export { Attestation, AttestationUtils } from './attestation/index.js'
+export { Credential, CredentialUtils } from './credential/index.js'
+export { Balance, BalanceUtils } from './balance/index.js'
+export { Claim, ClaimUtils } from './claim/index.js'
+export { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype/index.js'
+export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
+export { Quote, QuoteSchema, QuoteUtils } from './quote/index.js'
 export {
   RequestForAttestation,
   RequestForAttestationUtils,
-} from './requestforattestation'
+} from './requestforattestation/index.js'
 
-export { connect, disconnect, config, init } from './kilt'
+export { connect, disconnect, config, init } from './kilt/index.js'
 export { SDKErrors } from '@kiltprotocol/utils'

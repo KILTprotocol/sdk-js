@@ -77,7 +77,7 @@ When using the SDK, there are two things you'll always want to do before anythin
 To keep things simple, we grouped these two steps in a function you can call first thing, before any other code that used the KILT SDK.
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 
 await Kilt.init({ address: YOUR_CHAIN_ADDRESS })
 ```
@@ -111,8 +111,8 @@ initializes the SDK _and_ sets the config, so it is related to the second approa
 There are of KILT chains which you can use, each one having a different address:
 
 1. A local node: `ws://127.0.0.1:9944`
-2. The test-net: `wss://peregrine.kilt.io`
-3. The dev-net: `wss://kilt-peregrine-stg.kilt.io`
+2. The test-net: `wss://peregrine.kilt.io/parachain-public-ws`
+3. The dev-net: `wss://peregrine-stg.kilt.io/para`
 4. The live-net: `wss://spiritnet.kilt.io`
 
 In case you go with option #1, #2 or #3, you have to request test money **since storing a CTYPE on the chain requires tokens and a full did** as transaction fee and deposit.
@@ -141,7 +141,7 @@ const account = keyring.addFromMnemonic(
 To generate an account first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the on-chain account and DID:
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 
 const keyring = new Kilt.Utils.Keyring.Keyring({
@@ -165,7 +165,7 @@ To create a light DID, there needs to be a keystore instance that conforms to th
 **Using the demo keystore in production is highly discouraged as all the keys are kept in the memory and easily retrievable by malicious actors.**
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 
 const keystore = new Kilt.Did.DemoKeystore()
 
@@ -187,7 +187,7 @@ const claimerEncryptionKeypair = await keystore.generateKeypair({
 Using the keys from the demo keystore to generate the claimer's light DID.
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 
 const claimerLightDid = new Kilt.Did.LightDidDetails({
   authenticationKey: {
@@ -211,7 +211,7 @@ console.log(claimerLightDid.did)
 Before we can send the request for an attestation to an Attester, we should first create an Attester account and a full on-chain DID using the previously generated keyring.. Using the previously generated keyring.
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 
 // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
@@ -225,7 +225,7 @@ console.log('attester address', attester.address)
 Providing the attester with funds from the endowed account in order to write transactions on-chain.
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 
 const transferAmount = '1000000000000000'
 await Kilt.Balance.makeTransfer(attester.address, transferAmount).then((tx) =>
@@ -295,9 +295,10 @@ await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, attester, {
 })
 
 // The resolved full DID
-const attesterFullDid = await Did.DefaultResolver.resolveDoc(did)
+  const attesterFullDid = (await Kilt.Did.resolveDoc(fullDid.did))
+    ?.details as IDidDetails
 
-console.log('Full DID', attesterFullDid.details)
+console.log('Full DID', attesterFullDid)
 
 // Example of a full did:
 {
@@ -330,7 +331,7 @@ When building a CTYPE, you only need a JSON schema and your public [SS58 address
 ### 3.1. Building a CTYPE
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 
 const ctype = Kilt.CType.fromSchema({
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -446,7 +447,7 @@ First, we need to build a request for an attestation, which has to include a cla
 ### 5.1. Requesting an Attestation
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
 
 const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndaccount(
   claim,
@@ -494,7 +495,7 @@ KILT contains a simple messaging system and we describe it through the following
 First, we create the request for attestation message which the Claimer uses their did and the did of the Attester:
 
 ```typescript
-import Kilt, { MessageBody } from '@kiltprotocol/sdk-js'
+import * as Kilt, { MessageBody } from '@kiltprotocol/sdk-js'
 
 const messageBody: MessageBody = {
   content: { requestForAttestation },

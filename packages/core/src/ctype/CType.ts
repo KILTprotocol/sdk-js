@@ -24,8 +24,8 @@ import type {
   CTypeSchemaWithoutId,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { store } from './CType.chain'
-import * as CTypeUtils from './CType.utils'
+import { store } from './CType.chain.js'
+import * as CTypeUtils from './CType.utils.js'
 
 export class CType implements ICType {
   /**

@@ -19,8 +19,8 @@ import type {
 } from '@kiltprotocol/types'
 import { jsonabc, Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import { getOwner, isStored } from './CType.chain'
-import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import { getOwner, isStored } from './CType.chain.js'
+import { CTypeModel, CTypeWrapperModel } from './CTypeSchema.js'
 
 export function verifySchemaWithErrors(
   object: Record<string, unknown>,
