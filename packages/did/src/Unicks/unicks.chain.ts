@@ -60,30 +60,6 @@ export async function getReleaseByPayerTx(
 }
 
 /**
- * Returns a extrinsic to put a nick on the list of banned nicks.
- *
- * @param nick Unick that should be banned.
- * @returns The [[SubmittableExtrinsic]] for the `ban` call.
- */
-export async function getBanTx(nick: Unick): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.unicks.ban(nick)
-  return tx
-}
-
-/**
- * Returns a extrinsic to remove a nick from the list of banned nicks.
- *
- * @param nick Unick that should be unbanned.
- * @returns The [[SubmittableExtrinsic]] for the `unban` call.
- */
-export async function getUnbanTx(nick: Unick): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.unicks.unban(nick)
-  return tx
-}
-
-/**
  * Retrieve the Unick for a specific did.
  *
  * @param didUri DID uri of the unick owner, i.e. 'did:kilt:4...'.
