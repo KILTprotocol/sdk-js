@@ -66,20 +66,6 @@ export async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
     )
 }
 
-// Returns the raw representation of the storage entry for the given DID identifier.
-async function queryDidDeletionStatusEncoded(
-  didIdentifier: IIdentity['address']
-): Promise<Uint8Array> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedStorageKey = await api.query.did.didBlacklist.key(didIdentifier)
-  return (
-    api.rpc.state
-      .queryStorageAt<Codec[]>([encodedStorageKey])
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      .then((encodedValue) => encodedValue.pop()!.toU8a())
-  )
-}
-
 // Query a DID service given the DID identifier and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 export async function queryServiceEncoded(
@@ -304,12 +290,12 @@ export async function queryDeletedDids(): Promise<Array<IDidDetails['did']>> {
 export async function queryDidDeletionStatus(
   didUri: IDidDetails['did']
 ): Promise<boolean> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const { identifier } = parseDidUrl(didUri)
-  const encodedDeletionStorageEntry = await queryDidDeletionStatusEncoded(
-    identifier
-  )
-  // The result is a 1-byte array where the only element is 1 if the DID has been deleted, and 0 otherwise.
-  return encodedDeletionStorageEntry[0] === 1
+  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
+  const encodedStorageHash = await api.query.did.didBlacklist.hash(identifier)
+  // isEmpty returns true if there is no entry for the given key -> the function should return false.
+  return !encodedStorageHash.isEmpty
 }
 
 // ### EXTRINSICS
