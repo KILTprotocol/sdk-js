@@ -292,6 +292,17 @@ export class MockProvider implements ProviderInterface {
     delete this.db[key]
   }
 
+  public resetState(): void {
+    this.db = {}
+    Object.keys(this.subscriptions).forEach((name) => {
+      this.subscriptions[name] = {
+        callbacks: {},
+        lastValue: null,
+      }
+    })
+    this.subscriptionMap = {}
+  }
+
   public updateSubs(method: string, value: Codec): void {
     this.subscriptions[method].lastValue = value
 

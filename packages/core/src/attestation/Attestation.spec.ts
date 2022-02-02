@@ -23,19 +23,34 @@ import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
+import { ApiPromise } from '@polkadot/api'
+import { TypeRegistry } from '@polkadot/types'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { Attestation } from './Attestation'
 import * as AttestationUtils from './Attestation.utils'
 
-let mockedApi: any
-let blockchain: Blockchain
+let provider: ApiMocks.MockProvider
+let api: ApiPromise
+let registry: TypeRegistry
 
-beforeAll(() => {
-  mockedApi = ApiMocks.getMockedApi()
-  blockchain = new Blockchain(mockedApi)
-  BlockchainApiConnection.setConnection(Promise.resolve(blockchain))
+beforeAll(async () => {
+  registry = new TypeRegistry()
+  provider = new ApiMocks.MockProvider(registry)
+
+  api = new ApiPromise({ provider })
+  BlockchainApiConnection.setConnection(
+    api.isReady.then((a) => new Blockchain(a))
+  )
+})
+
+afterAll(async () => {
+  await api.disconnect()
+})
+
+afterEach(() => {
+  provider.resetState()
 })
 
 describe('Attestation', () => {
@@ -72,14 +87,16 @@ describe('Attestation', () => {
   })
 
   it('stores attestation', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
+    provider.setQueryState(
+      [
         testCType.hash,
         DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,
         false,
         [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
-      ])
+      ],
+      api.query.attestation.attestations,
+      requestForAttestation.rootHash
     )
 
     const attestation: Attestation = Attestation.fromRequestAndDid(
@@ -90,10 +107,6 @@ describe('Attestation', () => {
   })
 
   it('verify attestations not on chain', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations')
-    )
-
     const attestation: Attestation = Attestation.fromAttestation({
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
@@ -105,14 +118,16 @@ describe('Attestation', () => {
   })
 
   it('verify attestation revoked', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
+    provider.setQueryState(
+      [
         testCType.hash,
         DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,
         true,
         [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
-      ])
+      ],
+      api.query.attestation.attestations,
+      requestForAttestation.rootHash
     )
 
     const attestation: Attestation = Attestation.fromRequestAndDid(

@@ -12,20 +12,21 @@
 import { TypeRegistry } from '@polkadot/types'
 import { ApiPromise } from '@polkadot/api'
 import { encodeAddress, randomAsHex } from '@polkadot/util-crypto'
-import { kiltMetadata, MockProvider } from '@kiltprotocol/testing'
+import { ApiMocks } from '@kiltprotocol/testing'
 import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
-import { queryById } from './Did.chain'
+import { BN, hexToU8a } from '@polkadot/util'
+import { queryDetails } from './Did.chain'
 
-let provider: MockProvider
+let provider: ApiMocks.MockProvider
 let api: ApiPromise
 let registry: TypeRegistry
 
-beforeEach(async () => {
+beforeAll(async () => {
   registry = new TypeRegistry()
-  provider = new MockProvider(registry, kiltMetadata)
+  provider = new ApiMocks.MockProvider(registry)
 
   api = new ApiPromise({ provider })
   BlockchainApiConnection.setConnection(
@@ -33,9 +34,13 @@ beforeEach(async () => {
   )
 })
 
+afterEach(() => {
+  provider.resetState()
+})
+
 it('resolves nonexistent dids to null', async () => {
   const address = encodeAddress(randomAsHex(32), 38)
-  await expect(queryById(address)).resolves.toBe(null)
+  await expect(queryDetails(address)).resolves.toBe(null)
 })
 
 it('queries existing dids', async () => {
@@ -53,22 +58,20 @@ it('queries existing dids', async () => {
     },
   }
   provider.setQueryState(didInfos, api.query.did.did, address)
-  const queried = await queryById(address)
+  const queried = await queryDetails(address)
   expect(queried).toMatchObject({
-    did: `did:kilt:${address}`,
-    authenticationKey: `did:kilt:${address}#${keyId}`,
+    authenticationKey: keyId,
     publicKeys: [
       {
-        id: `did:kilt:${address}#${keyId}`,
+        id: keyId,
         type: 'sr25519',
-        controller: `did:kilt:${address}`,
-        publicKeyHex: key,
-        includedAt: 1,
+        publicKey: hexToU8a(key),
+        includedAt: new BN(1),
       },
     ],
   })
 })
 
-afterEach(async () => {
+afterAll(async () => {
   await api.disconnect()
 })
