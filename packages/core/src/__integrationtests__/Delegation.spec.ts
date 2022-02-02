@@ -15,8 +15,12 @@ import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation/Attestation'
-import { Claim } from '../claim/Claim'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { Claim } from '../claim'
+import { CType } from '../ctype'
+import {
+  RequestForAttestation,
+  RequestForAttestationUtils,
+} from '../requestforattestation'
 import { Credential } from '../index.js'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
@@ -94,8 +98,7 @@ beforeAll(async () => {
   ])
 
   if (!(await isCtypeOnChain(driversLicenseCType))) {
-    await driversLicenseCType
-      .store()
+    await CType.store(driversLicenseCType)
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -156,9 +159,16 @@ describe('and attestation rights have been delegated', () => {
     const request = RequestForAttestation.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
-    expect(request.verifyData()).toBeTruthy()
-    await expect(request.verifySignature()).resolves.toBeTruthy()
+    await RequestForAttestation.signWithDidKey(
+      request,
+      signer,
+      claimer,
+      claimer.authenticationKey.id
+    )
+    expect(RequestForAttestationUtils.verifyData(request)).toBeTruthy()
+    await expect(
+      RequestForAttestation.verifySignature(request)
+    ).resolves.toBeTruthy()
 
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation

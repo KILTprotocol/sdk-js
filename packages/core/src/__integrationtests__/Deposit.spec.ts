@@ -36,10 +36,11 @@ import {
 } from './utils'
 import { Balance } from '../balance'
 import { Attestation } from '../attestation/Attestation'
-import { Claim } from '../claim/Claim'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { Claim } from '../claim'
+import { RequestForAttestation } from '../requestforattestation'
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
+import { CType } from '../ctype'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
@@ -247,7 +248,7 @@ async function checkDeletedDidReclaimAttestation(
 const testIdentities: KeyringPair[] = []
 const testMnemonics: string[] = []
 const keystore = new DemoKeystore()
-let requestForAttestation: RequestForAttestation
+let requestForAttestation: IRequestForAttestation
 
 beforeAll(async () => {
   /* Initialize KILT SDK and set up node endpoint */
@@ -279,7 +280,7 @@ beforeAll(async () => {
   if (!ctypeExists) {
     await attester
       .authorizeExtrinsic(
-        await driversLicenseCType.store(),
+        await CType.store(driversLicenseCType),
         keystore,
         devFaucet.address
       )
@@ -300,7 +301,8 @@ beforeAll(async () => {
   )
 
   requestForAttestation = RequestForAttestation.fromClaim(claim)
-  await requestForAttestation.signWithDidKey(
+  await RequestForAttestation.signWithDidKey(
+    requestForAttestation,
     keystore,
     claimerLightDid,
     claimerLightDid.authenticationKey.id

@@ -25,13 +25,14 @@ import {
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 import type {
+  ICType,
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { CType } from '../ctype/CType'
+import { CType, CTypeUtils } from '../ctype'
 import { Balance } from '../balance'
 import { init } from '../kilt'
 
@@ -62,8 +63,8 @@ export function addressFromRandom(): string {
   return keypairFromRandom().address
 }
 
-export async function isCtypeOnChain(ctype: CType): Promise<boolean> {
-  return ctype.verifyStored()
+export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
+  return CTypeUtils.verifyStored(ctype)
 }
 
 export const driversLicenseCType = CType.fromSchema({

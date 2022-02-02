@@ -17,9 +17,12 @@ import { Attestation } from '../attestation/Attestation'
 import { revoke, remove } from '../attestation/Attestation.chain'
 import { Credential } from '../credential/Credential'
 import { disconnect } from '../kilt'
-import { Claim } from '../claim/Claim'
-import { CType } from '../ctype/CType'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import * as Claim from '../claim/Claim'
+import { CType } from '../ctype'
+import {
+  RequestForAttestation,
+  RequestForAttestationUtils,
+} from '../requestforattestation'
 import {
   isCtypeOnChain,
   driversLicenseCType,
@@ -93,7 +96,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     if (!ctypeExists) {
       await attester
         .authorizeExtrinsic(
-          await driversLicenseCType.store(),
+          await CType.store(driversLicenseCType),
           signer,
           tokenHolder.address
         )
@@ -109,9 +112,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
-    expect(request.verifyData()).toBe(true)
-    await expect(request.verifySignature()).resolves.toBe(true)
+    await RequestForAttestation.signWithDidKey(
+      request,
+      signer,
+      claimer,
+      claimer.authenticationKey.id
+    )
+    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
+    await expect(RequestForAttestation.verifySignature(request)).resolves.toBe(
+      true
+    )
     expect(request.claim.contents).toMatchObject(content)
   })
 
@@ -124,9 +134,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    expect(request.verifyData()).toBe(true)
-    await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
-    await expect(request.verifySignature()).resolves.toBe(true)
+    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
+    await RequestForAttestation.signWithDidKey(
+      request,
+      signer,
+      claimer,
+      claimer.authenticationKey.id
+    )
+    await expect(RequestForAttestation.verifySignature(request)).resolves.toBe(
+      true
+    )
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation
       .store()
@@ -160,9 +177,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    expect(request.verifyData()).toBe(true)
-    await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
-    await expect(request.verifySignature()).resolves.toBe(true)
+    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
+    await RequestForAttestation.signWithDidKey(
+      request,
+      signer,
+      claimer,
+      claimer.authenticationKey.id
+    )
+    await expect(RequestForAttestation.verifySignature(request)).resolves.toBe(
+      true
+    )
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
 
     const bobbyBroke = keypairFromRandom()
@@ -230,7 +254,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer.did
       )
       const request = RequestForAttestation.fromClaim(claim)
-      await request.signWithDidKey(
+      await RequestForAttestation.signWithDidKey(
+        request,
         signer,
         claimer,
         claimer.authenticationKey.id
@@ -268,7 +293,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer.did
       )
       const request = RequestForAttestation.fromClaim(claim)
-      await request.signWithDidKey(
+      await RequestForAttestation.signWithDidKey(
+        request,
         signer,
         claimer,
         claimer.authenticationKey.id
@@ -328,8 +354,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     beforeAll(async () => {
       if (!(await isCtypeOnChain(officialLicenseAuthorityCType))) {
-        await officialLicenseAuthorityCType
-          .store()
+        await CType.store(officialLicenseAuthorityCType)
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
@@ -351,7 +376,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attester.did
       )
       const request1 = RequestForAttestation.fromClaim(licenseAuthorization)
-      await request1.signWithDidKey(
+      await RequestForAttestation.signWithDidKey(
+        request1,
         signer,
         claimer,
         claimer.authenticationKey.id
@@ -380,7 +406,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           ),
         ],
       })
-      await request2.signWithDidKey(
+      await RequestForAttestation.signWithDidKey(
+        request2,
         signer,
         claimer,
         claimer.authenticationKey.id

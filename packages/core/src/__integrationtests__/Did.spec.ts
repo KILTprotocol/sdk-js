@@ -31,7 +31,7 @@ import {
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
-import { CType } from '../ctype'
+import { CType, CTypeUtils } from '../ctype'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -615,7 +615,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.store()
+    const call = await CType.store(ctype)
     const tx = await didDetails.authorizeExtrinsic(
       call,
       keystore,
@@ -625,7 +625,7 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
-    await expect(ctype.verifyStored()).resolves.toEqual(true)
+    await expect(CTypeUtils.verifyStored(ctype)).resolves.toEqual(true)
   }, 60_000)
 
   it('authorizes batch with DID signature', async () => {
@@ -641,7 +641,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const calls = await Promise.all([ctype1, ctype2].map((c) => c.store()))
+    const calls = await Promise.all([ctype1, ctype2].map((c) => CType.store(c)))
     const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
       ({ api }) => api.tx.utility.batch(calls)
     )
@@ -655,8 +655,8 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
-    await expect(ctype1.verifyStored()).resolves.toEqual(true)
-    await expect(ctype2.verifyStored()).resolves.toEqual(true)
+    await expect(CTypeUtils.verifyStored(ctype1)).resolves.toEqual(true)
+    await expect(CTypeUtils.verifyStored(ctype2)).resolves.toEqual(true)
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
@@ -681,7 +681,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.store()
+    const call = await CType.store(ctype)
     const tx2 = await didDetails.authorizeExtrinsic(
       call,
       keystore,
@@ -691,7 +691,7 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
 
-    await expect(ctype.verifyStored()).resolves.toEqual(false)
+    await expect(CTypeUtils.verifyStored(ctype)).resolves.toEqual(false)
   }, 60_000)
 })
 
