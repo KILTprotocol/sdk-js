@@ -29,7 +29,7 @@ import { assert, u8aToHex, u8aToU8a } from '@polkadot/util'
 import type { QueryableStorageEntry } from '@polkadot/api/types'
 import { spiritnetMetadata } from './metadata/index.js'
 
-export type MockStateDb = Record<string, Uint8Array>
+export type MockStateDb = Map<string, Uint8Array>
 export type MockStateSubscriptionCallback = (
   error: Error | null,
   value: any
@@ -69,7 +69,7 @@ function isCodecLike(a: unknown): a is CodecLike {
  * @internal
  */
 export class MockProvider implements ProviderInterface {
-  private db: MockStateDb = {}
+  private db: MockStateDb = new Map()
 
   private emitter = new EventEmitter()
 
@@ -103,9 +103,9 @@ export class MockProvider implements ProviderInterface {
     state_getRuntimeVersion: () =>
       this.registry.createType('RuntimeVersion').toHex(),
     state_getStorage: (storage, [key]: string[]) => {
-      const entry = storage[key]
+      const entry = storage.has(key) ? u8aToHex(storage.get(key)) : null
       l.debug(`requested storage ${key}: result ${entry}`)
-      return entry ? u8aToHex(entry) : null
+      return entry
     },
     system_chain: () => 'mockChain',
     system_health: () => ({}),
@@ -114,7 +114,7 @@ export class MockProvider implements ProviderInterface {
     system_upgradedToTripleRefCount: () =>
       this.registry.createType('bool', true),
     system_version: () => '9.8.7',
-    author_submitExtrinsic: (_storage, [submittedExtrinsic]: string[]) => {
+    author_submitExtrinsic: (_, [submittedExtrinsic]: string[]) => {
       const extrinsic = this.registry.createType(
         'Extrinsic',
         submittedExtrinsic
@@ -175,11 +175,13 @@ export class MockProvider implements ProviderInterface {
 
   // eslint-disable-next-line class-methods-use-this
   public async connect(): Promise<void> {
+    l.debug(`mock provider received connect request`)
     // noop
   }
 
   // eslint-disable-next-line class-methods-use-this
   public async disconnect(): Promise<void> {
+    l.debug(`mock provider received disconnect request`)
     // noop
   }
 
@@ -219,7 +221,8 @@ export class MockProvider implements ProviderInterface {
   }
 
   public setState(value: CodecLike | Uint8Array, key: string): void {
-    this.db[key] = isCodecLike(value) ? value.toU8a() : u8aToU8a(value)
+    l.debug(`setting storage for key ${key} with value ${value}`)
+    this.db.set(key, isCodecLike(value) ? value.toU8a() : u8aToU8a(value))
   }
 
   public setQueryState(
@@ -236,10 +239,12 @@ export class MockProvider implements ProviderInterface {
   }
 
   public unsetState(key: string): void {
-    delete this.db[key]
+    l.debug(`resetting storage for key ${key}`)
+    this.db.delete(key)
   }
 
   public resetState(): void {
-    this.db = {}
+    l.debug(`resetting storage`)
+    this.db.clear()
   }
 }
