@@ -14,34 +14,32 @@ import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/Acc
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 import {
-  TypeRegistry as TYPE_REGISTRY,
+  Blockchain,
+  BlockchainApiConnection,
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
+import { ApiMocks } from '@kiltprotocol/testing'
 import {
   getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from './Balance.chain'
 import * as BalanceUtils from './Balance.utils'
-import * as Kilt from '../kilt/Kilt'
 
-jest.mock(
-  '@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection'
-)
+const mockedApi: any = ApiMocks.getMockedApi()
+const blockchain = new Blockchain(mockedApi)
+BlockchainApiConnection.setConnection(Promise.resolve(blockchain))
 
 const BALANCE = 42
 const FEE = 30
 
 describe('Balance', () => {
-  Kilt.config({ address: 'ws://testSting' })
   const keyring = new Keyring({ type: 'sr25519', ss58Format: 38 })
   let alice: KeyringPair
   let bob: KeyringPair
-  const blockchainApi =
-    require('@kiltprotocol/chain-helpers/lib/cjs/blockchainApiConnection/BlockchainApiConnection').__mocked_api
 
   const accountInfo = (balance: number): AccountInfo => {
     return {
@@ -51,11 +49,11 @@ describe('Balance', () => {
         miscFrozen: new BN(balance),
         feeFrozen: new BN(balance),
       } as AccountData,
-      nonce: new AccountIndex(TYPE_REGISTRY, 0),
+      nonce: new AccountIndex(mockedApi.registry, 0),
     } as AccountInfo
   }
 
-  blockchainApi.query.system.account = jest.fn(
+  mockedApi.query.system.account = jest.fn(
     (accountAddress, cb): AccountInfo => {
       if (cb) {
         setTimeout(() => {
@@ -107,7 +105,7 @@ describe('Balance', () => {
     const status = await makeTransfer(bob.address, amount, exponent).then(
       (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
     )
-    expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
+    expect(mockedApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount
     )

@@ -6,4 +6,3 @@
  */
 
 export * as BlockchainApiConnection from './BlockchainApiConnection.js'
-export { KILT_TYPES, TYPE_REGISTRY as TypeRegistry } from './TypeRegistry.js'

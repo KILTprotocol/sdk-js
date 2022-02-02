@@ -11,7 +11,11 @@
  */
 
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
-import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
+import {
+  signatureVerify,
+  blake2AsHex,
+  base58Decode,
+} from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import { Attestation, CTypeSchema } from '@kiltprotocol/core'
 import { Crypto, JsonSchema } from '@kiltprotocol/utils'
@@ -105,9 +109,9 @@ export async function verifySelfSignedProof(
           Object.values(VerificationKeyTypesMap)
         )}, got "${verificationMethod.type}"`
       )
-    const signerPubKey = verificationMethod.publicKeyHex
+    const signerPubKey = verificationMethod.publicKeyBase58
     if (!signerPubKey)
-      throw new Error('signer key is missing publicKeyHex property')
+      throw new Error('signer key is missing publicKeyBase58 property')
 
     const rootHash = fromCredentialIRI(credential.id)
     // validate signature over root hash
@@ -115,7 +119,7 @@ export async function verifySelfSignedProof(
     const verification = signatureVerify(
       rootHash,
       proof.signature,
-      signerPubKey
+      base58Decode(signerPubKey)
     )
     if (
       !(
