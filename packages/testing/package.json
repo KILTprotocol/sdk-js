@@ -36,7 +36,9 @@
     "@polkadot/api": "^6.11.1",
     "@polkadot/types": "^6.11.1",
     "@polkadot/types-support": "^6.11.1",
-    "@polkadot/util": "^8.1.2"
+    "@polkadot/util": "^8.1.2",
+    "@polkadot/util-crypto": "^8.1.2",
+    "eventemitter3": "^4.0.7"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
