@@ -26,7 +26,6 @@ import rpc from '@polkadot/types/interfaces/jsonrpc'
 import rpcHeader from '@polkadot/types-support/json/Header.004.json'
 import rpcSignedBlock from '@polkadot/types-support/json/SignedBlock.004.immortal.json'
 import { assert, u8aToHex, u8aToU8a } from '@polkadot/util'
-import { ConfigService } from '@kiltprotocol/config'
 import type { QueryableStorageEntry } from '@polkadot/api/types'
 import { spiritnetMetadata } from './metadata'
 
@@ -43,7 +42,7 @@ export type MockStateSubscriptions = Record<
   }
 >
 
-const l = ConfigService.LoggingFactory.getLogger('Blockchain')
+const l = console
 
 const SUBSCRIPTIONS: string[] = Array.prototype.concat.apply(
   [],

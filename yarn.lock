@@ -1221,7 +1221,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/testing@workspace:packages/testing"
   dependencies:
-    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^6.11.1
     "@polkadot/types": ^6.11.1

@@ -6,7 +6,7 @@
  */
 
 /**
- * @group unit/did
+ * @group unit/mocks
  */
 
 import { TypeRegistry } from '@polkadot/types'
