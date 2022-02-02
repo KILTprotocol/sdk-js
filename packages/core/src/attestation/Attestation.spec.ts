@@ -15,6 +15,7 @@ import type {
   IAttestation,
   CompressedAttestation,
   ICType,
+  IClaim,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
@@ -23,8 +24,8 @@ import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
-import { Claim } from '../claim/Claim'
-import { CType } from '../ctype/CType'
+import * as Claim from '../claim/Claim'
+import * as CType from '../ctype/CType'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { Attestation } from './Attestation'
 import * as AttestationUtils from './Attestation.utils'
@@ -44,9 +45,9 @@ describe('Attestation', () => {
   const identityBob =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
-  let testCType: CType
+  let testCType: ICType
   let testcontents: any
-  let testClaim: Claim
+  let testClaim: IClaim
   let requestForAttestation: RequestForAttestation
 
   beforeAll(async () => {

@@ -34,8 +34,8 @@ import {
 } from '@kiltprotocol/did'
 import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
-import { Claim } from '../claim/Claim'
-import { CType } from '../ctype/CType'
+import * as Claim from '../claim/Claim'
+import * as CType from '../ctype/CType'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
@@ -62,7 +62,7 @@ async function buildCredential(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(rawCType)
+  const testCType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
@@ -400,7 +400,7 @@ describe('create presentation', () => {
   let migratedThenDeletedClaimerLightDid: DidDetails
   let migratedThenDeletedClaimerFullDid: DidDetails
   let attester: DidDetails
-  let ctype: CType
+  let ctype: ICType
   let reqForAtt: RequestForAttestation
   let attestation: Attestation
 

@@ -10,24 +10,24 @@
  */
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
-import { CType } from './CType'
-import { Claim } from '../claim/Claim'
+import * as CType from './CType'
+import * as Claim from '../claim/Claim'
 import * as CTypeUtils from './CType.utils'
 
 describe('Nested CTypes', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
   let passportCType: ICType['schema']
   let kycCType: ICType['schema']
-  let passport: CType
-  let kyc: CType
+  let passport: ICType
+  let kyc: ICType
   let claimContents: IClaimContents
   let claimDeepContents: IClaim['contents']
   let nested: ICType['schema']
   let nestedDeeply: ICType['schema']
-  let nestedCType: CType
-  let deeplyNestedCType: CType
-  let nestedData: Claim
-  let nestedDeepData: Claim
+  let nestedCType: ICType
+  let deeplyNestedCType: ICType
+  let nestedData: IClaim
+  let nestedDeepData: IClaim
 
   beforeAll(async () => {
     passportCType = {

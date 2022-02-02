@@ -24,7 +24,7 @@ import type {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { Credential } from '../credential/Credential'
-import { CType } from '../ctype/CType'
+import * as CType from '../ctype/CType'
 
 import { RequestForAttestation } from './RequestForAttestation'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils'
@@ -46,7 +46,7 @@ function buildRequestForAttestation(
 ): RequestForAttestation {
   // create claim
 
-  const testCType: CType = CType.fromSchema(rawCType)
+  const testCType: ICType = CType.fromSchema(rawCType)
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
@@ -417,7 +417,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('should verify the Request for attestation claims structure against the ctype', async () => {
-    const testCType: CType = CType.fromSchema(rawCType)
+    const testCType = CType.fromSchema(rawCType)
     const builtRequest = buildRequestForAttestation(
       identityBob,
       {

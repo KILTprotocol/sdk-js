@@ -11,16 +11,16 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
-import { CType } from '../ctype/CType'
-import { Claim } from './Claim'
+import * as CType from '../ctype/CType'
+import * as Claim from './Claim'
 import * as ClaimUtils from './Claim.utils'
 
 describe('Claim', () => {
   let did: string
   let claimContents: any
   let rawCType: ICType['schema']
-  let testCType: CType
-  let claim: Claim
+  let testCType: ICType
+  let claim: IClaim
   let compressedClaim: CompressedClaim
 
   beforeAll(async () => {
@@ -71,10 +71,6 @@ describe('Claim', () => {
     expect(ClaimUtils.compress(claim)).toEqual(compressedClaim)
 
     expect(ClaimUtils.decompress(compressedClaim)).toEqual(claim)
-
-    expect(Claim.decompress(compressedClaim)).toEqual(claim)
-
-    expect(claim.compress()).toEqual(compressedClaim)
   })
 
   it('Negative test for compresses and decompresses the Claim object', () => {
@@ -88,10 +84,6 @@ describe('Claim', () => {
 
     expect(() => {
       ClaimUtils.decompress(compressedClaim)
-    }).toThrow()
-
-    expect(() => {
-      Claim.decompress(compressedClaim)
     }).toThrow()
 
     // expect(() => {

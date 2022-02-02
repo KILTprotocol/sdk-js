@@ -112,7 +112,7 @@ async function buildCredential(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(rawCType)
+  const testCType: ICType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(testCType, contents, claimerDid)
   // build request for attestation with legitimations
@@ -140,9 +140,9 @@ describe('Messaging Utilities', () => {
   let date: string
   let rawCType: ICType['schema']
   let rawCTypeWithMultipleProperties: ICType['schema']
-  let testCType: CType
-  let testCTypeWithMultipleProperties: CType
-  let claim: Claim
+  let testCType: ICType
+  let testCTypeWithMultipleProperties: ICType
+  let claim: IClaim
   let claimContents: IClaim['contents']
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned

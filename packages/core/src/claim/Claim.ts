@@ -18,15 +18,8 @@
  * @module Claim
  */
 
-import type {
-  IClaim,
-  CompressedClaim,
-  CompressedPartialClaim,
-  PartialClaim,
-  IDidDetails,
-} from '@kiltprotocol/types'
+import type { IClaim, IDidDetails, ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { CType as ICType } from '../ctype/CType.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
 import * as ClaimUtils from './Claim.utils.js'
 
@@ -37,143 +30,104 @@ function verifyClaim(
   return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
 }
 
-export class Claim implements IClaim {
-  /**
-   * Instantiates a new Claim from the given [[IClaim]] and [[schema]].
-   *
-   * @param claimInput IClaim to instantiate the new claim from.
-   * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
-   * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the provided cTypeSchema.
-   *
-   * @returns An instantiated Claim.
-   */
-  public static fromClaim(
-    claimInput: IClaim,
-    cTypeSchema: ICType['schema']
-  ): Claim {
-    if (!verifyClaim(claimInput.contents, cTypeSchema)) {
+/**
+ * Constructs a new Claim from the given [[IClaim]] and [[schema]].
+ *
+ * @param claimInput IClaim to instantiate the new claim from.
+ * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
+ * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the provided cTypeSchema.
+ *
+ * @returns A Claim object.
+ */
+export function fromClaim(
+  claimInput: IClaim,
+  cTypeSchema: ICType['schema']
+): IClaim {
+  if (!verifyClaim(claimInput.contents, cTypeSchema)) {
+    throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+  }
+
+  ClaimUtils.errorCheck(claimInput)
+
+  return claimInput
+}
+
+/**
+ * [STATIC] Builds a [[Claim]] from a [[CType]] which has nested [[CType]]s within the schema.
+ *
+ * @param cTypeInput A [[CType]] object that has nested [[CType]]s.
+ * @param nestedCType The array of [[CType]]s, which are used inside the main [[CType]].
+ * @param claimContents The data inside the [[Claim]].
+ * @param claimOwner The [[PublicIdentity]] of the owner of the [[Claim]].
+ *
+ * @returns A [[Claim]] the owner can use.
+ */
+
+export function fromNestedCTypeClaim(
+  cTypeInput: ICType,
+  nestedCType: Array<ICType['schema']>,
+  claimContents: IClaim['contents'],
+  claimOwner: IDidDetails['did']
+): IClaim {
+  if (
+    !CTypeUtils.validateNestedSchemas(
+      cTypeInput.schema,
+      nestedCType,
+      claimContents
+    )
+  ) {
+    throw SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
+  }
+  const claim = {
+    cTypeHash: cTypeInput.hash,
+    contents: claimContents,
+    owner: claimOwner,
+  }
+  ClaimUtils.errorCheck(claim)
+  return claim
+}
+
+/**
+ * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and IPublicIdentity['address'].
+ *
+ * @param ctypeInput [[ICType]] for which the Claim will be built.
+ * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
+ * @param claimOwner IPublicIdentity['address'] to be used as the Claim owner.
+ * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the schema of the provided ctypeInput.
+ *
+ * @returns A Claim object.
+ */
+export function fromCTypeAndClaimContents(
+  ctypeInput: ICType,
+  claimContents: IClaim['contents'],
+  claimOwner: IDidDetails['did']
+): IClaim {
+  if (ctypeInput.schema) {
+    if (!verifyClaim(claimContents, ctypeInput.schema)) {
       throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
     }
-
-    return new Claim(claimInput)
   }
-
-  /**
-   * [STATIC] Builds a [[Claim]] from a [[CType]] which has nested [[CType]]s within the schema.
-   *
-   * @param cTypeInput A [[CType]] object that has nested [[CType]]s.
-   * @param nestedCType The array of [[CType]]s, which are used inside the main [[CType]].
-   * @param claimContents The data inside the [[Claim]].
-   * @param claimOwner The [[PublicIdentity]] of the owner of the [[Claim]].
-   *
-   * @returns A [[Claim]] the owner can use.
-   */
-
-  public static fromNestedCTypeClaim(
-    cTypeInput: ICType,
-    nestedCType: Array<ICType['schema']>,
-    claimContents: IClaim['contents'],
-    claimOwner: IDidDetails['did']
-  ): Claim {
-    if (
-      !CTypeUtils.validateNestedSchemas(
-        cTypeInput.schema,
-        nestedCType,
-        claimContents
-      )
-    ) {
-      throw SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
-    }
-    return new Claim({
-      cTypeHash: cTypeInput.hash,
-      contents: claimContents,
-      owner: claimOwner,
-    })
+  const claim = {
+    cTypeHash: ctypeInput.hash,
+    contents: claimContents,
+    owner: claimOwner,
   }
+  ClaimUtils.errorCheck(claim)
+  return claim
+}
 
-  /**
-   * Instantiates a new Claim from the given [[ICType]], IClaim['contents'] and IPublicIdentity['address'].
-   *
-   * @param ctypeInput [[ICType]] for which the Claim will be built.
-   * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
-   * @param claimOwner IPublicIdentity['address'] to be used as the Claim owner.
-   * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the schema of the provided ctypeInput.
-   *
-   * @returns An instantiated Claim.
-   */
-  public static fromCTypeAndClaimContents(
-    ctypeInput: ICType,
-    claimContents: IClaim['contents'],
-    claimOwner: IDidDetails['did']
-  ): Claim {
-    if (ctypeInput.schema) {
-      if (!verifyClaim(claimContents, ctypeInput.schema)) {
-        throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
-      }
-    }
-    return new Claim({
-      cTypeHash: ctypeInput.hash,
-      contents: claimContents,
-      owner: claimOwner,
-    })
+/**
+ * [STATIC] Custom Type Guard to determine input being of type IClaim using the ClaimUtils errorCheck.
+ *
+ * @param input The potentially only partial IClaim.
+ *
+ * @returns Boolean whether input is of type IClaim.
+ */
+export function isIClaim(input: unknown): input is IClaim {
+  try {
+    ClaimUtils.errorCheck(input as IClaim)
+  } catch (error) {
+    return false
   }
-
-  /**
-   *  [STATIC] Custom Type Guard to determine input being of type IClaim using the ClaimUtils errorCheck.
-   *
-   * @param input The potentially only partial IClaim.
-   *
-   * @returns Boolean whether input is of type IClaim.
-   */
-  static isIClaim(input: unknown): input is IClaim {
-    try {
-      ClaimUtils.errorCheck(input as IClaim)
-    } catch (error) {
-      return false
-    }
-    return true
-  }
-
-  public cTypeHash: IClaim['cTypeHash']
-  public contents: IClaim['contents']
-  public owner: IClaim['owner']
-
-  public constructor(claimInput: IClaim) {
-    ClaimUtils.errorCheck(claimInput)
-    this.cTypeHash = claimInput.cTypeHash
-    this.contents = claimInput.contents
-    this.owner = claimInput.owner
-  }
-
-  /**
-   * Compresses the [[Claim]] object to a [[CompressedClaim]].
-   *
-   * @returns An array that contains the same properties of an [[Claim]].
-   */
-
-  public compress(): CompressedClaim {
-    return ClaimUtils.compress(this)
-  }
-
-  /**
-   *  Decompresses the [[IClaim]] from storage and/or message.
-   *
-   * @param claim A [[CompressedClaim]] array that is reverted back into an object.
-   * @throws [[ERROR_DECOMPRESSION_ARRAY]] when an [[CompressedClaim]] is not an Array or it's length is unequal 3.
-   * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
-   */
-  public static decompress(claim: CompressedClaim): IClaim
-  /**
-   *  Decompresses the Partial [[IClaim]] from storage and/or message.
-   *
-   * @param claim An [[CompressedPartialClaim]] array that is reverted back into an object.
-   * @throws [[ERROR_DECOMPRESSION_ARRAY]] when an [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
-   * @returns An [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
-   */
-  public static decompress(claim: CompressedPartialClaim): PartialClaim
-  public static decompress(
-    compressedClaim: CompressedClaim | CompressedPartialClaim
-  ): IClaim | PartialClaim {
-    return ClaimUtils.decompress(compressedClaim)
-  }
+  return true
 }

@@ -15,9 +15,11 @@ import {
   verifyClaimStructure,
   verifySchema,
   verifySchemaWithErrors,
+  verifyStored,
+  verifyOwner,
 } from './CType.utils'
+import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
-import { CType } from './index'
 import { getOwner, isStored } from './CType.chain'
 
 jest.mock('./CType.chain')
@@ -100,12 +102,12 @@ describe('CType registration verification', () => {
 
     it('does not verify registration when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      await expect(ctype.verifyStored()).resolves.toBeFalsy()
+      await expect(verifyStored(ctype)).resolves.toBeFalsy()
     })
 
     it('does not verify owner when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      await expect(ctype.verifyOwner()).resolves.toBeFalsy()
+      await expect(verifyOwner(ctype)).resolves.toBeFalsy()
     })
   })
 
@@ -117,27 +119,27 @@ describe('CType registration verification', () => {
 
     it('verifies registration when owner not set', async () => {
       const ctype = CType.fromSchema(rawCType)
-      await expect(ctype.verifyStored()).resolves.toBeTruthy()
+      await expect(verifyStored(ctype)).resolves.toBeTruthy()
     })
 
     it('verifies registration when owner matches', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      await expect(ctype.verifyStored()).resolves.toBeTruthy()
+      await expect(verifyStored(ctype)).resolves.toBeTruthy()
     })
 
     it('verifies registration when owner does not match', async () => {
       const ctype = CType.fromSchema(rawCType, didBob)
-      await expect(ctype.verifyStored()).resolves.toBeTruthy()
+      await expect(verifyStored(ctype)).resolves.toBeTruthy()
     })
 
     it('verifies owner when owner matches', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      await expect(ctype.verifyOwner()).resolves.toBeTruthy()
+      await expect(verifyOwner(ctype)).resolves.toBeTruthy()
     })
 
     it('does not verify owner when owner does not match', async () => {
       const ctype = CType.fromSchema(rawCType, didBob)
-      await expect(ctype.verifyOwner()).resolves.toBeFalsy()
+      await expect(verifyOwner(ctype)).resolves.toBeFalsy()
     })
   })
 })
