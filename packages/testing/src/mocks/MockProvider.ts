@@ -12,7 +12,7 @@
 /* eslint-disable camelcase */
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
-import type { Codec, Registry } from '@polkadot/types/types'
+import type { Registry } from '@polkadot/types/types'
 import type {
   ProviderInterface,
   ProviderInterfaceEmitCb,
@@ -27,7 +27,7 @@ import rpcHeader from '@polkadot/types-support/json/Header.004.json'
 import rpcSignedBlock from '@polkadot/types-support/json/SignedBlock.004.immortal.json'
 import { assert, u8aToHex, u8aToU8a } from '@polkadot/util'
 import type { QueryableStorageEntry } from '@polkadot/api/types'
-import { spiritnetMetadata } from './metadata'
+import { spiritnetMetadata } from './metadata/index.js'
 
 export type MockStateDb = Record<string, Uint8Array>
 export type MockStateSubscriptionCallback = (
@@ -54,8 +54,6 @@ const SUBSCRIPTIONS: string[] = Array.prototype.concat.apply(
   )
 ) as string[]
 
-// const keyring = createTestKeyring({ type: 'ed25519' })
-
 type CodecLike = { toU8a: () => Uint8Array }
 function isCodecLike(a: unknown): a is CodecLike {
   return (
@@ -74,8 +72,6 @@ export class MockProvider implements ProviderInterface {
   private db: MockStateDb = {}
 
   private emitter = new EventEmitter()
-
-  private intervalId?: NodeJS.Timeout | null
 
   public isUpdating = true
 
@@ -143,10 +139,6 @@ export class MockProvider implements ProviderInterface {
     {} as MockStateSubscriptions
   )
 
-  private subscriptionId = 0
-
-  private subscriptionMap: Record<number, string> = {}
-
   public onSubmitExtrinsic?: (
     thisProvider: MockProvider,
     extrinsic: Extrinsic
@@ -173,7 +165,7 @@ export class MockProvider implements ProviderInterface {
 
   // eslint-disable-next-line class-methods-use-this
   public get hasSubscriptions(): boolean {
-    return true
+    return false
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -186,12 +178,9 @@ export class MockProvider implements ProviderInterface {
     // noop
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line class-methods-use-this
   public async disconnect(): Promise<void> {
-    if (this.intervalId) {
-      clearInterval(this.intervalId)
-      this.intervalId = null
-    }
+    // noop
   }
 
   public readonly isConnected: boolean = true
@@ -219,60 +208,18 @@ export class MockProvider implements ProviderInterface {
     return this.requests[method](this.db, params) as T
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  public async subscribe(
-    type: string,
-    method: string,
-    params: unknown[],
-    callback: MockStateSubscriptionCallback
-  ): Promise<number> {
-    l.debug(
-      `subscribe request with method ${method}, type ${type}, params ${params}`
-    )
-
-    assert(
-      this.subscriptions[method],
-      () => `provider.subscribe: Invalid method '${method}'`
-    )
-    assert(callback, () => `provider.subscribe: no callback given`)
-    // eslint-disable-next-line no-plusplus
-    const id = ++this.subscriptionId
-
-    this.subscriptions[method].callbacks[id] = callback
-    this.subscriptionMap[id] = method
-
-    if (this.subscriptions[method].lastValue !== null) {
-      callback(null, this.subscriptions[method].lastValue)
-    }
-
-    return id
+  // eslint-disable-next-line class-methods-use-this
+  public async subscribe(): Promise<number> {
+    throw new Error('Unimplemented')
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  public async unsubscribe(
-    type: string,
-    method: string,
-    id: number
-  ): Promise<boolean> {
-    const sub = this.subscriptionMap[id]
-
-    l.debug(`unsubscribe request with method ${method}, type ${type}, id ${id}`)
-
-    assert(sub, () => `Unable to find subscription for ${id}`)
-
-    delete this.subscriptionMap[id]
-    delete this.subscriptions[sub].callbacks[id]
-
-    return true
+  // eslint-disable-next-line class-methods-use-this
+  public async unsubscribe(): Promise<boolean> {
+    throw new Error('Unimplemented')
   }
 
   public setState(value: CodecLike | Uint8Array, key: string): void {
     this.db[key] = isCodecLike(value) ? value.toU8a() : u8aToU8a(value)
-    const storageChange = this.registry.createType('StorageChangeSet', {
-      block: this.requests['chain_getBlockHash'](this.db, []),
-      changes: [[key, this.db[key]]],
-    })
-    this.updateSubs('state_subscribeStorage', storageChange)
   }
 
   public setQueryState(
@@ -294,27 +241,5 @@ export class MockProvider implements ProviderInterface {
 
   public resetState(): void {
     this.db = {}
-    Object.keys(this.subscriptions).forEach((name) => {
-      this.subscriptions[name] = {
-        callbacks: {},
-        lastValue: null,
-      }
-    })
-    this.subscriptionMap = {}
-  }
-
-  public updateSubs(method: string, value: Codec): void {
-    this.subscriptions[method].lastValue = value
-
-    Object.values(this.subscriptions[method].callbacks).forEach((cb): void => {
-      try {
-        cb(null, value.toHex())
-      } catch (error) {
-        l.error(
-          `Error on '${method}' subscription`,
-          error instanceof Error ? error : undefined
-        )
-      }
-    })
   }
 }
