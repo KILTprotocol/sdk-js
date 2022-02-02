@@ -223,16 +223,18 @@ export class MockProvider implements ProviderInterface {
   public async subscribe(
     type: string,
     method: string,
-    ...params: unknown[]
+    params: unknown[],
+    callback: MockStateSubscriptionCallback
   ): Promise<number> {
-    l.debug(`subscribe request with method ${method}, type ${type}, ${params}`)
+    l.debug(
+      `subscribe request with method ${method}, type ${type}, params ${params}`
+    )
 
     assert(
       this.subscriptions[method],
       () => `provider.subscribe: Invalid method '${method}'`
     )
-
-    const callback = params.pop() as MockStateSubscriptionCallback
+    assert(callback, () => `provider.subscribe: no callback given`)
     // eslint-disable-next-line no-plusplus
     const id = ++this.subscriptionId
 
@@ -266,6 +268,11 @@ export class MockProvider implements ProviderInterface {
 
   public setState(value: CodecLike | Uint8Array, key: string): void {
     this.db[key] = isCodecLike(value) ? value.toU8a() : u8aToU8a(value)
+    const storageChange = this.registry.createType('StorageChangeSet', {
+      block: this.requests['chain_getBlockHash'](this.db, []),
+      changes: [[key, this.db[key]]],
+    })
+    this.updateSubs('state_subscribeStorage', storageChange)
   }
 
   public setQueryState(
@@ -290,7 +297,7 @@ export class MockProvider implements ProviderInterface {
 
     Object.values(this.subscriptions[method].callbacks).forEach((cb): void => {
       try {
-        cb(null, value.toJSON())
+        cb(null, value.toHex())
       } catch (error) {
         l.error(
           `Error on '${method}' subscription`,
