@@ -21,7 +21,7 @@
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
     "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
     "copy:jsonabc": "cp -f ./src/jsonabc.* ./lib/cjs && cp -f ./src/jsonabc.cjs ./lib/esm/jsonabc.cjs",
-    "build:fast": "esbuild src/**/!(*.spec|*.d).?(c)[tj]s --format=cjs --outdir=./lib/cjs --tsconfig=tsconfig.build.json"
+    "build:fast": "esbuild src/**/!(*.spec|*.d).ts --format=cjs --outdir=./lib/cjs --tsconfig=tsconfig.build.json && cp -f ./src/jsonabc.cjs ./lib/cjs/jsonabc.cjs"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
