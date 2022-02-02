@@ -20,6 +20,8 @@
 import type { ICType, CTypeSchemaWithoutId } from '@kiltprotocol/types'
 import { getHashForSchema, getIdForSchema, errorCheck } from './CType.utils.js'
 
+export { getOwner, isStored, store } from './CType.chain.js'
+
 /**
  * [STATIC] Clones an already existing [[CType]]
  * or initializes from an [[ICType]] like object

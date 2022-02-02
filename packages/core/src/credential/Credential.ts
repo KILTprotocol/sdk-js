@@ -28,7 +28,10 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation.js'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation.js'
+import {
+  RequestForAttestation,
+  RequestForAttestationUtils,
+} from '../requestforattestation/index.js'
 import * as CredentialUtils from './Credential.utils.js'
 
 export class Credential implements ICredential {
@@ -84,7 +87,7 @@ export class Credential implements ICredential {
     return true
   }
 
-  public request: RequestForAttestation
+  public request: IRequestForAttestation
   public attestation: Attestation
 
   /**
@@ -165,7 +168,7 @@ export class Credential implements ICredential {
       return false
     return (
       credential.request.rootHash === credential.attestation.claimHash &&
-      RequestForAttestation.verifyData(credential.request)
+      RequestForAttestationUtils.verifyData(credential.request)
     )
   }
 
@@ -247,7 +250,10 @@ export class Credential implements ICredential {
       : []
 
     // remove these attributes
-    credential.request.removeClaimProperties(excludedClaimProperties)
+    RequestForAttestation.removeClaimProperties(
+      credential.request,
+      excludedClaimProperties
+    )
 
     const keys = claimerDid.getKeys(KeyRelationship.authentication)
     const selectedKeyId = (await keySelection(keys))?.id
@@ -256,9 +262,15 @@ export class Credential implements ICredential {
       throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
     }
 
-    await credential.request.signWithDidKey(signer, claimerDid, selectedKeyId, {
-      challenge,
-    })
+    await RequestForAttestation.signWithDidKey(
+      credential.request,
+      signer,
+      claimerDid,
+      selectedKeyId,
+      {
+        challenge,
+      }
+    )
 
     return credential
   }

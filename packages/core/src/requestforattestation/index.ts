@@ -5,5 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { RequestForAttestation } from './RequestForAttestation.js'
+export * as RequestForAttestation from './RequestForAttestation.js'
 export * as RequestForAttestationUtils from './RequestForAttestation.utils.js'

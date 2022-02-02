@@ -11,20 +11,95 @@
  */
 
 import type {
+  Hash,
+  IDelegationNode,
   ICredential,
   CompressedCredential,
   CompressedRequestForAttestation,
   IRequestForAttestation,
   ICType,
 } from '@kiltprotocol/types'
-import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
 import * as CredentialUtils from '../credential/Credential.utils.js'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
+import { Credential } from '../credential/Credential.js'
 
-// TODO: circular dependency
-import { RequestForAttestation } from './RequestForAttestation.js'
+function getHashRoot(leaves: Uint8Array[]): Uint8Array {
+  const result = Crypto.u8aConcat(...leaves)
+  return Crypto.hash(result)
+}
+
+function getHashLeaves(
+  claimHashes: Hash[],
+  legitimations: ICredential[],
+  delegationId: IDelegationNode['id'] | null
+): Uint8Array[] {
+  const result: Uint8Array[] = []
+  claimHashes.forEach((item) => {
+    result.push(Crypto.coToUInt8(item))
+  })
+  if (legitimations) {
+    legitimations.forEach((legitimation) => {
+      result.push(Crypto.coToUInt8(legitimation.attestation.claimHash))
+    })
+  }
+  if (delegationId) {
+    result.push(Crypto.coToUInt8(delegationId))
+  }
+
+  return result
+}
+
+export function calculateRootHash(
+  request: Partial<IRequestForAttestation>
+): Hash {
+  const hashes: Uint8Array[] = getHashLeaves(
+    request.claimHashes || [],
+    request.legitimations || [],
+    request.delegationId || null
+  )
+  const root: Uint8Array = getHashRoot(hashes)
+  return Crypto.u8aToHex(root)
+}
+
+export function verifyRootHash(input: IRequestForAttestation): boolean {
+  return input.rootHash === calculateRootHash(input)
+}
+
+/**
+ * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
+ *
+ * @param input - The [[RequestForAttestation]] for which to verify data.
+ * @returns Whether the data is valid.
+ * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
+ * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
+ * @example ```javascript
+ * const reqForAtt = RequestForAttestation.fromClaim(claim);
+ * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
+ * ```
+ */
+export function verifyData(input: IRequestForAttestation): boolean {
+  // check claim hash
+  if (!verifyRootHash(input)) {
+    throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
+  }
+
+  // verify properties against selective disclosure proof
+  const verificationResult = ClaimUtils.verifyDisclosedAttributes(input.claim, {
+    nonces: input.claimNonceMap,
+    hashes: input.claimHashes,
+  })
+  // TODO: how do we want to deal with multiple errors during claim verification?
+  if (!verificationResult.verified)
+    throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+
+  // check legitimations
+  Credential.validateLegitimations(input.legitimations)
+
+  return true
+}
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
@@ -68,7 +143,7 @@ export function errorCheck(input: IRequestForAttestation): void {
   }
   if (input.claimerSignature)
     DidUtils.validateDidSignature(input.claimerSignature)
-  RequestForAttestation.verifyData(input as IRequestForAttestation)
+  verifyData(input as IRequestForAttestation)
 }
 
 /**

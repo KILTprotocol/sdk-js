@@ -21,6 +21,7 @@ import type {
   IDidResolver,
   DidResolvedDetails,
   DidKey,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import {
   DemoKeystore,
@@ -36,7 +37,7 @@ import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import * as Claim from '../claim/Claim'
 import * as CType from '../ctype/CType'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { RequestForAttestation } from '../requestforattestation/index'
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
@@ -73,7 +74,8 @@ async function buildCredential(
   const requestForAttestation = RequestForAttestation.fromClaim(claim, {
     legitimations,
   })
-  await requestForAttestation.signWithDidKey(
+  await RequestForAttestation.signWithDidKey(
+    requestForAttestation,
     signer,
     claimer,
     claimer.authenticationKey.id
@@ -401,7 +403,7 @@ describe('create presentation', () => {
   let migratedThenDeletedClaimerFullDid: DidDetails
   let attester: DidDetails
   let ctype: ICType
-  let reqForAtt: RequestForAttestation
+  let reqForAtt: IRequestForAttestation
   let attestation: Attestation
 
   const mockResolver: IDidResolver = (() => {

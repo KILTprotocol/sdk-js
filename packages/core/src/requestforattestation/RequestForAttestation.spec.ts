@@ -26,7 +26,7 @@ import { Attestation } from '../attestation/Attestation'
 import { Credential } from '../credential/Credential'
 import * as CType from '../ctype/CType'
 
-import { RequestForAttestation } from './RequestForAttestation'
+import * as RequestForAttestation from './RequestForAttestation'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils'
 
 const rawCType: ICType['schema'] = {
@@ -43,7 +43,7 @@ function buildRequestForAttestation(
   claimerDid: string,
   contents: IClaimContents,
   legitimations: Credential[]
-): RequestForAttestation {
+): IRequestForAttestation {
   // create claim
 
   const testCType: ICType = CType.fromSchema(rawCType)
@@ -67,7 +67,7 @@ describe('RequestForAttestation', () => {
     'did:kilt:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
   const identityCharlie =
     'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
-  let legitimationRequest: RequestForAttestation
+  let legitimationRequest: IRequestForAttestation
   let legitimationAttestation: Attestation
   let legitimation: Credential
   let legitimationAttestationCharlie: Attestation
@@ -111,13 +111,13 @@ describe('RequestForAttestation', () => {
       [legitimation]
     )
     // check proof on complete data
-    expect(request.verifyData()).toBeTruthy()
+    expect(RequestForAttestationUtils.verifyData(request)).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
-    expect(() => request.verifyData()).toThrowErrorWithCode(
-      SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
-    )
+    expect(() =>
+      RequestForAttestationUtils.verifyData(request)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 
   it('throws on wrong hash in claim hash tree', async () => {
@@ -133,7 +133,7 @@ describe('RequestForAttestation', () => {
 
     request.claimNonceMap[Object.keys(request.claimNonceMap)[0]] = '1234'
     expect(() => {
-      RequestForAttestation.verifyData(request)
+      RequestForAttestationUtils.verifyData(request)
     }).toThrow()
   })
 
@@ -224,7 +224,9 @@ describe('RequestForAttestation', () => {
       reqForAtt
     )
 
-    expect(reqForAtt.compress()).toEqual(compressedReqForAtt)
+    expect(RequestForAttestationUtils.compress(reqForAtt)).toEqual(
+      compressedReqForAtt
+    )
 
     expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
       reqForAtt
@@ -242,7 +244,7 @@ describe('RequestForAttestation', () => {
     }).toThrow()
 
     expect(() => {
-      reqForAtt.compress()
+      RequestForAttestationUtils.compress(reqForAtt)
     }).toThrow()
 
     expect(() => {
@@ -256,15 +258,15 @@ describe('RequestForAttestation', () => {
       { a: 'a', b: 'b' },
       []
     )
-    request.removeClaimProperties(['a'])
+    RequestForAttestation.removeClaimProperties(request, ['a'])
 
     expect((request.claim.contents as any).a).toBeUndefined()
     expect(Object.keys(request.claimNonceMap)).toHaveLength(
       request.claimHashes.length - 1
     )
     expect((request.claim.contents as any).b).toBe('b')
-    expect(request.verifyData()).toBe(true)
-    expect(request.verifyRootHash()).toBe(true)
+    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
+    expect(RequestForAttestationUtils.verifyRootHash(request)).toBe(true)
   })
 
   it('should throw error on faulty constructor input', async () => {
@@ -413,7 +415,9 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    expect(builtRequest instanceof RequestForAttestation).toEqual(true)
+    expect(
+      RequestForAttestation.isIRequestForAttestation(builtRequest)
+    ).toEqual(true)
   })
 
   it('should verify the Request for attestation claims structure against the ctype', async () => {

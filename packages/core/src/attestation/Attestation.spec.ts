@@ -16,6 +16,7 @@ import type {
   CompressedAttestation,
   ICType,
   IClaim,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
@@ -26,7 +27,7 @@ import {
 } from '@kiltprotocol/chain-helpers'
 import * as Claim from '../claim/Claim'
 import * as CType from '../ctype/CType'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { RequestForAttestation } from '../requestforattestation'
 import { Attestation } from './Attestation'
 import * as AttestationUtils from './Attestation.utils'
 
@@ -48,7 +49,7 @@ describe('Attestation', () => {
   let testCType: ICType
   let testcontents: any
   let testClaim: IClaim
-  let requestForAttestation: RequestForAttestation
+  let requestForAttestation: IRequestForAttestation
 
   beforeAll(async () => {
     rawCTypeSchema = {
