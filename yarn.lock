@@ -1230,6 +1230,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^6.11.1
     "@polkadot/types": ^6.11.1
+    esbuild: ^0.14.2
     rimraf: ^3.0.2
     typescript: ^4.5.4
     yargs: ^16.2.0
