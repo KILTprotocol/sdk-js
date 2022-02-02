@@ -12,15 +12,12 @@ import type {
   IDidIdentifier,
   IIdentity,
   KeystoreSigner,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import type {
   DidCreationDetails,
-  LightDidCreationDetails,
-  LightDidKeyCreationInput,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
@@ -30,7 +27,7 @@ import {
   decodeAndDeserializeAdditionalLightDidDetails,
   getEncodingForSigningKeyType,
   getSigningKeyTypeFromEncoding,
-  LightDidSupportedSigningKeyTypes,
+  LightDidCreationDetails,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils.js'
 import { DidDetails } from './DidDetails.js'
@@ -45,10 +42,6 @@ import { generateCreateTxFromDidDetails } from '../Did.chain.js'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
-
-export type DidMigrationHandler = (
-  migrationExtrinsic: SubmittableExtrinsic
-) => Promise<void>
 
 export class LightDidDetails extends DidDetails {
   public readonly identifier: IDidIdentifier
@@ -108,7 +101,7 @@ export class LightDidDetails extends DidDetails {
 
     // Authentication key always has the #authentication ID.
     const keys: PublicKeys = {
-      [authenticationKeyId]: authenticationKey,
+      authenticationKeyId: { ...authenticationKey },
     }
     // const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
     const keyRelationships: MapKeysToRelationship = {

@@ -7,43 +7,103 @@
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
-import { SDKErrors } from '@kiltprotocol/utils'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
-import type { LightDidCreationDetails } from '../types.js'
+import {
+  DidServiceEndpoint,
+  EncryptionKeyType,
+  SubmittableExtrinsic,
+  VerificationKeyType,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+} from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
+
 import { parseDidUri } from '../Did.utils.js'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
 
-export enum LightDidSupportedSigningKeyTypes {
-  ed25519 = 'ed25519',
-  sr25519 = 'sr25519',
+// Ecdsa not supported.
+export enum LightDidSupportedVerificationKeyTypes {
+  Ed25519 = VerificationKeyType.ed25519,
+  Sr25519 = VerificationKeyType.sr25519,
 }
 
-export enum LightDidSupportedEncryptionKeyTypes {
-  x25519 = 'x25519',
+// Ecdsa not supported.
+const EncodingForSigningKeyType: Record<
+  LightDidSupportedVerificationKeyTypes,
+  string
+> = {
+  [LightDidSupportedVerificationKeyTypes.Sr25519]: '00',
+  [LightDidSupportedVerificationKeyTypes.Ed25519]: '01',
 }
 
-const supportedEncryptionKeyTypes = new Set<string>([
-  ...Object.keys(LightDidSupportedEncryptionKeyTypes),
-])
-
-const EncodingForSigningKeyType = {
-  [LightDidSupportedSigningKeyTypes.sr25519]: '00',
-  [LightDidSupportedSigningKeyTypes.ed25519]: '01',
-}
+const supportedEncryptionKeyTypes = new Set(Object.values(EncryptionKeyType))
 
 export function getEncodingForSigningKeyType(
-  keyType: string
+  keyType: LightDidSupportedVerificationKeyTypes
 ): string | undefined {
   return EncodingForSigningKeyType[keyType]
 }
 
-const SigningKeyTypeFromEncoding = {
-  '00': LightDidSupportedSigningKeyTypes.sr25519,
-  '01': LightDidSupportedSigningKeyTypes.ed25519,
+/**
+ * A new public key specified when creating a new light DID.
+ *
+ * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
+ */
+export type NewLightDidAuthenticationKey = Omit<
+  NewDidVerificationKey,
+  'type'
+> & {
+  type: LightDidSupportedVerificationKeyTypes
 }
+
+/**
+ * The options that can be used to create a light DID.
+ */
+export type LightDidCreationDetails = {
+  /**
+   * The DID authentication key. This is mandatory and will be used as the first authentication key
+   * of the full DID upon migration.
+   */
+  authenticationKey: NewLightDidAuthenticationKey
+  /**
+   * The optional DID encryption key. If present, it will be used as the first key agreement key
+   * of the full DID upon migration.
+   */
+  encryptionKey?: NewDidEncryptionKey
+  /**
+   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
+   * The service ID must not contain the DID prefix when used to create a new DID.
+   *
+   * @example ```typescript
+   * const authenticationKey = exampleKey;
+   * const services = [
+   *   {
+   *     id: 'test-service',
+   *     types: ['CredentialExposureService'],
+   *     urls: ['http://my_domain.example.org'],
+   *   },
+   * ];
+   * const lightDid = new LightDid({ authenticationKey, services });
+   * RequestForAttestation.fromRequest(parsedRequest);
+   * ```
+   */
+  serviceEndpoints?: DidServiceEndpoint[]
+}
+
+const SigningKeyTypeFromEncoding: Record<
+  string,
+  LightDidSupportedVerificationKeyTypes
+> = {
+  '00': LightDidSupportedVerificationKeyTypes.Sr25519,
+  '01': LightDidSupportedVerificationKeyTypes.Ed25519,
+}
+
+export type DidMigrationHandler = (
+  migrationExtrinsic: SubmittableExtrinsic
+) => Promise<void>
 
 export function getSigningKeyTypeFromEncoding(
   encoding: string

@@ -32,33 +32,78 @@ export type VerificationKeyRelationship =
   | KeyRelationship.authentication
   | KeyRelationship.capabilityDelegation
   | KeyRelationship.assertionMethod
+/**
+ * Possible types for a DID verification key.
+ */
+export enum VerificationKeyType {
+  sr25519 = 'sr25519',
+  ed25519 = 'ed25519',
+  ecdsa = 'ecdsa',
+}
 
 /**
  * Subset of key relationships which pertain to key agreement/encryption keys.
  */
 export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
+/**
+ * Possible types for a DID encryption key.
+ */
+export enum EncryptionKeyType {
+  x25519 = 'x25519',
+}
 
 /**
- * The SDK-specific details of a new DID public key.
+ * Type of a new key material to add under a DID.
  */
-export type DidKey<T extends string = string> = {
+export type BaseNewDidKey = {
+  publicKey: Uint8Array
+}
+
+/**
+ * Type of a new verification key to add under a DID.
+ */
+export type NewDidVerificationKey = BaseNewDidKey & {
+  type: VerificationKeyType
+}
+/**
+ * Type of a new encryption key to add under a DID.
+ */
+export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
+/**
+ * Type of a new key (verification or encryption) to add under a DID.
+ */
+export type NewDidKey = NewDidVerificationKey | NewDidEncryptionKey
+
+/**
+ * The SDK-specific base details of a DID key.
+ */
+export type BaseDidKey = {
   /**
    * Key id without the leading did:kilt:<did_identifier> prefix.
    */
   id: string
   /**
-   * Key type, e.g. Ed25519.
-   */
-  type: T
-  /**
    * The public key material.
    */
-  publicKey: Uint8Array
+  publicKey: NewDidKey['publicKey']
   /**
    * The inclusion block of the key, if stored on chain.
    */
   includedAt?: BN
 }
+
+/**
+ * The SDK-specific details of a DID verification key.
+ */
+export type DidVerificationKey = BaseDidKey & { type: VerificationKeyType }
+/**
+ * The SDK-specific details of a DID encryption key.
+ */
+export type DidEncryptionKey = BaseDidKey & { type: VerificationKeyType }
+/**
+ * The SDK-specific details of a DID key.
+ */
+export type DidKey = DidVerificationKey | DidEncryptionKey
 
 /**
  * The SDK-specific details of a new DID service endpoint.

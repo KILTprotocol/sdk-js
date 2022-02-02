@@ -6,7 +6,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { KeyRelationship } from '@kiltprotocol/types'
+import { KeyRelationship, VerificationKeyType } from '@kiltprotocol/types'
 
 import type { DidCreationDetails } from '../types.js'
 import { validateKiltDid } from '../Did.utils.js'
@@ -48,18 +48,14 @@ export function checkDidCreationDetails({
   })
 }
 
-enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
-  ed25519 = 'ed25519',
-  sr25519 = 'sr25519',
-  secp256k1 = 'secp256k1',
+const signatureAlgForKeyType: Record<VerificationKeyType, string> = {
+  [VerificationKeyType.ed25519]: 'ed25519',
+  [VerificationKeyType.sr25519]: 'sr25519',
+  [VerificationKeyType.ecdsa]: 'ecdsa-secp256k1',
 }
 
-const signatureAlgForKeyType = {
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.ed25519]: 'ed25519',
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.sr25519]: 'sr25519',
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.secp256k1]: 'ecdsa-secp256k1',
-}
-
-export function getSignatureAlgForKeyType(keyType: string): string | undefined {
+export function getSignatureAlgForKeyType(
+  keyType: VerificationKeyType
+): string | undefined {
   return signatureAlgForKeyType[keyType]
 }

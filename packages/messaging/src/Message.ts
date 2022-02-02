@@ -17,7 +17,7 @@
  * @module Messaging
  */
 
-import type {
+import {
   CompressedMessageBody,
   IMessage,
   ISubmitCredential,
@@ -29,6 +29,7 @@ import type {
   DidKey,
   NaclBoxCapable,
   DidPublicKey,
+  EncryptionKeyType,
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
@@ -142,13 +143,6 @@ export class Message implements IMessage {
     if (!receiverKeyDetails) {
       throw SDKErrors.ERROR_DID_ERROR(
         `Could not resolve receiver key ${receiverKeyId}`
-      )
-    }
-
-    // check key type
-    if (senderKeyDetails.type !== 'x25519') {
-      throw Error(
-        `key type mismatch for message sender: requires x25519, got ${senderKeyDetails.type}`
       )
     }
 

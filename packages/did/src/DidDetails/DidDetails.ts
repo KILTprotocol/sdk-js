@@ -6,10 +6,12 @@
  */
 
 import type {
+  DidEncryptionKey,
   DidKey,
   DidPublicKey,
   DidServiceEndpoint,
   DidSignature,
+  DidVerificationKey,
   IDidDetails,
   IDidIdentifier,
   KeystoreSigner,
@@ -63,7 +65,7 @@ export abstract class DidDetails implements IDidDetails {
 
   public abstract get identifier(): IDidIdentifier
 
-  public get authenticationKey(): DidKey {
+  public get authenticationKey(): DidVerificationKey {
     const firstAuthenticationKey = this.getKeys(
       KeyRelationship.authentication
     )[0]
@@ -75,15 +77,15 @@ export abstract class DidDetails implements IDidDetails {
     return firstAuthenticationKey
   }
 
-  public get encryptionKey(): DidKey | undefined {
+  public get encryptionKey(): DidEncryptionKey | undefined {
     return this.getKeys(KeyRelationship.keyAgreement)[0]
   }
 
-  public get attestationKey(): DidKey | undefined {
+  public get attestationKey(): DidVerificationKey | undefined {
     return this.getKeys(KeyRelationship.assertionMethod)[0]
   }
 
-  public get delegationKey(): DidKey | undefined {
+  public get delegationKey(): DidVerificationKey | undefined {
     return this.getKeys(KeyRelationship.capabilityDelegation)[0]
   }
 
@@ -153,7 +155,7 @@ export abstract class DidDetails implements IDidDetails {
   public async signPayload(
     payload: Uint8Array | string,
     signer: KeystoreSigner,
-    keyId: DidPublicKey['id']
+    keyId: DidKey['id']
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
     if (!key) {

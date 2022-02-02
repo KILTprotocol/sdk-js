@@ -328,10 +328,6 @@ export type AuthorizeCallInput = {
   blockNumber?: AnyNumber
 }
 
-export type NewDidKey = Pick<DidKey, 'publicKey'> & {
-  type: SupportedSignatureKeys | SupportedEncryptionKeys
-}
-
 interface IDidAuthorizedCallOperation extends Struct {
   did: IDidIdentifier
   txCounter: u64

@@ -9,7 +9,7 @@ import { BN } from '@polkadot/util'
 import { decodeAddress } from '@polkadot/util-crypto'
 import Keyring from '@polkadot/keyring'
 
-import type {
+import {
   DidKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
@@ -19,6 +19,7 @@ import type {
   KeyringPair,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
@@ -518,7 +519,7 @@ describe('When resolving a light DID', () => {
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
-        type: 'sr25519',
+        type: VerificationKeyType.sr25519,
         publicKey: decodeAddress(identifierWithAuthenticationKey, false, 38),
       },
     ])
