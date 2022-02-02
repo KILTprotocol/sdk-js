@@ -11,7 +11,7 @@
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import * as CType from './CType'
-import * as Claim from '../claim/Claim'
+import { Claim } from '../claim'
 import * as CTypeUtils from './CType.utils'
 
 describe('Nested CTypes', () => {

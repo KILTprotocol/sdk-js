@@ -24,7 +24,7 @@ import type {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { Credential } from '../credential/Credential'
-import * as CType from '../ctype/CType'
+import { CType } from '../ctype'
 
 import * as RequestForAttestation from './RequestForAttestation'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils'

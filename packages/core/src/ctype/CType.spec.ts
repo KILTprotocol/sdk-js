@@ -20,7 +20,7 @@ import type {
   CompressedCTypeSchema,
   IClaim,
 } from '@kiltprotocol/types'
-import * as Claim from '../claim/Claim'
+import { Claim } from '../claim'
 import { RequestForAttestation } from '../requestforattestation'
 import * as CTypeUtils from './CType.utils'
 import { getOwner, isStored } from './CType.chain'
