@@ -99,7 +99,7 @@ export type DidVerificationKey = BaseDidKey & { type: VerificationKeyType }
 /**
  * The SDK-specific details of a DID encryption key.
  */
-export type DidEncryptionKey = BaseDidKey & { type: VerificationKeyType }
+export type DidEncryptionKey = BaseDidKey & { type: EncryptionKeyType }
 /**
  * The SDK-specific details of a DID key.
  */

@@ -23,6 +23,7 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   KeystoreSigner,
+  DidVerificationKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
@@ -30,7 +31,7 @@ import {
   DidUtils,
   DidResolver,
   DidDetails,
-  DidKeySelectionHandler,
+  DidVerificationKeySelectionHandler,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
@@ -111,13 +112,15 @@ export async function createAttesterSignature(
   attesterIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultDidKeySelection,
+    keySelection = DidUtils.defaultVerificationDidKeySelection,
   }: {
-    keySelection?: DidKeySelectionHandler
+    keySelection?: DidVerificationKeySelectionHandler
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   const authenticationKey = await keySelection(
-    attesterIdentity.getKeys(KeyRelationship.authentication)
+    attesterIdentity.getKeys(
+      KeyRelationship.authentication
+    ) as DidVerificationKey[]
   )
   if (!authenticationKey) {
     throw SDKErrors.ERROR_DID_ERROR(
@@ -153,9 +156,9 @@ export async function fromQuoteDataAndIdentity(
   attesterIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultDidKeySelection,
+    keySelection = DidUtils.defaultVerificationDidKeySelection,
   }: {
-    keySelection?: DidKeySelectionHandler
+    keySelection?: DidVerificationKeySelectionHandler
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
@@ -183,10 +186,10 @@ export async function createQuoteAgreement(
   claimerIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultDidKeySelection,
+    keySelection = DidUtils.defaultVerificationDidKeySelection,
     resolver = DidResolver,
   }: {
-    keySelection?: DidKeySelectionHandler
+    keySelection?: DidVerificationKeySelectionHandler
     resolver?: IDidResolver
   } = {}
 ): Promise<IQuoteAgreement> {
@@ -206,7 +209,9 @@ export async function createQuoteAgreement(
   })
 
   const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getKeys(KeyRelationship.authentication)
+    claimerIdentity.getKeys(
+      KeyRelationship.authentication
+    ) as DidVerificationKey[]
   )
   if (!claimerAuthenticationKey) {
     throw SDKErrors.ERROR_DID_ERROR(

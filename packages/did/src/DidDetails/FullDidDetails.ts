@@ -9,19 +9,19 @@ import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidKey,
+  DidVerificationKey,
   IDidIdentifier,
   IIdentity,
-  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
+  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import type {
   DidCreationDetails,
-  DidKeySelectionHandler,
+  DidVerificationKeySelectionHandler,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
@@ -36,7 +36,7 @@ import {
   queryServiceEndpoints,
 } from '../Did.chain.js'
 import {
-  defaultDidKeySelection,
+  defaultVerificationDidKeySelection,
   FULL_DID_LATEST_VERSION,
   getKiltDidFromIdentifier,
 } from '../Did.utils.js'
@@ -137,11 +137,11 @@ export class FullDidDetails extends DidDetails {
    *
    * @returns All the keys under the full DID that could be used to generate valid signatures to submit the provided extrinsic.
    */
-  public getKeysForExtrinsic(extrinsic: Extrinsic): DidKey[] {
+  public getKeysForExtrinsic(extrinsic: Extrinsic): DidVerificationKey[] {
     const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
     return keyRelationship === 'paymentAccount'
       ? []
-      : this.getKeys(keyRelationship)
+      : (this.getKeys(keyRelationship) as DidVerificationKey[])
   }
 
   /**
@@ -173,10 +173,10 @@ export class FullDidDetails extends DidDetails {
     signer: KeystoreSigner,
     submitterAccount: IIdentity['address'],
     {
-      keySelection = defaultDidKeySelection,
+      keySelection = defaultVerificationDidKeySelection,
       txCounter,
     }: {
-      keySelection?: DidKeySelectionHandler
+      keySelection?: DidVerificationKeySelectionHandler
       txCounter?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
@@ -214,16 +214,18 @@ export class FullDidDetails extends DidDetails {
     batchExtrinsic: Extrinsic,
     signer: KeystoreSigner,
     submitterAccount: IIdentity['address'],
-    keyRelationship: KeyRelationship,
+    keyRelationship: VerificationKeyRelationship,
     {
-      keySelection = defaultDidKeySelection,
+      keySelection = defaultVerificationDidKeySelection,
       txCounter,
     }: {
-      keySelection?: DidKeySelectionHandler
+      keySelection?: DidVerificationKeySelectionHandler
       txCounter?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
-    const signingKey = await keySelection(this.getKeys(keyRelationship))
+    const signingKey = await keySelection(
+      this.getKeys(keyRelationship) as DidVerificationKey[]
+    )
     if (
       batchExtrinsic.method.section !== 'utility' &&
       batchExtrinsic.method.method !== 'batch'

@@ -8,8 +8,5 @@
 export * from './DidDetails.js'
 export { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 export * from './LightDidDetails.js'
-export {
-  LightDidSupportedSigningKeyTypes,
-  LightDidSupportedEncryptionKeyTypes,
-} from './LightDidDetails.utils.js'
+export { LightDidSupportedVerificationKeyTypes } from './LightDidDetails.utils.js'
 export * from './FullDidDetails.js'

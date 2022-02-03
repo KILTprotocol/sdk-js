@@ -12,7 +12,7 @@ import {
   randomAsHex,
 } from '@polkadot/util-crypto'
 
-import { DidKey } from '@kiltprotocol/types'
+import { DidKey, EncryptionKeyType } from '@kiltprotocol/types'
 
 import { getKiltDidFromIdentifier } from '../Did.utils.js'
 import { LightDidDetails, FullDidDetails } from '../DidDetails/index.js'
@@ -22,6 +22,7 @@ import {
   EncryptionAlgorithms,
   SigningAlgorithms,
 } from './DemoKeystore.js'
+import { LightDidSupportedVerificationKeyTypes } from '../DidDetails/LightDidDetails.utils.js'
 
 // Given a seed, creates a light DID with an authentication and an encryption key.
 export async function createMinimalLightDidFromSeed(
@@ -40,11 +41,13 @@ export async function createMinimalLightDidFromSeed(
   const details = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: authKey.alg,
+      type: DemoKeystore.getKeypairTypeForAlg(
+        authKey.alg
+      ) as LightDidSupportedVerificationKeyTypes,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: 'x25519',
+      type: DemoKeystore.getKeypairTypeForAlg(encKey.alg) as EncryptionKeyType,
     },
   })
   return details
@@ -70,7 +73,7 @@ export async function createLocalDemoFullDidFromSeed(
   const generateKeypairForDid = async (
     derivation: string,
     alg: string,
-    keytype: string
+    keytype: SigningAlgorithms
   ): Promise<DidKey> => {
     const seed = derivation
       ? `${mnemonicOrHexSeed}//${derivation}`
@@ -83,7 +86,7 @@ export async function createLocalDemoFullDidFromSeed(
     return {
       id: keyId,
       publicKey,
-      type: keytype,
+      type: DemoKeystore.getVerificationKeyTypeForAlg(keytype),
     }
   }
 

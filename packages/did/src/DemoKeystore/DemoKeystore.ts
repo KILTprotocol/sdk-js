@@ -17,13 +17,15 @@ import {
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
 
-import type {
+import {
+  EncryptionKeyType,
   KeyringPair,
   Keystore,
   KeystoreSigningData,
   NaclBoxCapable,
   RequestData,
   ResponseData,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { Crypto, Keyring, SDKErrors } from '@kiltprotocol/utils'
 
@@ -59,13 +61,26 @@ export interface NaclKeypair {
 export type KeyAddOpts<T extends string> = Pick<RequestData<T>, 'alg'> &
   NaclKeypair
 
-const KeypairTypeForAlg: Record<string, string> = {
+const keypairTypeForAlg: Record<string, KeypairType> = {
   ed25519: 'ed25519',
   sr25519: 'sr25519',
   'ecdsa-secp256k1': 'ecdsa',
-  'x25519-xsalsa20-poly1305': 'x25519',
 }
-
+const didKeyForKeypairForAlg: Record<string, VerificationKeyType> = {
+  ed25519: VerificationKeyType.ed25519,
+  sr25519: VerificationKeyType.sr25519,
+  ecdsa: VerificationKeyType.ecdsa,
+  ethereum: VerificationKeyType.ecdsa,
+}
+const algForKeypairType: Record<
+  EncryptionKeyType | VerificationKeyType,
+  string
+> = {
+  [VerificationKeyType.ed25519]: 'ed25519',
+  [VerificationKeyType.sr25519]: 'sr25519',
+  [VerificationKeyType.ecdsa]: 'ecdsa-secp256k1',
+  [EncryptionKeyType.x25519]: 'x25519-xsalsa20-poly1305',
+}
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
@@ -273,6 +288,16 @@ export class DemoKeystore
   }
 
   public static getKeypairTypeForAlg(alg: string): KeypairType {
-    return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
+    return keypairTypeForAlg[alg.toLowerCase()]
+  }
+
+  public static getAlgForKeypairType(
+    type: VerificationKeyType | EncryptionKeyType
+  ): string {
+    return algForKeypairType[type]
+  }
+
+  public static getVerificationKeyTypeForAlg(alg: string): VerificationKeyType {
+    return didKeyForKeypairForAlg[alg]
   }
 }

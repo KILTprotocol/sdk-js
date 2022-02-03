@@ -68,7 +68,7 @@ export abstract class DidDetails implements IDidDetails {
   public get authenticationKey(): DidVerificationKey {
     const firstAuthenticationKey = this.getKeys(
       KeyRelationship.authentication
-    )[0]
+    )[0] as DidVerificationKey
     if (!firstAuthenticationKey) {
       throw SDKErrors.ERROR_DID_ERROR(
         'Unexpected error. Any DID should always have at least one authentication key.'
@@ -78,15 +78,19 @@ export abstract class DidDetails implements IDidDetails {
   }
 
   public get encryptionKey(): DidEncryptionKey | undefined {
-    return this.getKeys(KeyRelationship.keyAgreement)[0]
+    return this.getKeys(KeyRelationship.keyAgreement)[0] as DidEncryptionKey
   }
 
   public get attestationKey(): DidVerificationKey | undefined {
-    return this.getKeys(KeyRelationship.assertionMethod)[0]
+    return this.getKeys(
+      KeyRelationship.assertionMethod
+    )[0] as DidVerificationKey
   }
 
   public get delegationKey(): DidVerificationKey | undefined {
-    return this.getKeys(KeyRelationship.capabilityDelegation)[0]
+    return this.getKeys(
+      KeyRelationship.capabilityDelegation
+    )[0] as DidVerificationKey
   }
 
   public getKey(id: DidKey['id']): DidKey | undefined {
@@ -157,9 +161,11 @@ export abstract class DidDetails implements IDidDetails {
     signer: KeystoreSigner,
     keyId: DidKey['id']
   ): Promise<DidSignature> {
-    const key = this.getKey(keyId)
+    const key = this.getKey(keyId) as DidVerificationKey
     if (!key) {
-      throw Error(`failed to find key with ID ${keyId} on DID (${this.did})`)
+      throw SDKErrors.ERROR_DID_ERROR(
+        `failed to find key with ID ${keyId} on DID (${this.did})`
+      )
     }
     const alg = getSignatureAlgForKeyType(key.type)
     if (!alg) {

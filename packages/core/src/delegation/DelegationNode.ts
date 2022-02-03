@@ -24,6 +24,7 @@
  */
 
 import {
+  DidVerificationKey,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
@@ -33,7 +34,7 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { DidKeySelectionHandler } from '@kiltprotocol/did'
+import type { DidVerificationKeySelectionHandler } from '@kiltprotocol/did'
 import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
@@ -291,13 +292,13 @@ export class DelegationNode implements IDelegationNode {
     delegeeDid: DidDetails,
     signer: KeystoreSigner,
     {
-      keySelection = DidUtils.defaultDidKeySelection,
+      keySelection = DidUtils.defaultVerificationDidKeySelection,
     }: {
-      keySelection?: DidKeySelectionHandler
+      keySelection?: DidVerificationKeySelectionHandler
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
-      delegeeDid.getKeys(KeyRelationship.authentication)
+      delegeeDid.getKeys(KeyRelationship.authentication) as DidVerificationKey[]
     )
     if (!authenticationKey) {
       throw SDKErrors.ERROR_DID_ERROR(

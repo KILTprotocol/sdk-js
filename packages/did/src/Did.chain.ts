@@ -28,18 +28,21 @@ import type {
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
 
-import type {
+import {
   Deposit,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
+  EncryptionKeyType,
   IDidIdentifier,
   IIdentity,
+  KeyRelationship,
   KeystoreSigningOptions,
+  NewDidKey,
   SubmittableExtrinsic,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
@@ -52,17 +55,13 @@ const log = ConfigService.LoggingFactory.getLogger('Did')
 type KeyId = Hash
 type DidKeyAgreementKeys = BTreeSet<KeyId>
 
-export type SupportedSignatureKeys = 'sr25519' | 'ed25519' | 'ecdsa'
-export type SupportedEncryptionKeys = 'x25519'
-
-interface DidVerificationKey<T extends string = SupportedSignatureKeys>
+interface DidVerificationKey<T extends string = VerificationKeyType>
   extends Enum {
   type: T
   value: Vec<u8>
 }
 
-interface DidEncryptionKey<T extends string = SupportedEncryptionKeys>
-  extends Enum {
+interface DidEncryptionKey<T extends string = EncryptionKeyType> extends Enum {
   type: T
   value: Vec<u8>
 }
@@ -192,7 +191,7 @@ function decodeDidPublicKeyDetails(
   const key = keyDetails.key.value
   return {
     id: keyId.toHex(),
-    type: key.type.toLowerCase(),
+    type: key.type,
     publicKey: key.value.toU8a(),
     includedAt: keyDetails.blockNumber.toBn(),
   }
@@ -354,7 +353,7 @@ export async function generateCreateTxFromDidDetails(
   const newKeyAgreementKeys: PublicKeyEnum[] = did
     .getKeys(KeyRelationship.keyAgreement)
     .map(({ publicKey }) => {
-      return formatPublicKey({ type: 'x25519', publicKey })
+      return formatPublicKey({ type: EncryptionKeyType.x25519, publicKey })
     })
 
   // For now, it only takes the first attestation key, if present.
@@ -556,7 +555,7 @@ export async function generateDidAuthenticatedTx({
 
 // ### Chain utils
 export function encodeDidSignature(
-  key: Pick<DidKey, 'type'>,
+  key: Pick<DidVerificationKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
   const alg = getSignatureAlgForKeyType(key.type)

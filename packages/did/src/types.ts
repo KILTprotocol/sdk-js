@@ -6,8 +6,10 @@
  */
 
 import type {
+  DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
+  DidVerificationKey,
   IDidDetails,
   KeyRelationship,
 } from '@kiltprotocol/types'
@@ -32,7 +34,12 @@ export type ServiceEndpoints = Record<
   Omit<DidServiceEndpoint, 'id'>
 >
 
-export type DidKeySelectionHandler = (keys: DidKey[]) => Promise<DidKey | null>
+export type DidVerificationKeySelectionHandler = (
+  keys: DidVerificationKey[]
+) => Promise<DidVerificationKey | null>
+export type DidEncryptionKeySelectionHandler = (
+  keys: DidEncryptionKey[]
+) => Promise<DidEncryptionKey | null>
 
 export type DidCreationDetails = {
   did: IDidDetails['did']

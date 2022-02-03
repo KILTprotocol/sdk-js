@@ -25,27 +25,37 @@ const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
 
 // Ecdsa not supported.
-export enum LightDidSupportedVerificationKeyTypes {
-  Ed25519 = VerificationKeyType.ed25519,
-  Sr25519 = VerificationKeyType.sr25519,
-}
+export type LightDidSupportedVerificationKeyTypes =
+  | VerificationKeyType.ed25519
+  | VerificationKeyType.sr25519
 
 // Ecdsa not supported.
-const EncodingForSigningKeyType: Record<
-  LightDidSupportedVerificationKeyTypes,
-  string
-> = {
-  [LightDidSupportedVerificationKeyTypes.Sr25519]: '00',
-  [LightDidSupportedVerificationKeyTypes.Ed25519]: '01',
+export function getEncodingForVerificationKeyType(
+  type: VerificationKeyType
+): string | undefined {
+  switch (type) {
+    case VerificationKeyType.sr25519:
+      return '00'
+    case VerificationKeyType.ed25519:
+      return '01'
+    default:
+      return undefined
+  }
+}
+export function getVerificationKeyTypeForEncoding(
+  encoding: string
+): LightDidSupportedVerificationKeyTypes | undefined {
+  switch (encoding) {
+    case '00':
+      return VerificationKeyType.sr25519
+    case '01':
+      return VerificationKeyType.ed25519
+    default:
+      return undefined
+  }
 }
 
 const supportedEncryptionKeyTypes = new Set(Object.values(EncryptionKeyType))
-
-export function getEncodingForSigningKeyType(
-  keyType: LightDidSupportedVerificationKeyTypes
-): string | undefined {
-  return EncodingForSigningKeyType[keyType]
-}
 
 /**
  * A new public key specified when creating a new light DID.
@@ -93,29 +103,15 @@ export type LightDidCreationDetails = {
   serviceEndpoints?: DidServiceEndpoint[]
 }
 
-const SigningKeyTypeFromEncoding: Record<
-  string,
-  LightDidSupportedVerificationKeyTypes
-> = {
-  '00': LightDidSupportedVerificationKeyTypes.Sr25519,
-  '01': LightDidSupportedVerificationKeyTypes.Ed25519,
-}
-
 export type DidMigrationHandler = (
   migrationExtrinsic: SubmittableExtrinsic
 ) => Promise<void>
-
-export function getSigningKeyTypeFromEncoding(
-  encoding: string
-): string | undefined {
-  return SigningKeyTypeFromEncoding[encoding]?.toString()
-}
 
 export function checkLightDidCreationDetails(
   details: LightDidCreationDetails
 ): void {
   // Check authentication key type
-  const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
+  const authenticationKeyTypeEncoding = getEncodingForVerificationKeyType(
     details.authenticationKey.type
   )
   if (!authenticationKeyTypeEncoding) {

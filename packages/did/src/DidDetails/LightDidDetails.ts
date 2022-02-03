@@ -7,11 +7,12 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
-import type {
+import {
   IDidDetails,
   IDidIdentifier,
   IIdentity,
   KeystoreSigner,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -25,9 +26,12 @@ import type {
 import {
   checkLightDidCreationDetails,
   decodeAndDeserializeAdditionalLightDidDetails,
-  getEncodingForSigningKeyType,
-  getSigningKeyTypeFromEncoding,
+  DidMigrationHandler,
+  getEncodingForVerificationKeyType,
+  getVerificationKeyTypeForEncoding,
   LightDidCreationDetails,
+  LightDidSupportedVerificationKeyTypes,
+  NewLightDidAuthenticationKey,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils.js'
 import { DidDetails } from './DidDetails.js'
@@ -56,7 +60,9 @@ export class LightDidDetails extends DidDetails {
   }
 
   public get authKeyEncoding(): string {
-    return getEncodingForSigningKeyType(this.authenticationKey.type) as string
+    return getEncodingForVerificationKeyType(
+      this.authenticationKey.type
+    ) as string
   }
 
   /**
@@ -85,7 +91,7 @@ export class LightDidDetails extends DidDetails {
       serviceEndpoints,
     })
     // Validity is checked in checkLightDidCreationDetails
-    const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
+    const authenticationKeyTypeEncoding = getEncodingForVerificationKeyType(
       authenticationKey.type
     ) as string
 
@@ -159,13 +165,13 @@ export class LightDidDetails extends DidDetails {
     }
     const authKeyTypeEncoding = identifier.substring(0, 2)
     const decodedAuthKeyType =
-      getSigningKeyTypeFromEncoding(authKeyTypeEncoding)
+      getVerificationKeyTypeForEncoding(authKeyTypeEncoding)
     if (!decodedAuthKeyType) {
       throw SDKErrors.ERROR_DID_ERROR(
         `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type.`
       )
     }
-    const authenticationKey: LightDidKeyCreationInput = {
+    const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier.substring(2), false, 38),
       type: decodedAuthKeyType,
     }
@@ -192,9 +198,9 @@ export class LightDidDetails extends DidDetails {
    */
   public static fromIdentifier(
     identifier: IDidIdentifier,
-    keyType: LightDidSupportedSigningKeyTypes = LightDidSupportedSigningKeyTypes.sr25519
+    keyType: LightDidSupportedVerificationKeyTypes = VerificationKeyType.sr25519
   ): LightDidDetails {
-    const authenticationKey: LightDidKeyCreationInput = {
+    const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier, false, 38),
       type: keyType,
     }

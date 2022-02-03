@@ -29,9 +29,8 @@ import {
   DidKey,
   NaclBoxCapable,
   DidPublicKey,
-  EncryptionKeyType,
+  MessageBodyType,
 } from '@kiltprotocol/types'
-import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import { DidDetails, DidResolver, DidUtils } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'

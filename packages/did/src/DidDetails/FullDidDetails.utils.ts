@@ -37,7 +37,7 @@ const methodMapping: SectionMapping<
 
 export function getKeyRelationshipForExtrinsic(
   extrinsic: Extrinsic
-): KeyRelationship | 'paymentAccount' {
+): VerificationKeyRelationship | 'paymentAccount' {
   const callMethod = extrinsic.method
   const { section, method } = callMethod
   const keyRelationship =
