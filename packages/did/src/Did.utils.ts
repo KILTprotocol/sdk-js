@@ -8,9 +8,9 @@
 import { checkAddress } from '@polkadot/util-crypto'
 import { isHex, u8aToHex } from '@polkadot/util'
 
-import type {
-  DidKey,
+import {
   DidSignature,
+  DidVerificationKey,
   IDidDetails,
   IDidIdentifier,
   IDidResolver,
@@ -196,7 +196,7 @@ export function validateDidSignature(input: unknown): input is DidSignature {
 type DidSignatureVerificationFromDetailsInput = {
   message: string | Uint8Array
   signature: string
-  keyId: DidKey['id']
+  keyId: DidVerificationKey['id']
   expectedVerificationMethod?: VerificationKeyRelationship
   details: IDidDetails
 }
@@ -205,7 +205,7 @@ export type VerificationResult = {
   verified: boolean
   reason?: string
   didDetails?: IDidDetails
-  key?: DidKey
+  key?: DidVerificationKey
 }
 
 function verifyDidSignatureFromDetails({
@@ -249,7 +249,7 @@ function verifyDidSignatureFromDetails({
   return {
     verified: true,
     didDetails: details,
-    key,
+    key: key as DidVerificationKey,
   }
 }
 

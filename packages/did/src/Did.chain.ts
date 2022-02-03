@@ -30,9 +30,11 @@ import { BN, hexToString, hexToU8a } from '@polkadot/util'
 
 import {
   Deposit,
+  DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
+  DidVerificationKey,
   EncryptionKeyType,
   IDidIdentifier,
   IIdentity,
@@ -53,41 +55,42 @@ const log = ConfigService.LoggingFactory.getLogger('Did')
 // ### Chain type definitions
 
 type KeyId = Hash
-type DidKeyAgreementKeys = BTreeSet<KeyId>
+type ChainDidKeyAgreementKeys = BTreeSet<KeyId>
 
-interface DidVerificationKey<T extends string = VerificationKeyType>
+interface ChainDidVerificationKey<T extends string = VerificationKeyType>
   extends Enum {
   type: T
   value: Vec<u8>
 }
 
-interface DidEncryptionKey<T extends string = EncryptionKeyType> extends Enum {
+interface ChainDidEncryptionKey<T extends string = EncryptionKeyType>
+  extends Enum {
   type: T
   value: Vec<u8>
 }
 
-interface DidPublicKey extends Enum {
+interface ChainDidPublicKey extends Enum {
   isPublicVerificationKey: boolean
-  asPublicVerificationKey: DidVerificationKey
+  asPublicVerificationKey: ChainDidVerificationKey
   isPublicEncryptionKey: boolean
-  asPublicEncryptionKey: DidEncryptionKey
+  asPublicEncryptionKey: ChainDidEncryptionKey
   type: 'PublicVerificationKey' | 'PublicEncryptionKey'
-  value: DidVerificationKey | DidEncryptionKey
+  value: ChainDidVerificationKey | ChainDidEncryptionKey
 }
 
-interface DidPublicKeyDetails extends Struct {
-  key: DidPublicKey
+interface ChainDidPublicKeyDetails extends Struct {
+  key: ChainDidPublicKey
   blockNumber: BlockNumber
 }
 
-type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
+type ChainDidPublicKeyMap = BTreeMap<KeyId, ChainDidPublicKeyDetails>
 
 interface IDidChainRecordCodec extends Struct {
   authenticationKey: KeyId
-  keyAgreementKeys: DidKeyAgreementKeys
+  keyAgreementKeys: ChainDidKeyAgreementKeys
   delegationKey: Option<KeyId>
   attestationKey: Option<KeyId>
-  publicKeys: DidPublicKeyMap
+  publicKeys: ChainDidPublicKeyMap
   lastTxCounter: u64
   deposit: Deposit
 }
@@ -166,10 +169,10 @@ export type IChainDeposit = {
 }
 
 export type IDidChainRecordJSON = {
-  authenticationKey: DidKey['id']
-  keyAgreementKeys: Array<DidKey['id']>
-  capabilityDelegationKey?: DidKey['id']
-  assertionMethodKey?: DidKey['id']
+  authenticationKey: DidVerificationKey['id']
+  keyAgreementKeys: Array<DidEncryptionKey['id']>
+  capabilityDelegationKey?: DidVerificationKey['id']
+  assertionMethodKey?: DidVerificationKey['id']
   publicKeys: DidKey[]
   lastTxCounter: BN
   deposit: IChainDeposit
@@ -186,7 +189,7 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
 
 function decodeDidPublicKeyDetails(
   keyId: Hash,
-  keyDetails: DidPublicKeyDetails
+  keyDetails: ChainDidPublicKeyDetails
 ): DidKey {
   const key = keyDetails.key.value
   return {
@@ -555,7 +558,7 @@ export async function generateDidAuthenticatedTx({
 
 // ### Chain utils
 export function encodeDidSignature(
-  key: Pick<DidVerificationKey, 'type'>,
+  key: Pick<ChainDidVerificationKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
   const alg = getSignatureAlgForKeyType(key.type)

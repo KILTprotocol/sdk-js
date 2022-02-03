@@ -26,10 +26,10 @@ import {
   ICType,
   IDidResolver,
   IEncryptedMessageContents,
-  DidKey,
   NaclBoxCapable,
   DidPublicKey,
   MessageBodyType,
+  DidEncryptionKey,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import { DidDetails, DidResolver, DidUtils } from '@kiltprotocol/did'
@@ -243,7 +243,7 @@ export class Message implements IMessage {
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
-    senderKeyId: DidKey['id'],
+    senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     keystore: Pick<NaclBoxCapable, 'encrypt'>,
     receiverKeyId: DidPublicKey['id'],

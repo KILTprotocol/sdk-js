@@ -254,8 +254,10 @@ export class Credential implements ICredential {
     // remove these attributes
     credential.request.removeClaimProperties(excludedClaimProperties)
 
-    const keys = claimerDid.getKeys(KeyRelationship.authentication)
-    const selectedKeyId = (await keySelection(keys as DidVerificationKey[]))?.id
+    const keys = claimerDid.getKeys(
+      KeyRelationship.authentication
+    ) as DidVerificationKey[]
+    const selectedKeyId = (await keySelection(keys))?.id
 
     if (!selectedKeyId) {
       throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
