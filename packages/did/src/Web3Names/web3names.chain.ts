@@ -12,7 +12,9 @@ import { DecoderUtils } from '@kiltprotocol/utils'
 import type { Option, Bytes } from '@polkadot/types'
 // import type { AccountId } from '@polkadot/types/interfaces'
 
-import { DidUtils, DidTypes } from '../index.js'
+import { DidUtils } from '../index.js'
+
+import { Web3NameOwner } from '../Did.chain.js'
 
 /**
  *  Web3Name is the type of a nickname for a DID.
@@ -36,7 +38,6 @@ export async function getClaimTx(
 /**
  * Returns a extrinsic to release a web3name by its owner.
  *
- * @param nick Web3Name that should be released.
  * @returns The [[SubmittableExtrinsic]] for the `releaseByOwner` call.
  */
 export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
@@ -69,7 +70,7 @@ export async function getReclaimDepositTx(
 export async function queryWeb3NameForDid(
   didUri: string
 ): Promise<Web3Name | null> {
-  const didDetails = DidUtils.parseDidUrl(didUri)
+  const didDetails = DidUtils.parseDidUri(didUri)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.web3Names.names<Option<Bytes>>(
     didDetails.identifier
@@ -89,7 +90,7 @@ export async function queryDidForWeb3Name(
 ): Promise<IDidDetails['did'] | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.web3Names.owner<
-    Option<DidTypes.Web3NameOwner>
+    Option<Web3NameOwner>
   >(nick)
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
