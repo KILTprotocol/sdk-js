@@ -6,7 +6,9 @@
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import { Metadata, TypeRegistry } from '@polkadot/types'
+import { Metadata, TypeRegistry, unwrapStorageType } from '@polkadot/types'
+import type { QueryableStorageEntry } from '@polkadot/api/types'
+import type { Codec } from '@polkadot/types/types'
 
 import metaStatic from './metadata/spiritnet.json'
 
@@ -43,4 +45,15 @@ export function createAugmentedApi(
   api.injectMetadata(metadata, true)
 
   return api
+}
+
+export function getQueryTypeFactory<T extends Codec = Codec>(
+  query: QueryableStorageEntry<any>,
+  inOption = true
+): (value: unknown) => T {
+  const { registry, type } = query.creator.meta
+  const storageType = unwrapStorageType(registry, type, inOption)
+  return (v) => {
+    return registry.createType(storageType, v) as T
+  }
 }
