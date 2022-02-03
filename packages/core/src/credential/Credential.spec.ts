@@ -485,9 +485,7 @@ describe('create presentation', () => {
     migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
       migratedClaimerLightDid as LightDidDetails,
       {
-        type: DemoKeystore.getVerificationKeyTypeForAlg(
-          newKeyForMigratedClaimerDid.alg
-        ),
+        type: DemoKeystore.getKeyTypeForAlg(newKeyForMigratedClaimerDid.alg),
         publicKey: newKeyForMigratedClaimerDid.publicKey,
         id: 'new-auth',
       }

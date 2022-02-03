@@ -8,5 +8,9 @@
 export * from './DidDetails.js'
 export { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 export * from './LightDidDetails.js'
-export { LightDidSupportedVerificationKeyTypes } from './LightDidDetails.utils.js'
+export {
+  LightDidSupportedVerificationKeyTypes,
+  NewLightDidAuthenticationKey,
+  DidMigrationHandler,
+} from './LightDidDetails.utils.js'
 export * from './FullDidDetails.js'

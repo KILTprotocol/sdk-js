@@ -86,7 +86,7 @@ export async function createLocalDemoFullDidFromSeed(
     return {
       id: keyId,
       publicKey,
-      type: DemoKeystore.getVerificationKeyTypeForAlg(keytype),
+      type: DemoKeystore.getKeyTypeForAlg(keytype),
     }
   }
 

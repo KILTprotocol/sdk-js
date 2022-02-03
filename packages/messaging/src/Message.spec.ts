@@ -125,7 +125,7 @@ beforeAll(async () => {
   })
   aliceLightDid = LightDidDetails.fromDetails({
     authenticationKey: {
-      type: DemoKeystore.getVerificationKeyTypeForAlg(
+      type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
       ) as LightDidSupportedVerificationKeyTypes,
       ...aliceAuthKey,
@@ -134,7 +134,7 @@ beforeAll(async () => {
   })
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: {
-      type: DemoKeystore.getVerificationKeyTypeForAlg(
+      type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
       ) as LightDidSupportedVerificationKeyTypes,
       ...aliceAuthKey,
@@ -156,7 +156,7 @@ beforeAll(async () => {
   })
   bobLightDid = LightDidDetails.fromDetails({
     authenticationKey: {
-      type: DemoKeystore.getVerificationKeyTypeForAlg(
+      type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
       ) as LightDidSupportedVerificationKeyTypes,
       ...bobAuthKey,
@@ -165,7 +165,7 @@ beforeAll(async () => {
   })
   bobLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: {
-      type: DemoKeystore.getVerificationKeyTypeForAlg(
+      type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
       ) as LightDidSupportedVerificationKeyTypes,
       ...bobAuthKey,

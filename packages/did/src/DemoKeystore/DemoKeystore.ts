@@ -18,6 +18,7 @@ import {
 import { u8aEq } from '@polkadot/util'
 
 import {
+  DidKey,
   EncryptionKeyType,
   KeyringPair,
   Keystore,
@@ -66,11 +67,12 @@ const keypairTypeForAlg: Record<string, KeypairType> = {
   sr25519: 'sr25519',
   'ecdsa-secp256k1': 'ecdsa',
 }
-const didKeyForKeypairForAlg: Record<string, VerificationKeyType> = {
+const didKeyForKeypairForAlg: Record<string, DidKey['type']> = {
   ed25519: VerificationKeyType.ed25519,
   sr25519: VerificationKeyType.sr25519,
   ecdsa: VerificationKeyType.ecdsa,
   ethereum: VerificationKeyType.ecdsa,
+  x25519: EncryptionKeyType.x25519,
 }
 const algForKeypairType: Record<
   EncryptionKeyType | VerificationKeyType,
@@ -297,7 +299,7 @@ export class DemoKeystore
     return algForKeypairType[type]
   }
 
-  public static getVerificationKeyTypeForAlg(alg: string): VerificationKeyType {
+  public static getKeyTypeForAlg(alg: string): DidKey['type'] {
     return didKeyForKeypairForAlg[alg]
   }
 }

@@ -146,7 +146,7 @@ export async function createEndowedTestAccount(
 export function getDefaultMigrationHandler(
   submitter: KeyringPair
 ): DidMigrationHandler {
-  return async (e) => {
+  return async (e: SubmittableExtrinsic) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       reSign: true,
       resolveOn: BlockchainUtils.IS_IN_BLOCK,

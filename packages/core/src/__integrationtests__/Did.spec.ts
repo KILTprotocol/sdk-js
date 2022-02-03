@@ -20,14 +20,18 @@ import {
   EncryptionAlgorithms,
   resolveDoc,
   DemoKeystoreUtils,
+  NewLightDidAuthenticationKey,
+  LightDidSupportedVerificationKeyTypes,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   DidResolvedDetails,
   DidServiceEndpoint,
+  EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
   KeystoreSigner,
+  NewDidKey,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
@@ -82,7 +86,8 @@ describe('write and didDeleteTx', () => {
 
   it('writes a new DID record to chain', async () => {
     const newDetails = LightDidDetails.fromDetails({
-      authenticationKey: details.authenticationKey,
+      authenticationKey:
+        details.authenticationKey as NewLightDidAuthenticationKey,
       serviceEndpoints: [
         {
           id: 'test-id-1',
@@ -244,7 +249,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const newDetails = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey,
-      type: alg,
+      type: DemoKeystore.getKeyTypeForAlg(
+        alg
+      ) as LightDidSupportedVerificationKeyTypes,
     },
   })
 
@@ -270,9 +277,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const newKeypair = await keystore.generateKeypair({
     alg: SigningAlgorithms.Sr25519,
   })
-  const newKeyDetails: DidChain.NewDidKey = {
+  const newKeyDetails: NewDidKey = {
     publicKey: newKeypair.publicKey,
-    type: newKeypair.alg,
+    type: DemoKeystore.getKeyTypeForAlg(
+      alg
+    ) as LightDidSupportedVerificationKeyTypes,
   }
 
   const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
@@ -368,13 +377,15 @@ describe('DID migration', () => {
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-        type: DemoKeystore.getKeypairTypeForAlg(
+        type: DemoKeystore.getKeyTypeForAlg(
           didEd25519AuthenticationKeyDetails.alg
-        ),
+        ) as LightDidSupportedVerificationKeyTypes,
       },
       encryptionKey: {
         publicKey: didEncryptionKeyDetails.publicKey,
-        type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
+        type: DemoKeystore.getKeyTypeForAlg(
+          didEncryptionKeyDetails.alg
+        ) as EncryptionKeyType,
       },
     })
 
@@ -421,9 +432,9 @@ describe('DID migration', () => {
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: didSr25519AuthenticationKeyDetails.publicKey,
-        type: DemoKeystore.getKeypairTypeForAlg(
+        type: DemoKeystore.getKeyTypeForAlg(
           didSr25519AuthenticationKeyDetails.alg
-        ),
+        ) as LightDidSupportedVerificationKeyTypes,
       },
     })
 
@@ -481,13 +492,15 @@ describe('DID migration', () => {
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-        type: DemoKeystore.getKeypairTypeForAlg(
+        type: DemoKeystore.getKeyTypeForAlg(
           didEd25519AuthenticationKeyDetails.alg
-        ),
+        ) as LightDidSupportedVerificationKeyTypes,
       },
       encryptionKey: {
         publicKey: didEncryptionKeyDetails.publicKey,
-        type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
+        type: DemoKeystore.getKeyTypeForAlg(
+          didEncryptionKeyDetails.alg
+        ) as EncryptionKeyType,
       },
       serviceEndpoints,
     })
@@ -556,14 +569,16 @@ describe('DID authorization', () => {
   let didDetails: FullDidDetails
 
   beforeAll(async () => {
-    const newKey: DidChain.NewDidKey = await keystore
+    const newKey: NewLightDidAuthenticationKey = await keystore
       .generateKeypair({
         alg: SigningAlgorithms.Ed25519,
       })
       .then(({ publicKey, alg }) => {
         return {
           publicKey,
-          type: alg,
+          type: DemoKeystore.getKeyTypeForAlg(
+            alg
+          ) as LightDidSupportedVerificationKeyTypes,
         }
       })
 
