@@ -107,9 +107,8 @@ export class LightDidDetails extends DidDetails {
 
     // Authentication key always has the #authentication ID.
     const keys: PublicKeys = {
-      authenticationKeyId: { ...authenticationKey },
+      [authenticationKeyId]: { ...authenticationKey },
     }
-    // const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
     const keyRelationships: MapKeysToRelationship = {
       authentication: new Set([authenticationKeyId]),
     }
