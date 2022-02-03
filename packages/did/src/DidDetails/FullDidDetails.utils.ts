@@ -41,7 +41,7 @@ const mapping: SectionMapping<VerificationKeyRelationship | 'paymentAccount'> =
       submitDidCall: 'paymentAccount',
       reclaimDeposit: 'paymentAccount',
     },
-    unicks: { default: KeyRelationship.authentication },
+    web3Names: { default: KeyRelationship.authentication },
     default: { default: 'paymentAccount' },
   }
 

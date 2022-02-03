@@ -176,7 +176,7 @@ export interface DidAuthorizedCallOperation extends Struct {
   blockNumber: AnyNumber
 }
 
-export interface UnickOwner extends Struct {
+export interface Web3NameOwner extends Struct {
   owner: DidIdentifier
   claimedAt: BlockNumber
   deposit: Deposit

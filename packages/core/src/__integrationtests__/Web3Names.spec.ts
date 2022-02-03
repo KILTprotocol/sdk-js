@@ -6,7 +6,7 @@
  */
 
 /**
- * @group integration/unicks
+ * @group integration/web3name
  */
 
 import type { KeyringPair } from '@kiltprotocol/types'
@@ -15,12 +15,11 @@ import {
   FullDidDetails,
   DemoKeystore,
   createOnChainDidFromSeed,
+  Web3Names,
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { config, disconnect } from '../kilt'
 import { devAlice, devFaucet, keypairFromRandom, WS_ADDRESS } from './utils'
-
-import { Unicks } from '../../../did'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
@@ -28,9 +27,9 @@ beforeAll(async () => {
   config({ address: WS_ADDRESS })
 })
 
-describe('When there is an UnickCreator and a payer', () => {
-  let unickCreator: FullDidDetails
-  let otherUnickCreator: FullDidDetails
+describe('When there is an Web3NameCreator and a payer', () => {
+  let w3nCreator: FullDidDetails
+  let otherWeb3NameCreator: FullDidDetails
   let paymentAccount: KeyringPair
   let otherPaymentAccount: KeyringPair
   const keystore = new DemoKeystore()
@@ -38,28 +37,28 @@ describe('When there is an UnickCreator and a payer', () => {
   beforeAll(async () => {
     paymentAccount = devFaucet
     otherPaymentAccount = devAlice
-    const unickCreatorPromise = createOnChainDidFromSeed(
+    const w3nCreatorPromise = createOnChainDidFromSeed(
       paymentAccount,
       keystore,
       randomAsHex(32)
     )
 
-    const otherUnickCreatorPromise = createOnChainDidFromSeed(
+    const otherWeb3NameCreatorPromise = createOnChainDidFromSeed(
       paymentAccount,
       keystore,
       randomAsHex(32)
     )
 
-    ;[unickCreator, otherUnickCreator] = await Promise.all([
-      unickCreatorPromise,
-      otherUnickCreatorPromise,
+    ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
+      w3nCreatorPromise,
+      otherWeb3NameCreatorPromise,
     ])
   })
 
-  it('should not be possible to create a unick type w/o tokens', async () => {
-    const tx = await Unicks.getClaimTx('nick1')
+  it('should not be possible to create a w3n type w/o tokens', async () => {
+    const tx = await Web3Names.getClaimTx('nick1')
     const bobbyBroke = keypairFromRandom()
-    const authorizedTx = await unickCreator.authorizeExtrinsic(
+    const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
       bobbyBroke.address,
@@ -74,12 +73,13 @@ describe('When there is an UnickCreator and a payer', () => {
     await expect(p).rejects.toBeTruthy()
   }, 20_000)
 
-  it('should be possible to create a unick type with enough tokens', async () => {
-    const tx = await Unicks.getClaimTx('nick1')
-    const authorizedTx = await unickCreator.authorizeExtrinsic(
+  it('should be possible to create a w3n type with enough tokens', async () => {
+    const tx = await Web3Names.getClaimTx('nick1')
+    const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
-      paymentAccount.address
+      paymentAccount.address,
+      true
     )
 
     const p = BlockchainUtils.signAndSubmitTx(authorizedTx, paymentAccount, {
@@ -91,18 +91,18 @@ describe('When there is an UnickCreator and a payer', () => {
   }, 20_000)
 
   it('should be possible to lookup the DID with the given nick', async () => {
-    const did = await Unicks.queryDidForUnick('nick1')
-    expect(did).toBe(unickCreator.did)
+    const did = await Web3Names.queryDidForWeb3Name('nick1')
+    expect(did).toBe(w3nCreator.did)
   }, 20_000)
 
   it('should be possible to lookup the nick with the given did', async () => {
-    const nick = await Unicks.queryUnickForDid(unickCreator.did)
+    const nick = await Web3Names.queryWeb3NameForDid(w3nCreator.did)
     expect(nick).toBe('nick1')
   }, 20_000)
 
-  it('should not be possible to create the same unick twice', async () => {
-    const tx = await Unicks.getClaimTx('nick1')
-    const authorizedTx = await otherUnickCreator.authorizeExtrinsic(
+  it('should not be possible to create the same w3n twice', async () => {
+    const tx = await Web3Names.getClaimTx('nick1')
+    const authorizedTx = await otherWeb3NameCreator.authorizeExtrinsic(
       tx,
       keystore,
       paymentAccount.address,
@@ -117,9 +117,9 @@ describe('When there is an UnickCreator and a payer', () => {
     await expect(p).rejects.toBeTruthy()
   }, 20_000)
 
-  it('should not be possible to remove a unick by another did', async () => {
-    const tx = await Unicks.getReleaseByOwnerTx('nick1')
-    const authorizedTx = await otherUnickCreator.authorizeExtrinsic(
+  it('should not be possible to create a second w3n for the same did', async () => {
+    const tx = await Web3Names.getClaimTx('nick2')
+    const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
       paymentAccount.address,
@@ -134,8 +134,8 @@ describe('When there is an UnickCreator and a payer', () => {
     await expect(p).rejects.toBeTruthy()
   }, 20_000)
 
-  it('should not be possible to remove a unick by another payment account', async () => {
-    const tx = await Unicks.getReleaseByPayerTx('nick1')
+  it('should not be possible to remove a w3n by another payment account', async () => {
+    const tx = await Web3Names.getReclaimDepositTx('nick1')
     const p = BlockchainUtils.signAndSubmitTx(tx, otherPaymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
@@ -143,8 +143,8 @@ describe('When there is an UnickCreator and a payer', () => {
     await expect(p).rejects.toBeTruthy()
   }, 20_000)
 
-  it('should be possible to remove a unick by the payment account', async () => {
-    const tx = await Unicks.getReleaseByPayerTx('nick1')
+  it('should be possible to remove a w3n by the payment account', async () => {
+    const tx = await Web3Names.getReclaimDepositTx('nick1')
     const p = BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
@@ -152,21 +152,24 @@ describe('When there is an UnickCreator and a payer', () => {
     await expect(p).resolves.toBeTruthy()
   }, 20_000)
 
-  it('should be possible to remove a unick by the owner did', async () => {
-    // prepare the unick on chain
-    const prepareTx = await Unicks.getClaimTx('nick1')
-    const prepareAuthorizedTx = await unickCreator.authorizeExtrinsic(
+  it('should be possible to remove a w3n by the owner did', async () => {
+    w3nCreator.refreshTxIndex() // oO
+
+    // prepare the w3n on chain
+    const prepareTx = await Web3Names.getClaimTx('nick1')
+    const prepareAuthorizedTx = await w3nCreator.authorizeExtrinsic(
       prepareTx,
       keystore,
-      paymentAccount.address
+      paymentAccount.address,
+      true
     )
     await BlockchainUtils.signAndSubmitTx(prepareAuthorizedTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
 
-    const tx = await Unicks.getReleaseByOwnerTx('nick1')
-    const authorizedTx = await unickCreator.authorizeExtrinsic(
+    const tx = await Web3Names.getReleaseByOwnerTx()
+    const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
       paymentAccount.address,

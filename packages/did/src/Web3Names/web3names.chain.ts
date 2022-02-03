@@ -15,60 +15,63 @@ import type { Option, Bytes } from '@polkadot/types'
 import { DidUtils, DidTypes } from '../index.js'
 
 /**
- *  Unick is the type of a nickname for a DID.
+ *  Web3Name is the type of a nickname for a DID.
  */
-type Unick = string
+type Web3Name = string
 
 /**
- * Returns a extrinsic to claim a new unick.
+ * Returns a extrinsic to claim a new web3name.
  *
- * @param nick Unick that should be claimed.
+ * @param nick Web3Name that should be claimed.
  * @returns The [[SubmittableExtrinsic]] for the `claim` call.
  */
-export async function getClaimTx(nick: Unick): Promise<SubmittableExtrinsic> {
+export async function getClaimTx(
+  nick: Web3Name
+): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.unicks.claim(nick)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.web3Names.claim(nick)
   return tx
 }
 
 /**
- * Returns a extrinsic to release a unick by its owner.
+ * Returns a extrinsic to release a web3name by its owner.
  *
- * @param nick Unick that should be released.
+ * @param nick Web3Name that should be released.
  * @returns The [[SubmittableExtrinsic]] for the `releaseByOwner` call.
  */
-export async function getReleaseByOwnerTx(
-  nick: Unick
-): Promise<SubmittableExtrinsic> {
+export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.unicks.releaseByOwner(nick)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.web3Names.releaseByOwner()
   return tx
 }
 
 /**
- * Returns a extrinsic to release a unick by the account that owns the deposit.
+ * Returns a extrinsic to release a web3name by the account that owns the deposit.
  *
- * @param nick Unick that should be released.
- * @returns The [[SubmittableExtrinsic]] for the `releaseByPayer` call.
+ * @param nick Web3Name that should be released.
+ * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
  */
-export async function getReleaseByPayerTx(
-  nick: Unick
+export async function getReclaimDepositTx(
+  nick: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.unicks.releaseByPayer(nick)
+  const tx: SubmittableExtrinsic =
+    blockchain.api.tx.web3Names.reclaimDeposit(nick)
   return tx
 }
 
 /**
- * Retrieve the Unick for a specific did.
+ * Retrieve the Web3Name for a specific did.
  *
- * @param didUri DID uri of the unick owner, i.e. 'did:kilt:4...'.
- * @returns The registered unick for this DID if any.
+ * @param didUri DID uri of the web3name owner, i.e. 'did:kilt:4...'.
+ * @returns The registered web3name for this DID if any.
  */
-export async function queryUnickForDid(didUri: string): Promise<Unick | null> {
+export async function queryWeb3NameForDid(
+  didUri: string
+): Promise<Web3Name | null> {
   const didDetails = DidUtils.parseDidUrl(didUri)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.unicks.unicks<Option<Bytes>>(
+  const encoded = await blockchain.api.query.web3Names.names<Option<Bytes>>(
     didDetails.identifier
   )
   DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
@@ -76,20 +79,20 @@ export async function queryUnickForDid(didUri: string): Promise<Unick | null> {
 }
 
 /**
- * Retrieve the did for a specific unick.
+ * Retrieve the did for a specific web3name.
  *
- * @param nick Unick that should be resolved to a DID.
- * @returns The DID uri for this unick if any.
+ * @param nick Web3Name that should be resolved to a DID.
+ * @returns The DID uri for this web3name if any.
  */
-export async function queryDidForUnick(
-  nick: Unick
+export async function queryDidForWeb3Name(
+  nick: Web3Name
 ): Promise<IDidDetails['did'] | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.unicks.owner<
-    Option<DidTypes.UnickOwner>
+  const encoded = await blockchain.api.query.web3Names.owner<
+    Option<DidTypes.Web3NameOwner>
   >(nick)
   DecoderUtils.assertCodecIsType(encoded, [
-    'Option<PalletUnicksUnickUnickOwnership>',
+    'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])
 
   return encoded.isSome

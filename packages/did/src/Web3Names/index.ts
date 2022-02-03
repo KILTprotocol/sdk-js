@@ -5,4 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as Unicks from './unicks.chain.js'
+export * as Web3Names from './web3names.chain.js'
