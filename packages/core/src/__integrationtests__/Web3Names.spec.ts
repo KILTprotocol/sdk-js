@@ -11,20 +11,50 @@
 
 import type { KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import {
-  FullDidDetails,
-  DemoKeystore,
-  createOnChainDidFromSeed,
-  Web3Names,
-} from '@kiltprotocol/did'
+import { FullDidDetails, DemoKeystore, Web3Names } from '@kiltprotocol/did'
+import * as Kilt from '@kiltprotocol/sdk-js'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { config, disconnect } from '../kilt'
-import { devAlice, devFaucet, keypairFromRandom, WS_ADDRESS } from './utils'
+import { disconnect } from '../kilt'
+import { devAlice, devFaucet, keypairFromRandom, initializeApi } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
+async function createDid(
+  paymentAccount: Kilt.KeyringPair,
+  keystore: Kilt.Did.DemoKeystore
+): Promise<FullDidDetails> {
+  const didSr25519AuthenticationKeyDetails = await keystore.generateKeypair({
+    alg: Kilt.Did.SigningAlgorithms.Sr25519,
+  })
+  const didEncryptionKeyDetails = await keystore.generateKeypair({
+    alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+  })
+  const lightDid = Kilt.Did.LightDidDetails.fromDetails({
+    authenticationKey: {
+      publicKey: didSr25519AuthenticationKeyDetails.publicKey,
+      type: didSr25519AuthenticationKeyDetails.alg,
+    },
+    encryptionKey: {
+      publicKey: didEncryptionKeyDetails.publicKey,
+      type: didEncryptionKeyDetails.alg,
+    },
+  })
+  const did = await lightDid.migrate(
+    paymentAccount.address,
+    keystore,
+    async (tx) => {
+      await Kilt.BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+        resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    }
+  )
+
+  return did
+}
+
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
+  await initializeApi()
 })
 
 describe('When there is an Web3NameCreator and a payer', () => {
@@ -37,17 +67,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
   beforeAll(async () => {
     paymentAccount = devFaucet
     otherPaymentAccount = devAlice
-    const w3nCreatorPromise = createOnChainDidFromSeed(
-      paymentAccount,
-      keystore,
-      randomAsHex(32)
-    )
+    const w3nCreatorPromise = createDid(paymentAccount, keystore)
 
-    const otherWeb3NameCreatorPromise = createOnChainDidFromSeed(
-      paymentAccount,
-      keystore,
-      randomAsHex(32)
-    )
+    const otherWeb3NameCreatorPromise = createDid(paymentAccount, keystore)
 
     ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
       w3nCreatorPromise,
@@ -61,8 +83,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
-      bobbyBroke.address,
-      false
+      bobbyBroke.address
     )
 
     const p = BlockchainUtils.signAndSubmitTx(authorizedTx, bobbyBroke, {
@@ -78,8 +99,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
-      paymentAccount.address,
-      true
+      paymentAccount.address
     )
 
     const p = BlockchainUtils.signAndSubmitTx(authorizedTx, paymentAccount, {
@@ -105,8 +125,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await otherWeb3NameCreator.authorizeExtrinsic(
       tx,
       keystore,
-      paymentAccount.address,
-      false
+      paymentAccount.address
     )
 
     const p = BlockchainUtils.signAndSubmitTx(authorizedTx, paymentAccount, {
@@ -122,8 +141,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
-      paymentAccount.address,
-      false
+      paymentAccount.address
     )
 
     const p = BlockchainUtils.signAndSubmitTx(authorizedTx, paymentAccount, {
@@ -153,15 +171,12 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 20_000)
 
   it('should be possible to remove a w3n by the owner did', async () => {
-    w3nCreator.refreshTxIndex() // oO
-
     // prepare the w3n on chain
     const prepareTx = await Web3Names.getClaimTx('nick1')
     const prepareAuthorizedTx = await w3nCreator.authorizeExtrinsic(
       prepareTx,
       keystore,
-      paymentAccount.address,
-      true
+      paymentAccount.address
     )
     await BlockchainUtils.signAndSubmitTx(prepareAuthorizedTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -172,8 +187,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
-      paymentAccount.address,
-      true
+      paymentAccount.address
     )
     const p = BlockchainUtils.signAndSubmitTx(authorizedTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
