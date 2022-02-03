@@ -337,8 +337,7 @@ describe('RequestForAttestation', () => {
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
     builtRequestIncompleteClaimHashTree.rootHash =
-      // @ts-expect-error
-      RequestForAttestation.calculateRootHash(
+      RequestForAttestationUtils.calculateRootHash(
         builtRequestIncompleteClaimHashTree
       )
     const builtRequestMalformedSignature = {
