@@ -15,7 +15,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
 import * as CType from './CType'
 import * as CTypeUtils from './CType.utils'
-import { CTypeMetadata } from './CTypeMetadata'
+import * as CTypeMetadata from './CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
 
 describe('CType', () => {
@@ -23,7 +23,7 @@ describe('CType', () => {
   let rawCType: ICType['schema']
   let ctype: ICType
   let ctypeMetadata: ICTypeMetadata['metadata']
-  let metadata: CTypeMetadata
+  let metadata: ICTypeMetadata
 
   beforeAll(async () => {
     rawCType = {
@@ -47,13 +47,14 @@ describe('CType', () => {
       },
     }
 
-    metadata = new CTypeMetadata({
+    metadata = {
       metadata: ctypeMetadata,
       ctypeHash: ctype.hash,
-    })
+    }
   })
 
   it('verifies the metadata of a ctype', async () => {
+    expect(() => CTypeMetadata.check(metadata)).not.toThrow()
     expect(metadata.ctypeHash).not.toHaveLength(0)
     expect(CTypeUtils.verifySchema(metadata, MetadataModel)).toBeTruthy()
     expect(CTypeUtils.verifySchema(ctypeMetadata, MetadataModel)).toBeFalsy()
@@ -68,7 +69,7 @@ describe('CType', () => {
     }
     // @ts-expect-error
     delete faultyMetadata.metadata.properties
-    expect(() => new CTypeMetadata(faultyMetadata)).toThrow(
+    expect(() => CTypeMetadata.check(metadata)).toThrow(
       SDKErrors.ERROR_OBJECT_MALFORMED()
     )
   })

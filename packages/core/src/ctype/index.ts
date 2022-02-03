@@ -7,5 +7,5 @@
 
 export * as CType from './CType.js'
 export * as CTypeUtils from './CType.utils.js'
-export { CTypeMetadata } from './CTypeMetadata.js'
+export * as CTypeMetadata from './CTypeMetadata.js'
 export * as CTypeSchema from './CTypeSchema.js'
