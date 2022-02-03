@@ -41,13 +41,13 @@ export async function createMinimalLightDidFromSeed(
   const details = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: DemoKeystore.getKeypairTypeForAlg(
+      type: DemoKeystore.getKeyTypeForAlg(
         authKey.alg
       ) as LightDidSupportedVerificationKeyTypes,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: DemoKeystore.getKeypairTypeForAlg(encKey.alg) as EncryptionKeyType,
+      type: DemoKeystore.getKeyTypeForAlg(encKey.alg) as EncryptionKeyType,
     },
   })
   return details
