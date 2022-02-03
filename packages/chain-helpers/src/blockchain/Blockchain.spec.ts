@@ -21,8 +21,11 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
-import { TYPE_REGISTRY } from '../blockchainApiConnection/TypeRegistry'
+import { ApiMocks } from '@kiltprotocol/testing'
+import {
+  getConnectionOrConnect,
+  setConnection,
+} from '../blockchainApiConnection/BlockchainApiConnection'
 import { Blockchain } from './Blockchain'
 import {
   EXTRINSIC_FAILED,
@@ -33,15 +36,18 @@ import {
   submitSignedTx,
 } from './Blockchain.utils'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+let api: any
+
+beforeAll(() => {
+  api = ApiMocks.getMockedApi()
+  setConnection(Promise.resolve(new Blockchain(api)))
+})
 
 describe('queries', () => {
   beforeAll(() => {
-    const api =
-      require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
-    api.rpc.system.version.mockResolvedValue(new Text(TYPE_REGISTRY, '1.0.0'))
-    api.rpc.system.chain.mockResolvedValue(new Text(TYPE_REGISTRY, 'mockchain'))
-    api.rpc.system.name.mockResolvedValue(new Text(TYPE_REGISTRY, 'KILT node'))
+    api.rpc.system.version.mockResolvedValue(new Text(api.registry, '1.0.0'))
+    api.rpc.system.chain.mockResolvedValue(new Text(api.registry, 'mockchain'))
+    api.rpc.system.name.mockResolvedValue(new Text(api.registry, 'KILT node'))
 
     api.rpc.chain.subscribeNewHeads = jest.fn(async (listener) => {
       listener('mockHead')
@@ -71,10 +77,6 @@ describe('queries', () => {
 describe('Tx logic', () => {
   let alice: IIdentity
   let bob: IIdentity
-  const api =
-    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
-  const setDefault =
-    require('../blockchainApiConnection/BlockchainApiConnection').__setDefaultResult
   const dispatchNonceRetrieval = async (address: string): Promise<BN> => {
     const chain = await getConnectionOrConnect()
     return chain.getNonce(address)
@@ -255,7 +257,7 @@ describe('Tx logic', () => {
 
   describe('utils exported function submitSignedTx', () => {
     it('catches ERROR_TRANSACTION_USURPED and discovers as recoverable', async () => {
-      setDefault({ isUsurped: true })
+      api.__setDefaultResult({ isUsurped: true })
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
@@ -267,7 +269,7 @@ describe('Tx logic', () => {
     }, 20_000)
 
     it('catches priority error and discovers as recoverable', async () => {
-      setDefault()
+      api.__setDefaultResult()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
@@ -280,7 +282,7 @@ describe('Tx logic', () => {
     }, 20_000)
 
     it('catches Already Imported error and discovers as recoverable', async () => {
-      setDefault()
+      api.__setDefaultResult()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
@@ -295,7 +297,7 @@ describe('Tx logic', () => {
     }, 20_000)
 
     it('catches Outdated/Stale Tx error and discovers as recoverable', async () => {
-      setDefault()
+      api.__setDefaultResult()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
@@ -314,7 +316,7 @@ describe('Tx logic', () => {
 
   describe('Blockchain class method submitSignedTx', () => {
     it('Retries to send up to two times if recoverable error is caught', async () => {
-      setDefault({ isUsurped: true })
+      api.__setDefaultResult({ isUsurped: true })
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)

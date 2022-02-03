@@ -10,11 +10,7 @@
  * @module IDidDocumentExporter
  */
 
-import type {
-  IDidDetails,
-  IDidKeyDetails,
-  IDidServiceEndpoint,
-} from './index.js'
+import type { IDidDetails, DidServiceEndpoint } from './DidDetails.js'
 
 export enum DidDocumentPublicKeyType {
   Ed25519VerificationKey = 'Ed25519VerificationKey2018',
@@ -35,30 +31,37 @@ export const EncryptionKeyTypesMap = {
   x25519: DidDocumentPublicKeyType.X25519EncryptionKey,
 }
 
-export type IDidPublicKeyDetails = Pick<IDidKeyDetails, 'id' | 'controller'> & {
+export type DidPublicKey = {
+  id: string
+  controller: IDidDetails['did']
   publicKeyBase58: string
   type: DidDocumentPublicKeyType
 }
 
-export type IDidPublicKeyId = Pick<IDidKeyDetails, 'id'>
+// Transform the internal IDidServiceEndpoint into something compliant with the DID spec.
+export type DidPublicServiceEndpoint = {
+  id: string
+  type: DidServiceEndpoint['types']
+  serviceEndpoint: DidServiceEndpoint['urls']
+}
 
 /**
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
-export type IDidDocument = {
+export type DidDocument = {
   id: IDidDetails['did']
-  verificationMethod: IDidPublicKeyDetails[]
-  authentication: IDidPublicKeyId[]
-  assertionMethod?: IDidPublicKeyId[]
-  keyAgreement?: IDidPublicKeyId[]
-  capabilityDelegation?: IDidPublicKeyId[]
-  service?: IDidServiceEndpoint[]
+  verificationMethod: DidPublicKey[]
+  authentication: DidPublicKey['id']
+  assertionMethod?: DidPublicKey['id']
+  keyAgreement?: DidPublicKey['id']
+  capabilityDelegation?: DidPublicKey['id']
+  service?: DidPublicServiceEndpoint[]
 }
 
 /**
  * A JSON+LD DID Document that extends a traditional DID Document with additional semantic informatiion.
  */
-export type IJsonLDDidDocument = IDidDocument & { '@context': string[] }
+export type JsonLDDidDocument = DidDocument & { '@context': string[] }
 
 /**
  * An interface for any DID Document exporter to implement.
@@ -66,5 +69,5 @@ export type IJsonLDDidDocument = IDidDocument & { '@context': string[] }
  * It is purposefully general with regard to the mime types supported, so that multiple exporters might support different encoding types.
  */
 export interface IDidDocumentExporter {
-  exportToDidDocument: (details: IDidDetails, mimeType: string) => IDidDocument
+  exportToDidDocument: (details: IDidDetails, mimeType: string) => DidDocument
 }

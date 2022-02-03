@@ -8,10 +8,10 @@
   "license": "BSD-4-Clause",
   "scripts": {
     "check": "tsc -p tsconfig.json --noEmit",
-    "build": "yarn workspaces foreach -pt --no-private run build",
+    "build": "yarn workspaces foreach -p --topological-dev --exclude '{root-workspace}' run build",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
-    "clean": "yarn workspaces foreach -p --no-private run clean",
+    "clean": "yarn workspaces foreach -p --exclude '{root-workspace}' run clean",
     "clean:docs": "rm -rf docs/api",
     "prepublish": "yarn workspaces foreach -p --no-private exec cp -f ../../LICENSE .",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
@@ -64,6 +64,6 @@
     "typedoc-plugin-external-module-name": "^4.0.6",
     "typescript": "^4.5.4"
   },
-  "version": "0.26.0-2",
+  "version": "0.26.0-5",
   "packageManager": "yarn@2.4.3"
 }
