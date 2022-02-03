@@ -10,7 +10,6 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
 
 import type { Option, Bytes } from '@polkadot/types'
-// import type { AccountId } from '@polkadot/types/interfaces'
 
 import { DidUtils } from '../index.js'
 
