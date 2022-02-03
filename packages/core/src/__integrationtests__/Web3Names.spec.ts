@@ -54,7 +54,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       w3nCreatorPromise,
       otherWeb3NameCreatorPromise,
     ])
-  }, 20_000)
+  }, 60_000)
 
   it('should not be possible to create a w3n name w/o tokens', async () => {
     const tx = await Web3Names.getClaimTx('nick1')
