@@ -29,19 +29,19 @@ export const VerificationKeyTypesMap: Record<
   DidDocumentPublicKeyType
 > = {
   // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
-  [VerificationKeyType.sr25519]:
+  [VerificationKeyType.Sr25519]:
     DidDocumentPublicKeyType.Sr25519VerificationKey,
   // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
-  [VerificationKeyType.ed25519]:
+  [VerificationKeyType.Ed25519]:
     DidDocumentPublicKeyType.Ed25519VerificationKey,
-  [VerificationKeyType.ecdsa]: DidDocumentPublicKeyType.EcdsaVerificationKey,
+  [VerificationKeyType.Ecdsa]: DidDocumentPublicKeyType.EcdsaVerificationKey,
 }
 
 export const EncryptionKeyTypesMap: Record<
   EncryptionKeyType,
   DidDocumentPublicKeyType
 > = {
-  [EncryptionKeyType.x25519]: DidDocumentPublicKeyType.X25519EncryptionKey,
+  [EncryptionKeyType.X25519]: DidDocumentPublicKeyType.X25519EncryptionKey,
 }
 
 /**

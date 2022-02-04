@@ -36,9 +36,9 @@ export type VerificationKeyRelationship =
  * Possible types for a DID verification key.
  */
 export enum VerificationKeyType {
-  sr25519 = 'sr25519',
-  ed25519 = 'ed25519',
-  ecdsa = 'ecdsa',
+  Sr25519 = 'Sr25519',
+  Ed25519 = 'Ed25519',
+  Ecdsa = 'Ecdsa',
 }
 
 /**
@@ -49,7 +49,7 @@ export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
  * Possible types for a DID encryption key.
  */
 export enum EncryptionKeyType {
-  x25519 = 'x25519',
+  X25519 = 'X25519',
 }
 
 /**

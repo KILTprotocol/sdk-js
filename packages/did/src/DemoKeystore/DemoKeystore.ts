@@ -68,10 +68,10 @@ const keypairTypeForAlg: Record<string, KeypairType> = {
   'ecdsa-secp256k1': 'ecdsa',
 }
 const didKeyForKeypairForAlg: Record<string, DidKey['type']> = {
-  ed25519: VerificationKeyType.ed25519,
-  sr25519: VerificationKeyType.sr25519,
-  'ecdsa-secp256k1': VerificationKeyType.ecdsa,
-  'x25519-xsalsa20-poly1305': EncryptionKeyType.x25519,
+  ed25519: VerificationKeyType.Ed25519,
+  sr25519: VerificationKeyType.Sr25519,
+  'ecdsa-secp256k1': VerificationKeyType.Ecdsa,
+  'x25519-xsalsa20-poly1305': EncryptionKeyType.X25519,
 }
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!

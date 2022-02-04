@@ -26,17 +26,17 @@ const SERVICES_KEY_MAP_KEY = 's'
 
 // Ecdsa not supported.
 export type LightDidSupportedVerificationKeyTypes =
-  | VerificationKeyType.ed25519
-  | VerificationKeyType.sr25519
+  | VerificationKeyType.Ed25519
+  | VerificationKeyType.Sr25519
 
 // Ecdsa not supported.
 export function getEncodingForVerificationKeyType(
   type: VerificationKeyType
 ): string | undefined {
   switch (type) {
-    case VerificationKeyType.sr25519:
+    case VerificationKeyType.Sr25519:
       return '00'
-    case VerificationKeyType.ed25519:
+    case VerificationKeyType.Ed25519:
       return '01'
     default:
       return undefined
@@ -47,9 +47,9 @@ export function getVerificationKeyTypeForEncoding(
 ): LightDidSupportedVerificationKeyTypes | undefined {
   switch (encoding) {
     case '00':
-      return VerificationKeyType.sr25519
+      return VerificationKeyType.Sr25519
     case '01':
-      return VerificationKeyType.ed25519
+      return VerificationKeyType.Ed25519
     default:
       return undefined
   }

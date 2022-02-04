@@ -196,7 +196,7 @@ export class LightDidDetails extends DidDetails {
    */
   public static fromIdentifier(
     identifier: IDidIdentifier,
-    keyType: LightDidSupportedVerificationKeyTypes = VerificationKeyType.sr25519
+    keyType: LightDidSupportedVerificationKeyTypes = VerificationKeyType.Sr25519
   ): LightDidDetails {
     const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier, false, 38),

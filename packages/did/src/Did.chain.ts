@@ -59,12 +59,12 @@ const log = ConfigService.LoggingFactory.getLogger('Did')
 type KeyId = Hash
 type ChainDidKeyAgreementKeys = BTreeSet<KeyId>
 
-interface ChainDidKey extends Enum {
+export interface ChainDidKey extends Enum {
   type: string
   value: Vec<u8>
 }
 
-interface ChainDidPublicKey extends Enum {
+export interface ChainDidPublicKey extends Enum {
   isPublicVerificationKey: boolean
   asPublicVerificationKey: ChainDidKey
   isPublicEncryptionKey: boolean
@@ -183,10 +183,10 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
 }
 
 const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
-  Sr25519: VerificationKeyType.sr25519,
-  Ed25519: VerificationKeyType.ed25519,
-  Ecdsa: VerificationKeyType.ecdsa,
-  X25519: EncryptionKeyType.x25519,
+  Sr25519: VerificationKeyType.Sr25519,
+  Ed25519: VerificationKeyType.Ed25519,
+  Ecdsa: VerificationKeyType.Ecdsa,
+  X25519: EncryptionKeyType.X25519,
 }
 function decodeDidPublicKeyDetails(
   keyId: Hash,
@@ -369,7 +369,7 @@ export async function generateCreateTxFromDidDetails(
   const newKeyAgreementKeys: PublicKeyEnum[] = did
     .getKeys(KeyRelationship.keyAgreement)
     .map(({ publicKey }) => {
-      return formatPublicKey({ type: EncryptionKeyType.x25519, publicKey })
+      return formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
     })
 
   // For now, it only takes the first attestation key, if present.

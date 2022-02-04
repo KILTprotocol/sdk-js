@@ -29,7 +29,7 @@ const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 function generateAuthenticationKeyDetails(): DidKey {
   return {
     id: 'auth',
-    type: VerificationKeyType.ed25519,
+    type: VerificationKeyType.Ed25519,
     publicKey: new Uint8Array(32).fill(0),
   }
 }
@@ -37,7 +37,7 @@ function generateAuthenticationKeyDetails(): DidKey {
 function generateEncryptionKeyDetails(): DidKey {
   return {
     id: 'enc',
-    type: EncryptionKeyType.x25519,
+    type: EncryptionKeyType.X25519,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(15),
   }
@@ -46,7 +46,7 @@ function generateEncryptionKeyDetails(): DidKey {
 function generateAttestationKeyDetails(): DidKey {
   return {
     id: 'att',
-    type: VerificationKeyType.sr25519,
+    type: VerificationKeyType.Sr25519,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(20),
   }
@@ -55,7 +55,7 @@ function generateAttestationKeyDetails(): DidKey {
 function generateDelegationKeyDetails(): DidKey {
   return {
     id: 'del',
-    type: VerificationKeyType.ecdsa,
+    type: VerificationKeyType.Ecdsa,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(25),
   }
@@ -287,11 +287,11 @@ describe('When exporting a DID Document from a light DID', () => {
   const lightDidDetails = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: VerificationKeyType.ed25519,
+      type: VerificationKeyType.Ed25519,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: EncryptionKeyType.x25519,
+      type: EncryptionKeyType.X25519,
     },
     serviceEndpoints,
   })

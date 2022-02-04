@@ -237,7 +237,7 @@ describe('RequestForAttestation', () => {
     })
     identityDave = await LightDidDetails.fromIdentifier(
       encodeAddress(daveKey.publicKey, 38),
-      VerificationKeyType.ed25519
+      VerificationKeyType.Ed25519
     )
 
     const credential = await buildCredential(
@@ -270,7 +270,7 @@ describe('RequestForAttestation', () => {
     })
     migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedAndDeletedKey.publicKey, 38),
-      VerificationKeyType.ed25519
+      VerificationKeyType.Ed25519
     )
     migratedAndDeletedFullDid = new FullDidDetails({
       identifier: migratedAndDeletedLightDid.identifier,
@@ -465,7 +465,7 @@ describe('create presentation', () => {
     })
     unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(unmigratedClaimerKey.publicKey, 38),
-      VerificationKeyType.sr25519
+      VerificationKeyType.Sr25519
     )
     const migratedClaimerKey = await keystore.generateKeypair({
       alg: SigningAlgorithms.Sr25519,
@@ -473,7 +473,7 @@ describe('create presentation', () => {
     })
     migratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedClaimerKey.publicKey, 38),
-      VerificationKeyType.sr25519
+      VerificationKeyType.Sr25519
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
@@ -495,7 +495,7 @@ describe('create presentation', () => {
     })
     migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedThenDeletedKey.publicKey, 38),
-      VerificationKeyType.ed25519
+      VerificationKeyType.Ed25519
     )
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedThenDeletedClaimerLightDid as LightDidDetails

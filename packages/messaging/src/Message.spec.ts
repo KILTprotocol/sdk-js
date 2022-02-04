@@ -130,7 +130,7 @@ beforeAll(async () => {
       ) as LightDidSupportedVerificationKeyTypes,
       ...aliceAuthKey,
     },
-    encryptionKey: { type: EncryptionKeyType.x25519, ...aliceEncKey },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
   })
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: {
@@ -139,7 +139,7 @@ beforeAll(async () => {
       ) as LightDidSupportedVerificationKeyTypes,
       ...aliceAuthKey,
     },
-    encryptionKey: { type: EncryptionKeyType.x25519, ...aliceEncKey },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
   })
   aliceFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
@@ -161,7 +161,7 @@ beforeAll(async () => {
       ) as LightDidSupportedVerificationKeyTypes,
       ...bobAuthKey,
     },
-    encryptionKey: { type: EncryptionKeyType.x25519, ...bobEncKey },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
   })
   bobLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: {
@@ -170,7 +170,7 @@ beforeAll(async () => {
       ) as LightDidSupportedVerificationKeyTypes,
       ...bobAuthKey,
     },
-    encryptionKey: { type: EncryptionKeyType.x25519, ...bobEncKey },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
   })
   bobFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(

@@ -9,12 +9,14 @@ import { checkAddress } from '@polkadot/util-crypto'
 import { isHex, u8aToHex } from '@polkadot/util'
 
 import {
+  DidKey,
   DidSignature,
   DidVerificationKey,
   EncryptionKeyType,
   IDidDetails,
   IDidIdentifier,
   IDidResolver,
+  NewDidKey,
   VerificationKeyRelationship,
   VerificationKeyType,
 } from '@kiltprotocol/types'
@@ -151,9 +153,9 @@ export function isSameSubject(
 }
 
 const signatureAlgForKeyType: Record<VerificationKeyType, string> = {
-  [VerificationKeyType.ed25519]: 'ed25519',
-  [VerificationKeyType.sr25519]: 'sr25519',
-  [VerificationKeyType.ecdsa]: 'ecdsa-secp256k1',
+  [VerificationKeyType.Ed25519]: 'ed25519',
+  [VerificationKeyType.Sr25519]: 'sr25519',
+  [VerificationKeyType.Ecdsa]: 'ecdsa-secp256k1',
 }
 export function getSignatureAlgForKeyType(
   keyType: VerificationKeyType
@@ -162,12 +164,20 @@ export function getSignatureAlgForKeyType(
 }
 
 const encryptionAlgForKeyType: Record<EncryptionKeyType, string> = {
-  [EncryptionKeyType.x25519]: 'x25519-xsalsa20-poly1305',
+  [EncryptionKeyType.X25519]: 'x25519-xsalsa20-poly1305',
 }
 export function getEncryptionAlgForKeyType(
   keyType: EncryptionKeyType
 ): string | undefined {
   return encryptionAlgForKeyType[keyType]
+}
+
+export function isVerificationKey(key: NewDidKey | DidKey): boolean {
+  return Object.values(VerificationKeyType).some((kt) => kt === key.type)
+}
+
+export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
+  return Object.values(EncryptionKeyType).some((kt) => kt === key.type)
 }
 
 export function validateKiltDid(

@@ -40,31 +40,31 @@ const existingDidDetails: IDidChainRecordJSON = {
     {
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.sr25519,
+      type: VerificationKeyType.Sr25519,
       includedAt: new BN(0),
     },
     {
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.x25519,
+      type: EncryptionKeyType.X25519,
       includedAt: new BN(0),
     },
     {
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.x25519,
+      type: EncryptionKeyType.X25519,
       includedAt: new BN(0),
     },
     {
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.ed25519,
+      type: VerificationKeyType.Ed25519,
       includedAt: new BN(0),
     },
     {
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.ecdsa,
+      type: VerificationKeyType.Ecdsa,
       includedAt: new BN(0),
     },
   ],
@@ -134,7 +134,7 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('auth#1')).toStrictEqual<DidKey>({
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.sr25519,
+      type: VerificationKeyType.Sr25519,
       includedAt: new BN(0),
     })
     expect(
@@ -143,7 +143,7 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'auth#1',
         publicKey: new Uint8Array(32).fill(0),
-        type: VerificationKeyType.sr25519,
+        type: VerificationKeyType.Sr25519,
         includedAt: new BN(0),
       },
     ])
@@ -152,13 +152,13 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('enc#1')).toStrictEqual<DidKey>({
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.x25519,
+      type: EncryptionKeyType.X25519,
       includedAt: new BN(0),
     })
     expect(fullDidDetails?.getKey('enc#2')).toStrictEqual<DidKey>({
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.x25519,
+      type: EncryptionKeyType.X25519,
       includedAt: new BN(0),
     })
     expect(fullDidDetails?.getKeys(KeyRelationship.keyAgreement)).toStrictEqual<
@@ -167,13 +167,13 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'enc#1',
         publicKey: new Uint8Array(32).fill(1),
-        type: EncryptionKeyType.x25519,
+        type: EncryptionKeyType.X25519,
         includedAt: new BN(0),
       },
       {
         id: 'enc#2',
         publicKey: new Uint8Array(32).fill(2),
-        type: EncryptionKeyType.x25519,
+        type: EncryptionKeyType.X25519,
         includedAt: new BN(0),
       },
     ])
@@ -182,7 +182,7 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('att#1')).toStrictEqual<DidKey>({
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.ed25519,
+      type: VerificationKeyType.Ed25519,
       includedAt: new BN(0),
     })
     expect(
@@ -191,7 +191,7 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'att#1',
         publicKey: new Uint8Array(32).fill(3),
-        type: VerificationKeyType.ed25519,
+        type: VerificationKeyType.Ed25519,
         includedAt: new BN(0),
       },
     ])
@@ -200,7 +200,7 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('del#1')).toStrictEqual<DidKey>({
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.ecdsa,
+      type: VerificationKeyType.Ecdsa,
       includedAt: new BN(0),
     })
     expect(
@@ -209,7 +209,7 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'del#1',
         publicKey: new Uint8Array(32).fill(4),
-        type: VerificationKeyType.ecdsa,
+        type: VerificationKeyType.Ecdsa,
         includedAt: new BN(0),
       },
     ])
