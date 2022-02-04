@@ -59,25 +59,18 @@ const log = ConfigService.LoggingFactory.getLogger('Did')
 type KeyId = Hash
 type ChainDidKeyAgreementKeys = BTreeSet<KeyId>
 
-interface ChainDidVerificationKey<T extends string = VerificationKeyType>
-  extends Enum {
-  type: T
-  value: Vec<u8>
-}
-
-interface ChainDidEncryptionKey<T extends string = EncryptionKeyType>
-  extends Enum {
-  type: T
+interface ChainDidKey extends Enum {
+  type: string
   value: Vec<u8>
 }
 
 interface ChainDidPublicKey extends Enum {
   isPublicVerificationKey: boolean
-  asPublicVerificationKey: ChainDidVerificationKey
+  asPublicVerificationKey: ChainDidKey
   isPublicEncryptionKey: boolean
-  asPublicEncryptionKey: ChainDidEncryptionKey
+  asPublicEncryptionKey: ChainDidKey
   type: 'PublicVerificationKey' | 'PublicEncryptionKey'
-  value: ChainDidVerificationKey | ChainDidEncryptionKey
+  value: ChainDidKey
 }
 
 interface ChainDidPublicKeyDetails extends Struct {
@@ -189,14 +182,26 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
   }
 }
 
+const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
+  Sr25519: VerificationKeyType.sr25519,
+  Ed25519: VerificationKeyType.ed25519,
+  Ecdsa: VerificationKeyType.ecdsa,
+  X25519: EncryptionKeyType.x25519,
+}
 function decodeDidPublicKeyDetails(
   keyId: Hash,
   keyDetails: ChainDidPublicKeyDetails
 ): DidKey {
   const key = keyDetails.key.value
+  const keyType = chainTypeToDidKeyType[key.type]
+  if (!keyType) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `Unsupported key type "${key.type}" found on chain.`
+    )
+  }
   return {
     id: keyId.toHex(),
-    type: key.type,
+    type: keyType,
     publicKey: key.value.toU8a(),
     includedAt: keyDetails.blockNumber.toBn(),
   }
@@ -566,10 +571,15 @@ export async function generateDidAuthenticatedTx({
 
 // ### Chain utils
 export function encodeDidSignature(
-  key: Pick<ChainDidVerificationKey, 'type'>,
+  key: Pick<ChainDidKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  const alg = getSignatureAlgForKeyType(key.type)
+  if (!Object.keys(VerificationKeyType).some((kt) => kt === key.type)) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
+    )
+  }
+  const alg = getSignatureAlgForKeyType(key.type as VerificationKeyType)
   if (!alg) {
     throw SDKErrors.ERROR_DID_ERROR(
       `The provided type ${key.type} does not match any known algorithm.`

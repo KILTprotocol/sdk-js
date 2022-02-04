@@ -158,7 +158,7 @@ const signatureAlgForKeyType: Record<VerificationKeyType, string> = {
 export function getSignatureAlgForKeyType(
   keyType: VerificationKeyType
 ): string | undefined {
-  return signatureAlgForKeyType[keyType.toLowerCase()]
+  return signatureAlgForKeyType[keyType]
 }
 
 const encryptionAlgForKeyType: Record<EncryptionKeyType, string> = {
@@ -167,7 +167,7 @@ const encryptionAlgForKeyType: Record<EncryptionKeyType, string> = {
 export function getEncryptionAlgForKeyType(
   keyType: EncryptionKeyType
 ): string | undefined {
-  return encryptionAlgForKeyType[keyType.toLowerCase()]
+  return encryptionAlgForKeyType[keyType]
 }
 
 export function validateKiltDid(

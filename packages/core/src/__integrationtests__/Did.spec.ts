@@ -30,7 +30,6 @@ import {
   EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
-  KeystoreSigner,
   NewDidKey,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
@@ -72,11 +71,7 @@ describe('write and didDeleteTx', () => {
     const tx = await DidChain.generateCreateTxFromDidDetails(
       details,
       otherAccount.address,
-      {
-        alg: details.authenticationKey.type,
-        signer: keystore as KeystoreSigner<string>,
-        signingPublicKey: details.authenticationKey.publicKey,
-      }
+      keystore
     )
 
     await expect(
@@ -105,11 +100,7 @@ describe('write and didDeleteTx', () => {
     const tx = await DidChain.generateCreateTxFromDidDetails(
       newDetails,
       paymentAccount.address,
-      {
-        alg: newDetails.authenticationKey.type,
-        signer: keystore as KeystoreSigner<string>,
-        signingPublicKey: newDetails.authenticationKey.publicKey,
-      }
+      keystore
     )
 
     await expect(
@@ -243,26 +234,14 @@ describe('write and didDeleteTx', () => {
 })
 
 it('creates and updates DID, and then reclaims the deposit back', async () => {
-  const { publicKey, alg } = await keystore.generateKeypair({
-    alg: SigningAlgorithms.Ed25519,
-  })
-  const newDetails = LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey,
-      type: DemoKeystore.getKeyTypeForAlg(
-        alg
-      ) as LightDidSupportedVerificationKeyTypes,
-    },
-  })
+  const newDetails = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
+    keystore
+  )
 
   const tx = await DidChain.generateCreateTxFromDidDetails(
     newDetails,
     paymentAccount.address,
-    {
-      alg: newDetails.authenticationKey.type,
-      signer: keystore as KeystoreSigner<string>,
-      signingPublicKey: newDetails.authenticationKey.publicKey,
-    }
+    keystore
   )
 
   await expect(
@@ -280,7 +259,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const newKeyDetails: NewDidKey = {
     publicKey: newKeypair.publicKey,
     type: DemoKeystore.getKeyTypeForAlg(
-      alg
+      newKeypair.alg
     ) as LightDidSupportedVerificationKeyTypes,
   }
 

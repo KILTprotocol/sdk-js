@@ -280,7 +280,7 @@ export class DemoKeystore
   }
 
   public static getKeypairTypeForAlg(alg: string): KeypairType {
-    return keypairTypeForAlg[alg.toLowerCase()]
+    return keypairTypeForAlg[alg]
   }
 
   public static getKeyTypeForAlg(alg: string): DidKey['type'] {

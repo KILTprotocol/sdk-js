@@ -42,12 +42,11 @@ beforeAll(async () => {
   await initializeApi()
   tokenHolder = await createEndowedTestAccount()
   signer = new DemoKeystore()
-  ;[attester] = await Promise.all([
+  ;[attester, anotherAttester, claimer] = await Promise.all([
     createFullDidFromSeed(tokenHolder, signer),
-    // createFullDidFromSeed(tokenHolder, signer),
-    // createFullDidFromSeed(tokenHolder, signer),
+    createFullDidFromSeed(tokenHolder, signer),
+    createFullDidFromSeed(tokenHolder, signer),
   ])
-  console.log(JSON.stringify(attester))
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
@@ -57,7 +56,7 @@ it('fetches the correct deposit amount', async () => {
   )
 })
 
-describe.skip('handling attestations that do not exist', () => {
+describe('handling attestations that do not exist', () => {
   const claimHash = Crypto.hashStr('abcde')
   it('Attestation.query', async () => {
     return expect(Attestation.query(claimHash)).resolves.toBeNull()
@@ -90,7 +89,7 @@ describe.skip('handling attestations that do not exist', () => {
   }, 30_000)
 })
 
-describe.skip('When there is an attester, claimer and ctype drivers license', () => {
+describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
     const ctypeExists = await isCtypeOnChain(driversLicenseCType)
     if (!ctypeExists) {

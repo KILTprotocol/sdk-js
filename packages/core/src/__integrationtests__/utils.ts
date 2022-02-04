@@ -160,13 +160,11 @@ export async function createFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
 ): Promise<FullDidDetails> {
-  console.log('***')
   const fullDid = await lightDidForId.migrate(
     identity.address,
     keystore,
     getDefaultMigrationHandler(identity)
   )
-  console.log('****')
 
   const addAttestationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
     KeyRelationship.assertionMethod,
@@ -178,7 +176,6 @@ export async function createFullDidFromLightDid(
   )
 
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  console.log('Before authorizeBatch')
   const authenticatedBatch = await fullDid.authorizeBatch(
     api.tx.utility.batch([
       addAttestationKeyExtrinsic,
@@ -188,9 +185,7 @@ export async function createFullDidFromLightDid(
     identity.address,
     KeyRelationship.authentication
   )
-  console.log('After authorizeBatch')
   await submitExtrinsicWithResign(authenticatedBatch, identity)
-  console.log('*****')
 
   return FullDidDetails.fromChainInfo(
     fullDid.identifier
@@ -202,17 +197,9 @@ export async function createFullDidFromSeed(
   keystore: DemoKeystore,
   seed: string = randomAsHex()
 ): Promise<FullDidDetails> {
-  console.log('*')
   const lightDid = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
     keystore,
     seed
   )
-  console.log('**')
-  console.log(JSON.stringify(lightDid.getKeys()))
-  console.log(JSON.stringify(lightDid.getEndpoints()))
-  const fullDid = await createFullDidFromLightDid(identity, lightDid, keystore)
-  console.log('******')
-  console.log(JSON.stringify(fullDid.getKeys()))
-  console.log(JSON.stringify(fullDid.getEndpoints()))
-  return fullDid
+  return createFullDidFromLightDid(identity, lightDid, keystore)
 }
