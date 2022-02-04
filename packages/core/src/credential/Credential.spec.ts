@@ -40,7 +40,6 @@ import { RequestForAttestation } from '../requestforattestation/RequestForAttest
 import { Credential } from './Credential'
 import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
-import '../../../../testingTools/jestErrorCodeMatcher'
 
 jest.mock('../attestation/Attestation.chain')
 

@@ -250,7 +250,7 @@ export class Message implements IMessage {
    * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
    * @param senderDetails The sender's DID to use to fetch the right encryption key.
    * @param keystore The keystore used to perform the cryptographic operations.
-   * @param receiverKeyId The full ket ID of the receiver.
+   * @param receiverKeyId The full key ID of the receiver.
    * @param encryptionOptions Options to perform the encryption operation.
    * @param encryptionOptions.resolver The DID resolver to use.
    *
