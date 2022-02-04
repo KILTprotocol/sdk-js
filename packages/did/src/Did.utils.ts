@@ -11,10 +11,12 @@ import { isHex, u8aToHex } from '@polkadot/util'
 import {
   DidSignature,
   DidVerificationKey,
+  EncryptionKeyType,
   IDidDetails,
   IDidIdentifier,
   IDidResolver,
   VerificationKeyRelationship,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
@@ -146,6 +148,26 @@ export function isSameSubject(
     identifierB = identifierB.substring(2)
   }
   return identifierA === identifierB
+}
+
+const signatureAlgForKeyType: Record<VerificationKeyType, string> = {
+  [VerificationKeyType.ed25519]: 'ed25519',
+  [VerificationKeyType.sr25519]: 'sr25519',
+  [VerificationKeyType.ecdsa]: 'ecdsa-secp256k1',
+}
+export function getSignatureAlgForKeyType(
+  keyType: VerificationKeyType
+): string | undefined {
+  return signatureAlgForKeyType[keyType.toLowerCase()]
+}
+
+const encryptionAlgForKeyType: Record<EncryptionKeyType, string> = {
+  [EncryptionKeyType.x25519]: 'x25519-xsalsa20-poly1305',
+}
+export function getEncryptionAlgForKeyType(
+  keyType: EncryptionKeyType
+): string | undefined {
+  return encryptionAlgForKeyType[keyType.toLowerCase()]
 }
 
 export function validateKiltDid(

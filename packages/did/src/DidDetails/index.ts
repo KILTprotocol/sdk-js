@@ -6,7 +6,6 @@
  */
 
 export * from './DidDetails.js'
-export { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 export * from './LightDidDetails.js'
 export {
   LightDidSupportedVerificationKeyTypes,

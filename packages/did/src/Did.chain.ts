@@ -39,6 +39,7 @@ import {
   IDidIdentifier,
   IIdentity,
   KeyRelationship,
+  KeystoreSigner,
   KeystoreSigningOptions,
   NewDidKey,
   SubmittableExtrinsic,
@@ -48,7 +49,8 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { DidDetails, getSignatureAlgForKeyType } from './DidDetails/index.js'
+import { DidDetails } from './DidDetails/index.js'
+import { getSignatureAlgForKeyType } from './Did.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
@@ -348,10 +350,16 @@ export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
 export async function generateCreateTxFromDidDetails(
   did: DidDetails,
   submitterAddress: IIdentity['address'],
-  signingOptions: KeystoreSigningOptions
+  signer: KeystoreSigner
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const { signer, signingPublicKey, alg } = signingOptions
+
+  const { authenticationKey } = did
+  if (!authenticationKey) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The provided DID does not have an authentication key to sign the creation operation.`
+    )
+  }
 
   const newKeyAgreementKeys: PublicKeyEnum[] = did
     .getKeys(KeyRelationship.keyAgreement)
@@ -403,8 +411,8 @@ export async function generateCreateTxFromDidDetails(
   const signature = await signer.sign({
     data: encodedDidCreationDetails.toU8a(),
     meta: {},
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
+    publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
+    alg: getSignatureAlgForKeyType(authenticationKey.type) as string,
   })
   return api.tx.did.create(encodedDidCreationDetails, {
     [signature.alg]: signature.data,

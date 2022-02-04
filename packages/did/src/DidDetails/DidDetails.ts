@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
+import {
   DidEncryptionKey,
   DidKey,
   DidPublicKey,
@@ -15,16 +15,15 @@ import type {
   IDidDetails,
   IDidIdentifier,
   KeystoreSigner,
+  VerificationKeyType,
+  KeyRelationship,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { u8aToHex } from '@polkadot/util'
 
 import type { DidCreationDetails, MapKeysToRelationship } from '../types.js'
-import {
-  checkDidCreationDetails,
-  getSignatureAlgForKeyType,
-} from './DidDetails.utils.js'
+import { checkDidCreationDetails } from './DidDetails.utils.js'
+import { getSignatureAlgForKeyType } from '../Did.utils.js'
 
 type PublicKeysInner = Map<DidKey['id'], Omit<DidKey, 'id'>>
 type ServiceEndpointsInner = Map<
@@ -162,9 +161,12 @@ export abstract class DidDetails implements IDidDetails {
     keyId: DidVerificationKey['id']
   ): Promise<DidSignature> {
     const key = this.getKey(keyId) as DidVerificationKey
-    if (!key) {
+    if (
+      !key ||
+      !Object.keys(VerificationKeyType).some((kt) => kt === key.type)
+    ) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `failed to find key with ID ${keyId} on DID (${this.did})`
+        `Failed to find verification key with ID ${keyId} on DID (${this.did})`
       )
     }
     const alg = getSignatureAlgForKeyType(key.type)

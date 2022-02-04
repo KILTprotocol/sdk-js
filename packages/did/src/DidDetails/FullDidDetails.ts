@@ -28,7 +28,6 @@ import type {
 } from '../types.js'
 import { getKeyRelationshipForExtrinsic } from './FullDidDetails.utils.js'
 import { DidDetails } from './DidDetails.js'
-import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 import {
   generateDidAuthenticatedTx,
   queryDetails,
@@ -39,6 +38,7 @@ import {
   defaultVerificationDidKeySelection,
   FULL_DID_LATEST_VERSION,
   getKiltDidFromIdentifier,
+  getSignatureAlgForKeyType,
 } from '../Did.utils.js'
 
 // Max nonce value is (2^64) - 1

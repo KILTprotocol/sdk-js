@@ -35,7 +35,6 @@ import {
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils.js'
 import { DidDetails } from './DidDetails.js'
-import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 import { FullDidDetails } from './FullDidDetails.js'
 import {
   getKiltDidFromIdentifier,
@@ -225,11 +224,7 @@ export class LightDidDetails extends DidDetails {
     const creationTx = await generateCreateTxFromDidDetails(
       this,
       submitterAddress,
-      {
-        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
-        signingPublicKey: this.authenticationKey.publicKey,
-        signer,
-      }
+      signer
     )
     await migrationHandler(creationTx)
     const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)

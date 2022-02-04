@@ -6,7 +6,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { KeyRelationship, VerificationKeyType } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 
 import type { DidCreationDetails } from '../types.js'
 import { validateKiltDid } from '../Did.utils.js'
@@ -46,16 +46,4 @@ export function checkDidCreationDetails({
     if (!keyIds.has(id))
       throw SDKErrors.ERROR_DID_ERROR(`No key with id ${id} in "keys"`)
   })
-}
-
-const signatureAlgForKeyType: Record<VerificationKeyType, string> = {
-  [VerificationKeyType.ed25519]: 'ed25519',
-  [VerificationKeyType.sr25519]: 'sr25519',
-  [VerificationKeyType.ecdsa]: 'ecdsa-secp256k1',
-}
-
-export function getSignatureAlgForKeyType(
-  keyType: VerificationKeyType
-): string | undefined {
-  return signatureAlgForKeyType[keyType]
 }

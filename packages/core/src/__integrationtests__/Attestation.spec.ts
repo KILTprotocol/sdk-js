@@ -48,8 +48,6 @@ beforeAll(async () => {
     // createFullDidFromSeed(tokenHolder, signer),
   ])
   console.log(JSON.stringify(attester))
-  console.log(JSON.stringify(anotherAttester))
-  console.log(JSON.stringify(claimer))
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
