@@ -76,6 +76,8 @@ jobs:
         run: unzip build.zip -d .
       - name: lint
         run: yarn lint
+      - name: check dependency duplication
+        run: if ! yarn dedupe --check; then echo "::warning ::Dependencies may be deduplicated"; fi;
 
   test:
     runs-on: ubuntu-latest
