@@ -11,9 +11,10 @@
 
 import {
   DidDocumentPublicKeyType,
+  ICredential,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Attestation, Credential, CType } from '@kiltprotocol/core'
+import { Attestation, CType } from '@kiltprotocol/core'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -52,7 +53,7 @@ const ctype = CType.fromCType({
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 })
 
-const credential = Credential.fromCredential({
+const credential: ICredential = {
   request: {
     claim: {
       contents: {
@@ -99,7 +100,7 @@ const credential = Credential.fromCredential({
     owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     revoked: false,
   },
-})
+}
 
 it('exports credential to VC', () => {
   expect(toVC.fromCredential(credential)).toMatchObject({

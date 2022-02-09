@@ -19,7 +19,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/index.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
 import * as RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils.js'
-import { Credential } from './Credential.js'
+import * as Credential from './Credential.js'
 
 /**
  *  Checks whether the input meets all the required criteria of an ICredential object.

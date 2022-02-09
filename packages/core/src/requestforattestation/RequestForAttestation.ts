@@ -26,13 +26,13 @@ import type {
   IDidResolver,
   DidPublicKey,
   IDelegationNode,
+  ICredential,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
-import { Credential } from '../credential/Credential.js'
 
 function makeSigningData(
   input: IRequestForAttestation,
@@ -45,7 +45,7 @@ function makeSigningData(
 }
 
 export type Options = {
-  legitimations?: Credential[]
+  legitimations?: ICredential[]
   delegationId?: IDelegationNode['id']
 }
 

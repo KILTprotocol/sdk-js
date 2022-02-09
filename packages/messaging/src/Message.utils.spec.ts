@@ -98,8 +98,8 @@ async function buildCredential(
   claimerDid: IDidDetails['did'],
   attesterDid: IDidDetails['did'],
   contents: IClaim['contents'],
-  legitimations: Credential[]
-): Promise<Credential> {
+  legitimations: ICredential[]
+): Promise<ICredential> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -149,7 +149,7 @@ describe('Messaging Utilities', () => {
   let bothSigned: IQuoteAgreement
   let compressedLegitimation: CompressedCredential
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
-  let legitimation: Credential
+  let legitimation: ICredential
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: PartialClaim

@@ -21,10 +21,11 @@ import type {
   IRequestForAttestation,
   DidSignature,
   IAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation'
-import { Credential } from '../credential/Credential'
+// import { Credential } from '../credential/Credential'
 import { CType } from '../ctype'
 
 import * as RequestForAttestation from './RequestForAttestation'
@@ -43,7 +44,7 @@ const rawCType: ICType['schema'] = {
 function buildRequestForAttestation(
   claimerDid: string,
   contents: IClaimContents,
-  legitimations: Credential[]
+  legitimations: ICredential[]
 ): IRequestForAttestation {
   // create claim
 
@@ -70,9 +71,9 @@ describe('RequestForAttestation', () => {
     'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
   let legitimationRequest: IRequestForAttestation
   let legitimationAttestation: IAttestation
-  let legitimation: Credential
+  let legitimation: ICredential
   let legitimationAttestationCharlie: IAttestation
-  let legitimationCharlie: Credential
+  let legitimationCharlie: ICredential
 
   beforeEach(async () => {
     legitimationRequest = buildRequestForAttestation(identityAlice, {}, [])
@@ -82,10 +83,10 @@ describe('RequestForAttestation', () => {
       identityCharlie
     )
     // combine to credential
-    legitimation = new Credential({
+    legitimation = {
       request: legitimationRequest,
       attestation: legitimationAttestation,
-    })
+    }
 
     // build attestation
     legitimationAttestationCharlie = Attestation.fromRequestAndDid(
@@ -93,10 +94,10 @@ describe('RequestForAttestation', () => {
       identityCharlie
     )
     // combine to credential
-    legitimationCharlie = new Credential({
+    legitimationCharlie = {
       request: legitimationRequest,
       attestation: legitimationAttestationCharlie,
-    })
+    }
   })
 
   it.todo('signing and verification')
@@ -143,10 +144,10 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityBob
     )
-    const legitimationBob = new Credential({
+    const legitimationBob = {
       request: legitimationRequest,
       attestation: legitimationAttestationBob,
-    })
+    }
     const reqForAtt = buildRequestForAttestation(
       identityBob,
       {

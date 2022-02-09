@@ -15,7 +15,7 @@ import { BN } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation'
 import { revoke, remove } from '../attestation/Attestation.chain'
-import { Credential } from '../credential/Credential'
+import { Credential } from '../credential'
 import { disconnect } from '../kilt'
 import * as Claim from '../claim/Claim'
 import { CType } from '../ctype'
@@ -154,8 +154,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       request,
       attestation
     )
-    expect(credential.verifyData()).toBe(true)
-    await expect(credential.verify()).resolves.toBe(true)
+    expect(Credential.verifyData(credential)).toBe(true)
+    await expect(Credential.verify(credential)).resolves.toBe(true)
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
     await Attestation.reclaimDeposit(attestation).then((tx) =>
@@ -204,7 +204,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attestation
     )
 
-    await expect(credential.verify()).resolves.toBeFalsy()
+    await expect(Credential.verify(credential)).resolves.toBeFalsy()
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
@@ -241,7 +241,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
-    let credential: Credential
+    let credential: ICredential
 
     beforeAll(async () => {
       const content: IClaim['contents'] = { name: 'Rolfi', age: 18 }
@@ -264,7 +264,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         )
         .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
       credential = Credential.fromRequestAndAttestation(request, attestation)
-      await expect(credential.verify()).resolves.toBe(true)
+      await expect(Credential.verify(credential)).resolves.toBe(true)
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
@@ -304,27 +304,27 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(credential.getHash(), 0)
+        revoke(Credential.getHash(credential), 0)
           .then((call) =>
             claimer.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
           .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
       ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
-      await expect(credential.verify()).resolves.toBe(true)
+      await expect(Credential.verify(credential)).resolves.toBe(true)
     }, 45_000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
-      await expect(credential.verify()).resolves.toBe(true)
-      await revoke(credential.getHash(), 0)
+      await expect(Credential.verify(credential)).resolves.toBe(true)
+      await revoke(Credential.getHash(credential), 0)
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
-      await expect(credential.verify()).resolves.toBeFalsy()
+      await expect(Credential.verify(credential)).resolves.toBeFalsy()
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
-      await remove(credential.getHash(), 0)
+      await remove(Credential.getHash(credential), 0)
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
@@ -420,7 +420,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         LicenseGranted
       )
       await Promise.all([
-        expect(license.verify()).resolves.toBe(true),
+        expect(Credential.verify(license)).resolves.toBe(true),
         expect(
           Attestation.checkValidity(licenseAuthorizationGranted)
         ).resolves.toBe(true),

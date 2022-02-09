@@ -24,7 +24,7 @@ import { DidUtils } from '@kiltprotocol/did'
 import * as CredentialUtils from '../credential/Credential.utils.js'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
-import { Credential } from '../credential/Credential.js'
+import { Credential } from '../credential/index.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)
