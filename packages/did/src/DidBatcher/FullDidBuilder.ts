@@ -123,7 +123,10 @@ export abstract class FullDidBuilder {
       )
     }
     // Otherwise we can safely mark the key for addition.
-    this.newKeyAgreementKeys.set(newKeyId, key)
+    this.newKeyAgreementKeys.set(newKeyId, {
+      publicKey: key.publicKey,
+      type: key.type,
+    })
     return this
   }
 
@@ -174,7 +177,10 @@ export abstract class FullDidBuilder {
         'Another assertion key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
       )
     }
-    this.newAssertionKey = { action: 'update', newKey: key }
+    this.newAssertionKey = {
+      action: 'update',
+      newKey: { publicKey: key.publicKey, type: key.type },
+    }
     return this
   }
 
@@ -224,7 +230,10 @@ export abstract class FullDidBuilder {
         'Another delegation key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
       )
     }
-    this.newDelegationKey = { action: 'update', newKey: key }
+    this.newDelegationKey = {
+      action: 'update',
+      newKey: { publicKey: key.publicKey, type: key.type },
+    }
     return this
   }
 
@@ -274,7 +283,10 @@ export abstract class FullDidBuilder {
       )
     }
     // Otherwise we can safely mark the service endpoint for addition.
-    this.newServiceEndpoints.set(id, details)
+    this.newServiceEndpoints.set(id, {
+      types: details.types,
+      urls: details.urls,
+    })
     return this
   }
 

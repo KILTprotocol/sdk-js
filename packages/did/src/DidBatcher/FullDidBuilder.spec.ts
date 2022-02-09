@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @group unit/didbuilder
+ */
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { ApiPromise } from '@polkadot/api'
@@ -24,14 +28,7 @@ import {
 import { ApiMocks } from '@kiltprotocol/testing'
 
 import { FullDidBuilder, VerificationKeyAction } from './FullDidBuilder'
-
-/**
- * @group unit/didbuilder
- */
-
-function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
-  return key[0].toString()
-}
+import { computeKeyId } from './TestUtils'
 
 jest.mock('./FullDidBuilder.utils.js', () => ({
   deriveChainKeyId: jest.fn((api: ApiPromise, key: NewDidKey): DidKey['id'] =>
@@ -319,6 +316,103 @@ describe('FullDidBuilder', () => {
         ).toStrictEqual<VerificationKeyAction>({
           action: 'delete',
         })
+      })
+    })
+  })
+
+  describe('Service endpoints', () => {
+    const oldServiceEndpoint: DidServiceEndpoint = {
+      id: 'id-old',
+      types: ['type-old'],
+      urls: ['url-old'],
+    }
+    const newServiceEndpoint: DidServiceEndpoint = {
+      id: 'id-new',
+      types: ['type-new'],
+      urls: ['url-new'],
+    }
+
+    describe('.addServiceEndpoint()', () => {
+      it('fails if the service is already present in the DID', async () => {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
+          serviceEndpoints: [oldServiceEndpoint],
+        })
+
+        expect(() => builder.addServiceEndpoint(oldServiceEndpoint)).toThrow()
+      })
+
+      it('fails if the service has already been marked for addition', async () => {
+        const builder = new TestAbstractFullDidBuilder(mockApi)
+
+        expect(() =>
+          builder.addServiceEndpoint(newServiceEndpoint)
+        ).not.toThrow()
+
+        expect(() => builder.addServiceEndpoint(newServiceEndpoint)).toThrow()
+      })
+
+      it('adds the service endpoint successfully', async () => {
+        const builder = new TestAbstractFullDidBuilder(mockApi)
+
+        expect(() =>
+          builder.addServiceEndpoint(newServiceEndpoint)
+        ).not.toThrow()
+
+        expect(
+          // @ts-ignore
+          builder.newServiceEndpoints
+        ).toStrictEqual<
+          Map<DidServiceEndpoint['id'], Omit<DidServiceEndpoint, 'id'>>
+        >(
+          new Map([
+            [
+              newServiceEndpoint.id,
+              {
+                types: newServiceEndpoint.types,
+                urls: newServiceEndpoint.urls,
+              },
+            ],
+          ])
+        )
+      })
+    })
+
+    describe('.removeServiceEndpoint()', () => {
+      it('fails if the service is not present in the DID', async () => {
+        const builder = new TestAbstractFullDidBuilder(mockApi)
+
+        expect(() => builder.removeServiceEndpoint('random-id')).toThrow()
+      })
+
+      it('fails if the service has already been marked for deletion', async () => {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
+          serviceEndpoints: [oldServiceEndpoint],
+        })
+
+        expect(() =>
+          builder.removeServiceEndpoint(oldServiceEndpoint.id)
+        ).not.toThrow()
+
+        expect(() =>
+          builder.removeServiceEndpoint(oldServiceEndpoint.id)
+        ).toThrow()
+      })
+
+      it('removes the service endpoint successfully', async () => {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
+          serviceEndpoints: [oldServiceEndpoint],
+        })
+
+        expect(() =>
+          builder.removeServiceEndpoint(oldServiceEndpoint.id)
+        ).not.toThrow()
+
+        expect(
+          // @ts-ignore
+          builder.serviceEndpointsToDelete
+        ).toStrictEqual<Set<DidServiceEndpoint['id']>>(
+          new Set([oldServiceEndpoint.id])
+        )
       })
     })
   })

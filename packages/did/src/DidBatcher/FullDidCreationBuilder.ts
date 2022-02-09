@@ -17,7 +17,6 @@ import { encodeAddress } from '@polkadot/util-crypto'
 
 import {
   DidEncryptionKey,
-  DidKey,
   DidServiceEndpoint,
   IIdentity,
   KeyRelationship,
@@ -45,12 +44,35 @@ export type FullDidCreationHandler = (
 export class FullDidCreationBuilder extends FullDidBuilder {
   private authenticationKey: NewDidVerificationKey
 
+  // Marks all provided details as to-be-added to the DID. Hence, they cannot be marked for deletion in the same operation.
   public constructor(
     api: ApiPromise,
-    details: FullDidCreationBuilderCreationDetails
+    {
+      authenticationKey,
+      keyAgreementKeys = [],
+      assertionKey,
+      delegationKey,
+      serviceEndpoints = [],
+    }: FullDidCreationBuilderCreationDetails
   ) {
-    super(api, details)
-    this.authenticationKey = details.authenticationKey
+    super(api)
+    this.authenticationKey = {
+      publicKey: authenticationKey.publicKey,
+      type: authenticationKey.type,
+    }
+
+    keyAgreementKeys.forEach((key) => {
+      this.addEncryptionKey(key)
+    })
+    if (assertionKey) {
+      this.setAttestationKey(assertionKey)
+    }
+    if (delegationKey) {
+      this.setDelegationKey(delegationKey)
+    }
+    serviceEndpoints.forEach((service) => {
+      this.addServiceEndpoint(service)
+    })
   }
 
   public static fromLightDidDetails(
