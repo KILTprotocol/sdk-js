@@ -14,19 +14,22 @@
 
 import { ApiPromise } from '@polkadot/api'
 
-import type {
+import {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
   DidVerificationKey,
+  IIdentity,
+  KeystoreSigner,
   NewDidEncryptionKey,
   NewDidVerificationKey,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'
 
-export type FullDidBuilderCreationDetails = {
+export type DidBuilderCreationDetails = {
   keyAgreementKeys?: DidEncryptionKey[]
   assertionKey?: DidVerificationKey
   delegationKey?: DidVerificationKey
@@ -80,12 +83,9 @@ export abstract class FullDidBuilder {
   // Service endpoints to delete, by their ID.
   protected serviceEndpointsToDelete: Set<DidServiceEndpoint['id']> = new Set()
 
-  private consumed = false
+  protected consumed = false
 
-  public constructor(
-    api: ApiPromise,
-    details: FullDidBuilderCreationDetails = {}
-  ) {
+  public constructor(api: ApiPromise, details: DidBuilderCreationDetails = {}) {
     details.keyAgreementKeys?.forEach(({ id, ...keyDetails }) => {
       this.oldKeyAgreementKeys.set(id, keyDetails)
     })
@@ -303,7 +303,8 @@ export abstract class FullDidBuilder {
     return this
   }
 
-  protected consume(): void {
-    this.consumed = true
-  }
+  public abstract consume(
+    signer: KeystoreSigner,
+    submitter: IIdentity['address']
+  ): Promise<SubmittableExtrinsic>
 }

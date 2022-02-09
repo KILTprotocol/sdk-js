@@ -14,9 +14,11 @@ import {
   DidKey,
   DidServiceEndpoint,
   EncryptionKeyType,
+  KeystoreSigner,
   NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
+  SubmittableExtrinsic,
   VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ApiMocks } from '@kiltprotocol/testing'
@@ -37,8 +39,17 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
   ),
 }))
 
-// Class to test the abstract class FullDidBuilder
-class TestAbstractFullDidBuilder extends FullDidBuilder {}
+class TestAbstractFullDidBuilder extends FullDidBuilder {
+  public consume(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    signer: KeystoreSigner<any>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    submitter: string
+    // @ts-ignore
+  ): Promise<SubmittableExtrinsic> {
+    this.consumed = true
+  }
+}
 
 describe('FullDidBuilder', () => {
   const mockApi = ApiMocks.createAugmentedApi()

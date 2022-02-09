@@ -18,7 +18,7 @@ import {
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import type {
-  DidCreationDetails,
+  DidConstructorDetails,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
@@ -51,7 +51,7 @@ export class LightDidDetails extends DidDetails {
 
   private constructor(
     identifier: IDidIdentifier,
-    { did, keys, keyRelationships, serviceEndpoints = {} }: DidCreationDetails
+    { did, keys, keyRelationships, serviceEndpoints = {} }: DidConstructorDetails
   ) {
     super({ did, keys, keyRelationships, serviceEndpoints })
 

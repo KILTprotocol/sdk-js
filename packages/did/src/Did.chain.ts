@@ -51,6 +51,7 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { DidDetails } from './DidDetails/index.js'
 import { getSignatureAlgForKeyType } from './Did.utils.js'
+import { FullDidCreationDetails } from './types.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
@@ -352,60 +353,46 @@ export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   return { [type]: publicKey }
 }
 
-export async function generateCreateTxFromDidDetails(
-  did: DidDetails,
+export async function generateCreateTxFromCreationDetails(
+  details: FullDidCreationDetails,
   submitterAddress: IIdentity['address'],
   signer: KeystoreSigner
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
 
-  const { authenticationKey } = did
-  if (!authenticationKey) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The provided DID does not have an authentication key to sign the creation operation.`
-    )
-  }
+  const {
+    authenticationKey,
+    keyAgreementKeys = [],
+    assertionKey,
+    delegationKey,
+    serviceEndpoints = [],
+  } = details
 
-  const newKeyAgreementKeys: PublicKeyEnum[] = did
-    .getKeys(KeyRelationship.keyAgreement)
-    .map(({ publicKey }) => {
+  const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
+    ({ publicKey }) => {
       return formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
-    })
+    }
+  )
 
-  // For now, it only takes the first attestation key, if present.
-  const attestationKeys = did.getKeys(KeyRelationship.assertionMethod)
-  if (attestationKeys.length > 1) {
-    log.warn(
-      `More than one attestation key (${attestationKeys.length}) specified. Only the first will be stored on the chain.`
-    )
-  }
-  const newAttestationKey: PublicKeyEnum | undefined = attestationKeys[0]
-    ? formatPublicKey(attestationKeys[0])
+  const newAssertionKey = assertionKey
+    ? formatPublicKey(assertionKey)
+    : undefined
+  const newDelegationKey = delegationKey
+    ? formatPublicKey(delegationKey)
     : undefined
 
-  // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getKeys(KeyRelationship.capabilityDelegation)
-  if (delegationKeys.length > 1) {
-    log.warn(
-      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
-    )
-  }
-  const newDelegationKey: PublicKeyEnum | undefined = delegationKeys[0]
-    ? formatPublicKey(delegationKeys[0])
-    : undefined
-
-  const newServiceDetails = did.getEndpoints().map((service) => {
+  const newServiceEndpoints = serviceEndpoints.map((service) => {
     const { id, urls } = service
     return { id, urls, serviceTypes: service.types }
   })
 
   const rawCreationDetails = {
-    did: did.identifier,
+    did: details.identifier,
     submitter: submitterAddress,
     newKeyAgreementKeys,
-    newAttestationKey,
+    newAttestationKey: newAssertionKey,
     newDelegationKey,
-    newServiceDetails,
+    newServiceEndpoints,
   }
 
   const encodedDidCreationDetails = api.registry.createType(
@@ -422,6 +409,62 @@ export async function generateCreateTxFromDidDetails(
   return api.tx.did.create(encodedDidCreationDetails, {
     [signature.alg]: signature.data,
   })
+}
+
+export async function generateCreateTxFromDidDetails(
+  did: DidDetails,
+  submitterAddress: IIdentity['address'],
+  signer: KeystoreSigner
+): Promise<SubmittableExtrinsic> {
+  const { authenticationKey } = did
+  if (!authenticationKey) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The provided DID does not have an authentication key to sign the creation operation.`
+    )
+  }
+
+  const keyAgreementKeys = did.getKeys(
+    KeyRelationship.keyAgreement
+  ) as DidEncryptionKey[]
+
+  // For now, it only takes the first attestation key, if present.
+  const assertionKeys = did.getKeys(
+    KeyRelationship.assertionMethod
+  ) as DidVerificationKey[]
+  if (assertionKeys.length > 1) {
+    log.warn(
+      `More than one attestation key (${assertionKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const assertionKey = assertionKeys.pop()
+
+  // For now, it only takes the first delegation key, if present.
+  const delegationKeys = did.getKeys(
+    KeyRelationship.capabilityDelegation
+  ) as DidVerificationKey[]
+  if (delegationKeys.length > 1) {
+    log.warn(
+      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const delegationKey = delegationKeys.pop()
+
+  const serviceEndpoints = did.getEndpoints()
+
+  const fullDidCreationDetails: FullDidCreationDetails = {
+    identifier: did.identifier,
+    authenticationKey,
+    keyAgreementKeys,
+    assertionKey,
+    delegationKey,
+    serviceEndpoints,
+  }
+
+  return generateCreateTxFromCreationDetails(
+    fullDidCreationDetails,
+    submitterAddress,
+    signer
+  )
 }
 
 export async function getSetKeyExtrinsic(

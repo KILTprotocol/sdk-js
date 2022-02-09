@@ -21,7 +21,7 @@ import {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { u8aToHex } from '@polkadot/util'
 
-import type { DidCreationDetails, MapKeysToRelationship } from '../types.js'
+import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
 import { checkDidCreationDetails } from './DidDetails.utils.js'
 import { getSignatureAlgForKeyType } from '../Did.utils.js'
 
@@ -48,7 +48,7 @@ export abstract class DidDetails implements IDidDetails {
     keys,
     keyRelationships,
     serviceEndpoints = {},
-  }: DidCreationDetails) {
+  }: DidConstructorDetails) {
     checkDidCreationDetails({
       did,
       keys,

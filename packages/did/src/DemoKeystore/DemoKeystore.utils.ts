@@ -16,7 +16,7 @@ import { DidKey, EncryptionKeyType } from '@kiltprotocol/types'
 
 import { getKiltDidFromIdentifier } from '../Did.utils.js'
 import { LightDidDetails, FullDidDetails } from '../DidDetails/index.js'
-import { DidCreationDetails, PublicKeys } from '../types.js'
+import { DidConstructorDetails, PublicKeys } from '../types.js'
 import {
   DemoKeystore,
   EncryptionAlgorithms,
@@ -111,7 +111,7 @@ export async function createLocalDemoFullDidFromSeed(
     signingKeyType
   )
 
-  const fullDidCreationDetails: DidCreationDetails = {
+  const fullDidCreationDetails: DidConstructorDetails = {
     did,
     keyRelationships: {
       authentication: new Set([authKey.id]),
@@ -150,7 +150,7 @@ export async function createLocalDemoFullDidFromLightDid(
     keys[encKey.id] = encKey
   }
 
-  const fullDidCreationDetails: DidCreationDetails = {
+  const fullDidCreationDetails: DidConstructorDetails = {
     did: getKiltDidFromIdentifier(identifier, 'full'),
     keyRelationships: {
       authentication: new Set([authKey.id]),

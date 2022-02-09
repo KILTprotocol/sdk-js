@@ -20,7 +20,7 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import type {
-  DidCreationDetails,
+  DidConstructorDetails,
   DidVerificationKeySelectionHandler,
   MapKeysToRelationship,
   PublicKeys,
@@ -65,7 +65,7 @@ export class FullDidDetails extends DidDetails {
     keys,
     keyRelationships,
     serviceEndpoints = {},
-  }: DidCreationDetails & { identifier: IDidIdentifier }) {
+  }: DidConstructorDetails & { identifier: IDidIdentifier }) {
     super({ did, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier

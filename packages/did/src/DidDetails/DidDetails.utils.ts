@@ -8,14 +8,14 @@
 import { SDKErrors } from '@kiltprotocol/utils'
 import { KeyRelationship } from '@kiltprotocol/types'
 
-import type { DidCreationDetails } from '../types.js'
+import type { DidConstructorDetails } from '../types.js'
 import { validateKiltDid } from '../Did.utils.js'
 
 export function checkDidCreationDetails({
   did,
   keys,
   keyRelationships,
-}: DidCreationDetails): void {
+}: DidConstructorDetails): void {
   validateKiltDid(did, false)
   if (keyRelationships[KeyRelationship.authentication]?.size !== 1) {
     throw Error(

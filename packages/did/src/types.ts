@@ -11,7 +11,10 @@ import type {
   DidServiceEndpoint,
   DidVerificationKey,
   IDidDetails,
+  IDidIdentifier,
   KeyRelationship,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
 } from '@kiltprotocol/types'
 
 /**
@@ -41,11 +44,20 @@ export type DidEncryptionKeySelectionHandler = (
   keys: DidEncryptionKey[]
 ) => Promise<DidEncryptionKey | null>
 
-export type DidCreationDetails = {
+export type DidConstructorDetails = {
   did: IDidDetails['did']
   // Accepts a list of keys where the ID does not include the DID URI.
   keys: PublicKeys
   keyRelationships: MapKeysToRelationship
   // Accepts a list of service endpoints where the ID does not include the DID URI.
   serviceEndpoints?: ServiceEndpoints
+}
+
+export type FullDidCreationDetails = {
+  identifier: IDidIdentifier
+  authenticationKey: NewDidVerificationKey
+  keyAgreementKeys?: NewDidEncryptionKey[]
+  assertionKey?: NewDidVerificationKey
+  delegationKey?: NewDidVerificationKey
+  serviceEndpoints?: DidServiceEndpoint[]
 }
