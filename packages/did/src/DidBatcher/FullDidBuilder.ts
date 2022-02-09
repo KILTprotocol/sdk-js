@@ -22,10 +22,8 @@ import type {
   NewDidEncryptionKey,
   NewDidVerificationKey,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { DidDetails } from '../DidDetails/DidDetails.js'
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'
 
 export type FullDidBuilderCreationDetails = {
@@ -40,7 +38,7 @@ export type VerificationKeyAction = {
   // newKey is defined only if action === 'update'
   newKey?: NewDidVerificationKey
 }
-export class FullDidBuilder {
+export abstract class FullDidBuilder {
   private apiObject: ApiPromise
 
   // Old key agreement key as {id -> details}
@@ -56,9 +54,9 @@ export class FullDidBuilder {
   > = new Map()
 
   // Old assertion key, if present
-  protected oldAssertionKey: DidVerificationKey | undefined
+  protected oldAssertionKey: DidVerificationKey | undefined = undefined
   // Old delegation key, if present
-  protected oldDelegationKey: DidVerificationKey | undefined
+  protected oldDelegationKey: DidVerificationKey | undefined = undefined
 
   // New key agreement keys to set as {id -> details}
   protected newKeyAgreementKeys: Map<
@@ -82,6 +80,8 @@ export class FullDidBuilder {
   // Service endpoints to delete, by their ID.
   protected serviceEndpointsToDelete: Set<DidServiceEndpoint['id']> = new Set()
 
+  private consumed = false
+
   public constructor(
     api: ApiPromise,
     details: FullDidBuilderCreationDetails = {}
@@ -97,36 +97,12 @@ export class FullDidBuilder {
     this.apiObject = api
   }
 
-  public static fromDidDetails(
-    api: ApiPromise,
-    did: DidDetails
-  ): FullDidBuilder {
-    const keyAgreementKeys = did.getKeys(
-      KeyRelationship.keyAgreement
-    ) as DidEncryptionKey[]
-    const assertionKeys = did.getKeys(
-      KeyRelationship.assertionMethod
-    ) as DidVerificationKey[]
-    if (assertionKeys.length && assertionKeys.length > 1) {
-      throw new Error('Did is allowed to have only 1 assertion key.')
-    }
-    const delegationKeys = did.getKeys(
-      KeyRelationship.capabilityDelegation
-    ) as DidVerificationKey[]
-    if (delegationKeys.length && delegationKeys.length > 1) {
-      throw new Error('Did is allowed to have only 1 delegation key.')
-    }
-    const serviceEndpoints = did.getEndpoints()
-
-    return new FullDidBuilder(api, {
-      keyAgreementKeys,
-      assertionKey: assertionKeys.pop(),
-      delegationKey: delegationKeys.pop(),
-      serviceEndpoints,
-    })
-  }
-
   public addEncryptionKey(key: NewDidEncryptionKey): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // 1. Check if the key is already present in the DID.
     if (this.oldKeyAgreementKeys.has(newKeyId)) {
@@ -152,6 +128,11 @@ export class FullDidBuilder {
   }
 
   public removeEncryptionKey(keyId: DidKey['id']): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     // 1. Check that the key exists in the DID.
     if (!this.oldKeyAgreementKeys.has(keyId)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -176,6 +157,11 @@ export class FullDidBuilder {
   }
 
   public setAttestationKey(key: NewDidVerificationKey): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     // 1. Check that the attestation key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -193,6 +179,11 @@ export class FullDidBuilder {
   }
 
   public removeAttestationKey(): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     // 1. Check that the DID has an attestation key.
     if (!this.oldAssertionKey) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -216,6 +207,11 @@ export class FullDidBuilder {
   }
 
   public setDelegationKey(key: NewDidVerificationKey): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     // 1. Check that the delegation key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -233,6 +229,11 @@ export class FullDidBuilder {
   }
 
   public removeDelegationKey(): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     // 1. Check that the DID has a delegation key.
     if (!this.oldDelegationKey) {
       throw new Error('The DID does not have a delegation key to remove.')
@@ -254,6 +255,11 @@ export class FullDidBuilder {
   }
 
   public addServiceEndpoint(service: DidServiceEndpoint): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     const { id, ...details } = service
     // 1. Check if the service is already present in the DID.
     if (this.oldServiceEndpoints.has(id)) {
@@ -275,6 +281,11 @@ export class FullDidBuilder {
   public removeServiceEndpoint(
     serviceId: DidServiceEndpoint['id']
   ): FullDidBuilder {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
     // 1. Check that the service exists in the DID.
     if (!this.oldServiceEndpoints.has(serviceId)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -290,5 +301,9 @@ export class FullDidBuilder {
     // Otherwise we can safely mark the service endpoint for deletion.
     this.serviceEndpointsToDelete.add(serviceId)
     return this
+  }
+
+  protected consume(): void {
+    this.consumed = true
   }
 }

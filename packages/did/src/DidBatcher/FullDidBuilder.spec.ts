@@ -37,6 +37,9 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
   ),
 }))
 
+// Class to test the abstract class FullDidBuilder
+class TestAbstractFullDidBuilder extends FullDidBuilder {}
+
 describe('FullDidBuilder', () => {
   const mockApi = ApiMocks.createAugmentedApi()
 
@@ -53,7 +56,7 @@ describe('FullDidBuilder', () => {
     }
     describe('.addEncryptionKey()', () => {
       it('fails if the key already exists', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           keyAgreementKeys: [oldEncryptionKey],
         })
 
@@ -61,7 +64,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if the key has been marked for deletion', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           keyAgreementKeys: [oldEncryptionKey],
         })
 
@@ -72,7 +75,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if the key has been marked for addition', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.addEncryptionKey(newEncryptionKey)).not.toThrow()
         // Second time the same key is added, it throws
@@ -80,7 +83,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('adds a new key successfully', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.addEncryptionKey(newEncryptionKey)).not.toThrow()
         expect(
@@ -96,13 +99,13 @@ describe('FullDidBuilder', () => {
 
     describe('.removeEncryptionKey()', () => {
       it('fails if the key does not exist', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.removeEncryptionKey('randomID')).toThrow()
       })
 
       it('fails if the key has been marked for addition', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
         expect(() => builder.addEncryptionKey(newEncryptionKey)).not.toThrow()
         expect(() =>
           builder.removeEncryptionKey(computeKeyId(newEncryptionKey.publicKey))
@@ -110,7 +113,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if the key has been marked for deletion', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           keyAgreementKeys: [oldEncryptionKey],
         })
 
@@ -124,7 +127,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('removes a key successfully', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           keyAgreementKeys: [oldEncryptionKey],
         })
         expect(() =>
@@ -153,7 +156,7 @@ describe('FullDidBuilder', () => {
     }
     describe('.setAttestationKey()', () => {
       it('fails if the key has already been marked for deletion', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           assertionKey: oldAttestationKey,
         })
 
@@ -163,7 +166,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if another key has already been marked for addition', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.setAttestationKey(oldAttestationKey)).not.toThrow()
 
@@ -171,7 +174,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('sets an attestation key successfully', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.setAttestationKey(newAttestationKey)).not.toThrow()
         expect(
@@ -186,13 +189,13 @@ describe('FullDidBuilder', () => {
 
     describe('.removeAttestationKey()', () => {
       it('fails if the DID does not have an attestation key', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.removeAttestationKey()).toThrow()
       })
 
       it('fails if another attestation key was already marked for addition', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.setAttestationKey(oldAttestationKey)).not.toThrow()
 
@@ -200,7 +203,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if the old attestation key was already marked for deletion', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           assertionKey: oldAttestationKey,
         })
 
@@ -210,7 +213,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('removes the attestation key successfully', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           assertionKey: oldAttestationKey,
         })
 
@@ -238,7 +241,7 @@ describe('FullDidBuilder', () => {
     }
     describe('.setDelegation()', () => {
       it('fails if the key has already been marked for deletion', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           delegationKey: oldDelegationKey,
         })
 
@@ -248,7 +251,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if another key has already been marked for addition', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.setDelegationKey(oldDelegationKey)).not.toThrow()
 
@@ -256,7 +259,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('sets a delegation key successfully', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.setDelegationKey(newDelegationKey)).not.toThrow()
         // @ts-ignore
@@ -270,13 +273,13 @@ describe('FullDidBuilder', () => {
 
     describe('.removeDelegationKey()', () => {
       it('fails if the DID does not have a delegation key', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.removeDelegationKey()).toThrow()
       })
 
       it('fails if another delegation key was already marked for addition', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.setDelegationKey(oldDelegationKey)).not.toThrow()
 
@@ -284,7 +287,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if the old delegation key was already marked for deletion', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           delegationKey: oldDelegationKey,
         })
 
@@ -294,7 +297,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('removes the delegation key successfully', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           delegationKey: oldDelegationKey,
         })
 
@@ -323,7 +326,7 @@ describe('FullDidBuilder', () => {
 
     describe('.addServiceEndpoint()', () => {
       it('fails if the service is already present in the DID', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           serviceEndpoints: [oldServiceEndpoint],
         })
 
@@ -331,7 +334,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('fails if the service has already been marked for addition', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() =>
           builder.addServiceEndpoint(newServiceEndpoint)
@@ -341,7 +344,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('adds the service endpoint successfully', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() =>
           builder.addServiceEndpoint(newServiceEndpoint)
@@ -368,13 +371,13 @@ describe('FullDidBuilder', () => {
 
     describe('.removeServiceEndpoint()', () => {
       it('fails if the service is not present in the DID', async () => {
-        const builder = new FullDidBuilder(mockApi)
+        const builder = new TestAbstractFullDidBuilder(mockApi)
 
         expect(() => builder.removeServiceEndpoint('random-id')).toThrow()
       })
 
       it('fails if the service has already been marked for deletion', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           serviceEndpoints: [oldServiceEndpoint],
         })
 
@@ -388,7 +391,7 @@ describe('FullDidBuilder', () => {
       })
 
       it('removes the service endpoint successfully', async () => {
-        const builder = new FullDidBuilder(mockApi, {
+        const builder = new TestAbstractFullDidBuilder(mockApi, {
           serviceEndpoints: [oldServiceEndpoint],
         })
 
