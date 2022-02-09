@@ -72,7 +72,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       BlockchainUtils.IS_IN_BLOCK
     )
 
-    await expect(p).rejects.toBeTruthy()
+    await expect(p).rejects.toThrowError('Inability to pay some fees')
   }, 30_000)
 
   it('should be possible to create a w3n name with enough tokens', async () => {
@@ -118,7 +118,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       BlockchainUtils.IS_IN_BLOCK
     )
 
-    await expect(p).rejects.toBeTruthy()
+    await expect(p).rejects.toMatchObject({
+      section: 'web3Names',
+      name: 'Web3NameAlreadyClaimed',
+    })
   }, 30_000)
 
   it('should not be possible to create a second w3n for the same did', async () => {
@@ -135,7 +138,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       BlockchainUtils.IS_IN_BLOCK
     )
 
-    await expect(p).rejects.toBeTruthy()
+    await expect(p).rejects.toMatchObject({
+      section: 'web3Names',
+      name: 'OwnerAlreadyExists',
+    })
   }, 30_000)
 
   it('should not be possible to remove a w3n by another payment account', async () => {
@@ -145,7 +151,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       otherPaymentAccount,
       BlockchainUtils.IS_IN_BLOCK
     )
-    await expect(p).rejects.toBeTruthy()
+    await expect(p).rejects.toMatchObject({
+      section: 'web3Names',
+      name: 'NotAuthorized',
+    })
   }, 30_000)
 
   it('should be possible to remove a w3n by the payment account', async () => {
