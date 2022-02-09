@@ -32,9 +32,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let otherWeb3NameCreator: FullDidDetails
   let paymentAccount: KeyringPair
   let otherPaymentAccount: KeyringPair
+  let nick: Web3Names.Web3Name
+  let differentNick: Web3Names.Web3Name
+
   const keystore = new DemoKeystore()
 
   beforeAll(async () => {
+    nick = `nick_${randomAsHex(2)}`
+    differentNick = `different_${randomAsHex(2)}`
     ;[paymentAccount, otherPaymentAccount] = await Promise.all([
       createEndowedTestAccount(),
       createEndowedTestAccount(),
@@ -53,7 +58,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 60_000)
 
   it('should not be possible to create a w3n name w/o tokens', async () => {
-    const tx = await Web3Names.getClaimTx('nick1')
+    const tx = await Web3Names.getClaimTx(nick)
     const bobbyBroke = keypairFromRandom()
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
@@ -71,7 +76,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to create a w3n name with enough tokens', async () => {
-    const tx = await Web3Names.getClaimTx('nick1')
+    const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
       keystore,
@@ -84,23 +89,23 @@ describe('When there is an Web3NameCreator and a payer', () => {
       BlockchainUtils.IS_IN_BLOCK
     )
 
-    expect(p).resolves.not.toThrow()
+    await expect(p).resolves.not.toThrow()
   }, 30_000)
 
   it('should be possible to lookup the DID with the given nick', async () => {
-    const didId = await Web3Names.queryDidIdentifierForWeb3Name('nick1')
+    const didId = await Web3Names.queryDidIdentifierForWeb3Name(nick)
     expect(didId).toBe(w3nCreator.identifier)
   }, 30_000)
 
   it('should be possible to lookup the nick with the given did', async () => {
-    const nick = await Web3Names.queryWeb3NameForDidIdentifier(
+    const resolved = await Web3Names.queryWeb3NameForDidIdentifier(
       w3nCreator.identifier
     )
-    expect(nick).toBe('nick1')
+    expect(resolved).toBe(nick)
   }, 30_000)
 
   it('should not be possible to create the same w3n twice', async () => {
-    const tx = await Web3Names.getClaimTx('nick1')
+    const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await otherWeb3NameCreator.authorizeExtrinsic(
       tx,
       keystore,
@@ -134,7 +139,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should not be possible to remove a w3n by another payment account', async () => {
-    const tx = await Web3Names.getReclaimDepositTx('nick1')
+    const tx = await Web3Names.getReclaimDepositTx(nick)
     const p = submitExtrinsicWithResign(
       tx,
       otherPaymentAccount,
@@ -144,19 +149,19 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to remove a w3n by the payment account', async () => {
-    const tx = await Web3Names.getReclaimDepositTx('nick1')
+    const tx = await Web3Names.getReclaimDepositTx(nick)
     const p = submitExtrinsicWithResign(
       tx,
       paymentAccount,
       BlockchainUtils.IS_IN_BLOCK
     )
 
-    expect(p).resolves.not.toThrow()
+    await expect(p).resolves.not.toThrow()
   }, 30_000)
 
   it('should be possible to remove a w3n by the owner did', async () => {
     // prepare the w3n on chain
-    const prepareTx = await Web3Names.getClaimTx('different_name')
+    const prepareTx = await Web3Names.getClaimTx(differentNick)
     const prepareAuthorizedTx = await w3nCreator.authorizeExtrinsic(
       prepareTx,
       keystore,
@@ -180,7 +185,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       BlockchainUtils.IS_IN_BLOCK
     )
 
-    expect(p).resolves.not.toThrow()
+    await expect(p).resolves.not.toThrow()
   }, 40_000)
 })
 
