@@ -5,20 +5,30 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { SubmittableExtrinsic, IDidDetails } from '@kiltprotocol/types'
+import {
+  SubmittableExtrinsic,
+  IDidIdentifier,
+  Deposit,
+} from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
 
-import type { Option, Bytes } from '@polkadot/types'
+import type { Option, Bytes, Struct } from '@polkadot/types'
+import type { AnyNumber } from '@polkadot/types/types'
 
-import { DidUtils } from '../index.js'
-
-import { Web3NameOwner } from '../Did.chain.js'
+/**
+ * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.
+ */
+interface Web3NameOwner extends Struct {
+  owner: IDidIdentifier
+  claimedAt: AnyNumber
+  deposit: Deposit
+}
 
 /**
  *  Web3Name is the type of a nickname for a DID.
  */
-type Web3Name = string
+export type Web3Name = string
 
 /**
  * Returns a extrinsic to claim a new web3name.
@@ -63,30 +73,29 @@ export async function getReclaimDepositTx(
 /**
  * Retrieve the Web3Name for a specific did.
  *
- * @param didUri DID uri of the web3name owner, i.e. 'did:kilt:4...'.
+ * @param didIdentifier DID identifier of the web3name owner, i.e. '4abc...'.
  * @returns The registered web3name for this DID if any.
  */
-export async function queryWeb3NameForDid(
-  didUri: string
+export async function queryWeb3NameForDidIdentifier(
+  didIdentifier: IDidIdentifier
 ): Promise<Web3Name | null> {
-  const didDetails = DidUtils.parseDidUri(didUri)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.web3Names.names<Option<Bytes>>(
-    didDetails.identifier
+    didIdentifier
   )
   DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
   return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
 
 /**
- * Retrieve the did for a specific web3name.
+ * Retrieve the did identifier for a specific web3name.
  *
  * @param nick Web3Name that should be resolved to a DID.
- * @returns The DID uri for this web3name if any.
+ * @returns The DID identifier for this web3name if any.
  */
-export async function queryDidForWeb3Name(
+export async function queryDidIdentifierForWeb3Name(
   nick: Web3Name
-): Promise<IDidDetails['did'] | null> {
+): Promise<IDidIdentifier | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.web3Names.owner<
     Option<Web3NameOwner>
@@ -95,10 +104,5 @@ export async function queryDidForWeb3Name(
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])
 
-  return encoded.isSome
-    ? DidUtils.getKiltDidFromIdentifier(
-        encoded.unwrap().owner.toString(),
-        'full'
-      )
-    : null
+  return encoded.isSome ? encoded.unwrap().owner.toString() : null
 }

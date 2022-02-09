@@ -571,9 +571,3 @@ export function encodeDidSignature(
     [alg]: hexToU8a(signature.signature),
   }
 }
-
-export interface Web3NameOwner extends Struct {
-  owner: IDidIdentifier
-  claimedAt: BlockNumber
-  deposit: Deposit
-}
