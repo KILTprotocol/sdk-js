@@ -27,7 +27,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation/Attestation.js'
+import { Attestation } from '../attestation/index.js'
 import {
   RequestForAttestation,
   RequestForAttestationUtils,
@@ -88,7 +88,7 @@ export class Credential implements ICredential {
   }
 
   public request: IRequestForAttestation
-  public attestation: Attestation
+  public attestation: IAttestation
 
   /**
    * Builds a new [[Credential]] instance.
@@ -102,7 +102,7 @@ export class Credential implements ICredential {
   public constructor(credentialInput: ICredential) {
     CredentialUtils.errorCheck(credentialInput)
     this.request = RequestForAttestation.fromRequest(credentialInput.request)
-    this.attestation = Attestation.fromAttestation(credentialInput.attestation)
+    this.attestation = credentialInput.attestation
   }
 
   /**

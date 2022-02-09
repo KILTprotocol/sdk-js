@@ -28,8 +28,7 @@ import {
 import { Claim } from '../claim'
 import { CType } from '../ctype'
 import { RequestForAttestation } from '../requestforattestation'
-import { Attestation } from './Attestation'
-import * as AttestationUtils from './Attestation.utils'
+import * as Attestation from './Attestation'
 
 let mockedApi: any
 let blockchain: Blockchain
@@ -84,7 +83,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: Attestation = Attestation.fromRequestAndDid(
+    const attestation: IAttestation = Attestation.fromRequestAndDid(
       requestForAttestation,
       identityAlice
     )
@@ -96,13 +95,13 @@ describe('Attestation', () => {
       ApiMocks.mockChainQueryReturn('attestation', 'attestations')
     )
 
-    const attestation: Attestation = Attestation.fromAttestation({
+    const attestation: IAttestation = {
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       delegationId: null,
       owner: identityAlice,
       revoked: false,
-    })
+    }
     expect(await Attestation.checkValidity(attestation)).toBeFalsy()
   })
 
@@ -117,11 +116,11 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: Attestation = Attestation.fromRequestAndDid(
+    const attestation: IAttestation = Attestation.fromRequestAndDid(
       requestForAttestation,
       identityAlice
     )
-    expect(await attestation.checkValidity()).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation)).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
@@ -138,17 +137,9 @@ describe('Attestation', () => {
       attestation.delegationId,
     ]
 
-    expect(AttestationUtils.compress(attestation)).toEqual(
-      compressedAttestation
-    )
-
-    expect(AttestationUtils.decompress(compressedAttestation)).toEqual(
-      attestation
-    )
+    expect(Attestation.compress(attestation)).toEqual(compressedAttestation)
 
     expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
-
-    expect(attestation.compress()).toEqual(compressedAttestation)
   })
 
   it('Negative test for compresses and decompresses the attestation object', () => {
@@ -169,17 +160,11 @@ describe('Attestation', () => {
     delete attestation.claimHash
 
     expect(() => {
-      AttestationUtils.decompress(compressedAttestation)
+      Attestation.decompress(compressedAttestation)
     }).toThrow()
 
     expect(() => {
-      Attestation.decompress(compressedAttestation)
-    }).toThrow()
-    expect(() => {
-      attestation.compress()
-    }).toThrow()
-    expect(() => {
-      AttestationUtils.compress(attestation)
+      Attestation.compress(attestation)
     }).toThrow()
   })
   it('error check should throw errors on faulty Attestations', () => {
@@ -255,35 +240,33 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowErrorWithCode(
+    expect(() => Attestation.errorCheck(noClaimHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
     )
 
-    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
+    expect(() => Attestation.errorCheck(noCTypeHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedOwner)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
+    expect(() => Attestation.errorCheck(malformedOwner)).toThrowErrorWithCode(
+      SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    )
+
+    expect(() => Attestation.errorCheck(noRevocationBit)).toThrowErrorWithCode(
+      SDKErrors.ERROR_REVOCATION_BIT_MISSING()
+    )
+
+    expect(() => Attestation.errorCheck(everything)).not.toThrow()
 
     expect(() =>
-      AttestationUtils.errorCheck(noRevocationBit)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
-
-    expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
-
-    expect(() =>
-      AttestationUtils.errorCheck(malformedClaimHash)
+      Attestation.errorCheck(malformedClaimHash)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
 
     expect(() =>
-      AttestationUtils.errorCheck(malformedCTypeHash)
+      Attestation.errorCheck(malformedCTypeHash)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedAddress)
-    ).toThrowErrorWithCode(
+    expect(() => Attestation.errorCheck(malformedAddress)).toThrowErrorWithCode(
       SDKErrors.ERROR_INVALID_DID_FORMAT(malformedAddress.owner)
     )
   })

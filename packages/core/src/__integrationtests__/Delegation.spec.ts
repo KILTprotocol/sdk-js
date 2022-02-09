@@ -14,7 +14,7 @@ import { Permission } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
-import { Attestation } from '../attestation/Attestation'
+import { Attestation } from '../attestation'
 import { Claim } from '../claim'
 import { CType } from '../ctype'
 import {
@@ -171,8 +171,7 @@ describe('and attestation rights have been delegated', () => {
     ).resolves.toBeTruthy()
 
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
-    await attestation
-      .store()
+    await Attestation.store(attestation)
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -186,8 +185,7 @@ describe('and attestation rights have been delegated', () => {
     await expect(credential.verify()).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await credential.attestation
-      .revoke(1)
+    await Attestation.revoke(credential.attestation, 1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(credential.verify()).resolves.toBeFalsy()

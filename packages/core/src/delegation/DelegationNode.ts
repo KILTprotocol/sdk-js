@@ -24,6 +24,7 @@
  */
 
 import {
+  IAttestation,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
@@ -51,7 +52,6 @@ import {
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
-import { Attestation } from '../attestation/Attestation.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -214,7 +214,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns Promise containing all resolved attestations attested with this node.
    */
-  public async getAttestations(): Promise<Attestation[]> {
+  public async getAttestations(): Promise<IAttestation[]> {
     const attestationHashes = await this.getAttestationHashes()
     const attestations = await Promise.all(
       attestationHashes.map((claimHash: string) => {
@@ -222,7 +222,7 @@ export class DelegationNode implements IDelegationNode {
       })
     )
 
-    return attestations.filter((value): value is Attestation => !!value)
+    return attestations.filter((value): value is IAttestation => !!value)
   }
 
   /**

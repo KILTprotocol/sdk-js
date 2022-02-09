@@ -20,9 +20,10 @@ import type {
   CompressedRequestForAttestation,
   IRequestForAttestation,
   DidSignature,
+  IAttestation,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation/Attestation'
+import { Attestation } from '../attestation'
 import { Credential } from '../credential/Credential'
 import { CType } from '../ctype'
 
@@ -68,9 +69,9 @@ describe('RequestForAttestation', () => {
   const identityCharlie =
     'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
   let legitimationRequest: IRequestForAttestation
-  let legitimationAttestation: Attestation
+  let legitimationAttestation: IAttestation
   let legitimation: Credential
-  let legitimationAttestationCharlie: Attestation
+  let legitimationAttestationCharlie: IAttestation
   let legitimationCharlie: Credential
 
   beforeEach(async () => {
@@ -355,8 +356,9 @@ describe('RequestForAttestation', () => {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
     builtRequestMalformedSignature.rootHash =
-      // @ts-expect-error
-      RequestForAttestation.calculateRootHash(builtRequestMalformedSignature)
+      RequestForAttestationUtils.calculateRootHash(
+        builtRequestMalformedSignature
+      )
     const builtRequestMalformedHashes = {
       ...buildRequestForAttestation(
         identityBob,
@@ -380,8 +382,7 @@ describe('RequestForAttestation', () => {
       }
     )
     builtRequestMalformedHashes.rootHash =
-      // @ts-expect-error
-      RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
+      RequestForAttestationUtils.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())

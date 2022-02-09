@@ -21,7 +21,6 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
-import { Attestation } from './Attestation.js'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
@@ -59,7 +58,7 @@ export interface AttestationDetails extends Struct {
 function decode(
   encoded: Option<AttestationDetails>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
-): Attestation | null {
+): IAttestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<AttestationAttestationsAttestationDetails>',
   ])
@@ -77,7 +76,7 @@ function decode(
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-    return Attestation.fromAttestation(attestation)
+    return attestation
   }
   return null
 }
@@ -100,7 +99,7 @@ export async function queryRaw(
  * @param claimHash The hash of the claim attested in the attestation.
  * @returns Either the retrieved [[Attestation]] or null.
  */
-export async function query(claimHash: string): Promise<Attestation | null> {
+export async function query(claimHash: string): Promise<IAttestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }

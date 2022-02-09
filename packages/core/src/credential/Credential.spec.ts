@@ -22,6 +22,7 @@ import type {
   DidResolvedDetails,
   DidKey,
   IRequestForAttestation,
+  IAttestation,
 } from '@kiltprotocol/types'
 import {
   DemoKeystore,
@@ -404,7 +405,7 @@ describe('create presentation', () => {
   let attester: DidDetails
   let ctype: ICType
   let reqForAtt: IRequestForAttestation
-  let attestation: Attestation
+  let attestation: IAttestation
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (

@@ -11,7 +11,7 @@
  */
 
 import {
-  AttestationUtils,
+  Attestation,
   CredentialUtils,
   ClaimUtils,
   CTypeUtils,
@@ -117,7 +117,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.SUBMIT_ATTESTATION: {
-      AttestationUtils.errorCheck(body.content.attestation)
+      Attestation.errorCheck(body.content.attestation)
       break
     }
     case Message.BodyType.REJECT_ATTESTATION: {
@@ -304,7 +304,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.SUBMIT_ATTESTATION: {
-      compressedContents = AttestationUtils.compress(body.content.attestation)
+      compressedContents = Attestation.compress(body.content.attestation)
       break
     }
     case Message.BodyType.REQUEST_CREDENTIAL: {
@@ -441,7 +441,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     }
     case Message.BodyType.SUBMIT_ATTESTATION: {
       decompressedContents = {
-        attestation: AttestationUtils.decompress(body[1]),
+        attestation: Attestation.decompress(body[1]),
       }
       break
     }

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { Attestation, AttestationUtils } from './attestation/index.js'
+export { Attestation } from './attestation/index.js'
 export { Credential, CredentialUtils } from './credential/index.js'
 export { Balance, BalanceUtils } from './balance/index.js'
 export { Claim, ClaimUtils } from './claim/index.js'

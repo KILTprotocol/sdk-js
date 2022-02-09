@@ -297,9 +297,7 @@ describe('proofs', () => {
   })
 
   it('verifies attestation proof on chain', async () => {
-    jest
-      .spyOn(Attestation, 'query')
-      .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
+    jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
 
     const result = await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
     expect(result.errors).toEqual([])
@@ -364,9 +362,7 @@ describe('proofs', () => {
     })
 
     it('it detects tampering with credential fields', async () => {
-      jest
-        .spyOn(Attestation, 'query')
-        .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
+      jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
 
       VC.delegationId = '0x123'
       await expect(
@@ -413,12 +409,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation on chain not identical', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(
-        Attestation.fromAttestation({
-          ...credential.attestation,
-          owner: credential.request.claim.owner,
-        })
-      )
+      jest.spyOn(Attestation, 'query').mockResolvedValue({
+        ...credential.attestation,
+        owner: credential.request.claim.owner,
+      })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,
@@ -431,12 +425,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation revoked', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(
-        Attestation.fromAttestation({
-          ...credential.attestation,
-          revoked: true,
-        })
-      )
+      jest.spyOn(Attestation, 'query').mockResolvedValue({
+        ...credential.attestation,
+        revoked: true,
+      })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,

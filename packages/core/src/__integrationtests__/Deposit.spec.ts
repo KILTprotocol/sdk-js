@@ -16,6 +16,7 @@ import {
   FullDidDetails,
 } from '@kiltprotocol/did'
 import {
+  IAttestation,
   IRequestForAttestation,
   KeyringPair,
   SubmittableExtrinsic,
@@ -35,7 +36,7 @@ import {
   submitExtrinsicWithResign,
 } from './utils'
 import { Balance } from '../balance'
-import { Attestation } from '../attestation/Attestation'
+import { Attestation } from '../attestation'
 import { Claim } from '../claim'
 import { RequestForAttestation } from '../requestforattestation'
 import { disconnect } from '../kilt'
@@ -44,7 +45,7 @@ import { CType } from '../ctype'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
-let attestation: Attestation
+let attestation: IAttestation
 let storedEndpointsCount: BN
 
 async function checkDeleteFullDid(
@@ -106,7 +107,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await Attestation.store(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -134,7 +135,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.remove(0)
+  tx = await Attestation.remove(attestation, 0)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -165,7 +166,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await Attestation.store(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -184,7 +185,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.reclaimDeposit()
+  tx = await Attestation.reclaimDeposit(attestation)
 
   const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
@@ -215,7 +216,7 @@ async function checkDeletedDidReclaimAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await Attestation.store(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -240,7 +241,7 @@ async function checkDeletedDidReclaimAttestation(
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
-  tx = await attestation.reclaimDeposit()
+  tx = await Attestation.reclaimDeposit(attestation)
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 }
