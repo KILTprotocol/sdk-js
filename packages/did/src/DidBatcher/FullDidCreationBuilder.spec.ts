@@ -74,12 +74,22 @@ describe('FullDidCreationBuilder', () => {
           publicKey: authKey.publicKey,
           type: authKey.type,
         })
-        // @ts-ignore
         expect(
           // @ts-ignore
           builder.newKeyAgreementKeys
         ).toStrictEqual<Map<DidEncryptionKey['id'], NewDidEncryptionKey>>(
           new Map([[computeKeyId(encKey.publicKey), encKey]])
+        )
+        expect(
+          // @ts-ignore
+          builder.newServiceEndpoints
+        ).toStrictEqual<
+          Map<DidServiceEndpoint['id'], Omit<DidServiceEndpoint, 'id'>>
+        >(
+          new Map([
+            [service1.id, { types: service1.types, urls: service1.urls }],
+            [service2.id, { types: service2.types, urls: service2.urls }],
+          ])
         )
       })
     })
