@@ -9,12 +9,14 @@ import {
   SubmittableExtrinsic,
   IDidIdentifier,
   Deposit,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
 
 import type { Option, Bytes, Struct } from '@polkadot/types'
 import type { AnyNumber } from '@polkadot/types/types'
+import { DidUtils } from 'did/lib/cjs'
 
 /**
  * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.
@@ -40,8 +42,7 @@ export async function getClaimTx(
   nick: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.web3Names.claim(nick)
-  return tx
+  return blockchain.api.tx.web3Names.claim(nick)
 }
 
 /**
@@ -51,8 +52,7 @@ export async function getClaimTx(
  */
 export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.web3Names.releaseByOwner()
-  return tx
+  return blockchain.api.tx.web3Names.releaseByOwner()
 }
 
 /**
@@ -65,9 +65,7 @@ export async function getReclaimDepositTx(
   nick: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.web3Names.reclaimDeposit(nick)
-  return tx
+  return blockchain.api.tx.web3Names.reclaimDeposit(nick)
 }
 
 /**
@@ -105,4 +103,33 @@ export async function queryDidIdentifierForWeb3Name(
   ])
 
   return encoded.isSome ? encoded.unwrap().owner.toString() : null
+}
+
+/**
+ * Retrieve the Web3Name for a specific did uri.
+ *
+ * @param did DID of the web3name owner, i.e. 'did:kilt:4abc...'.
+ * @returns The registered web3name for this DID if any.
+ */
+export async function queryWeb3NameForDid(
+  did: IDidDetails['did']
+): Promise<Web3Name | null> {
+  const details = DidUtils.parseDidUri(did)
+  return queryWeb3NameForDidIdentifier(details.identifier)
+}
+
+/**
+ * Retrieve the DID uri for a specific web3 name.
+ *
+ * @param nick Web3 name that should be looked up.
+ * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
+ */
+export async function queryDidForWeb3Name(
+  nick: Web3Name
+): Promise<string | null> {
+  const identifier = await queryDidIdentifierForWeb3Name(nick)
+  if (identifier === null) {
+    return null
+  }
+  return DidUtils.getKiltDidFromIdentifier(identifier, 'full')
 }

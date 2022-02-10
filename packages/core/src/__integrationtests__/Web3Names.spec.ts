@@ -92,15 +92,25 @@ describe('When there is an Web3NameCreator and a payer', () => {
     await expect(p).resolves.not.toThrow()
   }, 30_000)
 
-  it('should be possible to lookup the DID with the given nick', async () => {
+  it('should be possible to lookup the DID identifier with the given nick', async () => {
     const didId = await Web3Names.queryDidIdentifierForWeb3Name(nick)
     expect(didId).toBe(w3nCreator.identifier)
   }, 30_000)
 
-  it('should be possible to lookup the nick with the given did', async () => {
+  it('should be possible to lookup the nick with the given DID identifier', async () => {
     const resolved = await Web3Names.queryWeb3NameForDidIdentifier(
       w3nCreator.identifier
     )
+    expect(resolved).toBe(nick)
+  }, 30_000)
+
+  it('should be possible to lookup the DID uri with the given nick', async () => {
+    const did = await Web3Names.queryDidForWeb3Name(nick)
+    expect(did).toBe(w3nCreator.did)
+  }, 30_000)
+
+  it('should be possible to lookup the nick with the given DID uri', async () => {
+    const resolved = await Web3Names.queryWeb3NameForDid(w3nCreator.did)
     expect(resolved).toBe(nick)
   }, 30_000)
 
