@@ -71,7 +71,7 @@ export async function getReclaimDepositTx(
 }
 
 /**
- * Retrieve the Web3Name for a specific did.
+ * Retrieve the Web3Name for a specific did identifier.
  *
  * @param didIdentifier DID identifier of the web3name owner, i.e. '4abc...'.
  * @returns The registered web3name for this DID if any.
