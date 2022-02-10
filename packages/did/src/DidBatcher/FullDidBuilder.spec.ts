@@ -36,7 +36,7 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
   ),
 }))
 
-class TestAbstractFullDidBuilder extends FullDidBuilder<TestAbstractFullDidBuilder> {
+class TestAbstractFullDidBuilder extends FullDidBuilder {
   public consume(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     signer: KeystoreSigner<any>,
