@@ -16,7 +16,8 @@ import { DecoderUtils } from '@kiltprotocol/utils'
 
 import type { Option, Bytes, Struct } from '@polkadot/types'
 import type { AnyNumber } from '@polkadot/types/types'
-import { DidUtils } from 'did/lib/cjs'
+
+import { DidUtils } from '../index.js'
 
 /**
  * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.
