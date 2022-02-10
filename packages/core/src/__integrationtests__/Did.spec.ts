@@ -22,6 +22,7 @@ import {
   DemoKeystoreUtils,
   NewLightDidAuthenticationKey,
   LightDidSupportedVerificationKeyTypes,
+  FullDidCreationBuilder,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
@@ -31,6 +32,7 @@ import {
   KeyRelationship,
   KeyringPair,
   NewDidKey,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
@@ -687,6 +689,49 @@ describe('DID authorization', () => {
 
     await expect(ctype.verifyStored()).resolves.toEqual(false)
   }, 60_000)
+})
+
+describe.only('DID management batching', () => {
+  describe('FullDidCreationBuilder', () => {
+    it('Build from a light DID to a complete full DID by removing some elements from the light DID', async () => {
+      const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+      const lightDidDetails = LightDidDetails.fromDetails({
+        authenticationKey: {
+          publicKey: Uint8Array.from(Array(32).fill(0)),
+          type: VerificationKeyType.Ed25519,
+        },
+        encryptionKey: {
+          publicKey: Uint8Array.from(Array(32).fill(10)),
+          type: EncryptionKeyType.X25519,
+        },
+        serviceEndpoints: [
+          {
+            id: 'id-1',
+            types: ['type-1'],
+            urls: ['url-1'],
+          },
+          {
+            id: 'id-2',
+            types: ['type-2'],
+            urls: ['url-2'],
+          },
+        ],
+      })
+      const builder = FullDidCreationBuilder.fromLightDidDetails(
+        api,
+        lightDidDetails
+      )
+      builder
+        .setAttestationKey({
+          publicKey: Uint8Array.from(Array(32).fill(20)),
+          type: VerificationKeyType.Sr25519,
+        })
+        .setDelegationKey({
+          publicKey: Uint8Array.from(Array(33).fill(30)),
+          type: VerificationKeyType.Ecdsa,
+        })
+    })
+  })
 })
 
 afterAll(async () => disconnect())
