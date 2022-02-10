@@ -32,7 +32,7 @@ export type VerificationKeyAction = {
   // newKey is defined only if action === 'update'
   newKey?: NewDidVerificationKey
 }
-export abstract class FullDidBuilder {
+export abstract class FullDidBuilder<T extends FullDidBuilder<T>> {
   protected apiObject: ApiPromise
 
   // New key agreement keys to set as {id -> details}
@@ -58,7 +58,7 @@ export abstract class FullDidBuilder {
     this.apiObject = api
   }
 
-  public addEncryptionKey(key: NewDidEncryptionKey): FullDidBuilder {
+  public addEncryptionKey(key: NewDidEncryptionKey): FullDidBuilder<T> {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'
@@ -79,7 +79,7 @@ export abstract class FullDidBuilder {
     return this
   }
 
-  public setAttestationKey(key: NewDidVerificationKey): FullDidBuilder {
+  public setAttestationKey(key: NewDidVerificationKey): FullDidBuilder<T> {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'
@@ -98,7 +98,7 @@ export abstract class FullDidBuilder {
     return this
   }
 
-  public setDelegationKey(key: NewDidVerificationKey): FullDidBuilder {
+  public setDelegationKey(key: NewDidVerificationKey): FullDidBuilder<T> {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'
@@ -117,7 +117,7 @@ export abstract class FullDidBuilder {
     return this
   }
 
-  public addServiceEndpoint(service: DidServiceEndpoint): FullDidBuilder {
+  public addServiceEndpoint(service: DidServiceEndpoint): FullDidBuilder<T> {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'

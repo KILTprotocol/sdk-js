@@ -38,7 +38,9 @@ export type FullDidCreationHandler = (
   didCreationExtrinsic: SubmittableExtrinsic
 ) => Promise<void>
 
-export class FullDidCreationBuilder extends FullDidBuilder {
+export class FullDidCreationBuilder extends FullDidBuilder<
+  FullDidBuilder<FullDidCreationBuilder>
+> {
   protected authenticationKey: NewDidVerificationKey
 
   // Marks all provided details as to-be-added to the DID. Hence, they cannot be marked for deletion in the same operation.

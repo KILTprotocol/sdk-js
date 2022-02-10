@@ -8,5 +8,5 @@
 import type { DidKey } from '@kiltprotocol/types'
 
 export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
-  return key[0].toString()
+  return Array(key[0]).fill(32).toString()
 }

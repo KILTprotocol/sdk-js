@@ -693,7 +693,7 @@ describe('DID authorization', () => {
 
 describe.only('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
-    it('Build from a light DID to a complete full DID by removing some elements from the light DID', async () => {
+    it('Build from a light DID to a complete full DID', async () => {
       const { api } = await BlockchainApiConnection.getConnectionOrConnect()
       const lightDidDetails = LightDidDetails.fromDetails({
         authenticationKey: {
@@ -721,7 +721,6 @@ describe.only('DID management batching', () => {
         api,
         lightDidDetails
       )
-      builder
         .setAttestationKey({
           publicKey: Uint8Array.from(Array(32).fill(20)),
           type: VerificationKeyType.Sr25519,
@@ -730,6 +729,8 @@ describe.only('DID management batching', () => {
           publicKey: Uint8Array.from(Array(33).fill(30)),
           type: VerificationKeyType.Ecdsa,
         })
+
+      builder.consume(keystore, paymentAccount.address)
     })
   })
 })

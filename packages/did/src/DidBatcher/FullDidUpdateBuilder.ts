@@ -42,7 +42,7 @@ export type FullDidUpdateHandler = (
 ) => Promise<void>
 
 // TODO: replace manual extrinsic creation with DID chain functions when those will take an api object as parameter, so that they do not have to be async.
-export class FullDidUpdateBuilder extends FullDidBuilder {
+export class FullDidUpdateBuilder extends FullDidBuilder<FullDidUpdateBuilder> {
   protected identifier: IDidIdentifier
   protected firstBatch: SubmittableExtrinsic[] = []
   protected secondBatch: SubmittableExtrinsic[] = []
@@ -147,7 +147,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
-  public addEncryptionKey(key: NewDidEncryptionKey): FullDidBuilder {
+  public addEncryptionKey(key: NewDidEncryptionKey): FullDidUpdateBuilder {
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // 1. Check if the key is already present in the DID.
     if (this.oldKeyAgreementKeys.has(newKeyId)) {
@@ -171,7 +171,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
-  public removeEncryptionKey(keyId: DidKey['id']): FullDidBuilder {
+  public removeEncryptionKey(keyId: DidKey['id']): FullDidUpdateBuilder {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'
@@ -204,7 +204,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
-  public setAttestationKey(key: NewDidVerificationKey): FullDidBuilder {
+  public setAttestationKey(key: NewDidVerificationKey): FullDidUpdateBuilder {
     // 1. Check that the attestation key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -221,7 +221,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
-  public removeAttestationKey(): FullDidBuilder {
+  public removeAttestationKey(): FullDidUpdateBuilder {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'
@@ -254,7 +254,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
-  public setDelegationKey(key: NewDidVerificationKey): FullDidBuilder {
+  public setDelegationKey(key: NewDidVerificationKey): FullDidUpdateBuilder {
     // 1. Check that the delegation key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -271,7 +271,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
-  public removeDelegationKey(): FullDidBuilder {
+  public removeDelegationKey(): FullDidUpdateBuilder {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'
@@ -301,7 +301,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
-  public addServiceEndpoint(service: DidServiceEndpoint): FullDidBuilder {
+  public addServiceEndpoint(service: DidServiceEndpoint): FullDidUpdateBuilder {
     // 1. Check if the service is already present in the DID.
     if (this.oldServiceEndpoints.has(service.id)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -321,7 +321,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
 
   public removeServiceEndpoint(
     serviceId: DidServiceEndpoint['id']
-  ): FullDidBuilder {
+  ): FullDidUpdateBuilder {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'

@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export type { DidBuilderCreationDetails } from './FullDidBuilder.js'
 export { FullDidBuilder } from './FullDidBuilder.js'
 
 export type {
