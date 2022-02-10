@@ -100,7 +100,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public static fromFullDidDetails(
     api: ApiPromise,
     details: FullDidDetails
-  ): this {
+  ): FullDidUpdateBuilder {
     const keyAgreementKeys = details.getKeys(
       KeyRelationship.keyAgreement
     ) as DidEncryptionKey[]

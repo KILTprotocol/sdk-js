@@ -369,9 +369,8 @@ export async function generateCreateTxFromCreationDetails(
   } = details
 
   const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
-    ({ publicKey }) => {
-      return formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
-    }
+    ({ publicKey }) =>
+      formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
   )
 
   const newAssertionKey = assertionKey
@@ -381,7 +380,7 @@ export async function generateCreateTxFromCreationDetails(
     ? formatPublicKey(delegationKey)
     : undefined
 
-  const newServiceEndpoints = serviceEndpoints.map((service) => {
+  const newServiceDetails = serviceEndpoints.map((service) => {
     const { id, urls } = service
     return { id, urls, serviceTypes: service.types }
   })
@@ -392,7 +391,7 @@ export async function generateCreateTxFromCreationDetails(
     newKeyAgreementKeys,
     newAttestationKey: newAssertionKey,
     newDelegationKey,
-    newServiceEndpoints,
+    newServiceDetails,
   }
 
   const encodedDidCreationDetails = api.registry.createType(

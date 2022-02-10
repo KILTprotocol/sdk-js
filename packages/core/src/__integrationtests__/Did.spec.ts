@@ -26,8 +26,10 @@ import {
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
+  DidEncryptionKey,
   DidResolvedDetails,
   DidServiceEndpoint,
+  DidVerificationKey,
   EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
@@ -695,14 +697,25 @@ describe.only('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build from a light DID to a complete full DID', async () => {
       const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+      const authKey = await keystore.generateKeypair({
+        alg: SigningAlgorithms.Sr25519,
+      })
+      const encKey = await keystore.generateKeypair({
+        alg: EncryptionAlgorithms.NaclBox,
+      })
+      const newEncKey = await keystore.generateKeypair({
+        alg: EncryptionAlgorithms.NaclBox,
+      })
       const lightDidDetails = LightDidDetails.fromDetails({
         authenticationKey: {
-          publicKey: Uint8Array.from(Array(32).fill(0)),
-          type: VerificationKeyType.Ed25519,
+          publicKey: authKey.publicKey,
+          type: DemoKeystore.getKeyTypeForAlg(
+            authKey.alg
+          ) as LightDidSupportedVerificationKeyTypes,
         },
         encryptionKey: {
-          publicKey: Uint8Array.from(Array(32).fill(10)),
-          type: EncryptionKeyType.X25519,
+          publicKey: encKey.publicKey,
+          type: DemoKeystore.getKeyTypeForAlg(encKey.alg) as EncryptionKeyType,
         },
         serviceEndpoints: [
           {
@@ -721,6 +734,12 @@ describe.only('DID management batching', () => {
         api,
         lightDidDetails
       )
+        .addEncryptionKey({
+          publicKey: newEncKey.publicKey,
+          type: DemoKeystore.getKeyTypeForAlg(
+            newEncKey.alg
+          ) as EncryptionKeyType,
+        })
         .setAttestationKey({
           publicKey: Uint8Array.from(Array(32).fill(20)),
           type: VerificationKeyType.Sr25519,
@@ -729,8 +748,78 @@ describe.only('DID management batching', () => {
           publicKey: Uint8Array.from(Array(33).fill(30)),
           type: VerificationKeyType.Ecdsa,
         })
+        .addServiceEndpoint({
+          id: 'id-3',
+          types: ['types-3'],
+          urls: ['url-3'],
+        })
 
-      builder.consume(keystore, paymentAccount.address)
+      await expect(
+        builder
+          .consume(keystore, paymentAccount.address)
+          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+      ).resolves.not.toThrow()
+
+      const fullDid = await FullDidDetails.fromChainInfo(
+        lightDidDetails.identifier
+      )
+
+      expect(fullDid).not.toBeNull()
+      expect(fullDid!.getKeys(KeyRelationship.authentication)).toMatchObject<
+        Array<Partial<DidVerificationKey>>
+      >([
+        {
+          publicKey: authKey.publicKey,
+          type: DemoKeystore.getKeyTypeForAlg(
+            authKey.alg
+          ) as LightDidSupportedVerificationKeyTypes,
+        },
+      ])
+      expect(fullDid!.getKeys(KeyRelationship.keyAgreement)).toMatchObject<
+        Array<Partial<DidEncryptionKey>>
+      >([
+        {
+          publicKey: encKey.publicKey,
+          type: DemoKeystore.getKeyTypeForAlg(encKey.alg) as EncryptionKeyType,
+        },
+        {
+          publicKey: Uint8Array.from(Array(32).fill(21)),
+          type: EncryptionKeyType.X25519,
+        },
+      ])
+      expect(fullDid!.getKeys(KeyRelationship.assertionMethod)).toMatchObject<
+        Array<Partial<DidVerificationKey>>
+      >([
+        {
+          publicKey: Uint8Array.from(Array(32).fill(20)),
+          type: VerificationKeyType.Sr25519,
+        },
+      ])
+      expect(
+        fullDid!.getKeys(KeyRelationship.capabilityDelegation)
+      ).toMatchObject<Array<Partial<DidVerificationKey>>>([
+        {
+          publicKey: Uint8Array.from(Array(33).fill(30)),
+          type: VerificationKeyType.Ecdsa,
+        },
+      ])
+      expect(fullDid!.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
+        {
+          id: 'id-1',
+          types: ['type-1'],
+          urls: ['url-1'],
+        },
+        {
+          id: 'id-2',
+          types: ['type-2'],
+          urls: ['url-2'],
+        },
+        {
+          id: 'id-3',
+          types: ['type-3'],
+          urls: ['url-3'],
+        },
+      ])
     })
   })
 })

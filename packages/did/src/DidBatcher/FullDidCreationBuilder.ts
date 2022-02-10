@@ -132,11 +132,11 @@ export class FullDidCreationBuilder extends FullDidBuilder {
           this.newDelegationKey.action === 'update'
             ? this.newDelegationKey.newKey
             : undefined,
-        serviceEndpoints: [...this.newServiceEndpoints.entries()].map(
-          ([id, service]) => {
-            return { id, ...service }
-          }
-        ),
+        serviceEndpoints: this.newServiceEndpoints.size
+          ? [...this.newServiceEndpoints.entries()].map(([id, service]) => {
+              return { id, ...service }
+            })
+          : undefined,
       },
       submitter,
       signer
