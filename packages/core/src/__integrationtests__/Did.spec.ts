@@ -23,17 +23,19 @@ import {
   NewLightDidAuthenticationKey,
   LightDidSupportedVerificationKeyTypes,
   FullDidCreationBuilder,
+  FullDidUpdateBuilder,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
-  DidEncryptionKey,
   DidResolvedDetails,
   DidServiceEndpoint,
-  DidVerificationKey,
   EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
+  // NewDidEncryptionKey,
+  // NewDidEncryptionKey,
   NewDidKey,
+  NewDidVerificationKey,
   VerificationKeyType,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
@@ -47,6 +49,7 @@ import {
   submitExtrinsicWithResign,
   addressFromRandom,
   getDefaultMigrationHandler,
+  getDefaultConsumeHandler,
 } from './utils'
 
 let paymentAccount: KeyringPair
@@ -693,18 +696,12 @@ describe('DID authorization', () => {
   }, 60_000)
 })
 
-describe.only('DID management batching', () => {
+describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build from a light DID to a complete full DID', async () => {
       const { api } = await BlockchainApiConnection.getConnectionOrConnect()
       const authKey = await keystore.generateKeypair({
         alg: SigningAlgorithms.Sr25519,
-      })
-      const encKey = await keystore.generateKeypair({
-        alg: EncryptionAlgorithms.NaclBox,
-      })
-      const newEncKey = await keystore.generateKeypair({
-        alg: EncryptionAlgorithms.NaclBox,
       })
       const lightDidDetails = LightDidDetails.fromDetails({
         authenticationKey: {
@@ -714,8 +711,8 @@ describe.only('DID management batching', () => {
           ) as LightDidSupportedVerificationKeyTypes,
         },
         encryptionKey: {
-          publicKey: encKey.publicKey,
-          type: DemoKeystore.getKeyTypeForAlg(encKey.alg) as EncryptionKeyType,
+          publicKey: Uint8Array.from(Array(32).fill(1)),
+          type: EncryptionKeyType.X25519,
         },
         serviceEndpoints: [
           {
@@ -735,22 +732,20 @@ describe.only('DID management batching', () => {
         lightDidDetails
       )
         .addEncryptionKey({
-          publicKey: newEncKey.publicKey,
-          type: DemoKeystore.getKeyTypeForAlg(
-            newEncKey.alg
-          ) as EncryptionKeyType,
+          publicKey: Uint8Array.from(Array(32).fill(2)),
+          type: EncryptionKeyType.X25519,
         })
         .setAttestationKey({
-          publicKey: Uint8Array.from(Array(32).fill(20)),
+          publicKey: Uint8Array.from(Array(32).fill(1)),
           type: VerificationKeyType.Sr25519,
         })
         .setDelegationKey({
-          publicKey: Uint8Array.from(Array(33).fill(30)),
+          publicKey: Uint8Array.from(Array(33).fill(1)),
           type: VerificationKeyType.Ecdsa,
         })
         .addServiceEndpoint({
           id: 'id-3',
-          types: ['types-3'],
+          types: ['type-3'],
           urls: ['url-3'],
         })
 
@@ -765,62 +760,156 @@ describe.only('DID management batching', () => {
       )
 
       expect(fullDid).not.toBeNull()
-      expect(fullDid!.getKeys(KeyRelationship.authentication)).toMatchObject<
-        Array<Partial<DidVerificationKey>>
-      >([
-        {
+
+      expect(
+        fullDid!.getKeys(KeyRelationship.authentication).sort()
+      ).toMatchObject<NewDidVerificationKey[]>(
+        [
+          {
+            publicKey: authKey.publicKey,
+            type: DemoKeystore.getKeyTypeForAlg(
+              authKey.alg
+            ) as LightDidSupportedVerificationKeyTypes,
+          },
+        ].sort()
+      )
+
+      // expect(
+      //   fullDid!.getKeys(KeyRelationship.keyAgreement).length
+      // ).toStrictEqual(2)
+      // expect(
+      //   fullDid!.getKeys(KeyRelationship.keyAgreement).sort()
+      // ).toMatchObject(
+      //   [
+      //     {
+      //       publicKey: Uint8Array.from(Array(32).fill(1)),
+      //       type: EncryptionKeyType.X25519,
+      //     },
+      //     {
+      //       publicKey: Uint8Array.from(Array(32).fill(2)),
+      //       type: EncryptionKeyType.X25519,
+      //     },
+      //   ].sort()
+      // )
+
+      expect(
+        fullDid!.getKeys(KeyRelationship.assertionMethod).sort()
+      ).toMatchObject<NewDidVerificationKey[]>(
+        [
+          {
+            publicKey: Uint8Array.from(Array(32).fill(1)),
+            type: VerificationKeyType.Sr25519,
+          },
+        ].sort()
+      )
+
+      expect(
+        fullDid!.getKeys(KeyRelationship.capabilityDelegation).sort()
+      ).toMatchObject<NewDidVerificationKey[]>(
+        [
+          {
+            publicKey: Uint8Array.from(Array(33).fill(1)),
+            type: VerificationKeyType.Ecdsa,
+          },
+        ].sort()
+      )
+
+      expect(fullDid!.getEndpoints().length).toStrictEqual(3)
+      expect(fullDid!.getEndpoints().sort()).toStrictEqual<
+        DidServiceEndpoint[]
+      >(
+        [
+          {
+            id: 'id-3',
+            types: ['type-3'],
+            urls: ['url-3'],
+          },
+          {
+            id: 'id-1',
+            types: ['type-1'],
+            urls: ['url-1'],
+          },
+          {
+            id: 'id-2',
+            types: ['type-2'],
+            urls: ['url-2'],
+          },
+        ].sort()
+      )
+    })
+  })
+
+  describe.only('FullDidUpdateBuilder', () => {
+    it('Build from a complete full DID and remove everything but the authentication key', async () => {
+      const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+      const authKey = await keystore.generateKeypair({
+        alg: SigningAlgorithms.Sr25519,
+      })
+      const lightDidDetails = LightDidDetails.fromDetails({
+        authenticationKey: {
           publicKey: authKey.publicKey,
           type: DemoKeystore.getKeyTypeForAlg(
             authKey.alg
           ) as LightDidSupportedVerificationKeyTypes,
         },
-      ])
-      expect(fullDid!.getKeys(KeyRelationship.keyAgreement)).toMatchObject<
-        Array<Partial<DidEncryptionKey>>
-      >([
-        {
-          publicKey: encKey.publicKey,
-          type: DemoKeystore.getKeyTypeForAlg(encKey.alg) as EncryptionKeyType,
-        },
-        {
-          publicKey: Uint8Array.from(Array(32).fill(21)),
+        encryptionKey: {
+          publicKey: Uint8Array.from(Array(32).fill(1)),
           type: EncryptionKeyType.X25519,
         },
-      ])
-      expect(fullDid!.getKeys(KeyRelationship.assertionMethod)).toMatchObject<
-        Array<Partial<DidVerificationKey>>
-      >([
-        {
-          publicKey: Uint8Array.from(Array(32).fill(20)),
+        serviceEndpoints: [
+          {
+            id: 'id-1',
+            types: ['type-1'],
+            urls: ['url-1'],
+          },
+        ],
+      })
+      const createBuilder = FullDidCreationBuilder.fromLightDidDetails(
+        api,
+        lightDidDetails
+      )
+        .setAttestationKey({
+          publicKey: Uint8Array.from(Array(32).fill(1)),
           type: VerificationKeyType.Sr25519,
-        },
-      ])
-      expect(
-        fullDid!.getKeys(KeyRelationship.capabilityDelegation)
-      ).toMatchObject<Array<Partial<DidVerificationKey>>>([
-        {
-          publicKey: Uint8Array.from(Array(33).fill(30)),
+        })
+        .setDelegationKey({
+          publicKey: Uint8Array.from(Array(33).fill(1)),
           type: VerificationKeyType.Ecdsa,
-        },
-      ])
-      expect(fullDid!.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
-        {
-          id: 'id-1',
-          types: ['type-1'],
-          urls: ['url-1'],
-        },
-        {
+        })
+        .addServiceEndpoint({
           id: 'id-2',
           types: ['type-2'],
           urls: ['url-2'],
-        },
-        {
-          id: 'id-3',
-          types: ['type-3'],
-          urls: ['url-3'],
-        },
-      ])
-    })
+        })
+
+      let fullDid = (await createBuilder.consumeWithHandler(
+        keystore,
+        paymentAccount.address,
+        getDefaultConsumeHandler(paymentAccount)
+      )) as FullDidDetails
+
+      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
+        api,
+        fullDid
+      )
+        .removeEncryptionKey(fullDid.encryptionKey!.id)
+        .removeAttestationKey()
+        .removeDelegationKey()
+        .removeServiceEndpoint('id-1')
+        .removeServiceEndpoint('id-2')
+
+      await expect(
+        updateBuilder
+          .consume(keystore, paymentAccount.address)
+          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+      ).resolves.not.toThrow()
+
+      fullDid = (await FullDidDetails.fromChainInfo(
+        fullDid.identifier
+      )) as FullDidDetails
+
+      expect(fullDid).not.toBeNull()
+    }, 40_000)
   })
 })
 

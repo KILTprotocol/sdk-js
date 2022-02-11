@@ -18,6 +18,7 @@ import {
   DidChain,
   DidMigrationHandler,
   FullDidDetails,
+  FullDidUpdateHandler,
   LightDidDetails,
 } from '@kiltprotocol/did'
 import {
@@ -146,6 +147,17 @@ export async function createEndowedTestAccount(
 export function getDefaultMigrationHandler(
   submitter: KeyringPair
 ): DidMigrationHandler {
+  return async (e) => {
+    await BlockchainUtils.signAndSubmitTx(e, submitter, {
+      reSign: true,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+  }
+}
+
+export function getDefaultConsumeHandler(
+  submitter: KeyringPair
+): FullDidUpdateHandler {
   return async (e) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       reSign: true,
