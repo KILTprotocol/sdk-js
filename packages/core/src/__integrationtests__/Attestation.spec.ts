@@ -30,8 +30,6 @@ import {
   submitExtrinsicWithResign,
 } from './utils'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 let tokenHolder: KeyringPair
 let signer: DemoKeystore
 let attester: FullDidDetails

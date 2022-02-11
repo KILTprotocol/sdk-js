@@ -23,8 +23,6 @@ import {
   submitExtrinsicWithResign,
 } from './utils'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 let paymentAccount: KeyringPair
 let someDid: FullDidDetails
 const keystore = new DemoKeystore()

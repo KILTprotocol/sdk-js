@@ -14,8 +14,6 @@ import { LogLevel, Logger } from 'typescript-logging'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as ConfigService from './ConfigService'
 
-import '../../../testingTools/jestErrorCodeMatcher'
-
 describe('Log Configuration', () => {
   let testLogger: Logger
   beforeEach(() => {

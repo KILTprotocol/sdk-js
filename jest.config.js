@@ -5,7 +5,7 @@ module.exports = {
   runner: 'groups',
   // Parachain block time is 12s
   testTimeout: 15000,
-  setupFilesAfterEnv: ['../testingTools/setup.js'],
+  setupFilesAfterEnv: ['../jest-setup/setup.js'],
   transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {
     global: {
@@ -27,9 +27,10 @@ module.exports = {
     '!**/blockchainApiConnection/*',
     '!**/types/**/*',
     '!**/SDKErrors.ts',
-    '!**/*.chain.ts',
     '!utils/src/json-schema/*',
+    '!testing/**',
     // TODO: write tests for these files and remove here
+    '!**/*.chain.ts',
     '!did/src/index.types.ts',
     '!did/src/Did.chain.ts',
     '!did/src/Did.utils.ts',

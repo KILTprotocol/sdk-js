@@ -23,8 +23,6 @@ import {
   submitExtrinsicWithResign,
 } from './utils'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 beforeAll(async () => {
   await initializeApi()
 })

@@ -11,5 +11,5 @@ export * from './DidDocumentExporter/index.js'
 export * from './DidResolver/index.js'
 export * as DidChain from './Did.chain.js'
 export * as DidUtils from './Did.utils.js'
-
+export * from './Web3Names/index.js'
 export * from './types.js'

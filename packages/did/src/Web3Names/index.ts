@@ -5,4 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as BlockchainApiConnection from './BlockchainApiConnection.js'
+export * as Web3Names from './Web3Names.chain.js'
