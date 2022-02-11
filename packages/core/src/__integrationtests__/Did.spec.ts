@@ -695,7 +695,7 @@ describe('DID authorization', () => {
 })
 
 describe('DID management batching', () => {
-  describe.only('FullDidCreationBuilder', () => {
+  describe('FullDidCreationBuilder', () => {
     it('Build a complete full DID from a full light DID', async () => {
       const { api } = await BlockchainApiConnection.getConnectionOrConnect()
 
@@ -705,9 +705,7 @@ describe('DID management batching', () => {
       const lightDidDetails = LightDidDetails.fromDetails({
         authenticationKey: {
           publicKey: authKey.publicKey,
-          type: DemoKeystore.getKeyTypeForAlg(
-            authKey.alg
-          ) as LightDidSupportedVerificationKeyTypes,
+          type: VerificationKeyType.Sr25519,
         },
         encryptionKey: {
           publicKey: Uint8Array.from(Array(32).fill(1)),
@@ -770,9 +768,7 @@ describe('DID management batching', () => {
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: authKey.publicKey,
-          type: DemoKeystore.getKeyTypeForAlg(
-            authKey.alg
-          ) as LightDidSupportedVerificationKeyTypes,
+          type: VerificationKeyType.Sr25519,
         },
       ])
 
@@ -828,26 +824,21 @@ describe('DID management batching', () => {
       const lightDidDetails = LightDidDetails.fromDetails({
         authenticationKey: {
           publicKey: authKey.publicKey,
-          type: DemoKeystore.getKeyTypeForAlg(
-            authKey.alg
-          ) as LightDidSupportedVerificationKeyTypes,
+          type: VerificationKeyType.Sr25519,
         },
-        encryptionKey: {
-          publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: EncryptionKeyType.X25519,
-        },
-        serviceEndpoints: [
-          {
-            id: 'id-1',
-            types: ['type-1'],
-            urls: ['url-1'],
-          },
-        ],
       })
       const createBuilder = FullDidCreationBuilder.fromLightDidDetails(
         api,
         lightDidDetails
       )
+        .addEncryptionKey({
+          publicKey: Uint8Array.from(Array(32).fill(1)),
+          type: EncryptionKeyType.X25519,
+        })
+        .addEncryptionKey({
+          publicKey: Uint8Array.from(Array(32).fill(2)),
+          type: EncryptionKeyType.X25519,
+        })
         .setAttestationKey({
           publicKey: Uint8Array.from(Array(32).fill(1)),
           type: VerificationKeyType.Sr25519,
@@ -857,26 +848,30 @@ describe('DID management batching', () => {
           type: VerificationKeyType.Ecdsa,
         })
         .addServiceEndpoint({
+          id: 'id-1',
+          types: ['type-1'],
+          urls: ['url-1'],
+        })
+        .addServiceEndpoint({
           id: 'id-2',
           types: ['type-2'],
           urls: ['url-2'],
         })
 
-      let fullDid = (await createBuilder.consumeWithHandler(
+      const initialFullDid = await createBuilder.consumeWithHandler(
         keystore,
         paymentAccount.address,
         getDefaultConsumeHandler(paymentAccount)
-      )) as FullDidDetails
+      )
 
       const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
         api,
-        fullDid
+        initialFullDid
       )
-        .removeEncryptionKey(fullDid.encryptionKey!.id)
+        .removeAllEncryptionKeys()
         .removeAttestationKey()
         .removeDelegationKey()
-        .removeServiceEndpoint('id-1')
-        .removeServiceEndpoint('id-2')
+        .removeAllServiceEndpoints()
 
       await expect(
         updateBuilder
@@ -884,11 +879,89 @@ describe('DID management batching', () => {
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
-      fullDid = (await FullDidDetails.fromChainInfo(
-        fullDid.identifier
-      )) as FullDidDetails
+      const finalFullDid = await FullDidDetails.fromChainInfo(
+        initialFullDid.identifier
+      ).then((did) => did as FullDidDetails)
 
-      expect(fullDid).not.toBeNull()
+      expect(finalFullDid).not.toBeNull()
+
+      expect(
+        finalFullDid.authenticationKey
+      ).toMatchObject<NewDidVerificationKey>({
+        publicKey: authKey.publicKey,
+        type: VerificationKeyType.Sr25519,
+      })
+
+      expect(finalFullDid.encryptionKey).toBeUndefined()
+      expect(finalFullDid.attestationKey).toBeUndefined()
+      expect(finalFullDid.delegationKey).toBeUndefined()
+      expect(finalFullDid.getEndpoints()).toHaveLength(0)
+    }, 40_000)
+
+    it('Correctly handles rotation of the authentication key', async () => {
+      const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+      const authKey = await keystore.generateKeypair({
+        alg: SigningAlgorithms.Sr25519,
+      })
+      const newAuthKey = await keystore.generateKeypair({
+        alg: SigningAlgorithms.Ed25519,
+      })
+      const createBuilder = new FullDidCreationBuilder(api, {
+        authenticationKey: {
+          publicKey: authKey.publicKey,
+          type: VerificationKeyType.Sr25519,
+        },
+      })
+
+      const initialFullDid = await createBuilder.consumeWithHandler(
+        keystore,
+        paymentAccount.address,
+        getDefaultConsumeHandler(paymentAccount)
+      )
+
+      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
+        api,
+        initialFullDid
+      )
+        .addServiceEndpoint({ id: 'id-1', types: ['type-1'], urls: ['url-1'] })
+        .setAuthenticationKey({
+          publicKey: newAuthKey.publicKey,
+          type: VerificationKeyType.Ed25519,
+        })
+        .addServiceEndpoint({ id: 'id-2', types: ['type-2'], urls: ['url-2'] })
+
+      // Fails if an authentication key is set twice for the same builder
+      const builderCopy = updateBuilder
+      expect(() =>
+        builderCopy.setAuthenticationKey({
+          publicKey: authKey.publicKey,
+          type: VerificationKeyType.Sr25519,
+        })
+      ).toThrow()
+
+      await expect(
+        updateBuilder
+          .consume(keystore, paymentAccount.address)
+          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+      ).resolves.not.toThrow()
+
+      const finalFullDid = await FullDidDetails.fromChainInfo(
+        initialFullDid.identifier
+      ).then((did) => did as FullDidDetails)
+
+      expect(finalFullDid).not.toBeNull()
+
+      expect(
+        finalFullDid.authenticationKey
+      ).toMatchObject<NewDidVerificationKey>({
+        publicKey: newAuthKey.publicKey,
+        type: VerificationKeyType.Ed25519,
+      })
+
+      expect(finalFullDid.encryptionKey).toBeUndefined()
+      expect(finalFullDid.attestationKey).toBeUndefined()
+      expect(finalFullDid.delegationKey).toBeUndefined()
+      expect(finalFullDid.getEndpoints()).toHaveLength(2)
     }, 40_000)
   })
 })

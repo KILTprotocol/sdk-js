@@ -202,6 +202,20 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  public removeAllEncryptionKeys(): this {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
+
+    ;[...this.oldKeyAgreementKeys.keys()].forEach((kId) => {
+      this.removeEncryptionKey(kId)
+    })
+
+    return this
+  }
+
   public setAttestationKey(key: NewDidVerificationKey): this {
     // 1. Check that the attestation key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
@@ -340,6 +354,20 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     // Otherwise we can safely mark the service endpoint for deletion.
     this.serviceEndpointsToDelete.add(serviceId)
     this.pushToRightBatch(extrinsic)
+
+    return this
+  }
+
+  public removeAllServiceEndpoints(): this {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
+
+    ;[...this.oldServiceEndpoints.keys()].forEach((sId) => {
+      this.removeServiceEndpoint(sId)
+    })
 
     return this
   }
