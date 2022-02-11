@@ -66,6 +66,11 @@ export abstract class DidDetails implements IDidDetails {
 
   public abstract get identifier(): IDidIdentifier
 
+  /**
+   * Returns the first authentication key of the DID.
+   *
+   * @returns The first authentication key, in the order they are stored internally, of the given DID.
+   */
   public get authenticationKey(): DidVerificationKey {
     const firstAuthenticationKey = this.getKeys(
       KeyRelationship.authentication
@@ -78,16 +83,31 @@ export abstract class DidDetails implements IDidDetails {
     return firstAuthenticationKey
   }
 
+  /**
+   * Returns the first encryption key of the DID, if any.
+   *
+   * @returns The first encryption key, in the order they are stored internally, of the given DID.
+   */
   public get encryptionKey(): DidEncryptionKey | undefined {
     return this.getKeys(KeyRelationship.keyAgreement)[0] as DidEncryptionKey
   }
 
+  /**
+   * Returns the first attestation key of the DID, if any.
+   *
+   * @returns The first attestation key, in the order they are stored internally, of the given DID.
+   */
   public get attestationKey(): DidVerificationKey | undefined {
     return this.getKeys(
       KeyRelationship.assertionMethod
     )[0] as DidVerificationKey
   }
 
+  /**
+   * Returns the first delegation key of the DID, if any.
+   *
+   * @returns The first delegation key, in the order they are stored internally, of the given DID.
+   */
   public get delegationKey(): DidVerificationKey | undefined {
     return this.getKeys(
       KeyRelationship.capabilityDelegation

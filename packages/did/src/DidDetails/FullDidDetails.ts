@@ -157,7 +157,7 @@ export class FullDidDetails extends DidDetails {
   }
 
   /**
-   * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will return an error.
+   * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will throw an error.
    *
    * @param extrinsic The unsigned extrinsic to sign.
    * @param signer The keystore signer to use.
@@ -197,7 +197,7 @@ export class FullDidDetails extends DidDetails {
   }
 
   /**
-   * Signs and returns the provided unsigned extrinsic batch with the right DID key, if present. Otherwise, it will return an error.
+   * Signs and returns the provided unsigned extrinsic batch with the right DID key, if present. Otherwise, it will throw an error.
    * The generated signature will fail to verify successfully by the blockchain if any two operations in the batch require a different key type, or if the key type specified is not the expected one for the operations in the batch.
    *
    * @param batchExtrinsic The unsigned extrinsic batch to sign.

@@ -39,6 +39,9 @@ export type FullDidCreationHandler = (
   didCreationExtrinsic: SubmittableExtrinsic
 ) => Promise<void>
 
+/**
+ * A builder to batch multiple changes before a DID creation.
+ */
 export class FullDidCreationBuilder extends FullDidBuilder {
   protected authenticationKey: NewDidVerificationKey
 
@@ -73,6 +76,15 @@ export class FullDidCreationBuilder extends FullDidBuilder {
     })
   }
 
+  /**
+   * Initialize a DID creation with the information contained in the provided light DID.
+   *
+   * All the details in the DID are marked as to-add in the resulting creation operation.
+   *
+   * @param api The [[ApiPromise]] object to encode/decoded types as needed.
+   * @param details The [[LightDidDetails]] object.
+   * @returns The builder initialized with the information contained in the light DID.
+   */
   public static fromLightDidDetails(
     api: ApiPromise,
     details: LightDidDetails
@@ -86,6 +98,16 @@ export class FullDidCreationBuilder extends FullDidBuilder {
     })
   }
 
+  /**
+   * Consume the builder and delegates to the closure the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   *
+   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
+   * @param submitter The KILT address of the user authorised to submit the creation operation.
+   * @param handler A closure to submit the extrinsic and return the created [[FullDidDetails]] instance.
+   * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
+   *
+   * @returns The [[FullDidDetails]] as returned by the provided closure.
+   */
   public async consumeWithHandler(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
@@ -106,6 +128,15 @@ export class FullDidCreationBuilder extends FullDidBuilder {
     return fetchedDidDetails
   }
 
+  /**
+   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   *
+   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
+   * @param submitter The KILT address of the user authorised to submit the creation operation.
+   * @param _atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
+   *
+   * @returns The [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   */
   public async consume(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],

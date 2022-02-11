@@ -7,6 +7,7 @@
 
 import type { DidKey } from '@kiltprotocol/types'
 
+// Mock function to generate a key ID without having to rely on a real chain metadata.
 export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
   return new Array(32).fill(key[0]).toString()
 }

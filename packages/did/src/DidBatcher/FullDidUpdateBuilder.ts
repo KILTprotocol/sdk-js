@@ -48,6 +48,10 @@ export type FullDidUpdateHandler = (
 ) => Promise<void>
 
 // TODO: replace manual extrinsic creation with DID chain functions when those will take an api object as parameter, so that they do not have to be async.
+
+/**
+ * A builder to batch multiple changes before a DID update.
+ */
 export class FullDidUpdateBuilder extends FullDidBuilder {
   protected identifier: IDidIdentifier
   protected firstBatch: SubmittableExtrinsic[] = []
@@ -103,6 +107,15 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     })
   }
 
+  /**
+   * Initialize a DID update with the information contained in the provided full DID.
+   *
+   * All the details in the DID are considered part of the starting state of the update batch.
+   *
+   * @param api The [[ApiPromise]] object to encode/decoded types as needed.
+   * @param details The [[FullDidDetails]] object.
+   * @returns The builder initialized with the information contained in the full DID.
+   */
   public static fromFullDidDetails(
     api: ApiPromise,
     details: FullDidDetails
@@ -127,6 +140,18 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     })
   }
 
+  /**
+   * Mark a new authentication key to replace the old one in the next DID operation.
+   *
+   * All update operations after this function is called are batched and signed with the new authentication key.
+   *
+   * The operation will fail in the following cases:
+   *   - The builder has already been consumed
+   *   - There was already a new authentication key marked for addition.
+   *
+   * @param key The new [[NewDidVerificationKey]] to add to the DID.
+   * @returns The builder with the provided operation saved internally.
+   */
   public setAuthenticationKey(key: NewDidVerificationKey): this {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -151,6 +176,18 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark a new encryption key to be added in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The starting state already has the provided encryption key
+   *   - There was already a key with the same ID marked for deletion.
+   *   - The builder has already been consumed
+   *   - There was already a key with the same ID marked for addition.
+   *
+   * @param key The new [[NewDidEncryptionKey]] to add to the DID.
+   * @returns The builder with the provided operation saved internally.
+   */
   public addEncryptionKey(key: NewDidEncryptionKey): this {
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // 1. Check if the key is already present in the DID.
@@ -175,6 +212,18 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark an encryption key to be removed in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The builder has already been consumed
+   *   - The starting state does not have a key with the provided ID
+   *   - There was already a key with the same ID marked for addition.
+   *   - There was already a key with the same ID marked for deletion.
+   *
+   * @param keyId The ID of the encryption key to delete.
+   * @returns The builder with the provided operation saved internally.
+   */
   public removeEncryptionKey(keyId: DidKey['id']): this {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -208,6 +257,13 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark all encryption keys in the provided DID to be removed in the next DID operation.
+   *
+   * It calls internally `removeEncryptionKey` for each encryption key.
+   *
+   * @returns The builder with the provided operation saved internally.
+   */
   public removeAllEncryptionKeys(): this {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -222,6 +278,17 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark a new attestation key to replace the old one, if present, in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The old attestation key was already marked for deletion.
+   *   - The builder has already been consumed
+   *   - There was already a new attestation key marked for addition.
+   *
+   * @param key The new [[NewDidVerificationKey]] to add to the DID.
+   * @returns The builder with the provided operation saved internally.
+   */
   public setAttestationKey(key: NewDidVerificationKey): this {
     // 1. Check that the attestation key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
@@ -239,6 +306,17 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark the attestation key to be removed in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The builder has already been consumed
+   *   - The starting state does not have an attestation key
+   *   - There was already an attestation key marked for addition
+   *   - The old attestation key was already marked for deletion
+   *
+   * @returns The builder with the provided operation saved internally.
+   */
   public removeAttestationKey(): this {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -272,6 +350,17 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark a new delegation key to replace the old one, if present, in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The old delegation key was already marked for deletion.
+   *   - The builder has already been consumed
+   *   - There was already a new delegation key marked for addition.
+   *
+   * @param key The new [[NewDidVerificationKey]] to add to the DID.
+   * @returns The builder with the provided operation saved internally.
+   */
   public setDelegationKey(key: NewDidVerificationKey): this {
     // 1. Check that the delegation key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
@@ -289,6 +378,17 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark the delegation key to be removed in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The builder has already been consumed
+   *   - The starting state does not have an delegation key
+   *   - There was already an attestation key marked for addition
+   *   - The old attestation key was already marked for deletion
+   *
+   * @returns The builder with the provided operation saved internally.
+   */
   public removeDelegationKey(): this {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -319,6 +419,18 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark a new service endpoint to be added in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The starting state already has the provided service endpoint
+   *   - There was already a service with the same ID marked for deletion.
+   *   - The builder has already been consumed
+   *   - There was already a service with the same ID marked for addition.
+   *
+   * @param service The new [[DidServiceEndpoint]] to add to the DID.
+   * @returns The builder with the provided operation saved internally.
+   */
   public addServiceEndpoint(service: DidServiceEndpoint): this {
     // 1. Check if the service is already present in the DID.
     if (this.oldServiceEndpoints.has(service.id)) {
@@ -337,6 +449,18 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark an service endpoint to be removed in the next DID operation.
+   *
+   * The operation will fail in the following cases:
+   *   - The builder has already been consumed
+   *   - The starting state does not have a service with the provided ID
+   *   - There was already a service with the same ID marked for addition.
+   *   - There was already a service with the same ID marked for deletion.
+   *
+   * @param serviceId The ID of the service to delete.
+   * @returns The builder with the provided operation saved internally.
+   */
   public removeServiceEndpoint(serviceId: DidServiceEndpoint['id']): this {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -364,6 +488,13 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Mark all service endpoints in the provided DID to be removed in the next DID operation.
+   *
+   * It calls internally `removeServiceEndpoint` for each service endpoint.
+   *
+   * @returns The builder with the provided operation saved internally.
+   */
   public removeAllServiceEndpoints(): this {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -378,6 +509,16 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return this
   }
 
+  /**
+   * Consume the builder and delegates to the closure the [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   *
+   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
+   * @param submitter The KILT address of the user authorised to submit the update operation.
+   * @param handler A closure to submit the extrinsic and return the update [[FullDidDetails]] instance.
+   * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
+   *
+   * @returns The [[FullDidDetails]] as returned by the provided closure.
+   */
   public async consumeWithHandler(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
@@ -397,6 +538,15 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return fetchedDidDetails
   }
 
+  /**
+   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of the DID update with the provided details.
+   *
+   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
+   * @param submitter The KILT address of the user authorised to submit the update operation.
+   * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
+   *
+   * @returns The [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   */
   public async consume(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
