@@ -634,17 +634,17 @@ export const ERROR_MESSAGE_TYPE: (
   expectedType: string,
   alternativeType?: string
 ) => {
-    if (alternativeType) {
-      return new SDKError(
-        ErrorCode.ERROR_MESSAGE_TYPE,
-        `Unexpected message type. Received ${type}, expected ${expectedType} or ${alternativeType}`
-      )
-    }
+  if (alternativeType) {
     return new SDKError(
       ErrorCode.ERROR_MESSAGE_TYPE,
-      `Unexpected message type. Received ${type}, expected ${expectedType}`
+      `Unexpected message type. Received ${type}, expected ${expectedType} or ${alternativeType}`
     )
   }
+  return new SDKError(
+    ErrorCode.ERROR_MESSAGE_TYPE,
+    `Unexpected message type. Received ${type}, expected ${expectedType}`
+  )
+}
 
 export const ERROR_UNKNOWN: () => SDKError = () => {
   return new SDKError(ErrorCode.ERROR_UNKNOWN, 'an unknown error ocurred')

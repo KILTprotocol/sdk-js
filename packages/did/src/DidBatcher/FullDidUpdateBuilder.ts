@@ -313,7 +313,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *   - The builder has already been consumed
    *   - The starting state does not have an attestation key
    *   - There was already an attestation key marked for addition
-   *   - The old attestation key was already marked for deletion
+   *   - The old attestation key was already marked for deletion.
    *
    * @returns The builder with the provided operation saved internally.
    */
@@ -385,7 +385,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *   - The builder has already been consumed
    *   - The starting state does not have an delegation key
    *   - There was already an attestation key marked for addition
-   *   - The old attestation key was already marked for deletion
+   *   - The old attestation key was already marked for deletion.
    *
    * @returns The builder with the provided operation saved internally.
    */
