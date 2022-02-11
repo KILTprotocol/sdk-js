@@ -7,15 +7,18 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
-import {
+import type {
   IDidDetails,
   IDidIdentifier,
   IIdentity,
   KeystoreSigner,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
+import { VerificationKeyType } from '@kiltprotocol/types'
 
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
+
+import { FullDidCreationBuilder } from '../DidBatcher/FullDidCreationBuilder.js'
 
 import type {
   DidConstructorDetails,
@@ -23,6 +26,13 @@ import type {
   PublicKeys,
   ServiceEndpoints,
 } from '../types.js'
+import {
+  getKiltDidFromIdentifier,
+  LIGHT_DID_LATEST_VERSION,
+  parseDidUri,
+} from '../Did.utils.js'
+
+import { DidDetails } from './DidDetails.js'
 import {
   checkLightDidCreationDetails,
   decodeAndDeserializeAdditionalLightDidDetails,
@@ -34,14 +44,7 @@ import {
   NewLightDidAuthenticationKey,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils.js'
-import { DidDetails } from './DidDetails.js'
 import { FullDidDetails } from './FullDidDetails.js'
-import {
-  getKiltDidFromIdentifier,
-  LIGHT_DID_LATEST_VERSION,
-  parseDidUri,
-} from '../Did.utils.js'
-import { generateCreateTxFromDidDetails } from '../Did.chain.js'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
@@ -51,7 +54,12 @@ export class LightDidDetails extends DidDetails {
 
   private constructor(
     identifier: IDidIdentifier,
-    { did, keys, keyRelationships, serviceEndpoints = {} }: DidConstructorDetails
+    {
+      did,
+      keys,
+      keyRelationships,
+      serviceEndpoints = {},
+    }: DidConstructorDetails
   ) {
     super({ did, keys, keyRelationships, serviceEndpoints })
 
@@ -221,12 +229,14 @@ export class LightDidDetails extends DidDetails {
     signer: KeystoreSigner,
     migrationHandler: DidMigrationHandler
   ): Promise<FullDidDetails> {
-    const creationTx = await generateCreateTxFromDidDetails(
-      this,
-      submitterAddress,
-      signer
-    )
+    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+    const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
+      api,
+      this
+    ).consume(signer, submitterAddress)
+
     await migrationHandler(creationTx)
+
     const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
     if (!fullDidDetails) {
       throw SDKErrors.ERROR_DID_ERROR(

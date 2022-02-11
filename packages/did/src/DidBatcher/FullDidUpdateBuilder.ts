@@ -7,8 +7,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 
-import {
-  KeyRelationship,
+import type {
   DidEncryptionKey,
   KeystoreSigner,
   SubmittableExtrinsic,
@@ -20,12 +19,19 @@ import {
   DidServiceEndpoint,
   DidKey,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { DidChain, FullDidDetails } from '../index.js'
-import { FullDidBuilder } from './FullDidBuilder.js'
-import { formatPublicKey, generateDidAuthenticatedTx } from '../Did.chain.js'
+import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
+import { increaseNonce } from '../DidDetails/FullDidDetails.utils.js'
+import {
+  formatPublicKey,
+  generateDidAuthenticatedTx,
+  queryNonce,
+} from '../Did.chain.js'
 import { getSignatureAlgForKeyType } from '../Did.utils.js'
+
+import { FullDidBuilder } from './FullDidBuilder.js'
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'
 
 export type FullDidUpdateBuilderCreationDetails = {
@@ -400,15 +406,16 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       ? this.apiObject.tx.utility.batchAll(this.firstBatch)
       : this.apiObject.tx.utility.batch(this.firstBatch)
 
-    const lastDidNonce = await DidChain.queryNonce(this.identifier)
+    const lastDidNonce = await queryNonce(this.identifier)
+    const firstBatchNonce = increaseNonce(lastDidNonce)
+
     const firstBatchAuthenticated = await generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: this.oldAuthenticationKey.publicKey,
       alg: getSignatureAlgForKeyType(this.oldAuthenticationKey.type),
       signer,
       call: first,
-      // TODO: Wrap around max value
-      txCounter: lastDidNonce.addn(1),
+      txCounter: firstBatchNonce,
       submitter,
     })
 
@@ -420,14 +427,14 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
         ? this.apiObject.tx.utility.batchAll(this.secondBatch)
         : this.apiObject.tx.utility.batch(this.secondBatch)
 
+      const secondBatchNonce = increaseNonce(firstBatchNonce)
       const secondBatchAuthenticated = await generateDidAuthenticatedTx({
         didIdentifier: this.identifier,
         signingPublicKey: this.newAuthenticationKey.publicKey,
         alg: getSignatureAlgForKeyType(this.newAuthenticationKey.type),
         signer,
         call: second,
-        // TODO: Wrap around max value
-        txCounter: lastDidNonce.addn(2),
+        txCounter: secondBatchNonce,
         submitter,
       })
 

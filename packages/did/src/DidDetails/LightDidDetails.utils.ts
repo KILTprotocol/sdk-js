@@ -9,14 +9,14 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
-import {
+import type {
   DidServiceEndpoint,
-  EncryptionKeyType,
   SubmittableExtrinsic,
-  VerificationKeyType,
   NewDidEncryptionKey,
   NewDidVerificationKey,
 } from '@kiltprotocol/types'
+import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
+
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { parseDidUri } from '../Did.utils.js'

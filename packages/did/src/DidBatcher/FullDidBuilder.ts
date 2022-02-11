@@ -14,7 +14,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 
-import {
+import type {
   DidEncryptionKey,
   DidServiceEndpoint,
   IIdentity,

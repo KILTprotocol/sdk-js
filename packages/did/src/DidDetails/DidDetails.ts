@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { u8aToHex } from '@polkadot/util'
+
 import {
   DidEncryptionKey,
   DidKey,
@@ -19,11 +21,11 @@ import {
   KeyRelationship,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { u8aToHex } from '@polkadot/util'
 
 import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
-import { checkDidCreationDetails } from './DidDetails.utils.js'
 import { getSignatureAlgForKeyType } from '../Did.utils.js'
+
+import { checkDidCreationDetails } from './DidDetails.utils.js'
 
 type PublicKeysInner = Map<DidKey['id'], Omit<DidKey, 'id'>>
 type ServiceEndpointsInner = Map<

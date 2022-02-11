@@ -5,9 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Extrinsic } from '@polkadot/types/interfaces'
+import { BN } from '@polkadot/util'
+
 import type { VerificationKeyRelationship } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import type { Extrinsic } from '@polkadot/types/interfaces'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -46,4 +48,13 @@ export function getKeyRelationshipForExtrinsic(
     methodMapping.default.default
 
   return keyRelationship
+}
+
+// Max nonce value is (2^64) - 1
+const maxNonceValue = new BN(new BN(2).pow(new BN(64))).subn(1)
+
+export function increaseNonce(currentNonce: BN): BN {
+  // Wrap around the max u64 value when reached.
+  // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
+  return currentNonce === maxNonceValue ? new BN(0) : currentNonce.addn(1)
 }

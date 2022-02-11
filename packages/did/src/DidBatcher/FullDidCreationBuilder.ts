@@ -8,23 +8,24 @@
 import { ApiPromise } from '@polkadot/api'
 import { encodeAddress } from '@polkadot/util-crypto'
 
-import {
+import type {
   DidEncryptionKey,
   DidServiceEndpoint,
   IIdentity,
-  KeyRelationship,
   KeystoreSigner,
   NewDidEncryptionKey,
   NewDidVerificationKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
+
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { LightDidDetails } from '../DidDetails/LightDidDetails.js'
+import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
+import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
-import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
-import { FullDidDetails } from '../index.js'
 
 export type FullDidCreationBuilderCreationDetails = {
   authenticationKey: NewDidVerificationKey

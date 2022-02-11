@@ -26,8 +26,6 @@ import type {
   PublicKeys,
   ServiceEndpoints,
 } from '../types.js'
-import { getKeyRelationshipForExtrinsic } from './FullDidDetails.utils.js'
-import { DidDetails } from './DidDetails.js'
 import {
   generateDidAuthenticatedTx,
   queryDetails,
@@ -41,8 +39,11 @@ import {
   getSignatureAlgForKeyType,
 } from '../Did.utils.js'
 
-// Max nonce value is (2^64) - 1
-const maxNonceValue = new BN(new BN(2).pow(new BN(64))).subn(1)
+import { DidDetails } from './DidDetails.js'
+import {
+  getKeyRelationshipForExtrinsic,
+  increaseNonce,
+} from './FullDidDetails.utils.js'
 
 export class FullDidDetails extends DidDetails {
   public readonly identifier: IDidIdentifier
@@ -152,9 +153,7 @@ export class FullDidDetails extends DidDetails {
    */
   public async getNextNonce(): Promise<BN> {
     const currentNonce = await queryNonce(this.identifier)
-    // Wrap around the max u64 value when reached.
-    // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
-    return currentNonce === maxNonceValue ? new BN(0) : currentNonce.addn(1)
+    return increaseNonce(currentNonce)
   }
 
   /**
