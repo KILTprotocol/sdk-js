@@ -278,6 +278,32 @@ describe('FullDidUpdateBuilder', () => {
         )
       })
     })
+
+    describe('.removeAllEncryptionKeys()', () => {
+      it('removes all encryption keys successfully', async () => {
+        const builder = new FullDidUpdateBuilder(mockApi, {
+          authenticationKey: oldAuthenticationKey,
+          identifier: 'test-identifier',
+          keyAgreementKeys: [
+            oldEncryptionKey,
+            {
+              id: computeKeyId(newEncryptionKey.publicKey),
+              ...newEncryptionKey,
+            },
+          ],
+        })
+        expect(() => builder.removeAllEncryptionKeys()).not.toThrow()
+        expect(
+          // @ts-ignore
+          builder.keyAgreementKeysToDelete
+        ).toStrictEqual<Set<DidEncryptionKey['id']>>(
+          new Set([
+            computeKeyId(oldEncryptionKey.publicKey),
+            computeKeyId(newEncryptionKey.publicKey),
+          ])
+        )
+      })
+    })
   })
 
   describe('Attestation keys', () => {
@@ -592,6 +618,33 @@ describe('FullDidUpdateBuilder', () => {
           builder.serviceEndpointsToDelete
         ).toStrictEqual<Set<DidServiceEndpoint['id']>>(
           new Set([oldServiceEndpoint.id])
+        )
+      })
+    })
+    describe('.removeAllServiceEndpoints()', () => {
+      it('removes all service endpoints successfully', async () => {
+        const builder = new FullDidUpdateBuilder(mockApi, {
+          authenticationKey: oldAuthenticationKey,
+          identifier: 'test-identifier',
+          serviceEndpoints: [
+            {
+              id: 'id-1',
+              types: ['type-1'],
+              urls: ['url-1'],
+            },
+            {
+              id: 'id-2',
+              types: ['type-2'],
+              urls: ['url-2'],
+            },
+          ],
+        })
+        expect(() => builder.removeAllServiceEndpoints()).not.toThrow()
+        expect(
+          // @ts-ignore
+          builder.serviceEndpointsToDelete
+        ).toStrictEqual<Set<DidServiceEndpoint['id']>>(
+          new Set(['id-1', 'id-2'])
         )
       })
     })
