@@ -116,7 +116,7 @@ export async function endowAccounts(
 ): Promise<void> {
   await Promise.all(
     addresses.map((address) =>
-      Balance.getMakeTransferTx(address, ENDOWMENT).then((tx) =>
+      Balance.getTransferTx(address, ENDOWMENT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn,
           reSign: true,
@@ -130,7 +130,7 @@ async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
-  const transferTx = await Balance.makeTransfer(address, amount)
+  const transferTx = await Balance.getTransferTx(address, amount)
   return submitExtrinsicWithResign(transferTx, devFaucet).catch((e) =>
     console.log(e)
   )
