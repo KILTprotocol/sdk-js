@@ -12,10 +12,13 @@ For more information, please visit our [official SDK documentation](https://dev.
 ## Installation
 
 NPM:
+
 ```
 npm install @kiltprotocol/utils
 ```
+
 YARN:
+
 ```
 yarn add @kiltprotocol/utils
 ```

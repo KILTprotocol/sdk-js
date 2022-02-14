@@ -14,10 +14,13 @@ For more information, please visit our [official SDK documentation](https://dev.
 ## Installation
 
 NPM:
+
 ```
 npm install @kiltprotocol/types
 ```
+
 YARN:
+
 ```
 yarn add @kiltprotocol/types
 ```

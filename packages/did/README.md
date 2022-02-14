@@ -13,10 +13,13 @@ For more information about Decentralised Identifiers, please visit the latest ve
 ## Installation
 
 NPM:
+
 ```
 npm install @kiltprotocol/did
 ```
+
 YARN:
+
 ```
 yarn add @kiltprotocol/did
 ```
