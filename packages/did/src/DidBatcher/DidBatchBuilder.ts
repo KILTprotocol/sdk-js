@@ -39,8 +39,9 @@ export const defaultBatchSigningKeySelectionClosure: BatchSigningKeySelection =
   (batch: Extrinsic[], keys: DidVerificationKey[]) => Promise.resolve(keys[0])
 
 export class DidBatchBuilder {
-  protected did: FullDidDetails
-  protected api: ApiPromise
+  private did: FullDidDetails
+  private api: ApiPromise
+
   protected batches: BatchInfo[] = []
   protected isConsumed = false
 
