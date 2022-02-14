@@ -3,6 +3,19 @@
 
 ![Lint and Test](https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg)
 
-# Kilt Config
+# KILT Config
 
 This package provides a configuration service, which the rest of the KILT SDK can use.
+
+For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+
+## Installation
+
+NPM:
+```
+npm install @kiltprotocol/config
+```
+YARN:
+```
+yarn add @kiltprotocol/config
+```

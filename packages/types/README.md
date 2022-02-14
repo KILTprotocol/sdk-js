@@ -3,8 +3,21 @@
 
 ![Lint and Test](https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg)
 
-# Kilt Types
+# KILT Types
 
 This package provides the generally applicable TypeScript types for different mechanisms in the KILT SDK.
 
 This is also contains all the types, which someone would need to support for working with KILT credentials and DIDs not using the SDK.
+
+For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+
+## Installation
+
+NPM:
+```
+npm install @kiltprotocol/types
+```
+YARN:
+```
+yarn add @kiltprotocol/types
+```

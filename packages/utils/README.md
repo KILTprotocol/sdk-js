@@ -3,6 +3,19 @@
 
 ![Lint and Test](https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg)
 
-# Kilt Utils
+# KILT Utils
 
 This package provides different generic utility (and stateless) functions.
+
+For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+
+## Installation
+
+NPM:
+```
+npm install @kiltprotocol/utils
+```
+YARN:
+```
+yarn add @kiltprotocol/utils
+```

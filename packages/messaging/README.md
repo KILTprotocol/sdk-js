@@ -3,6 +3,19 @@
 
 ![Lint and Test](https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg)
 
-# Kilt Messaging
+# KILT Messaging
 
 This package provides tools to create messages, encrypt, decrypt and verify them and compress and decompress them.
+
+For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+
+## Installation
+
+NPM:
+```
+npm install @kiltprotocol/messaging
+```
+YARN:
+```
+yarn add @kiltprotocol/messaging
+```
