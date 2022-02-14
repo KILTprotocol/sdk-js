@@ -57,3 +57,37 @@ export function getQueryTypeFactory<T extends Codec = Codec>(
     return registry.createType(storageType, v) as T
   }
 }
+
+export function buildQueryMock(
+  api: ApiPromise,
+  jest: any,
+  queryPaths: Array<[string, unknown] | string>
+): any {
+  const query = {}
+  queryPaths.forEach((args) => {
+    let queryPath: string
+    let returnValue: unknown
+    if (Array.isArray(args)) {
+      ;[queryPath, returnValue] = args
+    } else {
+      queryPath = args
+    }
+    const [module, method] = queryPath.split('.')
+    if (!module || !method) {
+      throw new Error('query paths must be strings like module.method')
+    }
+    const returnTypeFactory = getQueryTypeFactory(
+      api.query[module][method],
+      true
+    )
+    const mockFunction = jest.fn()
+    mockFunction.mockResolvedValue(returnTypeFactory(returnValue))
+    // eslint-disable-next-line no-underscore-dangle
+    mockFunction._typeFactory = returnTypeFactory
+    if (!query[module]) {
+      query[module] = {}
+    }
+    query[module][method] = mockFunction
+  })
+  return { query }
+}

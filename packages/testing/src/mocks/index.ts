@@ -9,6 +9,7 @@ export {
   createAugmentedApi,
   createRegistryFromMetadata,
   getQueryTypeFactory,
+  buildQueryMock,
 } from './typeRegistry.js'
 export { getMockedApi, MockApiPromise } from './mockedApi.js'
 export { mockChainQueryReturn } from './mockedApi.utils.js'

@@ -144,18 +144,10 @@ describe('api mocks', () => {
   let augmentedApi: ApiPromise
   beforeAll(() => {
     augmentedApi = ApiMocks.createAugmentedApi()
-    mockedApi = {
-      query: {
-        did: {
-          serviceEndpoints: {
-            entries: jest.fn(),
-            _typeFactory: ApiMocks.getQueryTypeFactory(
-              augmentedApi.query.did.serviceEndpoints
-            ),
-          },
-        },
-      },
-    }
+    mockedApi = ApiMocks.buildQueryMock(augmentedApi, jest, [
+      'did.serviceEndpoints',
+    ])
+    mockedApi.query.did.serviceEndpoints.entries = jest.fn()
     BlockchainApiConnection.setConnection(
       Promise.resolve(new Blockchain(mockedApi))
     )
