@@ -5,12 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Extrinsic } from '@polkadot/types/interfaces'
 import { ApiPromise } from '@polkadot/api'
 
 import type {
   DidEncryptionKey,
   KeystoreSigner,
-  SubmittableExtrinsic,
   IIdentity,
   IDidIdentifier,
   DidVerificationKey,
@@ -18,6 +18,7 @@ import type {
   NewDidEncryptionKey,
   DidServiceEndpoint,
   DidKey,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -54,8 +55,8 @@ export type FullDidUpdateHandler = (
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
   protected identifier: IDidIdentifier
-  protected firstBatch: SubmittableExtrinsic[] = []
-  protected secondBatch: SubmittableExtrinsic[] = []
+  protected firstBatch: Extrinsic[] = []
+  protected secondBatch: Extrinsic[] = []
 
   protected oldAuthenticationKey: DidVerificationKey
   protected newAuthenticationKey: NewDidVerificationKey | undefined = undefined
@@ -552,7 +553,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     submitter: IIdentity['address'],
     atomic = true
   ): Promise<SubmittableExtrinsic> {
-    const first: SubmittableExtrinsic = atomic
+    const first: Extrinsic = atomic
       ? this.apiObject.tx.utility.batchAll(this.firstBatch)
       : this.apiObject.tx.utility.batch(this.firstBatch)
 
@@ -570,10 +571,10 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     })
 
     // Batch of batches
-    const finalBatch: SubmittableExtrinsic[] = [firstBatchAuthenticated]
+    const finalBatch: Extrinsic[] = [firstBatchAuthenticated]
 
     if (this.newAuthenticationKey) {
-      const second: SubmittableExtrinsic = atomic
+      const second: Extrinsic = atomic
         ? this.apiObject.tx.utility.batchAll(this.secondBatch)
         : this.apiObject.tx.utility.batch(this.secondBatch)
 
@@ -596,7 +597,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       : this.apiObject.tx.utility.batch(finalBatch)
   }
 
-  private pushToRightBatch(extrinsic: SubmittableExtrinsic): void {
+  private pushToRightBatch(extrinsic: Extrinsic): void {
     if (this.newAuthenticationKey) {
       this.secondBatch.push(extrinsic)
     } else {

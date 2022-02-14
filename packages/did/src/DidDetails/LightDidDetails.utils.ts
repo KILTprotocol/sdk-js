@@ -11,9 +11,9 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 import type {
   DidServiceEndpoint,
-  SubmittableExtrinsic,
   NewDidEncryptionKey,
   NewDidVerificationKey,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
 

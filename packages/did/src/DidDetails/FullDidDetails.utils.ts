@@ -53,8 +53,10 @@ export function getKeyRelationshipForExtrinsic(
 // Max nonce value is (2^64) - 1
 const maxNonceValue = new BN(new BN(2).pow(new BN(64))).subn(1)
 
-export function increaseNonce(currentNonce: BN): BN {
+export function increaseNonce(currentNonce: BN, increment = 1): BN {
   // Wrap around the max u64 value when reached.
   // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
-  return currentNonce === maxNonceValue ? new BN(0) : currentNonce.addn(1)
+  return currentNonce === maxNonceValue
+    ? new BN(increment)
+    : currentNonce.addn(increment)
 }
