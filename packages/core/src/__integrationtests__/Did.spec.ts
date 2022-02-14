@@ -627,37 +627,6 @@ describe('DID authorization', () => {
     await expect(ctype.verifyStored()).resolves.toEqual(true)
   }, 60_000)
 
-  it('authorizes batch with DID signature', async () => {
-    const ctype1 = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
-    const ctype2 = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
-    const calls = await Promise.all([ctype1, ctype2].map((c) => c.store()))
-    const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
-      ({ api }) => api.tx.utility.batch(calls)
-    )
-    const tx = await didDetails.authorizeBatch(
-      batch,
-      keystore,
-      paymentAccount.address,
-      KeyRelationship.assertionMethod
-    )
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).resolves.not.toThrow()
-
-    await expect(ctype1.verifyStored()).resolves.toEqual(true)
-    await expect(ctype2.verifyStored()).resolves.toEqual(true)
-  }, 60_000)
-
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const storedEndpointsCount = await DidChain.queryEndpointsCounts(
       didDetails.identifier

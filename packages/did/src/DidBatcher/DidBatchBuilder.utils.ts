@@ -19,14 +19,6 @@ export function checkExtrinsicInput(
   did: FullDidDetails
 ): KeyRelationship {
   const { section, method } = ext.method
-
-  // Cannot batch utility extrinsics
-  if (section === 'utility') {
-    throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-      'DidBatchBuilder.addExtrinsic() cannot be used to queue utility extrinsics, including batches.'
-    )
-  }
-
   // Cannot batch DID extrinsics
   if (section === 'did') {
     throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -46,5 +38,6 @@ export function checkExtrinsicInput(
       `DidBatchBuilder.addExtrinsic() cannot be used with the provided extrinsic "${section}:${method}" because the DID ${did.did} does not have a valid key to sign the operation.`
     )
   }
+
   return extrinsicKeyRelationship
 }

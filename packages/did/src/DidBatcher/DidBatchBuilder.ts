@@ -8,6 +8,7 @@
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { ApiPromise } from '@polkadot/api'
 
+import { BN } from '@polkadot/util'
 import type {
   DidVerificationKey,
   IIdentity,
@@ -94,12 +95,20 @@ export class DidBatchBuilder {
     {
       atomic = true,
       keySelection = defaultBatchSigningKeySelectionClosure,
+      initialNonce,
     }: {
       atomic?: boolean
       keySelection?: BatchSigningKeySelection
+      initialNonce?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
-    const nonce = await this.did.getNextNonce()
+    if (this.isConsumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID batcher has already been consumed.'
+      )
+    }
+
+    const nonce = initialNonce || (await this.did.getNextNonce())
 
     const signedBatches: Extrinsic[] = await Promise.all(
       this.batches.map(async (batch, index) => {

@@ -116,7 +116,7 @@ describe('FullDidUpdateBuilder', () => {
         ).toThrow()
       })
 
-      it('correctly sets the new authentication key and consumes the builder', async () => {
+      it('correctly sets the new authentication key', async () => {
         const builder = new FullDidUpdateBuilder(mockApi, {
           authenticationKey: oldAuthenticationKey,
           identifier: 'test',
@@ -649,4 +649,8 @@ describe('FullDidUpdateBuilder', () => {
       })
     })
   })
+
+  // TODO: Unskip this test once the DID chain file accepts an api object as input
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  describe.skip('Consuming', () => {})
 })

@@ -42,12 +42,11 @@ export function getKeyRelationshipForExtrinsic(
 ): VerificationKeyRelationship | 'paymentAccount' {
   const callMethod = extrinsic.method
   const { section, method } = callMethod
-  const keyRelationship =
-    methodMapping[section][method] ||
-    methodMapping[section].default ||
-    methodMapping.default.default
-
-  return keyRelationship
+  const mappedSection = methodMapping[section]
+  if (!mappedSection) {
+    return methodMapping.default.default
+  }
+  return mappedSection[method] || mappedSection.default
 }
 
 // Max nonce value is (2^64) - 1

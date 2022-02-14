@@ -15,9 +15,9 @@ import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
   DemoKeystore,
   DemoKeystoreUtils,
-  DidChain,
   DidMigrationHandler,
   FullDidDetails,
+  FullDidUpdateBuilder,
   FullDidUpdateHandler,
   LightDidDetails,
 } from '@kiltprotocol/did'
@@ -31,7 +31,6 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { Balance } from '../balance'
 import { init } from '../kilt'
@@ -178,25 +177,14 @@ export async function createFullDidFromLightDid(
     getDefaultMigrationHandler(identity)
   )
 
-  const addAttestationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.assertionMethod,
-    fullDid.authenticationKey
-  )
-  const addDelegationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.capabilityDelegation,
-    fullDid.authenticationKey
-  )
-
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const authenticatedBatch = await fullDid.authorizeBatch(
-    api.tx.utility.batch([
-      addAttestationKeyExtrinsic,
-      addDelegationKeyExtrinsic,
-    ]),
-    keystore,
-    identity.address,
-    KeyRelationship.authentication
+  const authenticatedBatch = await FullDidUpdateBuilder.fromFullDidDetails(
+    api,
+    fullDid
   )
+    .setAttestationKey(fullDid.authenticationKey)
+    .setDelegationKey(fullDid.authenticationKey)
+    .consume(keystore, identity.address)
   await submitExtrinsicWithResign(authenticatedBatch, identity)
 
   return FullDidDetails.fromChainInfo(

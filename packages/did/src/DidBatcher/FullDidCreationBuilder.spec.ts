@@ -94,4 +94,8 @@ describe('FullDidCreationBuilder', () => {
       })
     })
   })
+
+  // TODO: Unskip this test once the DID chain file accepts an api object as input
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  describe.skip('Consuming', () => {})
 })

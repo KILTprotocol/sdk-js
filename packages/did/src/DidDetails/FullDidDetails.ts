@@ -14,7 +14,6 @@ import type {
   IIdentity,
   KeystoreSigner,
   SubmittableExtrinsic,
-  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -191,59 +190,6 @@ export class FullDidDetails extends DidDetails {
       alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
-      txCounter: txCounter || (await this.getNextNonce()),
-      submitter: submitterAccount,
-    })
-  }
-
-  /**
-   * Signs and returns the provided unsigned extrinsic batch with the right DID key, if present. Otherwise, it will throw an error.
-   * The generated signature will fail to verify successfully by the blockchain if any two operations in the batch require a different key type, or if the key type specified is not the expected one for the operations in the batch.
-   *
-   * @param batchExtrinsic The unsigned extrinsic batch to sign.
-   * @param signer The keystore signer to use.
-   * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
-   * @param keyRelationship The key relationship (e.g., authentication or attestation) to use when fetching the keys to use for signing the batch.
-   * @param signingOptions The signing options.
-   * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
-   * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
-   * @returns The DID-signed submittable extrinsic.
-   */
-  public async authorizeBatch(
-    batchExtrinsic: Extrinsic,
-    signer: KeystoreSigner,
-    submitterAccount: IIdentity['address'],
-    keyRelationship: VerificationKeyRelationship,
-    {
-      keySelection = defaultVerificationDidKeySelection,
-      txCounter,
-    }: {
-      keySelection?: DidVerificationKeySelectionHandler
-      txCounter?: BN
-    } = {}
-  ): Promise<SubmittableExtrinsic> {
-    const signingKey = await keySelection(
-      this.getKeys(keyRelationship) as DidVerificationKey[]
-    )
-    if (
-      batchExtrinsic.method.section !== 'utility' &&
-      batchExtrinsic.method.method !== 'batch'
-    ) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        'authorizeBatch can only be used to sign utility.batch extrinsics.'
-      )
-    }
-    if (!signingKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `The details for did ${this.did} do not contain the required keys for this operation`
-      )
-    }
-    return generateDidAuthenticatedTx({
-      didIdentifier: this.identifier,
-      signingPublicKey: signingKey.publicKey,
-      alg: getSignatureAlgForKeyType(signingKey.type),
-      signer,
-      call: batchExtrinsic,
       txCounter: txCounter || (await this.getNextNonce()),
       submitter: submitterAccount,
     })
