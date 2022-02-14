@@ -10,9 +10,14 @@
  * @module CredentialUtils
  */
 
-import type { ICredential, CompressedCredential } from '@kiltprotocol/types'
+import type {
+  ICredential,
+  CompressedCredential,
+  ICType,
+} from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as AttestationUtils from '../attestation/Attestation.utils.js'
+import * as CTypeUtils from '../ctype/CType.utils.js'
 import * as RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils.js'
 import { Credential } from './Credential.js'
 
@@ -73,4 +78,24 @@ export function decompress(credential: CompressedCredential): ICredential {
     request: RequestForAttestationUtils.decompress(credential[0]),
     attestation: AttestationUtils.decompress(credential[1]),
   }
+}
+
+/**
+ *  Checks the [[Credential]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
+ *
+ * @param credential A [[Credential]] object of an attested claim used for verification.
+ * @param ctype A [[CType]] to verify the [[Claim]] structure.
+ *
+ * @returns A boolean if the [[Claim]] structure in the [[Credential]] is valid.
+ */
+
+export function verifyStructure(
+  credential: ICredential,
+  ctype: ICType
+): boolean {
+  errorCheck(credential)
+  return CTypeUtils.verifyClaimStructure(
+    credential.request.claim.contents,
+    ctype.schema
+  )
 }

@@ -9,24 +9,22 @@
  * @group integration/ctype
  */
 
-import type { ICType, KeyringPair } from '@kiltprotocol/types'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
-import {
-  FullDidDetails,
-  DemoKeystore,
-  createOnChainDidFromSeed,
-} from '@kiltprotocol/did'
-import { randomAsHex } from '@polkadot/util-crypto'
+import { ICType, KeyringPair } from '@kiltprotocol/types'
+import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
-import { config, disconnect } from '../kilt'
-import { devFaucet, keypairFromRandom, WS_ADDRESS } from './utils'
-
-import '../../../../testingTools/jestErrorCodeMatcher'
+import { disconnect } from '../kilt'
+import {
+  createEndowedTestAccount,
+  createFullDidFromSeed,
+  initializeApi,
+  keypairFromRandom,
+  submitExtrinsicWithResign,
+} from './utils'
 
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
+  await initializeApi()
 })
 
 describe('When there is an CtypeCreator and a verifier', () => {
@@ -49,13 +47,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }
 
   beforeAll(async () => {
-    paymentAccount = devFaucet
-    ctypeCreator = await createOnChainDidFromSeed(
-      paymentAccount,
-      keystore,
-      randomAsHex(32)
-    )
-  })
+    paymentAccount = await createEndowedTestAccount()
+    ctypeCreator = await createFullDidFromSeed(paymentAccount, keystore)
+  }, 60_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
@@ -64,19 +58,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctype
         .store()
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(
-            tx,
-            keystore,
-            bobbyBroke.address,
-            false
-          )
+          ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
     ).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20_000)
@@ -88,12 +72,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did),
       expect(ctype.verifyStored()).resolves.toBeTruthy(),
@@ -109,27 +88,15 @@ describe('When there is an CtypeCreator and a verifier', () => {
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(
       ctype
         .store()
         .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
         )
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
-    ).rejects.toThrowErrorWithCode(
-      ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
-    )
+        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+    ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did)
   }, 45_000)

@@ -10,7 +10,7 @@
  */
 
 /* eslint-disable dot-notation */
-import { SDKErrors, Keyring } from '@kiltprotocol/utils'
+import { Keyring } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
 import type { SignerPayload } from '@polkadot/types/interfaces/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
@@ -21,27 +21,33 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
-import { TYPE_REGISTRY } from '../blockchainApiConnection/TypeRegistry'
+import { ApiMocks } from '@kiltprotocol/testing'
+import {
+  getConnectionOrConnect,
+  setConnection,
+} from '../blockchainApiConnection/BlockchainApiConnection'
 import { Blockchain } from './Blockchain'
 import {
   EXTRINSIC_FAILED,
+  isRecoverableTxError,
   IS_ERROR,
   IS_FINALIZED,
-  IS_USURPED,
   parseSubscriptionOptions,
   submitSignedTx,
 } from './Blockchain.utils'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+let api: any
+
+beforeAll(() => {
+  api = ApiMocks.getMockedApi()
+  setConnection(Promise.resolve(new Blockchain(api)))
+})
 
 describe('queries', () => {
   beforeAll(() => {
-    const api =
-      require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
-    api.rpc.system.version.mockResolvedValue(new Text(TYPE_REGISTRY, '1.0.0'))
-    api.rpc.system.chain.mockResolvedValue(new Text(TYPE_REGISTRY, 'mockchain'))
-    api.rpc.system.name.mockResolvedValue(new Text(TYPE_REGISTRY, 'KILT node'))
+    api.rpc.system.version.mockResolvedValue(new Text(api.registry, '1.0.0'))
+    api.rpc.system.chain.mockResolvedValue(new Text(api.registry, 'mockchain'))
+    api.rpc.system.name.mockResolvedValue(new Text(api.registry, 'KILT node'))
 
     api.rpc.chain.subscribeNewHeads = jest.fn(async (listener) => {
       listener('mockHead')
@@ -71,10 +77,6 @@ describe('queries', () => {
 describe('Tx logic', () => {
   let alice: IIdentity
   let bob: IIdentity
-  const api =
-    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
-  const setDefault =
-    require('../blockchainApiConnection/BlockchainApiConnection').__setDefaultResult
   const dispatchNonceRetrieval = async (address: string): Promise<BN> => {
     const chain = await getConnectionOrConnect()
     return chain.getNonce(address)
@@ -254,29 +256,33 @@ describe('Tx logic', () => {
   })
 
   describe('utils exported function submitSignedTx', () => {
-    it('catches ERROR_TRANSACTION_USURPED and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
-      setDefault({ isUsurped: true })
+    it('catches ERROR_TRANSACTION_USURPED and discovers as recoverable', async () => {
+      api.__setDefaultResult({ isUsurped: true })
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
 
-    it('catches priority error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
-      setDefault()
+    it('catches priority error and discovers as recoverable', async () => {
+      api.__setDefaultResult()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
       tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
 
-    it('catches Already Imported error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
-      setDefault()
+    it('catches Already Imported error and discovers as recoverable', async () => {
+      api.__setDefaultResult()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
@@ -284,12 +290,14 @@ describe('Tx logic', () => {
         .fn()
         .mockRejectedValue(Error('Transaction Already Imported'))
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
 
-    it('catches Outdated/Stale Tx error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
-      setDefault()
+    it('catches Outdated/Stale Tx error and discovers as recoverable', async () => {
+      api.__setDefaultResult()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
@@ -299,14 +307,16 @@ describe('Tx logic', () => {
           Error('1010: Invalid Transaction: Transaction is outdated')
         )
       await expect(
-        submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+        submitSignedTx(tx, parseSubscriptionOptions()).catch((e) =>
+          isRecoverableTxError(e)
+        )
+      ).resolves.toBe(true)
     }, 20_000)
   })
 
   describe('Blockchain class method submitSignedTx', () => {
     it('Retries to send up to two times if recoverable error is caught', async () => {
-      setDefault({ isUsurped: true })
+      api.__setDefaultResult({ isUsurped: true })
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
@@ -315,9 +325,11 @@ describe('Tx logic', () => {
         .mockImplementation(async (id, Tx) => {
           return Tx
         })
-      await expect(chain.submitSignedTxWithReSign(tx, alice)).rejects.toThrow(
-        SDKErrors.ERROR_TRANSACTION_RECOVERABLE()
-      )
+      await expect(
+        chain
+          .submitSignedTxWithReSign(tx, alice)
+          .catch((e) => isRecoverableTxError(e))
+      ).resolves.toBe(true)
 
       expect(reSignSpy).toHaveBeenCalledTimes(2)
     })
@@ -331,7 +343,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: IS_FINALIZED,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: undefined,
       })
     )
@@ -341,7 +353,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: testfunction,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: undefined,
       })
     )
@@ -370,7 +382,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: testfunction,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: 10,
       })
     )
@@ -384,7 +396,7 @@ describe('parseSubscriptionOptions', () => {
       JSON.stringify({
         resolveOn: IS_FINALIZED,
         rejectOn: (result: ISubmittableResult) =>
-          IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+          IS_ERROR(result) || EXTRINSIC_FAILED(result),
         timeout: 10,
       })
     )

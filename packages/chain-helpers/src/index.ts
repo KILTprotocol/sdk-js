@@ -5,16 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export {
-  ExtrinsicError,
-  ExtrinsicErrors,
-  PalletIndex,
-} from './errorhandling/index.js'
-export {
-  BlockchainApiConnection,
-  KILT_TYPES,
-  TypeRegistry,
-} from './blockchainApiConnection/index.js'
+export { ErrorHandler } from './errorhandling/index.js'
+export { BlockchainApiConnection } from './blockchainApiConnection/index.js'
 export {
   Blockchain,
   BlockchainUtils,

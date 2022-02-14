@@ -5,286 +5,252 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { BN } from '@polkadot/util'
+
+import {
+  DidKey,
+  DidServiceEndpoint,
+  IDidIdentifier,
+  KeyRelationship,
+} from '@kiltprotocol/types'
+
+import type { IDidChainRecordJSON } from '../Did.chain'
+import { getKiltDidFromIdentifier } from '../Did.utils'
+
+import { FullDidDetails } from './index.js'
+
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 /**
  * @group unit/did
  */
 
-import { KeyRelationship } from '@kiltprotocol/types'
-import { BN } from '@polkadot/util'
-import type { IDidKeyDetails, IDidServiceEndpoint } from '@kiltprotocol/types'
-import { mapCallToKeyRelationship } from './FullDidDetails.utils'
-import { FullDidDetails } from './FullDidDetails'
-import type { FullDidDetailsCreationOpts } from '../types'
-import { assembleDidFragment } from '../Did.utils'
+const existingIdentifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
+const nonExistingIdentifier = '4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM'
 
-describe('functional tests', () => {
-  const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
-  const did = `did:kilt:${identifier}`
-  const keys: IDidKeyDetails[] = [
+const existingDidDetails: IDidChainRecordJSON = {
+  authenticationKey: 'auth#1',
+  keyAgreementKeys: ['enc#1', 'enc#2'],
+  assertionMethodKey: 'att#1',
+  capabilityDelegationKey: 'del#1',
+  lastTxCounter: new BN('1'),
+  publicKeys: [
     {
-      id: assembleDidFragment(did, '1'),
-      controller: did,
-      includedAt: 100,
-      type: 'ed25519',
-      publicKeyHex:
-        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-    },
-    {
-      id: assembleDidFragment(did, '2'),
-      controller: did,
-      includedAt: 250,
-      type: 'x25519',
-      publicKeyHex:
-        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-    },
-    {
-      id: assembleDidFragment(did, '3'),
-      controller: did,
-      includedAt: 250,
-      type: 'x25519',
-      publicKeyHex:
-        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-    },
-    {
-      id: assembleDidFragment(did, '4'),
-      controller: did,
-      includedAt: 200,
+      id: 'auth#1',
+      publicKey: new Uint8Array(32).fill(0),
       type: 'sr25519',
-      publicKeyHex:
-        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
-    },
-  ]
-  const serviceEndpoints: IDidServiceEndpoint[] = [
-    {
-      id: assembleDidFragment(did, 'service-1'),
-      types: ['type-1'],
-      urls: ['url-1'],
+      includedAt: new BN(0),
     },
     {
-      id: assembleDidFragment(did, 'service-2'),
-      types: ['type-2'],
-      urls: ['url-2'],
+      id: 'enc#1',
+      publicKey: new Uint8Array(32).fill(1),
+      type: 'x25519',
+      includedAt: new BN(0),
     },
-  ]
-  const didDetails: FullDidDetailsCreationOpts = {
-    did,
-    keys,
-    keyRelationships: {
-      [KeyRelationship.authentication]: [keys[0].id],
-      [KeyRelationship.keyAgreement]: [keys[1].id, keys[2].id],
-      [KeyRelationship.assertionMethod]: [keys[3].id],
+    {
+      id: 'enc#2',
+      publicKey: new Uint8Array(32).fill(2),
+      type: 'x25519',
+      includedAt: new BN(0),
     },
-    serviceEndpoints,
-    lastTxIndex: new BN(10),
+    {
+      id: 'att#1',
+      publicKey: new Uint8Array(32).fill(3),
+      type: 'ed25519',
+      includedAt: new BN(0),
+    },
+    {
+      id: 'del#1',
+      publicKey: new Uint8Array(32).fill(4),
+      type: 'ecdsa',
+      includedAt: new BN(0),
+    },
+  ],
+  deposit: {
+    amount: new BN(2),
+    owner: existingIdentifier,
+  },
+}
+
+const existingServiceEndpoints: DidServiceEndpoint[] = [
+  {
+    id: 'service#1',
+    types: ['type-1'],
+    urls: ['url-1'],
+  },
+  {
+    id: 'service#2',
+    types: ['type-2'],
+    urls: ['url-2'],
+  },
+]
+
+jest.mock('../Did.chain.ts', () => {
+  return {
+    queryDetails: jest.fn(
+      async (
+        didIdentifier: IDidIdentifier
+      ): Promise<IDidChainRecordJSON | null> => {
+        if (didIdentifier === existingIdentifier) {
+          return existingDidDetails
+        }
+        return null
+      }
+    ),
+    queryServiceEndpoints: jest.fn(
+      async (didIdentifier: IDidIdentifier): Promise<DidServiceEndpoint[]> => {
+        if (didIdentifier === existingIdentifier) {
+          return existingServiceEndpoints
+        }
+        return []
+      }
+    ),
   }
-
-  it('creates FullDidDetails', () => {
-    const dd = new FullDidDetails(didDetails)
-    expect(dd.did).toStrictEqual(did)
-    expect(dd.identifier).toStrictEqual(identifier)
-    expect(dd.getKeys()).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "controller": "${did}",
-          "id": "${did}#1",
-          "includedAt": 100,
-          "publicKeyHex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "type": "ed25519",
-        },
-        Object {
-          "controller": "${did}",
-          "id": "${did}#2",
-          "includedAt": 250,
-          "publicKeyHex": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          "type": "x25519",
-        },
-        Object {
-          "controller": "${did}",
-          "id": "${did}#3",
-          "includedAt": 250,
-          "publicKeyHex": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-          "type": "x25519",
-        },
-        Object {
-          "controller": "${did}",
-          "id": "${did}#4",
-          "includedAt": 200,
-          "publicKeyHex": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-          "type": "sr25519",
-        },
-      ]
-    `)
-    expect(dd.getEndpoints()).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "id": "${did}#service-1",
-          "types": Array [
-            "type-1",
-          ],
-          "urls": Array [
-            "url-1",
-          ],
-        },
-        Object {
-          "id": "${did}#service-2",
-          "types": Array [
-            "type-2",
-          ],
-          "urls": Array [
-            "url-2",
-          ],
-        },
-      ]
-    `)
-  })
-
-  it('gets keys via role', () => {
-    let dd = new FullDidDetails(didDetails)
-    expect(dd.getKeyIds(KeyRelationship.authentication)).toStrictEqual([
-      keys[0].id,
-    ])
-    expect(dd.getKeys(KeyRelationship.authentication)).toStrictEqual([keys[0]])
-    expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toStrictEqual(
-      didDetails.keyRelationships![KeyRelationship.keyAgreement]
-    )
-    expect(
-      dd.getKeys(KeyRelationship.keyAgreement).map((key) => key.id)
-    ).toStrictEqual(didDetails.keyRelationships![KeyRelationship.keyAgreement])
-    expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toStrictEqual([
-      keys[3].id,
-    ])
-
-    dd = new FullDidDetails({
-      ...didDetails,
-      keyRelationships: { [KeyRelationship.authentication]: [keys[3].id] },
-    })
-    expect(
-      dd.getKeys(KeyRelationship.authentication).map((key) => key.id)
-    ).toStrictEqual([keys[3].id])
-    expect(dd.getKeyIds('none')).toStrictEqual(
-      keys.slice(0, 3).map((key) => key.id)
-    )
-  })
-
-  it('get the rights service endpoints', () => {
-    const dd = new FullDidDetails(didDetails)
-    expect(dd.getEndpoints()).toStrictEqual(serviceEndpoints)
-    expect(dd.getEndpointById(`${dd.did}#service-1`)).toStrictEqual(
-      serviceEndpoints[0]
-    )
-    expect(dd.getEndpointById(`${dd.did}#service-2`)).toStrictEqual(
-      serviceEndpoints[1]
-    )
-    expect(dd.getEndpointById(`${dd.did}#service-3`)).toBeUndefined()
-    expect(dd.getEndpointsByType('type-1')).toStrictEqual([serviceEndpoints[0]])
-    expect(dd.getEndpointsByType('type-2')).toStrictEqual([serviceEndpoints[1]])
-    expect(dd.getEndpointsByType('type-3')).toHaveLength(0)
-  })
-
-  it('returns the next nonce', () => {
-    let dd = new FullDidDetails(didDetails)
-    expect(dd.getNextTxIndex().toString()).toStrictEqual(
-      didDetails.lastTxIndex.addn(1).toString()
-    )
-    expect(dd.getNextTxIndex().toString()).toStrictEqual(
-      didDetails.lastTxIndex.addn(2).toString()
-    )
-    dd = new FullDidDetails(didDetails)
-    expect(dd.getNextTxIndex(false).toString()).toStrictEqual(
-      didDetails.lastTxIndex.addn(1).toString()
-    )
-    expect(dd.getNextTxIndex(false).toString()).toStrictEqual(
-      didDetails.lastTxIndex.addn(1).toString()
-    )
-  })
-
-  it('gets the correct keys for each pallet', () => {
-    const dd = new FullDidDetails({
-      ...didDetails,
-      keyRelationships: {
-        [KeyRelationship.authentication]: [keys[0].id],
-        [KeyRelationship.capabilityDelegation]: [keys[1].id],
-        [KeyRelationship.assertionMethod]: [keys[3].id],
-      },
-    })
-    expect(
-      dd
-        .getKeysForCall({ section: 'ctype', method: 'add' })
-        .map((key) => key.id)
-    ).toMatchInlineSnapshot(`
-      Array [
-        "${did}#4",
-      ]
-    `)
-    expect(
-      dd
-        .getKeysForCall({ section: 'delegation', method: 'revokeDelegation' })
-        .map((key) => key.id)
-    ).toMatchInlineSnapshot(`
-      Array [
-        "${did}#2",
-      ]
-    `)
-    expect(
-      dd
-        .getKeysForCall({ section: 'attestation', method: 'add' })
-        .map((key) => key.id)
-    ).toMatchInlineSnapshot(`
-      Array [
-        "${did}#4",
-      ]
-    `)
-  })
 })
 
-describe('Key mapping tests', () => {
-  it('gets the right key relationship for each pallet', () => {
-    // CTYPE
-    expect(
-      mapCallToKeyRelationship({ section: 'ctype', method: 'add' })
-    ).toMatchInlineSnapshot(`"assertionMethod"`)
-    // DELEGATION
-    expect(
-      mapCallToKeyRelationship({
-        section: 'delegation',
-        method: 'addDelegation',
-      })
-    ).toMatchInlineSnapshot(`"capabilityDelegation"`)
-    expect(
-      mapCallToKeyRelationship({
-        section: 'delegation',
-        method: 'revokeDelegation',
-      })
-    ).toMatchInlineSnapshot(`"capabilityDelegation"`)
-    // ATTESTATION
-    expect(
-      mapCallToKeyRelationship({ section: 'attestation', method: 'add' })
-    ).toMatchInlineSnapshot(`"assertionMethod"`)
-    expect(
-      mapCallToKeyRelationship({ section: 'attestation', method: 'revoke' })
-    ).toMatchInlineSnapshot(`"assertionMethod"`)
+/*
+ * Functions tested:
+ * - fromChainInfo
+ *
+ * Functions tested in integration tests:
+ * - getKeysForExtrinsic
+ * - authorizeExtrinsic
+ */
 
-    // DID
+describe('When creating an instance from the chain', () => {
+  it('correctly assign the right keys and the right service endpoints', async () => {
+    const fullDidDetails: FullDidDetails | null =
+      await FullDidDetails.fromChainInfo(existingIdentifier)
+
+    expect(fullDidDetails).not.toBeNull()
+
+    expect(fullDidDetails?.identifier).toStrictEqual(existingIdentifier)
+
+    const expectedDid = getKiltDidFromIdentifier(existingIdentifier, 'full')
+    expect(fullDidDetails?.did).toStrictEqual(expectedDid)
+
+    expect(fullDidDetails?.getKey('auth#1')).toStrictEqual<DidKey>({
+      id: 'auth#1',
+      publicKey: new Uint8Array(32).fill(0),
+      type: 'sr25519',
+      includedAt: new BN(0),
+    })
     expect(
-      mapCallToKeyRelationship({
-        section: 'did',
-        method: 'create',
-      })
-    ).toMatchInlineSnapshot(`"paymentAccount"`)
+      fullDidDetails?.getKeys(KeyRelationship.authentication)
+    ).toStrictEqual<DidKey[]>([
+      {
+        id: 'auth#1',
+        publicKey: new Uint8Array(32).fill(0),
+        type: 'sr25519',
+        includedAt: new BN(0),
+      },
+    ])
+    expect(fullDidDetails?.authenticationKey.id).toStrictEqual('auth#1')
+
+    expect(fullDidDetails?.getKey('enc#1')).toStrictEqual<DidKey>({
+      id: 'enc#1',
+      publicKey: new Uint8Array(32).fill(1),
+      type: 'x25519',
+      includedAt: new BN(0),
+    })
+    expect(fullDidDetails?.getKey('enc#2')).toStrictEqual<DidKey>({
+      id: 'enc#2',
+      publicKey: new Uint8Array(32).fill(2),
+      type: 'x25519',
+      includedAt: new BN(0),
+    })
+    expect(fullDidDetails?.getKeys(KeyRelationship.keyAgreement)).toStrictEqual<
+      DidKey[]
+    >([
+      {
+        id: 'enc#1',
+        publicKey: new Uint8Array(32).fill(1),
+        type: 'x25519',
+        includedAt: new BN(0),
+      },
+      {
+        id: 'enc#2',
+        publicKey: new Uint8Array(32).fill(2),
+        type: 'x25519',
+        includedAt: new BN(0),
+      },
+    ])
+    expect(fullDidDetails?.encryptionKey?.id).toStrictEqual('enc#1')
+
+    expect(fullDidDetails?.getKey('att#1')).toStrictEqual<DidKey>({
+      id: 'att#1',
+      publicKey: new Uint8Array(32).fill(3),
+      type: 'ed25519',
+      includedAt: new BN(0),
+    })
     expect(
-      mapCallToKeyRelationship({
-        section: 'did',
-        method: 'update',
-      })
-    ).toMatchInlineSnapshot(`"authentication"`)
+      fullDidDetails?.getKeys(KeyRelationship.assertionMethod)
+    ).toStrictEqual<DidKey[]>([
+      {
+        id: 'att#1',
+        publicKey: new Uint8Array(32).fill(3),
+        type: 'ed25519',
+        includedAt: new BN(0),
+      },
+    ])
+    expect(fullDidDetails?.attestationKey?.id).toStrictEqual('att#1')
+
+    expect(fullDidDetails?.getKey('del#1')).toStrictEqual<DidKey>({
+      id: 'del#1',
+      publicKey: new Uint8Array(32).fill(4),
+      type: 'ecdsa',
+      includedAt: new BN(0),
+    })
     expect(
-      mapCallToKeyRelationship({ section: 'did', method: 'submitDidCall' })
-    ).toMatchInlineSnapshot(`"paymentAccount"`)
-    // BALANCES
+      fullDidDetails?.getKeys(KeyRelationship.capabilityDelegation)
+    ).toStrictEqual<DidKey[]>([
+      {
+        id: 'del#1',
+        publicKey: new Uint8Array(32).fill(4),
+        type: 'ecdsa',
+        includedAt: new BN(0),
+      },
+    ])
+    expect(fullDidDetails?.delegationKey?.id).toStrictEqual('del#1')
+
     expect(
-      mapCallToKeyRelationship({ section: 'balances', method: 'transfer' })
-    ).toMatchInlineSnapshot(`"paymentAccount"`)
+      fullDidDetails?.getEndpoint('service#1')
+    ).toStrictEqual<DidServiceEndpoint>({
+      id: 'service#1',
+      types: ['type-1'],
+      urls: ['url-1'],
+    })
+    expect(fullDidDetails?.getEndpoints('type-1')).toStrictEqual<
+      DidServiceEndpoint[]
+    >([
+      {
+        id: 'service#1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+    ])
+
+    expect(
+      fullDidDetails?.getEndpoint('service#2')
+    ).toStrictEqual<DidServiceEndpoint>({
+      id: 'service#2',
+      types: ['type-2'],
+      urls: ['url-2'],
+    })
+    expect(fullDidDetails?.getEndpoints('type-2')).toStrictEqual<
+      DidServiceEndpoint[]
+    >([
+      {
+        id: 'service#2',
+        types: ['type-2'],
+        urls: ['url-2'],
+      },
+    ])
+  })
+
+  it('returns null if the identifier does not exist', async () => {
+    const fullDidDetails: FullDidDetails | null =
+      await FullDidDetails.fromChainInfo(nonExistingIdentifier)
+    expect(fullDidDetails).toBeNull()
   })
 })

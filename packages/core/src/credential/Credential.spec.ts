@@ -11,27 +11,28 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import { encodeAddress } from '@polkadot/util-crypto'
+
 import type {
   IClaim,
   CompressedCredential,
   ICType,
   IDidDetails,
   IDidResolver,
-  IDidResolvedDetails,
+  DidResolvedDetails,
+  DidKey,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import {
   DemoKeystore,
-  createLocalDemoDidFromSeed,
-  createLightDidFromSeed,
-  FullDidDetails,
+  DemoKeystoreUtils,
   LightDidDetails,
-  DidUtils,
-  DidTypes,
   SigningAlgorithms,
+  DidDetails,
+  LightDidSupportedSigningKeyTypes,
+  FullDidDetails,
+  DidUtils,
 } from '@kiltprotocol/did'
-import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
-import { UUID } from '@kiltprotocol/utils'
+import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
@@ -43,8 +44,8 @@ import { query } from '../attestation/Attestation.chain'
 jest.mock('../attestation/Attestation.chain')
 
 async function buildCredential(
-  claimer: IDidDetails,
-  attester: IDidDetails,
+  claimer: DidDetails,
+  attesterDid: IDidDetails['did'],
   contents: IClaim['contents'],
   legitimations: Credential[],
   signer: DemoKeystore
@@ -72,11 +73,15 @@ async function buildCredential(
   const requestForAttestation = RequestForAttestation.fromClaim(claim, {
     legitimations,
   })
-  await requestForAttestation.signWithDid(signer, claimer)
+  await requestForAttestation.signWithDidKey(
+    signer,
+    claimer,
+    claimer.authenticationKey.id
+  )
   // build attestation
   const testAttestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    attester.did
+    attesterDid
   )
   // combine to credential
   const credential = Credential.fromRequestAndAttestation(
@@ -89,76 +94,57 @@ async function buildCredential(
 // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
 function createMinimalFullDidFromLightDid(
   lightDidForId: LightDidDetails,
-  newAuthenticationKey?: DidTypes.INewPublicKey
+  newAuthenticationKey?: DidKey
 ): FullDidDetails {
-  const { identifier } = DidUtils.parseDidUrl(lightDidForId.did)
   const did = DidUtils.getKiltDidFromIdentifier(
-    identifier.substring(2),
-    'full',
-    FullDidDetails.FULL_DID_LATEST_VERSION
+    lightDidForId.identifier,
+    'full'
   )
-  const lightDidAuthKey = lightDidForId.getKeys(
-    KeyRelationship.authentication
-  )[0]
-
-  let authKey: DidTypes.INewPublicKey = {
-    publicKey: hexToU8a(lightDidAuthKey.publicKeyHex),
-    type: lightDidAuthKey.type,
-  }
-  if (newAuthenticationKey) {
-    authKey = newAuthenticationKey
-  }
+  const authKey = newAuthenticationKey || lightDidForId.authenticationKey
 
   return new FullDidDetails({
+    identifier: lightDidForId.identifier,
     did,
-    keys: [
-      {
-        ...authKey,
-        id: DidUtils.assembleDidFragment(did, 'authentication'),
-        controller: did,
-        publicKeyHex: u8aToHex(authKey.publicKey),
-      },
-    ],
     keyRelationships: {
-      authentication: [`${did}#authentication`],
+      authentication: new Set([authKey.id]),
     },
-    lastTxIndex: new BN(0),
+    keys: { [authKey.id]: authKey },
   })
 }
 
 describe('RequestForAttestation', () => {
   let keystore: DemoKeystore
-  let identityAlice: IDidDetails
-  let identityBob: IDidDetails
-  let identityCharlie: IDidDetails
+  let identityAlice: DidDetails
+  let identityBob: DidDetails
+  let identityCharlie: DidDetails
   let legitimation: Credential
   let compressedLegitimation: CompressedCredential
-  let identityDave: IDidDetails
-  let migratedAndDeletedLightDid: IDidDetails
-  let migratedAndDeletedFullDid: IDidDetails
+  let identityDave: DidDetails
+  let migratedAndDeletedLightDid: DidDetails
+  let migratedAndDeletedFullDid: DidDetails
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
       didUri: string
-    ): Promise<IDidResolvedDetails | null> => {
+    ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const didWithoutFragment = didUri.split('#')[0]
-      switch (didWithoutFragment) {
-        case identityAlice.did:
+      const { did } = DidUtils.parseDidUri(didUri)
+      switch (did) {
+        case identityAlice?.did:
           return { details: identityAlice, metadata: { deactivated: false } }
-        case identityBob.did:
+        case identityBob?.did:
           return { details: identityBob, metadata: { deactivated: false } }
-        case identityCharlie.did:
+        case identityCharlie?.did:
           return { details: identityCharlie, metadata: { deactivated: false } }
-        case identityDave.did:
+        case identityDave?.did:
           return { details: identityDave, metadata: { deactivated: false } }
-        case migratedAndDeletedLightDid.did:
+        case migratedAndDeletedLightDid?.did:
           return {
             metadata: {
               deactivated: true,
             },
           }
-        case migratedAndDeletedFullDid.did:
+        case migratedAndDeletedFullDid?.did:
           return {
             metadata: {
               deactivated: true,
@@ -177,13 +163,22 @@ describe('RequestForAttestation', () => {
   beforeAll(async () => {
     keystore = new DemoKeystore()
 
-    identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
-    identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
-    identityCharlie = await createLocalDemoDidFromSeed(keystore, '//Charlie')
+    identityAlice = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+      keystore,
+      '//Alice'
+    )
+    identityBob = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+      keystore,
+      '//Bob'
+    )
+    identityCharlie = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+      keystore,
+      '//Charlie'
+    )
 
     legitimation = await buildCredential(
       identityAlice,
-      identityBob,
+      identityBob.did,
       {},
       [],
       keystore
@@ -215,7 +210,7 @@ describe('RequestForAttestation', () => {
   it('verify credentials signed by a full DID', async () => {
     const credential = await buildCredential(
       identityCharlie,
-      identityAlice,
+      identityAlice.did,
       {
         a: 'a',
         b: 'b',
@@ -236,11 +231,18 @@ describe('RequestForAttestation', () => {
     ).resolves.toBe(true)
   })
   it('verify credentials signed by a light DID', async () => {
-    identityDave = await createLightDidFromSeed(keystore, '//Dave')
+    const daveKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+      seed: '//Dave',
+    })
+    identityDave = await LightDidDetails.fromIdentifier(
+      encodeAddress(daveKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.ed25519
+    )
 
     const credential = await buildCredential(
       identityDave,
-      identityAlice,
+      identityAlice.did,
       {
         a: 'a',
         b: 'b',
@@ -262,18 +264,34 @@ describe('RequestForAttestation', () => {
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
-    migratedAndDeletedLightDid = await createLightDidFromSeed(
-      keystore,
-      '//MigratedLight'
+    const migratedAndDeletedKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+      seed: '//MigratedLight',
+    })
+    migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(migratedAndDeletedKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.ed25519
     )
-    migratedAndDeletedFullDid = await createLocalDemoDidFromSeed(
-      keystore,
-      '//MigratedFull'
-    )
+    migratedAndDeletedFullDid = new FullDidDetails({
+      identifier: migratedAndDeletedLightDid.identifier,
+      did: DidUtils.getKiltDidFromIdentifier(
+        migratedAndDeletedLightDid.identifier,
+        'full'
+      ),
+      keyRelationships: {
+        authentication: new Set([
+          migratedAndDeletedLightDid.authenticationKey.id,
+        ]),
+      },
+      keys: {
+        [migratedAndDeletedLightDid.authenticationKey.id]:
+          migratedAndDeletedLightDid.authenticationKey,
+      },
+    })
 
     const credential = await buildCredential(
       migratedAndDeletedLightDid,
-      identityAlice,
+      identityAlice.did,
       {
         a: 'a',
         b: 'b',
@@ -332,7 +350,7 @@ describe('RequestForAttestation', () => {
   it('Typeguard should return true on complete Credentials', async () => {
     const testAttestation = await buildCredential(
       identityAlice,
-      identityBob,
+      identityBob.did,
       {},
       [],
       keystore
@@ -346,7 +364,7 @@ describe('RequestForAttestation', () => {
   it('Should throw error when attestation is from different request', async () => {
     const testAttestation = await buildCredential(
       identityAlice,
-      identityBob,
+      identityBob.did,
       {},
       [],
       keystore
@@ -363,7 +381,7 @@ describe('RequestForAttestation', () => {
   it('returns Claim Hash of the attestation', async () => {
     const testAttestation = await buildCredential(
       identityAlice,
-      identityBob,
+      identityBob.did,
       {},
       [],
       keystore
@@ -376,12 +394,12 @@ describe('RequestForAttestation', () => {
 
 describe('create presentation', () => {
   let keystore: DemoKeystore
-  let migratedClaimerLightDid: IDidDetails
-  let migratedClaimerFullDid: IDidDetails
-  let unmigratedClaimerLightDid: IDidDetails
-  let migratedThenDeletedClaimerLightDid: IDidDetails
-  let migratedThenDeletedClaimerFullDid: IDidDetails
-  let attester: IDidDetails
+  let migratedClaimerLightDid: DidDetails
+  let migratedClaimerFullDid: DidDetails
+  let unmigratedClaimerLightDid: DidDetails
+  let migratedThenDeletedClaimerLightDid: DidDetails
+  let migratedThenDeletedClaimerFullDid: DidDetails
+  let attester: DidDetails
   let ctype: CType
   let reqForAtt: RequestForAttestation
   let attestation: Attestation
@@ -389,11 +407,11 @@ describe('create presentation', () => {
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
       didUri: string
-    ): Promise<IDidResolvedDetails | null> => {
+    ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const didWithoutFragment = didUri.split('#')[0]
-      switch (didWithoutFragment) {
-        case migratedClaimerLightDid.did:
+      const { did } = DidUtils.parseDidUri(didUri)
+      switch (did) {
+        case migratedClaimerLightDid?.did:
           return {
             details: migratedClaimerLightDid,
             metadata: {
@@ -401,29 +419,29 @@ describe('create presentation', () => {
               deactivated: false,
             },
           }
-        case migratedThenDeletedClaimerLightDid.did:
+        case migratedThenDeletedClaimerLightDid?.did:
           return {
             metadata: {
               deactivated: true,
             },
           }
-        case migratedThenDeletedClaimerFullDid.did:
+        case migratedThenDeletedClaimerFullDid?.did:
           return {
             metadata: {
               deactivated: true,
             },
           }
-        case unmigratedClaimerLightDid.did:
+        case unmigratedClaimerLightDid?.did:
           return {
             details: unmigratedClaimerLightDid,
             metadata: { deactivated: false },
           }
-        case migratedClaimerFullDid.did:
+        case migratedClaimerFullDid?.did:
           return {
             details: migratedClaimerFullDid,
             metadata: { deactivated: false },
           }
-        case attester.did:
+        case attester?.did:
           return { details: attester, metadata: { deactivated: false } }
         default:
           return null
@@ -437,14 +455,25 @@ describe('create presentation', () => {
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
-    attester = await createLocalDemoDidFromSeed(keystore, '//Attester')
-    unmigratedClaimerLightDid = await createLightDidFromSeed(
+    attester = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
-      '//UnmigratedClaimer'
+      '//Attester'
     )
-    migratedClaimerLightDid = await createLightDidFromSeed(
-      keystore,
-      '//MigratedClaimer'
+    const unmigratedClaimerKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+      seed: '//UnmigratedClaimer',
+    })
+    unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(unmigratedClaimerKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.sr25519
+    )
+    const migratedClaimerKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+      seed: '//MigratedClaimer',
+    })
+    migratedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(migratedClaimerKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.sr25519
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
@@ -452,18 +481,23 @@ describe('create presentation', () => {
       alg: SigningAlgorithms.Sr25519,
       seed: '//RandomSeed',
     })
-    migratedClaimerFullDid = createMinimalFullDidFromLightDid(
+    migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
       migratedClaimerLightDid as LightDidDetails,
       {
         type: DemoKeystore.getKeypairTypeForAlg(
           newKeyForMigratedClaimerDid.alg
         ),
         publicKey: newKeyForMigratedClaimerDid.publicKey,
+        id: 'new-auth',
       }
     )
-    migratedThenDeletedClaimerLightDid = await createLightDidFromSeed(
-      keystore,
-      '//MigratedThenDeletedClaimer'
+    const migratedThenDeletedKey = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+      seed: '//MigratedThenDeletedClaimer',
+    })
+    migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(migratedThenDeletedKey.publicKey, 38),
+      LightDidSupportedSigningKeyTypes.ed25519
     )
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedThenDeletedClaimerLightDid as LightDidDetails
@@ -707,5 +741,15 @@ describe('create presentation', () => {
   it('should get attribute keys', async () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
     expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
+  })
+
+  it('should verify the credential claims structure against the ctype', () => {
+    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
+    expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
+    cred.request.claim.contents.name = 123
+
+    expect(() =>
+      CredentialUtils.verifyStructure(cred, ctype)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 })
