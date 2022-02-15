@@ -7,7 +7,7 @@
 
 This package provides the generally applicable TypeScript types for different mechanisms in the KILT SDK.
 
-This is also contains all the types, which someone would need to support for working with KILT credentials and DIDs not using the SDK.
+Is also contains all the types which someone would need for working with KILT credentials and DIDs, not using the SDK.
 
 For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
 
