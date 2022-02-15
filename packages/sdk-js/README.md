@@ -5,7 +5,7 @@
 
 Data sovereignty and interoperability
 
-# Mash-Net SDK
+# KILT JavaScript / TypeScript SDK
 
 The open-source KILT SDK is written in TypeScript and enables you to quickly and easily build dApps around new business use cases. KILT is a protocol for self-sovereign data and interoperability built on top of the permissionless KILT blockchain. The SDK provides collection of classes and methods you can utilize to interact with the KILT Protocol.
 
@@ -23,7 +23,7 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 
 - [KILT workshop](https://dev.kilt.io/docs/sdk/workshop/welcome/) 👈 Start here to get familiar with the basics
 - [Getting started guide](https://github.com/KILTprotocol/sdk-js/blob/master/docs/getting-started.md) 👈 Start here if you'd like to include KILT in your project
-- [KILT Developer overview](https://dev.kilt.io/) 👈 Checkout for an overview of the codebase, infrastructure and deployed KILT instances.
+- [KILT Developer docs](https://dev.kilt.io/) 👈 Checkout for in-depth documentation of KILT features.
 - [API documentation](https://kiltprotocol.github.io/sdk-js)
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
 - [Demo client code](https://github.com/KILTprotocol/demo-client)
