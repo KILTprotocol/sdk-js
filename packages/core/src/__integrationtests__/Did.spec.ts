@@ -910,6 +910,163 @@ describe('DID management batching', () => {
       expect(finalFullDid.delegationKey).toBeUndefined()
       expect(finalFullDid.getEndpoints()).toHaveLength(2)
     }, 40_000)
+
+    it('non-atomic builder succeeds despite failures of some extrinsics', async () => {
+      const authKey = await keystore.generateKeypair({
+        alg: SigningAlgorithms.Sr25519,
+      })
+      const createBuilder = new FullDidCreationBuilder(api, {
+        authenticationKey: {
+          publicKey: authKey.publicKey,
+          type: VerificationKeyType.Sr25519,
+        },
+        serviceEndpoints: [
+          {
+            id: 'id-1',
+            types: ['type-1'],
+            urls: ['url-1'],
+          },
+        ],
+      })
+      // Create the full DID with a service endpoint
+      const fullDid = await createBuilder.consumeWithHandler(
+        keystore,
+        paymentAccount.address,
+        async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
+      )
+      expect(fullDid.attestationKey).toBeUndefined()
+
+      // Configure the builder to set a new attestation key and a service endpoint
+      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
+        api,
+        fullDid
+      )
+        .setAttestationKey({
+          publicKey: authKey.publicKey,
+          type: VerificationKeyType.Sr25519,
+        })
+        .addServiceEndpoint({ id: 'id-2', types: ['type-2'], urls: ['url-2'] })
+
+      // Before consuming the builder, let's add the same service endpoint to the DID directly
+      const newEndpointTx = await DidChain.getAddEndpointExtrinsic({
+        id: 'id-2',
+        types: ['type-22'],
+        urls: ['url-22'],
+      })
+      const authorisedTx = await fullDid.authorizeExtrinsic(
+        newEndpointTx,
+        keystore,
+        paymentAccount.address
+      )
+      await expect(
+        submitExtrinsicWithResign(authorisedTx, paymentAccount)
+      ).resolves.not.toThrow()
+
+      // Now, consuming the builder will result in the second operation to fail but the batch to succeed, so we can test the atomic flag.
+      await expect(
+        updateBuilder.consumeWithHandler(
+          keystore,
+          paymentAccount.address,
+          async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
+          // Not atomic
+          false
+        )
+      ).resolves.not.toThrow()
+
+      const updatedFullDid = await FullDidDetails.fromChainInfo(
+        fullDid.identifier
+      )
+      // .setAttestationKey() extrinsic went through in the batch
+      expect(updatedFullDid!.attestationKey).toBeDefined()
+      // The service endpoint will match the one manually added, and not the one set in the builder.
+      expect(
+        updatedFullDid!.getEndpoint('id-2')
+      ).toStrictEqual<DidServiceEndpoint>({
+        id: 'id-2',
+        types: ['type-22'],
+        urls: ['url-22'],
+      })
+    }, 60_000)
+
+    it('atomic builder fails if any extrinsics fails', async () => {
+      const authKey = await keystore.generateKeypair({
+        alg: SigningAlgorithms.Sr25519,
+      })
+      const createBuilder = new FullDidCreationBuilder(api, {
+        authenticationKey: {
+          publicKey: authKey.publicKey,
+          type: VerificationKeyType.Sr25519,
+        },
+        serviceEndpoints: [
+          {
+            id: 'id-1',
+            types: ['type-1'],
+            urls: ['url-1'],
+          },
+        ],
+      })
+      // Create the full DID with a service endpoint
+      const fullDid = await createBuilder.consumeWithHandler(
+        keystore,
+        paymentAccount.address,
+        async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
+      )
+      expect(fullDid.attestationKey).toBeUndefined()
+
+      // Configure the builder to set a new attestation key and a service endpoint
+      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
+        api,
+        fullDid
+      )
+        .setAttestationKey({
+          publicKey: authKey.publicKey,
+          type: VerificationKeyType.Sr25519,
+        })
+        .addServiceEndpoint({ id: 'id-2', types: ['type-2'], urls: ['url-2'] })
+
+      // Before consuming the builder, let's add the same service endpoint to the DID directly
+      const newEndpointTx = await DidChain.getAddEndpointExtrinsic({
+        id: 'id-2',
+        types: ['type-22'],
+        urls: ['url-22'],
+      })
+      const authorisedTx = await fullDid.authorizeExtrinsic(
+        newEndpointTx,
+        keystore,
+        paymentAccount.address
+      )
+      await expect(
+        submitExtrinsicWithResign(authorisedTx, paymentAccount)
+      ).resolves.not.toThrow()
+
+      // Now, consuming the builder will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
+      await expect(
+        updateBuilder.consumeWithHandler(
+          keystore,
+          paymentAccount.address,
+          async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
+          // Atomic
+          true
+        )
+      ).rejects.toMatchObject({
+        section: 'did',
+        name: 'ServiceAlreadyPresent',
+      })
+
+      const updatedFullDid = await FullDidDetails.fromChainInfo(
+        fullDid.identifier
+      )
+      // .setAttestationKey() extrinsic went through but it was then reverted
+      expect(updatedFullDid!.attestationKey).toBeUndefined()
+      // The service endpoint will match the one manually added, and not the one set in the builder.
+      expect(
+        updatedFullDid!.getEndpoint('id-2')
+      ).toStrictEqual<DidServiceEndpoint>({
+        id: 'id-2',
+        types: ['type-22'],
+        urls: ['url-22'],
+      })
+    }, 60_000)
   })
 })
 
