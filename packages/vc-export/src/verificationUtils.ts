@@ -124,7 +124,7 @@ export async function verifySelfSignedProof(
     if (
       !(
         verification.isValid &&
-        VerificationKeyTypesMap[verification.crypto] === keyType
+        Object.values(VerificationKeyTypesMap).includes(keyType)
       )
     ) {
       throw new Error('signature could not be verified')
