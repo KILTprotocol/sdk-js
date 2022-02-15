@@ -1177,7 +1177,7 @@ describe('DID extrinsics batching', () => {
     await expect(
       Web3Names.queryDidIdentifierForWeb3Name('random-name-2')
     ).resolves.toStrictEqual(fullDid.identifier)
-  })
+  }, 30_000)
 
   it('can batch extrinsics for different required key types', async () => {
     // Authentication key
