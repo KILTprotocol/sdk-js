@@ -1147,7 +1147,7 @@ describe('DID extrinsics batching', () => {
   })
 
   it('can batch extrinsics for the same required key type', async () => {
-    const web3NameClaimTx = await Web3Names.getClaimTx('test')
+    const web3NameClaimTx = await Web3Names.getClaimTx('test-1')
     const authorisedTx = await fullDid.authorizeExtrinsic(
       web3NameClaimTx,
       keystore,
@@ -1155,15 +1155,10 @@ describe('DID extrinsics batching', () => {
     )
     await submitExtrinsicWithResign(authorisedTx, paymentAccount)
 
-    const web3Name1ClaimExt = await Web3Names.getClaimTx('random-name-1')
     const web3Name1ReleaseExt = await Web3Names.getReleaseByOwnerTx()
-    const web3Name2ClaimExt = await Web3Names.getClaimTx('random-name-2')
+    const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
     const tx = await new DidBatchBuilder(api, fullDid)
-      .addMultipleExtrinsics([
-        web3Name1ClaimExt,
-        web3Name1ReleaseExt,
-        web3Name2ClaimExt,
-      ])
+      .addMultipleExtrinsics([web3Name1ReleaseExt, web3Name2ClaimExt])
       .consume(keystore, paymentAccount.address)
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
@@ -1171,11 +1166,11 @@ describe('DID extrinsics batching', () => {
 
     // Test for correct creation and deletion
     await expect(
-      Web3Names.queryDidIdentifierForWeb3Name('random-name-1')
+      Web3Names.queryDidIdentifierForWeb3Name('test-1')
     ).resolves.toBeNull()
     // Test for correct creation of second web3 name
     await expect(
-      Web3Names.queryDidIdentifierForWeb3Name('random-name-2')
+      Web3Names.queryDidIdentifierForWeb3Name('test-2')
     ).resolves.toStrictEqual(fullDid.identifier)
   }, 30_000)
 
