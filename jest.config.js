@@ -6,7 +6,7 @@ module.exports = {
   // Parachain block time is 12s
   testTimeout: 15000,
   setupFilesAfterEnv: ['../jest-setup/setup.js'],
-  transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
+  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {
     global: {
       branches: 70,
@@ -37,6 +37,12 @@ module.exports = {
     '!did/src/DemoKeystore/DemoKeystore.ts',
     '!did/src/DidDetails/DidDetails.utils.ts',
     '!did/src/DidDetails/FullDidDetails.utils.ts',
+    '!did/src/DidBatcher/DidBatchBuilder.ts',
+    '!did/src/DidBatcher/FullDidBuilder.ts',
+    '!did/src/DidBatcher/FullDidBuilder.utils.ts',
+    '!did/src/DidBatcher/FullDidCreationBuilder.ts',
+    '!did/src/DidBatcher/FullDidCreationBuilder.utils.ts',
+    '!did/src/DidBatcher/FullDidUpdateBuilder.utils.ts',
   ],
   resolver: "ts-jest-resolver",
   rootDir: 'packages',
