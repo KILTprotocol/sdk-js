@@ -9,7 +9,9 @@
  * @group integration/did
  */
 
+import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+
 import {
   DemoKeystore,
   DidChain,
@@ -53,14 +55,15 @@ import {
   getDefaultConsumeHandler,
   createFullDidFromSeed,
 } from './utils'
-import { ApiPromise } from '@polkadot/api'
 import { DelegationNode } from '../delegation'
 
 let paymentAccount: KeyringPair
 const keystore = new DemoKeystore()
+let api: ApiPromise
 
 beforeAll(async () => {
   await initializeApi()
+  ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
   paymentAccount = await createEndowedTestAccount()
 })
 
@@ -559,7 +562,6 @@ describe('DID authorization', () => {
   let didDetails: FullDidDetails
 
   beforeAll(async () => {
-    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
     const newKey: NewLightDidAuthenticationKey = await keystore
       .generateKeypair({
         alg: SigningAlgorithms.Ed25519,
@@ -646,8 +648,6 @@ describe('DID authorization', () => {
 describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build a complete full DID from a full light DID', async () => {
-      const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-
       const authKey = await keystore.generateKeypair({
         alg: SigningAlgorithms.Sr25519,
       })
@@ -766,7 +766,6 @@ describe('DID management batching', () => {
 
   describe('FullDidUpdateBuilder', () => {
     it('Build from a complete full DID and remove everything but the authentication key', async () => {
-      const { api } = await BlockchainApiConnection.getConnectionOrConnect()
       const authKey = await keystore.generateKeypair({
         alg: SigningAlgorithms.Sr25519,
       })
@@ -848,7 +847,6 @@ describe('DID management batching', () => {
     }, 40_000)
 
     it('Correctly handles rotation of the authentication key', async () => {
-      const { api } = await BlockchainApiConnection.getConnectionOrConnect()
       const authKey = await keystore.generateKeypair({
         alg: SigningAlgorithms.Sr25519,
       })
@@ -917,10 +915,8 @@ describe('DID management batching', () => {
 
 describe('DID extrinsics batching', () => {
   let fullDid: FullDidDetails
-  let api: ApiPromise
 
   beforeAll(async () => {
-    ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
     fullDid = await createFullDidFromSeed(paymentAccount, keystore)
   }, 50_000)
 
@@ -957,7 +953,7 @@ describe('DID extrinsics batching', () => {
     await expect(ctype.verifyStored()).resolves.toBeTruthy()
   })
 
-  it.only('atomic batch fails if any extrinsics fail', async () => {
+  it('atomic batch fails if any extrinsics fail', async () => {
     const ctype = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
