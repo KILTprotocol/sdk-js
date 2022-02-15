@@ -50,19 +50,6 @@ export class DidBatchBuilder {
     this.api = api
   }
 
-  public addSingleExtrinsic(extrinsic: Extrinsic): this {
-    if (this.isConsumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID batcher has already been consumed.'
-      )
-    }
-
-    const keyRelationship = checkExtrinsicInput(extrinsic, this.did)
-    this.pushNewExtrinsic(extrinsic, keyRelationship)
-
-    return this
-  }
-
   private pushNewExtrinsic(
     ext: Extrinsic,
     keyRelationship: KeyRelationship
@@ -80,6 +67,19 @@ export class DidBatchBuilder {
     } else {
       this.batches[this.batches.length - 1].extrinsics.push(ext)
     }
+  }
+
+  public addSingleExtrinsic(extrinsic: Extrinsic): this {
+    if (this.isConsumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID batcher has already been consumed.'
+      )
+    }
+
+    const keyRelationship = checkExtrinsicInput(extrinsic, this.did)
+    this.pushNewExtrinsic(extrinsic, keyRelationship)
+
+    return this
   }
 
   public addMultipleExtrinsics(extrinsics: Extrinsic[]): this {

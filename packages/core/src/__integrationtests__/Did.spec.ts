@@ -24,6 +24,8 @@ import {
   LightDidSupportedVerificationKeyTypes,
   FullDidCreationBuilder,
   FullDidUpdateBuilder,
+  Web3Names,
+  DidBatchBuilder,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
@@ -34,6 +36,7 @@ import {
   KeyringPair,
   NewDidKey,
   NewDidVerificationKey,
+  Permission,
   VerificationKeyType,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
@@ -48,7 +51,10 @@ import {
   addressFromRandom,
   getDefaultMigrationHandler,
   getDefaultConsumeHandler,
+  createFullDidFromSeed,
 } from './utils'
+import { ApiPromise } from '@polkadot/api'
+import { DelegationNode } from '../delegation'
 
 let paymentAccount: KeyringPair
 const keystore = new DemoKeystore()
@@ -932,6 +938,93 @@ describe('DID management batching', () => {
       expect(finalFullDid.delegationKey).toBeUndefined()
       expect(finalFullDid.getEndpoints()).toHaveLength(2)
     }, 40_000)
+  })
+})
+
+describe.only('DID extrinsics batching', () => {
+  let fullDid: FullDidDetails
+  let api: ApiPromise
+
+  beforeAll(async () => {
+    ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
+    fullDid = await createFullDidFromSeed(paymentAccount, keystore)
+    const web3NameClaimTx = await Web3Names.getClaimTx('test')
+    const authorisedTx = await fullDid.authorizeExtrinsic(
+      web3NameClaimTx,
+      keystore,
+      paymentAccount.address
+    )
+    await submitExtrinsicWithResign(authorisedTx, paymentAccount)
+  }, 50_000)
+
+  it('can batch extrinsics for different required key types', async () => {
+    // Authentication key
+    const web3NameReleaseExt = await Web3Names.getReleaseByOwnerTx()
+    // Attestation key
+    const ctype1 = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const ctype1Creation = await ctype1.store()
+    // Delegation key
+    const rootNode = DelegationNode.newRoot({
+      account: fullDid.did,
+      permissions: [Permission.DELEGATE],
+      cTypeHash: ctype1.hash,
+    })
+    const delegationHierarchyCreation = await rootNode.store()
+
+    // Authentication key
+    const web3NameNewClaimExt = await Web3Names.getClaimTx('test-2')
+    // Attestation key
+    const ctype2 = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const ctype2Creation = await ctype2.store()
+    // Delegation key
+    const delegationHierarchyRemoval = await rootNode.revoke(fullDid.did)
+
+    const builder = new DidBatchBuilder(api, fullDid)
+      .addSingleExtrinsic(web3NameReleaseExt)
+      .addSingleExtrinsic(ctype1Creation)
+      .addSingleExtrinsic(delegationHierarchyCreation)
+      .addSingleExtrinsic(web3NameNewClaimExt)
+      .addSingleExtrinsic(ctype2Creation)
+      .addSingleExtrinsic(delegationHierarchyRemoval)
+
+    const batchedExtrinsics = await builder.consume(
+      keystore,
+      paymentAccount.address
+    )
+
+    await expect(
+      submitExtrinsicWithResign(batchedExtrinsics, paymentAccount)
+    ).resolves.not.toThrow()
+
+    // Test correct use of authentication keys
+    await expect(Web3Names.queryDidForWeb3Name('test')).resolves.toBeNull()
+    await expect(
+      Web3Names.queryDidIdentifierForWeb3Name('test-2')
+    ).resolves.toStrictEqual(fullDid.identifier)
+
+    // Test correct use of attestation keys
+    await expect(ctype1.verifyStored()).resolves.toBeTruthy()
+    await expect(ctype2.verifyStored()).resolves.toBeTruthy()
+
+    // Test correct use of delegation keys
+    await expect(
+      DelegationNode.query(rootNode.id).then((node) => node?.revoked)
+    ).resolves.toBeTruthy()
+
+    // Cannot consume the builder again
+    await expect(
+      builder.consume(keystore, paymentAccount.address)
+    ).rejects.toThrow()
   })
 })
 
