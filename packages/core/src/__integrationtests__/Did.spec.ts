@@ -559,6 +559,7 @@ describe('DID authorization', () => {
   let didDetails: FullDidDetails
 
   beforeAll(async () => {
+    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
     const newKey: NewLightDidAuthenticationKey = await keystore
       .generateKeypair({
         alg: SigningAlgorithms.Ed25519,
@@ -575,42 +576,15 @@ describe('DID authorization', () => {
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey: newKey,
     })
-    const fullDidDetails = await lightDidDetails.migrate(
-      paymentAccount.address,
-      keystore,
-      getDefaultMigrationHandler(paymentAccount)
+    didDetails = await FullDidCreationBuilder.fromLightDidDetails(
+      api,
+      lightDidDetails
     )
-
-    // TODO: these steps can be combined in one operation once we have a builder.
-    const newAssertionKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-      KeyRelationship.assertionMethod,
-      newKey
-    )
-    let signedExtrinsic = await fullDidDetails.authorizeExtrinsic(
-      newAssertionKeyExtrinsic,
-      keystore,
-      paymentAccount.address
-    )
-    await expect(
-      submitExtrinsicWithResign(signedExtrinsic, paymentAccount)
-    ).resolves.not.toThrow()
-
-    const newDelegationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-      KeyRelationship.capabilityDelegation,
-      newKey
-    )
-    signedExtrinsic = await fullDidDetails.authorizeExtrinsic(
-      newDelegationKeyExtrinsic,
-      keystore,
-      paymentAccount.address
-    )
-    await expect(
-      submitExtrinsicWithResign(signedExtrinsic, paymentAccount)
-    ).resolves.not.toThrow()
-
-    didDetails = (await FullDidDetails.fromChainInfo(
-      fullDidDetails.identifier
-    )) as FullDidDetails
+      .setAttestationKey(newKey)
+      .setDelegationKey(newKey)
+      .consumeWithHandler(keystore, paymentAccount.address, async (tx) =>
+        submitExtrinsicWithResign(tx, paymentAccount)
+      )
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
@@ -941,13 +915,85 @@ describe('DID management batching', () => {
   })
 })
 
-describe.only('DID extrinsics batching', () => {
+describe('DID extrinsics batching', () => {
   let fullDid: FullDidDetails
   let api: ApiPromise
 
   beforeAll(async () => {
     ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
     fullDid = await createFullDidFromSeed(paymentAccount, keystore)
+  }, 50_000)
+
+  it('non-atomic batch succeeds despite failures of some extrinsics', async () => {
+    const ctype = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const ctypeCreationTx = await ctype.store()
+    const rootNode = DelegationNode.newRoot({
+      account: fullDid.did,
+      permissions: [Permission.DELEGATE],
+      cTypeHash: ctype.hash,
+    })
+    const delegationCreationTx = await rootNode.store()
+    const delegationRevocationTx = await rootNode.revoke(fullDid.did)
+    const tx = await new DidBatchBuilder(api, fullDid)
+      .addMultipleExtrinsics([
+        ctypeCreationTx,
+        // Will fail since the delegation cannot be revoked before it is added
+        delegationRevocationTx,
+        delegationCreationTx,
+      ])
+      .consume(keystore, paymentAccount.address, { atomic: false })
+
+    // The entire submission promise is resolves and does not throw
+    await expect(
+      submitExtrinsicWithResign(tx, paymentAccount)
+    ).resolves.not.toThrow()
+
+    // The ctype has been created, even though the delegation operations failed.
+    await expect(ctype.verifyStored()).resolves.toBeTruthy()
+  })
+
+  it.only('atomic batch fails if any extrinsics fail', async () => {
+    const ctype = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const ctypeCreationTx = await ctype.store()
+    const rootNode = DelegationNode.newRoot({
+      account: fullDid.did,
+      permissions: [Permission.DELEGATE],
+      cTypeHash: ctype.hash,
+    })
+    const delegationCreationTx = await rootNode.store()
+    const delegationRevocationTx = await rootNode.revoke(fullDid.did)
+    const tx = await new DidBatchBuilder(api, fullDid)
+      .addMultipleExtrinsics([
+        ctypeCreationTx,
+        // Will fail since the delegation cannot be revoked before it is added
+        delegationRevocationTx,
+        delegationCreationTx,
+      ])
+      .consume(keystore, paymentAccount.address, { atomic: true })
+
+    // The entire submission promise is rejected and throws.
+    await expect(
+      submitExtrinsicWithResign(tx, paymentAccount)
+    ).rejects.toMatchObject({
+      section: 'delegation',
+      name: 'DelegationNotFound',
+    })
+
+    // The ctype has not been created, since atomicity ensures the whole batch is reverted in case of failure.
+    await expect(ctype.verifyStored()).resolves.toBeFalsy()
+  })
+
+  it('can batch extrinsics for the same required key type', async () => {
     const web3NameClaimTx = await Web3Names.getClaimTx('test')
     const authorisedTx = await fullDid.authorizeExtrinsic(
       web3NameClaimTx,
@@ -955,7 +1001,30 @@ describe.only('DID extrinsics batching', () => {
       paymentAccount.address
     )
     await submitExtrinsicWithResign(authorisedTx, paymentAccount)
-  }, 50_000)
+
+    const web3Name1ClaimExt = await Web3Names.getClaimTx('random-name-1')
+    const web3Name1ReleaseExt = await Web3Names.getReleaseByOwnerTx()
+    const web3Name2ClaimExt = await Web3Names.getClaimTx('random-name-2')
+    const tx = await new DidBatchBuilder(api, fullDid)
+      .addMultipleExtrinsics([
+        web3Name1ClaimExt,
+        web3Name1ReleaseExt,
+        web3Name2ClaimExt,
+      ])
+      .consume(keystore, paymentAccount.address)
+    await expect(
+      submitExtrinsicWithResign(tx, paymentAccount)
+    ).resolves.not.toThrow()
+
+    // Test for correct creation and deletion
+    await expect(
+      Web3Names.queryDidIdentifierForWeb3Name('random-name-1')
+    ).resolves.toBeNull()
+    // Test for correct creation of second web3 name
+    await expect(
+      Web3Names.queryDidIdentifierForWeb3Name('random-name-2')
+    ).resolves.toStrictEqual(fullDid.identifier)
+  })
 
   it('can batch extrinsics for different required key types', async () => {
     // Authentication key
