@@ -128,8 +128,15 @@ describe('DidBatchBuilder', () => {
         },
       ])
     })
-    // TODO: Unskip this test once the DID chain file accepts an api object as input
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    it.skip('consumes the builder in the expected way', () => {})
+  })
+
+  // TODO: complete these tests once SDK has been refactored to work with generic api object
+  describe('.consume()', () => {
+    it.todo('successfully consume builder with only 1 extrinsic')
+    it.todo('successfully consume builder with 1 extrinsic per required key')
+    it.todo('successfully consume builder with 2 extrinsics per required key')
+    it.todo(
+      'successfully consume builder with 1 extrinsic per required key, repeated two times'
+    )
   })
 })

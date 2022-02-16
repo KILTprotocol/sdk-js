@@ -532,7 +532,8 @@ describe('FullDidUpdateBuilder', () => {
     })
   })
 
-  // TODO: Unskip this test once the DID chain file accepts an api object as input
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  describe.skip('Consuming', () => {})
+  // TODO: complete these tests once SDK has been refactored to work with generic api object
+  describe('Consuming', () => {
+    it.todo('properly consumes the builder')
+  })
 })
