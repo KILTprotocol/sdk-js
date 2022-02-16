@@ -9,10 +9,8 @@ import { ApiPromise } from '@polkadot/api'
 import { encodeAddress } from '@polkadot/util-crypto'
 
 import type {
-  DidServiceEndpoint,
   IIdentity,
   KeystoreSigner,
-  NewDidEncryptionKey,
   NewDidVerificationKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -24,14 +22,6 @@ import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
-
-export type FullDidCreationBuilderCreationDetails = {
-  authenticationKey: NewDidVerificationKey
-  encryptionKeys?: NewDidEncryptionKey[]
-  attestationKey?: NewDidVerificationKey
-  delegationKey?: NewDidVerificationKey
-  serviceEndpoints?: DidServiceEndpoint[]
-}
 
 export type FullDidCreationHandler = (
   didCreationExtrinsic: SubmittableExtrinsic

@@ -10,14 +10,8 @@ export { DidBatchBuilder } from './DidBatchBuilder.js'
 
 export { FullDidBuilder } from './FullDidBuilder.js'
 
-export type {
-  FullDidCreationBuilderCreationDetails,
-  FullDidCreationHandler,
-} from './FullDidCreationBuilder.js'
+export type { FullDidCreationHandler } from './FullDidCreationBuilder.js'
 export { FullDidCreationBuilder } from './FullDidCreationBuilder.js'
 
-export type {
-  FullDidUpdateBuilderCreationDetails,
-  FullDidUpdateHandler,
-} from './FullDidUpdateBuilder.js'
+export type { FullDidUpdateHandler } from './FullDidUpdateBuilder.js'
 export { FullDidUpdateBuilder } from './FullDidUpdateBuilder.js'
