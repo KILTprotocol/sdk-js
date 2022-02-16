@@ -165,12 +165,17 @@ export class DidBatchBuilder {
     }
 
     const nonce = initialNonce || (await this.did.getNextNonce())
+    const batchFunction = atomic
+      ? this.api.tx.utility.batchAll
+      : this.api.tx.utility.batch
 
     const signedBatches: Extrinsic[] = await Promise.all(
       this.batches.map(async (batch, index) => {
-        const processedBatch = atomic
-          ? this.api.tx.utility.batchAll(batch.extrinsics)
-          : this.api.tx.utility.batch(batch.extrinsics)
+        // Don't create a new batch if the batch contains only one extrinsic
+        const processedBatch =
+          batch.extrinsics.length > 1
+            ? batchFunction(batch.extrinsics)
+            : (batch.extrinsics.pop() as Extrinsic)
         const signingKey = await keySelection(
           batch.extrinsics,
           this.did.getKeys(batch.keyRelationship) as DidVerificationKey[]
@@ -191,8 +196,8 @@ export class DidBatchBuilder {
 
     this.isConsumed = true
 
-    return atomic
-      ? this.api.tx.utility.batchAll(signedBatches)
-      : this.api.tx.utility.batch(signedBatches)
+    return signedBatches.length > 1
+      ? batchFunction(signedBatches)
+      : (signedBatches.pop() as SubmittableExtrinsic)
   }
 }
