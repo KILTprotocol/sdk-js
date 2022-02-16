@@ -53,8 +53,8 @@ export const defaultBatchSigningKeySelectionClosure: BatchSigningKeySelection =
  * A builder to batch multiple DID-authorised extrinsics which are to be submitted by the same KILT account.
  */
 export class DidBatchBuilder {
-  private did: FullDidDetails
-  private api: ApiPromise
+  protected did: FullDidDetails
+  protected api: ApiPromise
 
   protected batches: BatchInfo[] = []
   protected isConsumed = false
