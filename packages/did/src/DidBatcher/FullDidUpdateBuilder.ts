@@ -487,6 +487,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * @returns The [[FullDidDetails]] as returned by the provided closure.
    */
+  // TODO: Remove ignore when we can test the consume function
+  /* istanbul ignore next */
   public async consumeWithHandler(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
@@ -515,6 +517,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * @returns The [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
    */
+  // TODO: Remove ignore when we can test the consume function
+  /* istanbul ignore next */
   public async consume(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],

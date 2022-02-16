@@ -125,6 +125,7 @@ export class DidBatchBuilder {
    * @param extrinsics The list of [[Extrinsic]] to add to the batch.
    * @returns The builder containing the new extrinsics.
    */
+  /* istanbul ignore next */
   public addMultipleExtrinsics(extrinsics: Extrinsic[]): this {
     extrinsics.forEach((ext) => {
       this.addSingleExtrinsic(ext)
@@ -145,6 +146,8 @@ export class DidBatchBuilder {
    *
    * @returns The [[SubmittableExtrinsic]] containing the batch of batches.
    */
+  // TODO: Remove ignore when we can test the consume function
+  /* istanbul ignore next */
   public async consume(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
