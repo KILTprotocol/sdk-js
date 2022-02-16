@@ -45,35 +45,15 @@ export type FullDidCreationHandler = (
 export class FullDidCreationBuilder extends FullDidBuilder {
   protected authenticationKey: NewDidVerificationKey
 
-  // Marks all provided details as to-be-added to the DID. Hence, they cannot be marked for deletion in the same operation.
   public constructor(
     api: ApiPromise,
-    {
-      authenticationKey,
-      encryptionKeys = [],
-      attestationKey,
-      delegationKey,
-      serviceEndpoints = [],
-    }: FullDidCreationBuilderCreationDetails
+    authenticationKey: NewDidVerificationKey
   ) {
     super(api)
     this.authenticationKey = {
       publicKey: authenticationKey.publicKey,
       type: authenticationKey.type,
     }
-
-    encryptionKeys.forEach((key) => {
-      this.addEncryptionKey(key)
-    })
-    if (attestationKey) {
-      this.setAttestationKey(attestationKey)
-    }
-    if (delegationKey) {
-      this.setDelegationKey(delegationKey)
-    }
-    serviceEndpoints.forEach((service) => {
-      this.addServiceEndpoint(service)
-    })
   }
 
   /**
@@ -89,13 +69,18 @@ export class FullDidCreationBuilder extends FullDidBuilder {
     api: ApiPromise,
     details: LightDidDetails
   ): FullDidCreationBuilder {
-    return new FullDidCreationBuilder(api, {
-      authenticationKey: details.authenticationKey,
-      encryptionKeys: details.getKeys(
-        KeyRelationship.keyAgreement
-      ) as DidEncryptionKey[],
-      serviceEndpoints: details.getEndpoints(),
-    })
+    let builder = new FullDidCreationBuilder(api, details.authenticationKey)
+    if (details.encryptionKey) {
+      builder = builder.addEncryptionKey(details.encryptionKey)
+    }
+    details
+      .getEndpoints()
+      .reduce(
+        (builderState, endpoint) => builderState.addServiceEndpoint(endpoint),
+        builder
+      )
+
+    return builder
   }
 
   /**

@@ -854,10 +854,8 @@ describe('DID management batching', () => {
         alg: SigningAlgorithms.Ed25519,
       })
       const createBuilder = new FullDidCreationBuilder(api, {
-        authenticationKey: {
-          publicKey: authKey.publicKey,
-          type: VerificationKeyType.Sr25519,
-        },
+        publicKey: authKey.publicKey,
+        type: VerificationKeyType.Sr25519,
       })
 
       const initialFullDid = await createBuilder.consumeWithHandler(
@@ -916,17 +914,12 @@ describe('DID management batching', () => {
         alg: SigningAlgorithms.Sr25519,
       })
       const createBuilder = new FullDidCreationBuilder(api, {
-        authenticationKey: {
-          publicKey: authKey.publicKey,
-          type: VerificationKeyType.Sr25519,
-        },
-        serviceEndpoints: [
-          {
-            id: 'id-1',
-            types: ['type-1'],
-            urls: ['url-1'],
-          },
-        ],
+        publicKey: authKey.publicKey,
+        type: VerificationKeyType.Sr25519,
+      }).addServiceEndpoint({
+        id: 'id-1',
+        types: ['type-1'],
+        urls: ['url-1'],
       })
       // Create the full DID with a service endpoint
       const fullDid = await createBuilder.consumeWithHandler(
@@ -993,17 +986,12 @@ describe('DID management batching', () => {
         alg: SigningAlgorithms.Sr25519,
       })
       const createBuilder = new FullDidCreationBuilder(api, {
-        authenticationKey: {
-          publicKey: authKey.publicKey,
-          type: VerificationKeyType.Sr25519,
-        },
-        serviceEndpoints: [
-          {
-            id: 'id-1',
-            types: ['type-1'],
-            urls: ['url-1'],
-          },
-        ],
+        publicKey: authKey.publicKey,
+        type: VerificationKeyType.Sr25519,
+      }).addServiceEndpoint({
+        id: 'id-1',
+        types: ['type-1'],
+        urls: ['url-1'],
       })
       // Create the full DID with a service endpoint
       const fullDid = await createBuilder.consumeWithHandler(
