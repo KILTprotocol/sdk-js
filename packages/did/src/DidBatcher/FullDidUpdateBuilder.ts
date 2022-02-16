@@ -55,8 +55,7 @@ export type FullDidUpdateHandler = (
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
   protected identifier: IDidIdentifier
-  protected firstBatch: Extrinsic[] = []
-  protected secondBatch: Extrinsic[] = []
+  protected batch: Extrinsic[] = []
 
   protected oldAuthenticationKey: DidVerificationKey
   protected newAuthenticationKey: NewDidVerificationKey | undefined = undefined
@@ -84,61 +83,30 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   // Service endpoints to delete, by their ID.
   protected serviceEndpointsToDelete: Set<DidServiceEndpoint['id']> = new Set()
 
-  public constructor(
-    api: ApiPromise,
-    {
-      authenticationKey,
-      identifier,
-      keyAgreementKeys = [],
-      assertionKey,
-      delegationKey,
-      serviceEndpoints = [],
-    }: FullDidUpdateBuilderCreationDetails
-  ) {
-    super(api)
-    this.oldAuthenticationKey = authenticationKey
-    this.identifier = identifier
-    keyAgreementKeys.forEach(({ id, ...keyDetails }) => {
-      this.oldKeyAgreementKeys.set(id, keyDetails)
-    })
-    this.oldAssertionKey = assertionKey
-    this.oldDelegationKey = delegationKey
-    serviceEndpoints.forEach(({ id, ...serviceDetails }) => {
-      this.oldServiceEndpoints.set(id, serviceDetails)
-    })
-  }
-
   /**
    * Initialize a DID update with the information contained in the provided full DID.
    *
-   * All the details in the DID are considered part of the starting state of the update batch.
-   *
    * @param api The [[ApiPromise]] object to encode/decoded types as needed.
    * @param details The [[FullDidDetails]] object.
-   * @returns The builder initialized with the information contained in the full DID.
    */
-  public static fromFullDidDetails(
-    api: ApiPromise,
-    details: FullDidDetails
-  ): FullDidUpdateBuilder {
-    const keyAgreementKeys = details.getKeys(
-      KeyRelationship.keyAgreement
-    ) as DidEncryptionKey[]
-    const {
-      authenticationKey,
-      attestationKey: assertionKey,
-      delegationKey,
-    } = details
-    const serviceEndpoints = details.getEndpoints()
-
-    return new FullDidUpdateBuilder(api, {
-      identifier: details.identifier,
-      authenticationKey,
-      keyAgreementKeys,
-      assertionKey,
-      delegationKey,
-      serviceEndpoints,
-    })
+  public constructor(api: ApiPromise, details: FullDidDetails) {
+    super(api)
+    ;({
+      identifier: this.identifier,
+      authenticationKey: this.oldAuthenticationKey,
+      attestationKey: this.oldAssertionKey,
+      delegationKey: this.oldDelegationKey,
+    } = details)
+    ;(
+      details.getKeys(KeyRelationship.keyAgreement) as DidEncryptionKey[]
+    ).forEach(({ id, ...keyDetails }) =>
+      this.oldKeyAgreementKeys.set(id, keyDetails)
+    )
+    details
+      .getEndpoints()
+      .forEach(({ id, ...serviceDetails }) =>
+        this.oldServiceEndpoints.set(id, serviceDetails)
+      )
   }
 
   /**
@@ -170,8 +138,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       formatPublicKey(key)
     )
 
-    // Called before updating the authentication key. Pushed to the first batch.
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
     this.newAuthenticationKey = key
 
     return this
@@ -208,7 +175,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     )
 
     super.addEncryptionKey(key)
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -253,7 +220,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
 
     // Otherwise we can safely mark the key for removal.
     this.keyAgreementKeysToDelete.add(keyId)
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -302,7 +269,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     )
 
     super.setAttestationKey(key)
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -346,7 +313,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     const extrinsic = this.apiObject.tx.did.removeAttestationKey()
 
     this.newAssertionKey = { action: 'delete' }
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -374,7 +341,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     )
 
     super.setDelegationKey(key)
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -415,7 +382,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     const extrinsic = this.apiObject.tx.did.removeDelegationKey()
 
     this.newDelegationKey = { action: 'delete' }
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -445,7 +412,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     })
 
     super.addServiceEndpoint(service)
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -484,7 +451,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
 
     // Otherwise we can safely mark the service endpoint for deletion.
     this.serviceEndpointsToDelete.add(serviceId)
-    this.pushToRightBatch(extrinsic)
+    this.batch.push(extrinsic)
 
     return this
   }
@@ -553,55 +520,33 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     submitter: IIdentity['address'],
     atomic = true
   ): Promise<SubmittableExtrinsic> {
-    const first: Extrinsic = atomic
-      ? this.apiObject.tx.utility.batchAll(this.firstBatch)
-      : this.apiObject.tx.utility.batch(this.firstBatch)
+    const batchFunction = atomic
+      ? this.apiObject.tx.utility.batchAll
+      : this.apiObject.tx.utility.batch
+
+    const batchLength = this.batch.length
+
+    if (!batchLength) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'Builder was empty, hence it cannot be consumed.'
+      )
+    }
+
+    const batch =
+      this.batch.length > 1
+        ? batchFunction(this.batch)
+        : (this.batch.pop() as Extrinsic)
 
     const lastDidNonce = await queryNonce(this.identifier)
-    const firstBatchNonce = increaseNonce(lastDidNonce)
 
-    const firstBatchAuthenticated = await generateDidAuthenticatedTx({
+    return generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: this.oldAuthenticationKey.publicKey,
       alg: getSignatureAlgForKeyType(this.oldAuthenticationKey.type),
       signer,
-      call: first,
-      txCounter: firstBatchNonce,
+      call: batch,
+      txCounter: increaseNonce(lastDidNonce),
       submitter,
     })
-
-    // Batch of batches
-    const finalBatch: Extrinsic[] = [firstBatchAuthenticated]
-
-    if (this.newAuthenticationKey) {
-      const second: Extrinsic = atomic
-        ? this.apiObject.tx.utility.batchAll(this.secondBatch)
-        : this.apiObject.tx.utility.batch(this.secondBatch)
-
-      const secondBatchNonce = increaseNonce(firstBatchNonce)
-      const secondBatchAuthenticated = await generateDidAuthenticatedTx({
-        didIdentifier: this.identifier,
-        signingPublicKey: this.newAuthenticationKey.publicKey,
-        alg: getSignatureAlgForKeyType(this.newAuthenticationKey.type),
-        signer,
-        call: second,
-        txCounter: secondBatchNonce,
-        submitter,
-      })
-
-      finalBatch.push(secondBatchAuthenticated)
-    }
-
-    return atomic
-      ? this.apiObject.tx.utility.batchAll(finalBatch)
-      : this.apiObject.tx.utility.batch(finalBatch)
-  }
-
-  private pushToRightBatch(extrinsic: Extrinsic): void {
-    if (this.newAuthenticationKey) {
-      this.secondBatch.push(extrinsic)
-    } else {
-      this.firstBatch.push(extrinsic)
-    }
   }
 }

@@ -812,10 +812,7 @@ describe('DID management batching', () => {
         getDefaultConsumeHandler(paymentAccount)
       )
 
-      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
-        api,
-        initialFullDid
-      )
+      const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
         .removeAllEncryptionKeys()
         .removeAttestationKey()
         .removeDelegationKey()
@@ -864,10 +861,7 @@ describe('DID management batching', () => {
         getDefaultConsumeHandler(paymentAccount)
       )
 
-      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
-        api,
-        initialFullDid
-      )
+      const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
         .addServiceEndpoint({ id: 'id-1', types: ['type-1'], urls: ['url-1'] })
         .setAuthenticationKey({
           publicKey: newAuthKey.publicKey,
@@ -930,10 +924,7 @@ describe('DID management batching', () => {
       expect(fullDid.attestationKey).toBeUndefined()
 
       // Configure the builder to set a new attestation key and a service endpoint
-      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
-        api,
-        fullDid
-      )
+      const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
         .setAttestationKey({
           publicKey: authKey.publicKey,
           type: VerificationKeyType.Sr25519,
@@ -1002,10 +993,7 @@ describe('DID management batching', () => {
       expect(fullDid.attestationKey).toBeUndefined()
 
       // Configure the builder to set a new attestation key and a service endpoint
-      const updateBuilder = FullDidUpdateBuilder.fromFullDidDetails(
-        api,
-        fullDid
-      )
+      const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
         .setAttestationKey({
           publicKey: authKey.publicKey,
           type: VerificationKeyType.Sr25519,

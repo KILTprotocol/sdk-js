@@ -178,10 +178,7 @@ export async function createFullDidFromLightDid(
   )
 
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const authenticatedBatch = await FullDidUpdateBuilder.fromFullDidDetails(
-    api,
-    fullDid
-  )
+  const authenticatedBatch = await new FullDidUpdateBuilder(api, fullDid)
     .setAttestationKey(fullDid.authenticationKey)
     .setDelegationKey(fullDid.authenticationKey)
     .consume(keystore, identity.address)

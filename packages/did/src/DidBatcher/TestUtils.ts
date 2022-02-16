@@ -5,9 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { blake2AsHex } from '@polkadot/util-crypto'
 import type { DidKey } from '@kiltprotocol/types'
 
 // Mock function to generate a key ID without having to rely on a real chain metadata.
 export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
-  return new Array(32).fill(key[0]).toString()
+  return `${blake2AsHex(key, 256)}`
 }

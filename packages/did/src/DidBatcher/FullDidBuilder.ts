@@ -188,5 +188,5 @@ export abstract class FullDidBuilder {
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     atomic: boolean
-  ): Promise<SubmittableExtrinsic>
+  ): Promise<SubmittableExtrinsic | null>
 }

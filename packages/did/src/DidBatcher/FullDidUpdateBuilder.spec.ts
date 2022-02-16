@@ -31,6 +31,7 @@ import { computeKeyId } from './TestUtils'
 import { DemoKeystore, DemoKeystoreUtils } from '../DemoKeystore'
 import { FullDidUpdateBuilder } from './FullDidUpdateBuilder'
 import { VerificationKeyAction } from './FullDidBuilder'
+import { FullDidDetails } from '../DidDetails'
 
 jest.mock('./FullDidBuilder.utils.js', () => ({
   deriveChainKeyId: jest.fn((api: ApiPromise, key: NewDidKey): DidKey['id'] =>
@@ -38,168 +39,123 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
   ),
 }))
 
+const keystore = new DemoKeystore()
+const mockApi = ApiMocks.createAugmentedApi()
+
 describe('FullDidUpdateBuilder', () => {
-  const mockApi = ApiMocks.createAugmentedApi()
-  const keystore = new DemoKeystore()
-  const oldAuthenticationKey: DidVerificationKey = {
-    id: 'old-auth',
-    publicKey: Uint8Array.from(Array(32).fill(0)),
-    type: VerificationKeyType.Ed25519,
-  }
+  describe('Constructor', () => {
+    let fullDid: FullDidDetails
+    beforeAll(async () => {
+      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+        keystore,
+        '//test-constructor'
+      )
+    })
+    it('sets the right keys when creating from a full DID', async () => {
+      const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
-  describe('Constructors', () => {
-    describe('.fromFullDidDetails()', () => {
-      it('sets the right keys when creating from a full DID', async () => {
-        const fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-          keystore,
-          'test'
+      // @ts-ignore
+      expect(builder.oldAuthenticationKey).toStrictEqual<DidVerificationKey>(
+        fullDid.authenticationKey
+      )
+      // @ts-ignore
+      expect(builder.oldKeyAgreementKeys).toStrictEqual<
+        Map<DidEncryptionKey['id'], Omit<DidEncryptionKey, 'id'>>
+      >(
+        new Map(
+          (
+            fullDid.getKeys(KeyRelationship.keyAgreement) as DidEncryptionKey[]
+          ).map(({ id, ...details }) => [id, { ...details }])
         )
-        const builder = FullDidUpdateBuilder.fromFullDidDetails(
-          mockApi,
+      )
+      // @ts-ignore
+      expect(builder.oldAssertionKey).toStrictEqual<
+        DidVerificationKey | undefined
+      >(fullDid.attestationKey)
+      // @ts-ignore
+      expect(builder.oldDelegationKey).toStrictEqual<
+        DidVerificationKey | undefined
+      >(fullDid.delegationKey)
+      // @ts-ignore
+      expect(builder.oldServiceEndpoints).toStrictEqual<
+        Map<DidServiceEndpoint['id'], Omit<DidServiceEndpoint, 'id'>>
+      >(
+        new Map(
           fullDid
+            .getEndpoints()
+            .map(({ id, ...details }) => [id, { ...details }])
         )
+      )
+    })
+  })
 
-        // @ts-ignore
-        expect(builder.oldAuthenticationKey).toStrictEqual<DidVerificationKey>(
-          fullDid.authenticationKey
-        )
-        // @ts-ignore
-        expect(builder.oldKeyAgreementKeys).toStrictEqual<
-          Map<DidEncryptionKey['id'], Omit<DidEncryptionKey, 'id'>>
-        >(
-          new Map(
-            (
-              fullDid.getKeys(
-                KeyRelationship.keyAgreement
-              ) as DidEncryptionKey[]
-            ).map(({ id, ...details }) => [id, { ...details }])
-          )
-        )
-        // @ts-ignore
-        expect(builder.oldAssertionKey).toStrictEqual<
-          DidVerificationKey | undefined
-        >(fullDid.attestationKey)
-        // @ts-ignore
-        expect(builder.oldDelegationKey).toStrictEqual<
-          DidVerificationKey | undefined
-        >(fullDid.delegationKey)
-        // @ts-ignore
-        expect(builder.oldServiceEndpoints).toStrictEqual<
-          Map<DidServiceEndpoint['id'], Omit<DidServiceEndpoint, 'id'>>
-        >(
-          new Map(
-            fullDid
-              .getEndpoints()
-              .map(({ id, ...details }) => [id, { ...details }])
-          )
-        )
-      })
+  describe('.setAuthenticationKey()', () => {
+    let fullDid: FullDidDetails
+    beforeAll(async () => {
+      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+        keystore,
+        '//test-auth-key',
+        { keyRelationships: new Set([]) }
+      )
+    })
+    const newAuthenticationKey: NewDidVerificationKey = {
+      publicKey: Uint8Array.from(Array(33).fill(1)),
+      type: VerificationKeyType.Ecdsa,
+    }
+
+    it('fails if the authentication key is set twice', async () => {
+      const builder = new FullDidUpdateBuilder(mockApi, fullDid)
+
+      expect(() =>
+        builder.setAuthenticationKey(newAuthenticationKey)
+      ).not.toThrow()
+      // Throws if called a second time
+      expect(() => builder.setAuthenticationKey(newAuthenticationKey)).toThrow()
     })
 
-    describe('.setAuthenticationKey()', () => {
-      const newAuthenticationKey: NewDidVerificationKey = {
-        publicKey: Uint8Array.from(Array(33).fill(1)),
-        type: VerificationKeyType.Ecdsa,
-      }
+    it('correctly sets the new authentication key', async () => {
+      const builder = new FullDidUpdateBuilder(mockApi, fullDid)
+      expect(() =>
+        builder.setAuthenticationKey(newAuthenticationKey)
+      ).not.toThrow()
 
-      it('fails if the authentication key is set twice', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test',
-        })
-        expect(() =>
-          builder.setAuthenticationKey(newAuthenticationKey)
-        ).not.toThrow()
-        // Throws if called a second time
-        expect(() =>
-          builder.setAuthenticationKey(newAuthenticationKey)
-        ).toThrow()
-      })
-
-      it('correctly sets the new authentication key', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test',
-        })
-        expect(() =>
-          builder.setAuthenticationKey(newAuthenticationKey)
-        ).not.toThrow()
-
-        // @ts-ignore
-        expect(builder.firstBatch).toHaveLength(1)
-        // @ts-ignore
-        expect(builder.secondBatch).toHaveLength(0)
-      })
-
-      it('correctly creates a new batch after changing the authentication key', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test',
-        })
-        const newKeyBeforeUpdate: NewDidEncryptionKey = {
-          publicKey: Uint8Array.from(Array(32).fill(10)),
-          type: EncryptionKeyType.X25519,
-        }
-        const newKeyAfterUpdate: NewDidVerificationKey = {
-          publicKey: Uint8Array.from(Array(32).fill(20)),
-          type: VerificationKeyType.Sr25519,
-        }
-        expect(() => builder.addEncryptionKey(newKeyBeforeUpdate)).not.toThrow()
-        expect(() =>
-          builder.setAuthenticationKey(newAuthenticationKey)
-        ).not.toThrow()
-        expect(() => builder.setDelegationKey(newKeyAfterUpdate)).not.toThrow()
-
-        // [key agreement update, authentication key set]
-        // @ts-ignore
-        expect(builder.firstBatch).toHaveLength(2)
-        // [delegation key set]
-        // @ts-ignore
-        expect(builder.secondBatch).toHaveLength(1)
-      })
+      // @ts-ignore
+      expect(builder.batch).toHaveLength(1)
     })
   })
 
   describe('Key agreement keys', () => {
-    const encryptionKey = Uint8Array.from(Array(32).fill(0))
-    const oldEncryptionKey: DidKey = {
-      id: computeKeyId(encryptionKey),
-      publicKey: encryptionKey,
-      type: EncryptionKeyType.X25519,
-    }
+    let fullDid: FullDidDetails
     const newEncryptionKey: NewDidEncryptionKey = {
       publicKey: Uint8Array.from(Array(32).fill(1)),
       type: EncryptionKeyType.X25519,
     }
+    beforeAll(async () => {
+      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+        keystore,
+        '//test-enc-key',
+        { keyRelationships: new Set([KeyRelationship.keyAgreement]) }
+      )
+    })
+
     describe('.addEncryptionKey()', () => {
       it('fails if the key already exists', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          keyAgreementKeys: [oldEncryptionKey],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
-        expect(() => builder.addEncryptionKey(oldEncryptionKey)).toThrow()
+        expect(() => builder.addEncryptionKey(fullDid.encryptionKey!)).toThrow()
       })
 
       it('fails if the key has been marked for deletion', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          keyAgreementKeys: [oldEncryptionKey],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() =>
-          builder.removeEncryptionKey(oldEncryptionKey.id)
+          builder.removeEncryptionKey(fullDid.encryptionKey!.id)
         ).not.toThrow()
-        expect(() => builder.addEncryptionKey(oldEncryptionKey)).toThrow()
+        expect(() => builder.addEncryptionKey(fullDid.encryptionKey!)).toThrow()
       })
 
       it('fails if the key has been marked for addition', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.addEncryptionKey(newEncryptionKey)).not.toThrow()
         // Second time the same key is added, it throws
@@ -207,10 +163,7 @@ describe('FullDidUpdateBuilder', () => {
       })
 
       it('adds a new key successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.addEncryptionKey(newEncryptionKey)).not.toThrow()
         expect(
@@ -226,19 +179,14 @@ describe('FullDidUpdateBuilder', () => {
 
     describe('.removeEncryptionKey()', () => {
       it('fails if the key does not exist', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeEncryptionKey('randomID')).toThrow()
       })
 
       it('fails if the key has been marked for addition', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
+
         expect(() => builder.addEncryptionKey(newEncryptionKey)).not.toThrow()
         expect(() =>
           builder.removeEncryptionKey(computeKeyId(newEncryptionKey.publicKey))
@@ -246,106 +194,87 @@ describe('FullDidUpdateBuilder', () => {
       })
 
       it('fails if the key has been marked for deletion', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          keyAgreementKeys: [oldEncryptionKey],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() =>
-          builder.removeEncryptionKey(computeKeyId(oldEncryptionKey.publicKey))
+          builder.removeEncryptionKey(fullDid.encryptionKey!.id)
         ).not.toThrow()
         // Second time the same key is removed, it throws
         expect(() =>
-          builder.removeEncryptionKey(computeKeyId(oldEncryptionKey.publicKey))
+          builder.removeEncryptionKey(fullDid.encryptionKey!.id)
         ).toThrow()
       })
 
       it('removes a key successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          keyAgreementKeys: [oldEncryptionKey],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
+
         expect(() =>
-          builder.removeEncryptionKey(oldEncryptionKey.id)
+          builder.removeEncryptionKey(fullDid.encryptionKey!.id)
         ).not.toThrow()
         expect(
           // @ts-ignore
           builder.keyAgreementKeysToDelete
         ).toStrictEqual<Set<DidEncryptionKey['id']>>(
-          new Set([computeKeyId(oldEncryptionKey.publicKey)])
+          new Set([fullDid.encryptionKey!.id])
         )
       })
     })
 
     describe('.removeAllEncryptionKeys()', () => {
       it('removes all encryption keys successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          keyAgreementKeys: [
-            oldEncryptionKey,
-            {
-              id: computeKeyId(newEncryptionKey.publicKey),
-              ...newEncryptionKey,
-            },
-          ],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
+
         expect(() => builder.removeAllEncryptionKeys()).not.toThrow()
         expect(
           // @ts-ignore
           builder.keyAgreementKeysToDelete
         ).toStrictEqual<Set<DidEncryptionKey['id']>>(
-          new Set([
-            computeKeyId(oldEncryptionKey.publicKey),
-            computeKeyId(newEncryptionKey.publicKey),
-          ])
+          new Set([fullDid.encryptionKey!.id])
         )
       })
     })
   })
 
   describe('Attestation keys', () => {
-    const attestationKey = Uint8Array.from(Array(32).fill(10))
-    const oldAttestationKey: DidKey = {
-      id: computeKeyId(attestationKey),
-      publicKey: attestationKey,
-      type: VerificationKeyType.Ed25519,
-    }
+    let fullDid: FullDidDetails
     const newAttestationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(33).fill(11)),
       type: VerificationKeyType.Ecdsa,
     }
+    beforeAll(async () => {
+      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+        keystore,
+        '//test-att-key',
+        { keyRelationships: new Set([KeyRelationship.assertionMethod]) }
+      )
+    })
     describe('.setAttestationKey()', () => {
       it('fails if the key has already been marked for deletion', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          assertionKey: oldAttestationKey,
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeAttestationKey()).not.toThrow()
-
         expect(() => builder.setAttestationKey(newAttestationKey)).toThrow()
       })
 
       it('fails if another key has already been marked for addition', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        // Does not have any attestation key set
+        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+          keystore,
+          '//test-att-key-2',
+          {
+            keyRelationships: new Set([]),
+          }
+        )
+        const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
-        expect(() => builder.setAttestationKey(oldAttestationKey)).not.toThrow()
-
+        expect(() =>
+          builder.setAttestationKey(fullDid.attestationKey!)
+        ).not.toThrow()
         expect(() => builder.setAttestationKey(newAttestationKey)).toThrow()
       })
 
       it('sets an attestation key successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.setAttestationKey(newAttestationKey)).not.toThrow()
         expect(
@@ -360,43 +289,35 @@ describe('FullDidUpdateBuilder', () => {
 
     describe('.removeAttestationKey()', () => {
       it('fails if the DID does not have an attestation key', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        // Does not have any attestation key set
+        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+          keystore,
+          '//test-att-key-3',
+          {
+            keyRelationships: new Set([]),
+          }
+        )
+        const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
         expect(() => builder.removeAttestationKey()).toThrow()
       })
 
       it('fails if another attestation key was already marked for addition', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
-        expect(() => builder.setAttestationKey(oldAttestationKey)).not.toThrow()
-
+        expect(() => builder.setAttestationKey(newAttestationKey)).not.toThrow()
         expect(() => builder.removeAttestationKey()).toThrow()
       })
 
       it('fails if the old attestation key was already marked for deletion', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          assertionKey: oldAttestationKey,
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeAttestationKey()).not.toThrow()
-
         expect(() => builder.removeAttestationKey()).toThrow()
       })
 
       it('removes the attestation key successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          assertionKey: oldAttestationKey,
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeAttestationKey()).not.toThrow()
         expect(
@@ -410,50 +331,51 @@ describe('FullDidUpdateBuilder', () => {
   })
 
   describe('Delegation keys', () => {
-    const delegationKey = Uint8Array.from(Array(32).fill(20))
-    const oldDelegationKey: DidKey = {
-      id: computeKeyId(delegationKey),
-      publicKey: delegationKey,
-      type: VerificationKeyType.Sr25519,
-    }
+    let fullDid: FullDidDetails
     const newDelegationKey: NewDidVerificationKey = {
-      publicKey: Uint8Array.from(Array(32).fill(21)),
-      type: VerificationKeyType.Ed25519,
+      publicKey: Uint8Array.from(Array(33).fill(21)),
+      type: VerificationKeyType.Ecdsa,
     }
-    describe('.setDelegation()', () => {
+    beforeAll(async () => {
+      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+        keystore,
+        '//test-del-key',
+        { keyRelationships: new Set([KeyRelationship.capabilityDelegation]) }
+      )
+    })
+    describe('.setDelegationKey()', () => {
       it('fails if the key has already been marked for deletion', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          delegationKey: oldDelegationKey,
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeDelegationKey()).not.toThrow()
-
         expect(() => builder.setDelegationKey(newDelegationKey)).toThrow()
       })
 
       it('fails if another key has already been marked for addition', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        // Does not have any delegation key set
+        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+          keystore,
+          '//test-del-key-2',
+          {
+            keyRelationships: new Set([]),
+          }
+        )
+        const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
-        expect(() => builder.setDelegationKey(oldDelegationKey)).not.toThrow()
-
+        expect(() =>
+          builder.setDelegationKey(fullDid.delegationKey!)
+        ).not.toThrow()
         expect(() => builder.setDelegationKey(newDelegationKey)).toThrow()
       })
 
       it('sets a delegation key successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.setDelegationKey(newDelegationKey)).not.toThrow()
-        // @ts-ignore
-        const delegationKeyAction = builder.newDelegationKey
-        expect(delegationKeyAction).toStrictEqual<VerificationKeyAction>({
+        expect(
+          // @ts-ignore
+          builder.newDelegationKey
+        ).toStrictEqual<VerificationKeyAction>({
           action: 'update',
           newKey: newDelegationKey,
         })
@@ -462,43 +384,35 @@ describe('FullDidUpdateBuilder', () => {
 
     describe('.removeDelegationKey()', () => {
       it('fails if the DID does not have a delegation key', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        // Does not have any delegation key set
+        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+          keystore,
+          '//test-del-key-3',
+          {
+            keyRelationships: new Set([]),
+          }
+        )
+        const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
         expect(() => builder.removeDelegationKey()).toThrow()
       })
 
       it('fails if another delegation key was already marked for addition', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
-        expect(() => builder.setDelegationKey(oldDelegationKey)).not.toThrow()
-
+        expect(() => builder.setDelegationKey(newDelegationKey)).not.toThrow()
         expect(() => builder.removeDelegationKey()).toThrow()
       })
 
       it('fails if the old delegation key was already marked for deletion', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          delegationKey: oldDelegationKey,
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeDelegationKey()).not.toThrow()
-
         expect(() => builder.removeDelegationKey()).toThrow()
       })
 
       it('removes the delegation key successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          delegationKey: oldDelegationKey,
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeDelegationKey()).not.toThrow()
         expect(
@@ -512,46 +426,40 @@ describe('FullDidUpdateBuilder', () => {
   })
 
   describe('Service endpoints', () => {
-    const oldServiceEndpoint: DidServiceEndpoint = {
-      id: 'id-old',
-      types: ['type-old'],
-      urls: ['url-old'],
-    }
+    let fullDid: FullDidDetails
     const newServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
       types: ['type-new'],
       urls: ['url-new'],
     }
+    beforeAll(async () => {
+      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+        keystore,
+        '//test-endpoint',
+        { endpoints: { 'id-old': { types: ['type-old'], urls: ['url-old'] } } }
+      )
+    })
 
     describe('.addServiceEndpoint()', () => {
       it('fails if the service is already present in the DID', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          serviceEndpoints: [oldServiceEndpoint],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
-        expect(() => builder.addServiceEndpoint(oldServiceEndpoint)).toThrow()
+        expect(() =>
+          builder.addServiceEndpoint(fullDid.getEndpoint('id-old')!)
+        ).toThrow()
       })
 
       it('fails if the service has already been marked for addition', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() =>
           builder.addServiceEndpoint(newServiceEndpoint)
         ).not.toThrow()
-
         expect(() => builder.addServiceEndpoint(newServiceEndpoint)).toThrow()
       })
 
       it('adds the service endpoint successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() =>
           builder.addServiceEndpoint(newServiceEndpoint)
@@ -578,73 +486,47 @@ describe('FullDidUpdateBuilder', () => {
 
     describe('.removeServiceEndpoint()', () => {
       it('fails if the service is not present in the DID', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() => builder.removeServiceEndpoint('random-id')).toThrow()
       })
 
       it('fails if the service has already been marked for deletion', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          serviceEndpoints: [oldServiceEndpoint],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() =>
-          builder.removeServiceEndpoint(oldServiceEndpoint.id)
+          builder.removeServiceEndpoint(fullDid.getEndpoint('id-old')!.id)
         ).not.toThrow()
 
         expect(() =>
-          builder.removeServiceEndpoint(oldServiceEndpoint.id)
+          builder.removeServiceEndpoint(fullDid.getEndpoint('id-old')!.id)
         ).toThrow()
       })
 
       it('removes the service endpoint successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          serviceEndpoints: [oldServiceEndpoint],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
         expect(() =>
-          builder.removeServiceEndpoint(oldServiceEndpoint.id)
+          builder.removeServiceEndpoint(fullDid.getEndpoint('id-old')!.id)
         ).not.toThrow()
 
         expect(
           // @ts-ignore
           builder.serviceEndpointsToDelete
         ).toStrictEqual<Set<DidServiceEndpoint['id']>>(
-          new Set([oldServiceEndpoint.id])
+          new Set([fullDid.getEndpoint('id-old')!.id])
         )
       })
     })
     describe('.removeAllServiceEndpoints()', () => {
       it('removes all service endpoints successfully', async () => {
-        const builder = new FullDidUpdateBuilder(mockApi, {
-          authenticationKey: oldAuthenticationKey,
-          identifier: 'test-identifier',
-          serviceEndpoints: [
-            {
-              id: 'id-1',
-              types: ['type-1'],
-              urls: ['url-1'],
-            },
-            {
-              id: 'id-2',
-              types: ['type-2'],
-              urls: ['url-2'],
-            },
-          ],
-        })
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
         expect(() => builder.removeAllServiceEndpoints()).not.toThrow()
         expect(
           // @ts-ignore
           builder.serviceEndpointsToDelete
         ).toStrictEqual<Set<DidServiceEndpoint['id']>>(
-          new Set(['id-1', 'id-2'])
+          new Set([fullDid.getEndpoint('id-old')!.id])
         )
       })
     })

@@ -9,7 +9,6 @@ import { ApiPromise } from '@polkadot/api'
 import { encodeAddress } from '@polkadot/util-crypto'
 
 import type {
-  DidEncryptionKey,
   DidServiceEndpoint,
   IIdentity,
   KeystoreSigner,
@@ -17,7 +16,6 @@ import type {
   NewDidVerificationKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
