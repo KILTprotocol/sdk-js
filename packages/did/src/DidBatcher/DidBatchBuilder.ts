@@ -172,6 +172,14 @@ export class DidBatchBuilder {
       ? this.api.tx.utility.batchAll
       : this.api.tx.utility.batch
 
+    const batchesLength = this.batches.length
+
+    if (!batchesLength) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'Builder was empty, hence it cannot be consumed.'
+      )
+    }
+
     const signedBatches: Extrinsic[] = await Promise.all(
       this.batches.map(async (batch, index) => {
         // Don't create a new batch if the batch contains only one extrinsic
