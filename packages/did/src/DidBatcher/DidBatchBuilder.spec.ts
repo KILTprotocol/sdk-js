@@ -12,7 +12,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
-import { ApiMocks } from '@kiltprotocol/testing'
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import {
@@ -20,6 +19,7 @@ import {
   NewDidKey,
   VerificationKeyType,
 } from '@kiltprotocol/types'
+import { ApiMocks } from '@kiltprotocol/testing'
 import { DemoKeystore, DemoKeystoreUtils } from '../DemoKeystore'
 import { getSetKeyExtrinsic, formatPublicKey } from '../Did.chain.js'
 import { DidBatchBuilder } from './DidBatchBuilder'
@@ -50,15 +50,15 @@ jest.mock('../Did.chain.js', () => ({
 
 describe('DidBatchBuilder', () => {
   const keystore = new DemoKeystore()
+  let fullDid: FullDidDetails
+  beforeAll(async () => {
+    fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
+      keystore,
+      'seed'
+    )
+  })
 
   describe('.addSingleExtrinsic()', () => {
-    let fullDid: FullDidDetails
-    beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        'seed'
-      )
-    })
     it('fails if the extrinsic is a DID extrinsic', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
       const ext = await getSetKeyExtrinsic(KeyRelationship.assertionMethod, {
@@ -132,6 +132,10 @@ describe('DidBatchBuilder', () => {
 
   // TODO: complete these tests once SDK has been refactored to work with generic api object
   describe('.consume()', () => {
+    it('throws if batch is empty', async () => {
+      const builder = new DidBatchBuilder(mockApi, fullDid)
+      await expect(builder.consume(keystore, 'test-account')).rejects.toThrow()
+    })
     it.todo('successfully consume builder with only 1 extrinsic')
     it.todo('successfully consume builder with 1 extrinsic per required key')
     it.todo('successfully consume builder with 2 extrinsics per required key')
