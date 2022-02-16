@@ -26,7 +26,7 @@ import {
   EncryptionAlgorithms,
   SigningAlgorithms,
 } from './DemoKeystore.js'
-import { LightDidSupportedVerificationKeyTypes } from '../DidDetails/LightDidDetails.utils.js'
+import { LightDidSupportedVerificationKeyType } from '../DidDetails/LightDidDetails.utils.js'
 
 // Given a seed, creates a light DID with an authentication and an encryption key.
 export async function createMinimalLightDidFromSeed(
@@ -47,7 +47,7 @@ export async function createMinimalLightDidFromSeed(
       publicKey: authKey.publicKey,
       type: DemoKeystore.getKeyTypeForAlg(
         authKey.alg
-      ) as LightDidSupportedVerificationKeyTypes,
+      ) as LightDidSupportedVerificationKeyType,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,

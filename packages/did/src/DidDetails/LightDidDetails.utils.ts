@@ -25,7 +25,7 @@ const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
 
 // Ecdsa not supported.
-export type LightDidSupportedVerificationKeyTypes =
+export type LightDidSupportedVerificationKeyType =
   | VerificationKeyType.Ed25519
   | VerificationKeyType.Sr25519
 
@@ -44,7 +44,7 @@ export function getEncodingForVerificationKeyType(
 }
 export function getVerificationKeyTypeForEncoding(
   encoding: string
-): LightDidSupportedVerificationKeyTypes | undefined {
+): LightDidSupportedVerificationKeyType | undefined {
   switch (encoding) {
     case '00':
       return VerificationKeyType.Sr25519
@@ -66,7 +66,7 @@ export type NewLightDidAuthenticationKey = Omit<
   NewDidVerificationKey,
   'type'
 > & {
-  type: LightDidSupportedVerificationKeyTypes
+  type: LightDidSupportedVerificationKeyType
 }
 
 /**

@@ -23,7 +23,7 @@ import {
   resolveDoc,
   DemoKeystoreUtils,
   NewLightDidAuthenticationKey,
-  LightDidSupportedVerificationKeyTypes,
+  LightDidSupportedVerificationKeyType,
   FullDidCreationBuilder,
   FullDidUpdateBuilder,
   Web3Names,
@@ -274,7 +274,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     publicKey: newKeypair.publicKey,
     type: DemoKeystore.getKeyTypeForAlg(
       newKeypair.alg
-    ) as LightDidSupportedVerificationKeyTypes,
+    ) as LightDidSupportedVerificationKeyType,
   }
 
   const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
@@ -372,7 +372,7 @@ describe('DID migration', () => {
         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
         type: DemoKeystore.getKeyTypeForAlg(
           didEd25519AuthenticationKeyDetails.alg
-        ) as LightDidSupportedVerificationKeyTypes,
+        ) as LightDidSupportedVerificationKeyType,
       },
       encryptionKey: {
         publicKey: didEncryptionKeyDetails.publicKey,
@@ -427,7 +427,7 @@ describe('DID migration', () => {
         publicKey: didSr25519AuthenticationKeyDetails.publicKey,
         type: DemoKeystore.getKeyTypeForAlg(
           didSr25519AuthenticationKeyDetails.alg
-        ) as LightDidSupportedVerificationKeyTypes,
+        ) as LightDidSupportedVerificationKeyType,
       },
     })
 
@@ -487,7 +487,7 @@ describe('DID migration', () => {
         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
         type: DemoKeystore.getKeyTypeForAlg(
           didEd25519AuthenticationKeyDetails.alg
-        ) as LightDidSupportedVerificationKeyTypes,
+        ) as LightDidSupportedVerificationKeyType,
       },
       encryptionKey: {
         publicKey: didEncryptionKeyDetails.publicKey,
@@ -571,7 +571,7 @@ describe('DID authorization', () => {
           publicKey,
           type: DemoKeystore.getKeyTypeForAlg(
             alg
-          ) as LightDidSupportedVerificationKeyTypes,
+          ) as LightDidSupportedVerificationKeyType,
         }
       })
 

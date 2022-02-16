@@ -40,7 +40,7 @@ import {
   getEncodingForVerificationKeyType,
   getVerificationKeyTypeForEncoding,
   LightDidCreationDetails,
-  LightDidSupportedVerificationKeyTypes,
+  LightDidSupportedVerificationKeyType,
   NewLightDidAuthenticationKey,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils.js'
@@ -204,7 +204,7 @@ export class LightDidDetails extends DidDetails {
    */
   public static fromIdentifier(
     identifier: IDidIdentifier,
-    keyType: LightDidSupportedVerificationKeyTypes = VerificationKeyType.Sr25519
+    keyType: LightDidSupportedVerificationKeyType = VerificationKeyType.Sr25519
   ): LightDidDetails {
     const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier, false, 38),

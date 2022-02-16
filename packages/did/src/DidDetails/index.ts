@@ -8,7 +8,7 @@
 export * from './DidDetails.js'
 export * from './LightDidDetails.js'
 export {
-  LightDidSupportedVerificationKeyTypes,
+  LightDidSupportedVerificationKeyType,
   NewLightDidAuthenticationKey,
   DidMigrationHandler,
 } from './LightDidDetails.utils.js'

@@ -34,7 +34,7 @@ import {
   SigningAlgorithms,
   FullDidDetails,
   DemoKeystoreUtils,
-  LightDidSupportedVerificationKeyTypes,
+  LightDidSupportedVerificationKeyType,
 } from '@kiltprotocol/did'
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -127,7 +127,7 @@ beforeAll(async () => {
     authenticationKey: {
       type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyTypes,
+      ) as LightDidSupportedVerificationKeyType,
       ...aliceAuthKey,
     },
     encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
@@ -136,7 +136,7 @@ beforeAll(async () => {
     authenticationKey: {
       type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyTypes,
+      ) as LightDidSupportedVerificationKeyType,
       ...aliceAuthKey,
     },
     encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
@@ -158,7 +158,7 @@ beforeAll(async () => {
     authenticationKey: {
       type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyTypes,
+      ) as LightDidSupportedVerificationKeyType,
       ...bobAuthKey,
     },
     encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
@@ -167,7 +167,7 @@ beforeAll(async () => {
     authenticationKey: {
       type: DemoKeystore.getKeyTypeForAlg(
         aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyTypes,
+      ) as LightDidSupportedVerificationKeyType,
       ...bobAuthKey,
     },
     encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
