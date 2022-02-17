@@ -15,6 +15,7 @@ import type {
   KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
+  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
@@ -27,7 +28,7 @@ import { getSignatureAlgForKeyType } from '../Did.utils.js'
 import { checkExtrinsicInput } from './DidBatchBuilder.utils.js'
 
 type BatchInfo = {
-  keyRelationship: KeyRelationship
+  keyRelationship: VerificationKeyRelationship
   extrinsics: Extrinsic[]
 }
 
@@ -72,7 +73,7 @@ export class DidBatchBuilder {
 
   private pushNewExtrinsic(
     ext: Extrinsic,
-    keyRelationship: KeyRelationship
+    keyRelationship: VerificationKeyRelationship
   ): void {
     const lastBatch: BatchInfo | undefined =
       this.batches[this.batches.length - 1]
@@ -189,7 +190,7 @@ export class DidBatchBuilder {
             : (batch.extrinsics.pop() as Extrinsic)
         const signingKey = await keySelection(
           batch.extrinsics,
-          this.did.getKeys(batch.keyRelationship) as DidVerificationKey[]
+          this.did.getVerificationKeys(batch.keyRelationship)
         )
         // For index = 0, nonce = next valid nonce (currently stored on chain + 1).
         const batchNonce = increaseNonce(nonce, index)

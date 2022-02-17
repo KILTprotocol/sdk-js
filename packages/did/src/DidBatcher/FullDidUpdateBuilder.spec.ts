@@ -63,9 +63,9 @@ describe('FullDidUpdateBuilder', () => {
         Map<DidEncryptionKey['id'], Omit<DidEncryptionKey, 'id'>>
       >(
         new Map(
-          (
-            fullDid.getKeys(KeyRelationship.keyAgreement) as DidEncryptionKey[]
-          ).map(({ id, ...details }) => [id, { ...details }])
+          fullDid
+            .getEncryptionKeys(KeyRelationship.keyAgreement)
+            .map(({ id, ...details }) => [id, { ...details }])
         )
       )
       // @ts-ignore

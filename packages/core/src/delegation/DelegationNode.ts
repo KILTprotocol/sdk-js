@@ -298,7 +298,7 @@ export class DelegationNode implements IDelegationNode {
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
-      delegeeDid.getKeys(KeyRelationship.authentication) as DidVerificationKey[]
+      delegeeDid.getVerificationKeys(KeyRelationship.authentication)
     )
     if (!authenticationKey) {
       throw SDKErrors.ERROR_DID_ERROR(

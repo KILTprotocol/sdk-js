@@ -100,7 +100,7 @@ describe('When creating an instance from the details', () => {
       type: VerificationKeyType.Sr25519,
     })
     expect(
-      lightDidDetails?.getKeys(KeyRelationship.authentication)
+      lightDidDetails?.getVerificationKeys(KeyRelationship.authentication)
     ).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
@@ -118,7 +118,7 @@ describe('When creating an instance from the details', () => {
       type: EncryptionKeyType.X25519,
     })
     expect(
-      lightDidDetails?.getKeys(KeyRelationship.keyAgreement)
+      lightDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
     ).toStrictEqual<DidKey[]>([
       {
         id: 'encryption',
@@ -211,7 +211,7 @@ describe('When creating an instance from the details', () => {
       type: VerificationKeyType.Ed25519,
     })
     expect(
-      lightDidDetails?.getKeys(KeyRelationship.authentication)
+      lightDidDetails?.getVerificationKeys(KeyRelationship.authentication)
     ).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
@@ -229,7 +229,7 @@ describe('When creating an instance from the details', () => {
       type: EncryptionKeyType.X25519,
     })
     expect(
-      lightDidDetails?.getKeys(KeyRelationship.keyAgreement)
+      lightDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
     ).toStrictEqual<DidKey[]>([
       {
         id: 'encryption',

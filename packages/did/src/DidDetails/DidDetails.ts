@@ -19,11 +19,13 @@ import {
   KeystoreSigner,
   VerificationKeyType,
   KeyRelationship,
+  VerificationKeyRelationship,
+  EncryptionKeyRelationship,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
-import { getSignatureAlgForKeyType } from '../Did.utils.js'
+import { getSignatureAlgForKeyType, isVerificationKey } from '../Did.utils.js'
 
 import { checkDidCreationDetails } from './DidDetails.utils.js'
 
@@ -72,9 +74,9 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first authentication key, in the order they are stored internally, of the given DID.
    */
   public get authenticationKey(): DidVerificationKey {
-    const firstAuthenticationKey = this.getKeys(
+    const firstAuthenticationKey = this.getVerificationKeys(
       KeyRelationship.authentication
-    )[0] as DidVerificationKey
+    )[0]
     if (!firstAuthenticationKey) {
       throw SDKErrors.ERROR_DID_ERROR(
         'Unexpected error. Any DID should always have at least one authentication key.'
@@ -89,7 +91,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first encryption key, in the order they are stored internally, of the given DID.
    */
   public get encryptionKey(): DidEncryptionKey | undefined {
-    return this.getKeys(KeyRelationship.keyAgreement)[0] as DidEncryptionKey
+    return this.getEncryptionKeys(KeyRelationship.keyAgreement)[0]
   }
 
   /**
@@ -98,9 +100,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first attestation key, in the order they are stored internally, of the given DID.
    */
   public get attestationKey(): DidVerificationKey | undefined {
-    return this.getKeys(
-      KeyRelationship.assertionMethod
-    )[0] as DidVerificationKey
+    return this.getVerificationKeys(KeyRelationship.assertionMethod)[0]
   }
 
   /**
@@ -109,9 +109,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first delegation key, in the order they are stored internally, of the given DID.
    */
   public get delegationKey(): DidVerificationKey | undefined {
-    return this.getKeys(
-      KeyRelationship.capabilityDelegation
-    )[0] as DidVerificationKey
+    return this.getVerificationKeys(KeyRelationship.capabilityDelegation)[0]
   }
 
   public getKey(id: DidKey['id']): DidKey | undefined {
@@ -125,10 +123,22 @@ export abstract class DidDetails implements IDidDetails {
     }
   }
 
-  public getKeys(relationship?: KeyRelationship | 'none'): DidKey[] {
-    const keyIds = relationship
-      ? this.keyRelationships[relationship] || new Set()
-      : new Set(this.publicKeys.keys())
+  public getVerificationKeys(
+    relationship: VerificationKeyRelationship
+  ): DidVerificationKey[] {
+    const keyIds = this.keyRelationships[relationship] || []
+    return [...keyIds].map((keyId) => this.getKey(keyId) as DidVerificationKey)
+  }
+
+  public getEncryptionKeys(
+    relationship: EncryptionKeyRelationship
+  ): DidEncryptionKey[] {
+    const keyIds = this.keyRelationships[relationship] || []
+    return [...keyIds].map((keyId) => this.getKey(keyId) as DidEncryptionKey)
+  }
+
+  public getKeys(): DidKey[] {
+    const keyIds = this.publicKeys.keys()
     return [...keyIds].map((keyId) => this.getKey(keyId) as DidKey)
   }
 
@@ -182,16 +192,13 @@ export abstract class DidDetails implements IDidDetails {
     signer: KeystoreSigner,
     keyId: DidVerificationKey['id']
   ): Promise<DidSignature> {
-    const key = this.getKey(keyId) as DidVerificationKey
-    if (
-      !key ||
-      !Object.keys(VerificationKeyType).some((kt) => kt === key.type)
-    ) {
+    const key = this.getKey(keyId)
+    if (!key || !isVerificationKey(key)) {
       throw SDKErrors.ERROR_DID_ERROR(
         `Failed to find verification key with ID ${keyId} on DID (${this.did})`
       )
     }
-    const alg = getSignatureAlgForKeyType(key.type)
+    const alg = getSignatureAlgForKeyType(key.type as VerificationKeyType)
     if (!alg) {
       throw SDKErrors.ERROR_DID_ERROR(
         `No algorithm found for key type ${key.type}`

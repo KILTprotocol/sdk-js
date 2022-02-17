@@ -97,11 +97,11 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       attestationKey: this.oldAssertionKey,
       delegationKey: this.oldDelegationKey,
     } = details)
-    ;(
-      details.getKeys(KeyRelationship.keyAgreement) as DidEncryptionKey[]
-    ).forEach(({ id, ...keyDetails }) =>
-      this.oldKeyAgreementKeys.set(id, keyDetails)
-    )
+    details
+      .getEncryptionKeys(KeyRelationship.keyAgreement)
+      .forEach(({ id, ...keyDetails }) =>
+        this.oldKeyAgreementKeys.set(id, keyDetails)
+      )
     details
       .getEndpoints()
       .forEach(({ id, ...serviceDetails }) =>

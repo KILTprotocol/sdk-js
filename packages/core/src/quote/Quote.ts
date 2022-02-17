@@ -118,9 +118,7 @@ export async function createAttesterSignature(
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   const authenticationKey = await keySelection(
-    attesterIdentity.getKeys(
-      KeyRelationship.authentication
-    ) as DidVerificationKey[]
+    attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!authenticationKey) {
     throw SDKErrors.ERROR_DID_ERROR(
@@ -209,9 +207,7 @@ export async function createQuoteAgreement(
   })
 
   const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getKeys(
-      KeyRelationship.authentication
-    ) as DidVerificationKey[]
+    claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!claimerAuthenticationKey) {
     throw SDKErrors.ERROR_DID_ERROR(

@@ -421,14 +421,10 @@ export async function generateCreateTxFromDidDetails(
     )
   }
 
-  const keyAgreementKeys = did.getKeys(
-    KeyRelationship.keyAgreement
-  ) as DidEncryptionKey[]
+  const keyAgreementKeys = did.getEncryptionKeys(KeyRelationship.keyAgreement)
 
   // For now, it only takes the first attestation key, if present.
-  const assertionKeys = did.getKeys(
-    KeyRelationship.assertionMethod
-  ) as DidVerificationKey[]
+  const assertionKeys = did.getVerificationKeys(KeyRelationship.assertionMethod)
   if (assertionKeys.length > 1) {
     log.warn(
       `More than one attestation key (${assertionKeys.length}) specified. Only the first will be stored on the chain.`
@@ -437,9 +433,9 @@ export async function generateCreateTxFromDidDetails(
   const assertionKey = assertionKeys.pop()
 
   // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getKeys(
+  const delegationKeys = did.getVerificationKeys(
     KeyRelationship.capabilityDelegation
-  ) as DidVerificationKey[]
+  )
   if (delegationKeys.length > 1) {
     log.warn(
       `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`

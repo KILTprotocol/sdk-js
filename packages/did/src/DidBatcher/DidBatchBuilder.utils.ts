@@ -7,7 +7,7 @@
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
 
-import type { KeyRelationship } from '@kiltprotocol/types'
+import type { VerificationKeyRelationship } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
@@ -17,7 +17,7 @@ import { getKeyRelationshipForExtrinsic } from '../DidDetails/FullDidDetails.uti
 export function checkExtrinsicInput(
   ext: Extrinsic,
   did: FullDidDetails
-): KeyRelationship {
+): VerificationKeyRelationship {
   const { section, method } = ext.method
   // Cannot batch DID extrinsics
   if (section === 'did') {
@@ -33,7 +33,7 @@ export function checkExtrinsicInput(
     )
   }
 
-  if (did.getKeys(extrinsicKeyRelationship).length === 0) {
+  if (did.getVerificationKeys(extrinsicKeyRelationship).length === 0) {
     throw SDKErrors.ERROR_DID_ERROR(
       `DidBatchBuilder.addExtrinsic() cannot be used with the provided extrinsic "${section}:${method}" because the DID ${did.did} does not have a valid key to sign the operation.`
     )

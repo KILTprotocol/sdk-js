@@ -139,13 +139,24 @@ export interface IDidDetails {
    */
   getKey(id: DidKey['id']): DidKey | undefined
   /**
-   * Retrieves public key details from the [[IDid]], optionally filtering by [[KeyRelationship]].
+   * Retrieves public key details from the [[IDid]].
    *
    * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
    * relationship, undefined to return all keys.
    * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
    */
-  getKeys(relationship?: KeyRelationship | 'none'): DidKey[]
+  getVerificationKeys(
+    relationship: VerificationKeyRelationship
+  ): DidVerificationKey[]
+  /**
+   * Retrieves public key details from the [[IDid]].
+   *
+   * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
+   * relationship, undefined to return all keys.
+   * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
+   */
+  getEncryptionKeys(relationship: EncryptionKeyRelationship): DidEncryptionKey[]
+  getKeys(): DidKey[]
   /**
    * Retrieves the service endpoint associated with the DID, if any.
    *

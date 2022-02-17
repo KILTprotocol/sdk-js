@@ -33,7 +33,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
 
   // Populate the `verificationMethod` array and then sets the `authentication` array with the key IDs (or undefined if no auth key is present - which should never happen)
   const authenticationKeysIds = details
-    .getKeys(KeyRelationship.authentication)
+    .getVerificationKeys(KeyRelationship.authentication)
     .map((authKey) => {
       result.verificationMethod.push({
         id: `${details.did}#${authKey.id}`,
@@ -48,7 +48,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   }
 
   const keyAgreementKeysIds = details
-    .getKeys(KeyRelationship.keyAgreement)
+    .getEncryptionKeys(KeyRelationship.keyAgreement)
     .map((keyAgrKey) => {
       result.verificationMethod.push({
         id: `${details.did}#${keyAgrKey.id}`,
@@ -63,7 +63,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   }
 
   const assertionKeysIds = details
-    .getKeys(KeyRelationship.assertionMethod)
+    .getVerificationKeys(KeyRelationship.assertionMethod)
     .map((assKey) => {
       result.verificationMethod.push({
         id: `${details.did}#${assKey.id}`,
@@ -78,7 +78,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   }
 
   const delegationKeyIds = details
-    .getKeys(KeyRelationship.capabilityDelegation)
+    .getVerificationKeys(KeyRelationship.capabilityDelegation)
     .map((delKey) => {
       result.verificationMethod.push({
         id: `${details.did}#${delKey.id}`,

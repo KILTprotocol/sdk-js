@@ -711,7 +711,7 @@ describe('DID management batching', () => {
 
       expect(fullDid).not.toBeNull()
 
-      const authenticationKeys = fullDid!.getKeys(
+      const authenticationKeys = fullDid!.getVerificationKeys(
         KeyRelationship.authentication
       )
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
@@ -721,10 +721,14 @@ describe('DID management batching', () => {
         },
       ])
 
-      const encryptionKeys = fullDid!.getKeys(KeyRelationship.keyAgreement)
+      const encryptionKeys = fullDid!.getEncryptionKeys(
+        KeyRelationship.keyAgreement
+      )
       expect(encryptionKeys).toHaveLength(3)
 
-      const assertionKeys = fullDid!.getKeys(KeyRelationship.assertionMethod)
+      const assertionKeys = fullDid!.getVerificationKeys(
+        KeyRelationship.assertionMethod
+      )
       expect(assertionKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: Uint8Array.from(Array(32).fill(1)),
@@ -732,7 +736,7 @@ describe('DID management batching', () => {
         },
       ])
 
-      const delegationKeys = fullDid!.getKeys(
+      const delegationKeys = fullDid!.getVerificationKeys(
         KeyRelationship.capabilityDelegation
       )
       expect(delegationKeys).toMatchObject<NewDidVerificationKey[]>([

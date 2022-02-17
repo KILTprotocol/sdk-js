@@ -141,7 +141,7 @@ export class FullDidDetails extends DidDetails {
     const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
     return keyRelationship === 'paymentAccount'
       ? []
-      : (this.getKeys(keyRelationship) as DidVerificationKey[])
+      : this.getVerificationKeys(keyRelationship)
   }
 
   /**

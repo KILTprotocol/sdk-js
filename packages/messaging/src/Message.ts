@@ -140,12 +140,7 @@ export class Message implements IMessage {
       )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
-    if (
-      !receiverKeyDetails ||
-      !Object.keys(EncryptionKeyType).some(
-        (kt) => kt === receiverKeyDetails.type
-      )
-    ) {
+    if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
       throw SDKErrors.ERROR_DID_ERROR(
         `Could not resolve receiver encryption key ${receiverKeyId}`
       )
@@ -278,10 +273,7 @@ export class Message implements IMessage {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
     }
     const senderKey = senderDetails.getKey(senderKeyId)
-    if (
-      !senderKey ||
-      !Object.keys(EncryptionKeyType).some((kt) => kt === senderKey.type)
-    ) {
+    if (!senderKey || !DidUtils.isEncryptionKey(senderKey)) {
       throw SDKErrors.ERROR_DID_ERROR(
         `Cannot find key with ID ${senderKeyId} for the sender DID.`
       )

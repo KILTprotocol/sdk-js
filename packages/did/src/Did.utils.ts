@@ -258,7 +258,7 @@ function verifyDidSignatureFromDetails({
   if (
     expectedVerificationMethod &&
     !details
-      .getKeys(expectedVerificationMethod)
+      .getVerificationKeys(expectedVerificationMethod)
       .map((verKey) => verKey.id)
       .includes(keyId)
   ) {

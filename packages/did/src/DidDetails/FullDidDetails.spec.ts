@@ -138,7 +138,7 @@ describe('When creating an instance from the chain', () => {
       includedAt: new BN(0),
     })
     expect(
-      fullDidDetails?.getKeys(KeyRelationship.authentication)
+      fullDidDetails?.getVerificationKeys(KeyRelationship.authentication)
     ).toStrictEqual<DidKey[]>([
       {
         id: 'auth#1',
@@ -161,9 +161,9 @@ describe('When creating an instance from the chain', () => {
       type: EncryptionKeyType.X25519,
       includedAt: new BN(0),
     })
-    expect(fullDidDetails?.getKeys(KeyRelationship.keyAgreement)).toStrictEqual<
-      DidKey[]
-    >([
+    expect(
+      fullDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
+    ).toStrictEqual<DidKey[]>([
       {
         id: 'enc#1',
         publicKey: new Uint8Array(32).fill(1),
@@ -186,7 +186,7 @@ describe('When creating an instance from the chain', () => {
       includedAt: new BN(0),
     })
     expect(
-      fullDidDetails?.getKeys(KeyRelationship.assertionMethod)
+      fullDidDetails?.getVerificationKeys(KeyRelationship.assertionMethod)
     ).toStrictEqual<DidKey[]>([
       {
         id: 'att#1',
@@ -204,7 +204,7 @@ describe('When creating an instance from the chain', () => {
       includedAt: new BN(0),
     })
     expect(
-      fullDidDetails?.getKeys(KeyRelationship.capabilityDelegation)
+      fullDidDetails?.getVerificationKeys(KeyRelationship.capabilityDelegation)
     ).toStrictEqual<DidKey[]>([
       {
         id: 'del#1',

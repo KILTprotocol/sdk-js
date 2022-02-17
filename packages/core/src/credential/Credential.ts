@@ -254,9 +254,7 @@ export class Credential implements ICredential {
     // remove these attributes
     credential.request.removeClaimProperties(excludedClaimProperties)
 
-    const keys = claimerDid.getKeys(
-      KeyRelationship.authentication
-    ) as DidVerificationKey[]
+    const keys = claimerDid.getVerificationKeys(KeyRelationship.authentication)
     const selectedKeyId = (await keySelection(keys))?.id
 
     if (!selectedKeyId) {
