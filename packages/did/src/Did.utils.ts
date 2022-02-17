@@ -23,6 +23,10 @@ import {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { DidResolver } from './DidResolver/index.js'
+import {
+  EncryptionAlgorithms,
+  SigningAlgorithms,
+} from './DemoKeystore/DemoKeystore.js'
 
 /// The latest version for KILT light DIDs.
 export const LIGHT_DID_LATEST_VERSION = 1
@@ -146,24 +150,44 @@ export function isSameSubject(
   return identifierA === identifierB
 }
 
-const signatureAlgForKeyType: Record<VerificationKeyType, string> = {
-  [VerificationKeyType.Ed25519]: 'ed25519',
-  [VerificationKeyType.Sr25519]: 'sr25519',
-  [VerificationKeyType.Ecdsa]: 'ecdsa-secp256k1',
+const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
+  [VerificationKeyType.Ed25519]: SigningAlgorithms.Ed25519,
+  [VerificationKeyType.Sr25519]: SigningAlgorithms.Sr25519,
+  [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
 }
-export function getSignatureAlgForKeyType(
+export function getSigningAlgorithmForVerificationKeyType(
   keyType: VerificationKeyType
-): string | undefined {
+): SigningAlgorithms {
   return signatureAlgForKeyType[keyType]
 }
-
-const encryptionAlgForKeyType: Record<EncryptionKeyType, string> = {
-  [EncryptionKeyType.X25519]: 'x25519-xsalsa20-poly1305',
+const keyTypeForSignatureAlg: Record<SigningAlgorithms, VerificationKeyType> = {
+  [SigningAlgorithms.Ed25519]: VerificationKeyType.Ed25519,
+  [SigningAlgorithms.Sr25519]: VerificationKeyType.Sr25519,
+  [SigningAlgorithms.EcdsaSecp256k1]: VerificationKeyType.Ecdsa,
 }
-export function getEncryptionAlgForKeyType(
+export function getVerificationKeyTypeForSigningAlgorithm(
+  signatureAlg: SigningAlgorithms
+): VerificationKeyType {
+  return keyTypeForSignatureAlg[signatureAlg]
+}
+
+const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
+  {
+    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+  }
+export function getEncryptionAlgorithmForEncryptionKeyType(
   keyType: EncryptionKeyType
-): string | undefined {
+): EncryptionAlgorithms {
   return encryptionAlgForKeyType[keyType]
+}
+const keyTypeForEncryptionAlg: Record<EncryptionKeyType, EncryptionAlgorithms> =
+  {
+    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+  }
+export function getEncryptionKeyTypeForEncryptionAlgorithm(
+  encryptionAlg: EncryptionAlgorithms
+): EncryptionKeyType {
+  return keyTypeForEncryptionAlg[encryptionAlg]
 }
 
 export function isVerificationKey(key: NewDidKey | DidKey): boolean {

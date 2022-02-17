@@ -28,6 +28,7 @@ import {
   FullDidUpdateBuilder,
   Web3Names,
   DidBatchBuilder,
+  DidUtils,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
@@ -272,7 +273,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   })
   const newKeyDetails: NewDidKey = {
     publicKey: newKeypair.publicKey,
-    type: DemoKeystore.getKeyTypeForAlg(
+    type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
       newKeypair.alg
     ) as LightDidSupportedVerificationKeyType,
   }
@@ -370,15 +371,15 @@ describe('DID migration', () => {
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-        type: DemoKeystore.getKeyTypeForAlg(
+        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
           didEd25519AuthenticationKeyDetails.alg
         ) as LightDidSupportedVerificationKeyType,
       },
       encryptionKey: {
         publicKey: didEncryptionKeyDetails.publicKey,
-        type: DemoKeystore.getKeyTypeForAlg(
+        type: DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
           didEncryptionKeyDetails.alg
-        ) as EncryptionKeyType,
+        ),
       },
     })
 
@@ -425,7 +426,7 @@ describe('DID migration', () => {
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: didSr25519AuthenticationKeyDetails.publicKey,
-        type: DemoKeystore.getKeyTypeForAlg(
+        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
           didSr25519AuthenticationKeyDetails.alg
         ) as LightDidSupportedVerificationKeyType,
       },
@@ -485,15 +486,15 @@ describe('DID migration', () => {
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-        type: DemoKeystore.getKeyTypeForAlg(
+        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
           didEd25519AuthenticationKeyDetails.alg
         ) as LightDidSupportedVerificationKeyType,
       },
       encryptionKey: {
         publicKey: didEncryptionKeyDetails.publicKey,
-        type: DemoKeystore.getKeyTypeForAlg(
+        type: DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
           didEncryptionKeyDetails.alg
-        ) as EncryptionKeyType,
+        ),
       },
       serviceEndpoints,
     })
@@ -569,7 +570,7 @@ describe('DID authorization', () => {
       .then(({ publicKey, alg }) => {
         return {
           publicKey,
-          type: DemoKeystore.getKeyTypeForAlg(
+          type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
             alg
           ) as LightDidSupportedVerificationKeyType,
         }

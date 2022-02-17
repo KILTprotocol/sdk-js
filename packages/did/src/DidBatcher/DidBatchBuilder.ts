@@ -22,7 +22,7 @@ import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import { increaseNonce } from '../DidDetails/FullDidDetails.utils.js'
 
 import { generateDidAuthenticatedTx } from '../Did.chain.js'
-import { getSignatureAlgForKeyType } from '../Did.utils.js'
+import { getSigningAlgorithmForVerificationKeyType } from '../Did.utils.js'
 
 import { checkExtrinsicInput } from './DidBatchBuilder.utils.js'
 
@@ -196,7 +196,7 @@ export class DidBatchBuilder {
         return generateDidAuthenticatedTx({
           didIdentifier: this.did.identifier,
           signingPublicKey: signingKey.publicKey,
-          alg: getSignatureAlgForKeyType(signingKey.type),
+          alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
           signer,
           call: processedBatch,
           txCounter: batchNonce,

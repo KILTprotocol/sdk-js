@@ -33,7 +33,7 @@ import {
   EncryptionKeyType,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DidDetails, DidResolver, DidUtils } from '@kiltprotocol/did'
+import { DidDetails, DidResolver, DidUtils, EncryptionAlgorithms } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -145,10 +145,11 @@ export class Message implements IMessage {
         `Could not resolve receiver encryption key ${receiverKeyId}`
       )
     }
-    const receiverKeyAlgType = DidUtils.getEncryptionAlgForKeyType(
-      receiverKeyDetails.type as EncryptionKeyType
-    )
-    if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
+    const receiverKeyAlgType =
+      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
+        receiverKeyDetails.type as EncryptionKeyType
+      )
+    if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
       throw SDKErrors.ERROR_KEYSTORE_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
@@ -278,10 +279,11 @@ export class Message implements IMessage {
         `Cannot find key with ID ${senderKeyId} for the sender DID.`
       )
     }
-    const senderKeyAlgType = DidUtils.getEncryptionAlgForKeyType(
-      senderKey.type as EncryptionKeyType
-    )
-    if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
+    const senderKeyAlgType =
+      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
+        senderKey.type as EncryptionKeyType
+      )
+    if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
       throw SDKErrors.ERROR_KEYSTORE_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )

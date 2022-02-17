@@ -25,7 +25,10 @@ import {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
-import { getSignatureAlgForKeyType, isVerificationKey } from '../Did.utils.js'
+import {
+  getSigningAlgorithmForVerificationKeyType,
+  isVerificationKey,
+} from '../Did.utils.js'
 
 import { checkDidCreationDetails } from './DidDetails.utils.js'
 
@@ -198,7 +201,9 @@ export abstract class DidDetails implements IDidDetails {
         `Failed to find verification key with ID ${keyId} on DID (${this.did})`
       )
     }
-    const alg = getSignatureAlgForKeyType(key.type as VerificationKeyType)
+    const alg = getSigningAlgorithmForVerificationKeyType(
+      key.type as VerificationKeyType
+    )
     if (!alg) {
       throw SDKErrors.ERROR_DID_ERROR(
         `No algorithm found for key type ${key.type}`

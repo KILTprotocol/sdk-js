@@ -30,7 +30,7 @@ import {
   generateDidAuthenticatedTx,
   queryNonce,
 } from '../Did.chain.js'
-import { getSignatureAlgForKeyType } from '../Did.utils.js'
+import { getSigningAlgorithmForVerificationKeyType } from '../Did.utils.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'
@@ -545,7 +545,9 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     return generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: this.oldAuthenticationKey.publicKey,
-      alg: getSignatureAlgForKeyType(this.oldAuthenticationKey.type),
+      alg: getSigningAlgorithmForVerificationKeyType(
+        this.oldAuthenticationKey.type
+      ),
       signer,
       call: batch,
       txCounter: increaseNonce(lastDidNonce),

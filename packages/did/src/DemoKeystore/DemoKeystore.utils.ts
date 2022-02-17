@@ -12,9 +12,13 @@ import {
   randomAsHex,
 } from '@polkadot/util-crypto'
 
-import { DidKey, EncryptionKeyType, KeyRelationship } from '@kiltprotocol/types'
+import { DidKey, KeyRelationship } from '@kiltprotocol/types'
 
-import { getKiltDidFromIdentifier } from '../Did.utils.js'
+import {
+  getEncryptionKeyTypeForEncryptionAlgorithm,
+  getKiltDidFromIdentifier,
+  getVerificationKeyTypeForSigningAlgorithm,
+} from '../Did.utils.js'
 import { LightDidDetails, FullDidDetails } from '../DidDetails/index.js'
 import {
   DidConstructorDetails,
@@ -45,13 +49,13 @@ export async function createMinimalLightDidFromSeed(
   const details = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: DemoKeystore.getKeyTypeForAlg(
+      type: getVerificationKeyTypeForSigningAlgorithm(
         authKey.alg
       ) as LightDidSupportedVerificationKeyType,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: DemoKeystore.getKeyTypeForAlg(encKey.alg) as EncryptionKeyType,
+      type: getEncryptionKeyTypeForEncryptionAlgorithm(encKey.alg),
     },
   })
   return details
@@ -106,7 +110,7 @@ export async function createLocalDemoFullDidFromSeed(
     return {
       id: `${blake2AsHex(publicKey, 256)}`,
       publicKey,
-      type: DemoKeystore.getKeyTypeForAlg(alg),
+      type: getVerificationKeyTypeForSigningAlgorithm(alg),
     }
   }
 

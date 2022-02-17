@@ -50,7 +50,7 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { DidDetails } from './DidDetails/index.js'
-import { getSignatureAlgForKeyType } from './Did.utils.js'
+import { getSigningAlgorithmForVerificationKeyType } from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
@@ -402,7 +402,7 @@ export async function generateCreateTxFromCreationDetails(
     data: encodedDidCreationDetails.toU8a(),
     meta: {},
     publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
-    alg: getSignatureAlgForKeyType(authenticationKey.type) as string,
+    alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
   return api.tx.did.create(encodedDidCreationDetails, {
     [signature.alg]: signature.data,
@@ -627,12 +627,9 @@ export function encodeDidSignature(
       `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
   }
-  const alg = getSignatureAlgForKeyType(key.type as VerificationKeyType)
-  if (!alg) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The provided type ${key.type} does not match any known algorithm.`
-    )
-  }
+  const alg = getSigningAlgorithmForVerificationKeyType(
+    key.type as VerificationKeyType
+  )
   return {
     [alg]: hexToU8a(signature.signature),
   }

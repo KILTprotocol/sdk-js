@@ -18,15 +18,12 @@ import {
 import { u8aEq } from '@polkadot/util'
 
 import {
-  DidKey,
-  EncryptionKeyType,
   KeyringPair,
   Keystore,
   KeystoreSigningData,
   NaclBoxCapable,
   RequestData,
   ResponseData,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { Crypto, Keyring, SDKErrors } from '@kiltprotocol/utils'
 
@@ -67,12 +64,6 @@ const keypairTypeForAlg: Record<string, KeypairType> = {
   sr25519: 'sr25519',
   'ecdsa-secp256k1': 'ecdsa',
 }
-const didKeyForKeypairForAlg: Record<string, DidKey['type']> = {
-  ed25519: VerificationKeyType.Ed25519,
-  sr25519: VerificationKeyType.Sr25519,
-  'ecdsa-secp256k1': VerificationKeyType.Ecdsa,
-  'x25519-xsalsa20-poly1305': EncryptionKeyType.X25519,
-}
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
@@ -81,6 +72,10 @@ export class DemoKeystore
 {
   private signingKeyring: Keyring = new Keyring()
   private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
+
+  private static getKeypairTypeForAlg(alg: string): KeypairType {
+    return keypairTypeForAlg[alg]
+  }
 
   private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
     if (!signingSupported(alg))
@@ -277,13 +272,5 @@ export class DemoKeystore
       ...[...this.encryptionKeypairs.values()].map((i) => i.publicKey),
     ]
     return keys.map((key) => knownKeys.some((i) => u8aEq(key.publicKey, i)))
-  }
-
-  public static getKeypairTypeForAlg(alg: string): KeypairType {
-    return keypairTypeForAlg[alg]
-  }
-
-  public static getKeyTypeForAlg(alg: string): DidKey['type'] {
-    return didKeyForKeypairForAlg[alg]
   }
 }

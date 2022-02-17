@@ -35,7 +35,7 @@ import {
   defaultKeySelectionHandler,
   FULL_DID_LATEST_VERSION,
   getKiltDidFromIdentifier,
-  getSignatureAlgForKeyType,
+  getSigningAlgorithmForVerificationKeyType,
 } from '../Did.utils.js'
 
 import { DidDetails } from './DidDetails.js'
@@ -187,7 +187,7 @@ export class FullDidDetails extends DidDetails {
     return generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: signingKey.publicKey,
-      alg: getSignatureAlgForKeyType(signingKey.type),
+      alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
       signer,
       call: extrinsic,
       txCounter: txCounter || (await this.getNextNonce()),
