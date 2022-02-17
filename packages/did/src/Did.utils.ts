@@ -88,12 +88,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
       ? parseInt(matches.version, 10)
       : FULL_DID_LATEST_VERSION
     return {
-      did: getKiltDidFromIdentifier(
-        matches.identifier,
-        'full',
-        version,
-        matches.encoded_details
-      ),
+      did: getKiltDidFromIdentifier(matches.identifier, 'full', version),
       version,
       type: 'full',
       identifier: matches.identifier,
@@ -106,7 +101,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
   if (matches && matches.identifier && matches.auth_key_type) {
     const version = matches.version ? parseInt(matches.version, 10) : 1
     const lightDidIdentifier = matches.auth_key_type.concat(matches.identifier)
-    const encodedDetails = matches.encoded_details
+    const encodedDetails = matches.encoded_details?.substring(1)
     return {
       did: getKiltDidFromIdentifier(
         lightDidIdentifier,
@@ -118,7 +113,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
       type: 'light',
       identifier: matches.auth_key_type.concat(matches.identifier),
       fragment: matches.fragment?.substring(1),
-      encodedDetails: matches.encoded_details?.substring(1),
+      encodedDetails,
     }
   }
 
