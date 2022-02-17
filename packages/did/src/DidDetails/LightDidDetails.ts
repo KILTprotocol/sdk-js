@@ -25,6 +25,8 @@ import type {
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
+  LightDidSupportedVerificationKeyType,
+  NewLightDidAuthenticationKey,
 } from '../types.js'
 import {
   getKiltDidFromIdentifier,
@@ -40,8 +42,6 @@ import {
   getEncodingForVerificationKeyType,
   getVerificationKeyTypeForEncoding,
   LightDidCreationDetails,
-  LightDidSupportedVerificationKeyType,
-  NewLightDidAuthenticationKey,
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils.js'
 import { FullDidDetails } from './FullDidDetails.js'

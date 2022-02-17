@@ -12,7 +12,6 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type {
   DidServiceEndpoint,
   NewDidEncryptionKey,
-  NewDidVerificationKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
@@ -20,14 +19,13 @@ import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { parseDidUri } from '../Did.utils.js'
+import {
+  LightDidSupportedVerificationKeyType,
+  NewLightDidAuthenticationKey,
+} from '../types.js'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
-
-// Ecdsa not supported.
-export type LightDidSupportedVerificationKeyType =
-  | VerificationKeyType.Ed25519
-  | VerificationKeyType.Sr25519
 
 // Ecdsa not supported.
 export function getEncodingForVerificationKeyType(
@@ -56,18 +54,6 @@ export function getVerificationKeyTypeForEncoding(
 }
 
 const supportedEncryptionKeyTypes = new Set(Object.values(EncryptionKeyType))
-
-/**
- * A new public key specified when creating a new light DID.
- *
- * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
- */
-export type NewLightDidAuthenticationKey = Omit<
-  NewDidVerificationKey,
-  'type'
-> & {
-  type: LightDidSupportedVerificationKeyType
-}
 
 /**
  * The options that can be used to create a light DID.

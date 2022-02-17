@@ -24,7 +24,6 @@
  */
 
 import {
-  DidVerificationKey,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,

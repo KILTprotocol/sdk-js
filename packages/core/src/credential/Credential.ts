@@ -28,7 +28,6 @@ import type {
   IRequestForAttestation,
   IDidResolver,
   KeystoreSigner,
-  DidVerificationKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'

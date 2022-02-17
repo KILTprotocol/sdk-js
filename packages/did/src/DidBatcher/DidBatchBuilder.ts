@@ -12,7 +12,6 @@ import { BN } from '@polkadot/util'
 import type {
   DidVerificationKey,
   IIdentity,
-  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,

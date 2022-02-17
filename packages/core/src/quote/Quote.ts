@@ -23,7 +23,6 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   KeystoreSigner,
-  DidVerificationKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'

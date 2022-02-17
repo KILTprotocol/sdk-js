@@ -15,6 +15,7 @@ import type {
   KeyRelationship,
   NewDidEncryptionKey,
   NewDidVerificationKey,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 /**
@@ -60,4 +61,21 @@ export type FullDidCreationDetails = {
   assertionKey?: NewDidVerificationKey
   delegationKey?: NewDidVerificationKey
   serviceEndpoints?: DidServiceEndpoint[]
+}
+
+// Ecdsa not supported.
+export type LightDidSupportedVerificationKeyType =
+  | VerificationKeyType.Ed25519
+  | VerificationKeyType.Sr25519
+
+/**
+ * A new public key specified when creating a new light DID.
+ *
+ * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
+ */
+export type NewLightDidAuthenticationKey = Omit<
+  NewDidVerificationKey,
+  'type'
+> & {
+  type: LightDidSupportedVerificationKeyType
 }

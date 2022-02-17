@@ -26,7 +26,8 @@ import {
 } from '@kiltprotocol/types'
 
 import { FullDidCreationBuilder } from './FullDidCreationBuilder'
-import { LightDidDetails, NewLightDidAuthenticationKey } from '../DidDetails'
+import { LightDidDetails } from '../DidDetails'
+import type { NewLightDidAuthenticationKey } from '../types.js'
 import { computeKeyId } from './TestUtils'
 
 jest.mock('./FullDidBuilder.utils.js', () => ({

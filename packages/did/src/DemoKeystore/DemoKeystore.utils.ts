@@ -20,13 +20,13 @@ import {
   DidConstructorDetails,
   PublicKeys,
   ServiceEndpoints,
+  LightDidSupportedVerificationKeyType,
 } from '../types.js'
 import {
   DemoKeystore,
   EncryptionAlgorithms,
   SigningAlgorithms,
 } from './DemoKeystore.js'
-import { LightDidSupportedVerificationKeyType } from '../DidDetails/LightDidDetails.utils.js'
 
 // Given a seed, creates a light DID with an authentication and an encryption key.
 export async function createMinimalLightDidFromSeed(

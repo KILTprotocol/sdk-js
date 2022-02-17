@@ -7,9 +7,5 @@
 
 export * from './DidDetails.js'
 export * from './LightDidDetails.js'
-export {
-  LightDidSupportedVerificationKeyType,
-  NewLightDidAuthenticationKey,
-  DidMigrationHandler,
-} from './LightDidDetails.utils.js'
+export { DidMigrationHandler } from './LightDidDetails.utils.js'
 export * from './FullDidDetails.js'
