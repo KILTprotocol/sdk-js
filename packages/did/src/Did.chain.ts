@@ -409,6 +409,17 @@ export async function generateCreateTxFromCreationDetails(
   })
 }
 
+/**
+ * Create a DID creation operation which includes the information present in the provided DID.
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the same keys and service endpoints of the provided DID details.
+ *
+ * @param did The input DID details.
+ * @param submitterAddress The KILT address authorised to submit the creation operation.
+ * @param signer The keystore signer.
+ *
+ * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ */
 export async function generateCreateTxFromDidDetails(
   did: DidDetails,
   submitterAddress: IIdentity['address'],
