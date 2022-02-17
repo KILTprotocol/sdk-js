@@ -50,10 +50,12 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
+const defaultKeySelectionHandler = <T>(keys: T[]): Promise<T | null> =>
+  Promise.resolve(keys[0] || null)
 export const defaultVerificationDidKeySelection: DidVerificationKeySelectionHandler =
-  (keys) => Promise.resolve(keys[0] || null)
+  defaultKeySelectionHandler
 export const defaultEncryptionDidKeySelection: DidEncryptionKeySelectionHandler =
-  (keys) => Promise.resolve(keys[0] || null)
+  defaultKeySelectionHandler
 
 export function getKiltDidFromIdentifier(
   identifier: IDidIdentifier,
