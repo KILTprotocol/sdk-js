@@ -20,7 +20,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 
 import type {
   DidConstructorDetails,
-  DidVerificationKeySelectionHandler,
+  DidKeySelectionHandler,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
@@ -32,7 +32,7 @@ import {
   queryServiceEndpoints,
 } from '../Did.chain.js'
 import {
-  defaultVerificationDidKeySelection,
+  defaultKeySelectionHandler,
   FULL_DID_LATEST_VERSION,
   getKiltDidFromIdentifier,
   getSignatureAlgForKeyType,
@@ -171,10 +171,10 @@ export class FullDidDetails extends DidDetails {
     signer: KeystoreSigner,
     submitterAccount: IIdentity['address'],
     {
-      keySelection = defaultVerificationDidKeySelection,
+      keySelection = defaultKeySelectionHandler,
       txCounter,
     }: {
-      keySelection?: DidVerificationKeySelectionHandler
+      keySelection?: DidKeySelectionHandler<DidVerificationKey>
       txCounter?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {

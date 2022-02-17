@@ -6,10 +6,8 @@
  */
 
 import type {
-  DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidVerificationKey,
   IDidDetails,
   IDidIdentifier,
   KeyRelationship,
@@ -38,12 +36,7 @@ export type ServiceEndpoints = Record<
   Omit<DidServiceEndpoint, 'id'>
 >
 
-export type DidVerificationKeySelectionHandler = (
-  keys: DidVerificationKey[]
-) => Promise<DidVerificationKey | null>
-export type DidEncryptionKeySelectionHandler = (
-  keys: DidEncryptionKey[]
-) => Promise<DidEncryptionKey | null>
+export type DidKeySelectionHandler<T> = (keys: T[]) => Promise<T | null>
 
 export type DidConstructorDetails = {
   did: IDidDetails['did']
