@@ -38,7 +38,7 @@ async function main(): Promise<void> {
     publicKey: claimerKeystoreSigningKey.publicKey,
     type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
       claimerKeystoreSigningKey.alg
-    ) as Kilt.Did.LightDidSupportedVerificationKeyTypes,
+    ) as Kilt.Did.LightDidSupportedVerificationKeyType,
   }
   const claimerKeystoreEncryptionKey = await keystore.generateKeypair({
     alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
@@ -272,7 +272,7 @@ async function main(): Promise<void> {
         publicKey: verifierKeystoreSigningKey.publicKey,
         type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
           verifierKeystoreSigningKey.alg
-        ) as Kilt.Did.LightDidSupportedVerificationKeyTypes,
+        ) as Kilt.Did.LightDidSupportedVerificationKeyType,
       }
       const verifierKeystoreEncryptionKey = await keystore.generateKeypair({
         alg: Kilt.Did.EncryptionAlgorithms.NaclBox,

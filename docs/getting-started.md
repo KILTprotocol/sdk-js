@@ -178,7 +178,7 @@ const claimerAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey = {
   publicKey: claimerKeystoreSigningKey.publicKey,
   type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
     claimerKeystoreSigningKey.alg
-  ) as Kilt.Did.LightDidSupportedVerificationKeyTypes,
+  ) as Kilt.Did.LightDidSupportedVerificationKeyType,
 }
 
 // Encryption keypair
@@ -690,7 +690,7 @@ const verifierMnemonic = mnemonicGenerate()
         publicKey: verifierKeystoreSigningKey.publicKey,
         type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
           verifierKeystoreSigningKey.alg
-        ) as Kilt.Did.LightDidSupportedVerificationKeyTypes,
+        ) as Kilt.Did.LightDidSupportedVerificationKeyType,
       }
       const verifierKeystoreEncryptionKey = await keystore.generateKeypair({
         alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
