@@ -180,9 +180,9 @@ export function getEncryptionAlgorithmForEncryptionKeyType(
 ): EncryptionAlgorithms {
   return encryptionAlgForKeyType[keyType]
 }
-const keyTypeForEncryptionAlg: Record<EncryptionKeyType, EncryptionAlgorithms> =
+const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
   {
-    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+    [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
   }
 export function getEncryptionKeyTypeForEncryptionAlgorithm(
   encryptionAlg: EncryptionAlgorithms
