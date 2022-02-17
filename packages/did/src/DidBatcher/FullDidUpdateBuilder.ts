@@ -91,12 +91,12 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    */
   public constructor(api: ApiPromise, details: FullDidDetails) {
     super(api)
-    ;({
-      identifier: this.identifier,
-      authenticationKey: this.oldAuthenticationKey,
-      attestationKey: this.oldAssertionKey,
-      delegationKey: this.oldDelegationKey,
-    } = details)
+
+    this.identifier = details.identifier
+    this.oldAuthenticationKey = details.authenticationKey
+    this.oldAssertionKey = details.attestationKey
+    this.oldDelegationKey = details.delegationKey
+
     details
       .getEncryptionKeys(KeyRelationship.keyAgreement)
       .forEach(({ id, ...keyDetails }) =>
