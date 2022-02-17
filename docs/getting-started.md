@@ -1,14 +1,14 @@
 # Getting Started with the KILT SDK <!-- omit in toc -->
 
 In this simple tutorial we show how you can start developing your own applications on top of the KILT Protocol.
-The next examples give you a simple skeleton on how to use the KILT SDK to create identities, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
+The next examples give you a simple skeleton on how to use the KILT SDK to create DIDs, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
 
 # Quick Start Guide <!-- omit in toc -->
 
 - [1. Install the SDK](#1-install-the-sdk)
   - [1.1. Prerequisites](#11-prerequisites)
   - [1.2. Connect to a Chain](#11-connect-to-a-chain)
-- [2. Generate an Account](#2-generate-an-account)
+- [2. Generate an Account and DID](#2-generate-an-account)
   - [2.1. Generate a Keystore](#21-generate-a-keystore)
   - [2.2. Generate a light DID for the Claimer](#22-generate-a-light-did-for-the-claimer)
   - [2.3. Generate a full DID for the Attester](#22-generate-a-full-did-for-the-attester)
@@ -138,7 +138,7 @@ const account = keyring.addFromMnemonic(
 
 ## 2. Generate an account and DID
 
-To generate an account first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the on-chain account and DID:
+To generate an account first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the on-chain DID:
 
 ```typescript
 import * as Kilt from '@kiltprotocol/sdk-js'
@@ -170,16 +170,28 @@ import * as Kilt from '@kiltprotocol/sdk-js'
 const keystore = new Kilt.Did.DemoKeystore()
 
 // Signing keypair
-const claimerSigningKeypair = await keystore.generateKeypair({
-  alg: Kilt.Did.SigningAlgorithms.Ed25519,
+const claimerKeystoreSigningKey = await keystore.generateKeypair({
+  alg: Kilt.Did.SigningAlgorithms.Sr25519,
   seed: claimerMnemonic,
 })
+const claimerAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey = {
+  publicKey: claimerKeystoreSigningKey.publicKey,
+  type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
+    claimerKeystoreSigningKey.alg
+  ) as Kilt.Did.LightDidSupportedVerificationKeyTypes,
+}
 
 // Encryption keypair
-const claimerEncryptionKeypair = await keystore.generateKeypair({
+const claimerKeystoreEncryptionKey = await keystore.generateKeypair({
   alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
   seed: claimerMnemonic,
 })
+const claimerEncryptionKey: Kilt.NewDidEncryptionKey = {
+  publicKey: claimerKeystoreEncryptionKey.publicKey,
+  type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
+    claimerKeystoreEncryptionKey.alg
+  ) as Kilt.EncryptionKeyType,
+}
 ```
 
 ### 2.2. Generate a light DID for the Claimer
@@ -189,26 +201,18 @@ Using the keys from the demo keystore to generate the claimer's light DID.
 ```typescript
 import * as Kilt from '@kiltprotocol/sdk-js'
 
-const claimerLightDid = new Kilt.Did.LightDidDetails({
-  authenticationKey: {
-    publicKey: claimerSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(claimerSigningKeypair.alg),
-  },
-  encryptionKey: {
-    publicKey: claimerEncryptionKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      claimerEncryptionKeypair.alg
-    ),
-  },
-})
+const claimerLightDid = Kilt.Did.LightDidDetails.fromDetails({
+    authenticationKey: claimerAuthenticationKey,
+    encryptionKey: claimerEncryptionKey,
+  })
 
-// Example light DID: `did:kilt:light:014qFxmHnWw5sGMwjskdvMCrASF9Jvu5ggWRTWTK2NNYSLDg56:oWFlomlwdWJsaWNLZXlYIJuIow7rjSdf92qMKYtWV42lF9mctD1nFf8RM24auJhwZHR5cGVmeDI1NTE5`
+// Example light DID: `did:kilt:light:004oLh6pqc8dVqHJ6TXdopJzrLm3Y64HbHvvihATYj5KiizbRM:z1Ac9CMtYCTRWjetJfJqJoV7FcNQfmHbgaABnPm8S8UM29z77w5MVGL3mTgACDa2CJYU6Svcw6o9YK9KGDBXZEx`
 console.log(claimerLightDid.did)
 ```
 
 ### 2.3 Generate a full DID for the Attester
 
-Before we can send the request for an attestation to an Attester, we should first create an Attester account and a full on-chain DID using the previously generated keyring.. Using the previously generated keyring.
+Before we can send the request for an attestation to an Attester, we should first create an Attester account and a full on-chain DID using the previously generated keyring.
 
 ```typescript
 import * as Kilt from '@kiltprotocol/sdk-js'
@@ -240,63 +244,42 @@ Then we generate all the keypairs for the attester to construct the attestation,
 
 ```typescript
 // Signing keypair
-const attesterSigningKeypair = await keystore.generateKeypair({
-  alg: Kilt.Did.SigningAlgorithms.Ed25519,
+const attesterKeystoreSigningKey = await keystore.generateKeypair({
+  alg: Kilt.Did.SigningAlgorithms.Sr25519,
   seed: attesterMnemonic,
 })
+const attesterAuthenticationKey: Kilt.NewDidVerificationKey = {
+  publicKey: attesterKeystoreSigningKey.publicKey,
+  type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
+    attesterKeystoreSigningKey.alg
+  ) as Kilt.VerificationKeyType,
+}
 
 // Encryption keypair
-const attesterEncryptionKeypair = await keystore.generateKeypair({
+const attesterKeystoreEncryptionKey = await keystore.generateKeypair({
   alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
   seed: attesterMnemonic,
 })
-
-const keys: Partial<Record<
-  KeyRelationship,
-  Did.DidTypes.INewPublicKey<string>
->> = {
-  authentication: {
-    publicKey: attesterSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterSigningKeypair.alg
-    ),
-  },
-  keyAgreement: {
-    publicKey: attesterEncryptionKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterEncryptionKeypair.alg
-    ),
-  },
-  capabilityDelegation: {
-    publicKey: attesterSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterSigningKeypair.alg
-    ),
-  },
-  assertionMethod: {
-    publicKey: attesterSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterSigningKeypair.alg
-    ),
-  },
+const attesterEncryptionKey: Kilt.NewDidEncryptionKey = {
+  publicKey: attesterKeystoreEncryptionKey.publicKey,
+  type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
+    attesterKeystoreEncryptionKey.alg
+  ) as Kilt.EncryptionKeyType,
 }
 
-const { extrinsic, did } = await Kilt.Did.DidUtils.writeDidFromPublicKeys(
-  keystore,
-  attester.address,
-  keys
-)
-
-// The attester must have balance to pay for the transaction to write the newly created full DID on-chain. Submitting the transaction from the extrinsic.
-
-await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, attester, {
-  reSign: true,
-  resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-})
-
-// The resolved full DID
-  const attesterFullDid = (await Kilt.Did.resolveDoc(fullDid.did))
-    ?.details as IDidDetails
+const attesterFullDid = await new Kilt.Did.FullDidCreationBuilder(
+    api,
+    attesterAuthenticationKey
+  )
+    .addEncryptionKey(attesterEncryptionKey)
+    .setAttestationKey(attesterAuthenticationKey)
+    .consumeWithHandler(keystore, attester.address, async (creationTx) => {
+      // The attester must have balance to pay for the transaction to write the newly created full DID on-chain. Submitting the transaction from the extrinsic.
+      await Kilt.BlockchainUtils.signAndSubmitTx(creationTx, attester, {
+        resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+        reSign: true,
+      })
+    })
 
 console.log('Full DID', attesterFullDid)
 
@@ -326,7 +309,7 @@ console.log('Full DID', attesterFullDid)
 
 ## 3. Build and store a Claim Type (CTYPE)
 
-When building a CTYPE, you only need a JSON schema and your public [SS58 address](<https://github.com/paritytech/substrate/wiki/External-Address-Format-(SS58)>) which you automatically receive when generating an account.
+When building a CTYPE, you only need a JSON schema and an on-chain DID.
 
 ### 3.1. Building a CTYPE
 
@@ -419,13 +402,13 @@ const rawClaim = {
 }
 ```
 
-Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the constructor:
+Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the DID of the owner/creator of the claim in the constructor:
 
 ```typescript
 const claim = Kilt.Claim.fromCTypeAndClaimContents(
   ctype,
   rawClaim,
-  claimer.address
+  claimerLightDid.did
 )
 ```
 
@@ -435,13 +418,13 @@ As a result we get the following KILT claim:
 Claim {
   cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
   contents: { name: 'Alice', age: 29 },
-  owner: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire'
+  owner: 'did:kilt:light:014tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire'
 }
 ```
 
 ## 5. Request, create and send an Attestation
 
-First, we need to build a request for an attestation, which has to include a claim and the address of the Claimer.
+First, we need to build a request for an attestation, which has to include a claim and the DID of the Claimer.
 (_Note_ that this object offers many more functionalities, however, we do not go into the details here).
 
 ### 5.1. Requesting an Attestation
@@ -449,12 +432,13 @@ First, we need to build a request for an attestation, which has to include a cla
 ```typescript
 import * as Kilt from '@kiltprotocol/sdk-js'
 
-const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndaccount(
-  claim,
-  claimer
-)
+const requestForAttestation = Kilt.RequestForAttestation.fromClaim(claim)
 // The claimer signs the request for attestation with the did
-await requestForAttestation.signWithDid(claimerLightDid)
+await requestForAttestation.signWithDidKey(
+  keystore,
+  claimerLightDid,
+  claimerLightDid.authenticationKey.id
+)
 ```
 
 The `requestForAttestation` object looks like this:
@@ -464,7 +448,7 @@ RequestForAttestation {
     claim: Claim {
       cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
       contents: { name: 'Alice', age: 29 },
-      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5'
+      owner: 'did:kilt:light:014tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire:z1Ac9CMtYCTRWjetJfJqJoV7FcNQfmHbgaABnPm8S8UM29z77w5MVGL3mTgACDa2CJYU6Svcw6o9YK9KGDBXZEx'
     },
     claimHashes: [
       '0x5847086b70b224e6a27952e00ca347005c5032097382a2beb8e83e2b990cd272',
@@ -481,7 +465,7 @@ RequestForAttestation {
     rootHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
     claimerSignature: {
       signature: '0x102beecf2d1649daa081b45726408a4d82009f045538cc25a0faf60329734b31ff0f93c21173df9f3f6448651bd2c07b8afa97562eb6a8d52adabdf81265ec8b',
-      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5#authentication',
+      keyId: 'did:kilt:light:014tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire:z1Ac9CMtYCTRWjetJfJqJoV7FcNQfmHbgaABnPm8S8UM29z77w5MVGL3mTgACDa2CJYU6Svcw6o9YK9KGDBXZEx#authentication',
       challenge: undefined
     }
   }
@@ -517,55 +501,45 @@ Message {
     type: 'request-attestation'
   },
   createdAt: 1595252779597,
-  receiverAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
-  senderAddress: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire',
-  senderBoxPublicKey: '0x04c84fc046c9c783161d9f60a9b884592e58388a99eed2b3824e90951980dd25',
-  message: '0xFEED....CAFE',
+  receiver: 'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy',
+  sender: 'did:kilt:light:014tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire:z1Ac9CMtYCTRWjetJfJqJoV7FcNQfmHbgaABnPm8S8UM29z77w5MVGL3mTgACDa2CJYU6Svcw6o9YK9KGDBXZEx',
+  messageId: '0xFEED....CAFE',
   nonce: '0x231e9050c63838987c4d956592550fccacf7fd2d065f7e0c',
   hash: '0x60ab82bf615c024ec662b80edbe5f84cb4bcea515fb845c1b0ce21e30d757378',
   signature: '0x01ea1b24e07cc5830764ed3b23631d0d894738384f3ae321d23bcf1501d2893761c92d38fccb8e7269325c03a62e31f36fb3ce23f76de5811a718b73888d2fab89'
 }
 ```
 
-After the message has been created the key agreement of both the claimer and attester must be retrieved in order to encrypt each other's messages using the previously generated DIDs of the claimer and attesters.
-
-```typescript
-const claimerEncryptionKey = claimerLightDid.getKeys(
-  KeyRelationship.keyAgreement
-)[0] as IDidKeyDetails<string>
-const attesterEncryptionKey = attesterFullDid.getKeys(
-  KeyRelationship.keyAgreement
-)[0] as IDidKeyDetails<string>
-```
-
 The message can be encrypted with the keystore and keys as follows:
 
 ```typescript
-const encrypted = message.encrypt(
-  claimerEncryptionKey,
-  attesterEncryptionKey,
-  keystore
-)
+const encrypted = await message.encrypt(
+    claimerLightDid.encryptionKey!.id,
+    claimerLightDid,
+    keystore,
+    attesterFullDid.assembleKeyId(attesterFullDid.encryptionKey!.id)
+  )
 ```
 
 The messaging system is transport agnostic.
 
 ```typescript
-const decrypted = Kilt.Message.decrypt(encrypted, keystore, {
-  senderDetails: claimerLightDid,
-  receiverDetails: attesterFullDid,
-})
+const decrypted = await Kilt.Message.decrypt(
+    encryptedMessage,
+    keystore,
+    attesterFullDid
+  )
 ```
 
-As sender account and message validity are also checked during decryption, if the decryption process completes successfully, you can assume that the sender of the message is also the owner of the claim, as the two identites match.
+As sender identity and message validity are also checked during decryption, if the decryption process completes successfully, you can assume that the sender of the message is also the owner of the claim, as the two identities match.
 At this point the Attester has the original request for attestation object:
 
 ```typescript
 if (
   decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION
 ) {
-  const extractedRequestForAttestation: IRequestForAttestation =
-    decrypted.body.content.requestForAttestation
+  const extractedRequestForAttestation: Kilt.IRequestForAttestation =
+      decrypted.body.content.requestForAttestation
 }
 ```
 
@@ -622,7 +596,7 @@ Credential {
     claim: Claim {
       cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
       contents: [Object],
-      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5'
+      owner: 'did:kilt:light:014tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire:z1Ac9CMtYCTRWjetJfJqJoV7FcNQfmHbgaABnPm8S8UM29z77w5MVGL3mTgACDa2CJYU6Svcw6o9YK9KGDBXZEx'
     },
     claimHashes: [
       '0x5847086b70b224e6a27952e00ca347005c5032097382a2beb8e83e2b990cd272',
@@ -639,7 +613,7 @@ Credential {
     rootHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
     claimerSignature: {
       signature: '0x102beecf2d1649daa081b45726408a4d82009f045538cc25a0faf60329734b31ff0f93c21173df9f3f6448651bd2c07b8afa97562eb6a8d52adabdf81265ec8b',
-      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5#authentication',
+      keyId: 'did:kilt:light:014tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire:z1Ac9CMtYCTRWjetJfJqJoV7FcNQfmHbgaABnPm8S8UM29z77w5MVGL3mTgACDa2CJYU6Svcw6o9YK9KGDBXZEx#authentication',
       challenge: undefined
     }
   },
@@ -679,9 +653,8 @@ Message {
     type: 'submit-attestation'
   },
   createdAt: 1595254601814,
-  receiverAddress: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire',
-  senderAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
-  senderBoxPublicKey: '0x97a9f05a70fe934b365d8b63dea7424b4070d49f64f2baa70e74d984da797d2d',
+  receiver: 'did:kilt:light:014tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire:z1Ac9CMtYCTRWjetJfJqJoV7FcNQfmHbgaABnPm8S8UM29z77w5MVGL3mTgACDa2CJYU6Svcw6o9YK9KGDBXZEx',
+  sender: 'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy',
   message: '0xFEED...CAFE',
   nonce: '0x8f18d3394f4d325106c7b618046f6a8415bff1d5b4d267a8',
   hash: '0x4f4108cf390eda665315cbff7cc21c155ae5895918a8691b04e0c27b803c3bc8',
@@ -692,7 +665,7 @@ Message {
 After receiving the message, the Claimer just needs to save it and use it later for verification:
 
 ```typescript
-let myCredential: Credential
+let myCredential: Kilt.Credential
 if (
   messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION
 ) {
@@ -708,21 +681,32 @@ if (
 As in the attestation, you need a second account to act as the verifier. The verifier only needs a light DID [see claimer DID](#22-generate-a-light-did-for-the-claimer):
 
 ```typescript
-const verifierMnemonic = generateMnemonic()
-const verifierLightDid = new Kilt.Did.LightDidDetails({
-  authenticationKey: {
-    publicKey: verifierSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      verifierSigningKeypair.alg
-    ),
-  },
-  encryptionKey: {
-    publicKey: verifierEncryptionKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      verifierEncryptionKeypair.alg
-    ),
-  },
-})
+const verifierMnemonic = mnemonicGenerate()
+      const verifierKeystoreSigningKey = await keystore.generateKeypair({
+        alg: Kilt.Did.SigningAlgorithms.Sr25519,
+        seed: verifierMnemonic,
+      })
+      const verifierAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey = {
+        publicKey: verifierKeystoreSigningKey.publicKey,
+        type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
+          verifierKeystoreSigningKey.alg
+        ) as Kilt.Did.LightDidSupportedVerificationKeyTypes,
+      }
+      const verifierKeystoreEncryptionKey = await keystore.generateKeypair({
+        alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+        seed: verifierMnemonic,
+      })
+      const verifierEncryptionKey: Kilt.NewDidEncryptionKey = {
+        publicKey: verifierKeystoreEncryptionKey.publicKey,
+        type: Kilt.Did.DemoKeystore.getKeyTypeForAlg(
+          verifierKeystoreEncryptionKey.alg
+        ) as Kilt.EncryptionKeyType,
+      }
+      // Create the verifier's light DID from the generated authentication key.
+      const verifierLightDid = Kilt.Did.LightDidDetails.fromDetails({
+        authenticationKey: verifierAuthenticationKey,
+        encryptionKey: verifierEncryptionKey,
+      })
 ```
 
 Before a claimer sends any data to a verifier, the verifier needs to initiate the verification process by requesting a presentation for a specific CTYPE.
@@ -777,7 +761,7 @@ if (
 ) {
   const claims = messageForVerifier.body.content
   const isValid = await Kilt.Credential.fromCredential(claims[0]).verify()
-  console.log('Verifcation success?', isValid)
+  console.log('Verification success?', isValid)
   console.log('Credentials from verifier perspective:\n', claims)
 }
 ```

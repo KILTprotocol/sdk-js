@@ -174,6 +174,8 @@ export class Message implements IMessage {
 
     const decoded = u8aToString(data)
 
+    console.log(JSON.parse(decoded))
+
     try {
       const {
         body,
