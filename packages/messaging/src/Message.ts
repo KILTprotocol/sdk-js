@@ -33,7 +33,12 @@ import {
   EncryptionKeyType,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DidDetails, DidResolver, DidUtils, EncryptionAlgorithms } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  DidResolver,
+  DidUtils,
+  EncryptionAlgorithms,
+} from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
