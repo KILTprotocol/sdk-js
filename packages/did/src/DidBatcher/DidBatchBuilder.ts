@@ -39,7 +39,7 @@ export type BatchSigningKeySelection = (
   keys: DidVerificationKey[]
 ) => Promise<DidVerificationKey>
 /**
- * The default signign key selection closure which returns the first key in the list of key candidates.
+ * The default signing key selection closure which returns the first key in the list of key candidates.
  *
  * @param batch The batch of extrinsics to sign. All extrinsics are guaranteed to require the same signing key relationship.
  * @param keys The list of key candidates that match the required key relationship for the given extrinsic batch.
