@@ -127,7 +127,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
         'DID builder has already been consumed.'
       )
     }
-    // 1. Check that no other authentication key has already been set.
+    // Check that no other authentication key has already been set.
     if (this.newAuthenticationKey) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'A new authentication key has already been marked for addition.'
@@ -258,7 +258,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public setAttestationKey(key: NewDidVerificationKey): this {
-    // 1. Check that the attestation key has not already been marked for deletion.
+    // Check that the attestation key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'The assertion key has already been marked for deletion.'
@@ -330,7 +330,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public setDelegationKey(key: NewDidVerificationKey): this {
-    // 1. Check that the delegation key has not already been marked for deletion.
+    // Check that the delegation key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'The delegation key has already been marked for deletion.'
@@ -400,7 +400,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public addServiceEndpoint(service: DidServiceEndpoint): this {
-    // 1. Check if the service is already present in the DID.
+    // Check if the service is already present in the DID.
     if (this.oldServiceEndpoints.has(service.id)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Service endpoint with ID ${service.id} already present under the DID.`

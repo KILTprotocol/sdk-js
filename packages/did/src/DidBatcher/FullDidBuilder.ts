@@ -81,7 +81,7 @@ export abstract class FullDidBuilder {
       )
     }
     const newKeyId = deriveChainKeyId(this.apiObject, key)
-    // 1. Check if a key with the same ID has already been added.
+    // Check if a key with the same ID has already been added.
     if (this.newKeyAgreementKeys.has(newKeyId)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${newKeyId} has already been marked for addition. Failing since this may lead to unexpected behaviour.`
@@ -111,7 +111,7 @@ export abstract class FullDidBuilder {
         'DID builder has already been consumed.'
       )
     }
-    // 1. Check if another attestation key was already marked for addition.
+    // Check if another attestation key was already marked for addition.
     if (this.newAssertionKey.action === 'update') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another assertion key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
@@ -140,7 +140,7 @@ export abstract class FullDidBuilder {
         'DID builder has already been consumed.'
       )
     }
-    // 1. Check if another delegation key was already marked for addition.
+    // Check if another delegation key was already marked for addition.
     if (this.newDelegationKey.action === 'update') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another delegation key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
@@ -170,7 +170,7 @@ export abstract class FullDidBuilder {
       )
     }
     const { id, ...details } = service
-    // 1. Check if the service has already been added.
+    // Check if the service has already been added.
     if (this.newServiceEndpoints.has(id)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Service endpoint with ID ${id} has already been marked for addition. Failing since this may lead to unexpected behaviour.`
