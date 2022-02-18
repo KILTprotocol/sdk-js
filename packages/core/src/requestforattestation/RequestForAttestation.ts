@@ -19,7 +19,6 @@
 
 import type {
   IRequestForAttestation,
-  CompressedRequestForAttestation,
   IClaim,
   DidKey,
   KeystoreSigner,
@@ -27,11 +26,14 @@ import type {
   DidPublicKey,
   IDelegationNode,
   ICredential,
+  ICType,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils.js'
+import * as CTypeUtils from '../ctype/CType.utils.js'
+import { Credential } from '../credential/index.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
 
 function makeSigningData(
@@ -49,26 +51,117 @@ export type Options = {
   delegationId?: IDelegationNode['id']
 }
 
+export function verifyRootHash(input: IRequestForAttestation): boolean {
+  return input.rootHash === RequestForAttestationUtils.calculateRootHash(input)
+}
+
 /**
- * [STATIC] Clones a [[RequestForAttestation]] object.
- * Verifies data integrity while doing so.
+ * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
  *
- * @param requestForAttestationInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
- * @returns  A new [[RequestForAttestation]] `object`.
+ * @param input - The [[RequestForAttestation]] for which to verify data.
+ * @returns Whether the data is valid.
+ * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
+ * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
  * @example ```javascript
- * const serializedRequest =
- *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
- * const parsedRequest = JSON.parse(serializedRequest);
- * RequestForAttestation.fromRequest(parsedRequest);
+ * const reqForAtt = RequestForAttestation.fromClaim(claim);
+ * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
  * ```
  */
-export function fromRequest(
-  requestForAttestationInput: IRequestForAttestation
-): IRequestForAttestation {
-  const copy = JSON.parse(JSON.stringify(requestForAttestationInput))
-  RequestForAttestationUtils.errorCheck(copy)
-  RequestForAttestationUtils.verifyData(copy)
-  return copy
+export function verifyData(input: IRequestForAttestation): boolean {
+  // check claim hash
+  if (!verifyRootHash(input)) {
+    throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
+  }
+
+  // verify properties against selective disclosure proof
+  const verificationResult = ClaimUtils.verifyDisclosedAttributes(input.claim, {
+    nonces: input.claimNonceMap,
+    hashes: input.claimHashes,
+  })
+  // TODO: how do we want to deal with multiple errors during claim verification?
+  if (!verificationResult.verified)
+    throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+
+  // check legitimations
+  Credential.validateLegitimations(input.legitimations)
+
+  return true
+}
+
+/**
+ *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
+ *  Throws on invalid input.
+ *
+ * @param input - A potentially only partial [[IRequestForAttestation]].
+ * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
+ * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
+ *
+ */
+export function errorCheck(input: IRequestForAttestation): void {
+  if (!input.claim) {
+    throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
+  } else {
+    ClaimUtils.errorCheck(input.claim)
+  }
+  if (!input.claim.owner) {
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+  }
+  if (!input.legitimations && !Array.isArray(input.legitimations)) {
+    throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
+  }
+
+  if (!input.claimNonceMap) {
+    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
+  }
+  if (
+    typeof input.claimNonceMap !== 'object' ||
+    Object.entries(input.claimNonceMap).some(
+      ([digest, nonce]) =>
+        !digest ||
+        !DataUtils.validateHash(digest, 'statement digest') ||
+        typeof nonce !== 'string' ||
+        !nonce
+    )
+  ) {
+    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
+  }
+  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
+  }
+  if (input.claimerSignature)
+    DidUtils.validateDidSignature(input.claimerSignature)
+  verifyData(input as IRequestForAttestation)
+}
+
+/**
+ *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
+ *
+ * @param RequestForAttestation A [[RequestForAttestation]] object for the attester.
+ * @param ctype A [[CType]] to verify the [[Claim]] structure.
+ *
+ * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
+ */
+
+export function verifyStructure(
+  requestForAttestation: IRequestForAttestation,
+  ctype: ICType
+): boolean {
+  errorCheck(requestForAttestation)
+  return CTypeUtils.verifyClaimStructure(
+    requestForAttestation.claim.contents,
+    ctype.schema
+  )
+}
+
+/**
+ * Verifies data structure and integrity.
+ *
+ * @param requestForAttestation - The object to check.
+ * @throws - If a check fails.
+ */
+export function check(requestForAttestation: IRequestForAttestation): void {
+  errorCheck(requestForAttestation)
+  verifyData(requestForAttestation)
 }
 
 /**
@@ -97,14 +190,16 @@ export function fromClaim(
   })
 
   // signature will be added afterwards!
-  return fromRequest({
+  const request = {
     claim,
     legitimations: legitimations || [],
     claimHashes,
     claimNonceMap,
     rootHash,
     delegationId: delegationId || null,
-  })
+  }
+  check(request)
+  return request
 }
 
 /**
@@ -159,56 +254,11 @@ export function isIRequestForAttestation(
   input: unknown
 ): input is IRequestForAttestation {
   try {
-    RequestForAttestationUtils.errorCheck(input as IRequestForAttestation)
+    errorCheck(input as IRequestForAttestation)
   } catch (error) {
     return false
   }
   return true
-}
-
-/**
- * [STATIC] Builds an [[RequestForAttestation]] from the decompressed array.
- *
- * @param reqForAtt The [[CompressedRequestForAttestation]] that should get decompressed.
- * @returns A new [[RequestForAttestation]] object.
- */
-export function decompress(
-  reqForAtt: CompressedRequestForAttestation
-): IRequestForAttestation {
-  const decompressedRequestForAttestation =
-    RequestForAttestationUtils.decompress(reqForAtt)
-  return fromRequest(decompressedRequestForAttestation)
-}
-
-/**
- * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
- *
- * @param req4Att - The RequestForAttestation object to remove properties from.
- * @param properties - Properties to remove from the [[Claim]] object.
- * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
- * @example ```javascript
- * const rawClaim = {
- *   name: 'Alice',
- *   age: 29,
- * };
- * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
- * const reqForAtt = RequestForAttestation.fromClaim(claim);
- * RequestForAttestation.removeClaimProperties(reqForAtt, ['name']);
- * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
- * ```
- */
-export function removeClaimProperties(
-  req4Att: IRequestForAttestation,
-  properties: string[]
-): void {
-  properties.forEach((key) => {
-    // eslint-disable-next-line no-param-reassign
-    delete req4Att.claim.contents[key]
-  })
-  // eslint-disable-next-line no-param-reassign
-  req4Att.claimNonceMap = ClaimUtils.hashClaimContents(req4Att.claim, {
-    nonces: req4Att.claimNonceMap,
-  }).nonceMap
 }
 
 export async function addSignature(

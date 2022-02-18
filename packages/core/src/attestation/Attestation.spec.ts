@@ -27,7 +27,7 @@ import {
 } from '@kiltprotocol/chain-helpers'
 import { Claim } from '../claim'
 import { CType } from '../ctype'
-import { RequestForAttestation } from '../requestforattestation'
+import * as RequestForAttestation from '../requestforattestation'
 import * as Attestation from './Attestation'
 
 let mockedApi: any

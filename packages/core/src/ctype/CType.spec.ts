@@ -21,7 +21,7 @@ import type {
   IClaim,
 } from '@kiltprotocol/types'
 import { Claim } from '../claim'
-import { RequestForAttestation } from '../requestforattestation'
+import * as RequestForAttestation from '../requestforattestation'
 import * as CTypeUtils from './CType.utils'
 import { getOwner, isStored } from './CType.chain'
 import * as CType from './CType.js'

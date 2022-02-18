@@ -17,10 +17,7 @@ import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation'
 import { Claim } from '../claim'
 import { CType } from '../ctype'
-import {
-  RequestForAttestation,
-  RequestForAttestationUtils,
-} from '../requestforattestation'
+import * as RequestForAttestation from '../requestforattestation'
 import { Credential } from '../index.js'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
@@ -165,7 +162,7 @@ describe('and attestation rights have been delegated', () => {
       claimer,
       claimer.authenticationKey.id
     )
-    expect(RequestForAttestationUtils.verifyData(request)).toBeTruthy()
+    expect(RequestForAttestation.verifyData(request)).toBeTruthy()
     await expect(
       RequestForAttestation.verifySignature(request)
     ).resolves.toBeTruthy()

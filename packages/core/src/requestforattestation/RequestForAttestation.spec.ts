@@ -28,8 +28,7 @@ import { Attestation } from '../attestation'
 // import { Credential } from '../credential/Credential'
 import { CType } from '../ctype'
 
-import * as RequestForAttestation from './RequestForAttestation'
-import * as RequestForAttestationUtils from './RequestForAttestation.utils'
+import * as RequestForAttestation from './index.js'
 
 const rawCType: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',
@@ -113,12 +112,12 @@ describe('RequestForAttestation', () => {
       [legitimation]
     )
     // check proof on complete data
-    expect(RequestForAttestationUtils.verifyData(request)).toBeTruthy()
+    expect(RequestForAttestation.verifyData(request)).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
     expect(() =>
-      RequestForAttestationUtils.verifyData(request)
+      RequestForAttestation.verifyData(request)
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 
@@ -135,7 +134,7 @@ describe('RequestForAttestation', () => {
 
     request.claimNonceMap[Object.keys(request.claimNonceMap)[0]] = '1234'
     expect(() => {
-      RequestForAttestationUtils.verifyData(request)
+      RequestForAttestation.verifyData(request)
     }).toThrow()
   })
 
@@ -218,15 +217,15 @@ describe('RequestForAttestation', () => {
       reqForAtt.delegationId,
     ]
 
-    expect(RequestForAttestationUtils.compress(reqForAtt)).toEqual(
+    expect(RequestForAttestation.compress(reqForAtt)).toEqual(
       compressedReqForAtt
     )
 
-    expect(RequestForAttestationUtils.decompress(compressedReqForAtt)).toEqual(
+    expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
       reqForAtt
     )
 
-    expect(RequestForAttestationUtils.compress(reqForAtt)).toEqual(
+    expect(RequestForAttestation.compress(reqForAtt)).toEqual(
       compressedReqForAtt
     )
 
@@ -238,15 +237,15 @@ describe('RequestForAttestation', () => {
     delete reqForAtt.claim.owner
 
     expect(() => {
-      RequestForAttestationUtils.compress(reqForAtt)
+      RequestForAttestation.compress(reqForAtt)
     }).toThrow()
 
     expect(() => {
-      RequestForAttestationUtils.decompress(compressedReqForAtt)
+      RequestForAttestation.decompress(compressedReqForAtt)
     }).toThrow()
 
     expect(() => {
-      RequestForAttestationUtils.compress(reqForAtt)
+      RequestForAttestation.compress(reqForAtt)
     }).toThrow()
 
     expect(() => {
@@ -260,15 +259,15 @@ describe('RequestForAttestation', () => {
       { a: 'a', b: 'b' },
       []
     )
-    RequestForAttestation.removeClaimProperties(request, ['a'])
+    RequestForAttestation.Utils.removeClaimProperties(request, ['a'])
 
     expect((request.claim.contents as any).a).toBeUndefined()
     expect(Object.keys(request.claimNonceMap)).toHaveLength(
       request.claimHashes.length - 1
     )
     expect((request.claim.contents as any).b).toBe('b')
-    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
-    expect(RequestForAttestationUtils.verifyRootHash(request)).toBe(true)
+    expect(RequestForAttestation.verifyData(request)).toBe(true)
+    expect(RequestForAttestation.verifyRootHash(request)).toBe(true)
   })
 
   it('should throw error on faulty constructor input', async () => {
@@ -339,7 +338,7 @@ describe('RequestForAttestation', () => {
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
     builtRequestIncompleteClaimHashTree.rootHash =
-      RequestForAttestationUtils.calculateRootHash(
+      RequestForAttestation.Utils.calculateRootHash(
         builtRequestIncompleteClaimHashTree
       )
     const builtRequestMalformedSignature = {
@@ -357,7 +356,7 @@ describe('RequestForAttestation', () => {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
     builtRequestMalformedSignature.rootHash =
-      RequestForAttestationUtils.calculateRootHash(
+      RequestForAttestation.Utils.calculateRootHash(
         builtRequestMalformedSignature
       )
     const builtRequestMalformedHashes = {
@@ -383,27 +382,25 @@ describe('RequestForAttestation', () => {
       }
     )
     builtRequestMalformedHashes.rootHash =
-      RequestForAttestationUtils.calculateRootHash(builtRequestMalformedHashes)
+      RequestForAttestation.Utils.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
+      RequestForAttestation.errorCheck(builtRequestNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
+      RequestForAttestation.errorCheck(builtRequestMalformedRootHash)
     ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE())
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
+      RequestForAttestation.errorCheck(builtRequestIncompleteClaimHashTree)
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
+      RequestForAttestation.errorCheck(builtRequestMalformedSignature)
     ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
+      RequestForAttestation.errorCheck(builtRequestMalformedHashes)
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
-    expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequest)
-    ).not.toThrow()
+    expect(() => RequestForAttestation.errorCheck(builtRequest)).not.toThrow()
     expect(() => {
-      RequestForAttestationUtils.errorCheck(builtRequestWithLegitimation)
+      RequestForAttestation.errorCheck(builtRequestWithLegitimation)
     }).not.toThrow()
   })
   it('checks Object instantiation', async () => {
@@ -433,11 +430,11 @@ describe('RequestForAttestation', () => {
       []
     )
     expect(
-      RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
+      RequestForAttestation.verifyStructure(builtRequest, testCType)
     ).toBeTruthy()
     builtRequest.claim.contents.name = 123
     expect(() =>
-      RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
+      RequestForAttestation.verifyStructure(builtRequest, testCType)
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 })

@@ -28,10 +28,7 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/index.js'
-import {
-  RequestForAttestation,
-  RequestForAttestationUtils,
-} from '../requestforattestation/index.js'
+import * as RequestForAttestation from '../requestforattestation/index.js'
 import * as CredentialUtils from './Credential.utils.js'
 
 /**
@@ -90,7 +87,7 @@ export function verifyData(credential: ICredential): boolean {
     return false
   return (
     credential.request.rootHash === credential.attestation.claimHash &&
-    RequestForAttestationUtils.verifyData(credential.request)
+    RequestForAttestation.verifyData(credential.request)
   )
 }
 
@@ -206,7 +203,7 @@ export async function createPresentation({
     : []
 
   // remove these attributes
-  RequestForAttestation.removeClaimProperties(
+  RequestForAttestation.Utils.removeClaimProperties(
     presentation.request,
     excludedClaimProperties
   )

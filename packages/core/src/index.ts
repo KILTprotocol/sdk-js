@@ -12,10 +12,7 @@ export { Claim, ClaimUtils } from './claim/index.js'
 export { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
 export { Quote, QuoteSchema, QuoteUtils } from './quote/index.js'
-export {
-  RequestForAttestation,
-  RequestForAttestationUtils,
-} from './requestforattestation/index.js'
+export * as RequestForAttestation from './requestforattestation/index.js'
 
 export { connect, disconnect, config, init } from './kilt/index.js'
 export { SDKErrors } from '@kiltprotocol/utils'

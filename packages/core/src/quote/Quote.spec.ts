@@ -36,7 +36,7 @@ import {
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { CType } from '../ctype'
-import { RequestForAttestation } from '../requestforattestation'
+import * as RequestForAttestation from '../requestforattestation'
 import * as Quote from './Quote'
 import * as QuoteUtils from './Quote.utils'
 import { QuoteSchema } from './QuoteSchema'

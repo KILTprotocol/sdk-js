@@ -18,7 +18,7 @@ import {
   Quote,
   QuoteSchema,
   QuoteUtils,
-  RequestForAttestationUtils,
+  RequestForAttestation,
 } from '@kiltprotocol/core'
 import type {
   ICredential,
@@ -110,7 +110,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
-      RequestForAttestationUtils.errorCheck(body.content.requestForAttestation)
+      RequestForAttestation.errorCheck(body.content.requestForAttestation)
       if (body.content.quote) {
         Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
       }
@@ -296,7 +296,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
       compressedContents = [
-        RequestForAttestationUtils.compress(body.content.requestForAttestation),
+        RequestForAttestation.compress(body.content.requestForAttestation),
         body.content.quote
           ? QuoteUtils.compressQuoteAgreement(body.content.quote)
           : undefined,
@@ -429,9 +429,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
       decompressedContents = {
-        requestForAttestation: RequestForAttestationUtils.decompress(
-          body[1][0]
-        ),
+        requestForAttestation: RequestForAttestation.decompress(body[1][0]),
         quote: body[1][1]
           ? QuoteUtils.decompressQuoteAgreement(body[1][1])
           : undefined,

@@ -14,17 +14,10 @@ import type {
   Hash,
   IDelegationNode,
   ICredential,
-  CompressedCredential,
-  CompressedRequestForAttestation,
   IRequestForAttestation,
-  ICType,
 } from '@kiltprotocol/types'
-import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
-import * as CredentialUtils from '../credential/Credential.utils.js'
-import * as ClaimUtils from '../claim/Claim.utils.js'
-import * as CTypeUtils from '../ctype/CType.utils.js'
-import { Credential } from '../credential/index.js'
+import { Crypto } from '@kiltprotocol/utils'
+import { hashClaimContents } from '../claim/Claim.utils.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)
@@ -64,179 +57,33 @@ export function calculateRootHash(
   return Crypto.u8aToHex(root)
 }
 
-export function verifyRootHash(input: IRequestForAttestation): boolean {
-  return input.rootHash === calculateRootHash(input)
-}
-
 /**
- * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
+ * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
  *
- * @param input - The [[RequestForAttestation]] for which to verify data.
- * @returns Whether the data is valid.
- * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
- * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
+ * @param req4Att - The RequestForAttestation object to remove properties from.
+ * @param properties - Properties to remove from the [[Claim]] object.
+ * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
  * @example ```javascript
+ * const rawClaim = {
+ *   name: 'Alice',
+ *   age: 29,
+ * };
+ * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
  * const reqForAtt = RequestForAttestation.fromClaim(claim);
- * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
+ * RequestForAttestation.removeClaimProperties(reqForAtt, ['name']);
+ * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
  * ```
  */
-export function verifyData(input: IRequestForAttestation): boolean {
-  // check claim hash
-  if (!verifyRootHash(input)) {
-    throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
-  }
-
-  // verify properties against selective disclosure proof
-  const verificationResult = ClaimUtils.verifyDisclosedAttributes(input.claim, {
-    nonces: input.claimNonceMap,
-    hashes: input.claimHashes,
+export function removeClaimProperties(
+  req4Att: IRequestForAttestation,
+  properties: string[]
+): void {
+  properties.forEach((key) => {
+    // eslint-disable-next-line no-param-reassign
+    delete req4Att.claim.contents[key]
   })
-  // TODO: how do we want to deal with multiple errors during claim verification?
-  if (!verificationResult.verified)
-    throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
-
-  // check legitimations
-  Credential.validateLegitimations(input.legitimations)
-
-  return true
-}
-
-/**
- *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
- *  Throws on invalid input.
- *
- * @param input - A potentially only partial [[IRequestForAttestation]].
- * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
- * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
- *
- */
-export function errorCheck(input: IRequestForAttestation): void {
-  if (!input.claim) {
-    throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
-  } else {
-    ClaimUtils.errorCheck(input.claim)
-  }
-  if (!input.claim.owner) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  }
-  if (!input.legitimations && !Array.isArray(input.legitimations)) {
-    throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
-  }
-
-  if (!input.claimNonceMap) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
-  }
-  if (
-    typeof input.claimNonceMap !== 'object' ||
-    Object.entries(input.claimNonceMap).some(
-      ([digest, nonce]) =>
-        !digest ||
-        !DataUtils.validateHash(digest, 'statement digest') ||
-        typeof nonce !== 'string' ||
-        !nonce
-    )
-  ) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
-  }
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
-  }
-  if (input.claimerSignature)
-    DidUtils.validateDidSignature(input.claimerSignature)
-  verifyData(input as IRequestForAttestation)
-}
-
-/**
- *  Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
- *
- * @param leg An array of [[Attestation]] and [[RequestForAttestation]] objects.
- *
- * @returns An ordered array of [[Credential]]s.
- */
-
-export function compressLegitimation(
-  leg: ICredential[]
-): CompressedCredential[] {
-  return leg.map(CredentialUtils.compress)
-}
-
-/**
- *  Decompresses [[Credential]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
- *
- * @param leg A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as a [[Credential]].
- */
-
-function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
-  return leg.map(CredentialUtils.decompress)
-}
-
-/**
- *  Compresses a [[RequestForAttestation]] for storage and/or messaging.
- *
- * @param reqForAtt A [[RequestForAttestation]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[RequestForAttestation]].
- */
-
-export function compress(
-  reqForAtt: IRequestForAttestation
-): CompressedRequestForAttestation {
-  errorCheck(reqForAtt)
-  return [
-    ClaimUtils.compress(reqForAtt.claim),
-    reqForAtt.claimNonceMap,
-    reqForAtt.claimerSignature,
-    reqForAtt.claimHashes,
-    reqForAtt.rootHash,
-    compressLegitimation(reqForAtt.legitimations),
-    reqForAtt.delegationId,
-  ]
-}
-
-/**
- *  Decompresses a [[RequestForAttestation]] from storage and/or message.
- *
- * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when reqForAtt is not an Array and it's length is not equal to the defined length of 8.
- *
- * @returns An object that has the same properties as a [[RequestForAttestation]].
- */
-
-export function decompress(
-  reqForAtt: CompressedRequestForAttestation
-): IRequestForAttestation {
-  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
-  }
-  return {
-    claim: ClaimUtils.decompress(reqForAtt[0]),
-    claimNonceMap: reqForAtt[1],
-    claimerSignature: reqForAtt[2],
-    claimHashes: reqForAtt[3],
-    rootHash: reqForAtt[4],
-    legitimations: decompressLegitimation(reqForAtt[5]),
-    delegationId: reqForAtt[6],
-  }
-}
-
-/**
- *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
- *
- * @param RequestForAttestation A [[RequestForAttestation]] object for the attester.
- * @param ctype A [[CType]] to verify the [[Claim]] structure.
- *
- * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
- */
-
-export function verifyStructure(
-  requestForAttestation: IRequestForAttestation,
-  ctype: ICType
-): boolean {
-  errorCheck(requestForAttestation)
-  return CTypeUtils.verifyClaimStructure(
-    requestForAttestation.claim.contents,
-    ctype.schema
-  )
+  // eslint-disable-next-line no-param-reassign
+  req4Att.claimNonceMap = hashClaimContents(req4Att.claim, {
+    nonces: req4Att.claimNonceMap,
+  }).nonceMap
 }

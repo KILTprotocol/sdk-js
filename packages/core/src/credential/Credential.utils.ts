@@ -18,7 +18,7 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/index.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
-import * as RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils.js'
+import * as RequestForAttestation from '../requestforattestation/index.js'
 import * as Credential from './Credential.js'
 
 /**
@@ -36,7 +36,7 @@ export function errorCheck(input: ICredential): void {
   } else throw SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
 
   if (input.request) {
-    RequestForAttestationUtils.errorCheck(input.request)
+    RequestForAttestation.errorCheck(input.request)
   } else throw SDKErrors.ERROR_RFA_NOT_PROVIDED()
 
   if (!Credential.verifyData(input as ICredential)) {
@@ -56,7 +56,7 @@ export function compress(credential: ICredential): CompressedCredential {
   errorCheck(credential)
 
   return [
-    RequestForAttestationUtils.compress(credential.request),
+    RequestForAttestation.compress(credential.request),
     Attestation.compress(credential.attestation),
   ]
 }
@@ -75,7 +75,7 @@ export function decompress(credential: CompressedCredential): ICredential {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
   }
   return {
-    request: RequestForAttestationUtils.decompress(credential[0]),
+    request: RequestForAttestation.decompress(credential[0]),
     attestation: Attestation.decompress(credential[1]),
   }
 }

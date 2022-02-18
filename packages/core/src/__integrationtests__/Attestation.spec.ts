@@ -19,10 +19,7 @@ import { Credential } from '../credential'
 import { disconnect } from '../kilt'
 import * as Claim from '../claim/Claim'
 import { CType } from '../ctype'
-import {
-  RequestForAttestation,
-  RequestForAttestationUtils,
-} from '../requestforattestation'
+import * as RequestForAttestation from '../requestforattestation'
 import {
   isCtypeOnChain,
   driversLicenseCType,
@@ -118,7 +115,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer,
       claimer.authenticationKey.id
     )
-    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
+    expect(RequestForAttestation.verifyData(request)).toBe(true)
     await expect(RequestForAttestation.verifySignature(request)).resolves.toBe(
       true
     )
@@ -134,7 +131,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
+    expect(RequestForAttestation.verifyData(request)).toBe(true)
     await RequestForAttestation.signWithDidKey(
       request,
       signer,
@@ -176,7 +173,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    expect(RequestForAttestationUtils.verifyData(request)).toBe(true)
+    expect(RequestForAttestation.verifyData(request)).toBe(true)
     await RequestForAttestation.signWithDidKey(
       request,
       signer,
