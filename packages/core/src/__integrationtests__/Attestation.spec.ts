@@ -115,7 +115,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer,
       claimer.authenticationKey.id
     )
-    expect(RequestForAttestation.verifyData(request)).toBe(true)
+    expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
     await expect(RequestForAttestation.verifySignature(request)).resolves.toBe(
       true
     )
@@ -131,7 +131,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    expect(RequestForAttestation.verifyData(request)).toBe(true)
+    expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
     await RequestForAttestation.signWithDidKey(
       request,
       signer,
@@ -173,7 +173,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.did
     )
     const request = RequestForAttestation.fromClaim(claim)
-    expect(RequestForAttestation.verifyData(request)).toBe(true)
+    expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
     await RequestForAttestation.signWithDidKey(
       request,
       signer,

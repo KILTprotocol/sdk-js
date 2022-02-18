@@ -110,7 +110,9 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
-      RequestForAttestation.errorCheck(body.content.requestForAttestation)
+      RequestForAttestation.verifyDataStructure(
+        body.content.requestForAttestation
+      )
       if (body.content.quote) {
         Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
       }

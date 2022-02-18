@@ -162,7 +162,7 @@ describe('and attestation rights have been delegated', () => {
       claimer,
       claimer.authenticationKey.id
     )
-    expect(RequestForAttestation.verifyData(request)).toBeTruthy()
+    expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
     await expect(
       RequestForAttestation.verifySignature(request)
     ).resolves.toBeTruthy()

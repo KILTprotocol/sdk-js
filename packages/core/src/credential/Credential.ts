@@ -87,7 +87,7 @@ export function verifyData(credential: ICredential): boolean {
     return false
   return (
     credential.request.rootHash === credential.attestation.claimHash &&
-    RequestForAttestation.verifyData(credential.request)
+    RequestForAttestation.verifyDataIntegrity(credential.request)
   )
 }
 

@@ -67,7 +67,7 @@ export function verifyRootHash(input: IRequestForAttestation): boolean {
  * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
  * ```
  */
-export function verifyData(input: IRequestForAttestation): boolean {
+export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
   // check claim hash
   if (!verifyRootHash(input)) {
     throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
@@ -97,7 +97,7 @@ export function verifyData(input: IRequestForAttestation): boolean {
  * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
  *
  */
-export function errorCheck(input: IRequestForAttestation): void {
+export function verifyDataStructure(input: IRequestForAttestation): void {
   if (!input.claim) {
     throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
@@ -130,11 +130,11 @@ export function errorCheck(input: IRequestForAttestation): void {
   }
   if (input.claimerSignature)
     DidUtils.validateDidSignature(input.claimerSignature)
-  verifyData(input as IRequestForAttestation)
+  verifyDataIntegrity(input as IRequestForAttestation)
 }
 
 /**
- *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
+ *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
  *
  * @param RequestForAttestation A [[RequestForAttestation]] object for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
@@ -142,26 +142,15 @@ export function errorCheck(input: IRequestForAttestation): void {
  * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
  */
 
-export function verifyStructure(
+export function verifyAgainstSchema(
   requestForAttestation: IRequestForAttestation,
   ctype: ICType
 ): boolean {
-  errorCheck(requestForAttestation)
+  verifyDataStructure(requestForAttestation)
   return CTypeUtils.verifyClaimStructure(
     requestForAttestation.claim.contents,
     ctype.schema
   )
-}
-
-/**
- * Verifies data structure and integrity.
- *
- * @param requestForAttestation - The object to check.
- * @throws - If a check fails.
- */
-export function check(requestForAttestation: IRequestForAttestation): void {
-  errorCheck(requestForAttestation)
-  verifyData(requestForAttestation)
 }
 
 /**
@@ -198,7 +187,8 @@ export function fromClaim(
     rootHash,
     delegationId: delegationId || null,
   }
-  check(request)
+  verifyDataStructure(request)
+  verifyDataIntegrity(request)
   return request
 }
 
@@ -254,7 +244,7 @@ export function isIRequestForAttestation(
   input: unknown
 ): input is IRequestForAttestation {
   try {
-    errorCheck(input as IRequestForAttestation)
+    verifyDataStructure(input as IRequestForAttestation)
   } catch (error) {
     return false
   }

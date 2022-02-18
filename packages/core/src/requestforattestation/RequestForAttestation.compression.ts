@@ -19,7 +19,10 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CredentialUtils from '../credential/Credential.utils.js'
 import * as ClaimUtils from '../claim/Claim.utils.js'
-import { errorCheck, verifyData } from './RequestForAttestation.js'
+import {
+  verifyDataStructure,
+  verifyDataIntegrity,
+} from './RequestForAttestation.js'
 
 /**
  *  Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
@@ -58,7 +61,7 @@ function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
 export function compress(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
-  errorCheck(reqForAtt)
+  verifyDataStructure(reqForAtt)
   return [
     ClaimUtils.compress(reqForAtt.claim),
     reqForAtt.claimNonceMap,
@@ -106,7 +109,7 @@ export function decompressAndVerify(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   const decompressedRequestForAttestation = decompress(reqForAtt)
-  errorCheck(decompressedRequestForAttestation)
-  verifyData(decompressedRequestForAttestation)
+  verifyDataStructure(decompressedRequestForAttestation)
+  verifyDataIntegrity(decompressedRequestForAttestation)
   return decompressedRequestForAttestation
 }

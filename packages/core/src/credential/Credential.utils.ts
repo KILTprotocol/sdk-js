@@ -36,7 +36,7 @@ export function errorCheck(input: ICredential): void {
   } else throw SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
 
   if (input.request) {
-    RequestForAttestation.errorCheck(input.request)
+    RequestForAttestation.verifyDataStructure(input.request)
   } else throw SDKErrors.ERROR_RFA_NOT_PROVIDED()
 
   if (!Credential.verifyData(input as ICredential)) {
