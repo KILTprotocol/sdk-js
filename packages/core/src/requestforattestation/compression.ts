@@ -7,7 +7,7 @@
 
 /**
  * @packageDocumentation
- * @module RequestForAttestation.Compression
+ * @module RequestForAttestation
  */
 
 import type {

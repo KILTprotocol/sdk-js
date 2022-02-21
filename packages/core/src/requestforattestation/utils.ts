@@ -7,7 +7,7 @@
 
 /**
  * @packageDocumentation
- * @module RequestForAttestationUtils
+ * @module RequestForAttestation
  */
 
 import type {
