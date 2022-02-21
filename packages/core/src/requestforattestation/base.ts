@@ -34,8 +34,8 @@ import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/utils.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
 import { Credential } from '../credential/index.js'
-import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
-import { makeSigningData } from './RequestForAttestation.utils.js'
+import * as RequestForAttestationUtils from './utils.js'
+import { makeSigningData } from './utils.js'
 
 export type Options = {
   legitimations?: ICredential[]

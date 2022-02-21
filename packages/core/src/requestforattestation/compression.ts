@@ -22,7 +22,7 @@ import * as ClaimCompression from '../claim/compression.js'
 import {
   verifyDataStructure,
   verifyDataIntegrity,
-} from './RequestForAttestation.js'
+} from './requestforattestation.js'
 
 /**
  *  Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
