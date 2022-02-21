@@ -23,33 +23,28 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import * as CTypeUtils from '../ctype/CType.utils.js'
 import * as ClaimUtils from './Claim.utils.js'
 
-function verifyClaim(
+function verifyAgainstCType(
   claimContents: IClaim['contents'],
   cTypeSchema: ICType['schema']
 ): boolean {
   return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
 }
-
 /**
- * Constructs a new Claim from the given [[IClaim]] and [[schema]].
+ * Verifies the data structure and schema of a Claim.
  *
- * @param claimInput IClaim to instantiate the new claim from.
+ * @param claimInput IClaim to verify.
  * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
  * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the provided cTypeSchema.
- *
- * @returns A Claim object.
  */
-export function fromClaim(
+export function verify(
   claimInput: IClaim,
   cTypeSchema: ICType['schema']
-): IClaim {
-  if (!verifyClaim(claimInput.contents, cTypeSchema)) {
+): void {
+  if (!verifyAgainstCType(claimInput.contents, cTypeSchema)) {
     throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
   }
 
-  ClaimUtils.errorCheck(claimInput)
-
-  return claimInput
+  ClaimUtils.verifyDataStructure(claimInput)
 }
 
 /**
@@ -83,7 +78,7 @@ export function fromNestedCTypeClaim(
     contents: claimContents,
     owner: claimOwner,
   }
-  ClaimUtils.errorCheck(claim)
+  ClaimUtils.verifyDataStructure(claim)
   return claim
 }
 
@@ -103,7 +98,7 @@ export function fromCTypeAndClaimContents(
   claimOwner: IDidDetails['did']
 ): IClaim {
   if (ctypeInput.schema) {
-    if (!verifyClaim(claimContents, ctypeInput.schema)) {
+    if (!verifyAgainstCType(claimContents, ctypeInput.schema)) {
       throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
     }
   }
@@ -112,7 +107,7 @@ export function fromCTypeAndClaimContents(
     contents: claimContents,
     owner: claimOwner,
   }
-  ClaimUtils.errorCheck(claim)
+  ClaimUtils.verifyDataStructure(claim)
   return claim
 }
 
@@ -125,7 +120,7 @@ export function fromCTypeAndClaimContents(
  */
 export function isIClaim(input: unknown): input is IClaim {
   try {
-    ClaimUtils.errorCheck(input as IClaim)
+    ClaimUtils.verifyDataStructure(input as IClaim)
   } catch (error) {
     return false
   }

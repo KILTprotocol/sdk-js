@@ -8,7 +8,7 @@
 export { Attestation } from './attestation/index.js'
 export { Credential, CredentialUtils } from './credential/index.js'
 export { Balance, BalanceUtils } from './balance/index.js'
-export { Claim, ClaimUtils } from './claim/index.js'
+export * as Claim from './claim/index.js'
 export { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
 export { Quote, QuoteSchema, QuoteUtils } from './quote/index.js'

@@ -37,7 +37,7 @@ import {
 } from '@kiltprotocol/did'
 import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation'
-import { Claim } from '../claim'
+import * as Claim from '../claim'
 import { CType } from '../ctype'
 import * as RequestForAttestation from '../requestforattestation/index'
 import * as Credential from './Credential'

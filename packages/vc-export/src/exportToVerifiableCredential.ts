@@ -12,7 +12,7 @@
 
 import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
-import { ClaimUtils } from '@kiltprotocol/core'
+import { Claim } from '@kiltprotocol/core'
 import type { ICredential, ICType } from '@kiltprotocol/types'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
@@ -71,7 +71,7 @@ export function fromCredential(
   const id = toCredentialIRI(rootHash)
 
   // transform & annotate claim to be json-ld and VC conformant
-  const { credentialSubject } = ClaimUtils.toJsonLD(claim, false) as Record<
+  const { credentialSubject } = Claim.toJsonLD(claim, false) as Record<
     string,
     Record<string, AnyJson>
   >

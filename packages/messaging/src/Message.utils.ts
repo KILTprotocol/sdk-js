@@ -13,7 +13,7 @@
 import {
   Attestation,
   CredentialUtils,
-  ClaimUtils,
+  Claim,
   CTypeUtils,
   Quote,
   QuoteSchema,
@@ -76,11 +76,11 @@ export function errorCheckDelegationData(
 export function errorCheckMessageBody(body: MessageBody): boolean | void {
   switch (body.type) {
     case Message.BodyType.REQUEST_TERMS: {
-      ClaimUtils.errorCheck(body.content)
+      Claim.verifyDataStructure(body.content)
       break
     }
     case Message.BodyType.SUBMIT_TERMS: {
-      ClaimUtils.errorCheck(body.content.claim)
+      Claim.verifyDataStructure(body.content.claim)
       body.content.legitimations.map((credential: ICredential) =>
         CredentialUtils.errorCheck(credential)
       )
@@ -99,7 +99,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.REJECT_TERMS: {
-      ClaimUtils.errorCheck(body.content.claim)
+      Claim.verifyDataStructure(body.content.claim)
       if (body.content.delegationId) {
         DataUtils.validateHash(
           body.content.delegationId,
@@ -268,12 +268,12 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
   let compressedContents: CompressedMessageBody[1]
   switch (body.type) {
     case Message.BodyType.REQUEST_TERMS: {
-      compressedContents = ClaimUtils.compress(body.content)
+      compressedContents = Claim.compress(body.content)
       break
     }
     case Message.BodyType.SUBMIT_TERMS: {
       compressedContents = [
-        ClaimUtils.compress(body.content.claim),
+        Claim.compress(body.content.claim),
         body.content.legitimations.map(
           (credential: ICredential | CompressedCredential) =>
             Array.isArray(credential)
@@ -290,7 +290,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     }
     case Message.BodyType.REJECT_TERMS: {
       compressedContents = [
-        ClaimUtils.compress(body.content.claim),
+        Claim.compress(body.content.claim),
         body.content.legitimations.map((val) => CredentialUtils.compress(val)),
         body.content.delegationId || undefined,
       ]
@@ -400,12 +400,12 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
   let decompressedContents: MessageBody['content']
   switch (body[0]) {
     case Message.BodyType.REQUEST_TERMS: {
-      decompressedContents = ClaimUtils.decompress(body[1])
+      decompressedContents = Claim.decompress(body[1])
       break
     }
     case Message.BodyType.SUBMIT_TERMS: {
       decompressedContents = {
-        claim: ClaimUtils.decompress(body[1][0]),
+        claim: Claim.decompress(body[1][0]),
         legitimations: body[1][1].map(
           (credential: ICredential | CompressedCredential) =>
             !Array.isArray(credential)
@@ -423,7 +423,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     }
     case Message.BodyType.REJECT_TERMS: {
       decompressedContents = {
-        claim: ClaimUtils.decompress(body[1][0]),
+        claim: Claim.decompress(body[1][0]),
         legitimations: body[1][1].map((val) => CredentialUtils.decompress(val)),
         delegationId: body[1][2] ? body[1][2] : undefined,
       }

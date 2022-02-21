@@ -5,5 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as Claim from './Claim.js'
-export * as ClaimUtils from './Claim.utils.js'
+export * from './Claim.js'
+export * from './Claim.compression.js'
+export * from './Claim.utils.js'

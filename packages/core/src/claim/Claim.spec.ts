@@ -13,6 +13,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
 import * as CType from '../ctype/CType'
 import * as Claim from './Claim'
+import * as ClaimCompression from './Claim.compression'
 import * as ClaimUtils from './Claim.utils'
 
 describe('Claim', () => {
@@ -54,7 +55,7 @@ describe('Claim', () => {
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
-    expect(Claim.fromClaim(claimObj, testCType.schema)).toEqual(claim)
+    expect(Claim.verify(claimObj, testCType.schema)).not.toThrow()
   })
 
   it('allows falsy claim values', () => {
@@ -64,13 +65,13 @@ describe('Claim', () => {
         name: '',
       },
     }
-    expect(() => ClaimUtils.errorCheck(claimWithFalsy)).not.toThrow()
+    expect(() => ClaimUtils.verifyDataStructure(claimWithFalsy)).not.toThrow()
   })
 
   it('compresses and decompresses the Claim object', () => {
-    expect(ClaimUtils.compress(claim)).toEqual(compressedClaim)
+    expect(ClaimCompression.compress(claim)).toEqual(compressedClaim)
 
-    expect(ClaimUtils.decompress(compressedClaim)).toEqual(claim)
+    expect(ClaimCompression.decompress(compressedClaim)).toEqual(claim)
   })
 
   it('Negative test for compresses and decompresses the Claim object', () => {
@@ -83,7 +84,7 @@ describe('Claim', () => {
     // }).toThrow()
 
     expect(() => {
-      ClaimUtils.decompress(compressedClaim)
+      ClaimCompression.decompress(compressedClaim)
     }).toThrow()
 
     // expect(() => {
@@ -119,18 +120,18 @@ describe('Claim', () => {
       owner: ownerAddress.replace('8', 'D'),
     } as IClaim
 
-    expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
-
-    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
-    )
+    expect(() => ClaimUtils.verifyDataStructure(everything)).not.toThrow()
 
     expect(() =>
-      ClaimUtils.errorCheck(malformedCTypeHash)
+      ClaimUtils.verifyDataStructure(noCTypeHash)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
+
+    expect(() =>
+      ClaimUtils.verifyDataStructure(malformedCTypeHash)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
 
-    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowErrorWithCode(
-      SDKErrors.ERROR_ADDRESS_INVALID()
-    )
+    expect(() =>
+      ClaimUtils.verifyDataStructure(malformedAddress)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_ADDRESS_INVALID())
   })
 })

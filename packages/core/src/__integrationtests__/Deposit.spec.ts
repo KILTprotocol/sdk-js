@@ -37,7 +37,7 @@ import {
 } from './utils'
 import { Balance } from '../balance'
 import { Attestation } from '../attestation'
-import { Claim } from '../claim'
+import * as Claim from '../claim'
 import * as RequestForAttestation from '../requestforattestation'
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'

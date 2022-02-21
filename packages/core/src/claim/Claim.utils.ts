@@ -11,13 +11,8 @@
  */
 
 import { hexToBn } from '@polkadot/util'
-import type {
-  IClaim,
-  CompressedClaim,
-  PartialClaim,
-  CompressedPartialClaim,
-} from '@kiltprotocol/types'
-import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
+import type { IClaim, PartialClaim } from '@kiltprotocol/types'
+import { DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
 import { getIdForCTypeHash } from '../ctype/CType.utils.js'
 
@@ -189,7 +184,7 @@ export function verifyDisclosedAttributes(
  * @throws [[ERROR_CLAIM_CONTENTS_MALFORMED]] when any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
  *
  */
-export function errorCheck(input: IClaim | PartialClaim): void {
+export function verifyDataStructure(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
@@ -208,61 +203,4 @@ export function errorCheck(input: IClaim | PartialClaim): void {
     })
   }
   DataUtils.validateHash(input.cTypeHash, 'Claim CType')
-}
-
-/**
- *  Compresses the [[IClaim]] for storage and/or messaging.
- *
- * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[CompressedClaim]].
- */
-export function compress(claim: IClaim): CompressedClaim
-/**
- *  Compresses the [[PartialClaim]] for storage and/or messaging.
- *
- * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[CompressedPartialClaim]].
- */
-export function compress(claim: PartialClaim): CompressedPartialClaim
-export function compress(
-  claim: IClaim | PartialClaim
-): CompressedClaim | CompressedPartialClaim {
-  errorCheck(claim)
-  let sortedContents
-  if (claim.contents) {
-    sortedContents = jsonabc.sortObj(claim.contents)
-  }
-  return [claim.cTypeHash, claim.owner, sortedContents]
-}
-
-/**
- *  Decompresses the [[IClaim]] from storage and/or message.
- *
- * @param claim A [[CompressedClaim]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when a [[CompressedClaim]] is not an Array or it's length is unequal 3.
- * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
- */
-export function decompress(claim: CompressedClaim): IClaim
-/**
- *  Decompresses the Partial [[IClaim]] from storage and/or message.
- *
- * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
- * @throws When a [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns A [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
- */
-export function decompress(claim: CompressedPartialClaim): PartialClaim
-export function decompress(
-  claim: CompressedClaim | CompressedPartialClaim
-): IClaim | PartialClaim {
-  if (!Array.isArray(claim) || claim.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
-  }
-  return {
-    cTypeHash: claim[0],
-    owner: claim[1],
-    contents: claim[2],
-  }
 }
