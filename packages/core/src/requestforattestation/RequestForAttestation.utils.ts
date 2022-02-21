@@ -87,3 +87,13 @@ export function removeClaimProperties(
     nonces: req4Att.claimNonceMap,
   }).nonceMap
 }
+
+export function makeSigningData(
+  input: IRequestForAttestation,
+  challenge?: string
+): Uint8Array {
+  return new Uint8Array([
+    ...Crypto.coToUInt8(input.rootHash),
+    ...Crypto.coToUInt8(challenge),
+  ])
+}

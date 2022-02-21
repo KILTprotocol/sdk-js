@@ -7,4 +7,4 @@
 
 export * from './RequestForAttestation.js'
 export * from './RequestForAttestation.compression.js'
-export * as Utils from './RequestForAttestation.utils.js'
+export * from './RequestForAttestation.utils.js'

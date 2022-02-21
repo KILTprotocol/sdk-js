@@ -259,7 +259,7 @@ describe('RequestForAttestation', () => {
       { a: 'a', b: 'b' },
       []
     )
-    RequestForAttestation.Utils.removeClaimProperties(request, ['a'])
+    RequestForAttestation.removeClaimProperties(request, ['a'])
 
     expect((request.claim.contents as any).a).toBeUndefined()
     expect(Object.keys(request.claimNonceMap)).toHaveLength(
@@ -338,7 +338,7 @@ describe('RequestForAttestation', () => {
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
     builtRequestIncompleteClaimHashTree.rootHash =
-      RequestForAttestation.Utils.calculateRootHash(
+      RequestForAttestation.calculateRootHash(
         builtRequestIncompleteClaimHashTree
       )
     const builtRequestMalformedSignature = {
@@ -356,9 +356,7 @@ describe('RequestForAttestation', () => {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
     builtRequestMalformedSignature.rootHash =
-      RequestForAttestation.Utils.calculateRootHash(
-        builtRequestMalformedSignature
-      )
+      RequestForAttestation.calculateRootHash(builtRequestMalformedSignature)
     const builtRequestMalformedHashes = {
       ...buildRequestForAttestation(
         identityBob,
@@ -382,7 +380,7 @@ describe('RequestForAttestation', () => {
       }
     )
     builtRequestMalformedHashes.rootHash =
-      RequestForAttestation.Utils.calculateRootHash(builtRequestMalformedHashes)
+      RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequestNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
@@ -434,11 +432,11 @@ describe('RequestForAttestation', () => {
       []
     )
     expect(
-      RequestForAttestation.verifyAgainstSchema(builtRequest, testCType)
+      RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
     ).toBeTruthy()
     builtRequest.claim.contents.name = 123
     expect(() =>
-      RequestForAttestation.verifyAgainstSchema(builtRequest, testCType)
+      RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 })

@@ -203,7 +203,7 @@ export async function createPresentation({
     : []
 
   // remove these attributes
-  RequestForAttestation.Utils.removeClaimProperties(
+  RequestForAttestation.removeClaimProperties(
     presentation.request,
     excludedClaimProperties
   )

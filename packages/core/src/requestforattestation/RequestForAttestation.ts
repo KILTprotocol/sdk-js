@@ -35,16 +35,7 @@ import * as ClaimUtils from '../claim/Claim.utils.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
 import { Credential } from '../credential/index.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
-
-function makeSigningData(
-  input: IRequestForAttestation,
-  challenge?: string
-): Uint8Array {
-  return new Uint8Array([
-    ...Crypto.coToUInt8(input.rootHash),
-    ...Crypto.coToUInt8(challenge),
-  ])
-}
+import { makeSigningData } from './RequestForAttestation.utils.js'
 
 export type Options = {
   legitimations?: ICredential[]
@@ -101,7 +92,7 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
   if (!input.claim) {
     throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
-    ClaimUtils.errorCheck(input.claim)
+    ClaimUtils.verifyDataStructure(input.claim)
   }
   if (!input.claim.owner) {
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
@@ -142,7 +133,7 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
  * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
  */
 
-export function verifyAgainstSchema(
+export function verifyAgainstCType(
   requestForAttestation: IRequestForAttestation,
   ctype: ICType
 ): boolean {
@@ -231,6 +222,42 @@ export async function verifySignature(
     resolver,
   })
   return verified
+}
+
+type VerifyOptions = {
+  ctype?: ICType
+  challenge?: string
+  resolver?: IDidResolver
+}
+/**
+ * Verifies data structure and integrity.
+ *
+ * @param requestForAttestation - The object to check.
+ * @param options - Additional parameter for more verification step.
+ * @param options.ctype - Ctype which the included claim should be checked against.
+ * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
+ * @param options.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
+ * @throws - If a check fails.
+ */
+export async function verify(
+  requestForAttestation: IRequestForAttestation,
+  { ctype, challenge, resolver = DidResolver }: VerifyOptions = {}
+): Promise<void> {
+  verifyDataStructure(requestForAttestation)
+  verifyDataIntegrity(requestForAttestation)
+
+  if (ctype) {
+    const isSchemaValid = verifyAgainstCType(requestForAttestation, ctype)
+    if (!isSchemaValid) throw SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
+  }
+
+  if (challenge) {
+    const isSignatureCorrect = verifySignature(requestForAttestation, {
+      challenge,
+      resolver,
+    })
+    if (!isSignatureCorrect) throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
+  }
 }
 
 /**
