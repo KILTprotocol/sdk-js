@@ -11,7 +11,7 @@ export { Balance, BalanceUtils } from './balance/index.js'
 export * as Claim from './claim/index.js'
 export { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
-export { Quote, QuoteSchema, QuoteUtils } from './quote/index.js'
+export * as Quote from './quote/index.js'
 export * as RequestForAttestation from './requestforattestation/index.js'
 
 export { connect, disconnect, config, init } from './kilt/index.js'

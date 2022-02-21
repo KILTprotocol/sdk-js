@@ -62,51 +62,19 @@ export function validateQuoteSchema(
   return result.valid
 }
 
-/**
- * Builds a [[Quote]] object, from a simple object with the same properties.
- *
- * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
- * @throws [[ERROR_QUOTE_MALFORMED]] when the derived basicQuote can not be validated with the QuoteSchema.
- *
- * @returns A [[Quote]] object signed by an Attester.
- */
-
-export async function fromAttesterSignedInput(
-  deserializedQuote: IQuoteAttesterSigned,
-  {
-    resolver = DidResolver,
-  }: {
-    resolver?: IDidResolver
-  } = {}
-): Promise<IQuoteAttesterSigned> {
-  const { attesterSignature, ...basicQuote } = deserializedQuote
-  await DidUtils.verifyDidSignature({
-    signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
-    resolver,
-  })
-  const messages: string[] = []
-  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    throw SDKErrors.ERROR_QUOTE_MALFORMED()
-  }
-
-  return {
-    ...basicQuote,
-    attesterSignature,
-  }
-}
+// TODO: should have a "create quote" function.
 
 /**
- * Signs a [[Quote]] object as an Attester, created via [[fromQuoteDataAndIdentity]].
+ * Signs a [[Quote]] object as an Attester.
  *
  * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity [[Identity]] used to sign the object.
+ * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
  *
  * @returns A signed [[Quote]] object.
  */
 
-export async function createAttesterSignature(
+export async function createAttesterSignedQuote(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
   signer: KeystoreSigner,
@@ -116,6 +84,10 @@ export async function createAttesterSignature(
     keySelection?: DidKeySelectionHandler
   } = {}
 ): Promise<IQuoteAttesterSigned> {
+  if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
+  }
+
   const authenticationKey = await keySelection(
     attesterIdentity.getKeys(KeyRelationship.authentication)
   )
@@ -139,31 +111,37 @@ export async function createAttesterSignature(
 }
 
 /**
- * Creates a [[Quote]] object signed by the given [[Identity]].
+ * Verifies a [[IQuoteAttesterSigned]] object.
  *
- * @param quoteInput A [[Quote]] object.
- * @param identity [[Identity]] used to sign the object.
- * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
- *
- * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
+ * @param quote The object which to be verified.
+ * @throws [[ERROR_QUOTE_MALFORMED]] when the quote can not be validated with the QuoteSchema.
  */
 
-export async function fromQuoteDataAndIdentity(
-  quoteInput: IQuote,
-  attesterIdentity: DidDetails,
-  signer: KeystoreSigner,
+export async function verifyAttesterSignedQuote(
+  quote: IQuoteAttesterSigned,
   {
-    keySelection = DidUtils.defaultDidKeySelection,
+    resolver = DidResolver,
   }: {
-    keySelection?: DidKeySelectionHandler
+    resolver?: IDidResolver
   } = {}
-): Promise<IQuoteAttesterSigned> {
-  if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+): Promise<void> {
+  const { attesterSignature, ...basicQuote } = quote
+  const result = await DidUtils.verifyDidSignature({
+    signature: attesterSignature,
+    message: Crypto.hashObjectAsStr(basicQuote),
+    expectedVerificationMethod: KeyRelationship.authentication,
+    resolver,
+  })
+
+  if (!result.verified) {
+    // TODO: should throw a "signature not verifiable" error, with the reason attached.
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
-  return createAttesterSignature(quoteInput, attesterIdentity, signer, {
-    keySelection,
-  })
+
+  const messages: string[] = []
+  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
+  }
 }
 
 /**
@@ -226,3 +204,5 @@ export async function createQuoteAgreement(
     claimerSignature: signature,
   }
 }
+
+// TODO: Should have a `verifyQuoteAgreemment` function

@@ -377,7 +377,7 @@ describe('Messaging Utilities', () => {
       timeframe: date,
     }
     // Quote signed by attester
-    quoteAttesterSigned = await Quote.createAttesterSignature(
+    quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
       identityAlice,
       keystore

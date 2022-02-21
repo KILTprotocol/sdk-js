@@ -16,8 +16,6 @@ import {
   Claim,
   CTypeUtils,
   Quote,
-  QuoteSchema,
-  QuoteUtils,
   RequestForAttestation,
 } from '@kiltprotocol/core'
 import type {
@@ -91,7 +89,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
         )
       }
       if (body.content.quote) {
-        Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
+        Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
       }
       if (body.content.cTypes) {
         body.content.cTypes.map((val) => CTypeUtils.errorCheck(val))
@@ -114,7 +112,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
         body.content.requestForAttestation
       )
       if (body.content.quote) {
-        Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
+        Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
       }
       break
     }
@@ -282,7 +280,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
         ),
         body.content.delegationId,
         body.content.quote
-          ? QuoteUtils.compressAttesterSignedQuote(body.content.quote)
+          ? Quote.compressAttesterSignedQuote(body.content.quote)
           : undefined,
         body.content.cTypes?.map((val) => CTypeUtils.compress(val)),
       ]
@@ -300,7 +298,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       compressedContents = [
         RequestForAttestation.compress(body.content.requestForAttestation),
         body.content.quote
-          ? QuoteUtils.compressQuoteAgreement(body.content.quote)
+          ? Quote.compressQuoteAgreement(body.content.quote)
           : undefined,
       ]
       break
@@ -414,7 +412,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
         ),
         delegationId: body[1][2],
         quote: body[1][3]
-          ? QuoteUtils.decompressAttesterSignedQuote(body[1][3])
+          ? Quote.decompressAttesterSignedQuote(body[1][3])
           : undefined,
         cTypes: body[1][4]?.map((val) => CTypeUtils.decompress(val)),
       }
@@ -433,7 +431,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       decompressedContents = {
         requestForAttestation: RequestForAttestation.decompress(body[1][0]),
         quote: body[1][1]
-          ? QuoteUtils.decompressQuoteAgreement(body[1][1])
+          ? Quote.decompressQuoteAgreement(body[1][1])
           : undefined,
       }
 

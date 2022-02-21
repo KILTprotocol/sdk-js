@@ -244,7 +244,7 @@ describe('Messaging', () => {
       termsAndConditions: 'https://coolcompany.io/terms.pdf',
       timeframe: date,
     }
-    const quoteAttesterSigned = await Quote.createAttesterSignature(
+    const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
       bobFullDid,
       keystore
@@ -380,7 +380,7 @@ describe('Messaging', () => {
       termsAndConditions: 'https://coolcompany.io/terms.pdf',
       timeframe: date,
     }
-    const quoteAttesterSigned = await Quote.createAttesterSignature(
+    const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
       bobLightDid,
       keystore
@@ -423,7 +423,7 @@ describe('Messaging', () => {
       timeframe: date,
     }
     const quoteAttesterSignedEncodedDetails =
-      await Quote.createAttesterSignature(
+      await Quote.createAttesterSignedQuote(
         quoteDataEncodedDetails,
         bobLightDidWithDetails,
         keystore

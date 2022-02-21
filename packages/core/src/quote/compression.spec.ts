@@ -11,8 +11,6 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { u8aToHex } from '@polkadot/util'
-
 import type {
   IClaim,
   ICType,
@@ -20,44 +18,34 @@ import type {
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
   IDidResolver,
-  ICostBreakdown,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
   DidResolvedDetails,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
 import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidDetails,
-  DidUtils,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { CType } from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
-import * as Quote from './Quote'
-import * as QuoteUtils from './Quote.utils'
-import { QuoteSchema } from './QuoteSchema'
+import * as Quote from './base'
+import * as Compression from './compression'
 
-describe('Claim', () => {
+describe('Quote compression', () => {
   let claimerIdentity: DidDetails
   let attesterIdentity: DidDetails
   let keystore: DemoKeystore
-  let invalidCost: ICostBreakdown
-  let date: string
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
   let request: IRequestForAttestation
-  let invalidCostQuoteData: IQuote
-  let invalidPropertiesQuoteData: IQuote
   let validQuoteData: IQuote
   let validAttesterSignedQuote: IQuoteAttesterSigned
   let quoteBothAgreed: IQuoteAgreement
-  let invalidPropertiesQuote: IQuote
-  let invalidCostQuote: IQuote
   let compressedQuote: CompressedQuote
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
@@ -97,12 +85,6 @@ describe('Claim', () => {
       SigningAlgorithms.Ed25519
     )
 
-    invalidCost = {
-      gross: 233,
-      tax: { vat: 3.3 },
-    } as unknown as ICostBreakdown
-    date = new Date(2019, 11, 10).toISOString()
-
     cTypeSchema = {
       $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -124,26 +106,6 @@ describe('Claim', () => {
     // build request for attestation with legitimations
     request = RequestForAttestation.fromClaim(claim)
 
-    invalidCostQuoteData = {
-      cTypeHash: '0x12345678',
-      cost: invalidCost,
-      currency: 'Euro',
-      timeframe: date,
-      termsAndConditions: 'Lots of these',
-    } as IQuote
-
-    invalidPropertiesQuoteData = {
-      cTypeHash: '0x12345678',
-      cost: {
-        gross: 233,
-        net: 23.3,
-        tax: { vat: 3.3 },
-      },
-      timeframe: date,
-      currency: 'Euro',
-      termsAndConditions: 'Lots of these',
-    } as unknown as IQuote
-
     validQuoteData = {
       attesterDid: attesterIdentity.did,
       cTypeHash: '0x12345678',
@@ -156,7 +118,7 @@ describe('Claim', () => {
       timeframe: new Date('12-04-2020').toISOString(),
       termsAndConditions: 'Lots of these',
     }
-    validAttesterSignedQuote = await Quote.createAttesterSignature(
+    validAttesterSignedQuote = await Quote.createAttesterSignedQuote(
       validQuoteData,
       attesterIdentity,
       keystore
@@ -171,9 +133,8 @@ describe('Claim', () => {
         resolver: mockResolver,
       }
     )
-    invalidPropertiesQuote = invalidPropertiesQuoteData
-    invalidCostQuote = invalidCostQuoteData
 
+    // TODO: use snapshot testing and test compress -> decompress -> still equal
     compressedQuote = [
       validQuoteData.attesterDid,
       validQuoteData.cTypeHash,
@@ -227,78 +188,27 @@ describe('Claim', () => {
     ]
   })
 
-  it('tests created quote data against given data', async () => {
-    expect(validQuoteData.attesterDid).toEqual(attesterIdentity.did)
-    await expect(
-      claimerIdentity.signPayload(
-        Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        keystore,
-        claimerIdentity.authenticationKey.id
-      )
-    ).resolves.toEqual(quoteBothAgreed.claimerSignature)
-
-    const { fragment: attesterKeyId } = DidUtils.parseDidUri(
-      validAttesterSignedQuote.attesterSignature.keyId
-    )
-
-    expect(
-      Crypto.verify(
-        Crypto.hashObjectAsStr({
-          attesterDid: validQuoteData.attesterDid,
-          cTypeHash: validQuoteData.cTypeHash,
-          cost: validQuoteData.cost,
-          currency: validQuoteData.currency,
-          timeframe: validQuoteData.timeframe,
-          termsAndConditions: validQuoteData.termsAndConditions,
-        }),
-        validAttesterSignedQuote.attesterSignature.signature,
-        u8aToHex(
-          attesterIdentity.getKey(attesterKeyId!)?.publicKey || new Uint8Array()
-        )
-      )
-    ).toBeTruthy()
-    expect(
-      await Quote.fromAttesterSignedInput(validAttesterSignedQuote, {
-        resolver: mockResolver,
-      })
-    ).toEqual(validAttesterSignedQuote)
-    expect(
-      await Quote.fromQuoteDataAndIdentity(
-        validQuoteData,
-        attesterIdentity,
-        keystore
-      )
-    ).toEqual(validAttesterSignedQuote)
-  })
-  it('validates created quotes against QuoteSchema', () => {
-    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBeTruthy()
-    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBeFalsy()
-    expect(
-      Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
-    ).toBeFalsy()
-  })
-
   it('compresses and decompresses the quote object', () => {
-    expect(QuoteUtils.compressQuote(validQuoteData)).toEqual(compressedQuote)
+    expect(Compression.compressQuote(validQuoteData)).toEqual(compressedQuote)
 
-    expect(QuoteUtils.decompressQuote(compressedQuote)).toEqual(validQuoteData)
+    expect(Compression.decompressQuote(compressedQuote)).toEqual(validQuoteData)
 
     expect(
-      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
+      Compression.compressAttesterSignedQuote(validAttesterSignedQuote)
     ).toEqual(compressedResultAttesterSignedQuote)
 
     expect(
-      QuoteUtils.decompressAttesterSignedQuote(
+      Compression.decompressAttesterSignedQuote(
         compressedResultAttesterSignedQuote
       )
     ).toEqual(validAttesterSignedQuote)
 
-    expect(QuoteUtils.compressQuoteAgreement(quoteBothAgreed)).toEqual(
+    expect(Compression.compressQuoteAgreement(quoteBothAgreed)).toEqual(
       compressedResultQuoteAgreement
     )
 
     expect(
-      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
+      Compression.decompressQuoteAgreement(compressedResultQuoteAgreement)
     ).toEqual(quoteBothAgreed)
   })
   it('Negative test for compresses and decompresses the quote object', () => {
@@ -313,29 +223,29 @@ describe('Claim', () => {
     compressedResultQuoteAgreement.pop()
 
     expect(() => {
-      QuoteUtils.compressQuote(validQuoteData)
+      Compression.compressQuote(validQuoteData)
     }).toThrow()
 
     expect(() => {
-      QuoteUtils.decompressQuote(compressedQuote)
+      Compression.decompressQuote(compressedQuote)
     }).toThrow()
 
     expect(() => {
-      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
+      Compression.compressAttesterSignedQuote(validAttesterSignedQuote)
     }).toThrow()
 
     expect(() => {
-      QuoteUtils.decompressAttesterSignedQuote(
+      Compression.decompressAttesterSignedQuote(
         compressedResultAttesterSignedQuote
       )
     }).toThrow()
 
     expect(() => {
-      QuoteUtils.compressQuoteAgreement(quoteBothAgreed)
+      Compression.compressQuoteAgreement(quoteBothAgreed)
     }).toThrow()
 
     expect(() => {
-      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
+      Compression.decompressQuoteAgreement(compressedResultQuoteAgreement)
     }).toThrow()
   })
 })
