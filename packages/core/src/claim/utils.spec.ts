@@ -10,7 +10,7 @@
  */
 
 import type { IClaim } from '@kiltprotocol/types'
-import { hashClaimContents, toJsonLD } from './Claim.utils'
+import { hashClaimContents, toJsonLD } from './utils'
 
 const claim: IClaim = {
   cTypeHash:

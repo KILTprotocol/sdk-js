@@ -17,7 +17,7 @@ import type {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { hashClaimContents } from '../claim/Claim.utils.js'
+import { hashClaimContents } from '../claim/utils.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)

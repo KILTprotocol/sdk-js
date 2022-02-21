@@ -31,7 +31,7 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
-import * as ClaimUtils from '../claim/Claim.utils.js'
+import * as ClaimUtils from '../claim/utils.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
 import { Credential } from '../credential/index.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'

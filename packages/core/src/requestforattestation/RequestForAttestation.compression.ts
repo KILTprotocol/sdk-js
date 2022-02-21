@@ -18,7 +18,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CredentialUtils from '../credential/Credential.utils.js'
-import * as ClaimCompression from '../claim/Claim.compression.js'
+import * as ClaimCompression from '../claim/compression.js'
 import {
   verifyDataStructure,
   verifyDataIntegrity,

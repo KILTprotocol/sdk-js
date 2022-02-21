@@ -17,7 +17,7 @@ import type {
   CompressedPartialClaim,
 } from '@kiltprotocol/types'
 import { jsonabc, SDKErrors } from '@kiltprotocol/utils'
-import { verifyDataStructure } from './Claim.utils.js'
+import { verifyDataStructure } from './utils.js'
 
 /**
  *  Compresses the [[IClaim]] for storage and/or messaging.

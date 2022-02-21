@@ -21,7 +21,7 @@
 import type { IClaim, IDidDetails, ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CTypeUtils from '../ctype/CType.utils.js'
-import * as ClaimUtils from './Claim.utils.js'
+import * as ClaimUtils from './utils.js'
 
 function verifyAgainstCType(
   claimContents: IClaim['contents'],
