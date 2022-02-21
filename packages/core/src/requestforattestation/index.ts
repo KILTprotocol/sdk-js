@@ -8,3 +8,4 @@
 export * from './base.js'
 export * from './compression.js'
 export * from './utils.js'
+export * from './verification.js'

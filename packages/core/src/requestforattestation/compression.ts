@@ -19,10 +19,7 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CredentialUtils from '../credential/Credential.utils.js'
 import * as ClaimCompression from '../claim/compression.js'
-import {
-  verifyDataStructure,
-  verifyDataIntegrity,
-} from './requestforattestation.js'
+import { verifyDataStructure, verifyDataIntegrity } from './verification.js'
 
 /**
  *  Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.

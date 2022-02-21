@@ -15,8 +15,12 @@ import type {
   IDelegationNode,
   ICredential,
   IRequestForAttestation,
+  DidPublicKey,
+  KeystoreSigner,
+  DidKey,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import { DidDetails } from '@kiltprotocol/did'
 import { hashClaimContents } from '../claim/utils.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
@@ -96,4 +100,38 @@ export function makeSigningData(
     ...Crypto.coToUInt8(input.rootHash),
     ...Crypto.coToUInt8(challenge),
   ])
+}
+
+export async function addSignature(
+  req4Att: IRequestForAttestation,
+  sig: string | Uint8Array,
+  keyId: DidPublicKey['id'],
+  {
+    challenge,
+  }: {
+    challenge?: string
+  } = {}
+): Promise<void> {
+  const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
+  // eslint-disable-next-line no-param-reassign
+  req4Att.claimerSignature = { signature, keyId, challenge }
+}
+
+export async function signWithDidKey(
+  req4Att: IRequestForAttestation,
+  signer: KeystoreSigner,
+  didDetails: DidDetails,
+  keyId: DidKey['id'],
+  {
+    challenge,
+  }: {
+    challenge?: string
+  } = {}
+): Promise<void> {
+  const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
+    makeSigningData(req4Att, challenge),
+    signer,
+    keyId
+  )
+  return addSignature(req4Att, signature, signatureKeyId, { challenge })
 }
