@@ -527,9 +527,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       ? this.apiObject.tx.utility.batchAll
       : this.apiObject.tx.utility.batch
 
-    const batchLength = this.batch.length
-
-    if (!batchLength) {
+    if (!this.batch.length) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Builder was empty, hence it cannot be consumed.'
       )
