@@ -6,13 +6,14 @@
  */
 
 import { ApiPromise } from '@polkadot/api'
-import { encodeAddress } from '@polkadot/util-crypto'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
-import type {
+import {
   IIdentity,
   KeystoreSigner,
   NewDidVerificationKey,
   SubmittableExtrinsic,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -90,9 +91,14 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   ): Promise<FullDidDetails> {
     const extrinsic = await this.consume(signer, submitter, atomic)
     await handler(extrinsic)
+    const pk =
+      this.authenticationKey.type === VerificationKeyType.Ecdsa &&
+      this.authenticationKey.publicKey.length > 32
+        ? blake2AsU8a(this.authenticationKey.publicKey)
+        : this.authenticationKey.publicKey
     const fetchedDidDetails = await FullDidDetails.fromChainInfo(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      encodeAddress(this.authenticationKey!.publicKey, 38)
+      encodeAddress(pk, 38)
     )
     if (!fetchedDidDetails) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -127,9 +133,17 @@ export class FullDidCreationBuilder extends FullDidBuilder {
 
     this.consumed = true
 
+    const { publicKey, type } = this.authenticationKey
+
+    const pk =
+      type === VerificationKeyType.Ecdsa && publicKey.length > 32
+        ? blake2AsU8a(publicKey)
+        : publicKey
+    const encodedAddress = encodeAddress(pk, 38)
+
     return generateCreateTxFromCreationDetails(
       {
-        identifier: encodeAddress(this.authenticationKey.publicKey, 38),
+        identifier: encodedAddress,
         authenticationKey: this.authenticationKey,
         keyAgreementKeys: [...this.newKeyAgreementKeys.values()],
         assertionKey:

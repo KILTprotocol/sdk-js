@@ -11,6 +11,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
   DemoKeystore,
@@ -57,7 +58,6 @@ import {
   createFullDidFromSeed,
 } from './utils'
 import { DelegationNode } from '../delegation'
-import { encodeAddress } from '@polkadot/util-crypto'
 
 let paymentAccount: KeyringPair
 const keystore = new DemoKeystore()
@@ -773,11 +773,16 @@ describe('DID management batching', () => {
       const authKey = await keystore.generateKeypair({
         alg: SigningAlgorithms.EcdsaSecp256k1,
       })
-
-      const builder = new FullDidCreationBuilder(api, {
+      const didAuthKey: NewDidVerificationKey = {
         publicKey: authKey.publicKey,
         type: VerificationKeyType.Ecdsa,
-      })
+      }
+      const encodedEcdsaAddress = encodeAddress(
+        blake2AsU8a(authKey.publicKey),
+        38
+      )
+
+      const builder = new FullDidCreationBuilder(api, didAuthKey)
 
       await expect(
         builder
@@ -785,9 +790,7 @@ describe('DID management batching', () => {
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
-      const fullDid = await FullDidDetails.fromChainInfo(
-        encodeAddress(authKey.publicKey, 38)
-      )
+      const fullDid = await FullDidDetails.fromChainInfo(encodedEcdsaAddress)
 
       expect(fullDid).not.toBeNull()
 

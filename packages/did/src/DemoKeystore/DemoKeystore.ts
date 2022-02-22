@@ -58,7 +58,7 @@ function encodeSigningPublicKeyToAddress(
     case SigningAlgorithms.EcdsaSecp256k1: {
       // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
       const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
-      return encodeAddress(pk)
+      return encodeAddress(pk, 38)
     }
     default:
       throw SDKErrors.ERROR_KEYSTORE_ERROR(`Unsupport signing key alg ${alg}`)

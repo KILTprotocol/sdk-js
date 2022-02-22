@@ -50,7 +50,10 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { DidDetails } from './DidDetails/index.js'
-import { getSigningAlgorithmForVerificationKeyType } from './Did.utils.js'
+import {
+  getSigningAlgorithmForVerificationKeyType,
+  getVerificationKeyTypeForSigningAlgorithm,
+} from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
@@ -405,7 +408,7 @@ export async function generateCreateTxFromCreationDetails(
     alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
   return api.tx.did.create(encodedDidCreationDetails, {
-    [signature.alg]: signature.data,
+    [getVerificationKeyTypeForSigningAlgorithm(signature.alg)]: signature.data,
   })
 }
 
