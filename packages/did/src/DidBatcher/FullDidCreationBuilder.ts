@@ -107,7 +107,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
-   * @param _atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
+   * @param _atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails. At this time, this parameter is not used for a creation operation, albeit this might change in the future.
    *
    * @returns The [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    */
