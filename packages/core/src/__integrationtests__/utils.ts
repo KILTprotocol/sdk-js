@@ -32,7 +32,7 @@ import type {
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { CType, CTypeUtils } from '../ctype'
+import * as CType from '../ctype'
 import { Balance } from '../balance'
 import { init } from '../kilt'
 
@@ -64,7 +64,7 @@ export function addressFromRandom(): string {
 }
 
 export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
-  return CTypeUtils.verifyStored(ctype)
+  return CType.verifyStored(ctype)
 }
 
 export const driversLicenseCType = CType.fromSchema({

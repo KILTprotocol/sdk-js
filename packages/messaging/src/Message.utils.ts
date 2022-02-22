@@ -14,7 +14,7 @@ import {
   Attestation,
   CredentialUtils,
   Claim,
-  CTypeUtils,
+  CType,
   Quote,
   RequestForAttestation,
 } from '@kiltprotocol/core'
@@ -92,7 +92,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
       }
       if (body.content.cTypes) {
-        body.content.cTypes.map((val) => CTypeUtils.errorCheck(val))
+        body.content.cTypes.map((val) => CType.verifyDataStructure(val))
       }
       break
     }
@@ -242,7 +242,7 @@ export function verifyRequiredCTypeProperties(
   requiredProperties: string[],
   cType: ICType
 ): boolean {
-  CTypeUtils.errorCheck(cType as ICType)
+  CType.verifyDataStructure(cType as ICType)
 
   const validProperties = requiredProperties.find(
     (property) => !(property in cType.schema.properties)
@@ -282,7 +282,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
         body.content.quote
           ? Quote.compressAttesterSignedQuote(body.content.quote)
           : undefined,
-        body.content.cTypes?.map((val) => CTypeUtils.compress(val)),
+        body.content.cTypes?.map((val) => CType.compress(val)),
       ]
       break
     }
@@ -414,7 +414,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
         quote: body[1][3]
           ? Quote.decompressAttesterSignedQuote(body[1][3])
           : undefined,
-        cTypes: body[1][4]?.map((val) => CTypeUtils.decompress(val)),
+        cTypes: body[1][4]?.map((val) => CType.decompress(val)),
       }
 
       break

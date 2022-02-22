@@ -10,9 +10,9 @@
  */
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
-import * as CType from './CType'
+import * as CType from './base'
 import * as Claim from '../claim'
-import * as CTypeUtils from './CType.utils'
+import * as Verification from './verification'
 
 describe('Nested CTypes', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
@@ -154,7 +154,7 @@ describe('Nested CTypes', () => {
 
   it('verify json-schema validator', () => {
     expect(
-      CTypeUtils.validateNestedSchemas(
+      Verification.verifyClaimAgainstNestedSchemas(
         nestedCType.schema,
         [passport.schema, kyc.schema],
         claimContents
@@ -173,7 +173,7 @@ describe('Nested CTypes', () => {
       new Error('Nested claim data does not validate against CType')
     )
     expect(
-      CTypeUtils.validateNestedSchemas(
+      Verification.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],
         claimDeepContents
@@ -181,7 +181,7 @@ describe('Nested CTypes', () => {
     ).toBeTruthy()
     ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
     expect(
-      CTypeUtils.validateNestedSchemas(
+      Verification.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],
         claimDeepContents

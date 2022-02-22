@@ -17,7 +17,7 @@ import {
   base58Decode,
 } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { Attestation, CTypeSchema } from '@kiltprotocol/core'
+import { Attestation, CType } from '@kiltprotocol/core'
 import { Crypto, JsonSchema } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
 import { VerificationKeyTypesMap } from '@kiltprotocol/types'
@@ -311,7 +311,7 @@ export function validateSchema(
   if (schema) {
     // there's no rule against additional properties, so we can just validate the ones that are there
     const validator = new JsonSchema.Validator(schema)
-    validator.addSchema(CTypeSchema.CTypeModel)
+    validator.addSchema(CType.Schemas.CTypeModel)
     const result = validator.validate(credential.credentialSubject)
     return {
       verified: result.valid,

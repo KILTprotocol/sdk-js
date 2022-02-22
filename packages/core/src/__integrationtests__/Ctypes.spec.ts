@@ -12,8 +12,8 @@
 import { ICType, KeyringPair } from '@kiltprotocol/types'
 import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import { CType, CTypeUtils } from '../ctype'
-import { getOwner } from '../ctype/CType.chain'
+import * as CType from '../ctype'
+import { getOwner } from '../ctype/chain'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -61,7 +61,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         )
         .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
     ).rejects.toThrowError()
-    await expect(CTypeUtils.verifyStored(ctype)).resolves.toBeFalsy()
+    await expect(CType.verifyStored(ctype)).resolves.toBeFalsy()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
@@ -73,10 +73,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did),
-      expect(CTypeUtils.verifyStored(ctype)).resolves.toBeTruthy(),
+      expect(CType.verifyStored(ctype)).resolves.toBeTruthy(),
     ])
     ctype.owner = ctypeCreator.did
-    await expect(CTypeUtils.verifyStored(ctype)).resolves.toBeTruthy()
+    await expect(CType.verifyStored(ctype)).resolves.toBeTruthy()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
@@ -122,12 +122,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
 
     await Promise.all([
-      expect(CTypeUtils.verifyStored(iAmNotThere)).resolves.toBeFalsy(),
+      expect(CType.verifyStored(iAmNotThere)).resolves.toBeFalsy(),
       expect(getOwner(iAmNotThere.hash)).resolves.toBeNull(),
       expect(getOwner(Crypto.hashStr('abcdefg'))).resolves.toBeNull(),
-      expect(
-        CTypeUtils.verifyStored(iAmNotThereWithOwner)
-      ).resolves.toBeFalsy(),
+      expect(CType.verifyStored(iAmNotThereWithOwner)).resolves.toBeFalsy(),
     ])
   })
 })

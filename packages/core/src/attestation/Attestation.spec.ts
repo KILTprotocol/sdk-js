@@ -26,7 +26,7 @@ import {
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
 import * as Claim from '../claim'
-import { CType } from '../ctype'
+import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
 import * as Attestation from './Attestation'
 

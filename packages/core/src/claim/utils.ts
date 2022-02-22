@@ -14,7 +14,7 @@ import { hexToBn } from '@polkadot/util'
 import type { IClaim, PartialClaim } from '@kiltprotocol/types'
 import { DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import { getIdForCTypeHash } from '../ctype/CType.utils.js'
+import { getIdForCTypeHash } from '../ctype/utils.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 

@@ -12,15 +12,14 @@
 import type { ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import {
-  verifyClaimStructure,
-  verifySchema,
-  verifySchemaWithErrors,
+  verifyClaimAgainstSchema,
+  verifyObjectAgainstSchema,
   verifyStored,
   verifyOwner,
-} from './CType.utils'
-import * as CType from './CType.js'
-import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
-import { getOwner, isStored } from './CType.chain'
+} from './verification'
+import * as CType from './base.js'
+import { CTypeModel, CTypeWrapperModel } from './schemas'
+import { getOwner, isStored } from './chain'
 
 jest.mock('./CType.chain')
 
@@ -68,15 +67,19 @@ const badClaim = {
 
 describe('CTypeUtils', () => {
   it('verifies claims', () => {
-    expect(verifyClaimStructure(goodClaim, ctypeWrapperModel)).toBeTruthy()
-    expect(verifyClaimStructure(badClaim, ctypeWrapperModel)).toBeFalsy()
-    expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
+    expect(verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)).toBeTruthy()
+    expect(verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)).toBeFalsy()
+    expect(
+      verifyObjectAgainstSchema(badClaim, CTypeWrapperModel, [])
+    ).toBeFalsy()
     expect(() => {
-      verifyClaimStructure(badClaim, ctypeInput)
+      verifyClaimAgainstSchema(badClaim, ctypeInput)
     }).toThrow(SDKErrors.ERROR_OBJECT_MALFORMED())
   })
   it('verifies ctypes', () => {
-    expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()
+    expect(
+      verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)
+    ).toBeTruthy()
   })
 })
 

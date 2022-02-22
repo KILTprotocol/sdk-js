@@ -18,7 +18,7 @@ import { revoke, remove } from '../attestation/Attestation.chain'
 import { Credential } from '../credential'
 import { disconnect } from '../kilt'
 import * as Claim from '../claim'
-import { CType } from '../ctype'
+import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
 import {
   isCtypeOnChain,

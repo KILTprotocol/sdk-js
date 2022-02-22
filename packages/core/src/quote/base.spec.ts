@@ -32,7 +32,7 @@ import {
   DidUtils,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
-import { CType } from '../ctype'
+import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
 import * as Quote from './base'
 import { QuoteSchema } from './QuoteSchema'

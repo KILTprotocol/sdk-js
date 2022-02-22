@@ -31,7 +31,7 @@ import {
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
-import { CType, CTypeUtils } from '../ctype'
+import * as CType from '../ctype'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -625,7 +625,7 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
-    await expect(CTypeUtils.verifyStored(ctype)).resolves.toEqual(true)
+    await expect(CType.verifyStored(ctype)).resolves.toEqual(true)
   }, 60_000)
 
   it('authorizes batch with DID signature', async () => {
@@ -655,8 +655,8 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
-    await expect(CTypeUtils.verifyStored(ctype1)).resolves.toEqual(true)
-    await expect(CTypeUtils.verifyStored(ctype2)).resolves.toEqual(true)
+    await expect(CType.verifyStored(ctype1)).resolves.toEqual(true)
+    await expect(CType.verifyStored(ctype2)).resolves.toEqual(true)
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
@@ -691,7 +691,7 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
 
-    await expect(CTypeUtils.verifyStored(ctype)).resolves.toEqual(false)
+    await expect(CType.verifyStored(ctype)).resolves.toEqual(false)
   }, 60_000)
 })
 

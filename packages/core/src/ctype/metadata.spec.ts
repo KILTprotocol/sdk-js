@@ -13,10 +13,9 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
-import * as CType from './CType'
-import * as CTypeUtils from './CType.utils'
-import * as CTypeMetadata from './CTypeMetadata'
-import { MetadataModel } from './CTypeSchema'
+import * as CType from './base'
+import * as Verification from './verification'
+import { MetadataModel } from './schemas'
 
 describe('CType', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
@@ -54,10 +53,14 @@ describe('CType', () => {
   })
 
   it('verifies the metadata of a ctype', async () => {
-    expect(() => CTypeMetadata.check(metadata)).not.toThrow()
+    expect(() => Verification.verifyCTypeMetadata(metadata)).not.toThrow()
     expect(metadata.ctypeHash).not.toHaveLength(0)
-    expect(CTypeUtils.verifySchema(metadata, MetadataModel)).toBeTruthy()
-    expect(CTypeUtils.verifySchema(ctypeMetadata, MetadataModel)).toBeFalsy()
+    expect(
+      Verification.verifyObjectAgainstSchema(metadata, MetadataModel)
+    ).toBeTruthy()
+    expect(
+      Verification.verifyObjectAgainstSchema(ctypeMetadata, MetadataModel)
+    ).toBeFalsy()
   })
   it('checks if the metadata matches corresponding ctype hash', async () => {
     expect(metadata.ctypeHash).toEqual(ctype.hash)
@@ -69,7 +72,7 @@ describe('CType', () => {
     }
     // @ts-expect-error
     delete faultyMetadata.metadata.properties
-    expect(() => CTypeMetadata.check(metadata)).toThrow(
+    expect(() => Verification.verifyCTypeMetadata(metadata)).toThrow(
       SDKErrors.ERROR_OBJECT_MALFORMED()
     )
   })

@@ -20,14 +20,17 @@
 
 import type { IClaim, IDidDetails, ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import * as CTypeUtils from '../ctype/CType.utils.js'
+import {
+  verifyClaimAgainstSchema,
+  verifyClaimAgainstNestedSchemas,
+} from '../ctype/index.js'
 import * as ClaimUtils from './utils.js'
 
 function verifyAgainstCType(
   claimContents: IClaim['contents'],
   cTypeSchema: ICType['schema']
 ): boolean {
-  return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
+  return verifyClaimAgainstSchema(claimContents, cTypeSchema)
 }
 /**
  * Verifies the data structure and schema of a Claim.
@@ -65,7 +68,7 @@ export function fromNestedCTypeClaim(
   claimOwner: IDidDetails['did']
 ): IClaim {
   if (
-    !CTypeUtils.validateNestedSchemas(
+    !verifyClaimAgainstNestedSchemas(
       cTypeInput.schema,
       nestedCType,
       claimContents

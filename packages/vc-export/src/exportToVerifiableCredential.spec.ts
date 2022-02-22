@@ -12,9 +12,10 @@
 import {
   DidDocumentPublicKeyType,
   ICredential,
+  ICType,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Attestation, CType } from '@kiltprotocol/core'
+import { Attestation } from '@kiltprotocol/core'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -30,7 +31,7 @@ import {
   KILT_CREDENTIAL_CONTEXT_URL,
 } from './constants'
 
-const ctype = CType.fromCType({
+const ctype: ICType = {
   schema: {
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'membership',
@@ -51,7 +52,7 @@ const ctype = CType.fromCType({
   },
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-})
+}
 
 const credential: ICredential = {
   request: {

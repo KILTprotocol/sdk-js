@@ -41,7 +41,7 @@ import * as Claim from '../claim'
 import * as RequestForAttestation from '../requestforattestation'
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
-import { CType } from '../ctype'
+import * as CType from '../ctype'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic

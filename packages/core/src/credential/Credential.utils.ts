@@ -17,7 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/index.js'
-import * as CTypeUtils from '../ctype/CType.utils.js'
+import { verifyClaimAgainstSchema } from '../ctype/index.js'
 import * as RequestForAttestation from '../requestforattestation/index.js'
 import * as Credential from './Credential.js'
 
@@ -94,7 +94,7 @@ export function verifyStructure(
   ctype: ICType
 ): boolean {
   errorCheck(credential)
-  return CTypeUtils.verifyClaimStructure(
+  return verifyClaimAgainstSchema(
     credential.request.claim.contents,
     ctype.schema
   )

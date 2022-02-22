@@ -18,23 +18,10 @@
  */
 
 import type { ICType, CTypeSchemaWithoutId } from '@kiltprotocol/types'
-import { getHashForSchema, getIdForSchema, errorCheck } from './CType.utils.js'
+import { getHashForSchema, getIdForSchema } from './utils.js'
+import { verifyDataStructure } from './verification.js'
 
-export { getOwner, isStored, store } from './CType.chain.js'
-
-/**
- * [STATIC] Clones an already existing [[CType]]
- * or initializes from an [[ICType]] like object
- * which is non-initialized and non-verified CType data.
- *
- * @param cTypeInput The [[CType]] which shall be cloned.
- *
- * @returns A copy of the given [[CType]].
- */
-export function fromCType(cTypeInput: ICType): ICType {
-  errorCheck(cTypeInput)
-  return JSON.parse(JSON.stringify(cTypeInput))
-}
+export { getOwner, isStored, store } from './chain.js'
 
 /**
  *  [STATIC] Creates a new [[CType]] from an [[ICTypeSchema]].
@@ -58,7 +45,7 @@ export function fromSchema(
       $id: getIdForSchema(schema),
     },
   }
-  errorCheck(ctype)
+  verifyDataStructure(ctype)
   return ctype
 }
 
@@ -71,7 +58,7 @@ export function fromSchema(
  */
 export function isICType(input: unknown): input is ICType {
   try {
-    errorCheck(input as ICType)
+    verifyDataStructure(input as ICType)
   } catch (error) {
     return false
   }

@@ -11,7 +11,7 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
-import { CType } from '../ctype'
+import * as CType from '../ctype'
 import * as Claim from './base'
 import * as ClaimCompression from './compression'
 import * as ClaimUtils from './utils'

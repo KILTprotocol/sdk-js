@@ -26,7 +26,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidResolver, DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/utils.js'
-import * as CTypeUtils from '../ctype/CType.utils.js'
+import { verifyClaimAgainstSchema } from '../ctype/index.js'
 import { Credential } from '../credential/index.js'
 import * as RequestForAttestationUtils from './utils.js'
 import { makeSigningData } from './utils.js'
@@ -127,7 +127,7 @@ export function verifyAgainstCType(
   ctype: ICType
 ): boolean {
   verifyDataStructure(requestForAttestation)
-  return CTypeUtils.verifyClaimStructure(
+  return verifyClaimAgainstSchema(
     requestForAttestation.claim.contents,
     ctype.schema
   )
