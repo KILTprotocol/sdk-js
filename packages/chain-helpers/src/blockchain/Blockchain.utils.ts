@@ -20,6 +20,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import { SubmittableResult } from '@polkadot/api'
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
 import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection.js'
@@ -41,7 +42,7 @@ export const IS_FINALIZED: SubscriptionPromise.ResultEvaluator = (result) =>
   result.isFinalized
 
 export const IS_ERROR: SubscriptionPromise.ResultEvaluator = (result) =>
-  result.isError
+  result.isError || result.internalError
 export const EXTRINSIC_FAILED: SubscriptionPromise.ResultEvaluator = (result) =>
   ErrorHandler.extrinsicFailed(result)
 
@@ -90,22 +91,23 @@ export async function submitSignedTx(
 
   const unsubscribe = await tx.send(subscription)
 
-  const disconnectHandler = new Promise<ISubmittableResult>((res, rej) => {
-    getConnectionOrConnect().then(({ api }) => {
-      const errorCb = (): void => rej(new Error('connection error'))
-      api.once('disconnected', errorCb)
-      promise
-        .then(res)
-        .catch(rej)
-        .finally(() => {
-          api.off('disconnected', errorCb)
-        })
+  const { api } = await getConnectionOrConnect()
+  const handleDisconnect = (): void => {
+    const result = new SubmittableResult({
+      events: [],
+      internalError: new Error('connection error'),
+      status: api.registry.createType('ExtrinsicStatus', 'future'),
     })
-  })
+    subscription(result)
+  }
+  api.once('disconnected', handleDisconnect)
 
-  return disconnectHandler
+  return promise
     .catch((e) => Promise.reject(ErrorHandler.getExtrinsicError(e) || e))
-    .finally(() => unsubscribe())
+    .finally(() => {
+      unsubscribe()
+      api.off('disconnected', handleDisconnect)
+    })
 }
 export const dispatchTx = submitSignedTx
 
