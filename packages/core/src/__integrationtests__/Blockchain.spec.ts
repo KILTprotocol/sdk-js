@@ -13,7 +13,7 @@ import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import { BN } from '@polkadot/util'
 import type { IBlockchainApi, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { makeTransfer } from '../balance/Balance.chain'
+import { getTransferTx } from '../balance/Balance.chain'
 import {
   devFaucet,
   devCharlie,
@@ -38,7 +38,7 @@ describe('Chain returns specific errors, that we check for', () => {
     faucet = devFaucet
     testIdentity = keypairFromRandom()
     charlie = devCharlie
-    await makeTransfer(testIdentity.address, new BN(10000), 0).then((tx) =>
+    await getTransferTx(testIdentity.address, new BN(10000), 0).then((tx) =>
       submitExtrinsicWithResign(tx, faucet)
     )
   }, 40000)

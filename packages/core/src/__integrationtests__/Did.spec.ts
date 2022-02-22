@@ -615,7 +615,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.store()
+    const call = await ctype.getStoreTx()
     const tx = await didDetails.authorizeExtrinsic(
       call,
       keystore,
@@ -641,7 +641,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const calls = await Promise.all([ctype1, ctype2].map((c) => c.store()))
+    const calls = await Promise.all([ctype1, ctype2].map((c) => c.getStoreTx()))
     const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
       ({ api }) => api.tx.utility.batch(calls)
     )
@@ -681,7 +681,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.store()
+    const call = await ctype.getStoreTx()
     const tx2 = await didDetails.authorizeExtrinsic(
       call,
       keystore,

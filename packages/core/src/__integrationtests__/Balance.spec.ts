@@ -14,7 +14,7 @@ import type { KeyringPair } from '@kiltprotocol/types'
 import {
   getBalances,
   listenToBalanceChanges,
-  makeTransfer,
+  getTransferTx,
 } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
@@ -72,7 +72,7 @@ describe('when there is a dev chain with a faucet', () => {
     const funny = jest.fn()
     listenToBalanceChanges(address, funny)
     const balanceBefore = await getBalances(faucet.address)
-    await makeTransfer(address, EXISTENTIAL_DEPOSIT).then((tx) =>
+    await getTransferTx(address, EXISTENTIAL_DEPOSIT).then((tx) =>
       submitExtrinsicWithResign(tx, faucet)
     )
     const [balanceAfter, balanceIdent] = await Promise.all([
@@ -101,7 +101,7 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+    await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       submitExtrinsicWithResign(tx, richieRich)
     )
     const balanceTo = await getBalances(stormyD.address)
@@ -111,7 +111,7 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = await getBalances(stormyD.address)
     await expect(
-      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         submitExtrinsicWithResign(tx, bobbyBroke)
       )
     ).rejects.toThrowError('1010: Invalid Transaction')
@@ -126,7 +126,7 @@ describe('When there are haves and have-nots', () => {
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalances(richieRich.address)
     await expect(
-      makeTransfer(bobbyBroke.address, RichieBalance.free).then((tx) =>
+      getTransferTx(bobbyBroke.address, RichieBalance.free).then((tx) =>
         submitExtrinsicWithResign(tx, richieRich)
       )
     ).rejects.toThrowError()
@@ -141,10 +141,10 @@ describe('When there are haves and have-nots', () => {
   it('should be able to make a new transaction once the last is ready', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
-    await makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+    await getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       submitExtrinsicWithResign(tx, faucet)
     )
-    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+    await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       submitExtrinsicWithResign(tx, faucet)
     )
 
@@ -160,10 +160,10 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
-      makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         submitExtrinsicWithResign(tx, faucet)
       ),
-      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
+      getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         submitExtrinsicWithResign(tx, faucet)
       ),
     ])

@@ -31,7 +31,7 @@ import {
 } from './utils'
 import {
   getAttestationHashes,
-  revoke,
+  getRevokeTx,
 } from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
@@ -51,7 +51,7 @@ async function writeHierarchy(
   })
 
   await rootNode
-    .store()
+    .getStoreTx()
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
@@ -75,7 +75,7 @@ async function addDelegation(
   })
   const signature = await delegationNode.delegeeSign(delegee, signer)
   await delegationNode
-    .store(signature)
+    .getStoreTx(signature)
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
@@ -95,7 +95,7 @@ beforeAll(async () => {
 
   if (!(await isCtypeOnChain(driversLicenseCType))) {
     await driversLicenseCType
-      .store()
+      .getStoreTx()
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -162,7 +162,7 @@ describe('and attestation rights have been delegated', () => {
 
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation
-      .store()
+      .getStoreTx()
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -177,7 +177,7 @@ describe('and attestation rights have been delegated', () => {
 
     // revoke attestation through root
     await credential.attestation
-      .revoke(1)
+      .getRevokeTx(1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(credential.verify()).resolves.toBeFalsy()
@@ -207,7 +207,7 @@ describe('revocation', () => {
     // Test revocation
     await expect(
       delegationA
-        .revoke(delegator.did)
+        .getRevokeTx(delegator.did)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -220,7 +220,7 @@ describe('revocation', () => {
     // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
     await expect(
       delegationA
-        .remove()
+        .getRemoveTx()
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -247,7 +247,7 @@ describe('revocation', () => {
       firstDelegee
     )
     await expect(
-      revoke(delegationRoot.id, 1, 1)
+      getRevokeTx(delegationRoot.id, 1, 1)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -260,7 +260,7 @@ describe('revocation', () => {
 
     await expect(
       delegationA
-        .revoke(firstDelegee.did)
+        .getRevokeTx(firstDelegee.did)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -289,7 +289,7 @@ describe('revocation', () => {
     delegationRoot = await delegationRoot.getLatestState()
     await expect(
       delegationRoot
-        .revoke(delegator.did)
+        .getRevokeTx(delegator.did)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -326,7 +326,7 @@ describe('Deposit claiming', () => {
       DelegationNode.query(subDelegatedNode.id)
     ).resolves.not.toBeNull()
 
-    const depositClaimTx = await delegatedNode.reclaimDeposit()
+    const depositClaimTx = await delegatedNode.getReclaimDepositTx()
 
     // Test removal failure with an account that is not the deposit payer.
     await expect(

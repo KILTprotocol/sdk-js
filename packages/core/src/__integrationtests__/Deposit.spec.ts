@@ -105,7 +105,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await attestation.getStoreTx()
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -133,7 +133,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.remove(0)
+  tx = await attestation.getRemoveTx(0)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -164,7 +164,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await attestation.getStoreTx()
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -183,7 +183,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.did
   )
 
-  tx = await attestation.reclaimDeposit()
+  tx = await attestation.getReclaimDepositTx()
 
   const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
@@ -214,7 +214,7 @@ async function checkDeletedDidReclaimAttestation(
     fullDid.did
   )
 
-  tx = await attestation.store()
+  tx = await attestation.getStoreTx()
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -239,7 +239,7 @@ async function checkDeletedDidReclaimAttestation(
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
-  tx = await attestation.reclaimDeposit()
+  tx = await attestation.getReclaimDepositTx()
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 }
@@ -279,7 +279,7 @@ beforeAll(async () => {
   if (!ctypeExists) {
     await attester
       .authorizeExtrinsic(
-        await driversLicenseCType.store(),
+        await driversLicenseCType.getStoreTx(),
         keystore,
         devFaucet.address
       )
