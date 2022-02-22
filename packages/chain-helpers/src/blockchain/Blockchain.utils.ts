@@ -90,7 +90,20 @@ export async function submitSignedTx(
 
   const unsubscribe = await tx.send(subscription)
 
-  return promise
+  const disconnectHandler = new Promise<ISubmittableResult>((res, rej) => {
+    getConnectionOrConnect().then(({ api }) => {
+      const errorCb = (): void => rej(new Error('connection error'))
+      api.once('disconnected', errorCb)
+      promise
+        .then(res)
+        .catch(rej)
+        .finally(() => {
+          api.off('disconnected', errorCb)
+        })
+    })
+  })
+
+  return disconnectHandler
     .catch((e) => Promise.reject(ErrorHandler.getExtrinsicError(e) || e))
     .finally(() => unsubscribe())
 }
