@@ -9,23 +9,36 @@ import type {
   DidKey,
   DidServiceEndpoint,
   IDidDetails,
+  IDidIdentifier,
   KeyRelationship,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
+/**
+ * Map from a key relationship (including the 'none' relationship) -> set of key IDs.
+ */
 export type MapKeysToRelationship = Partial<
   Record<KeyRelationship, Set<DidKey['id']>> & { none: Set<DidKey['id']> }
 >
 
+/**
+ * Map from a key ID -> set of keys.
+ */
 export type PublicKeys = Record<DidKey['id'], Omit<DidKey, 'id'>>
 
+/**
+ * Map from a service ID -> set of services.
+ */
 export type ServiceEndpoints = Record<
   DidServiceEndpoint['id'],
   Omit<DidServiceEndpoint, 'id'>
 >
 
-export type DidKeySelectionHandler = (keys: DidKey[]) => Promise<DidKey | null>
+export type DidKeySelectionHandler<T> = (keys: T[]) => Promise<T | null>
 
-export type DidCreationDetails = {
+export type DidConstructorDetails = {
   did: IDidDetails['did']
   // Accepts a list of keys where the ID does not include the DID URI.
   keys: PublicKeys
@@ -34,43 +47,28 @@ export type DidCreationDetails = {
   serviceEndpoints?: ServiceEndpoints
 }
 
-/**
- * A new public key specified when creating a new DID.
- */
-export type LightDidKeyCreationInput = Pick<DidKey, 'type'> & {
-  publicKey: Uint8Array
+export type FullDidCreationDetails = {
+  identifier: IDidIdentifier
+  authenticationKey: NewDidVerificationKey
+  keyAgreementKeys?: NewDidEncryptionKey[]
+  assertionKey?: NewDidVerificationKey
+  delegationKey?: NewDidVerificationKey
+  serviceEndpoints?: DidServiceEndpoint[]
 }
 
+// Ecdsa not supported.
+export type LightDidSupportedVerificationKeyType =
+  | VerificationKeyType.Ed25519
+  | VerificationKeyType.Sr25519
+
 /**
- * The options that can be used to create a light DID.
+ * A new public key specified when creating a new light DID.
+ *
+ * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
  */
-export type LightDidCreationDetails = {
-  /**
-   * The DID authentication key. This is mandatory and will be used as the first authentication key
-   * of the full DID upon migration.
-   */
-  authenticationKey: LightDidKeyCreationInput
-  /**
-   * The optional DID encryption key. If present, it will be used as the first key agreement key
-   * of the full DID upon migration.
-   */
-  encryptionKey?: LightDidKeyCreationInput
-  /**
-   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
-   * The service ID must not contain the DID prefix when used to create a new DID.
-   *
-   * @example ```typescript
-   * const authenticationKey = exampleKey;
-   * const services = [
-   *   {
-   *     id: 'test-service',
-   *     types: ['CredentialExposureService'],
-   *     urls: ['http://my_domain.example.org'],
-   *   },
-   * ];
-   * const lightDid = new LightDid({ authenticationKey, services });
-   * RequestForAttestation.fromRequest(parsedRequest);
-   * ```
-   */
-  serviceEndpoints?: DidServiceEndpoint[]
+export type NewLightDidAuthenticationKey = Omit<
+  NewDidVerificationKey,
+  'type'
+> & {
+  type: LightDidSupportedVerificationKeyType
 }

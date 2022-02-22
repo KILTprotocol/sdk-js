@@ -36,14 +36,14 @@ export type Web3Name = string
 /**
  * Returns a extrinsic to claim a new web3name.
  *
- * @param nick Web3Name that should be claimed.
+ * @param name Web3Name that should be claimed.
  * @returns The [[SubmittableExtrinsic]] for the `claim` call.
  */
 export async function getClaimTx(
-  nick: Web3Name
+  name: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.web3Names.claim(nick)
+  return blockchain.api.tx.web3Names.claim(name)
 }
 
 /**
@@ -59,14 +59,14 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
 /**
  * Returns a extrinsic to release a web3name by the account that owns the deposit.
  *
- * @param nick Web3Name that should be released.
+ * @param name Web3Name that should be released.
  * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
  */
 export async function getReclaimDepositTx(
-  nick: Web3Name
+  name: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.web3Names.reclaimDeposit(nick)
+  return blockchain.api.tx.web3Names.reclaimDeposit(name)
 }
 
 /**
@@ -89,16 +89,16 @@ export async function queryWeb3NameForDidIdentifier(
 /**
  * Retrieve the did identifier for a specific web3name.
  *
- * @param nick Web3Name that should be resolved to a DID.
+ * @param name Web3Name that should be resolved to a DID.
  * @returns The DID identifier for this web3name if any.
  */
 export async function queryDidIdentifierForWeb3Name(
-  nick: Web3Name
+  name: Web3Name
 ): Promise<IDidIdentifier | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.web3Names.owner<
     Option<Web3NameOwner>
-  >(nick)
+  >(name)
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])
@@ -122,13 +122,13 @@ export async function queryWeb3NameForDid(
 /**
  * Retrieve the DID uri for a specific web3 name.
  *
- * @param nick Web3 name that should be looked up.
+ * @param name Web3 name that should be looked up.
  * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
  */
 export async function queryDidForWeb3Name(
-  nick: Web3Name
-): Promise<string | null> {
-  const identifier = await queryDidIdentifierForWeb3Name(nick)
+  name: Web3Name
+): Promise<IDidDetails['did'] | null> {
+  const identifier = await queryDidIdentifierForWeb3Name(name)
   if (identifier === null) {
     return null
   }

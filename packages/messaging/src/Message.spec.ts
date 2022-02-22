@@ -9,10 +9,11 @@
  * @group unit/messaging
  */
 
-import type {
+import {
   DidKey,
   DidPublicKey,
   DidResolvedDetails,
+  EncryptionKeyType,
   ICredential,
   IDidDetails,
   IDidResolver,
@@ -33,6 +34,7 @@ import {
   SigningAlgorithms,
   FullDidDetails,
   DemoKeystoreUtils,
+  LightDidSupportedVerificationKeyType,
 } from '@kiltprotocol/did'
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -122,12 +124,22 @@ beforeAll(async () => {
     alg: EncryptionAlgorithms.NaclBox,
   })
   aliceLightDid = LightDidDetails.fromDetails({
-    authenticationKey: { type: aliceAuthKey.alg, ...aliceAuthKey },
-    encryptionKey: { type: 'x25519', ...aliceEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...aliceAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
   })
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: { type: aliceAuthKey.alg, ...aliceAuthKey },
-    encryptionKey: { type: 'x25519', ...aliceEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...aliceAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
   })
   aliceFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
@@ -143,12 +155,22 @@ beforeAll(async () => {
     alg: EncryptionAlgorithms.NaclBox,
   })
   bobLightDid = LightDidDetails.fromDetails({
-    authenticationKey: { type: bobAuthKey.alg, ...bobAuthKey },
-    encryptionKey: { type: 'x25519', ...bobEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...bobAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
   })
   bobLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: { type: bobAuthKey.alg, ...bobAuthKey },
-    encryptionKey: { type: 'x25519', ...bobEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...bobAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
   })
   bobFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(

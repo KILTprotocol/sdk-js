@@ -10,7 +10,12 @@
  * @module IDidDocumentExporter
  */
 
-import type { IDidDetails, DidServiceEndpoint } from './DidDetails.js'
+import {
+  IDidDetails,
+  DidServiceEndpoint,
+  VerificationKeyType,
+  EncryptionKeyType,
+} from './DidDetails.js'
 
 export enum DidDocumentPublicKeyType {
   Ed25519VerificationKey = 'Ed25519VerificationKey2018',
@@ -19,29 +24,63 @@ export enum DidDocumentPublicKeyType {
   X25519EncryptionKey = 'X25519KeyAgreementKey2019',
 }
 
-export const VerificationKeyTypesMap = {
+export const VerificationKeyTypesMap: Record<
+  VerificationKeyType,
+  DidDocumentPublicKeyType
+> = {
   // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
-  sr25519: DidDocumentPublicKeyType.Sr25519VerificationKey,
+  [VerificationKeyType.Sr25519]:
+    DidDocumentPublicKeyType.Sr25519VerificationKey,
   // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
-  ed25519: DidDocumentPublicKeyType.Ed25519VerificationKey,
-  ecdsa: DidDocumentPublicKeyType.EcdsaVerificationKey,
+  [VerificationKeyType.Ed25519]:
+    DidDocumentPublicKeyType.Ed25519VerificationKey,
+  [VerificationKeyType.Ecdsa]: DidDocumentPublicKeyType.EcdsaVerificationKey,
 }
 
-export const EncryptionKeyTypesMap = {
-  x25519: DidDocumentPublicKeyType.X25519EncryptionKey,
+export const EncryptionKeyTypesMap: Record<
+  EncryptionKeyType,
+  DidDocumentPublicKeyType
+> = {
+  [EncryptionKeyType.X25519]: DidDocumentPublicKeyType.X25519EncryptionKey,
 }
 
+/**
+ * A spec-compliant description of a DID key.
+ */
 export type DidPublicKey = {
+  /**
+   * The full key identifier, in the form of <did_subject>#<key_identifier>.
+   */
   id: string
+  /**
+   * The key controller, in the form of <did_subject>.
+   */
   controller: IDidDetails['did']
+  /**
+   * The base58-encoded public component of the key.
+   */
   publicKeyBase58: string
+  /**
+   * The signing/encryption algorithm type where the key can be used.
+   */
   type: DidDocumentPublicKeyType
 }
 
-// Transform the internal IDidServiceEndpoint into something compliant with the DID spec.
+/**
+ * A spec-compliant description of a DID endpoint.
+ */
 export type DidPublicServiceEndpoint = {
+  /**
+   * The full service identifier, in the form of <did_subject>#<service_identifier>.
+   */
   id: string
+  /**
+   * The set of types for this endpoint.
+   */
   type: DidServiceEndpoint['types']
+  /**
+   * The set of services exposed by this endpoint.
+   */
   serviceEndpoint: DidServiceEndpoint['urls']
 }
 

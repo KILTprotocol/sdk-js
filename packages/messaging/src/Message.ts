@@ -17,7 +17,7 @@
  * @module Messaging
  */
 
-import type {
+import {
   CompressedMessageBody,
   IMessage,
   ISubmitCredential,
@@ -26,13 +26,19 @@ import type {
   ICType,
   IDidResolver,
   IEncryptedMessageContents,
-  DidKey,
   NaclBoxCapable,
   DidPublicKey,
+  MessageBodyType,
+  DidEncryptionKey,
+  EncryptionKeyType,
 } from '@kiltprotocol/types'
-import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DidDetails, DidResolver, DidUtils } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  DidResolver,
+  DidUtils,
+  EncryptionAlgorithms,
+} from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -129,7 +135,7 @@ export class Message implements IMessage {
     const senderKeyDetails = await resolver.resolveKey(senderKeyId)
     if (!senderKeyDetails) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve sender key ${senderKeyId}`
+        `Could not resolve sender encryption key ${senderKeyId}`
       )
     }
     const { fragment } = DidUtils.parseDidUri(receiverKeyId)
@@ -139,23 +145,25 @@ export class Message implements IMessage {
       )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
-    if (!receiverKeyDetails) {
+    if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve receiver key ${receiverKeyId}`
+        `Could not resolve receiver encryption key ${receiverKeyId}`
       )
     }
-
-    // check key type
-    if (senderKeyDetails.type !== 'x25519') {
-      throw Error(
-        `key type mismatch for message sender: requires x25519, got ${senderKeyDetails.type}`
+    const receiverKeyAlgType =
+      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
+        receiverKeyDetails.type as EncryptionKeyType
+      )
+    if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }
 
     const { data } = await keystore
       .decrypt({
         publicKey: receiverKeyDetails.publicKey,
-        alg: 'x25519-xsalsa20-poly1305', // TODO find better ways than hard-coding the alg
+        alg: receiverKeyAlgType,
         peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
         nonce: hexToU8a(nonce),
@@ -218,8 +226,8 @@ export class Message implements IMessage {
    * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
    *
    * @param body The body of the message.
-   * @param sender The [[PublicIdentity]] of the sender.
-   * @param receiver The [[PublicIdentity]] of the receiver.
+   * @param sender The DID of the sender.
+   * @param receiver The DID of the receiver.
    */
   public constructor(
     body: MessageBody | CompressedMessageBody,
@@ -250,7 +258,7 @@ export class Message implements IMessage {
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
-    senderKeyId: DidKey['id'],
+    senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     keystore: Pick<NaclBoxCapable, 'encrypt'>,
     receiverKeyId: DidPublicKey['id'],
@@ -271,9 +279,18 @@ export class Message implements IMessage {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
     }
     const senderKey = senderDetails.getKey(senderKeyId)
-    if (!senderKey) {
+    if (!senderKey || !DidUtils.isEncryptionKey(senderKey)) {
       throw SDKErrors.ERROR_DID_ERROR(
         `Cannot find key with ID ${senderKeyId} for the sender DID.`
+      )
+    }
+    const senderKeyAlgType =
+      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
+        senderKey.type as EncryptionKeyType
+      )
+    if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }
 
@@ -290,7 +307,7 @@ export class Message implements IMessage {
     const serialized = stringToU8a(JSON.stringify(toEncrypt))
 
     const encrypted = await keystore.encrypt({
-      alg: 'x25519-xsalsa20-poly1305',
+      alg: senderKeyAlgType,
       data: serialized,
       publicKey: senderKey.publicKey,
       peerPublicKey: receiverKey.publicKey,

@@ -9,10 +9,9 @@ import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidKey,
+  DidVerificationKey,
   IDidIdentifier,
   IIdentity,
-  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -20,15 +19,12 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import type {
-  DidCreationDetails,
+  DidConstructorDetails,
   DidKeySelectionHandler,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
 } from '../types.js'
-import { methodMapping } from './FullDidDetails.utils.js'
-import { DidDetails } from './DidDetails.js'
-import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
 import {
   generateDidAuthenticatedTx,
   queryDetails,
@@ -36,13 +32,17 @@ import {
   queryServiceEndpoints,
 } from '../Did.chain.js'
 import {
-  defaultDidKeySelection,
+  defaultKeySelectionHandler,
   FULL_DID_LATEST_VERSION,
   getKiltDidFromIdentifier,
+  getSigningAlgorithmForVerificationKeyType,
 } from '../Did.utils.js'
 
-// Max nonce value is (2^64) - 1
-const maxNonceValue = new BN(new BN(2).pow(new BN(64))).subn(1)
+import { DidDetails } from './DidDetails.js'
+import {
+  getKeyRelationshipForExtrinsic,
+  increaseNonce,
+} from './FullDidDetails.utils.js'
 
 export class FullDidDetails extends DidDetails {
   public readonly identifier: IDidIdentifier
@@ -65,7 +65,7 @@ export class FullDidDetails extends DidDetails {
     keys,
     keyRelationships,
     serviceEndpoints = {},
-  }: DidCreationDetails & { identifier: IDidIdentifier }) {
+  }: DidConstructorDetails & { identifier: IDidIdentifier }) {
     super({ did, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
@@ -137,16 +137,11 @@ export class FullDidDetails extends DidDetails {
    *
    * @returns All the keys under the full DID that could be used to generate valid signatures to submit the provided extrinsic.
    */
-  public getKeysForExtrinsic(extrinsic: Extrinsic): DidKey[] {
-    const callMethod = extrinsic.method
-    const { section, method } = callMethod
-    const keyRelationship =
-      methodMapping[section][method] ||
-      methodMapping[section].default ||
-      methodMapping.default.default
+  public getKeysForExtrinsic(extrinsic: Extrinsic): DidVerificationKey[] {
+    const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
     return keyRelationship === 'paymentAccount'
       ? []
-      : this.getKeys(keyRelationship)
+      : this.getVerificationKeys(keyRelationship)
   }
 
   /**
@@ -157,19 +152,18 @@ export class FullDidDetails extends DidDetails {
    */
   public async getNextNonce(): Promise<BN> {
     const currentNonce = await queryNonce(this.identifier)
-    // Wrap around the max u64 value when reached.
-    // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
-    return currentNonce === maxNonceValue ? new BN(0) : currentNonce.addn(1)
+    return increaseNonce(currentNonce)
   }
 
   /**
-   * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will return an error.
+   * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will throw an error.
    *
    * @param extrinsic The unsigned extrinsic to sign.
    * @param signer The keystore signer to use.
    * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
    * @param signingOptions The signing options.
    * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
+   * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
    * @returns The DID-signed submittable extrinsic.
    */
   public async authorizeExtrinsic(
@@ -177,9 +171,11 @@ export class FullDidDetails extends DidDetails {
     signer: KeystoreSigner,
     submitterAccount: IIdentity['address'],
     {
-      keySelection = defaultDidKeySelection,
+      keySelection = defaultKeySelectionHandler,
+      txCounter,
     }: {
-      keySelection?: DidKeySelectionHandler
+      keySelection?: DidKeySelectionHandler<DidVerificationKey>
+      txCounter?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
@@ -191,58 +187,10 @@ export class FullDidDetails extends DidDetails {
     return generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: signingKey.publicKey,
-      alg: getSignatureAlgForKeyType(signingKey.type),
+      alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
       signer,
       call: extrinsic,
-      txCounter: await this.getNextNonce(),
-      submitter: submitterAccount,
-    })
-  }
-
-  /**
-   * Signs and returns the provided unsigned extrinsic batch with the right DID key, if present. Otherwise, it will return an error.
-   * The generated signature will fail to verify successfully by the blockchain if any two operations in the batch require a different key type, or if the key type specified is not the expected one for the operations in the batch.
-   *
-   * @param batchExtrinsic The unsigned extrinsic batch to sign.
-   * @param signer The keystore signer to use.
-   * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
-   * @param keyRelationship The key relationship (e.g., authentication or attestation) to use when fetching the keys to use for signing the batch.
-   * @param signingOptions The signing options.
-   * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
-   * @returns The DID-signed submittable extrinsic.
-   */
-  public async authorizeBatch(
-    batchExtrinsic: Extrinsic,
-    signer: KeystoreSigner,
-    submitterAccount: IIdentity['address'],
-    keyRelationship: KeyRelationship,
-    {
-      keySelection = defaultDidKeySelection,
-    }: {
-      keySelection?: DidKeySelectionHandler
-    } = {}
-  ): Promise<SubmittableExtrinsic> {
-    const signingKey = await keySelection(this.getKeys(keyRelationship))
-    if (
-      batchExtrinsic.method.section !== 'utility' &&
-      batchExtrinsic.method.method !== 'batch'
-    ) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        'authorizeBatch can only be used to sign utility.batch extrinsics.'
-      )
-    }
-    if (!signingKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `The details for did ${this.did} do not contain the required keys for this operation`
-      )
-    }
-    return generateDidAuthenticatedTx({
-      didIdentifier: this.identifier,
-      signingPublicKey: signingKey.publicKey,
-      alg: getSignatureAlgForKeyType(signingKey.type),
-      signer,
-      call: batchExtrinsic,
-      txCounter: await this.getNextNonce(),
+      txCounter: txCounter || (await this.getNextNonce()),
       submitter: submitterAccount,
     })
   }

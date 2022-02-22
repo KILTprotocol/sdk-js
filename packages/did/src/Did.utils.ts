@@ -8,18 +8,25 @@
 import { checkAddress } from '@polkadot/util-crypto'
 import { isHex, u8aToHex } from '@polkadot/util'
 
-import type {
+import {
   DidKey,
   DidSignature,
+  DidVerificationKey,
+  EncryptionKeyType,
   IDidDetails,
   IDidIdentifier,
   IDidResolver,
+  NewDidKey,
   VerificationKeyRelationship,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import type { DidKeySelectionHandler } from './types.js'
 import { DidResolver } from './DidResolver/index.js'
+import {
+  EncryptionAlgorithms,
+  SigningAlgorithms,
+} from './DemoKeystore/DemoKeystore.js'
 
 /// The latest version for KILT light DIDs.
 export const LIGHT_DID_LATEST_VERSION = 1
@@ -43,7 +50,7 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
-export const defaultDidKeySelection: DidKeySelectionHandler = (keys) =>
+export const defaultKeySelectionHandler = <T>(keys: T[]): Promise<T | null> =>
   Promise.resolve(keys[0] || null)
 
 export function getKiltDidFromIdentifier(
@@ -81,12 +88,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
       ? parseInt(matches.version, 10)
       : FULL_DID_LATEST_VERSION
     return {
-      did: getKiltDidFromIdentifier(
-        matches.identifier,
-        'full',
-        version,
-        matches.encoded_details
-      ),
+      did: getKiltDidFromIdentifier(matches.identifier, 'full', version),
       version,
       type: 'full',
       identifier: matches.identifier,
@@ -99,7 +101,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
   if (matches && matches.identifier && matches.auth_key_type) {
     const version = matches.version ? parseInt(matches.version, 10) : 1
     const lightDidIdentifier = matches.auth_key_type.concat(matches.identifier)
-    const encodedDetails = matches.encoded_details
+    const encodedDetails = matches.encoded_details?.substring(1)
     return {
       did: getKiltDidFromIdentifier(
         lightDidIdentifier,
@@ -111,7 +113,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
       type: 'light',
       identifier: matches.auth_key_type.concat(matches.identifier),
       fragment: matches.fragment?.substring(1),
-      encodedDetails: matches.encoded_details?.substring(1),
+      encodedDetails,
     }
   }
 
@@ -141,6 +143,54 @@ export function isSameSubject(
     identifierB = identifierB.substring(2)
   }
   return identifierA === identifierB
+}
+
+const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
+  [VerificationKeyType.Ed25519]: SigningAlgorithms.Ed25519,
+  [VerificationKeyType.Sr25519]: SigningAlgorithms.Sr25519,
+  [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
+}
+export function getSigningAlgorithmForVerificationKeyType(
+  keyType: VerificationKeyType
+): SigningAlgorithms {
+  return signatureAlgForKeyType[keyType]
+}
+const keyTypeForSignatureAlg: Record<SigningAlgorithms, VerificationKeyType> = {
+  [SigningAlgorithms.Ed25519]: VerificationKeyType.Ed25519,
+  [SigningAlgorithms.Sr25519]: VerificationKeyType.Sr25519,
+  [SigningAlgorithms.EcdsaSecp256k1]: VerificationKeyType.Ecdsa,
+}
+export function getVerificationKeyTypeForSigningAlgorithm(
+  signatureAlg: SigningAlgorithms
+): VerificationKeyType {
+  return keyTypeForSignatureAlg[signatureAlg]
+}
+
+const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
+  {
+    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+  }
+export function getEncryptionAlgorithmForEncryptionKeyType(
+  keyType: EncryptionKeyType
+): EncryptionAlgorithms {
+  return encryptionAlgForKeyType[keyType]
+}
+const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
+  {
+    [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
+  }
+export function getEncryptionKeyTypeForEncryptionAlgorithm(
+  encryptionAlg: EncryptionAlgorithms
+): EncryptionKeyType {
+  return keyTypeForEncryptionAlg[encryptionAlg]
+}
+
+export function isVerificationKey(key: NewDidKey | DidKey): boolean {
+  return Object.values(VerificationKeyType).some((kt) => kt === key.type)
+}
+
+export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
+  return Object.values(EncryptionKeyType).some((kt) => kt === key.type)
 }
 
 export function validateKiltDid(
@@ -191,7 +241,7 @@ export function validateDidSignature(input: unknown): input is DidSignature {
 type DidSignatureVerificationFromDetailsInput = {
   message: string | Uint8Array
   signature: string
-  keyId: DidKey['id']
+  keyId: DidVerificationKey['id']
   expectedVerificationMethod?: VerificationKeyRelationship
   details: IDidDetails
 }
@@ -200,7 +250,7 @@ export type VerificationResult = {
   verified: boolean
   reason?: string
   didDetails?: IDidDetails
-  key?: DidKey
+  key?: DidVerificationKey
 }
 
 function verifyDidSignatureFromDetails({
@@ -221,7 +271,7 @@ function verifyDidSignatureFromDetails({
   if (
     expectedVerificationMethod &&
     !details
-      .getKeys(expectedVerificationMethod)
+      .getVerificationKeys(expectedVerificationMethod)
       .map((verKey) => verKey.id)
       .includes(keyId)
   ) {
@@ -244,7 +294,7 @@ function verifyDidSignatureFromDetails({
   return {
     verified: true,
     didDetails: details,
-    key,
+    key: key as DidVerificationKey,
   }
 }
 

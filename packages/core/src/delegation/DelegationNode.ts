@@ -24,6 +24,7 @@
  */
 
 import {
+  DidVerificationKey,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
@@ -291,13 +292,13 @@ export class DelegationNode implements IDelegationNode {
     delegeeDid: DidDetails,
     signer: KeystoreSigner,
     {
-      keySelection = DidUtils.defaultDidKeySelection,
+      keySelection = DidUtils.defaultKeySelectionHandler,
     }: {
-      keySelection?: DidKeySelectionHandler
+      keySelection?: DidKeySelectionHandler<DidVerificationKey>
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
-      delegeeDid.getKeys(KeyRelationship.authentication)
+      delegeeDid.getVerificationKeys(KeyRelationship.authentication)
     )
     if (!authenticationKey) {
       throw SDKErrors.ERROR_DID_ERROR(

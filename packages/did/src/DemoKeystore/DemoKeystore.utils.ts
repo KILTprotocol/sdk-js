@@ -12,11 +12,20 @@ import {
   randomAsHex,
 } from '@polkadot/util-crypto'
 
-import { DidKey } from '@kiltprotocol/types'
+import { DidKey, KeyRelationship } from '@kiltprotocol/types'
 
-import { getKiltDidFromIdentifier } from '../Did.utils.js'
+import {
+  getEncryptionKeyTypeForEncryptionAlgorithm,
+  getKiltDidFromIdentifier,
+  getVerificationKeyTypeForSigningAlgorithm,
+} from '../Did.utils.js'
 import { LightDidDetails, FullDidDetails } from '../DidDetails/index.js'
-import { DidCreationDetails, PublicKeys } from '../types.js'
+import {
+  DidConstructorDetails,
+  PublicKeys,
+  ServiceEndpoints,
+  LightDidSupportedVerificationKeyType,
+} from '../types.js'
 import {
   DemoKeystore,
   EncryptionAlgorithms,
@@ -40,11 +49,13 @@ export async function createMinimalLightDidFromSeed(
   const details = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: authKey.alg,
+      type: getVerificationKeyTypeForSigningAlgorithm(
+        authKey.alg
+      ) as LightDidSupportedVerificationKeyType,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: 'x25519',
+      type: getEncryptionKeyTypeForEncryptionAlgorithm(encKey.alg),
     },
   })
   return details
@@ -55,74 +66,85 @@ export async function createMinimalLightDidFromSeed(
  *
  * @param keystore The keystore to generate and store the DID private keys.
  * @param mnemonicOrHexSeed The mnemonic phrase or HEX seed for key generation.
- * @param signingKeyType One of the supported [[SigningAlgorithms]] to generate the DID authentication key.
+ * @param generationOptions The additional options for generation.
+ * @param generationOptions.signingKeyType One of the supported [[SigningAlgorithms]] to generate the DID verification keys.
+ * @param generationOptions.encryptionKeyType One of the supported [[EncryptionAlgorithms]] to generate the DID encryption keys.
+ * @param generationOptions.keyRelationships The set of key relationships to indicate which keys must be added to the DID.
+ * @param generationOptions.endpoints The set of service endpoints that must be added to the DID.
  *
  * @returns A promise resolving to a [[FullDidDetails]] object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoFullDidFromSeed(
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Sr25519
+  {
+    signingKeyType = SigningAlgorithms.Sr25519,
+    encryptionKeyType = EncryptionAlgorithms.NaclBox,
+    keyRelationships = new Set([
+      KeyRelationship.assertionMethod,
+      KeyRelationship.capabilityDelegation,
+      KeyRelationship.keyAgreement,
+    ]),
+    endpoints = {},
+  }: {
+    signingKeyType?: SigningAlgorithms
+    encryptionKeyType?: EncryptionAlgorithms
+    keyRelationships?: Set<Omit<KeyRelationship, 'authentication'>>
+    endpoints?: ServiceEndpoints
+  } = {}
 ): Promise<FullDidDetails> {
   const identifier = encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 256), 38)
   const did = getKiltDidFromIdentifier(identifier, 'full')
 
   const generateKeypairForDid = async (
     derivation: string,
-    alg: string,
-    keytype: string
+    keytype: SigningAlgorithms | EncryptionAlgorithms
   ): Promise<DidKey> => {
     const seed = derivation
       ? `${mnemonicOrHexSeed}//${derivation}`
       : mnemonicOrHexSeed
-    const keyId = `${blake2AsHex(seed, 64)}`
-    const { publicKey } = await keystore.generateKeypair<any>({
-      alg,
+    const { publicKey, alg } = await keystore.generateKeypair<any>({
+      alg: keytype,
       seed,
     })
     return {
-      id: keyId,
+      id: `${blake2AsHex(publicKey, 256)}`,
       publicKey,
-      type: keytype,
+      type: getVerificationKeyTypeForSigningAlgorithm(alg),
     }
   }
 
-  const authKey = await generateKeypairForDid(
-    'auth',
-    signingKeyType,
-    signingKeyType
-  )
-  const encKey = await generateKeypairForDid(
-    'enc',
-    signingKeyType,
-    signingKeyType
-  )
-  const attKey = await generateKeypairForDid(
-    'att',
-    signingKeyType,
-    signingKeyType
-  )
-  const delKey = await generateKeypairForDid(
-    'del',
-    signingKeyType,
-    signingKeyType
-  )
+  const authKey = await generateKeypairForDid('auth', signingKeyType)
 
-  const fullDidCreationDetails: DidCreationDetails = {
+  const fullDidCreationDetails: DidConstructorDetails = {
     did,
     keyRelationships: {
       authentication: new Set([authKey.id]),
-      keyAgreement: new Set([encKey.id]),
-      assertionMethod: new Set([attKey.id]),
-      capabilityDelegation: new Set([delKey.id]),
     },
     keys: {
       [authKey.id]: authKey,
-      [encKey.id]: encKey,
-      [attKey.id]: attKey,
-      [delKey.id]: delKey,
     },
-    serviceEndpoints: {},
+    serviceEndpoints: endpoints,
+  }
+
+  if (keyRelationships.has(KeyRelationship.keyAgreement)) {
+    const encKey = await generateKeypairForDid('enc', encryptionKeyType)
+    fullDidCreationDetails.keyRelationships.keyAgreement = new Set([encKey.id])
+    fullDidCreationDetails.keys[encKey.id] = encKey
+  }
+  if (keyRelationships.has(KeyRelationship.assertionMethod)) {
+    const attKey = await generateKeypairForDid('att', signingKeyType)
+    fullDidCreationDetails.keyRelationships.assertionMethod = new Set([
+      attKey.id,
+    ])
+    fullDidCreationDetails.keys[attKey.id] = attKey
+  }
+  if (keyRelationships.has(KeyRelationship.capabilityDelegation)) {
+    const delKey = await generateKeypairForDid('del', signingKeyType)
+    fullDidCreationDetails.keyRelationships.capabilityDelegation = new Set([
+      delKey.id,
+    ])
+    fullDidCreationDetails.keys[delKey.id] = delKey
   }
 
   return new FullDidDetails({
@@ -147,7 +169,7 @@ export async function createLocalDemoFullDidFromLightDid(
     keys[encKey.id] = encKey
   }
 
-  const fullDidCreationDetails: DidCreationDetails = {
+  const fullDidCreationDetails: DidConstructorDetails = {
     did: getKiltDidFromIdentifier(identifier, 'full'),
     keyRelationships: {
       authentication: new Set([authKey.id]),

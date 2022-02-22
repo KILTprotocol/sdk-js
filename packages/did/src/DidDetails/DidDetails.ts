@@ -5,24 +5,32 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
+import { u8aToHex } from '@polkadot/util'
+
+import {
+  DidEncryptionKey,
   DidKey,
   DidPublicKey,
   DidServiceEndpoint,
   DidSignature,
+  DidVerificationKey,
   IDidDetails,
   IDidIdentifier,
   KeystoreSigner,
+  VerificationKeyType,
+  KeyRelationship,
+  VerificationKeyRelationship,
+  EncryptionKeyRelationship,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { u8aToHex } from '@polkadot/util'
 
-import type { DidCreationDetails, MapKeysToRelationship } from '../types.js'
+import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
 import {
-  checkDidCreationDetails,
-  getSignatureAlgForKeyType,
-} from './DidDetails.utils.js'
+  getSigningAlgorithmForVerificationKeyType,
+  isVerificationKey,
+} from '../Did.utils.js'
+
+import { checkDidCreationDetails } from './DidDetails.utils.js'
 
 type PublicKeysInner = Map<DidKey['id'], Omit<DidKey, 'id'>>
 type ServiceEndpointsInner = Map<
@@ -47,7 +55,7 @@ export abstract class DidDetails implements IDidDetails {
     keys,
     keyRelationships,
     serviceEndpoints = {},
-  }: DidCreationDetails) {
+  }: DidConstructorDetails) {
     checkDidCreationDetails({
       did,
       keys,
@@ -63,8 +71,13 @@ export abstract class DidDetails implements IDidDetails {
 
   public abstract get identifier(): IDidIdentifier
 
-  public get authenticationKey(): DidKey {
-    const firstAuthenticationKey = this.getKeys(
+  /**
+   * Returns the first authentication key of the DID.
+   *
+   * @returns The first authentication key, in the order they are stored internally, of the given DID.
+   */
+  public get authenticationKey(): DidVerificationKey {
+    const firstAuthenticationKey = this.getVerificationKeys(
       KeyRelationship.authentication
     )[0]
     if (!firstAuthenticationKey) {
@@ -75,16 +88,31 @@ export abstract class DidDetails implements IDidDetails {
     return firstAuthenticationKey
   }
 
-  public get encryptionKey(): DidKey | undefined {
-    return this.getKeys(KeyRelationship.keyAgreement)[0]
+  /**
+   * Returns the first encryption key of the DID, if any.
+   *
+   * @returns The first encryption key, in the order they are stored internally, of the given DID.
+   */
+  public get encryptionKey(): DidEncryptionKey | undefined {
+    return this.getEncryptionKeys(KeyRelationship.keyAgreement)[0]
   }
 
-  public get attestationKey(): DidKey | undefined {
-    return this.getKeys(KeyRelationship.assertionMethod)[0]
+  /**
+   * Returns the first attestation key of the DID, if any.
+   *
+   * @returns The first attestation key, in the order they are stored internally, of the given DID.
+   */
+  public get attestationKey(): DidVerificationKey | undefined {
+    return this.getVerificationKeys(KeyRelationship.assertionMethod)[0]
   }
 
-  public get delegationKey(): DidKey | undefined {
-    return this.getKeys(KeyRelationship.capabilityDelegation)[0]
+  /**
+   * Returns the first delegation key of the DID, if any.
+   *
+   * @returns The first delegation key, in the order they are stored internally, of the given DID.
+   */
+  public get delegationKey(): DidVerificationKey | undefined {
+    return this.getVerificationKeys(KeyRelationship.capabilityDelegation)[0]
   }
 
   public getKey(id: DidKey['id']): DidKey | undefined {
@@ -98,10 +126,22 @@ export abstract class DidDetails implements IDidDetails {
     }
   }
 
-  public getKeys(relationship?: KeyRelationship | 'none'): DidKey[] {
-    const keyIds = relationship
-      ? this.keyRelationships[relationship] || new Set()
-      : new Set(this.publicKeys.keys())
+  public getVerificationKeys(
+    relationship: VerificationKeyRelationship
+  ): DidVerificationKey[] {
+    const keyIds = this.keyRelationships[relationship] || []
+    return [...keyIds].map((keyId) => this.getKey(keyId) as DidVerificationKey)
+  }
+
+  public getEncryptionKeys(
+    relationship: EncryptionKeyRelationship
+  ): DidEncryptionKey[] {
+    const keyIds = this.keyRelationships[relationship] || []
+    return [...keyIds].map((keyId) => this.getKey(keyId) as DidEncryptionKey)
+  }
+
+  public getKeys(): DidKey[] {
+    const keyIds = this.publicKeys.keys()
     return [...keyIds].map((keyId) => this.getKey(keyId) as DidKey)
   }
 
@@ -153,13 +193,17 @@ export abstract class DidDetails implements IDidDetails {
   public async signPayload(
     payload: Uint8Array | string,
     signer: KeystoreSigner,
-    keyId: DidPublicKey['id']
+    keyId: DidVerificationKey['id']
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
-    if (!key) {
-      throw Error(`failed to find key with ID ${keyId} on DID (${this.did})`)
+    if (!key || !isVerificationKey(key)) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `Failed to find verification key with ID ${keyId} on DID (${this.did})`
+      )
     }
-    const alg = getSignatureAlgForKeyType(key.type)
+    const alg = getSigningAlgorithmForVerificationKeyType(
+      key.type as VerificationKeyType
+    )
     if (!alg) {
       throw SDKErrors.ERROR_DID_ERROR(
         `No algorithm found for key type ${key.type}`

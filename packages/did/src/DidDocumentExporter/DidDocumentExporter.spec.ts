@@ -7,10 +7,13 @@
 
 import { BN } from '@polkadot/util'
 
-import type {
+import {
   DidKey,
   DidServiceEndpoint,
+  EncryptionKeyType,
   IDidIdentifier,
+  NewDidVerificationKey,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
@@ -26,7 +29,7 @@ const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 function generateAuthenticationKeyDetails(): DidKey {
   return {
     id: 'auth',
-    type: 'ed25519',
+    type: VerificationKeyType.Ed25519,
     publicKey: new Uint8Array(32).fill(0),
   }
 }
@@ -34,7 +37,7 @@ function generateAuthenticationKeyDetails(): DidKey {
 function generateEncryptionKeyDetails(): DidKey {
   return {
     id: 'enc',
-    type: 'x25519',
+    type: EncryptionKeyType.X25519,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(15),
   }
@@ -43,7 +46,7 @@ function generateEncryptionKeyDetails(): DidKey {
 function generateAttestationKeyDetails(): DidKey {
   return {
     id: 'att',
-    type: 'sr25519',
+    type: VerificationKeyType.Sr25519,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(20),
   }
@@ -52,7 +55,7 @@ function generateAttestationKeyDetails(): DidKey {
 function generateDelegationKeyDetails(): DidKey {
   return {
     id: 'del',
-    type: 'ecdsa',
+    type: VerificationKeyType.Ecdsa,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(25),
   }
@@ -275,7 +278,7 @@ describe('When exporting a DID Document from a full DID', () => {
 })
 
 describe('When exporting a DID Document from a light DID', () => {
-  const authKey: DidKey = generateAuthenticationKeyDetails()
+  const authKey = generateAttestationKeyDetails() as NewDidVerificationKey
   const encKey: DidKey = generateEncryptionKeyDetails()
   const serviceEndpoints: DidServiceEndpoint[] = [
     generateServiceEndpointDetails('id-1'),
@@ -284,11 +287,11 @@ describe('When exporting a DID Document from a light DID', () => {
   const lightDidDetails = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: authKey.type,
+      type: VerificationKeyType.Ed25519,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: 'x25519',
+      type: EncryptionKeyType.X25519,
     },
     serviceEndpoints,
   })
@@ -297,37 +300,37 @@ describe('When exporting a DID Document from a light DID', () => {
     const didDoc = exportToDidDocument(lightDidDetails, 'application/json')
 
     expect(didDoc).toStrictEqual({
-      id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK',
+      id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d',
       verificationMethod: [
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#authentication',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#authentication',
           controller:
-            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK',
+            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d',
           type: 'Ed25519VerificationKey2018',
           publicKeyBase58: '11111111111111111111111111111111',
         },
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#encryption',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#encryption',
           controller:
-            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK',
+            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d',
           type: 'X25519KeyAgreementKey2019',
           publicKeyBase58: '11111111111111111111111111111111',
         },
       ],
       authentication: [
-        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#authentication',
+        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#authentication',
       ],
       keyAgreement: [
-        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#encryption',
+        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#encryption',
       ],
       service: [
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#id-1',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#id-1',
           type: ['type-id-1'],
           serviceEndpoint: ['url-id-1'],
         },
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#id-2',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#id-2',
           type: ['type-id-2'],
           serviceEndpoint: ['url-id-2'],
         },
@@ -340,37 +343,37 @@ describe('When exporting a DID Document from a light DID', () => {
 
     expect(didDoc).toStrictEqual({
       '@context': ['https://www.w3.org/ns/did/v1'],
-      id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK',
+      id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d',
       verificationMethod: [
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#authentication',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#authentication',
           controller:
-            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK',
+            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d',
           type: 'Ed25519VerificationKey2018',
           publicKeyBase58: '11111111111111111111111111111111',
         },
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#encryption',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#encryption',
           controller:
-            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK',
+            'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d',
           type: 'X25519KeyAgreementKey2019',
           publicKeyBase58: '11111111111111111111111111111111',
         },
       ],
       authentication: [
-        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#authentication',
+        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#authentication',
       ],
       keyAgreement: [
-        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#encryption',
+        'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#encryption',
       ],
       service: [
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#id-1',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#id-1',
           type: ['type-id-1'],
           serviceEndpoint: ['url-id-1'],
         },
         {
-          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74vLhFc3AXGE4HBVxqDt8bdEtDBNSELnBnJxpL3CUBe79MKo95NfGAiFZPkFBrAmqgSDNZR1RhdUidXLmTMuS9BF6T9kKbbyAzJnAARG88BBF8bXPMUU268GYSHYKK#id-2',
+          id: 'did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z1ERkVVjngcarMbJn6YssB1PYULescQneSSEfCTJwYbzT2aK8fzH5WPsp3G4UVuLWWfsTayketnFV74YCnyboHBUvqEs6J8jdYY5dK2XeqCCs653Sf9XVH4RN2WvPrDFZXzzKf3KigvcaE7kkaEwLZvcas3U1M2ZDZCajDG71winwaRNrDtcqkJL9V6Q5yKNWRacw7hJ58d#id-2',
           type: ['type-id-2'],
           serviceEndpoint: ['url-id-2'],
         },

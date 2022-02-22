@@ -28,67 +28,65 @@ import type {
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
 
-import type {
+import {
   Deposit,
+  DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
+  DidVerificationKey,
+  EncryptionKeyType,
   IDidIdentifier,
   IIdentity,
+  KeyRelationship,
+  KeystoreSigner,
   KeystoreSigningOptions,
+  NewDidKey,
   SubmittableExtrinsic,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { DidDetails, getSignatureAlgForKeyType } from './DidDetails/index.js'
+import { DidDetails } from './DidDetails/index.js'
+import { getSigningAlgorithmForVerificationKeyType } from './Did.utils.js'
+import { FullDidCreationDetails } from './types.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
 // ### Chain type definitions
 
 type KeyId = Hash
-type DidKeyAgreementKeys = BTreeSet<KeyId>
+type ChainDidKeyAgreementKeys = BTreeSet<KeyId>
 
-type SupportedSignatureKeys = 'sr25519' | 'ed25519' | 'ecdsa'
-type SupportedEncryptionKeys = 'x25519'
-
-interface DidVerificationKey<T extends string = SupportedSignatureKeys>
-  extends Enum {
-  type: T
+export interface ChainDidKey extends Enum {
+  type: string
   value: Vec<u8>
 }
 
-interface DidEncryptionKey<T extends string = SupportedEncryptionKeys>
-  extends Enum {
-  type: T
-  value: Vec<u8>
-}
-
-interface DidPublicKey extends Enum {
+export interface ChainDidPublicKey extends Enum {
   isPublicVerificationKey: boolean
-  asPublicVerificationKey: DidVerificationKey
+  asPublicVerificationKey: ChainDidKey
   isPublicEncryptionKey: boolean
-  asPublicEncryptionKey: DidEncryptionKey
+  asPublicEncryptionKey: ChainDidKey
   type: 'PublicVerificationKey' | 'PublicEncryptionKey'
-  value: DidVerificationKey | DidEncryptionKey
+  value: ChainDidKey
 }
 
-interface DidPublicKeyDetails extends Struct {
-  key: DidPublicKey
+interface ChainDidPublicKeyDetails extends Struct {
+  key: ChainDidPublicKey
   blockNumber: BlockNumber
 }
 
-type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
+type ChainDidPublicKeyMap = BTreeMap<KeyId, ChainDidPublicKeyDetails>
 
 interface IDidChainRecordCodec extends Struct {
   authenticationKey: KeyId
-  keyAgreementKeys: DidKeyAgreementKeys
+  keyAgreementKeys: ChainDidKeyAgreementKeys
   delegationKey: Option<KeyId>
   attestationKey: Option<KeyId>
-  publicKeys: DidPublicKeyMap
+  publicKeys: ChainDidPublicKeyMap
   lastTxCounter: u64
   deposit: Deposit
 }
@@ -167,10 +165,10 @@ export type IChainDeposit = {
 }
 
 export type IDidChainRecordJSON = {
-  authenticationKey: DidKey['id']
-  keyAgreementKeys: Array<DidKey['id']>
-  capabilityDelegationKey?: DidKey['id']
-  assertionMethodKey?: DidKey['id']
+  authenticationKey: DidVerificationKey['id']
+  keyAgreementKeys: Array<DidEncryptionKey['id']>
+  capabilityDelegationKey?: DidVerificationKey['id']
+  assertionMethodKey?: DidVerificationKey['id']
   publicKeys: DidKey[]
   lastTxCounter: BN
   deposit: IChainDeposit
@@ -185,14 +183,26 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
   }
 }
 
+const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
+  Sr25519: VerificationKeyType.Sr25519,
+  Ed25519: VerificationKeyType.Ed25519,
+  Ecdsa: VerificationKeyType.Ecdsa,
+  X25519: EncryptionKeyType.X25519,
+}
 function decodeDidPublicKeyDetails(
   keyId: Hash,
-  keyDetails: DidPublicKeyDetails
+  keyDetails: ChainDidPublicKeyDetails
 ): DidKey {
   const key = keyDetails.key.value
+  const keyType = chainTypeToDidKeyType[key.type]
+  if (!keyType) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `Unsupported key type "${key.type}" found on chain.`
+    )
+  }
   return {
     id: keyId.toHex(),
-    type: key.type.toLowerCase(),
+    type: keyType,
     publicKey: key.value.toU8a(),
     includedAt: keyDetails.blockNumber.toBn(),
   }
@@ -239,7 +249,6 @@ export async function queryDetails(
   return decodeDidChainRecord(result.unwrap())
 }
 
-// TODO: Find a better way to not decode the whole details struct to only fetch one key.
 export async function queryKey(
   didIdentifier: IDidIdentifier,
   keyId: DidKey['id']
@@ -328,8 +337,6 @@ export type AuthorizeCallInput = {
   blockNumber?: AnyNumber
 }
 
-export type NewDidKey = Pick<DidKey, 'type' | 'publicKey'>
-
 interface IDidAuthorizedCallOperation extends Struct {
   did: IDidIdentifier
   txCounter: u64
@@ -340,57 +347,48 @@ interface IDidAuthorizedCallOperation extends Struct {
 
 // ### EXTRINSICS
 
-function formatPublicKey(key: NewDidKey): PublicKeyEnum {
+export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   const { type, publicKey } = key
   return { [type]: publicKey }
 }
 
-export async function generateCreateTxFromDidDetails(
-  did: DidDetails,
+export async function generateCreateTxFromCreationDetails(
+  details: FullDidCreationDetails,
   submitterAddress: IIdentity['address'],
-  signingOptions: KeystoreSigningOptions
+  signer: KeystoreSigner
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const { signer, signingPublicKey, alg } = signingOptions
 
-  const newKeyAgreementKeys: PublicKeyEnum[] = did
-    .getKeys(KeyRelationship.keyAgreement)
-    .map((key) => {
-      return formatPublicKey(key)
-    })
+  const {
+    authenticationKey,
+    keyAgreementKeys = [],
+    assertionKey,
+    delegationKey,
+    serviceEndpoints = [],
+  } = details
 
-  // For now, it only takes the first attestation key, if present.
-  const attestationKeys = did.getKeys(KeyRelationship.assertionMethod)
-  if (attestationKeys.length > 1) {
-    log.warn(
-      `More than one attestation key (${attestationKeys.length}) specified. Only the first will be stored on the chain.`
-    )
-  }
-  const newAttestationKey: PublicKeyEnum | undefined = attestationKeys[0]
-    ? formatPublicKey(attestationKeys[0])
+  const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
+    ({ publicKey }) =>
+      formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
+  )
+
+  const newAssertionKey = assertionKey
+    ? formatPublicKey(assertionKey)
+    : undefined
+  const newDelegationKey = delegationKey
+    ? formatPublicKey(delegationKey)
     : undefined
 
-  // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getKeys(KeyRelationship.capabilityDelegation)
-  if (delegationKeys.length > 1) {
-    log.warn(
-      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
-    )
-  }
-  const newDelegationKey: PublicKeyEnum | undefined = delegationKeys[0]
-    ? formatPublicKey(delegationKeys[0])
-    : undefined
-
-  const newServiceDetails = did.getEndpoints().map((service) => {
+  const newServiceDetails = serviceEndpoints.map((service) => {
     const { id, urls } = service
     return { id, urls, serviceTypes: service.types }
   })
 
   const rawCreationDetails = {
-    did: did.identifier,
+    did: details.identifier,
     submitter: submitterAddress,
     newKeyAgreementKeys,
-    newAttestationKey,
+    newAttestationKey: newAssertionKey,
     newDelegationKey,
     newServiceDetails,
   }
@@ -403,12 +401,75 @@ export async function generateCreateTxFromDidDetails(
   const signature = await signer.sign({
     data: encodedDidCreationDetails.toU8a(),
     meta: {},
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
+    publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
+    alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
   return api.tx.did.create(encodedDidCreationDetails, {
     [signature.alg]: signature.data,
   })
+}
+
+/**
+ * Create a DID creation operation which includes the information present in the provided DID.
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the same keys and service endpoints of the provided DID details.
+ *
+ * @param did The input DID details.
+ * @param submitterAddress The KILT address authorised to submit the creation operation.
+ * @param signer The keystore signer.
+ *
+ * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ */
+export async function generateCreateTxFromDidDetails(
+  did: DidDetails,
+  submitterAddress: IIdentity['address'],
+  signer: KeystoreSigner
+): Promise<SubmittableExtrinsic> {
+  const { authenticationKey } = did
+  if (!authenticationKey) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The provided DID does not have an authentication key to sign the creation operation.`
+    )
+  }
+
+  const keyAgreementKeys = did.getEncryptionKeys(KeyRelationship.keyAgreement)
+
+  // For now, it only takes the first attestation key, if present.
+  const assertionKeys = did.getVerificationKeys(KeyRelationship.assertionMethod)
+  if (assertionKeys.length > 1) {
+    log.warn(
+      `More than one attestation key (${assertionKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const assertionKey = assertionKeys.pop()
+
+  // For now, it only takes the first delegation key, if present.
+  const delegationKeys = did.getVerificationKeys(
+    KeyRelationship.capabilityDelegation
+  )
+  if (delegationKeys.length > 1) {
+    log.warn(
+      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const delegationKey = delegationKeys.pop()
+
+  const serviceEndpoints = did.getEndpoints()
+
+  const fullDidCreationDetails: FullDidCreationDetails = {
+    identifier: did.identifier,
+    authenticationKey,
+    keyAgreementKeys,
+    assertionKey,
+    delegationKey,
+    serviceEndpoints,
+  }
+
+  return generateCreateTxFromCreationDetails(
+    fullDidCreationDetails,
+    submitterAddress,
+    signer
+  )
 }
 
 export async function getSetKeyExtrinsic(
@@ -558,15 +619,17 @@ export async function generateDidAuthenticatedTx({
 
 // ### Chain utils
 export function encodeDidSignature(
-  key: Pick<DidKey, 'type'>,
+  key: Pick<ChainDidKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  const alg = getSignatureAlgForKeyType(key.type)
-  if (!alg) {
+  if (!Object.keys(VerificationKeyType).some((kt) => kt === key.type)) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `The provided type ${key.type} does not match any known algorithm.`
+      `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
   }
+  const alg = getSigningAlgorithmForVerificationKeyType(
+    key.type as VerificationKeyType
+  )
   return {
     [alg]: hexToU8a(signature.signature),
   }

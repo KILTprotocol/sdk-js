@@ -24,11 +24,11 @@ import type {
   IDelegationNode,
   IClaim,
   ICredential,
-  DidKey,
   KeystoreSigner,
   IDidResolver,
   DidSignature,
   DidPublicKey,
+  DidVerificationKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -310,7 +310,7 @@ export class RequestForAttestation implements IRequestForAttestation {
   public async signWithDidKey(
     signer: KeystoreSigner,
     didDetails: DidDetails,
-    keyId: DidKey['id'],
+    keyId: DidVerificationKey['id'],
     {
       challenge,
     }: {

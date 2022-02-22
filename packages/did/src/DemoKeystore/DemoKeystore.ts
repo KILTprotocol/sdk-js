@@ -17,7 +17,7 @@ import {
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
 
-import type {
+import {
   KeyringPair,
   Keystore,
   KeystoreSigningData,
@@ -59,13 +59,11 @@ export interface NaclKeypair {
 export type KeyAddOpts<T extends string> = Pick<RequestData<T>, 'alg'> &
   NaclKeypair
 
-const KeypairTypeForAlg: Record<string, string> = {
+const keypairTypeForAlg: Record<string, KeypairType> = {
   ed25519: 'ed25519',
   sr25519: 'sr25519',
   'ecdsa-secp256k1': 'ecdsa',
-  'x25519-xsalsa20-poly1305': 'x25519',
 }
-
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
@@ -74,6 +72,10 @@ export class DemoKeystore
 {
   private signingKeyring: Keyring = new Keyring()
   private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
+
+  private static getKeypairTypeForAlg(alg: string): KeypairType {
+    return keypairTypeForAlg[alg]
+  }
 
   private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
     if (!signingSupported(alg))
@@ -270,9 +272,5 @@ export class DemoKeystore
       ...[...this.encryptionKeypairs.values()].map((i) => i.publicKey),
     ]
     return keys.map((key) => knownKeys.some((i) => u8aEq(key.publicKey, i)))
-  }
-
-  public static getKeypairTypeForAlg(alg: string): KeypairType {
-    return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
   }
 }
