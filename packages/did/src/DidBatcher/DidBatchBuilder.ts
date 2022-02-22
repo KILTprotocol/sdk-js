@@ -180,13 +180,13 @@ export class DidBatchBuilder {
       )
     }
 
-    const signedBatches: Extrinsic[] = await Promise.all(
+    const signedBatches: SubmittableExtrinsic[] = await Promise.all(
       this.batches.map(async (batch, index) => {
         // Don't create a new batch if the batch contains only one extrinsic
         const processedBatch =
           batch.extrinsics.length > 1
             ? batchFunction(batch.extrinsics)
-            : (batch.extrinsics.pop() as Extrinsic)
+            : batch.extrinsics[0]
         const signingKey = await keySelection(
           batch.extrinsics,
           this.did.getVerificationKeys(batch.keyRelationship)
@@ -209,6 +209,6 @@ export class DidBatchBuilder {
 
     return signedBatches.length > 1
       ? batchFunction(signedBatches)
-      : (signedBatches.pop() as SubmittableExtrinsic)
+      : signedBatches[0]
   }
 }

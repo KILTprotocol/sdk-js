@@ -536,9 +536,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     }
 
     const batch =
-      this.batch.length > 1
-        ? batchFunction(this.batch)
-        : (this.batch.pop() as Extrinsic)
+      this.batch.length > 1 ? batchFunction(this.batch) : this.batch[0]
 
     const lastDidNonce = await queryNonce(this.identifier)
 
