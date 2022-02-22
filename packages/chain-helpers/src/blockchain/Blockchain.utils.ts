@@ -89,14 +89,20 @@ export async function submitSignedTx(
   const options = parseSubscriptionOptions(opts)
   const { promise, subscription } = makeSubscriptionPromise(options)
 
-  const unsubscribe = await tx.send(subscription)
+  let latestResult: SubmittableResult
+  const unsubscribe = await tx.send((result) => {
+    latestResult = result
+    subscription(result)
+  })
 
   const { api } = await getConnectionOrConnect()
   const handleDisconnect = (): void => {
     const result = new SubmittableResult({
-      events: [],
+      events: latestResult.events || [],
       internalError: new Error('connection error'),
-      status: api.registry.createType('ExtrinsicStatus', 'future'),
+      status:
+        latestResult.status ||
+        api.registry.createType('ExtrinsicStatus', 'future'),
     })
     subscription(result)
   }
