@@ -44,11 +44,11 @@ import {
   getAttestationHashes,
   query,
   queryDepositAmount,
-  remove,
-  revoke,
-  storeAsDelegation,
-  storeAsRoot,
-  reclaimDeposit,
+  getRemoveTx,
+  getRevokeTx,
+  getStoreAsDelegationTx,
+  getStoreAsRootTx,
+  getReclaimDepositTx,
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
@@ -332,16 +332,16 @@ export class DelegationNode implements IDelegationNode {
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async store(
+  public async getStoreTx(
     signature?: DidChain.SignatureEnum
   ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
-      return storeAsRoot(this)
+      return getStoreAsRootTx(this)
     }
     if (!signature) {
       throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
     }
-    return storeAsDelegation(this, signature)
+    return getStoreAsDelegationTx(this, signature)
   }
 
   isRoot(): boolean {
@@ -411,7 +411,9 @@ export class DelegationNode implements IDelegationNode {
    * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async revoke(did: IDidDetails['did']): Promise<SubmittableExtrinsic> {
+  public async getRevokeTx(
+    did: IDidDetails['did']
+  ): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
       throw SDKErrors.ERROR_UNAUTHORIZED(
@@ -422,7 +424,7 @@ export class DelegationNode implements IDelegationNode {
     log.debug(
       `:: revoke(${this.id}) with maxRevocations=${childCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
     )
-    return revoke(this.id, steps, childCount)
+    return getRevokeTx(this.id, steps, childCount)
   }
 
   /**
@@ -430,10 +432,10 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async remove(): Promise<SubmittableExtrinsic> {
+  public async getRemoveTx(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
     log.debug(`:: remove(${this.id}) with maxRevocations=${childCount}`)
-    return remove(this.id, childCount)
+    return getRemoveTx(this.id, childCount)
   }
 
   /**
@@ -443,10 +445,12 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    */
-  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
+  public async getReclaimDepositTx(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
-    log.debug(`:: reclaimDeposit(${this.id}) with maxRemovals=${childCount}`)
-    return reclaimDeposit(this.id, childCount)
+    log.debug(
+      `:: getReclaimDepositTx(${this.id}) with maxRemovals=${childCount}`
+    )
+    return getReclaimDepositTx(this.id, childCount)
   }
 
   /**

@@ -25,7 +25,7 @@ import { ApiMocks } from '@kiltprotocol/testing'
 import {
   getBalances,
   listenToBalanceChanges,
-  makeTransfer,
+  getTransferTx,
 } from './Balance.chain'
 import * as BalanceUtils from './Balance.utils'
 
@@ -89,7 +89,7 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const status = await makeTransfer(bob.address, new BN(100)).then((tx) =>
+    const status = await getTransferTx(bob.address, new BN(100)).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
     )
     expect(status).toBeInstanceOf(SubmittableResult)
@@ -102,7 +102,7 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await makeTransfer(bob.address, amount, exponent).then(
+    const status = await getTransferTx(bob.address, amount, exponent).then(
       (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
     )
     expect(mockedApi.tx.balances.transfer).toHaveBeenCalledWith(

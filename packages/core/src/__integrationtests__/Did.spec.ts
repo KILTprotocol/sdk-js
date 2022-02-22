@@ -597,7 +597,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.store()
+    const call = await ctype.getStoreTx()
     const tx = await didDetails.authorizeExtrinsic(
       call,
       keystore,
@@ -632,7 +632,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.store()
+    const call = await ctype.getStoreTx()
     const tx2 = await didDetails.authorizeExtrinsic(
       call,
       keystore,
@@ -1065,14 +1065,14 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await ctype.store()
+    const ctypeCreationTx = await ctype.getStoreTx()
     const rootNode = DelegationNode.newRoot({
       account: fullDid.did,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
-    const delegationCreationTx = await rootNode.store()
-    const delegationRevocationTx = await rootNode.revoke(fullDid.did)
+    const delegationCreationTx = await rootNode.getStoreTx()
+    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.did)
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([
         ctypeCreationTx,
@@ -1098,14 +1098,14 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await ctype.store()
+    const ctypeCreationTx = await ctype.getStoreTx()
     const rootNode = DelegationNode.newRoot({
       account: fullDid.did,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
-    const delegationCreationTx = await rootNode.store()
-    const delegationRevocationTx = await rootNode.revoke(fullDid.did)
+    const delegationCreationTx = await rootNode.getStoreTx()
+    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.did)
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([
         ctypeCreationTx,
@@ -1165,14 +1165,14 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype1Creation = await ctype1.store()
+    const ctype1Creation = await ctype1.getStoreTx()
     // Delegation key
     const rootNode = DelegationNode.newRoot({
       account: fullDid.did,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype1.hash,
     })
-    const delegationHierarchyCreation = await rootNode.store()
+    const delegationHierarchyCreation = await rootNode.getStoreTx()
 
     // Authentication key
     const web3NameNewClaimExt = await Web3Names.getClaimTx('test-2')
@@ -1183,9 +1183,9 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype2Creation = await ctype2.store()
+    const ctype2Creation = await ctype2.getStoreTx()
     // Delegation key
-    const delegationHierarchyRemoval = await rootNode.revoke(fullDid.did)
+    const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.did)
 
     const builder = new DidBatchBuilder(api, fullDid)
       .addSingleExtrinsic(web3NameReleaseExt)
