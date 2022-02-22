@@ -42,12 +42,14 @@ async function main(): Promise<void> {
   console.log(`Attester KILT address: ${attesterAccount.address}`)
 
   const transferAmount = new BN('10000000000000000')
-  await Kilt.Balance.makeTransfer(attesterAccount.address, transferAmount).then(
-    (tx) =>
-      Kilt.BlockchainUtils.signAndSubmitTx(tx, devAccount, {
-        resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+  await Kilt.Balance.getTransferTx(
+    attesterAccount.address,
+    transferAmount
+  ).then((tx) =>
+    Kilt.BlockchainUtils.signAndSubmitTx(tx, devAccount, {
+      resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
   )
   console.log(`Attester address funded!`)
 
@@ -225,7 +227,7 @@ async function main(): Promise<void> {
 
   /* 4.2 Store the attestation on the KILT blockchain */
   const attesterAuthorisedAttestationTx = await attestation
-    .store()
+    .getStoreTx()
     .then((tx) =>
       attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
     )
@@ -335,7 +337,6 @@ async function main(): Promise<void> {
     const credentialsValidity = await Promise.all(
       credentials.map((cred) => Kilt.Credential.fromCredential(cred).verify())
     )
-    console.log(credentialsValidity)
     const isPresentationValid = credentialsValidity.every(
       (isValid) => isValid === true
     )

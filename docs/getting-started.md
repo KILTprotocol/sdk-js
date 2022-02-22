@@ -174,7 +174,7 @@ If you want to interact with the blockchain, you will have to get them either by
 ```typescript
 /* In case of a local deployment, KILTs can be transferred from the dev account to the newly generated attester account. */
 const transferAmount = new BN('10000000000000000')
-await Kilt.Balance.makeTransfer(attesterAccount.address, transferAmount).then(
+await Kilt.Balance.getTransferTx(attesterAccount.address, transferAmount).then(
   (tx) =>
     Kilt.BlockchainUtils.signAndSubmitTx(tx, devAccount, {
       resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
@@ -263,7 +263,7 @@ With the built CType object, the attester can now create and sign a transaction 
 ```typescript
 /* The attester signs the ctype creation transaction resulting from calling `ctype.store()` with its DID. */
 const attesterAuthorisedCtypeTx = await ctype
-  .store()
+  .getStoreTx()
   .then((tx) =>
     attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
   )
@@ -445,7 +445,7 @@ With the attestation built, the attester can now write the attestation informati
 ```typescript
 /* Write the attestation on the blockchain. */
 const attesterAuthorisedAttestationTx = await attestation
-  .store()
+  .getStoreTx()
   .then((tx) =>
     attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
   )
