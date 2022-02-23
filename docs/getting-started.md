@@ -81,7 +81,7 @@ In case you are unsure, please have a look at our [workshop](https://dev.kilt.io
 When using the SDK, there are two tasks that must performed before everything else:
 
 1. Initialize cryptographic dependencies.
-   If this step is skipped, certain operations like account generation could fail with the error "the WASM interface has not been initialized".
+   If this step is skipped, certain operations like account generation using some algorithms, e.g., Sr25519, could fail with the error "the WASM interface has not been initialized".
 2. Set essential configurations, most importantly the address of the KILT node to connect to for anything that interacts with the KILT blockchain.
    These operations will throw an error if called before a connection with a KILT node has been established.
 
