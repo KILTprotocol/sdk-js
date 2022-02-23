@@ -403,8 +403,6 @@ const encryptedRequestForAttestationMessage =
 Once the attester receives a request for attestation from a claimer, it will perform some work to verify whether the claims are valid.
 If so, it will write an attestation on the KILT blockchain and return the information back to the claimer.
 
-As sender identity and message validity are also checked during decryption, if the decryption process completes successfully, the attester can assume that the sender of the message is also the owner of the claim, as the two identities match.
-
 ### 4.1 Build an attestation
 
 In this case, the attester decrypts the message received from the claimer and extracts the original request for attestation.
