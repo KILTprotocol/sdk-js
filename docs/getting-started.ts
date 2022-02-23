@@ -281,6 +281,7 @@ async function main(): Promise<void> {
   console.log(`Verifier DID: ${verifierLightDid.did}`)
 
   /* 5.2 Ask for credentials */
+  const challenge = Kilt.Utils.UUID.generate()
   const requestForCredentialMessage = new Kilt.Message(
     {
       type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
@@ -288,6 +289,7 @@ async function main(): Promise<void> {
         cTypes: [
           { cTypeHash: ctype.hash, trustedAttesters: [attesterFullDid.did] },
         ],
+        challenge,
       },
     },
     verifierLightDid.did,
@@ -301,6 +303,7 @@ async function main(): Promise<void> {
     selectedAttributes: ['name'],
     signer: keystore,
     claimerDid: claimerLightDid,
+    challenge,
   })
   console.log('Presentation:')
   console.log(JSON.stringify(selectedCredential))

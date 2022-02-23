@@ -518,8 +518,10 @@ A verifier usually requires a claimer to fulfil some requirements before providi
 The verifier needs to initiate the verification process by requesting a presentation for a specific CType.
 In this case, the verifier wants to verify the name of the claimer.
 To do so, it will send a request for credential message to the claimer.
+The request for credential can optionally contain a challenge that will be used by the verifier to ensure that the claimer owns the identity specified in the provided credentials at the time the presentation is generated.
 
 ```typescript
+const challenge = Kilt.Utils.UUID.generate()
 const requestForCredentialMessage = new Kilt.Message(
   {
     type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
@@ -527,6 +529,7 @@ const requestForCredentialMessage = new Kilt.Message(
       cTypes: [
         { cTypeHash: ctype.hash, trustedAttesters: [attesterFullDid.did] },
       ],
+      challenge,
     },
   },
   verifierLightDid.did,
@@ -548,6 +551,7 @@ const selectedCredential = await credential.createPresentation({
   selectedAttributes: ['name'],
   signer: keystore,
   claimerDid: claimerLightDid,
+  challenge,
 })
 console.log('Presentation:')
 console.log(JSON.stringify(selectedCredential))
