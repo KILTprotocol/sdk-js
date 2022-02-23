@@ -23,7 +23,7 @@ async function main(): Promise<void> {
 
   const keyring = new Kilt.Utils.Keyring({
     ss58Format: 38,
-    type: 'sr25519',
+    type: 'ed25519',
   })
   const keystore = new Kilt.Did.DemoKeystore()
   console.log(`Connected to KILT endpoint ${NODE_URL}`)

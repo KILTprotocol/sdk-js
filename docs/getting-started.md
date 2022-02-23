@@ -107,7 +107,7 @@ const { api } =
 // Keyring is required to generate KILT accounts.
 const keyring = new Kilt.Utils.Keyring({
   ss58Format: 38,
-  type: 'sr25519',
+  type: 'ed25519',
 })
 
 // Keystore is required to generate KILT DIDs.
