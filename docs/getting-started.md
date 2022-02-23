@@ -152,7 +152,7 @@ A Claim Type (CType) defines the structure of all credentials that conform to it
 ### 2.1 Generate an attester KILT account and on-chain DID
 
 Before being used in credentials, CTypes must be stored on the KILT blockchain.
-To do so, an on-chain DID is required for the entity willing to write CType on chain.
+To do so, an on-chain DID is required for the entity willing to write the CType on chain.
 In this example, we create a KILT account and an on-chain DID for the attester, which is also going to use the CType to issue a credential later on.
 
 To generate a KILT account for the attester first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the attester KILT account:
