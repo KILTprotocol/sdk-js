@@ -425,7 +425,7 @@ if (
 }
 ```
 
-Then, after verifying the validity of the claims in the request for attestation, the attester builds an attestation.
+Then, after the attester verifies the validity of the claims in the request for attestation, it builds an attestation.
 
 ```typescript
 const attestation = Kilt.Attestation.fromRequestAndDid(
