@@ -41,18 +41,18 @@ From inside the `kilt-rocks` project directory, install the SDK and typescript w
 With `yarn` (recommended):
 
 ```bash
-yarn add @kiltprotocol/sdk-js typescript
+yarn add @kiltprotocol/sdk-js ts-node typescript
 ```
 
 With `npm`:
 
 ```bash
-npm install @kiltprotocol/sdk-js typescript
+npm install @kiltprotocol/sdk-js ts-node typescript
 ```
 
 With all the required dependencies set, just create a new (empty) TS script file with `touch getting-started.ts`.
 
-To run the script at any point during this guide, just run `npx ts-node getting-started.ts`.
+To run the script at any point during this guide, just run `yarn ts-node getting-started.ts`.
 
 Let's get started 🔥
 
