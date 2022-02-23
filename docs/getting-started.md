@@ -7,7 +7,7 @@ The next examples give you a simple skeleton on how to use the KILT SDK to creat
 
 - [1. Setup](#1-setup)
   - [1.1 Create a new project](#11-create-a-new-project)
-  - [1.2 Set up the crypto and connect to a KILT node](#12-set-up-the-crypto-and-connect-to-a-kilt-node)
+  - [1.2 Connect to a KILT node and set up the crypto](#12-connect-to-a-kilt-node-and-set-up-the-crypto)
   - [1.3 Generate a dev account with KILT tokens (local deployment only)](#13-generate-a-dev-account-with-kilt-tokens-local-deployment-only)
 - [2. Create a Claim Type (CType)](#2-create-a-claim-type-ctype)
   - [2.1 Generate an attester KILT account and on-chain DID](#21-generate-an-attester-kilt-account-and-on-chain-did)
@@ -76,14 +76,16 @@ In case you are unsure, please have a look at our [workshop](https://dev.kilt.io
 
 💡 At any point, you can **check out our [getting-started.ts](./getting-started.ts) for a working example of the code presented here**.
 
-### 1.2 Set up the crypto and connect to a KILT node
+### 1.2 Connect to a KILT node and set up the crypto
 
 When using the SDK, there are two tasks that must performed before everything else:
 
 1. Initialize cryptographic dependencies.
-   If this step is skipped, certain operations like account generation using some algorithms, e.g., Sr25519, could fail with the error "the WASM interface has not been initialized".
-2. Set essential configurations, most importantly the address of the KILT node to connect to for anything that interacts with the KILT blockchain.
+   If this step is skipped, certain operations such as using some algorithms, e.g., Sr25519, to generate an account could fail with the error "the WASM interface has not been initialized".
+2. Set essential configurations, most importantly the address of the KILT node to connect to interact with the KILT blockchain.
    These operations will throw an error if called before a connection with a KILT node has been established.
+
+The SDK exposes the `Kilt.init()` function which takes care of both steps, provided an address of a node to connect to, as shown below.
 
 DID operations require the presence of a keystore object that implements the [Keystore interface](../packages/types/src/Keystore.ts).
 For the sake of simplicity, the SDK provides a [demo keystore implementation](../packages/did/src/DemoKeystore/DemoKeystore.ts) which can be used to generate key pairs that are kept unencrypted in memory and disappear at the end of the program execution.
@@ -93,22 +95,23 @@ For the sake of simplicity, the SDK provides a [demo keystore implementation](..
 ```typescript
 import * as Kilt from '@kiltprotocol/sdk-js'
 
+/* Connect to a KILT node */
+
+// Establish a connection with the node specified AND initialize the required crypto libraries.
+await Kilt.init({ address: YOUR_CHAIN_ADDRESS })
+const { api } =
+  await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
+
 /* Set up the crypto */
 
 // Keyring is required to generate KILT accounts.
 const keyring = new Kilt.Utils.Keyring({
   ss58Format: 38,
-  type: 'ed25519',
+  type: 'sr25519',
 })
 
 // Keystore is required to generate KILT DIDs.
 const keystore = new Kilt.Did.DemoKeystore()
-
-/* Connect to a KILT node */
-
-await Kilt.init({ address: YOUR_CHAIN_ADDRESS })
-const { api } =
-  await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
 
 console.log(`Connected to KILT endpoint ${YOUR_CHAIN_ADDRESS}`)
 ```
@@ -190,7 +193,7 @@ Once the attester account has tokens, it can be used to create an on-chain DID f
 /* Generate the required keys using the demo keystore. */
 const attesterAuthenticationKey: Kilt.NewDidVerificationKey = await keystore
   .generateKeypair({
-    alg: Kilt.Did.SigningAlgorithms.Ed25519,
+    alg: Kilt.Did.SigningAlgorithms.Sr25519,
     seed: attesterMnemonic,
   })
   .then((keypair) => {
@@ -260,6 +263,8 @@ console.log(JSON.stringify(ctype, undefined, 2))
 
 With the built CType object, the attester can now create and sign a transaction that writes it on the KILT blockchain.
 
+*Please note that unless using a local deployment, the CType above might already exist on the blockchain, as someone else might have created it. If that is the case, please skip the next step and move straight to section [3: Create a claim and a request for attestation](#3-create-a-claim-and-a-request-for-attestation).*
+
 ```typescript
 /* The attester signs the ctype creation transaction resulting from calling `ctype.store()` with its DID. */
 const attesterAuthorisedCtypeTx = await ctype
@@ -302,7 +307,7 @@ Since the process does not involve any blockchain write operation, an off-chain 
 const claimerAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey =
   await keystore
     .generateKeypair({
-      alg: Kilt.Did.SigningAlgorithms.Ed25519,
+      alg: Kilt.Did.SigningAlgorithms.Sr25519,
     })
     .then((keypair) => {
       return {
@@ -481,7 +486,7 @@ A verifier typically does not need to write anything on the KILT blockchain, hen
 const verifierAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey =
   await keystore
     .generateKeypair({
-      alg: Kilt.Did.SigningAlgorithms.Ed25519,
+      alg: Kilt.Did.SigningAlgorithms.Sr25519,
     })
     .then((keypair) => {
       return {

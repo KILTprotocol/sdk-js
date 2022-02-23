@@ -16,17 +16,16 @@ import { BN } from '@polkadot/util'
 const NODE_URL = 'ws://127.0.0.1:9944'
 
 async function main(): Promise<void> {
-  /* 1.2 Set up the crypto and connect to a KILT node */
-  const keyring = new Kilt.Utils.Keyring({
-    ss58Format: 38,
-    type: 'ed25519',
-  })
-  const keystore = new Kilt.Did.DemoKeystore()
-
+  /* 1.2 Connect to a KILT node and setup the crypto */
   await Kilt.init({ address: NODE_URL })
   const { api } =
     await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
 
+  const keyring = new Kilt.Utils.Keyring({
+    ss58Format: 38,
+    type: 'sr25519',
+  })
+  const keystore = new Kilt.Did.DemoKeystore()
   console.log(`Connected to KILT endpoint ${NODE_URL}`)
 
   /* 1.3 Generate a dev account with KILT tokens (local deployment only) */
@@ -55,7 +54,7 @@ async function main(): Promise<void> {
 
   const attesterAuthenticationKey: Kilt.NewDidVerificationKey = await keystore
     .generateKeypair({
-      alg: Kilt.Did.SigningAlgorithms.Ed25519,
+      alg: Kilt.Did.SigningAlgorithms.Sr25519,
       seed: attesterMnemonic,
     })
     .then((keypair) => {
@@ -131,7 +130,7 @@ async function main(): Promise<void> {
   const claimerAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey =
     await keystore
       .generateKeypair({
-        alg: Kilt.Did.SigningAlgorithms.Ed25519,
+        alg: Kilt.Did.SigningAlgorithms.Sr25519,
       })
       .then((keypair) => {
         return {
@@ -252,7 +251,7 @@ async function main(): Promise<void> {
   const verifierAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey =
     await keystore
       .generateKeypair({
-        alg: Kilt.Did.SigningAlgorithms.Ed25519,
+        alg: Kilt.Did.SigningAlgorithms.Sr25519,
       })
       .then((keypair) => {
         return {
