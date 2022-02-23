@@ -1,57 +1,67 @@
 # Getting Started with the KILT SDK <!-- omit in toc -->
 
 In this simple tutorial we show how you can start developing your own applications on top of the KILT Protocol.
-The next examples give you a simple skeleton on how to use the KILT SDK to create identities, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
+The next examples give you a simple skeleton on how to use the KILT SDK to create DIDs, CTypes, and claims, and also how to issue and verify attestations with the use of our messaging framework.
 
 # Quick Start Guide <!-- omit in toc -->
 
-- [1. Install the SDK](#1-install-the-sdk)
-  - [1.1. Prerequisites](#11-prerequisites)
-  - [1.2. Connect to a Chain](#11-connect-to-a-chain)
-- [2. Generate an Account](#2-generate-an-account)
-  - [2.1. Generate a Keystore](#21-generate-a-keystore)
-  - [2.2. Generate a light DID for the Claimer](#22-generate-a-light-did-for-the-claimer)
-  - [2.3. Generate a full DID for the Attester](#22-generate-a-full-did-for-the-attester)
+- [1. Setup](#1-setup)
+  - [1.1 Create a new project](#11-create-a-new-project)
+  - [1.2 Connect to a KILT node and set up the crypto](#12-connect-to-a-kilt-node-and-set-up-the-crypto)
+  - [1.3 Generate a dev account with KILT tokens (local deployment only)](#13-generate-a-dev-account-with-kilt-tokens-local-deployment-only)
+- [2. Create a Claim Type (CType)](#2-create-a-claim-type-ctype)
+  - [2.1 Generate an attester KILT account and on-chain DID](#21-generate-an-attester-kilt-account-and-on-chain-did)
+  - [2.2 Build a CType](#22-build-a-ctype)
+  - [2.3 Store the CType on the KILT blockchain](#23-store-the-ctype-on-the-kilt-blockchain)
+- [3. Create a claim and a request for attestation](#3-create-a-claim-and-a-request-for-attestation)
+  - [3.1 Generate a claimer light DID](#31-generate-a-claimer-light-did)
+  - [3.2 Build a claim](#32-build-a-claim)
+  - [3.3 Build a request for attestation](#33-build-a-request-for-attestation)
+- [4. Create an attestation](#4-create-an-attestation)
+  - [4.1 Build an attestation](#41-build-an-attestation)
+  - [4.2 Store the attestation on the KILT blockchain](#42-store-the-attestation-on-the-kilt-blockchain)
+- [5. Create and verify a presentation](#5-create-and-verify-a-presentation)
+  - [5.1 Generate a verifier light DID](#51-generate-a-verifier-light-did)
+  - [5.2 Ask for credentials](#52-ask-for-credentials)
+  - [5.3 Build a presentation](#53-build-a-presentation)
+  - [5.4 Verify the presentation](#54-verify-the-presentation)
+- [6. Teardown](#6-teardown)
 
-* [3. Build and store a Claim Type (CTYPE)](#3-build-and-store-a-claim-type-ctype)
-  - [3.1. Building a CTYPE](#31-building-a-ctype)
-  - [3.2. Storing a CTYPE](#32-storing-a-ctype)
-* [4. Build a Claim](#4-build-a-claim)
-* [5. Request, create and send an Attestation](#5-request-create-and-send-an-attestation)
-  - [5.1. Requesting an Attestation](#51-requesting-an-attestation)
-  - [5.2. Sending an Attestation](#52-sending-an-attestation)
-* [6. Verify a claim](#6-verify-a-claim)
-  - [6.1. Request presentation for CTYPE](#61-request-presentation-for-ctype)
-  - [6.2. Verify presentation](#62-verify-presentation)
-* [7. Disconnect from chain](#7-disconnect-from-chain)
+## 1. Setup
 
-## 1. Install the SDK
+Before we can run this getting started, there are few steps to run to set up the crypto and the connections required.
 
-Install the KILT-SDK by running either of the following commands:
+### 1.1 Create a new project
+
+First, we need to create a new project in a new directory.
+For this, we run `mkdir kilt-rocks && cd kilt-rocks`.
+
+From inside the `kilt-rocks` project directory, install the SDK and typescript with either of the following package managers:
+
+With `yarn` (recommended):
 
 ```bash
-npm install @kiltprotocol/sdk-js
+yarn add @kiltprotocol/sdk-js ts-node typescript
 ```
 
-Or (recommended) with `yarn`:
+With `npm`:
 
 ```bash
-yarn add @kiltprotocol/sdk-js
+npm install @kiltprotocol/sdk-js ts-node typescript
 ```
 
-### 1.1. Prerequisites
+With all the required dependencies set, just create a new (empty) TS script file with `touch getting-started.ts`.
 
-1. Make a new directory and navigate into it with `mkdir kilt-rocks && cd kilt-rocks`
-2. Install the SDK with `yarn add @kiltprotocol/sdk-js`
-3. Install typescript with `yarn add typescript`
-4. Make a new file, e.g. `touch getting-started.ts`
-5. Execute the file with `npx ts-node getting-started.ts`
+To run the script at any point during this guide, just run `yarn ts-node getting-started.ts`.
 
-### Note <!-- omit in toc -->
+Let's get started 🔥
 
-Some calls in this example are made to asynchronous functions. Therefore, you have to wrap your functions inside an `async` function to execute them properly:
+#### Note <!-- omit in toc -->
 
-```javascript
+Some calls in this example are made to asynchronous functions.
+Therefore, functions must be wrapped inside an `async` function to be executed:
+
+```typescript
 async function main() {
   await foo()
 }
@@ -59,280 +69,179 @@ async function main() {
 main()
 ```
 
-To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own. Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this (see [the typescript doc](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await) for more).
+To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own.
+Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this (see [the typescript doc](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await) for more).
 
-In case you are unsure, please have a look at our [workshop](https://kiltprotocol.github.io/kilt-workshop-101/#/) where we provide everything ready to be copied and pasted.
+In case you are unsure, please have a look at our [workshop](https://dev.kilt.io/docs/sdk/workshop/welcome/) where we provide everything ready to be copied and pasted.
 
-💡 At any point, you can **check out our [getting-started.ts](./getting-started.ts) for a working example of the code presented in the following**.
+💡 At any point, you can **check out our [getting-started.ts](./getting-started.ts) for a working example of the code presented here**.
 
-### 1.2 Initializing the KILT SDK
+### 1.2 Connect to a KILT node and set up the crypto
 
-When using the SDK, there are two things you'll always want to do before anything else:
+When using the SDK, there are two tasks that must performed before everything else:
 
 1. Initialize cryptographic dependencies.
-   If you don't do this, certain operations like account generation could fail with the notice that "the WASM interface has not been initialized".
-2. Set essential configurations, most importantly the endpoint of the KILT node to which you'll want to connect for actions that read or write to blockchain state.
-   These operations would throw an error if called before an endpoint has been set.
+   If this step is skipped, certain operations such as using some algorithms, e.g., Sr25519, to generate an account could fail with the error "the WASM interface has not been initialized".
+2. Set essential configurations, most importantly the address of the KILT node to connect to interact with the KILT blockchain.
+   These operations will throw an error if called before a connection with a KILT node has been established.
 
-To keep things simple, we grouped these two steps in a function you can call first thing, before any other code that used the KILT SDK.
+The SDK exposes the `Kilt.init()` function which takes care of both steps, provided an address of a node to connect to, as shown below.
+
+DID operations require the presence of a keystore object that implements the [Keystore interface](../packages/types/src/Keystore.ts).
+For the sake of simplicity, the SDK provides a [demo keystore implementation](../packages/did/src/DemoKeystore/DemoKeystore.ts) which can be used to generate key pairs that are kept unencrypted in memory and disappear at the end of the program execution.
+
+**Using the demo keystore in production is highly discouraged as all the keys are kept in the memory and easily retrievable by malicious actors. For an example on how to write your own keystore, take a look at the [Sporran wallet implementation](https://github.com/BTE-Trusted-Entity/sporran-extension).**
 
 ```typescript
 import * as Kilt from '@kiltprotocol/sdk-js'
 
+/* Connect to a KILT node */
+
+// Establish a connection with the node specified AND initialize the required crypto libraries.
 await Kilt.init({ address: YOUR_CHAIN_ADDRESS })
+const { api } =
+  await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
+
+/* Set up the crypto */
+
+// Keyring is required to generate KILT accounts.
+const keyring = new Kilt.Utils.Keyring({
+  ss58Format: 38,
+  type: 'ed25519',
+})
+
+// Keystore is required to generate KILT DIDs.
+const keystore = new Kilt.Did.DemoKeystore()
+
+console.log(`Connected to KILT endpoint ${YOUR_CHAIN_ADDRESS}`)
 ```
 
 Again, this is asynchronous, so be sure to wrap this in an `async` function as described above.
-Add this line to the `async` functions wrapping the examples below if you run them individually.
 
-### 1.2. Connect to a Chain
-
-Either explicitly:
-
-```typescript
-Kilt.config({ address: YOUR_CHAIN_ADDRESS })
-await Kilt.connect()
-```
-
-Or by setting a default address in the configuration, connecting implicitly.
-
-```typescript
-Kilt.config({ address: YOUR_CHAIN_ADDRESS })
-```
-
-Note that calling (as described in [1.2](#initializing-the-kilt-sdk))
-
-```typescript
-await Kilt.init({ address: YOUR_CHAIN_ADDRESS })
-```
-
-initializes the SDK _and_ sets the config, so it is related to the second approach.
-
-There are of KILT chains which you can use, each one having a different address:
+There are different instances of KILT chains which can be used:
 
 1. A local node: `ws://127.0.0.1:9944`
 2. The test-net: `wss://peregrine.kilt.io/parachain-public-ws`
-3. The dev-net: `wss://peregrine-stg.kilt.io/para`
-4. The live-net: `wss://spiritnet.kilt.io`
+3. The live-net: `wss://spiritnet.kilt.io`
 
-In case you go with option #1, #2 or #3, you have to request test money **since storing a CTYPE on the chain requires tokens and a full did** as transaction fee and deposit.
-
-However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image. Depending on which version of the SDK you are using, you might need to spin up the latest officially released version of the node (working with the latest release of the SDK) or the latest development version of the node (working with the latest development version of the SDK). Either version can be started with the following command by using one between the `latest` and `develop` tag.
-
-**Option #4 is the live network and not recommended to test on as it requires tokens with real value**
+In the case of option #1, a local node can be set up by using our Docker image, which also contains few dev accounts that are pre-funded and with a known mnemonic:
 
 ```
-docker run -p 9944:9944 kiltprotocol/peregrine:{latest,develop} --dev --ws-port 9944 --ws-external --rpc-external --tmp
+docker run -p 9944:9944 kiltprotocol/peregrine:latest --dev --ws-port 9944 --ws-external --rpc-external
 ```
 
-The following account is endowed with funds and can be used to send tokens to other accounts.
+In case you go with option #2, you have to request test money for your accounts since **storing DIDs, CTypes and attestations on the chain require tokens** in the form of transaction fee and deposit.
+This can be done using the [Peregrine faucet](https://faucet.peregrine.kilt.io).
+
+However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image.
+Depending on which version of the SDK you are using, you might need to spin up the latest officially released version of the node, which works with the latest release of the SDK.
+
+**Option #3 is the live network and not recommended to test on as it requires tokens with real value**
+
+### 1.3 Generate a dev account with KILT tokens (local deployment only)
+
+If using a local dev deployment, the following account is endowed with funds and can be used to send tokens to other accounts.
 
 ```typescript
-// Using the keyring to add an account this mnemonic already has tokens
-const account = keyring.addFromMnemonic(
-  'receive clutch item involve chaos clutch furnace arrest claw isolate okay together',
-  // depending on what setup either use ed25519 or sr25519 as key type because this is how the endowed account is set up
-  { signingKeyPairType: 'ed25519' }
+const devAccount = keyring.addFromMnemonic(
+  'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 )
 ```
 
-## 2. Generate an account and DID
+## 2. Create a Claim Type (CType)
 
-To generate an account first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the on-chain account and DID:
+A Claim Type (CType) defines the structure of all credentials that conform to it, and is useful especially for verifiers since they can know, by requesting credentials of a specific CType, what information to expect in those credentials.
+
+### 2.1 Generate an attester KILT account and on-chain DID
+
+Before being used in credentials, CTypes must be stored on the KILT blockchain.
+To do so, an on-chain DID is required for the entity willing to write the CType on chain.
+In this example, we create a KILT account and an on-chain DID for the attester, which is also going to use the CType to issue a credential later on.
+
+To generate a KILT account for the attester first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the attester KILT account:
 
 ```typescript
-import * as Kilt from '@kiltprotocol/sdk-js'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
-
-const keyring = new Kilt.Utils.Keyring.Keyring({
-  ss58Format: 38,
-  type: 'sr25519',
-})
-// mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
-const claimerMnemonic = mnemonicGenerate()
-
-const claimer = keyring.createFromUri(claimerMnemonic)
-
-console.log('claimer address', claimer.address)
-```
-
-At this point the generated account has no tokens. If you want to interact with the blockchain, you will have to get some by [requesting them from our faucet](https://faucet.kilt.io/).
-
-### 2.1. Generate a Keystore
-
-To create a light DID, there needs to be a keystore instance that conforms to the [Keystore interface](../types/src/Keystore.ts). For the sake of ease of use, this package includes a [demo keystore](./src/DemoKeystore/DemoKeystore.ts) which can be used to generate key pairs that are kept in memory and disappear at the end of the program execution.
-
-**Using the demo keystore in production is highly discouraged as all the keys are kept in the memory and easily retrievable by malicious actors.**
-
-```typescript
 import * as Kilt from '@kiltprotocol/sdk-js'
 
-const keystore = new Kilt.Did.DemoKeystore()
-
-// Signing keypair
-const claimerSigningKeypair = await keystore.generateKeypair({
-  alg: Kilt.Did.SigningAlgorithms.Ed25519,
-  seed: claimerMnemonic,
-})
-
-// Encryption keypair
-const claimerEncryptionKeypair = await keystore.generateKeypair({
-  alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
-  seed: claimerMnemonic,
-})
-```
-
-### 2.2. Generate a light DID for the Claimer
-
-Using the keys from the demo keystore to generate the claimer's light DID.
-
-```typescript
-import * as Kilt from '@kiltprotocol/sdk-js'
-
-const claimerLightDid = new Kilt.Did.LightDidDetails({
-  authenticationKey: {
-    publicKey: claimerSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(claimerSigningKeypair.alg),
-  },
-  encryptionKey: {
-    publicKey: claimerEncryptionKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      claimerEncryptionKeypair.alg
-    ),
-  },
-})
-
-// Example light DID: `did:kilt:light:014qFxmHnWw5sGMwjskdvMCrASF9Jvu5ggWRTWTK2NNYSLDg56:oWFlomlwdWJsaWNLZXlYIJuIow7rjSdf92qMKYtWV42lF9mctD1nFf8RM24auJhwZHR5cGVmeDI1NTE5`
-console.log(claimerLightDid.did)
-```
-
-### 2.3 Generate a full DID for the Attester
-
-Before we can send the request for an attestation to an Attester, we should first create an Attester account and a full on-chain DID using the previously generated keyring.. Using the previously generated keyring.
-
-```typescript
-import * as Kilt from '@kiltprotocol/sdk-js'
-import { mnemonicGenerate } from '@polkadot/util-crypto'
-
-// mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
 const attesterMnemonic = mnemonicGenerate()
+console.log(`Attester mnemonic: ${attesterMnemonic}`)
 
-const attester = keyring.createFromUri(attesterMnemonic)
-
-console.log('attester address', attester.address)
+const attesterAccount = keyring.addFromMnemonic(attesterMnemonic)
+console.log(`Attester KILT address: ${attesterAccount.address}`)
 ```
 
-Providing the attester with funds from the endowed account in order to write transactions on-chain.
+At this point the generated account has no tokens
+If you want to interact with the blockchain, you will have to get them either by transferring them from the dev account generated above, in case of a local deployment, or by requesting them from the [Peregrine faucet](https://faucet.peregrine.kilt.io).
 
 ```typescript
-import * as Kilt from '@kiltprotocol/sdk-js'
+/* In case of a local deployment, KILTs can be transferred from the dev account to the newly generated attester account. */
+const transferAmount = new BN('10000000000000000')
+await Kilt.Balance.getTransferTx(attesterAccount.address, transferAmount).then(
+  (tx) =>
+    Kilt.BlockchainUtils.signAndSubmitTx(tx, devAccount, {
+      resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+)
+console.log(`Attester address funded!`)
+```
 
-const transferAmount = '1000000000000000'
-await Kilt.Balance.getTransferTx(attester.address, transferAmount).then((tx) =>
-  Kilt.BlockchainUtils.signAndSubmitTx(tx, account, {
-    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-    reSign: true,
+Once the attester account has tokens, it can be used to create an on-chain DID for the attester.
+
+```typescript
+/* Generate the required keys using the demo keystore. */
+const attesterAuthenticationKey: Kilt.NewDidVerificationKey = await keystore
+  .generateKeypair({
+    alg: Kilt.Did.SigningAlgorithms.Sr25519,
+    seed: attesterMnemonic,
   })
+  .then((keypair) => {
+    return {
+      publicKey: keypair.publicKey,
+      type: Kilt.Did.DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        keypair.alg
+      ),
+    }
+  })
+const attesterEncryptionKey: Kilt.NewDidEncryptionKey = await keystore
+  .generateKeypair({
+    alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+    seed: attesterMnemonic,
+  })
+  .then((keypair) => {
+    return {
+      publicKey: keypair.publicKey,
+      type: Kilt.Did.DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
+        keypair.alg
+      ),
+    }
+  })
+
+/* Create an on-chain DID with the generated keys. */
+const attesterFullDid = await new Kilt.Did.FullDidCreationBuilder(
+  api,
+  attesterAuthenticationKey
 )
+  .addEncryptionKey(attesterEncryptionKey)
+  .setAttestationKey(attesterAuthenticationKey)
+  .consumeWithHandler(keystore, devAccount.address, async (tx) => {
+    await Kilt.BlockchainUtils.signAndSubmitTx(tx, devAccount, {
+      resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  })
+console.log(`Attester DID: ${attesterFullDid.did}`)
 ```
 
-Then we generate all the keypairs for the attester to construct the attestation, delegation and authentication keys with the keystore. **Note: we are using the same keypairs for the various keys. This is not recommended for production use.**
+Please note that the attester's DID uses the same key for both authentication and attestation.
+**This is not recommended for production use.**
+
+### 2.2 Build a CType
+
+Creating a CType requires specifying its structure as a [JSON schema](https://json-schema.org/) definition.
 
 ```typescript
-// Signing keypair
-const attesterSigningKeypair = await keystore.generateKeypair({
-  alg: Kilt.Did.SigningAlgorithms.Ed25519,
-  seed: attesterMnemonic,
-})
-
-// Encryption keypair
-const attesterEncryptionKeypair = await keystore.generateKeypair({
-  alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
-  seed: attesterMnemonic,
-})
-
-const keys: Partial<Record<
-  KeyRelationship,
-  Did.DidTypes.INewPublicKey<string>
->> = {
-  authentication: {
-    publicKey: attesterSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterSigningKeypair.alg
-    ),
-  },
-  keyAgreement: {
-    publicKey: attesterEncryptionKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterEncryptionKeypair.alg
-    ),
-  },
-  capabilityDelegation: {
-    publicKey: attesterSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterSigningKeypair.alg
-    ),
-  },
-  assertionMethod: {
-    publicKey: attesterSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      attesterSigningKeypair.alg
-    ),
-  },
-}
-
-const { extrinsic, did } = await Kilt.Did.DidUtils.writeDidFromPublicKeys(
-  keystore,
-  attester.address,
-  keys
-)
-
-// The attester must have balance to pay for the transaction to write the newly created full DID on-chain. Submitting the transaction from the extrinsic.
-
-await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, attester, {
-  reSign: true,
-  resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-})
-
-// The resolved full DID
-  const attesterFullDid = (await Kilt.Did.resolveDoc(fullDid.did))
-    ?.details as IDidDetails
-
-console.log('Full DID', attesterFullDid)
-
-// Example of a full did:
-{
-  keys: {},
-  keyRelationships: {
-    authentication: [
-      'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy#0x49d513f193ca2e6401be6bda48a9cfba479b41f4d8b0b68cb516c1229582f68c',
-    ],
-    keyAgreement: [
-      'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy#0xdad1085e0941aa6b67488abfeeb1d16cf3f6e8e8453e89fc57113f9486c4f1a7',
-    ],
-    assertionMethod: [
-      'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy#0x3b71b98a6bbb5e7c82d9f0c403fdbc9e87c361a3a55d5b6ebe76e1d2f851eb1d',
-    ],
-    capabilityDelegation: [
-      'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy#0xc7fb6237d42aec4a04930c9c45fe9b693681f6514766ef4e804ba57facb8aa2b',
-    ],
-    none: [],
-  },
-  didUri: 'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy',
-  id: '4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy',
-  lastTxIndex: '0x0000000000000002',
-}
-```
-
-## 3. Build and store a Claim Type (CTYPE)
-
-When building a CTYPE, you only need a JSON schema and your public [SS58 address](<https://github.com/paritytech/substrate/wiki/External-Address-Format-(SS58)>) which you automatically receive when generating an account.
-
-### 3.1. Building a CTYPE
-
-```typescript
-import * as Kilt from '@kiltprotocol/sdk-js'
-
 const ctype = Kilt.CType.fromSchema({
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
   title: 'Drivers License',
@@ -346,445 +255,367 @@ const ctype = Kilt.CType.fromSchema({
   },
   type: 'object',
 })
+console.log('CType: ')
+console.log(JSON.stringify(ctype, undefined, 2))
 ```
 
-### 3.2. Storing a CTYPE
+### 2.3 Store the CType on the KILT blockchain
 
-Before you can store the CTYPE on the blockchain, you have to configure your blockchain address and connect to it.
+With the built CType object, the attester can now create and sign a transaction that writes it on the KILT blockchain.
 
-To store the CTYPE on the blockchain with the attester, you have to call:
+*Please note that unless using a local deployment, the CType above might already exist on the blockchain, as someone else might have created it. If that is the case, please skip the next step and move straight to section [3: Create a claim and a request for attestation](#3-create-a-claim-and-a-request-for-attestation).*
 
 ```typescript
-const tx = await ctype.getStoreTx()
+/* The attester signs the ctype creation transaction resulting from calling `ctype.store()` with its DID. */
+const attesterAuthorisedCtypeTx = await ctype
+  .getStoreTx()
+  .then((tx) =>
+    attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
+  )
 
-const authorizedExtrinsic = await attesterFullDid.authorizeExtrinsic(
-  tx,
-  keystore,
-  attester.address
+/* The resulting transaction is then signed and submitted by the attester KILT account, which has enough funds to pay for the CType creation fees. */
+await Kilt.BlockchainUtils.signAndSubmitTx(
+  attesterAuthorisedCtypeTx,
+  attesterAccount,
+  {
+    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+    reSign: true,
+  }
 )
-
-// either sign and send in one step
-await Kilt.BlockchainUtils.signAndSubmitTx(authorizedExtrinsic, attester)
-// signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria:
-await Kilt.BlockchainUtils.signAndSubmitTx(authorizedExtrinsic, attester, {
-  resolveOn: Kilt.BlockchainUtils.IS_READY, // resolve once tx is in the tx pool
-  rejectOn: Kilt.BlockchainUtils.IS_ERROR, // only reject when IS_ERROR criteria is matched
-  timeout: 10_000, // Promise timeout in ms
-  tip: 10_000_000, // Amount of Femto-KILT to tip the validator
-})
-
-// or step by step
-const chain = await Kilt.connect()
-const signed = await chain.signTx(attester, authorizedExtrinsic)
-await Kilt.BlockchainUtils.submitSignedTx(authorizedExtrinsic)
+console.log('CType written on the blockchain!')
 ```
 
-Please note that the **same CTYPE can only be stored once** on the blockchain.
+Please note that the **same CType can only be stored once** on the blockchain.
+Since the KILT blockchain only stores the CType hash, the actual CType can be stored anywhere, for example on a CType registry service.
 
-If a transaction fails with an by re-signing recoverable error (e.g. multi device nonce collision),
-BlockchainUtils.signAndSubmitTx has the ability to re-sign and re-send the failed tx upt to 2 times, if the appropriate flag is set:
+## 3. Create a claim and a request for attestation
+
+With the new CType on chain, a claimer can now ask for credentials that comply with such CType.
+Let's dive right in!
+
+### 3.1 Generate a claimer light DID
+
+All KILT core features require DIDs.
+For users that do not need to write anything on the blockchain, KILT provides off-chain DIDs.
+These DIDs are lightweight versions of their on-chain counterpart, but allow users to obtain credentials and set up encrypted communication channels with other KILT users without the cost of writing any information on the blockchain.
+
+In this case, in order to obtain a claim, the claimer needs a DID.
+Since the process does not involve any blockchain write operation, an off-chain DID is sufficient.
 
 ```typescript
-await Kilt.BlockchainUtils.signAndSubmitTx(authorizedExtrinsic, account, {
-  resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-  reSign: true,
+/* Generate the required keys using the demo keystore. */
+const claimerAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey =
+  await keystore
+    .generateKeypair({
+      alg: Kilt.Did.SigningAlgorithms.Sr25519,
+    })
+    .then((keypair) => {
+      return {
+        publicKey: keypair.publicKey,
+        type: Kilt.Did.DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+          keypair.alg
+        ) as Kilt.Did.LightDidSupportedVerificationKeyType,
+      }
+    })
+const claimerEncryptionKey: Kilt.NewDidEncryptionKey = await keystore
+  .generateKeypair({
+    alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+  })
+  .then((keypair) => {
+    return {
+      publicKey: keypair.publicKey,
+      type: Kilt.Did.DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
+        keypair.alg
+      ),
+    }
+  })
+
+/* Create an off-chain DID with the generated keys. */
+const claimerLightDid = Kilt.Did.LightDidDetails.fromDetails({
+  authenticationKey: claimerAuthenticationKey,
+  encryptionKey: claimerEncryptionKey,
 })
+console.log(`Claimer DID: ${claimerLightDid.did}`)
 ```
 
-At the end of the process, the `CType` object should match the CType below.
-This can be saved anywhere, for example on a CTYPE registry service:
+### 3.2 Build a claim
 
-```typescript
-CType {
-  schema: {
-    '$schema': 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Drivers License',
-    properties: { name: [Object], age: [Object] },
-    type: 'object',
-    '$id': 'kilt:ctype:0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5'
-  },
-  owner: null,
-  hash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5'
-}
-```
-
-## 4. Build a Claim
-
-To construct a claim, we need to know the structure of the claim that is defined in a CTYPE. Based on the CTYPE, we need to build a basic claim object with the respective fields filled out. In our example, the claim would be:
+With a freshly-created DID, the claimer can now build a claim.
+Based on the CType, the claimer builds a simple claim object with the respective fields filled out and then generates a KILT claim from it.
+In our example, the claim would be:
 
 ```typescript
 const rawClaim = {
   name: 'Alice',
   age: 29,
 }
-```
-
-Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the constructor:
-
-```typescript
 const claim = Kilt.Claim.fromCTypeAndClaimContents(
   ctype,
   rawClaim,
-  claimer.address
+  claimerLightDid.did
 )
+console.log('Claim:')
+console.log(JSON.stringify(claim, undefined, 2))
 ```
 
-As a result we get the following KILT claim:
+### 3.3 Build a request for attestation
+
+The claimer then uses the claim to build a request for attestation.
+This request is then sent to the attester, who will check the validity of the claim and, in case of successful check, attest it.
+_Request for attestations offer many more functionalities. However, we do not go into the details here._
 
 ```typescript
-Claim {
-  cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
-  contents: { name: 'Alice', age: 29 },
-  owner: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire'
-}
-```
+const requestForAttestation = Kilt.RequestForAttestation.fromClaim(claim)
 
-## 5. Request, create and send an Attestation
-
-First, we need to build a request for an attestation, which has to include a claim and the address of the Claimer.
-(_Note_ that this object offers many more functionalities, however, we do not go into the details here).
-
-### 5.1. Requesting an Attestation
-
-```typescript
-import * as Kilt from '@kiltprotocol/sdk-js'
-
-const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndaccount(
-  claim,
-  claimer
+/* Request for attestation must be digitally signed by the claimer using its DID. */
+await requestForAttestation.signWithDidKey(
+  keystore,
+  claimerLightDid,
+  claimerLightDid.authenticationKey.id
 )
-// The claimer signs the request for attestation with the did
-await requestForAttestation.signWithDid(claimerLightDid)
+console.log('Request for attestation:')
+console.log(JSON.stringify(requestForAttestation, undefined, 2))
 ```
 
-The `requestForAttestation` object looks like this:
+The request for attestation must be sent from the claimer to the attester in a way that no other party can read, as the claim might contain personal information.
+The KILT SDK provides a transport-agnostic messaging framework that does just that and uses DIDs for secure end-to-end encrypted communication.
 
 ```typescript
-RequestForAttestation {
-    claim: Claim {
-      cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
-      contents: { name: 'Alice', age: 29 },
-      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5'
-    },
-    claimHashes: [
-      '0x5847086b70b224e6a27952e00ca347005c5032097382a2beb8e83e2b990cd272',
-      '0x836739c2acbbb831d5fa2ccd7ed952a005f2dd255cdbfd1669833a9e22ca4f9f',
-      '0x9c8a2c70456266d2a2a4207da9f79f8b9a8082a8f4e95a3bbd8b948a198d1c93'
-    ],
-    claimNonceMap: {
-      '0x7ca6424c43f70ce832356513409c2c78a6da7283495949e83acbf13b395033b6': 'aa8d1607-6655-4a20-bdb5-0d3cde151b1b',
-      '0x11b4b6f6627c8c5b589ad88be0cec280a04dac5b03608a52ab1b2db09dd27ba7': '3780c8a6-9296-4f7d-bbbc-a634b8513a77',
-      '0x77e3da790a5e2dd59c0ddab38ace397e3afc9325e2ce6d17e91b354ba30e27f9': 'ceaa9f13-30f8-4bbb-b389-5f22de7ae7dc'
-    },
-    legitimations: [],
-    delegationId: null,
-    rootHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
-    claimerSignature: {
-      signature: '0x102beecf2d1649daa081b45726408a4d82009f045538cc25a0faf60329734b31ff0f93c21173df9f3f6448651bd2c07b8afa97562eb6a8d52adabdf81265ec8b',
-      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5#authentication',
-      challenge: undefined
-    }
-  }
-```
-
-#### 5.2. Sending an Attestation
-
-If the Attester doesn't live on the same machine, we need to send them a message with the request.
-KILT contains a simple messaging system and we describe it through the following example.
-
-First, we create the request for attestation message which the Claimer uses their did and the did of the Attester:
-
-```typescript
-import * as Kilt, { MessageBody } from '@kiltprotocol/sdk-js'
-
-const messageBody: MessageBody = {
-  content: { requestForAttestation },
-  type: Kilt.Message.BodyType.REQUEST_ATTESTATION,
-}
-const message = new Kilt.Message(
-  messageBody,
+/* The claimer creates a message from the request for attestation. */
+const requestForAttestationMessage = new Kilt.Message(
+  {
+    content: { requestForAttestation },
+    type: Kilt.Message.BodyType.REQUEST_ATTESTATION,
+  },
   claimerLightDid.did,
   attesterFullDid.did
 )
+console.log('Request for attestation message:')
+console.log(JSON.stringify(requestForAttestationMessage, undefined, 2))
+
+/* The message is encrypted for the attester, so that no other user can decrypt it and read its content. */
+const encryptedRequestForAttestationMessage =
+  await requestForAttestationMessage.encrypt(
+    claimerLightDid.encryptionKey!.id,
+    claimerLightDid,
+    keystore,
+    attesterFullDid.assembleKeyId(attesterFullDid.encryptionKey!.id)
+  )
 ```
 
-The complete `message` looks as follows:
+## 4. Create an attestation
+
+Once the attester receives a request for attestation from a claimer, it will perform some work to verify whether the claims are valid.
+If so, it will write an attestation on the KILT blockchain and return the information back to the claimer.
+
+### 4.1 Build an attestation
+
+In this case, the attester decrypts the message received from the claimer and extracts the original request for attestation.
 
 ```typescript
-Message {
-  body: {
-    content: { requestForAttestation: [RequestForAttestation] },
-    type: 'request-attestation'
-  },
-  createdAt: 1595252779597,
-  receiverAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
-  senderAddress: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire',
-  senderBoxPublicKey: '0x04c84fc046c9c783161d9f60a9b884592e58388a99eed2b3824e90951980dd25',
-  message: '0xFEED....CAFE',
-  nonce: '0x231e9050c63838987c4d956592550fccacf7fd2d065f7e0c',
-  hash: '0x60ab82bf615c024ec662b80edbe5f84cb4bcea515fb845c1b0ce21e30d757378',
-  signature: '0x01ea1b24e07cc5830764ed3b23631d0d894738384f3ae321d23bcf1501d2893761c92d38fccb8e7269325c03a62e31f36fb3ce23f76de5811a718b73888d2fab89'
-}
-```
-
-After the message has been created the key agreement of both the claimer and attester must be retrieved in order to encrypt each other's messages using the previously generated DIDs of the claimer and attesters.
-
-```typescript
-const claimerEncryptionKey = claimerLightDid.getKeys(
-  KeyRelationship.keyAgreement
-)[0] as IDidKeyDetails<string>
-const attesterEncryptionKey = attesterFullDid.getKeys(
-  KeyRelationship.keyAgreement
-)[0] as IDidKeyDetails<string>
-```
-
-The message can be encrypted with the keystore and keys as follows:
-
-```typescript
-const encrypted = message.encrypt(
-  claimerEncryptionKey,
-  attesterEncryptionKey,
-  keystore
+const decryptedRequestForAttestationMessage = await Kilt.Message.decrypt(
+  encryptedRequestForAttestationMessage,
+  keystore,
+  attesterFullDid
 )
-```
-
-The messaging system is transport agnostic.
-
-```typescript
-const decrypted = Kilt.Message.decrypt(encrypted, keystore, {
-  senderDetails: claimerLightDid,
-  receiverDetails: attesterFullDid,
-})
-```
-
-As sender account and message validity are also checked during decryption, if the decryption process completes successfully, you can assume that the sender of the message is also the owner of the claim, as the two identites match.
-At this point the Attester has the original request for attestation object:
-
-```typescript
+let extractedRequestForAttestation: Kilt.IRequestForAttestation
 if (
-  decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION
+  decryptedRequestForAttestationMessage.body.type ===
+  Kilt.Message.BodyType.REQUEST_ATTESTATION
 ) {
-  const extractedRequestForAttestation: IRequestForAttestation =
-    decrypted.body.content.requestForAttestation
+  extractedRequestForAttestation =
+    decryptedRequestForAttestationMessage.body.content.requestForAttestation
+} else {
+  throw new Error('Invalid request for attestation received.')
 }
 ```
 
-The Attester creates the attestation based on the IRequestForAttestation object she received:
+Then, after the attester verifies the validity of the claims in the request for attestation, it builds an attestation.
 
 ```typescript
 const attestation = Kilt.Attestation.fromRequestAndDid(
   extractedRequestForAttestation,
   attesterFullDid.did
 )
+console.log('Attestation:')
+console.log(JSON.stringify(attestation, undefined, 2))
 ```
 
-The complete `attestation` object looks as follows:
+### 4.2 Store the attestation on the KILT blockchain
+
+With the attestation built, the attester can now write the attestation information on the KILT blockchain, and return the attestation information to the claimer using the SDK messaging framework.
 
 ```typescript
-Attestation {
-    claimHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
-    cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
-    delegationId: null,
-    owner: 'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy',
-    revoked: false
+/* Write the attestation on the blockchain. */
+const attesterAuthorisedAttestationTx = await attestation
+  .getStoreTx()
+  .then((tx) =>
+    attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
+  )
+await Kilt.BlockchainUtils.signAndSubmitTx(
+  attesterAuthorisedAttestationTx,
+  attesterAccount,
+  {
+    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+    reSign: true,
   }
-```
-
-Now the Attester must store the attestation on the blockchain, which also costs tokens:
-
-```typescript
-const tx = await attestation.getStoreTx()
-const authorizedExtrinsic = attesterFullDid.authorizeExtrinsic(
-  tx,
-  keystore,
-  attester.address
 )
-await Kilt.BlockchainUtils.signAndSubmitTx(authorizedExtrinsic, attester, {
-  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-  reSign: true,
-})
-```
+console.log('Attestation written on the blockchain!')
 
-The request for attestation is fulfilled with the attestation, but it needs to be combined into the `Credential` object before sending it back to the Claimer:
-
-```typescript
+/* Build a credential and send it back to the claimer. */
 const credential = Kilt.Credential.fromRequestAndAttestation(
   extractedRequestForAttestation,
   attestation
 )
+console.log('Credential:')
+console.log(JSON.stringify(credential, undefined, 2))
 ```
 
-The complete `credential` object looks as follows:
+## 5. Create and verify a presentation
+
+Credentials are worthless if they cannot be verified.
+Hence, now enters the picture the verifier: someone who trusts the attester to perform due diligence before issuing credentials.
+
+### 5.1 Generate a verifier light DID
+
+As with the claimer, interacting as a verifier requires a DID.
+A verifier typically does not need to write anything on the KILT blockchain, hence they can use a simpler off-chain DID for their needs.
 
 ```typescript
-Credential {
-  request: RequestForAttestation {
-    claim: Claim {
-      cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
-      contents: [Object],
-      owner: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5'
-    },
-    claimHashes: [
-      '0x5847086b70b224e6a27952e00ca347005c5032097382a2beb8e83e2b990cd272',
-      '0x836739c2acbbb831d5fa2ccd7ed952a005f2dd255cdbfd1669833a9e22ca4f9f',
-      '0x9c8a2c70456266d2a2a4207da9f79f8b9a8082a8f4e95a3bbd8b948a198d1c93'
-    ],
-    claimNonceMap: {
-      '0x7ca6424c43f70ce832356513409c2c78a6da7283495949e83acbf13b395033b6': 'aa8d1607-6655-4a20-bdb5-0d3cde151b1b',
-      '0x11b4b6f6627c8c5b589ad88be0cec280a04dac5b03608a52ab1b2db09dd27ba7': '3780c8a6-9296-4f7d-bbbc-a634b8513a77',
-      '0x77e3da790a5e2dd59c0ddab38ace397e3afc9325e2ce6d17e91b354ba30e27f9': 'ceaa9f13-30f8-4bbb-b389-5f22de7ae7dc'
-    },
-    legitimations: [],
-    delegationId: null,
-    rootHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
-    claimerSignature: {
-      signature: '0x102beecf2d1649daa081b45726408a4d82009f045538cc25a0faf60329734b31ff0f93c21173df9f3f6448651bd2c07b8afa97562eb6a8d52adabdf81265ec8b',
-      keyId: 'did:kilt:light:004sJaLoXk5XD2EqXqiiNpy9fKUxgowh9hQCYVs91CPPVxSVVr:oWFlomlwdWJsaWNLZXlYINQuoa9wi7n1fWXMKDA6+QDYyX/t8Fz5vaehLGYTZyl6ZHR5cGVmeDI1NTE5#authentication',
-      challenge: undefined
-    }
-  },
-  attestation: Attestation {
-    claimHash: '0x977628f38de70ba5e70269c287da9185cf727685eb31ff1ca8f3a80208909eb0',
-    cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
-    delegationId: null,
-    owner: 'did:kilt:4siJtc4dYq2gPre8Xj6KJcSjVAdi1gmjctUzjf3AwrtNnhvy',
-    revoked: false
-  }
-}
-```
-
-The Attester has to send the `credential` object back to the Claimer in the following message:
-
-```typescript
-const messageBodyBack: MessageBody = {
-  content: credential,
-  type: Kilt.Message.BodyType.SUBMIT_ATTESTATION,
-}
-const messageBack = new Kilt.Message(
-  messageBodyBack,
-  attesterFullDid.did,
-  claimerLightDid.did
-)
-```
-
-The complete `messageBack` message then looks as follows:
-
-```typescript
-Message {
-  body: {
-    content: Credential {
-      request: [RequestForAttestation],
-      attestation: [Attestation]
-    },
-    type: 'submit-attestation'
-  },
-  createdAt: 1595254601814,
-  receiverAddress: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire',
-  senderAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
-  senderBoxPublicKey: '0x97a9f05a70fe934b365d8b63dea7424b4070d49f64f2baa70e74d984da797d2d',
-  message: '0xFEED...CAFE',
-  nonce: '0x8f18d3394f4d325106c7b618046f6a8415bff1d5b4d267a8',
-  hash: '0x4f4108cf390eda665315cbff7cc21c155ae5895918a8691b04e0c27b803c3bc8',
-  signature: '0x01ee177a0ce94603de8958f854d7cec84adc09f6f5ec400e1432dfe6cf69418174b8c841f92664dd7c89818560aafee747e453200dab8a47b39a5fdfa3b4b3d880'
-}
-```
-
-After receiving the message, the Claimer just needs to save it and use it later for verification:
-
-```typescript
-let myCredential: Credential
-if (
-  messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION
-) {
-  myCredential = Kilt.Credential.fromCredential({
-    ...messageBack.body.content,
-    request: requestForAttestation,
+/* Generate the required keys using the demo keystore. */
+const verifierAuthenticationKey: Kilt.Did.NewLightDidAuthenticationKey =
+  await keystore
+    .generateKeypair({
+      alg: Kilt.Did.SigningAlgorithms.Sr25519,
+    })
+    .then((keypair) => {
+      return {
+        publicKey: keypair.publicKey,
+        type: Kilt.Did.DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+          keypair.alg
+        ) as Kilt.Did.LightDidSupportedVerificationKeyType,
+      }
+    })
+const verifierEncryptionKey: Kilt.NewDidEncryptionKey = await keystore
+  .generateKeypair({
+    alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
   })
-}
-```
+  .then((keypair) => {
+    return {
+      publicKey: keypair.publicKey,
+      type: Kilt.Did.DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
+        keypair.alg
+      ),
+    }
+  })
 
-## 6. Verify a Claim
-
-As in the attestation, you need a second account to act as the verifier. The verifier only needs a light DID [see claimer DID](#22-generate-a-light-did-for-the-claimer):
-
-```typescript
-const verifierMnemonic = generateMnemonic()
-const verifierLightDid = new Kilt.Did.LightDidDetails({
-  authenticationKey: {
-    publicKey: verifierSigningKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      verifierSigningKeypair.alg
-    ),
-  },
-  encryptionKey: {
-    publicKey: verifierEncryptionKeypair.publicKey,
-    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-      verifierEncryptionKeypair.alg
-    ),
-  },
+/* Create an off-chain DID with the generated keys. */
+const verifierLightDid = Kilt.Did.LightDidDetails.fromDetails({
+  authenticationKey: verifierAuthenticationKey,
+  encryptionKey: verifierEncryptionKey,
 })
+console.log(`Verifier DID: ${verifierLightDid.did}`)
 ```
 
-Before a claimer sends any data to a verifier, the verifier needs to initiate the verification process by requesting a presentation for a specific CTYPE.
-Therefore, the verifier knows which properties are included in the credential.
-A claimer can also hide selected properties from their credential.
-This is an **important feature for the privacy of a claimer** as this enables them to only show necessary properties for a specific verification.
+### 5.2 Ask for credentials
 
-### 6.1. Request presentation for CTYPE
+A verifier usually requires a claimer to fulfil some requirements before providing a specific service.
+The verifier needs to initiate the verification process by requesting a presentation for a specific CType.
+In this case, the verifier wants to verify the name of the claimer.
+To do so, it will send a request for credential message to the claimer.
+The request for credential can optionally contain a challenge that will be used by the verifier to ensure that the claimer owns the identity specified in the provided credentials at the time the presentation is generated.
 
 ```typescript
-const messageBodyForClaimer: MessageBody = {
-  type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
-  content: { ctypes: [ctype.hash] },
-}
-const messageForClaimer = new Kilt.Message(
-  messageBodyForClaimer,
+const challenge = Kilt.Utils.UUID.generate()
+const requestForCredentialMessage = new Kilt.Message(
+  {
+    type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
+    content: {
+      cTypes: [
+        { cTypeHash: ctype.hash, trustedAttesters: [attesterFullDid.did] },
+      ],
+      challenge,
+    },
+  },
   verifierLightDid.did,
   claimerLightDid.did
 )
+console.log('Request for credential message:')
+console.log(JSON.stringify(requestForCredentialMessage, undefined, 2))
 ```
 
-Now the claimer can send a message to the verifier including the credential.
-They may choose to create a copy and selected properties from it:
+### 5.3 Build a presentation
+
+Based on the requirements asked by the verifier, the claimer will choose one or multiple credentials that, combined, cover all such requirements.
+A claimer can also hide selected properties from their credential: this is an **important feature for the privacy of a claimer** as this enables them to only show necessary properties for a specific verification.
 
 ```typescript
-const copiedCredential = myCredential.createPresentation({
+/* Select one or more credentials according to the presentation requirements. */
+const selectedCredential = await credential.createPresentation({
+  // Hide the `age` property, and only reveal the `name` one.
   selectedAttributes: ['name'],
   signer: keystore,
   claimerDid: claimerLightDid,
+  challenge,
 })
+console.log('Presentation:')
+console.log(JSON.stringify(selectedCredential))
+```
 
-const messageBodyForVerifier: MessageBody = {
-  content: [copiedCredential],
-  type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
-}
-const messageForVerifier = new Kilt.Message(
-  messageBodyForVerifier,
+Once the credentials have been selected and combined, the claimer creates and encrypts a presentation message for the attester.
+
+```typescript
+const presentationMessage = new Kilt.Message(
+  {
+    content: [selectedCredential],
+    type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
+  },
   claimerLightDid.did,
   verifierLightDid.did
 )
+console.log('Presentation message:')
+console.log(JSON.stringify(presentationMessage, undefined, 2))
+
+const encryptedPresentationMessage = await presentationMessage.encrypt(
+  claimerLightDid.encryptionKey!.id,
+  claimerLightDid,
+  keystore,
+  verifierLightDid.assembleKeyId(verifierLightDid.encryptionKey!.id)
+)
 ```
 
-### 6.2. Verify presentation
+### 5.4 Verify the presentation
 
-When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request.
-The result will be a boolean indicating the result of the verification and the credential(s) which are either sent in their entirety OR have been stripped off of the properties that the verifier did not request to verify.
+The attester decrypts the message, extract the presentation within it, and verify its structure and validity.
 
 ```typescript
-if (
-  messageForVerifier.body.type ===
-  Kilt.Message.BodyType.SUBMIT_CREDENTIAL
-) {
-  const claims = messageForVerifier.body.content
-  const isValid = await Kilt.Credential.fromCredential(claims[0]).verify()
-  console.log('Verifcation success?', isValid)
-  console.log('Credentials from verifier perspective:\n', claims)
-}
+/* Decrypt the presentation message. */
+const decryptedPresentationMessage = await Kilt.Message.decrypt(
+    encryptedPresentationMessage,
+    keystore,
+    verifierLightDid
+  )
+  if (
+    decryptedPresentationMessage.body.type ===
+    Kilt.Message.BodyType.SUBMIT_CREDENTIAL
+  ) {
+    /* Verify all credentials in the presentation */
+    const credentials = decryptedPresentationMessage.body.content
+    const credentialsValidity = await Promise.all(
+      credentials.map((cred) => Kilt.Credential.fromCredential(cred).verify())
+    )
+    console.log(credentialsValidity)
+    const isPresentationValid = credentialsValidity.every(
+      (isValid) => isValid === true
+    )
+    console.log(`Presented credential validity status: ${isPresentationValid}`)
+    console.log('Credentials from verifier perspective:')
+    console.log(JSON.stringify(credentials, undefined, 2))
 ```
 
-## 7. Disconnect from chain
+## 6. Teardown
 
-Closing the connection to your chain is as simple as connecting to it:
+Once we have gone through everything, we close the connection to the KILT node.
 
 ```typescript
 await Kilt.disconnect()
