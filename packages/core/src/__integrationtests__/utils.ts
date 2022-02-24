@@ -198,6 +198,5 @@ export async function createFullDidFromSeed(
     keystore,
     seed
   )
-  console.log(lightDid)
   return createFullDidFromLightDid(identity, lightDid, keystore)
 }
