@@ -14,7 +14,7 @@ import {
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
 
-import type { Option, Bytes, Struct } from '@polkadot/types'
+import type { Option, Bytes, Struct, u128 } from '@polkadot/types'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN } from '@polkadot/util'
 
@@ -143,5 +143,5 @@ export async function queryDidForWeb3Name(
  */
 export async function queryDepositAmount(): Promise<BN> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return new BN(api.consts.web3Names.deposit.toString())
+  return (api.consts.web3Names.deposit as u128).toBn()
 }
