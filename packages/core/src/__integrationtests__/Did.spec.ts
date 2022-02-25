@@ -11,6 +11,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
   DemoKeystore,
@@ -764,6 +765,42 @@ describe('DID management batching', () => {
           id: 'id-2',
           types: ['type-2'],
           urls: ['url-2'],
+        },
+      ])
+    })
+
+    it('Build a minimal full DID with an Ecdsa key', async () => {
+      const authKey = await keystore.generateKeypair({
+        alg: SigningAlgorithms.EcdsaSecp256k1,
+      })
+      const didAuthKey: NewDidVerificationKey = {
+        publicKey: authKey.publicKey,
+        type: VerificationKeyType.Ecdsa,
+      }
+      const encodedEcdsaAddress = encodeAddress(
+        blake2AsU8a(authKey.publicKey),
+        38
+      )
+
+      const builder = new FullDidCreationBuilder(api, didAuthKey)
+
+      await expect(
+        builder
+          .consume(keystore, paymentAccount.address)
+          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+      ).resolves.not.toThrow()
+
+      const fullDid = await FullDidDetails.fromChainInfo(encodedEcdsaAddress)
+
+      expect(fullDid).not.toBeNull()
+
+      const authenticationKeys = fullDid!.getVerificationKeys(
+        KeyRelationship.authentication
+      )
+      expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
+        {
+          publicKey: authKey.publicKey,
+          type: VerificationKeyType.Ecdsa,
         },
       ])
     })

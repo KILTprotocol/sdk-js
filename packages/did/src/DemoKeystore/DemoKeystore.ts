@@ -14,6 +14,7 @@ import {
   naclSeal,
   randomAsHex,
   blake2AsU8a,
+  encodeAddress,
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
 
@@ -44,6 +45,24 @@ function signingSupported(alg: string): alg is SigningAlgorithms {
 }
 function encryptionSupported(alg: string): alg is EncryptionAlgorithms {
   return Object.values(EncryptionAlgorithms).some((i) => i === alg)
+}
+
+function encodeSigningPublicKeyToAddress(
+  publicKey: Uint8Array,
+  alg: SigningAlgorithms
+): string {
+  switch (alg) {
+    case SigningAlgorithms.Ed25519:
+    case SigningAlgorithms.Sr25519:
+      return encodeAddress(publicKey, 38)
+    case SigningAlgorithms.EcdsaSecp256k1: {
+      // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
+      const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+      return encodeAddress(pk, 38)
+    }
+    default:
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(`Unsupport signing key alg ${alg}.`)
+  }
 }
 
 export interface KeyGenOpts<T extends string> {
@@ -84,7 +103,8 @@ export class DemoKeystore
       )
     const keyType = DemoKeystore.getKeypairTypeForAlg(alg)
     try {
-      const keypair = this.signingKeyring.getPair(publicKey)
+      const encodedAddress = encodeSigningPublicKeyToAddress(publicKey, alg)
+      const keypair = this.signingKeyring.getPair(encodedAddress)
       if (keypair && keyType === keypair.type) return keypair
     } catch {
       throw SDKErrors.ERROR_KEYSTORE_ERROR(

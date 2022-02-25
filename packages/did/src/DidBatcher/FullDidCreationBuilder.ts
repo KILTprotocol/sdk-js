@@ -6,13 +6,15 @@
  */
 
 import { ApiPromise } from '@polkadot/api'
-import { encodeAddress } from '@polkadot/util-crypto'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
-import type {
+import {
+  DidVerificationKey,
   IIdentity,
   KeystoreSigner,
   NewDidVerificationKey,
   SubmittableExtrinsic,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -22,6 +24,24 @@ import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
+
+function encodeVerificationKeyToAddress({
+  publicKey,
+  type,
+}: Pick<DidVerificationKey, 'publicKey' | 'type'>): string {
+  switch (type) {
+    case VerificationKeyType.Ed25519:
+    case VerificationKeyType.Sr25519:
+      return encodeAddress(publicKey, 38)
+    case VerificationKeyType.Ecdsa: {
+      // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
+      const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+      return encodeAddress(pk, 38)
+    }
+    default:
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(`Unsupported key type ${type}.`)
+  }
+}
 
 export type FullDidCreationHandler = (
   didCreationExtrinsic: SubmittableExtrinsic
@@ -90,10 +110,10 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   ): Promise<FullDidDetails> {
     const extrinsic = await this.consume(signer, submitter, atomic)
     await handler(extrinsic)
-    const fetchedDidDetails = await FullDidDetails.fromChainInfo(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      encodeAddress(this.authenticationKey!.publicKey, 38)
+    const encodedAddress = encodeVerificationKeyToAddress(
+      this.authenticationKey
     )
+    const fetchedDidDetails = await FullDidDetails.fromChainInfo(encodedAddress)
     if (!fetchedDidDetails) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Something went wrong during the creation.'
@@ -127,9 +147,13 @@ export class FullDidCreationBuilder extends FullDidBuilder {
 
     this.consumed = true
 
+    const encodedAddress = encodeVerificationKeyToAddress(
+      this.authenticationKey
+    )
+
     return generateCreateTxFromCreationDetails(
       {
-        identifier: encodeAddress(this.authenticationKey.publicKey, 38),
+        identifier: encodedAddress,
         authenticationKey: this.authenticationKey,
         keyAgreementKeys: [...this.newKeyAgreementKeys.values()],
         assertionKey:
