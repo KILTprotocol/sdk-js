@@ -13,14 +13,21 @@ import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import { BN } from '@polkadot/util'
 import type { IBlockchainApi, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { makeTransfer } from '../balance/Balance.chain'
-import { devFaucet, devCharlie, WS_ADDRESS, keypairFromRandom } from './utils'
-import { config, connect, disconnect } from '../kilt'
+import { getTransferTx } from '../balance/Balance.chain'
+import {
+  devFaucet,
+  devCharlie,
+  keypairFromRandom,
+  submitExtrinsicWithResign,
+  initializeApi,
+} from './utils'
+import { connect, disconnect } from '../kilt'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
-  blockchain = await connect()
+  await initializeApi().then(async () => {
+    blockchain = await connect()
+  })
 })
 
 describe('Chain returns specific errors, that we check for', () => {
@@ -31,11 +38,9 @@ describe('Chain returns specific errors, that we check for', () => {
     faucet = devFaucet
     testIdentity = keypairFromRandom()
     charlie = devCharlie
-    const tx = await makeTransfer(testIdentity.address, new BN(10000), 0)
-    await BlockchainUtils.signAndSubmitTx(tx, faucet, {
-      resolveOn: BlockchainUtils.IS_FINALIZED,
-      reSign: true,
-    })
+    await getTransferTx(testIdentity.address, new BN(10000), 0).then((tx) =>
+      submitExtrinsicWithResign(tx, faucet)
+    )
   }, 40000)
 
   it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {

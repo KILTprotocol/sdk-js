@@ -30,14 +30,14 @@ jest.mock('./DelegationNode.chain', () => {
       node.childrenIds.map((id) => nodes[id] || null)
     ),
     query: jest.fn(async (id: string) => nodes[id] || null),
-    storeAsRoot: jest.fn(async (node: DelegationNode) => {
+    getStoreAsRootTx: jest.fn(async (node: DelegationNode) => {
       nodes[node.id] = node
       hierarchiesDetails[node.id] = {
         id: node.id,
         cTypeHash: await node.getCTypeHash(),
       }
     }),
-    revoke: jest.fn(
+    getRevokeTx: jest.fn(
       async (
         nodeId: IDelegationNode['id'],
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -575,7 +575,7 @@ describe('DelegationHierarchy', () => {
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
-    await rootDelegation.store()
+    await rootDelegation.getStoreTx()
 
     const rootNode = await DelegationNode.query(ROOT_IDENTIFIER)
     if (rootNode) {
@@ -602,7 +602,7 @@ describe('DelegationHierarchy', () => {
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
-    await aDelegationRootNode.revoke(didAlice)
+    await aDelegationRootNode.getRevokeTx(didAlice)
     const fetchedNodeRevocationStatus = DelegationNode.query(
       ROOT_IDENTIFIER
     ).then((node: DelegationNode | null) => node?.revoked)

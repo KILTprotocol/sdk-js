@@ -33,7 +33,7 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
  * @param ctype The CType to write on the blockchain.
  * @returns The [[SubmittableExtrinsic]] for the `add` call.
  */
-export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
+export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
   const preparedSchema = Crypto.encodeObjectAsStr(

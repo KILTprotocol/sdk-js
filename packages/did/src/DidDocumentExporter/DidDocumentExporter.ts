@@ -5,27 +5,27 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DID
- */
-
 import { base58Encode } from '@polkadot/util-crypto'
-import { hexToU8a } from '@polkadot/util'
 
 import type {
-  IDidDocument,
-  IJsonLDDidDocument,
+  DidDocument,
   IDidDetails,
   IDidDocumentExporter,
+  JsonLDDidDocument,
 } from '@kiltprotocol/types'
 import {
   KeyRelationship,
   VerificationKeyTypesMap,
   EncryptionKeyTypesMap,
 } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 
-function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
+/**
+ * @packageDocumentation
+ * @module DID
+ */
+
+function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   const result: any = {}
 
   result.id = details.did
@@ -33,61 +33,60 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
 
   // Populate the `verificationMethod` array and then sets the `authentication` array with the key IDs (or undefined if no auth key is present - which should never happen)
   const authenticationKeysIds = details
-    .getKeys(KeyRelationship.authentication)
+    .getVerificationKeys(KeyRelationship.authentication)
     .map((authKey) => {
       result.verificationMethod.push({
-        id: authKey.id,
+        id: `${details.did}#${authKey.id}`,
         controller: details.did,
         type: VerificationKeyTypesMap[authKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(authKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(authKey.publicKey),
       })
-      // Parse only the key ID from the complete key URI
-      return authKey.id
+      return `${details.did}#${authKey.id}`
     })
   if (authenticationKeysIds.length) {
     result.authentication = authenticationKeysIds
   }
 
   const keyAgreementKeysIds = details
-    .getKeys(KeyRelationship.keyAgreement)
+    .getEncryptionKeys(KeyRelationship.keyAgreement)
     .map((keyAgrKey) => {
       result.verificationMethod.push({
-        id: keyAgrKey.id,
+        id: `${details.did}#${keyAgrKey.id}`,
         controller: details.did,
         type: EncryptionKeyTypesMap[keyAgrKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(keyAgrKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(keyAgrKey.publicKey),
       })
-      return keyAgrKey.id
+      return `${details.did}#${keyAgrKey.id}`
     })
   if (keyAgreementKeysIds.length) {
     result.keyAgreement = keyAgreementKeysIds
   }
 
   const assertionKeysIds = details
-    .getKeys(KeyRelationship.assertionMethod)
+    .getVerificationKeys(KeyRelationship.assertionMethod)
     .map((assKey) => {
       result.verificationMethod.push({
-        id: assKey.id,
+        id: `${details.did}#${assKey.id}`,
         controller: details.did,
         type: VerificationKeyTypesMap[assKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(assKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(assKey.publicKey),
       })
-      return assKey.id
+      return `${details.did}#${assKey.id}`
     })
   if (assertionKeysIds.length) {
     result.assertionMethod = assertionKeysIds
   }
 
   const delegationKeyIds = details
-    .getKeys(KeyRelationship.capabilityDelegation)
+    .getVerificationKeys(KeyRelationship.capabilityDelegation)
     .map((delKey) => {
       result.verificationMethod.push({
-        id: delKey.id,
+        id: `${details.did}#${delKey.id}`,
         controller: details.did,
         type: VerificationKeyTypesMap[delKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(delKey.publicKeyHex)),
+        publicKeyBase58: base58Encode(delKey.publicKey),
       })
-      return delKey.id
+      return `${details.did}#${delKey.id}`
     })
   if (delegationKeyIds.length) {
     result.capabilityDelegation = delegationKeyIds
@@ -97,20 +96,20 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
   if (serviceEndpoints.length) {
     result.service = serviceEndpoints.map((service) => {
       return {
-        id: service.id,
+        id: `${details.did}#${service.id}`,
         type: service.types,
         serviceEndpoint: service.urls,
       }
     })
   }
 
-  return result as IDidDocument
+  return result as DidDocument
 }
 
-function exportToJsonLdDidDocument(details: IDidDetails): IJsonLDDidDocument {
+function exportToJsonLdDidDocument(details: IDidDetails): JsonLDDidDocument {
   const document = exportToJsonDidDocument(details)
   document['@context'] = ['https://www.w3.org/ns/did/v1']
-  return document as IJsonLDDidDocument
+  return document as JsonLDDidDocument
 }
 
 /**
@@ -123,14 +122,14 @@ function exportToJsonLdDidDocument(details: IDidDetails): IJsonLDDidDocument {
 export function exportToDidDocument(
   details: IDidDetails,
   mimeType: string
-): IDidDocument {
+): DidDocument {
   switch (mimeType) {
     case 'application/json':
       return exportToJsonDidDocument(details)
     case 'application/ld+json':
       return exportToJsonLdDidDocument(details)
     default:
-      throw new Error(
+      throw SDKErrors.ERROR_DID_EXPORTER_ERROR(
         `${mimeType} not supported by any of the available exporters.`
       )
   }

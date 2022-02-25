@@ -30,6 +30,16 @@ module.exports = {
   ],
   rules: {
     'import/no-cycle': 'off', // TODO: This rule does not seem to be working atm.
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: [
+          '**/*.test.ts',
+          '**/*.spec.ts',
+          '**/webpack.config.js',
+        ],
+      },
+    ],
     'import/extensions': [
       'error',
       'ignorePackages',

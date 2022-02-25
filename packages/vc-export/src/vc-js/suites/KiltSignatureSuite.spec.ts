@@ -12,9 +12,13 @@
 import jsigs, { DocumentLoader, purposes } from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
+
+import { base58Encode, randomAsHex } from '@polkadot/util-crypto'
+
+import { DidDocumentPublicKeyType } from '@kiltprotocol/types'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import { randomAsHex } from '@polkadot/util-crypto'
+
 import { KiltSignatureSuite as Suite } from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
 import { documentLoader as kiltDocumentLoader } from '../documentLoader'
@@ -42,12 +46,12 @@ beforeAll(async () => {
   })
   documentLoader = async (url) => {
     if (url.startsWith('did:kilt:')) {
-      const { identifier, fragment, did } = DidUtils.parseDidUrl(url)
+      const { identifier, fragment, did } = DidUtils.parseDidUri(url)
       const key: IPublicKeyRecord = {
         id: url,
-        publicKeyHex: Crypto.u8aToHex(Crypto.decodeAddress(identifier)),
+        publicKeyBase58: base58Encode(Crypto.decodeAddress(identifier)),
         controller: did,
-        type: 'Ed25519VerificationKey2018',
+        type: DidDocumentPublicKeyType.Ed25519VerificationKey,
       }
       if (fragment) {
         return { documentUrl: url, document: key }

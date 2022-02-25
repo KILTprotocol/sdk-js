@@ -15,8 +15,6 @@ import { validateAddress, validateHash, validateSignature } from './DataUtils'
 import { ErrorCode } from './SDKErrors'
 import * as Crypto from './Crypto'
 
-import '../../../testingTools/jestErrorCodeMatcher'
-
 const key = Buffer.from([0, 0, 7, 0])
 
 it('validates address with prefix 38', () => {
