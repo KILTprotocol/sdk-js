@@ -61,7 +61,7 @@ function encodeSigningPublicKeyToAddress(
       return encodeAddress(pk, 38)
     }
     default:
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(`Unsupport signing key alg ${alg}`)
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(`Unsupport signing key alg ${alg}.`)
   }
 }
 
