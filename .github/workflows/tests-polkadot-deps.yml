@@ -1,11 +1,13 @@
 name: Test with updated polkadot dependencies
 
 on:
-
   pull_request:
     branches:
       - develop
       - master
+
+env:
+  YARN_ENABLE_IMMUTABLE_INSTALLS: false
 
 jobs:
   build:
