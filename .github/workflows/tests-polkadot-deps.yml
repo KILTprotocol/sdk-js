@@ -31,10 +31,8 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.node-version }}-yarn-
-      - name: upgrade polkadot dependencies
-        run: yarn up @polkadot/* --mode update-lockfile
-      - name: discard changes to package.json files
-        run: git restore ./packages/
+      - name: delete yarn.lock
+        run: rm -f yarn.lock
       - name: run yarn install
         run: yarn install
       - name: yarn build
