@@ -11,11 +11,7 @@ import { Metadata, TypeRegistry } from '@polkadot/types'
 import metaStatic from './metadata/spiritnet.json'
 
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
-export type StaticMetadata =
-  | Uint8Array
-  | string
-  | Map<string, unknown>
-  | Record<string, unknown>
+export type StaticMetadata = ConstructorParameters<typeof Metadata>[1]
 
 export function createRegistryFromMetadata(
   meta: StaticMetadata = metaStatic
