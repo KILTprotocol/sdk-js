@@ -3,9 +3,6 @@ name: Test with updated polkadot dependencies
 on:
   schedule:
     - cron: 59 23 * * SAT
-  pull_request:
-    branches:
-      - develop
 
 env:
   YARN_ENABLE_IMMUTABLE_INSTALLS: false
