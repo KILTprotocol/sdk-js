@@ -616,7 +616,7 @@ export async function generateDidAuthenticatedTx({
     alg,
   })
   return api.tx.did.submitDidCall(signableCall, {
-    [signature.alg]: signature.data,
+    [getVerificationKeyTypeForSigningAlgorithm(signature.alg)]: signature.data,
   })
 }
 
