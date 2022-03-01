@@ -72,7 +72,7 @@ beforeAll(async () => {
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DidChain.queryDepositAmount()
   expect(depositAmount.toString()).toStrictEqual(
-    new BN(2000000000000000).toString()
+    new BN(2071900000000000).toString()
   )
 })
 
