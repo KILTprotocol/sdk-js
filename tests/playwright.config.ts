@@ -8,8 +8,7 @@
 import { PlaywrightTestConfig } from '@playwright/test'
 
 const config: PlaywrightTestConfig = {
-  globalTimeout: 80000, // Maximum time the whole test suite can run,
-  timeout: 70000, // Timeout for each test
+  timeout: 10 * 60 * 1000, // Timeout for each test
 }
 
 export default config

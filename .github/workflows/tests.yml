@@ -146,7 +146,7 @@ jobs:
           yarn test:integration:run
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
-  bundle_upload:
+  bundle_cache:
     runs-on: ubuntu-latest
     needs: build
 
@@ -167,7 +167,7 @@ jobs:
   bundle_test:
     runs-on: ubuntu-latest
 
-    needs: [build, bundle_upload]
+    needs: [build, bundle_cache]
     strategy:
       matrix:
         image: ['latest-rc']

@@ -8,47 +8,75 @@
 const {
   Claim,
   Attestation,
-  AttestedClaim,
+  Credential,
   CType,
+  CTypeUtils,
   RequestForAttestation,
   Did,
   BlockchainUtils,
   Utils: { Crypto, Keyring },
 } = window.kilt
 
-async function createFullDidFromSeed(identity, keystore, seed) {
+function getDefaultMigrationHandler(submitter) {
+  return async (e) => {
+    await BlockchainUtils.signAndSubmitTx(e, submitter, {
+      reSign: true,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+  }
+}
+
+async function createFullDidFromSeed(identity, keystore, seed, api) {
   const lightDid = await Did.DemoKeystoreUtils.createMinimalLightDidFromSeed(
     keystore,
     seed
   )
-  return Did.DemoKeystoreUtils.createFullDidFromLightDid(
-    identity,
-    lightDid,
-    keystore
+
+  const fullDid = await lightDid.migrate(
+    identity.address,
+    keystore,
+    getDefaultMigrationHandler(identity)
   )
+
+  const updatedFullDid = await new Did.FullDidUpdateBuilder(api, fullDid)
+    .setAttestationKey(fullDid.authenticationKey)
+    .setDelegationKey(fullDid.authenticationKey)
+    .consumeWithHandler(
+      keystore,
+      identity.address,
+      getDefaultMigrationHandler(identity)
+    )
+
+  return updatedFullDid
 }
 
 async function runAll() {
   // init sdk kilt config and connect to chain
   const keystore = new Did.DemoKeystore()
-  const init = window.kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const blockchain = init.then(() => window.kilt.connect())
+  await window.kilt.init({ address: 'ws://127.0.0.1:9944' })
+  const blockchain = await window.kilt.connect()
 
-  blockchain.then((chain) => {
-    if (!chain) console.error('No blockchain connection established')
-    else chain.getStats().then((t) => console.info(t))
-  })
+  if (!blockchain) console.error('No blockchain connection established')
+  else blockchain.getStats().then((t) => console.info(t))
   const keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
   // Accounts
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const devFaucet = keyring.createFromUri(FaucetSeed)
-  const Alice = await createFullDidFromSeed(devFaucet, keystore, '//Alice')
-  const Bob = await createFullDidFromSeed(devFaucet, keystore, '//Bob')
-  const Charlie = await createFullDidFromSeed(devFaucet, keystore, '//Charlie')
+  const alice = await createFullDidFromSeed(
+    devFaucet,
+    keystore,
+    '//Alice',
+    blockchain.api
+  )
+  const bob = await createFullDidFromSeed(
+    devFaucet,
+    keystore,
+    '//Bob',
+    blockchain.api
+  )
 
   // Light Did Account creation workflow
-
   const authPublicKey = Crypto.coToUInt8(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   )
@@ -59,84 +87,66 @@ async function runAll() {
   const didCreationDetails = {
     authenticationKey: {
       publicKey: authPublicKey,
-      type: 'ed25519',
+      type: 'Ed25519',
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: 'x25519',
+      type: 'X25519',
     },
   }
-  const testDid = new Did.LightDidDetails(didCreationDetails)
+  const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
   if (
     testDid.did !==
-    `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5`
-  )
+    `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytD7HjY6Doe`
+  ) {
     throw new Error('Did Test Unsuccessful')
-  else
-    console.info(
-      `light did successfully created: ${JSON.stringify(testDid, null, 2)}`
-    )
+  } else console.info(`light did successfully created`)
 
   // Chain Did workflow -> creation & deletion
-  keystore
-    .generateKeypair({
-      alg: Did.SigningAlgorithms.Ed25519,
+  console.log('DID workflow started')
+  const keypair = await keystore.generateKeypair({
+    alg: Did.SigningAlgorithms.Ed25519,
+  })
+
+  const fullDid = await new Did.FullDidCreationBuilder(blockchain.api, {
+    publicKey: keypair.publicKey,
+    type: 'Ed25519',
+  }).consumeWithHandler(keystore, devFaucet.address, async (tx) => {
+    await BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
+      reSign: true,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
-    .then(({ publicKey, alg }) => {
-      const didIdentifier = keyring.encodeAddress(publicKey)
-      const key = { publicKey, type: alg }
-      Did.DidChain.generateCreateTx({
-        didIdentifier,
-        submitter: devFaucet.address,
-        signer: keystore,
-        signingPublicKey: key.publicKey,
-        alg: key.type,
-      })
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          })
-        )
-        .then(() => {
-          Did.DidChain.queryById(didIdentifier)
-            .then(
-              (query) =>
-                (query.did ===
-                  Did.DidUtils.getKiltDidFromIdentifier(
-                    didIdentifier,
-                    'full'
-                  ) &&
-                  console.info('Did Identifiers matching!')) ||
-                new Error('Did Identifiers not matching!')
-            )
-            .then(() => {
-              Did.DidChain.getDeleteDidExtrinsic().then((extrinsic) => {
-                Did.DidChain.generateDidAuthenticatedTx({
-                  submitter: devFaucet.address,
-                  didIdentifier,
-                  txCounter: 1,
-                  call: extrinsic,
-                  signer: keystore,
-                  signingPublicKey: key.publicKey,
-                  alg: key.type,
-                })
-                  .then((submittable) =>
-                    BlockchainUtils.signAndSubmitTx(submittable, devFaucet, {
-                      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-                    })
-                  )
-                  .then(() =>
-                    Did.DidChain.queryById(didIdentifier).then(
-                      (didResult) =>
-                        didResult === null &&
-                        console.info('Did successfully deleted!')
-                    )
-                  )
-              })
-            })
-        })
-    })
+  })
+
+  const resolved = await Did.resolveDoc(fullDid.did)
+
+  if (!resolved.metadata.deactivated && resolved.details.did === fullDid.did) {
+    console.info('Did matches!')
+  } else {
+    throw new Error('Dids not matching!')
+  }
+
+  const extrinsic = await Did.DidChain.getDeleteDidExtrinsic()
+  const deleteTx = await fullDid.authorizeExtrinsic(
+    extrinsic,
+    keystore,
+    devFaucet.address
+  )
+
+  await BlockchainUtils.signAndSubmitTx(deleteTx, devFaucet, {
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    reSign: true,
+  })
+
+  const resolvedAgain = await Did.resolveDoc(fullDid.did)
+  if (resolvedAgain.metadata.deactivated) {
+    console.info('Did successfully deleted!')
+  } else {
+    throw new Error('Did not successfully deleted')
+  }
+
   // CType workflow
+  console.log('CType workflow started')
   const DriversLicense = CType.fromSchema({
     $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -152,81 +162,80 @@ async function runAll() {
     type: 'object',
   })
 
-  Alice.then((alice) => {
-    Did.DidChain.queryById(alice.identifier).then(
-      (chainDid) =>
-        (!chainDid && console.log('Alice Did on chain!')) ||
-        new Error('did not created')
-    )
-    DriversLicense.store()
-      .then((tx) => alice.authorizeExtrinsic(tx, keystore))
-      .then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
-      .then(() => {
-        DriversLicense.verifyStored().then(
-          (stored) =>
-            (stored && console.info('CType successfully stored onchain!')) ||
-            new Error('ctype not stored!')
-        )
-        window.kilt.CTypeUtils.verifyOwner({
-          ...DriversLicense,
-          owner: alice.did,
-        }).then(
-          (result) =>
-            (result && console.info('owner verified')) ||
-            new Error('ctype owner does not match ctype creator did')
-        )
-      })
+  const tx = await DriversLicense.getStoreTx()
+  const authorizedTx = await alice.authorizeExtrinsic(
+    tx,
+    keystore,
+    devFaucet.address
+  )
+
+  await BlockchainUtils.signAndSubmitTx(authorizedTx, devFaucet, {
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    reSign: true,
   })
+
+  const stored = await DriversLicense.verifyStored()
+  if (stored) {
+    console.info('CType successfully stored onchain!')
+  } else {
+    throw new Error('ctype not stored!')
+  }
+
+  const result = await CTypeUtils.verifyOwner({
+    ...DriversLicense,
+    owner: alice.did,
+  })
+  if (result) {
+    console.info('owner verified')
+  } else {
+    throw new Error('ctype owner does not match ctype creator did')
+  }
+
   // Attestation workflow
-
+  console.log('Attestation workflow started')
   const content = { name: 'Bob', age: 21 }
-  Promise.all([Alice, Bob]).then(([alice, bob]) => {
-    const claim = Claim.fromCTypeAndClaimContents(
-      DriversLicense,
-      content,
-      bob.did
-    )
-    const request = RequestForAttestation.fromClaim(claim)
-    request.signWithDid(keystore, bob).then((signed) => {
-      if (!RequestForAttestation.isIRequestForAttestation(signed))
-        throw new Error('Not a valid Request!')
-      else {
-        if (signed.verifyData()) console.info('Req4Att data verified')
-        else throw new Error('Req4Att not verifiable')
-        if (signed.verifySignature()) console.info('Req4Att signature verified')
-        else throw new Error('Req4Att Signature mismatch')
-        if (signed.claim.contents !== content)
-          throw new Error('Claim content inside Req4Att mismatching')
-      }
+  const claim = Claim.fromCTypeAndClaimContents(
+    DriversLicense,
+    content,
+    bob.did
+  )
+  const request = RequestForAttestation.fromClaim(claim)
+  const signed = await request.signWithDidKey(
+    keystore,
+    bob,
+    bob.authenticationKey.id
+  )
+  if (!RequestForAttestation.isIRequestForAttestation(signed))
+    throw new Error('Not a valid Request!')
+  else {
+    if (signed.verifyData()) console.info('Req4Att data verified')
+    else throw new Error('Req4Att not verifiable')
+    if (signed.verifySignature()) console.info('Req4Att signature verified')
+    else throw new Error('Req4Att Signature mismatch')
+    if (signed.claim.contents !== content)
+      throw new Error('Claim content inside Req4Att mismatching')
+  }
 
-      const attestation = Attestation.fromRequestAndDid(signed, alice.did)
-      const aClaim = AttestedClaim.fromRequestAndAttestation(
-        signed,
-        attestation
-      )
-      if (aClaim.verifyData()) console.info('Attested Claim Data verified!')
-      else throw new Error('Attested Claim data not verifiable')
+  const attestation = Attestation.fromRequestAndDid(signed, alice.did)
+  const credential = Credential.fromRequestAndAttestation(signed, attestation)
+  if (credential.verifyData()) console.info('Attested Claim Data verified!')
+  else throw new Error('Attested Claim data not verifiable')
 
-      attestation
-        .store()
-        .then((tx) => alice.authorizeExtrinsic(tx, keystore))
-        .then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          }).then(
-            (aClaim.verify() &&
-              console.info('Attested Claim verified with chain.')) ||
-              new Error('attested Claim not verifiable with chain')
-          )
-        )
-    })
+  const txAtt = await attestation.getStoreTx()
+  const authorizedAttTx = await alice.authorizeExtrinsic(
+    txAtt,
+    keystore,
+    devFaucet.address
+  )
+  await BlockchainUtils.signAndSubmitTx(authorizedAttTx, devFaucet, {
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    reSign: true,
   })
+  if (credential.verify()) {
+    console.info('Attested Claim verified with chain.')
+  } else {
+    throw new Error('attested Claim not verifiable with chain')
+  }
 }
 
-runAll()
+window.runAll = runAll

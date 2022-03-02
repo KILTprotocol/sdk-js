@@ -13,29 +13,18 @@ test('html bundle integration test', async ({ page }) => {
   const fileurl = url.pathToFileURL(
     path.join(__dirname, 'bundle-test.html')
   ).href
-  const msgnr: any[] = []
-  const testArray = Array(10).fill(0)
   page.on('pageerror', (exception) => {
     console.error(`uncaught exception: "${exception}"`)
     throw new Error('-1')
   })
   page.on('console', async (msg) => {
     console.log(msg.text())
-    const message = msg.args()
-    msgnr.push(message[1])
   })
   await page.goto(fileurl)
   await expect(page).toHaveTitle('Bundle tests')
 
-  await page.evaluate(() => {
-    return new Promise((resolve) => setTimeout(resolve, 30000))
+  await page.evaluate(async () => {
+    await window.runAll()
   })
-  msgnr.forEach((value) => {
-    if (value && typeof +value === 'number') {
-      const number = +value
-      testArray[number] += 1
-    }
-  })
-  testArray.forEach((value) => expect(value).toBe(1))
   page.close()
 })
