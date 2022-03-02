@@ -6,6 +6,6 @@
  */
 
 import context from './context.json'
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants'
+import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants.js'
 
 export const validationContexts = { [KILT_CREDENTIAL_CONTEXT_URL]: context }

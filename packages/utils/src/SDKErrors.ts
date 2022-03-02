@@ -15,12 +15,6 @@
 import type { NonceHash } from '@kiltprotocol/types'
 
 export enum ErrorCode {
-  ERROR_TRANSACTION_RECOVERABLE = 1000,
-  ERROR_TRANSACTION_OUTDATED = 1010,
-  ERROR_TRANSACTION_DUPLICATE = 1013,
-  ERROR_TRANSACTION_PRIORITY = 1014,
-  ERROR_TRANSACTION_USURPED = 1015,
-
   ERROR_UNAUTHORIZED = 1016,
   ERROR_NOT_FOUND = 1017,
 
@@ -85,6 +79,10 @@ export enum ErrorCode {
   ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
   ERROR_CTYPE_PROPERTIES_NOT_MATCHING = 30013,
   ERROR_UNSUPPORTED_KEY = 30014,
+  ERROR_DID_ERROR = 30014,
+  ERROR_KEYSTORE_ERROR = 30015,
+  ERROR_DID_EXPORTER_ERROR = 30016,
+  ERROR_DID_BUILDER_ERROR = 30017,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -116,36 +114,6 @@ export function isSDKError(input: unknown): input is SDKError {
   )
 }
 
-export const ERROR_TRANSACTION_RECOVERABLE: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_TRANSACTION_RECOVERABLE,
-    'Tx failed due to nonce collision, this is recoverable by re-signing!'
-  )
-}
-export const ERROR_TRANSACTION_OUTDATED: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_TRANSACTION_OUTDATED,
-    'Tx was signed with outdated Nonce'
-  )
-}
-export const ERROR_TRANSACTION_DUPLICATE: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_TRANSACTION_DUPLICATE,
-    'Identical Tx was already imported to the pool'
-  )
-}
-export const ERROR_TRANSACTION_PRIORITY: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_TRANSACTION_PRIORITY,
-    'Tx Priority too low to replace existing Tx with equal nonce'
-  )
-}
-export const ERROR_TRANSACTION_USURPED: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_TRANSACTION_USURPED,
-    'Tx was replaced by another TX with the same Nonce and higher Priority'
-  )
-}
 export const ERROR_UNAUTHORIZED: (msg: string) => SDKError = (msg: string) => {
   return new SDKError(ErrorCode.ERROR_UNAUTHORIZED, msg)
 }
@@ -184,6 +152,24 @@ export const ERROR_UNSUPPORTED_KEY: (keyType: string) => SDKError = (
     ErrorCode.ERROR_UNSUPPORTED_KEY,
     `The provided key type "${keyType}" is currently not supported.`
   )
+}
+export const ERROR_DID_ERROR: (input: string) => SDKError = (input: string) => {
+  return new SDKError(ErrorCode.ERROR_DID_ERROR, input)
+}
+export const ERROR_KEYSTORE_ERROR: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(ErrorCode.ERROR_KEYSTORE_ERROR, input)
+}
+export const ERROR_DID_EXPORTER_ERROR: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(ErrorCode.ERROR_DID_EXPORTER_ERROR, input)
+}
+export const ERROR_DID_BUILDER_ERROR: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(ErrorCode.ERROR_DID_BUILDER_ERROR, input)
 }
 
 export const ERROR_CLAIM_HASH_NOT_PROVIDED: () => SDKError = () => {

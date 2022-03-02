@@ -21,7 +21,7 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
-import { getSchemaPropertiesForHash } from './CType.utils'
+import { getSchemaPropertiesForHash } from './CType.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
@@ -33,7 +33,7 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
  * @param ctype The CType to write on the blockchain.
  * @returns The [[SubmittableExtrinsic]] for the `add` call.
  */
-export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
+export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
   const preparedSchema = Crypto.encodeObjectAsStr(

@@ -14,8 +14,8 @@ module.exports = {
   mode: 'production',
   // build two different bundles from the transpiled js
   entry: {
-    'sdk-js': './lib/index.js',
-    'sdk-js.min': './lib/index.js',
+    'sdk-js': './lib/cjs/index.js',
+    'sdk-js.min': './lib/cjs/index.js',
   },
   output: {
     filename: '[name].umd.js',

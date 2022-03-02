@@ -5,103 +5,46 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  IDidDetails,
-  IDidKeyDetails,
-  IIdentity,
-  KeystoreSigner,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
-import type { TypeRegistry } from '@polkadot/types'
-import type { PublicKeyRoleAssignment } from '../types'
-import { generateCreateTx } from '../Did.chain'
-import {
-  computeKeyId,
-  encodeDidPublicKey,
-  getKiltDidFromIdentifier,
-  getSignatureAlgForKeyType,
-  getIdentifierFromKiltDid,
-  assembleDidFragment,
-} from '../Did.utils'
 
-/**
- * Write on the KILT blockchain a new (full) DID with the provided details.
- *
- * @param didDetails The details of the new DID to write on chain.
- * @param submitter The account that is authorised to submit the creation operation to the blockchain.
- * @param signer The signer (a KILT account) to be used to sign the resulting operation.
- * @returns The signed extrinsic that can be submitted to the KILT blockchain to create the new DID.
- */
-export async function writeNewDidFromDidDetails(
-  didDetails: IDidDetails,
-  submitter: IIdentity['address'],
-  signer: KeystoreSigner
-): Promise<SubmittableExtrinsic> {
-  const [signingKey] = didDetails.getKeys(KeyRelationship.authentication)
-  const [assertionMethod] = didDetails.getKeys(KeyRelationship.assertionMethod)
-  const [delegation] = didDetails.getKeys(KeyRelationship.capabilityDelegation)
-  const [keyAgreement] = didDetails.getKeys(KeyRelationship.keyAgreement)
+import type { DidConstructorDetails } from '../types.js'
 
-  const keys: PublicKeyRoleAssignment = {
-    [KeyRelationship.assertionMethod]: {
-      ...assertionMethod,
-      publicKey: Crypto.coToUInt8(assertionMethod.publicKeyHex),
-    },
-    [KeyRelationship.capabilityDelegation]: {
-      ...delegation,
-      publicKey: Crypto.coToUInt8(delegation.publicKeyHex),
-    },
-    [KeyRelationship.keyAgreement]: {
-      ...keyAgreement,
-      publicKey: Crypto.coToUInt8(keyAgreement.publicKeyHex),
-    },
+import { validateKiltDid } from '../Did.utils.js'
+
+export function checkDidCreationDetails({
+  did,
+  keys,
+  keyRelationships,
+}: DidConstructorDetails): void {
+  validateKiltDid(did, false)
+  if (keyRelationships[KeyRelationship.authentication]?.size !== 1) {
+    throw Error(
+      `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`
+    )
   }
-  return generateCreateTx({
-    signer,
-    signingPublicKey: signingKey.publicKeyHex,
-    alg: getSignatureAlgForKeyType(signingKey.type),
-    didIdentifier: getIdentifierFromKiltDid(didDetails.did),
-    submitter,
-    keys,
-    endpoints: didDetails.getEndpoints(),
+  const allowedKeyRelationships: Set<string> = new Set([
+    ...Object.values(KeyRelationship),
+    'none',
+  ])
+  Object.keys(keyRelationships).forEach((keyRel) => {
+    if (!allowedKeyRelationships.has(keyRel)) {
+      throw Error(
+        `key relationship ${keyRel} is not recognized. Allowed: ${KeyRelationship}`
+      )
+    }
   })
-}
+  const keyIds = new Set<string>(Object.keys(keys))
+  const keyReferences = new Set<string>()
 
-/**
- * A tool to predict public key details if a given key would be added to an on-chain DID.
- * Especially handy for predicting the key id or for deriving which DID may be claimed with a
- * given authentication key.
- *
- * @param typeRegistry A TypeRegistry instance to which @kiltprotocol/types have been registered.
- * @param publicKey The public key in hex or U8a encoding.
- * @param type The [[CHAIN_SUPPORTED_KEY_TYPES]] variant indicating the key type.
- * @param controller Optionally, set the the DID to which this key would be added.
- * If left blank, the controller DID is inferred from the public key, mimicing the link between a new
- * DID and its authentication key.
- * @returns The [[IDidKeyDetails]] including key id, controller, type, and the public key hex encoded.
- */
-export function deriveDidPublicKey<T extends string>(
-  typeRegistry: TypeRegistry,
-  publicKey: string | Uint8Array,
-  type: T,
-  controller?: string
-): IDidKeyDetails<T> {
-  const publicKeyHex =
-    typeof publicKey === 'string' ? publicKey : Crypto.u8aToHex(publicKey)
-  const publicKeyU8a =
-    publicKey instanceof Uint8Array ? publicKey : Crypto.coToUInt8(publicKey)
-  const keyIdentifier = computeKeyId(
-    encodeDidPublicKey(typeRegistry, { publicKey: publicKeyU8a, type })
-  )
-  const did =
-    controller ||
-    getKiltDidFromIdentifier(Crypto.encodeAddress(publicKeyU8a, 38), 'full')
-  return {
-    id: assembleDidFragment(did, keyIdentifier),
-    controller: did,
-    type,
-    publicKeyHex,
-  }
+  // TODO: Find a more efficient way to populate the keyReferences set
+  Object.values(keyRelationships).forEach((keysRel) => {
+    keysRel.forEach((keyRel) => {
+      keyReferences.add(keyRel)
+    })
+  })
+  keyReferences.forEach((id) => {
+    if (!keyIds.has(id))
+      throw SDKErrors.ERROR_DID_ERROR(`No key with id ${id} in "keys"`)
+  })
 }

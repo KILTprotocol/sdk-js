@@ -17,7 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
-import { DelegationNode } from './DelegationNode'
+import { DelegationNode } from './DelegationNode.js'
 
 /**
  * Creates a bitset from the permissions in the array where each enum value

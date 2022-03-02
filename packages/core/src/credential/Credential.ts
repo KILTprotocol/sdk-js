@@ -16,20 +16,21 @@
  * @module Credential
  */
 
+import { DidDetails, DidUtils, DidKeySelectionHandler } from '@kiltprotocol/did'
 import type {
   ICredential,
   CompressedCredential,
   IAttestation,
   IRequestForAttestation,
-  IDidDetails,
   IDidResolver,
   KeystoreSigner,
-  IDidKeyDetails,
+  DidVerificationKey,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation/Attestation'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import * as CredentialUtils from './Credential.utils'
+import { Attestation } from '../attestation/Attestation.js'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation.js'
+import * as CredentialUtils from './Credential.utils.js'
 
 export class Credential implements ICredential {
   /**
@@ -113,7 +114,7 @@ export class Credential implements ICredential {
    * @param credential - The credential to check for validity.
    * @param verificationOpts The additional options to use upon attested credential verification.
    * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
-   * Defaults to the DefaultResolver.
+   * Defaults to [[DidResolver]].
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether the provided credential is valid.
    * @example ```javascript
@@ -213,25 +214,25 @@ export class Credential implements ICredential {
    *
    * @param presentationOptions The additional options to use upon presentation generation.
    * @param presentationOptions.signer Keystore signer to sign the presentation.
-   * @param presentationOptions.claimerSigningKey If passed, this key is used for signing.
-   * @param presentationOptions.claimerDid If no signing key is passed, the authentication key is fetched from the claimerDid (mandatory in that case).
+   * @param presentationOptions.claimerDid The DID details of the presenter.
    * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
    * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
    * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
+   * @param presentationOptions.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
    * @returns A deep copy of the Credential with all but `publicAttributes` removed.
    */
   public async createPresentation({
     selectedAttributes,
     signer,
     challenge,
-    claimerSigningKey,
     claimerDid,
+    keySelection = DidUtils.defaultKeySelectionHandler,
   }: {
-    signer: KeystoreSigner
-    claimerSigningKey?: IDidKeyDetails
-    claimerDid?: IDidDetails
-    challenge?: string
     selectedAttributes?: string[]
+    signer: KeystoreSigner
+    challenge?: string
+    claimerDid: DidDetails
+    keySelection?: DidKeySelectionHandler<DidVerificationKey>
   }): Promise<Credential> {
     const credential = new Credential(
       // clone the attestation and request for attestation because properties will be deleted later.
@@ -249,15 +250,17 @@ export class Credential implements ICredential {
     // remove these attributes
     credential.request.removeClaimProperties(excludedClaimProperties)
 
-    if (claimerDid) {
-      await credential.request.signWithDid(signer, claimerDid, challenge)
-    } else if (claimerSigningKey) {
-      await credential.request.signWithKey(signer, claimerSigningKey, challenge)
-    } else {
-      throw new Error(
-        'Either a key or claimer did details are required for signing'
-      )
+    const keys = claimerDid.getVerificationKeys(KeyRelationship.authentication)
+    const selectedKeyId = (await keySelection(keys))?.id
+
+    if (!selectedKeyId) {
+      throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
     }
+
+    await credential.request.signWithDidKey(signer, claimerDid, selectedKeyId, {
+      challenge,
+    })
+
     return credential
   }
 

@@ -10,4 +10,4 @@
  * @module DID
  */
 
-export { DidDocumentExporter, exportToDidDocument } from './DidDocumentExporter'
+export * from './DidDocumentExporter.js'

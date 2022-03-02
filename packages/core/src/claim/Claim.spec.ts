@@ -15,8 +15,6 @@ import { CType } from '../ctype/CType'
 import { Claim } from './Claim'
 import * as ClaimUtils from './Claim.utils'
 
-import '../../../../testingTools/jestErrorCodeMatcher'
-
 describe('Claim', () => {
   let did: string
   let claimContents: any

@@ -30,7 +30,7 @@ import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
-import jsonabc from './jsonabc'
+import jsonabc from './jsonabc.cjs'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
@@ -202,6 +202,8 @@ export function decryptSymmetricStr(
   return result ? u8aToString(result) : null
 }
 
+export type BitLength = 64 | 128 | 256 | 384 | 512
+
 /**
  * Create the blake2b and return the result as a u8a with the specified `bitLength`.
  *
@@ -209,7 +211,7 @@ export function decryptSymmetricStr(
  * @param bitLength Bit length of hash.
  * @returns Blake2b hash byte array.
  */
-export function hash(value: CryptoInput, bitLength?: number): Uint8Array {
+export function hash(value: CryptoInput, bitLength?: BitLength): Uint8Array {
   return blake2AsU8a(value, bitLength)
 }
 

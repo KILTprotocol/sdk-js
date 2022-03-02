@@ -11,7 +11,11 @@
  */
 
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
-import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
+import {
+  signatureVerify,
+  blake2AsHex,
+  base58Decode,
+} from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import { Attestation, CTypeSchema } from '@kiltprotocol/core'
 import { Crypto, JsonSchema } from '@kiltprotocol/utils'
@@ -21,15 +25,15 @@ import {
   KILT_SELF_SIGNED_PROOF_TYPE,
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
-} from './constants'
+} from './constants.js'
 import type {
   VerifiableCredential,
   SelfSignedProof,
   AttestedProof,
   CredentialDigestProof,
   IPublicKeyRecord,
-} from './types'
-import { fromCredentialIRI } from './exportToVerifiableCredential'
+} from './types.js'
+import { fromCredentialIRI } from './exportToVerifiableCredential.js'
 
 export interface VerificationResult {
   verified: boolean
@@ -105,9 +109,9 @@ export async function verifySelfSignedProof(
           Object.values(VerificationKeyTypesMap)
         )}, got "${verificationMethod.type}"`
       )
-    const signerPubKey = verificationMethod.publicKeyHex
+    const signerPubKey = verificationMethod.publicKeyBase58
     if (!signerPubKey)
-      throw new Error('signer key is missing publicKeyHex property')
+      throw new Error('signer key is missing publicKeyBase58 property')
 
     const rootHash = fromCredentialIRI(credential.id)
     // validate signature over root hash
@@ -115,12 +119,12 @@ export async function verifySelfSignedProof(
     const verification = signatureVerify(
       rootHash,
       proof.signature,
-      signerPubKey
+      base58Decode(signerPubKey)
     )
     if (
       !(
         verification.isValid &&
-        VerificationKeyTypesMap[verification.crypto] === keyType
+        Object.values(VerificationKeyTypesMap).includes(keyType)
       )
     ) {
       throw new Error('signature could not be verified')
@@ -128,7 +132,7 @@ export async function verifySelfSignedProof(
     return result
   } catch (e) {
     result.verified = false
-    result.errors = [e]
+    result.errors = [e as Error]
     return result
   }
 }
@@ -202,7 +206,7 @@ export async function verifyAttestedProof(
   } catch (e) {
     return {
       verified: false,
-      errors: [e],
+      errors: [e as Error],
       status,
     }
   }
@@ -294,7 +298,7 @@ export async function verifyCredentialDigestProof(
     )
   } catch (e) {
     result.verified = false
-    result.errors = [e]
+    result.errors = [e as Error]
     return result
   }
 }

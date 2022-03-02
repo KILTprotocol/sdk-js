@@ -10,44 +10,35 @@
  */
 
 import { BN } from '@polkadot/util'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import type { KeyringPair } from '@kiltprotocol/types'
+import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
+import { Attestation } from '../index'
+import { getTransferTx } from '../balance/Balance.chain'
+import { disconnect } from '../kilt'
 import {
-  createOnChainDidFromSeed,
-  DemoKeystore,
-  FullDidDetails,
-} from '@kiltprotocol/did'
-import { randomAsHex } from '@polkadot/util-crypto'
-import { Attestation } from '..'
-import { makeTransfer } from '../balance/Balance.chain'
-import { config, disconnect } from '../kilt'
-import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'
-
-import '../../../../testingTools/jestErrorCodeMatcher'
+  addressFromRandom,
+  createEndowedTestAccount,
+  createFullDidFromSeed,
+  initializeApi,
+  submitExtrinsicWithResign,
+} from './utils'
 
 let paymentAccount: KeyringPair
 let someDid: FullDidDetails
 const keystore = new DemoKeystore()
 
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
-  paymentAccount = devAlice
-  someDid = await createOnChainDidFromSeed(
-    paymentAccount,
-    keystore,
-    randomAsHex(32)
-  )
-})
+  await initializeApi()
+  paymentAccount = await createEndowedTestAccount()
+  someDid = await createFullDidFromSeed(paymentAccount, keystore)
+}, 60_000)
 
-it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
+it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
-    makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+    getTransferTx(addressFromRandom(), new BN(1)).then((tx) =>
+      submitExtrinsicWithResign(tx, paymentAccount)
     )
-  ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
+  ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
@@ -61,18 +52,13 @@ it('records an extrinsic error when ctype does not exist', async () => {
     revoked: false,
   })
   const tx = await attestation
-    .store()
+    .getStoreTx()
     .then((ex) =>
       someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
     )
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      reSign: true,
-    })
-  ).rejects.toThrowErrorWithCode(
-    ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
-  )
+    submitExtrinsicWithResign(tx, paymentAccount)
+  ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
 }, 30_000)
 
 afterAll(() => {

@@ -10,7 +10,7 @@
  * @module ISubscriptionPromise
  */
 
-import type { ISubmittableResult } from '.'
+import type { ISubmittableResult } from './index.js'
 
 /**
  * A function that determines whether a new incoming value should reject or resolve the promise.

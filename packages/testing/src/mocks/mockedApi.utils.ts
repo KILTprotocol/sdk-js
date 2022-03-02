@@ -1,15 +1,21 @@
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-import { TYPE_REGISTRY } from '../TypeRegistry'
+import { createRegistryFromMetadata } from './typeRegistry.js'
+
+const TYPE_REGISTRY = createRegistryFromMetadata()
 
 const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
 })
 TYPE_REGISTRY.setChainProperties(chainProperties)
-TYPE_REGISTRY.register({
-  AttestationAttestationsAttestationDetails: 'AttestationDetails',
-})
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
@@ -25,7 +31,7 @@ type ChainQueryTypes = {
  * Legend:
  * - ? === Option
  * - (...) === Tuple
- * - [...] === Vec
+ * - [...] === Vec.
  */
 const chainQueryReturnTuples: {
   [K in keyof ChainQueryTypes]: {
@@ -38,9 +44,13 @@ const chainQueryReturnTuples: {
   },
   delegation: {
     // Delegation hierarchies: root-id -> (ctype-hash)?
-    hierarchies: TYPE_REGISTRY.getOrUnknown('DelegationHierarchyDetails'),
+    hierarchies: TYPE_REGISTRY.getOrUnknown(
+      'DelegationDelegationHierarchyDelegationHierarchyDetails'
+    ),
     // Delegations: delegation-id -> (hierarchy-id, parent-id?, childrenIds, details)?
-    delegations: TYPE_REGISTRY.getOrUnknown('DelegationNode'),
+    delegations: TYPE_REGISTRY.getOrUnknown(
+      'DelegationDelegationHierarchyDelegationNode'
+    ),
   },
   attestation: {
     // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked, deposit)?
@@ -52,7 +62,7 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: TYPE_REGISTRY.getOrUnknown('DidRecord'),
+    dIDs: TYPE_REGISTRY.getOrUnknown('DidDidDetails'),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
@@ -96,7 +106,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     chainQueryReturnTuples[outerQuery as string][innerQuery]
 
   // helper function to wrap values into a vector
-  function wrapInVec() {
+  function wrapInVec(): Vec<Codec> {
     return new Vec(
       TYPE_REGISTRY,
       chainQueryReturnTuple,
@@ -104,7 +114,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     )
   }
   // helper function to wrap values into an option
-  function wrapInOption() {
+  function wrapInOption(): Option<Codec> {
     return new Option(TYPE_REGISTRY, chainQueryReturnTuple, mockValue)
   }
   // check cases

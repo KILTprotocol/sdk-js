@@ -1,0 +1,117 @@
+name: Test with updated polkadot dependencies
+
+on:
+  schedule:
+    - cron: 59 23 * * SAT
+
+env:
+  YARN_ENABLE_IMMUTABLE_INSTALLS: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-${{ matrix.node-version }}-updated-dependencies
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+      - name: delete yarn.lock
+        run: rm -f yarn.lock
+      - name: run yarn install
+        run: yarn install
+      - name: yarn build
+        run: yarn build
+      - name: zip build
+        run: zip -r build.zip .
+      - name: upload build
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-${{ matrix.node-version }}
+          path: build.zip
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+        required: ['required']
+        include:
+          - node-version: 16.x
+            required: 'optional'
+
+    continue-on-error: ${{ matrix.required == 'optional' }}
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-${{ matrix.node-version }}
+      - name: unzip
+        run: unzip build.zip -d .
+      - name: unit tests
+        run: yarn test:ci
+
+  integration_test:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    strategy:
+      matrix:
+        image: ['latest-rc']
+        required: ['optional']
+        include:
+          - image: 'latest-develop'
+            required: 'optional'
+
+    continue-on-error: ${{ matrix.required == 'optional' }}
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-14.x
+      - name: unzip
+        run: unzip build.zip -d .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: run integration tests
+        timeout-minutes: 60
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: kilt/prototype-chain
+          IMAGE_TAG: ${{ matrix.image }}
+        run: |
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
+          sleep 5s
+          yarn test:integration:run
+          docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)

@@ -13,20 +13,9 @@
  * @preferred
  */
 
-import type { EventRecord } from '@polkadot/types/interfaces'
+import type { DispatchError, EventRecord } from '@polkadot/types/interfaces'
 import type { ISubmittableResult } from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/config'
-import { errorForPallet, ExtrinsicError } from './ExtrinsicError'
-
-const log = ConfigService.LoggingFactory.getLogger('Blockchain')
-
-export enum SystemEvent {
-  ExtrinsicSuccess = '0x0000',
-  ExtrinsicFailed = '0x0001',
-}
-export interface ModuleError {
-  Module: { index: number; error: number }
-}
+import type { RegistryError } from '@polkadot/types/types'
 
 /**
  * Checks if there is `SystemEvent.ExtrinsicFailed` in the list of
@@ -38,10 +27,8 @@ export interface ModuleError {
 export function extrinsicFailed(extrinsicResult: ISubmittableResult): boolean {
   const events: EventRecord[] = extrinsicResult.events || []
   return events.some((eventRecord: EventRecord) => {
-    return (
-      eventRecord.phase.isApplyExtrinsic &&
-      eventRecord.event.index.toHex() === SystemEvent.ExtrinsicFailed
-    )
+    const { section, method } = eventRecord.event
+    return section === 'system' && method === 'ExtrinsicFailed' // as done in https://github.com/polkadot-js/apps/blob/51835328db5f0eb90a9efcc7bf5510704a7ab279/packages/react-components/src/Status/Queue.tsx
   })
 }
 
@@ -57,10 +44,8 @@ export function extrinsicSuccessful(
 ): boolean {
   const events: EventRecord[] = extrinsicResult.events || []
   return events.some((eventRecord: EventRecord) => {
-    return (
-      eventRecord.phase.isApplyExtrinsic &&
-      eventRecord.event.index.toHex() === SystemEvent.ExtrinsicSuccess
-    )
+    const { section, method } = eventRecord.event
+    return section === 'system' && method === 'ExtrinsicSuccess'
   })
 }
 
@@ -72,20 +57,16 @@ export function extrinsicSuccessful(
  */
 export function getExtrinsicError(
   extrinsicResult: ISubmittableResult
-): ExtrinsicError | null {
+): RegistryError | DispatchError | null {
   const errorEvent = extrinsicResult.dispatchError
 
   if (errorEvent && errorEvent.isModule) {
     const moduleError = errorEvent.asModule
-
-    const index = moduleError.index.toNumber()
-    const error = moduleError.error.toNumber()
-    if (index >= 0 && error >= 0) {
-      return errorForPallet({ index, error })
+    try {
+      return moduleError.registry.findMetaError(moduleError)
+    } catch {
+      // handled with last return
     }
-    log.warn(
-      `error event module index or error code out of range. index: ${index}; error: ${error}`
-    )
   }
-  return null
+  return errorEvent || null
 }

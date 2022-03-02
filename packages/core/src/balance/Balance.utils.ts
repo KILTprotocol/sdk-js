@@ -46,7 +46,6 @@ export const Prefixes = new Map<MetricPrefix, number>([
  * @param amount BN to format.
  * @param additionalOptions Optional formatting settings, these are defaulted to KILT specific settings.
  * @returns String representation of the given BN with prefix and unit ('KILT' as default).
-
  */
 export function formatKiltBalance(
   amount: BN,
