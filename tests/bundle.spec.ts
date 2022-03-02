@@ -10,8 +10,9 @@ import url from 'url'
 import path from 'path'
 
 test('html bundle integration test', async ({ page }) => {
-  const fileurl = url.pathToFileURL(path.join(__dirname, 'bundle-test.html'))
-    .href
+  const fileurl = url.pathToFileURL(
+    path.join(__dirname, 'bundle-test.html')
+  ).href
   const msgnr: any[] = []
   const testArray = Array(10).fill(0)
   page.on('pageerror', (exception) => {
