@@ -12,7 +12,6 @@ import { createRegistryFromMetadata } from './typeRegistry.js'
 
 const TYPE_REGISTRY = createRegistryFromMetadata()
 
-TYPE_REGISTRY.getChainProperties()
 TYPE_REGISTRY.setChainProperties(TYPE_REGISTRY.getChainProperties())
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
@@ -89,16 +88,16 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     | U64
     | string
     | Array<
-        | Constructor
-        | number
-        | string
-        | undefined
-        | U8
-        | boolean
-        | null
-        | U8aFixed
-        | any
-      >
+      | Constructor
+      | number
+      | string
+      | undefined
+      | U8
+      | boolean
+      | null
+      | U8aFixed
+      | any
+    >
 ): Option<Codec> | Vec<Codec> {
   const chainQueryReturnTuple =
     chainQueryReturnTuples[outerQuery as string][innerQuery]
