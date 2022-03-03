@@ -88,16 +88,16 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     | U64
     | string
     | Array<
-      | Constructor
-      | number
-      | string
-      | undefined
-      | U8
-      | boolean
-      | null
-      | U8aFixed
-      | any
-    >
+        | Constructor
+        | number
+        | string
+        | undefined
+        | U8
+        | boolean
+        | null
+        | U8aFixed
+        | any
+      >
 ): Option<Codec> | Vec<Codec> {
   const chainQueryReturnTuple =
     chainQueryReturnTuples[outerQuery as string][innerQuery]
