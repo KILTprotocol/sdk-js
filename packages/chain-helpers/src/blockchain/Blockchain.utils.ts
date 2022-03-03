@@ -103,6 +103,7 @@ export async function submitSignedTx(
       status:
         latestResult.status ||
         api.registry.createType('ExtrinsicStatus', 'future'),
+      txHash: api.registry.createType('Hash'),
     })
     subscription(result)
   }
