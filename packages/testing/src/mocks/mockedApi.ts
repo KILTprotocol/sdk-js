@@ -104,7 +104,7 @@ class MockSubmittableExtrinsic {
   ): Promise<string | (() => void)> {
     if (callable) {
       callable(this.result)
-      return () => {}
+      return () => { }
     }
     return '0x123'
   }
@@ -172,6 +172,7 @@ function makeSubmittableResult(
         },
       } as any,
     ],
+    txHash: registry.createType('Hash'),
   })
 }
 
