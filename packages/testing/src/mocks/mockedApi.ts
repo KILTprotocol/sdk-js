@@ -104,7 +104,7 @@ class MockSubmittableExtrinsic {
   ): Promise<string | (() => void)> {
     if (callable) {
       callable(this.result)
-      return () => { }
+      return () => {}
     }
     return '0x123'
   }
