@@ -38,7 +38,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     return CType.fromSchema({
       $id: `kilt:ctype:0x${ctypeCounter}`,
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: `ctype1${ctypeCounter}`,
+      title: `ctype${ctypeCounter}`,
       properties: {
         name: { type: 'string' },
       },
