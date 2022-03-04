@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/sdk-js",
-  "version": "0.26.0-14",
+  "version": "0.26.0-rc.4",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -50,6 +50,7 @@
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/messaging": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*",
+    "@polkadot/api-augment": "^7.10.1"
   }
 }

@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import '@polkadot/api-augment'
+
 import * as jsonabcCjs from './jsonabc.cjs'
 
 export const jsonabc = jsonabcCjs

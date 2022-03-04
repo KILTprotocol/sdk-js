@@ -172,6 +172,7 @@ function makeSubmittableResult(
         },
       } as any,
     ],
+    txHash: registry.createType('Hash'),
   })
 }
 

@@ -488,7 +488,7 @@ describe('Different deposits scenarios', () => {
       )
     ).resolves.not.toThrow()
   }, 120_000)
-  it.only('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
+  it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
     await expect(
       checkWeb3Deposit(testIdentities[9], testFullDidTen, keystore)
     ).resolves.toBeTruthy()
