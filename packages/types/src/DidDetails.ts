@@ -11,6 +11,11 @@ import type { DidPublicKey } from './DidDocumentExporter'
 import type { IIdentity } from './Identity'
 
 /**
+ *  Web3Name is the type of a nickname for a DID.
+ */
+export type Web3Name = string
+
+/**
  * A DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
  */
 export type IDidIdentifier = IIdentity['address']

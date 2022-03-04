@@ -11,7 +11,7 @@
 
 import { randomAsHex } from '@polkadot/util-crypto'
 
-import type { KeyringPair } from '@kiltprotocol/types'
+import type { KeyringPair, Web3Name } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { FullDidDetails, DemoKeystore, Web3Names } from '@kiltprotocol/did'
 import { disconnect } from '../kilt'
@@ -32,8 +32,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let otherWeb3NameCreator: FullDidDetails
   let paymentAccount: KeyringPair
   let otherPaymentAccount: KeyringPair
-  let nick: Web3Names.Web3Name
-  let differentNick: Web3Names.Web3Name
+  let nick: Web3Name
+  let differentNick: Web3Name
 
   const keystore = new DemoKeystore()
 

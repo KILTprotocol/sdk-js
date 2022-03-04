@@ -24,6 +24,7 @@ import {
   queryServiceEndpoint,
 } from '../Did.chain.js'
 import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
+import { queryWeb3NameForDidIdentifier } from '../Web3Names/Web3Names.chain.js'
 
 /**
  * Resolve a DID URI to the details of the DID subject.
@@ -40,11 +41,15 @@ export async function resolveDoc(
 
   switch (type) {
     case 'full': {
-      const details = await FullDidDetails.fromChainInfo(identifier, version)
+      const didDetails = await FullDidDetails.fromChainInfo(identifier, version)
       // If the details are found, return those details.
-      if (details) {
+      if (didDetails) {
+        const web3Name = await queryWeb3NameForDidIdentifier(identifier)
         return {
-          details,
+          details: {
+            ...(didDetails as IDidDetails),
+            getWeb3Name: () => web3Name || undefined,
+          },
           metadata: {
             deactivated: false,
           },
@@ -78,7 +83,11 @@ export async function resolveDoc(
           version
         )
         return {
-          details,
+          details: {
+            ...(details as IDidDetails),
+            // Light DID do not return a web3name when resolved, regardless whether they are migrated or not.
+            getWeb3Name: () => undefined,
+          },
           metadata: {
             canonicalId: fullDidUri,
             deactivated: false,
@@ -98,7 +107,11 @@ export async function resolveDoc(
       // If no full DID details nor deletion info is found, the light DID is un-migrated.
       // Metadata will simply contain `deactivated: false`.
       return {
-        details,
+        details: {
+          ...(details as IDidDetails),
+          // Light DID do not return a web3name when resolved, regardless whether they are migrated or not.
+          getWeb3Name: () => undefined,
+        },
         metadata: {
           deactivated: false,
         },

@@ -9,7 +9,7 @@ import {
   DidPublicKey,
   DidPublicServiceEndpoint,
 } from './DidDocumentExporter.js'
-import type { IDidDetails, DidKey } from './DidDetails.js'
+import type { IDidDetails, DidKey, Web3Name } from './DidDetails.js'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
@@ -25,6 +25,10 @@ export type DidResolutionDocumentMetadata = {
   deactivated: boolean
 }
 
+export type Web3NameIdentifiable = {
+  getWeb3Name: () => Web3Name | undefined
+}
+
 /**
  * The result of a DID resolution.
  *
@@ -34,7 +38,7 @@ export type DidResolvedDetails = {
   /**
    * The resolved DID details. It is undefined if the DID has been deleted.
    */
-  details?: IDidDetails
+  details?: IDidDetails & Web3NameIdentifiable
   /**
    * The DID resolution metadata.
    */

@@ -10,6 +10,7 @@ import {
   IDidIdentifier,
   Deposit,
   IDidDetails,
+  Web3Name,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
@@ -28,11 +29,6 @@ interface Web3NameOwner extends Struct {
   claimedAt: AnyNumber
   deposit: Deposit
 }
-
-/**
- *  Web3Name is the type of a nickname for a DID.
- */
-export type Web3Name = string
 
 /**
  * Returns a extrinsic to claim a new web3name.
