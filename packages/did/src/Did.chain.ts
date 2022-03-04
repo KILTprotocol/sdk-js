@@ -625,7 +625,7 @@ export function encodeDidSignature(
   key: Pick<ChainDidKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  if (!Object.keys(VerificationKeyType).some((kt) => kt === key.type)) {
+  if (!Object.values(VerificationKeyType).some((kt) => kt === key.type)) {
     throw SDKErrors.ERROR_DID_ERROR(
       `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
