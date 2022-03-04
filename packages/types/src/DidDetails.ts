@@ -49,7 +49,7 @@ export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
  * Possible types for a DID encryption key.
  */
 export enum EncryptionKeyType {
-  X25519 = 'X25519',
+  X25519 = 'x25519',
 }
 
 /**
