@@ -21,6 +21,7 @@ import {
   ResolvedDidServiceEndpoint,
   VerificationKeyType,
   EncryptionKeyType,
+  Web3Name,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
@@ -189,6 +190,22 @@ jest.mock('../Did.chain', () => {
   }
 })
 
+jest.mock('../Web3Names/Web3Names.chain', () => {
+  const queryWeb3NameForDidIdentifier = jest.fn(
+    async (didIdentifier: IDidIdentifier): Promise<Web3Name | null> => {
+      switch (didIdentifier) {
+        case identifierWithAllKeys:
+          return 'myCoolName'
+        default:
+          return null
+      }
+    }
+  )
+  return {
+    queryWeb3NameForDidIdentifier,
+  }
+})
+
 describe('When resolving a key', () => {
   it('correctly resolves it for a full DID if both the DID and the key exist', async () => {
     const fullDid = getKiltDidFromIdentifier(
@@ -287,7 +304,7 @@ describe('When resolving a service endpoint', () => {
 })
 
 describe('When resolving a full DID', () => {
-  it('correctly resolves the details with an authentication key', async () => {
+  it.only('correctly resolves the details with an authentication key', async () => {
     const fullDidWithAuthenticationKey = getKiltDidFromIdentifier(
       identifierWithAuthenticationKey,
       'full'
@@ -302,6 +319,7 @@ describe('When resolving a full DID', () => {
     expect(details?.did).toStrictEqual<IDidDetails['did']>(
       fullDidWithAuthenticationKey
     )
+    console.log(details)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'auth',
@@ -309,6 +327,9 @@ describe('When resolving a full DID', () => {
         publicKey: new Uint8Array(32).fill(0),
       },
     ])
+
+    // This full DID is expected not to have a web3 name
+    expect(details?.getWeb3Name()).toBeUndefined()
   })
 
   it('correctly resolves the details with all keys', async () => {
@@ -349,6 +370,9 @@ describe('When resolving a full DID', () => {
         includedAt: new BN(25),
       },
     ])
+
+    // This full DID is expected to have a web3 name
+    expect(details?.getWeb3Name()).toStrictEqual<Web3Name>('myCoolName')
   })
 
   it('correctly resolves the details with service endpoints', async () => {
@@ -378,6 +402,9 @@ describe('When resolving a full DID', () => {
         urls: ['url-id-2'],
       },
     ])
+
+    // This full DID is expected not to have a web3 name
+    expect(details?.getWeb3Name()).toBeUndefined()
   })
 
   it('correctly resolves a non-existing DID', async () => {
@@ -449,6 +476,9 @@ describe('When resolving a light DID', () => {
         publicKey: authKey.publicKey,
       },
     ])
+
+    // Light DID should not return a web3 name
+    expect(details?.getWeb3Name()).toBeUndefined()
   })
 
   it('correctly resolves the details with authentication key, encryption key, and two service endpoints', async () => {
@@ -498,6 +528,9 @@ describe('When resolving a light DID', () => {
         urls: ['url-service-2'],
       },
     ])
+
+    // Light DID should not return a web3 name
+    expect(details?.getWeb3Name()).toBeUndefined()
   })
 
   it('correctly resolves a migrated and not deleted DID', async () => {
@@ -524,6 +557,9 @@ describe('When resolving a light DID', () => {
         publicKey: decodeAddress(identifierWithAuthenticationKey, false, 38),
       },
     ])
+
+    // Migrated light DID should not return a web3 name
+    expect(details?.getWeb3Name()).toBeUndefined()
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {

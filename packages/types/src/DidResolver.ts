@@ -16,7 +16,7 @@ import type { IDidDetails, DidKey, Web3Name } from './DidDetails.js'
  */
 export type DidResolutionDocumentMetadata = {
   /**
-   * If present, it indicates that the resolved by DID should be treated as if it were the DID as specified in this property.
+   * If present, it indicates that the resolved DID should be treated as if it were the DID specified in this property.
    */
   canonicalId?: IDidDetails['did']
   /**
