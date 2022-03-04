@@ -36,9 +36,9 @@ export type VerificationKeyRelationship =
  * Possible types for a DID verification key.
  */
 export enum VerificationKeyType {
-  Sr25519 = 'Sr25519',
-  Ed25519 = 'Ed25519',
-  Ecdsa = 'Ecdsa',
+  Sr25519 = 'sr25519',
+  Ed25519 = 'ed25519',
+  Ecdsa = 'ecdsa',
 }
 
 /**
