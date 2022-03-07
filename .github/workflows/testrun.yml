@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "├─ yargs-parser@npm:20.2.7\n├─ yargs-parser@npm:20.2.9\n├─ yargs@npm:16.2.0" > locked_dependencies.txt
+      - name: stuff
+        run: |
+          echo 'DEPS<<EOF' >> $GITHUB_ENV
+          cat locked_dependencies.txt >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
       - run: echo "TODAY=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
       - name: issue-bot
         uses: imjohnbo/issue-bot@v3
@@ -35,4 +40,3 @@ jobs:
             </details>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEPS: ${{ cat locked_dependencies.txt }}
