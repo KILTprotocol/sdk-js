@@ -19,6 +19,7 @@ import {
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { exportToDidDocument } from './DidDocumentExporter'
 import { FullDidDetails, LightDidDetails } from '../index.js'
+import { getKiltDidFromIdentifier } from '../Did.utils'
 
 /**
  * @group unit/did
@@ -135,7 +136,7 @@ jest.mock('../Did.chain', () => {
 describe('When exporting a DID Document from a full DID', () => {
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
     const fullDidDetails = (await FullDidDetails.fromChainInfo(
-      identifier
+      getKiltDidFromIdentifier(identifier, 'full')
     )) as FullDidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
@@ -201,7 +202,7 @@ describe('When exporting a DID Document from a full DID', () => {
 
   it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
     const fullDidDetails = (await FullDidDetails.fromChainInfo(
-      identifier
+      getKiltDidFromIdentifier(identifier, 'full')
     )) as FullDidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
@@ -268,7 +269,7 @@ describe('When exporting a DID Document from a full DID', () => {
 
   it('fails to export to an unsupported mimetype', async () => {
     const fullDidDetails = (await FullDidDetails.fromChainInfo(
-      identifier
+      getKiltDidFromIdentifier(identifier, 'full')
     )) as FullDidDetails
 
     expect(() =>

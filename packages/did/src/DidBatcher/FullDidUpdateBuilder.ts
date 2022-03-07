@@ -19,6 +19,7 @@ import type {
   DidServiceEndpoint,
   DidKey,
   SubmittableExtrinsic,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -55,6 +56,7 @@ export type FullDidUpdateHandler = (
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
   protected identifier: IDidIdentifier
+  protected uri: IDidDetails['uri']
   protected batch: Extrinsic[] = []
 
   protected oldAuthenticationKey: DidVerificationKey
@@ -93,6 +95,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     super(api)
 
     this.identifier = details.identifier
+    this.uri = details.uri
     this.oldAuthenticationKey = details.authenticationKey
     this.oldAssertionKey = details.attestationKey
     this.oldDelegationKey = details.delegationKey
@@ -496,9 +499,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   ): Promise<FullDidDetails> {
     const extrinsic = await this.consume(signer, submitter, atomic)
     await handler(extrinsic)
-    const fetchedDidDetails = await FullDidDetails.fromChainInfo(
-      this.identifier
-    )
+    const fetchedDidDetails = await FullDidDetails.fromChainInfo(this.uri)
     if (!fetchedDidDetails) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Something went wrong during the creation.'

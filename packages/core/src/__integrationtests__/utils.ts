@@ -184,9 +184,7 @@ export async function createFullDidFromLightDid(
     .consume(keystore, identity.address)
   await submitExtrinsicWithResign(authenticatedBatch, identity)
 
-  return FullDidDetails.fromChainInfo(
-    fullDid.identifier
-  ) as Promise<FullDidDetails>
+  return FullDidDetails.fromChainInfo(fullDid.uri) as Promise<FullDidDetails>
 }
 
 export async function createFullDidFromSeed(

@@ -36,11 +36,11 @@ import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
 export async function resolveDoc(
   did: IDidDetails['uri']
 ): Promise<DidResolvedDetails | null> {
-  const { identifier, type, version } = parseDidUri(did)
+  const { identifier, type } = parseDidUri(did)
 
   switch (type) {
     case 'full': {
-      const details = await FullDidDetails.fromChainInfo(identifier, version)
+      const details = await FullDidDetails.fromChainInfo(did)
       // If the details are found, return those details.
       if (details) {
         return {
@@ -72,11 +72,7 @@ export async function resolveDoc(
       const fullDidDetails = await queryDetails(details.identifier)
       // If a full DID with same identifier is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
-        const fullDidUri = getKiltDidFromIdentifier(
-          details.identifier,
-          'full',
-          version
-        )
+        const fullDidUri = getKiltDidFromIdentifier(details.identifier, 'full')
         return {
           details,
           metadata: {

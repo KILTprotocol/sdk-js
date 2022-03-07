@@ -24,6 +24,7 @@ import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
+import { getKiltDidFromIdentifier } from '../Did.utils.js'
 
 function encodeVerificationKeyToAddress({
   publicKey,
@@ -113,7 +114,9 @@ export class FullDidCreationBuilder extends FullDidBuilder {
     const encodedAddress = encodeVerificationKeyToAddress(
       this.authenticationKey
     )
-    const fetchedDidDetails = await FullDidDetails.fromChainInfo(encodedAddress)
+    const fetchedDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(encodedAddress, 'full')
+    )
     if (!fetchedDidDetails) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Something went wrong during the creation.'

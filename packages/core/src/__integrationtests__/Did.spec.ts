@@ -65,7 +65,7 @@ let api: ApiPromise
 
 beforeAll(async () => {
   await initializeApi()
-    ; ({ api } = await BlockchainApiConnection.getConnectionOrConnect())
+  ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
   paymentAccount = await createEndowedTestAccount()
 })
 
@@ -124,7 +124,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     details = (await FullDidDetails.fromChainInfo(
-      newDetails.identifier
+      newDetails.uri
     )) as FullDidDetails
 
     // details and newDetails have the same identifier as the former is a resolved version of the latter.
@@ -132,7 +132,7 @@ describe('write and didDeleteTx', () => {
     // The ID changes as on chain is the has of the public key, so we can't compare for key ID equality.
     expect(
       details?.authenticationKey.publicKey ===
-      newDetails.authenticationKey.publicKey
+        newDetails.authenticationKey.publicKey
     )
     expect(
       details?.authenticationKey.type === newDetails.authenticationKey.type
@@ -266,7 +266,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDetails = (await FullDidDetails.fromChainInfo(
-    newDetails.identifier
+    newDetails.uri
   )) as FullDidDetails
 
   const newKeypair = await keystore.generateKeypair({
@@ -295,7 +295,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // Authentication key changed, so details must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   fullDetails = (await FullDidDetails.fromChainInfo(
-    fullDetails.identifier
+    newDetails.uri
   )) as FullDidDetails
 
   // Add a new service endpoint
@@ -708,7 +708,7 @@ describe('DID management batching', () => {
       ).resolves.not.toThrow()
 
       const fullDid = await FullDidDetails.fromChainInfo(
-        lightDidDetails.identifier
+        DidUtils.getKiltDidFromIdentifier(lightDidDetails.identifier, 'full')
       )
 
       expect(fullDid).not.toBeNull()
@@ -790,7 +790,9 @@ describe('DID management batching', () => {
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
-      const fullDid = await FullDidDetails.fromChainInfo(encodedEcdsaAddress)
+      const fullDid = await FullDidDetails.fromChainInfo(
+        DidUtils.getKiltDidFromIdentifier(encodedEcdsaAddress, 'full')
+      )
 
       expect(fullDid).not.toBeNull()
 
@@ -867,7 +869,7 @@ describe('DID management batching', () => {
       ).resolves.not.toThrow()
 
       const finalFullDid = await FullDidDetails.fromChainInfo(
-        initialFullDid.identifier
+        initialFullDid.uri
       ).then((did) => did as FullDidDetails)
 
       expect(finalFullDid).not.toBeNull()
@@ -927,7 +929,7 @@ describe('DID management batching', () => {
       ).resolves.not.toThrow()
 
       const finalFullDid = await FullDidDetails.fromChainInfo(
-        initialFullDid.identifier
+        initialFullDid.uri
       ).then((did) => did as FullDidDetails)
 
       expect(finalFullDid).not.toBeNull()
@@ -999,9 +1001,7 @@ describe('DID management batching', () => {
         )
       ).resolves.not.toThrow()
 
-      const updatedFullDid = await FullDidDetails.fromChainInfo(
-        fullDid.identifier
-      )
+      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
       // .setAttestationKey() extrinsic went through in the batch
       expect(updatedFullDid!.attestationKey).toBeDefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.
@@ -1071,9 +1071,7 @@ describe('DID management batching', () => {
         name: 'ServiceAlreadyPresent',
       })
 
-      const updatedFullDid = await FullDidDetails.fromChainInfo(
-        fullDid.identifier
-      )
+      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
       // .setAttestationKey() extrinsic went through but it was then reverted
       expect(updatedFullDid!.attestationKey).toBeUndefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.

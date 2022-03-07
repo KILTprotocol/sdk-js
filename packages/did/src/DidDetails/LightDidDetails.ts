@@ -237,7 +237,9 @@ export class LightDidDetails extends DidDetails {
 
     await migrationHandler(creationTx)
 
-    const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(this.identifier, 'full')
+    )
     if (!fullDidDetails) {
       throw SDKErrors.ERROR_DID_ERROR(
         'Something went wrong during the migration.'

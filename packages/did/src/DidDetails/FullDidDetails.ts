@@ -10,6 +10,7 @@ import { BN } from '@polkadot/util'
 
 import type {
   DidVerificationKey,
+  IDidDetails,
   IDidIdentifier,
   IIdentity,
   KeystoreSigner,
@@ -33,9 +34,8 @@ import {
 } from '../Did.chain.js'
 import {
   defaultKeySelectionHandler,
-  FULL_DID_LATEST_VERSION,
-  getKiltDidFromIdentifier,
   getSigningAlgorithmForVerificationKeyType,
+  parseDidUri,
 } from '../Did.utils.js'
 
 import { DidDetails } from './DidDetails.js'
@@ -75,19 +75,26 @@ export class FullDidDetails extends DidDetails {
    * Create a new instance of [[FullDidDetails]] after fetching the relevant information from the blockchain.
    * Private keys are assumed to already live in the keystore to be used with this DID instance, as only the public keys are retrieved from the blockchain.
    *
-   * @param didIdentifier The identifier of the DID to reconstruct.
-   * @param version The version of the DID to recreate. It defaults to the latest version supported by the SDK.
+   * @param didUri The URI of the DID to reconstruct.
    *
    * @returns The reconstructed [[FullDidDetails]], or null if not DID with the provided identifier exists.
    */
   public static async fromChainInfo(
-    didIdentifier: IDidIdentifier,
-    version: number = FULL_DID_LATEST_VERSION
+    didUri: IDidDetails['uri']
   ): Promise<FullDidDetails | null> {
-    const didRec = await queryDetails(didIdentifier)
+    const { identifier, fragment, type } = parseDidUri(didUri)
+    if (fragment) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `DID URI cannot contain fragment: ${didUri}`
+      )
+    }
+    if (type !== 'full') {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `DID URI does not refer to a full DID: ${didUri}`
+      )
+    }
+    const didRec = await queryDetails(identifier)
     if (!didRec) return null
-
-    const uri = getKiltDidFromIdentifier(didIdentifier, 'full', version)
 
     const {
       publicKeys,
@@ -114,15 +121,15 @@ export class FullDidDetails extends DidDetails {
     }
 
     const serviceEndpoints: ServiceEndpoints = (
-      await queryServiceEndpoints(didIdentifier)
+      await queryServiceEndpoints(identifier)
     ).reduce((res, service) => {
       res[service.id] = service
       return res
     }, {})
 
     return new FullDidDetails({
-      identifier: didIdentifier,
-      uri,
+      identifier,
+      uri: didUri,
       keys,
       keyRelationships,
       serviceEndpoints,
