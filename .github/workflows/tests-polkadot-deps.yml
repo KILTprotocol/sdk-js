@@ -37,7 +37,7 @@ jobs:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
 
       - name: list dependencies
-        run: echo "$(yarn list -AR --name-only)" > locked_dependencies.json
+        run: echo "$(yarn info -AR --name-only)" > locked_dependencies.json
       - name: upload dependencies list
         uses: actions/upload-artifact@v3
         with:
