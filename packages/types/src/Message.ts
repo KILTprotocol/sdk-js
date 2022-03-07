@@ -309,7 +309,7 @@ export type CompressedRequestAttestation = [
 
 export type CompressedRequestDelegationApproval = [
   CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
+  [DidSignature['signature'], DidSignature['keyUri']],
   AnyJson
 ]
 export type CompressedRequestAcceptDelegation = [
@@ -319,8 +319,8 @@ export type CompressedRequestAcceptDelegation = [
 
 export type CompressedSubmitDelegationApproval = [
   CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
-  [DidSignature['signature'], DidSignature['keyId']]
+  [DidSignature['signature'], DidSignature['keyUri']],
+  [DidSignature['signature'], DidSignature['keyUri']]
 ]
 export type CompressedSubmitAcceptDelegation = [
   MessageBodyType.SUBMIT_ACCEPT_DELEGATION,

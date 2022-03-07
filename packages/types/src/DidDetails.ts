@@ -175,6 +175,6 @@ export interface IDidDetails {
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
 export type DidSignature = {
-  keyId: DidPublicKey['uri']
+  keyUri: DidPublicKey['uri']
   signature: string
 }

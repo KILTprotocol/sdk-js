@@ -254,10 +254,10 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (
-      keyId: DidPublicKey['uri']
+      keyUri: DidPublicKey['uri']
     ): Promise<ResolvedDidKey | null> => {
       const { identifier, type, version, fragment, encodedDetails } =
-        DidUtils.parseDidUri(keyId)
+        DidUtils.parseDidUri(keyUri)
       const didSubject = DidUtils.getKiltDidFromIdentifier(
         identifier,
         type,
@@ -268,7 +268,7 @@ describe('Messaging Utilities', () => {
         const aliceKey = identityAlice.getKey(fragment!)
         if (aliceKey) {
           return {
-            uri: keyId,
+            uri: keyUri,
             controller: didSubject,
             publicKey: aliceKey.publicKey,
             type: aliceKey.type,
@@ -280,7 +280,7 @@ describe('Messaging Utilities', () => {
         const bobKey = identityBob.getKey(fragment!)
         if (bobKey) {
           return {
-            uri: keyId,
+            uri: keyUri,
             controller: didSubject,
             publicKey: bobKey.publicKey,
             type: bobKey.type,
@@ -396,7 +396,7 @@ describe('Messaging Utilities', () => {
       quoteAttesterSigned.timeframe,
       [
         quoteAttesterSigned.attesterSignature.signature,
-        quoteAttesterSigned.attesterSignature.keyId,
+        quoteAttesterSigned.attesterSignature.keyUri,
       ],
     ]
     // Quote agreement
@@ -420,11 +420,11 @@ describe('Messaging Utilities', () => {
       bothSigned.timeframe,
       [
         bothSigned.attesterSignature.signature,
-        bothSigned.attesterSignature.keyId,
+        bothSigned.attesterSignature.keyUri,
       ],
       [
         bothSigned.claimerSignature.signature,
-        bothSigned.claimerSignature.keyId,
+        bothSigned.claimerSignature.keyUri,
       ],
       bothSigned.rootHash,
     ]
@@ -558,7 +558,7 @@ describe('Messaging Utilities', () => {
       ],
       [
         requestAcceptDelegationContent.signatures.inviter.signature,
-        requestAcceptDelegationContent.signatures.inviter.keyId,
+        requestAcceptDelegationContent.signatures.inviter.keyUri,
       ],
       requestAcceptDelegationContent.metaData,
     ]
@@ -595,11 +595,11 @@ describe('Messaging Utilities', () => {
       ],
       [
         submitAcceptDelegationContent.signatures.inviter.signature,
-        submitAcceptDelegationContent.signatures.inviter.keyId,
+        submitAcceptDelegationContent.signatures.inviter.keyUri,
       ],
       [
         submitAcceptDelegationContent.signatures.invitee.signature,
-        submitAcceptDelegationContent.signatures.invitee.keyId,
+        submitAcceptDelegationContent.signatures.invitee.keyUri,
       ],
     ]
     // Reject Accept Delegation content
@@ -1086,7 +1086,7 @@ describe('Messaging Utilities', () => {
     ).toThrowErrorWithCode(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
     requestAttestationBody.content.requestForAttestation.claimerSignature = {
       signature: 'this is not the claimers signature',
-      keyId: 'this is not a key id',
+      keyUri: 'this is not a key id',
     }
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAttestationBody)
@@ -1132,7 +1132,7 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
-    submitAcceptDelegationBody.content.signatures.invitee.keyId =
+    submitAcceptDelegationBody.content.signatures.invitee.keyUri =
       'this is not a key id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)

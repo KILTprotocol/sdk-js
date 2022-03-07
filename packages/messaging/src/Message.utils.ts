@@ -337,7 +337,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
         ],
         [
           body.content.signatures.inviter.signature,
-          body.content.signatures.inviter.keyId,
+          body.content.signatures.inviter.keyUri,
         ],
         body.content.metaData,
       ]
@@ -354,11 +354,11 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
         ],
         [
           body.content.signatures.inviter.signature,
-          body.content.signatures.inviter.keyId,
+          body.content.signatures.inviter.keyUri,
         ],
         [
           body.content.signatures.invitee.signature,
-          body.content.signatures.invitee.keyId,
+          body.content.signatures.invitee.keyUri,
         ],
       ]
       break
@@ -476,7 +476,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           isPCR: body[1][0][4],
         },
         signatures: {
-          inviter: { signature: body[1][1][0], keyId: body[1][1][1] },
+          inviter: { signature: body[1][1][0], keyUri: body[1][1][1] },
         },
         metaData: body[1][2],
       }
@@ -492,8 +492,8 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           isPCR: body[1][0][4],
         },
         signatures: {
-          inviter: { signature: body[1][1][0], keyId: body[1][1][1] },
-          invitee: { signature: body[1][2][0], keyId: body[1][2][1] },
+          inviter: { signature: body[1][1][0], keyUri: body[1][1][1] },
+          invitee: { signature: body[1][2][0], keyUri: body[1][2][1] },
         },
       }
       break

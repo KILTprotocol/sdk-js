@@ -229,7 +229,7 @@ export function validateDidSignature(input: unknown): input is DidSignature {
   try {
     if (
       !isHex(signature.signature) ||
-      !validateKiltDidUri(signature.keyId, true)
+      !validateKiltDidUri(signature.keyUri, true)
     ) {
       throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
     }
@@ -315,19 +315,19 @@ export async function verifyDidSignature({
   resolver = DidResolver,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
   // Verification fails if the signature key ID is not valid
-  const { fragment: keyId } = parseDidUri(signature.keyId)
+  const { fragment: keyId } = parseDidUri(signature.keyUri)
   if (!keyId) {
     return {
       verified: false,
-      reason: `Signature key ID ${signature.keyId} invalid.`,
+      reason: `Signature key ID ${signature.keyUri} invalid.`,
     }
   }
-  const resolutionDetails = await resolver.resolveDoc(signature.keyId)
+  const resolutionDetails = await resolver.resolveDoc(signature.keyUri)
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
     return {
       verified: false,
-      reason: `No result for provided key ID ${signature.keyId}`,
+      reason: `No result for provided key ID ${signature.keyUri}`,
     }
   }
   // Verification also fails if the DID has been deleted.

@@ -216,7 +216,7 @@ export abstract class DidDetails implements IDidDetails {
       data: Crypto.coToUInt8(payload),
     })
     return {
-      keyId: this.assembleKeyUri(key.id),
+      keyUri: this.assembleKeyUri(key.id),
       signature: u8aToHex(signature),
     }
   }

@@ -133,7 +133,7 @@ export async function createAttesterSignature(
   return {
     ...quoteInput,
     attesterSignature: {
-      keyId: attesterIdentity.assembleKeyUri(authenticationKey.id),
+      keyUri: attesterIdentity.assembleKeyUri(authenticationKey.id),
       signature: signature.signature,
     },
   }

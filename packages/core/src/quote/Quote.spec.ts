@@ -203,7 +203,7 @@ describe('Claim', () => {
       validQuoteData.timeframe,
       [
         validAttesterSignedQuote.attesterSignature.signature,
-        validAttesterSignedQuote.attesterSignature.keyId,
+        validAttesterSignedQuote.attesterSignature.keyUri,
       ],
     ]
 
@@ -220,11 +220,11 @@ describe('Claim', () => {
       validQuoteData.timeframe,
       [
         validAttesterSignedQuote.attesterSignature.signature,
-        validAttesterSignedQuote.attesterSignature.keyId,
+        validAttesterSignedQuote.attesterSignature.keyUri,
       ],
       [
         quoteBothAgreed.claimerSignature.signature,
-        quoteBothAgreed.claimerSignature.keyId,
+        quoteBothAgreed.claimerSignature.keyUri,
       ],
       quoteBothAgreed.rootHash,
     ]
@@ -241,7 +241,7 @@ describe('Claim', () => {
     ).resolves.toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = DidUtils.parseDidUri(
-      validAttesterSignedQuote.attesterSignature.keyId
+      validAttesterSignedQuote.attesterSignature.keyUri
     )
 
     expect(

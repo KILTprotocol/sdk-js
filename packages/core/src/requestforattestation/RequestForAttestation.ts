@@ -303,7 +303,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     } = {}
   ): Promise<this> {
     const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
-    this.claimerSignature = { signature, keyId: keyUri, challenge }
+    this.claimerSignature = { signature, keyUri, challenge }
     return this
   }
 
@@ -317,7 +317,7 @@ export class RequestForAttestation implements IRequestForAttestation {
       challenge?: string
     } = {}
   ): Promise<this> {
-    const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
+    const { signature, keyUri: signatureKeyId } = await didDetails.signPayload(
       makeSigningData(this, challenge),
       signer,
       keyId
