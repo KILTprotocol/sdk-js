@@ -53,7 +53,7 @@ import {
   initializeApi,
   submitExtrinsicWithResign,
   addressFromRandom,
-  getDefaultMigrationHandler,
+  getDefaultMigrationCallback,
   getDefaultSubmitCallback,
   createFullDidFromSeed,
 } from './utils'
@@ -387,7 +387,7 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationHandler(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount)
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light
@@ -436,7 +436,7 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationHandler(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount)
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light
@@ -503,7 +503,7 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationHandler(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount)
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light

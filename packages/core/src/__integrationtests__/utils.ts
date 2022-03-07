@@ -15,10 +15,10 @@ import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
   DemoKeystore,
   DemoKeystoreUtils,
-  DidMigrationHandler,
+  DidMigrationCallback,
   FullDidDetails,
   FullDidUpdateBuilder,
-  FullDidUpdateHandler,
+  FullDidUpdateCallback,
   LightDidDetails,
 } from '@kiltprotocol/did'
 import {
@@ -143,9 +143,9 @@ export async function createEndowedTestAccount(
   return keypair
 }
 
-export function getDefaultMigrationHandler(
+export function getDefaultMigrationCallback(
   submitter: KeyringPair
-): DidMigrationHandler {
+): DidMigrationCallback {
   return async (e) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       reSign: true,
@@ -156,7 +156,7 @@ export function getDefaultMigrationHandler(
 
 export function getDefaultSubmitCallback(
   submitter: KeyringPair
-): FullDidUpdateHandler {
+): DidMigrationCallback {
   return async (e) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       reSign: true,
@@ -174,7 +174,7 @@ export async function createFullDidFromLightDid(
   const fullDid = await lightDidForId.migrate(
     identity.address,
     keystore,
-    getDefaultMigrationHandler(identity)
+    getDefaultMigrationCallback(identity)
   )
 
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()

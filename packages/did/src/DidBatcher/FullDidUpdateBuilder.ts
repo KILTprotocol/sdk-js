@@ -45,7 +45,7 @@ export type FullDidUpdateBuilderCreationDetails = {
   serviceEndpoints?: DidServiceEndpoint[]
 }
 
-export type FullDidUpdateHandler = (
+export type FullDidUpdateCallback = (
   didUpdateExtrinsicBatch: SubmittableExtrinsic
 ) => Promise<void>
 
@@ -485,7 +485,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
-   * @param handler A callback to submit the extrinsic and return the update [[FullDidDetails]] instance.
+   * @param callback A callback to submit the extrinsic and return the update [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
    * @returns The [[FullDidDetails]] as returned by the provided callback.
@@ -494,11 +494,11 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public async buildAndSubmit(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
-    handler: FullDidUpdateHandler,
+    callback: FullDidUpdateCallback,
     atomic = true
   ): Promise<FullDidDetails> {
     const extrinsic = await this.build(signer, submitter, atomic)
-    await handler(extrinsic)
+    await callback(extrinsic)
     const fetchedDidDetails = await FullDidDetails.fromChainInfo(this.uri)
     if (!fetchedDidDetails) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(

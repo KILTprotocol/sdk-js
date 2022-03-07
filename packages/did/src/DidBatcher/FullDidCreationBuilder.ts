@@ -44,7 +44,7 @@ function encodeVerificationKeyToAddress({
   }
 }
 
-export type FullDidCreationHandler = (
+export type FullDidCreationCallback = (
   didCreationExtrinsic: SubmittableExtrinsic
 ) => Promise<void>
 
@@ -97,7 +97,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
-   * @param handler A callback to submit the extrinsic and return the created [[FullDidDetails]] instance.
+   * @param callback A callback to submit the extrinsic and return the created [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
    * @returns The [[FullDidDetails]] as returned by the provided callback.
@@ -106,11 +106,11 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   public async buildAndSubmit(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
-    handler: FullDidCreationHandler,
+    callback: FullDidCreationCallback,
     atomic = true
   ): Promise<FullDidDetails> {
     const extrinsic = await this.build(signer, submitter, atomic)
-    await handler(extrinsic)
+    await callback(extrinsic)
     const encodedAddress = encodeVerificationKeyToAddress(
       this.authenticationKey
     )

@@ -134,7 +134,7 @@ export class DidBatchBuilder {
    * @param submitter The KILT address of the user authorised to submit each extrinsic in the batch.
    * @param submissionOptions The additional options to customise the signing operation.
    * @param submissionOptions.atomic A flag indicating whether the whole batch must be reverted (true) or not (false) in case any extrinsic in the batch fails. It defaults to true.
-   * @param submissionOptions.keySelection The [[BatchSigningKeySelection]] callback to specify the DID key to use for each batch. It defaults to [[defaultBatchSigningKeySelectionClosure]].
+   * @param submissionOptions.keySelection The [[BatchSigningKeySelection]] callback to specify the DID key to use for each batch. It defaults to [[defaultBatchSigningKeySelectionCallback]].
    * @param submissionOptions.initialNonce The initial nonce to use for the first batch, after which the nonce is increased by the builder. It defaults to the next valid DID nonce as stored on chain at the time this function is called.
    *
    * @returns The [[SubmittableExtrinsic]] containing the batch of batches.

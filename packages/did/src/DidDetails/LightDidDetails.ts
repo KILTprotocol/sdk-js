@@ -222,7 +222,7 @@ export class LightDidDetails extends DidDetails {
    * @param signer The keystore signer to sign the operation.
    * @param migrationCallback A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
    *
-   * @returns The migrated [[FullDidDetails]] if the user-provided handler successfully writes the full DID on the chain. It throws an error otherwise.
+   * @returns The migrated [[FullDidDetails]] if the user-provided callback successfully writes the full DID on the chain. It throws an error otherwise.
    */
   public async migrate(
     submitterAddress: IIdentity['address'],
