@@ -1,0 +1,45 @@
+name: Do stuff
+
+on: [push]
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+        echo "
+        ├─ yargs-parser@npm:20.2.7
+        ├─ yargs-parser@npm:20.2.9
+        ├─ yargs@npm:16.2.0
+        ├─ yn@npm:3.1.1
+        └─ yocto-queue@npm:0.1.0
+        " > locked_dependencies.txt
+      - run: echo "TODAY=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+      - name: issue-bot
+        uses: imjohnbo/issue-bot@v3
+        with:
+          labels: 'bug, incompatible dependencies, automation'
+          project: 10
+          project-type: organization
+          column: Backlog
+          pinned: false
+          close-previous: true
+          linked-comments: true
+          title: SDK no longer compatible with latest dependecies
+          body: |-
+            ## Incompatibilities detected
+
+            A scheduled test workflow using the latest available dependencies matching our semver ranges has failed.
+            We may need to constrain dependency ranges in our `package.json` or introduce fixes to recover compatibility.
+            Below you can find a summary of depedency versions against which these tests were run.
+
+            _Note: This issue was **automatically created** as a result of scheduled CI tests on {{env.TODAY}}._
+
+            <details>
+              <summary>Dependency versions</summary>
+
+              {{env.DEPS}}
+            </details>
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPS: ${{ cat locked_dependencies.txt }}
