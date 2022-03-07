@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: 59 23 * * SAT
 
-env:
-  YARN_ENABLE_IMMUTABLE_INSTALLS: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,6 +34,8 @@ jobs:
         run: rm -f yarn.lock
       - name: run yarn install
         run: yarn install
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
       - name: list dependencies
         run: yarn list -AR --name-only > locked_dependencies.json
       - name: upload dependencies list
@@ -84,10 +83,10 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc']
-        required: ['optional']
+        image: ['latest']
+        required: ['required']
         include:
-          - image: 'latest-develop'
+          - image: 'latest-rc'
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
