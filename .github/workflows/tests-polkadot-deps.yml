@@ -39,7 +39,7 @@ jobs:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
 
       - name: list dependencies
-        run: echo "$(yarn info -AR --name-only)" > locked_dependencies.txt
+        run: echo "$(yarn info -A --name-only)" > locked_dependencies.txt
       - name: upload dependencies list
         uses: actions/upload-artifact@v3
         with:
@@ -155,7 +155,7 @@ jobs:
           body: |-
             ## Incompatibilities detected
 
-            A scheduled test workflow using the latest available dependencies matching our semver ranges has failed.
+            A [scheduled test workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) using the latest available dependencies matching our semver ranges has failed.
             We may need to constrain dependency ranges in our `package.json` or introduce fixes to recover compatibility.
             Below you can find a summary of depedency versions against which these tests were run.
 
