@@ -15,7 +15,7 @@ import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
   DemoKeystore,
-  DidChain,
+  Chain as DidChain,
   SigningAlgorithms,
   LightDidDetails,
   FullDidDetails,
@@ -29,7 +29,7 @@ import {
   FullDidUpdateBuilder,
   Web3Names,
   DidBatchBuilder,
-  DidUtils,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
@@ -65,7 +65,7 @@ let api: ApiPromise
 
 beforeAll(async () => {
   await initializeApi()
-  ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
+    ; ({ api } = await BlockchainApiConnection.getConnectionOrConnect())
   paymentAccount = await createEndowedTestAccount()
 })
 
@@ -132,7 +132,7 @@ describe('write and didDeleteTx', () => {
     // The ID changes as on chain is the has of the public key, so we can't compare for key ID equality.
     expect(
       details?.authenticationKey.publicKey ===
-        newDetails.authenticationKey.publicKey
+      newDetails.authenticationKey.publicKey
     )
     expect(
       details?.authenticationKey.type === newDetails.authenticationKey.type

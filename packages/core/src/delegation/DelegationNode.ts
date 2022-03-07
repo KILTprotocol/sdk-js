@@ -35,7 +35,11 @@ import {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type { DidKeySelectionHandler } from '@kiltprotocol/did'
-import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  Chain as DidChain,
+  Utils as DidUtils,
+} from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain.js'
