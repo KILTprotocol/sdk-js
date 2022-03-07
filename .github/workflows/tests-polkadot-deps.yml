@@ -37,7 +37,7 @@ jobs:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
 
       - name: list dependencies
-        run: echo "$(yarn info -A --name-only)" > locked_dependencies.txt
+        run: echo "$(yarn info -A --name-only --json)" > locked_dependencies.txt
       - name: upload dependencies list
         uses: actions/upload-artifact@v3
         with:
@@ -143,9 +143,6 @@ jobs:
         uses: imjohnbo/issue-bot@v3
         with:
           labels: 'bug, incompatible dependencies, automation'
-          project: 10
-          project-type: organization
-          column: Backlog
           pinned: false
           close-previous: true
           linked-comments: true
