@@ -124,7 +124,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     details = (await FullDidDetails.fromChainInfo(
-      newDetails.uri
+      DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
     )) as FullDidDetails
 
     // details and newDetails have the same identifier as the former is a resolved version of the latter.
@@ -266,7 +266,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDetails = (await FullDidDetails.fromChainInfo(
-    newDetails.uri
+    DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
   )) as FullDidDetails
 
   const newKeypair = await keystore.generateKeypair({
@@ -295,7 +295,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // Authentication key changed, so details must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   fullDetails = (await FullDidDetails.fromChainInfo(
-    newDetails.uri
+    DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
   )) as FullDidDetails
 
   // Add a new service endpoint
