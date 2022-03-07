@@ -28,6 +28,7 @@ import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
   isVerificationKey,
+  assembleKeyUri,
 } from '../Did.utils.js'
 
 import { checkDidCreationDetails } from './DidDetails.utils.js'
@@ -39,7 +40,7 @@ type ServiceEndpointsInner = Map<
 >
 
 export abstract class DidDetails implements IDidDetails {
-  public readonly did: IDidDetails['did']
+  public readonly uri: IDidDetails['uri']
 
   // { key ID -> key details} - key ID does not include the DID subject
   protected publicKeys: PublicKeysInner
@@ -51,19 +52,19 @@ export abstract class DidDetails implements IDidDetails {
   protected serviceEndpoints: ServiceEndpointsInner
 
   protected constructor({
-    did,
+    uri,
     keys,
     keyRelationships,
     serviceEndpoints = {},
   }: DidConstructorDetails) {
     checkDidCreationDetails({
-      did,
+      uri,
       keys,
       keyRelationships,
       serviceEndpoints,
     })
 
-    this.did = did
+    this.uri = uri
     this.publicKeys = new Map(Object.entries(keys))
     this.keyRelationships = keyRelationships
     this.serviceEndpoints = new Map(Object.entries(serviceEndpoints))
@@ -161,8 +162,8 @@ export abstract class DidDetails implements IDidDetails {
   public getEndpoints(type?: string): DidServiceEndpoint[] {
     const serviceEndpointsEntries = type
       ? [...this.serviceEndpoints.entries()].filter(([, details]) => {
-          return details.types.includes(type)
-        })
+        return details.types.includes(type)
+      })
       : [...this.serviceEndpoints.entries()]
 
     return serviceEndpointsEntries.map(([id, details]) => {
@@ -177,8 +178,8 @@ export abstract class DidDetails implements IDidDetails {
    *
    * @returns The full [[DidPublicKey['id']]], which includes the subject's DID and the provided key ID.
    */
-  public assembleKeyId(keyId: DidKey['id']): DidPublicKey['id'] {
-    return `${this.did}#${keyId}`
+  public assembleKeyUri(keyId: DidKey['id']): DidPublicKey['uri'] {
+    return assembleKeyUri(this.uri, keyId)
   }
 
   /**
@@ -198,7 +199,7 @@ export abstract class DidDetails implements IDidDetails {
     const key = this.getKey(keyId)
     if (!key || !isVerificationKey(key)) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Failed to find verification key with ID ${keyId} on DID (${this.did})`
+        `Failed to find verification key with ID ${keyId} on DID (${this.uri})`
       )
     }
     const alg = getSigningAlgorithmForVerificationKeyType(
@@ -214,6 +215,9 @@ export abstract class DidDetails implements IDidDetails {
       alg,
       data: Crypto.coToUInt8(payload),
     })
-    return { keyId: this.assembleKeyId(key.id), signature: u8aToHex(signature) }
+    return {
+      keyId: this.assembleKeyUri(key.id),
+      signature: u8aToHex(signature),
+    }
   }
 }

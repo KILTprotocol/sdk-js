@@ -49,13 +49,13 @@ export const EncryptionKeyTypesMap: Record<
  */
 export type DidPublicKey = {
   /**
-   * The full key identifier, in the form of <did_subject>#<key_identifier>.
+   * The full key URI, in the form of <did_subject>#<key_identifier>.
    */
-  id: string
+  uri: string
   /**
    * The key controller, in the form of <did_subject>.
    */
-  controller: IDidDetails['did']
+  controller: IDidDetails['uri']
   /**
    * The base58-encoded public component of the key.
    */
@@ -71,9 +71,9 @@ export type DidPublicKey = {
  */
 export type DidPublicServiceEndpoint = {
   /**
-   * The full service identifier, in the form of <did_subject>#<service_identifier>.
+   * The full service URI, in the form of <did_subject>#<service_identifier>.
    */
-  id: string
+  uri: string
   /**
    * The set of types for this endpoint.
    */
@@ -88,12 +88,12 @@ export type DidPublicServiceEndpoint = {
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
 export type DidDocument = {
-  id: IDidDetails['did']
+  id: IDidDetails['uri']
   verificationMethod: DidPublicKey[]
-  authentication: DidPublicKey['id']
-  assertionMethod?: DidPublicKey['id']
-  keyAgreement?: DidPublicKey['id']
-  capabilityDelegation?: DidPublicKey['id']
+  authentication: DidPublicKey['uri']
+  assertionMethod?: DidPublicKey['uri']
+  keyAgreement?: DidPublicKey['uri']
+  capabilityDelegation?: DidPublicKey['uri']
   service?: DidPublicServiceEndpoint[]
 }
 

@@ -158,7 +158,7 @@ export class Attestation implements IAttestation {
    */
   public static fromRequestAndDid(
     request: IRequestForAttestation,
-    attesterDid: IDidDetails['did']
+    attesterDid: IDidDetails['uri']
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,
@@ -263,7 +263,7 @@ export class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Prepares an extrinisc to revoke the attestation. Also available as a static method.
+   * [ASYNC] Prepares an extrinsic to revoke the attestation. Also available as a static method.
    *
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).

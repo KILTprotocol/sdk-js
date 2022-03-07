@@ -54,19 +54,19 @@ export class FullDidDetails extends DidDetails {
    *
    * @param creationDetails The creation details.
    * @param creationDetails.identifier The DID subject identifier.
-   * @param creationDetails.did The full DID identifier.
+   * @param creationDetails.uri The full DID identifier.
    * @param creationDetails.keys The set of public keys associated with the given full DID.
    * @param creationDetails.keyRelationships The map of key ID -> relationship (e.g., authentication, attestation).
    * @param creationDetails.serviceEndpoints The set of service endpoints controlled by the specified DID.
    */
   public constructor({
     identifier,
-    did,
+    uri,
     keys,
     keyRelationships,
     serviceEndpoints = {},
   }: DidConstructorDetails & { identifier: IDidIdentifier }) {
-    super({ did, keys, keyRelationships, serviceEndpoints })
+    super({ uri, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
   }
@@ -87,7 +87,7 @@ export class FullDidDetails extends DidDetails {
     const didRec = await queryDetails(didIdentifier)
     if (!didRec) return null
 
-    const didUri = getKiltDidFromIdentifier(didIdentifier, 'full', version)
+    const uri = getKiltDidFromIdentifier(didIdentifier, 'full', version)
 
     const {
       publicKeys,
@@ -122,7 +122,7 @@ export class FullDidDetails extends DidDetails {
 
     return new FullDidDetails({
       identifier: didIdentifier,
-      did: didUri,
+      uri,
       keys,
       keyRelationships,
       serviceEndpoints,
@@ -181,7 +181,7 @@ export class FullDidDetails extends DidDetails {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `The details for did ${this.did} do not contain the required keys for this operation`
+        `The details for did ${this.uri} do not contain the required keys for this operation`
       )
     }
     return generateDidAuthenticatedTx({

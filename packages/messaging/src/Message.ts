@@ -36,7 +36,7 @@ import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import {
   DidDetails,
   DidResolver,
-  DidUtils,
+  Utils as DidUtils,
   EncryptionAlgorithms,
 } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
@@ -261,7 +261,7 @@ export class Message implements IMessage {
     senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     keystore: Pick<NaclBoxCapable, 'encrypt'>,
-    receiverKeyId: DidPublicKey['id'],
+    receiverKeyId: DidPublicKey['uri'],
     {
       resolver = DidResolver,
     }: {
@@ -275,7 +275,7 @@ export class Message implements IMessage {
     if (this.receiver !== receiverKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
     }
-    if (this.sender !== senderDetails.did) {
+    if (this.sender !== senderDetails.uri) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
     }
     const senderKey = senderDetails.getKey(senderKeyId)
@@ -319,8 +319,8 @@ export class Message implements IMessage {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      senderKeyId: senderDetails.assembleKeyId(senderKey.id),
-      receiverKeyId: receiverKey.id,
+      senderKeyId: senderDetails.assembleKeyUri(senderKey.id),
+      receiverKeyId: receiverKey.uri,
     }
   }
 

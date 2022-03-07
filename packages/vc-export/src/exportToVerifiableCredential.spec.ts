@@ -14,7 +14,7 @@ import {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { Attestation, Credential, CType } from '@kiltprotocol/core'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
 import { base58Encode } from '@polkadot/util-crypto'
@@ -206,7 +206,7 @@ describe('proofs', () => {
     VC = toVC.fromCredential(credential)
     const keyId: string = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
-      id: keyId,
+      uri: keyId,
       type: DidDocumentPublicKeyType.Ed25519VerificationKey,
       publicKeyBase58: base58Encode(
         Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)

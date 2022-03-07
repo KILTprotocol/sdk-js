@@ -29,7 +29,7 @@ import type { Struct, Vec } from '@polkadot/types/codec'
 import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 
 export type CodecWithId<C> = {
   id: string

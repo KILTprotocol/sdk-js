@@ -82,7 +82,7 @@ describe('DidBatchBuilder', () => {
     it('fails if the DID does not any key required to sign the batch', async () => {
       // Full DID with only an authentication key.
       const newFullDid = new FullDidDetails({
-        did: fullDid.did,
+        uri: fullDid.uri,
         identifier: fullDid.identifier,
         keys: { [fullDid.authenticationKey.id]: fullDid.authenticationKey },
         keyRelationships: {

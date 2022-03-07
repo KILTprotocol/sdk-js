@@ -31,7 +31,7 @@ import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidDetails,
-  DidUtils,
+  Utils as DidUtils,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { CType } from '../ctype/CType'
@@ -68,9 +68,9 @@ describe('Claim', () => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
-        case claimerIdentity?.did:
+        case claimerIdentity?.uri:
           return { details: claimerIdentity, metadata: { deactivated: false } }
-        case attesterIdentity?.did:
+        case attesterIdentity?.uri:
           return { details: attesterIdentity, metadata: { deactivated: false } }
         default:
           return null
@@ -121,7 +121,7 @@ describe('Claim', () => {
     claim = {
       cTypeHash: testCType.hash,
       contents: {},
-      owner: claimerIdentity.did,
+      owner: claimerIdentity.uri,
     }
 
     // build request for attestation with legitimations
@@ -148,7 +148,7 @@ describe('Claim', () => {
     } as unknown as IQuote
 
     validQuoteData = {
-      attesterDid: attesterIdentity.did,
+      attesterDid: attesterIdentity.uri,
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -167,7 +167,7 @@ describe('Claim', () => {
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       request.rootHash,
-      attesterIdentity.did,
+      attesterIdentity.uri,
       claimerIdentity,
       keystore,
       {
@@ -231,7 +231,7 @@ describe('Claim', () => {
   })
 
   it('tests created quote data against given data', async () => {
-    expect(validQuoteData.attesterDid).toEqual(attesterIdentity.did)
+    expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
     await expect(
       claimerIdentity.signPayload(
         Crypto.hashObjectAsStr(validAttesterSignedQuote),

@@ -73,7 +73,7 @@ export class Claim implements IClaim {
     cTypeInput: ICType,
     nestedCType: Array<ICType['schema']>,
     claimContents: IClaim['contents'],
-    claimOwner: IDidDetails['did']
+    claimOwner: IDidDetails['uri']
   ): Claim {
     if (
       !CTypeUtils.validateNestedSchemas(
@@ -104,7 +104,7 @@ export class Claim implements IClaim {
   public static fromCTypeAndClaimContents(
     ctypeInput: ICType,
     claimContents: IClaim['contents'],
-    claimOwner: IDidDetails['did']
+    claimOwner: IDidDetails['uri']
   ): Claim {
     if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {

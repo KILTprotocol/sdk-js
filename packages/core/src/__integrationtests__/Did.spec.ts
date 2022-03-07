@@ -413,10 +413,10 @@ describe('DID migration', () => {
     ).resolves.not.toBeNull()
 
     const { metadata } = (await resolveDoc(
-      lightDidDetails.did
+      lightDidDetails.uri
     )) as DidResolvedDetails
 
-    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBeFalsy()
   })
 
@@ -462,10 +462,10 @@ describe('DID migration', () => {
     ).resolves.not.toBeNull()
 
     const { metadata } = (await resolveDoc(
-      lightDidDetails.did
+      lightDidDetails.uri
     )) as DidResolvedDetails
 
-    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBeFalsy()
   })
 
@@ -529,10 +529,10 @@ describe('DID migration', () => {
     ).resolves.not.toBeNull()
 
     const { metadata } = (await resolveDoc(
-      lightDidDetails.did
+      lightDidDetails.uri
     )) as DidResolvedDetails
 
-    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBeFalsy()
 
     // Remove and claim the deposit back
@@ -1104,12 +1104,12 @@ describe('DID extrinsics batching', () => {
     })
     const ctypeCreationTx = await ctype.getStoreTx()
     const rootNode = DelegationNode.newRoot({
-      account: fullDid.did,
+      account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
     const delegationCreationTx = await rootNode.getStoreTx()
-    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.did)
+    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([
         ctypeCreationTx,
@@ -1137,12 +1137,12 @@ describe('DID extrinsics batching', () => {
     })
     const ctypeCreationTx = await ctype.getStoreTx()
     const rootNode = DelegationNode.newRoot({
-      account: fullDid.did,
+      account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
     const delegationCreationTx = await rootNode.getStoreTx()
-    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.did)
+    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([
         ctypeCreationTx,
@@ -1205,7 +1205,7 @@ describe('DID extrinsics batching', () => {
     const ctype1Creation = await ctype1.getStoreTx()
     // Delegation key
     const rootNode = DelegationNode.newRoot({
-      account: fullDid.did,
+      account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype1.hash,
     })
@@ -1222,7 +1222,7 @@ describe('DID extrinsics batching', () => {
     })
     const ctype2Creation = await ctype2.getStoreTx()
     // Delegation key
-    const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.did)
+    const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)
 
     const builder = new DidBatchBuilder(api, fullDid)
       .addSingleExtrinsic(web3NameReleaseExt)

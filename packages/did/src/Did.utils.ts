@@ -10,6 +10,7 @@ import { isHex, u8aToHex } from '@polkadot/util'
 
 import {
   DidKey,
+  DidPublicKey,
   DidSignature,
   DidVerificationKey,
   EncryptionKeyType,
@@ -58,7 +59,7 @@ export function getKiltDidFromIdentifier(
   didType: 'full' | 'light',
   version?: number,
   encodedDetails?: string
-): IDidDetails['did'] {
+): IDidDetails['uri'] {
   const typeString = didType === 'full' ? '' : `light:`
   let versionValue = version
   // If no version is specified, take the default one depending on the requested DID type.
@@ -72,7 +73,7 @@ export function getKiltDidFromIdentifier(
 }
 
 export type IDidParsingResult = {
-  did: IDidDetails['did']
+  did: IDidDetails['uri']
   version: number
   type: 'light' | 'full'
   identifier: IDidIdentifier
@@ -121,15 +122,15 @@ export function parseDidUri(didUri: string): IDidParsingResult {
 }
 
 export function getIdentifierFromKiltDid(
-  did: IDidDetails['did']
+  did: IDidDetails['uri']
 ): IDidIdentifier {
   return parseDidUri(did).identifier
 }
 
 // Returns true if both didA and didB refer to the same DID subject, i.e., whether they have the same identifier as specified in the method spec.
 export function isSameSubject(
-  didA: IDidDetails['did'],
-  didB: IDidDetails['did']
+  didA: IDidDetails['uri'],
+  didB: IDidDetails['uri']
 ): boolean {
   // eslint-disable-next-line prefer-const
   let { identifier: identifierA, type: typeA } = parseDidUri(didA)
@@ -167,18 +168,18 @@ export function getVerificationKeyTypeForSigningAlgorithm(
 }
 
 const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
-  {
-    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
-  }
+{
+  [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+}
 export function getEncryptionAlgorithmForEncryptionKeyType(
   keyType: EncryptionKeyType
 ): EncryptionAlgorithms {
   return encryptionAlgForKeyType[keyType]
 }
 const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
-  {
-    [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
-  }
+{
+  [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
+}
 export function getEncryptionKeyTypeForEncryptionAlgorithm(
   encryptionAlg: EncryptionAlgorithms
 ): EncryptionKeyType {
@@ -193,10 +194,10 @@ export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
   return Object.values(EncryptionKeyType).some((kt) => kt === key.type)
 }
 
-export function validateKiltDid(
+export function validateKiltDidUri(
   input: unknown,
   allowFragment = false
-): input is IDidDetails['did'] {
+): input is IDidDetails['uri'] {
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
@@ -228,7 +229,7 @@ export function validateDidSignature(input: unknown): input is DidSignature {
   try {
     if (
       !isHex(signature.signature) ||
-      !validateKiltDid(signature.keyId, true)
+      !validateKiltDidUri(signature.keyId, true)
     ) {
       throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
     }
@@ -264,7 +265,7 @@ function verifyDidSignatureFromDetails({
   if (!key) {
     return {
       verified: false,
-      reason: `No key with ID ${keyId} for the DID ${details.did}`,
+      reason: `No key with ID ${keyId} for the DID ${details.uri}`,
     }
   }
   // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
@@ -347,7 +348,7 @@ export async function verifyDidSignature({
   const details = (
     resolutionDetails.metadata.canonicalId
       ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
-          ?.details
+        ?.details
       : resolutionDetails.details
   ) as IDidDetails
 
@@ -358,4 +359,24 @@ export async function verifyDidSignature({
     expectedVerificationMethod,
     details,
   })
+}
+
+/**
+ * Compute the full identifier (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
+ *
+ * @param did The DID URI, with no trailing fragment (i.e., no "#" symbol).
+ * @param keyId The key ID, without the leading subject's DID prefix.
+ *
+ * @returns The full [[DidPublicKey['id']]], which includes the subject's DID and the provided key ID.
+ */
+export function assembleKeyUri(
+  did: IDidDetails['uri'],
+  keyId: DidKey['id']
+): DidPublicKey['uri'] {
+  if (parseDidUri(did).fragment) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `Cannot assemble key URI from a DID that already has a fragment: ${did}`
+    )
+  }
+  return `${did}#${keyId}`
 }

@@ -74,10 +74,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await Promise.all([
-      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did),
+      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri),
       expect(ctype.verifyStored()).resolves.toBeTruthy(),
     ])
-    ctype.owner = ctypeCreator.did
+    ctype.owner = ctypeCreator.uri
     await expect(ctype.verifyStored()).resolves.toBeTruthy()
   }, 40_000)
 
@@ -98,7 +98,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
     // console.log('Triggered error on re-submit')
-    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did)
+    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri)
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -122,7 +122,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         },
         type: 'object',
       },
-      ctypeCreator.did
+      ctypeCreator.uri
     )
 
     await Promise.all([

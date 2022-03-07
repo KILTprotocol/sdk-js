@@ -40,14 +40,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
     differentNick = `different_${randomAsHex(2)}`
-    ;[paymentAccount, otherPaymentAccount] = await Promise.all([
-      createEndowedTestAccount(),
-      createEndowedTestAccount(),
-    ])
-    ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
-      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-    ])
+      ;[paymentAccount, otherPaymentAccount] = await Promise.all([
+        createEndowedTestAccount(),
+        createEndowedTestAccount(),
+      ])
+      ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
+        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
+        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
+      ])
 
     if (paymentAccount === otherPaymentAccount) {
       throw new Error('The payment accounts are the same.')
@@ -106,11 +106,11 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to lookup the DID uri with the given nick', async () => {
     const did = await Web3Names.queryDidForWeb3Name(nick)
-    expect(did).toBe(w3nCreator.did)
+    expect(did).toBe(w3nCreator.uri)
   }, 30_000)
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
-    const resolved = await Web3Names.queryWeb3NameForDid(w3nCreator.did)
+    const resolved = await Web3Names.queryWeb3NameForDid(w3nCreator.uri)
     expect(resolved).toBe(nick)
   }, 30_000)
 

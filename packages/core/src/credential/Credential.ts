@@ -16,7 +16,11 @@
  * @module Credential
  */
 
-import { DidDetails, DidUtils, DidKeySelectionHandler } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  Utils as DidUtils,
+  DidKeySelectionHandler,
+} from '@kiltprotocol/did'
 import type {
   ICredential,
   CompressedCredential,
@@ -243,8 +247,8 @@ export class Credential implements ICredential {
     // filter attributes that are not in public attributes
     const excludedClaimProperties = selectedAttributes
       ? Array.from(this.getAttributes()).filter(
-          (property) => !selectedAttributes.includes(property)
-        )
+        (property) => !selectedAttributes.includes(property)
+      )
       : []
 
     // remove these attributes

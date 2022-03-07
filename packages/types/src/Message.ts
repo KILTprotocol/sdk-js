@@ -190,7 +190,7 @@ export interface IConfirmPayment extends IMessageBodyBase {
 export interface IRequestCredentialContent {
   cTypes: Array<{
     cTypeHash: ICType['hash']
-    trustedAttesters?: Array<IDidDetails['did']>
+    trustedAttesters?: Array<IDidDetails['uri']>
     requiredProperties?: string[]
   }>
   challenge?: string
@@ -285,7 +285,7 @@ export type CompressedRequestCredentialContent = [
   Array<
     [
       ICType['hash'],
-      Array<IDidDetails['did']> | undefined,
+      Array<IDidDetails['uri']> | undefined,
       string[] | undefined
     ]
   >,
@@ -381,8 +381,8 @@ export type CompressedMessageBody =
 export interface IMessage {
   body: MessageBody
   createdAt: number
-  sender: IDidDetails['did']
-  receiver: IDidDetails['did']
+  sender: IDidDetails['uri']
+  receiver: IDidDetails['uri']
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -403,8 +403,8 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: DidPublicKey['id']
-  senderKeyId: DidPublicKey['id']
+  receiverKeyId: DidPublicKey['uri']
+  senderKeyId: DidPublicKey['uri']
   ciphertext: string
   nonce: string
 }

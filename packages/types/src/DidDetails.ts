@@ -130,7 +130,7 @@ export interface IDidDetails {
   /**
    * The decentralized identifier (DID) to which the remaining info pertains.
    */
-  did: string
+  uri: string
   /**
    * Retrieves a particular public key record via its id.
    *
@@ -175,6 +175,6 @@ export interface IDidDetails {
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
 export type DidSignature = {
-  keyId: DidPublicKey['id']
+  keyId: DidPublicKey['uri']
   signature: string
 }

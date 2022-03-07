@@ -55,13 +55,13 @@ export class LightDidDetails extends DidDetails {
   private constructor(
     identifier: IDidIdentifier,
     {
-      did,
+      uri,
       keys,
       keyRelationships,
       serviceEndpoints = {},
     }: DidConstructorDetails
   ) {
-    super({ did, keys, keyRelationships, serviceEndpoints })
+    super({ uri, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
   }
@@ -107,9 +107,9 @@ export class LightDidDetails extends DidDetails {
       encodeAddress(authenticationKey.publicKey, 38)
     )
 
-    let did = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
+    let uri = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
     if (encodedDetails) {
-      did = did.concat(':', encodedDetails)
+      uri = uri.concat(':', encodedDetails)
     }
 
     // Authentication key always has the #authentication ID.
@@ -135,7 +135,7 @@ export class LightDidDetails extends DidDetails {
     )
 
     return new LightDidDetails(id.substring(2), {
-      did,
+      uri,
       keys,
       keyRelationships,
       serviceEndpoints: endpoints,
@@ -153,7 +153,7 @@ export class LightDidDetails extends DidDetails {
    * @returns The resulting [[LightDidDetails]].
    */
   public static fromUri(
-    uri: IDidDetails['did'],
+    uri: IDidDetails['uri'],
     failIfFragmentPresent = true
   ): LightDidDetails {
     const { identifier, version, encodedDetails, fragment, type } =

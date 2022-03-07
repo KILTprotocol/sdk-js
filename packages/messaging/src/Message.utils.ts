@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { isHex, isJsonObject } from '@polkadot/util'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 
 import { Message } from './Message.js'
 
@@ -52,7 +52,7 @@ export function errorCheckDelegationData(
 
   if (!account) {
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  } else DidUtils.validateKiltDid(account)
+  } else DidUtils.validateKiltDidUri(account)
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
@@ -133,7 +133,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
             cTypeHash,
             'request credential cTypeHash invalid'
           )
-          trustedAttesters?.map((did) => DidUtils.validateKiltDid(did))
+          trustedAttesters?.map((did) => DidUtils.validateKiltDidUri(did))
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
@@ -219,8 +219,8 @@ export function errorCheckMessage(message: IMessage): boolean | void {
   if (receivedAt && typeof receivedAt !== 'number') {
     throw new TypeError('received at is expected to be a number')
   }
-  DidUtils.validateKiltDid(receiver)
-  DidUtils.validateKiltDid(sender)
+  DidUtils.validateKiltDidUri(receiver)
+  DidUtils.validateKiltDidUri(sender)
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('in reply to is expected to be a string')
   }

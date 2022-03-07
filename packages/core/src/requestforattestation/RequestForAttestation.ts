@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
+import { DidResolver, DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import { Credential } from '../credential/Credential.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
@@ -295,7 +295,7 @@ export class RequestForAttestation implements IRequestForAttestation {
 
   public async addSignature(
     sig: string | Uint8Array,
-    keyId: DidPublicKey['id'],
+    keyUri: DidPublicKey['uri'],
     {
       challenge,
     }: {
@@ -303,7 +303,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     } = {}
   ): Promise<this> {
     const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
-    this.claimerSignature = { signature, keyId, challenge }
+    this.claimerSignature = { signature, keyId: keyUri, challenge }
     return this
   }
 

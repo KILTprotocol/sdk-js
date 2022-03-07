@@ -87,7 +87,7 @@ import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidDetails,
-  DidUtils,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
 
 import * as MessageUtils from './Message.utils'
@@ -95,8 +95,8 @@ import { Message } from './Message'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildCredential(
-  claimerDid: IDidDetails['did'],
-  attesterDid: IDidDetails['did'],
+  claimerDid: IDidDetails['uri'],
+  attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
   legitimations: Credential[]
 ): Promise<Credential> {
@@ -232,9 +232,9 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveDoc = async (
-      didUri: IDidDetails['did']
+      didUri: IDidDetails['uri']
     ): Promise<DidResolvedDetails | null> => {
-      if (didUri === identityAlice.did) {
+      if (didUri === identityAlice.uri) {
         return {
           metadata: {
             deactivated: false,
@@ -242,7 +242,7 @@ describe('Messaging Utilities', () => {
           details: identityAlice,
         }
       }
-      if (didUri === identityBob.did) {
+      if (didUri === identityBob.uri) {
         return {
           metadata: {
             deactivated: false,
@@ -254,7 +254,7 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (
-      keyId: DidPublicKey['id']
+      keyId: DidPublicKey['uri']
     ): Promise<ResolvedDidKey | null> => {
       const { identifier, type, version, fragment, encodedDetails } =
         DidUtils.parseDidUri(keyId)
@@ -264,11 +264,11 @@ describe('Messaging Utilities', () => {
         version,
         encodedDetails
       )
-      if (didSubject === identityAlice.did) {
+      if (didSubject === identityAlice.uri) {
         const aliceKey = identityAlice.getKey(fragment!)
         if (aliceKey) {
           return {
-            id: keyId,
+            uri: keyId,
             controller: didSubject,
             publicKey: aliceKey.publicKey,
             type: aliceKey.type,
@@ -276,11 +276,11 @@ describe('Messaging Utilities', () => {
         }
         return null
       }
-      if (didSubject === identityBob.did) {
+      if (didSubject === identityBob.uri) {
         const bobKey = identityBob.getKey(fragment!)
         if (bobKey) {
           return {
-            id: keyId,
+            uri: keyId,
             controller: didSubject,
             publicKey: bobKey.publicKey,
             type: bobKey.type,
@@ -321,22 +321,22 @@ describe('Messaging Utilities', () => {
       type: 'object',
     }
     // CType
-    testCType = CType.fromSchema(rawCType, identityAlice.did)
+    testCType = CType.fromSchema(rawCType, identityAlice.uri)
     testCTypeWithMultipleProperties = CType.fromSchema(
       rawCTypeWithMultipleProperties,
-      identityAlice.did
+      identityAlice.uri
     )
 
     // Claim
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
       claimContents,
-      identityAlice.did
+      identityAlice.uri
     )
     // Legitimation
     legitimation = await buildCredential(
-      identityAlice.did,
-      identityBob.did,
+      identityAlice.uri,
+      identityBob.uri,
       {},
       []
     )
@@ -365,7 +365,7 @@ describe('Messaging Utilities', () => {
     ]
     // Quote Data
     quoteData = {
-      attesterDid: identityAlice.did,
+      attesterDid: identityAlice.uri,
       cTypeHash: claim.cTypeHash,
       cost: {
         tax: { vat: 3.3 },
@@ -403,7 +403,7 @@ describe('Messaging Utilities', () => {
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       legitimation.request.rootHash,
-      identityAlice.did,
+      identityAlice.uri,
       identityBob,
       keystore,
       {
@@ -496,7 +496,7 @@ describe('Messaging Utilities', () => {
         delegationId: null,
         claimHash: requestAttestationContent.requestForAttestation.rootHash,
         cTypeHash: claim.cTypeHash,
-        owner: identityBob.did,
+        owner: identityBob.uri,
         revoked: false,
       },
     }
@@ -514,7 +514,7 @@ describe('Messaging Utilities', () => {
       cTypes: [
         {
           cTypeHash: claim.cTypeHash,
-          trustedAttesters: [identityAlice.did],
+          trustedAttesters: [identityAlice.uri],
           requiredProperties: ['id', 'name'],
         },
       ],
@@ -522,7 +522,7 @@ describe('Messaging Utilities', () => {
     }
     // Compressed Request Credential content
     compressedRequestCredentialContent = [
-      [[claim.cTypeHash, [identityAlice.did], ['id', 'name']]],
+      [[claim.cTypeHash, [identityAlice.uri], ['id', 'name']]],
       '1234',
     ]
     // Submit Credential content
@@ -532,7 +532,7 @@ describe('Messaging Utilities', () => {
     // Request Accept delegation content
     requestAcceptDelegationContent = {
       delegationData: {
-        account: identityAlice.did,
+        account: identityAlice.uri,
         id: Crypto.hashStr('0x12345678'),
         parentId: Crypto.hashStr('0x12345678'),
         permissions: [1],
@@ -565,7 +565,7 @@ describe('Messaging Utilities', () => {
     // Submit Accept delegation content
     submitAcceptDelegationContent = {
       delegationData: {
-        account: identityAlice.did,
+        account: identityAlice.uri,
         id: Crypto.hashStr('0x12345678'),
         parentId: Crypto.hashStr('0x12345678'),
         permissions: [1],
@@ -604,7 +604,7 @@ describe('Messaging Utilities', () => {
     ]
     // Reject Accept Delegation content
     rejectAcceptDelegationContent = {
-      account: identityAlice.did,
+      account: identityAlice.uri,
       id: Crypto.hashStr('0x12345678'),
       parentId: Crypto.hashStr('0x12345678'),
       permissions: [1],
@@ -893,74 +893,74 @@ describe('Messaging Utilities', () => {
   beforeAll(async () => {
     messageRequestTerms = new Message(
       requestTermsBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageSubmitTerms = new Message(
       submitTermsBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageRejectTerms = new Message(
       rejectTermsBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageRequestAttestationForClaim = new Message(
       requestAttestationBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageSubmitAttestationForClaim = new Message(
       submitAttestationBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
 
     messageRejectAttestationForClaim = new Message(
       rejectAttestationForClaimBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageRequestCredential = new Message(
       requestCredentialBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageSubmitCredential = new Message(
       submitCredentialBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageAcceptCredential = new Message(
       acceptCredentialBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageRejectCredential = new Message(
       rejectCredentialBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageRequestAcceptDelegation = new Message(
       requestAcceptDelegationBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageSubmitAcceptDelegation = new Message(
       submitAcceptDelegationBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageRejectAcceptDelegation = new Message(
       rejectAcceptDelegationBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
     messageInformCreateDelegation = new Message(
       informCreateDelegationBody,
-      identityAlice.did,
-      identityBob.did
+      identityAlice.uri,
+      identityBob.uri
     )
   })
   it('error check should not throw errors on faulty bodies', () => {

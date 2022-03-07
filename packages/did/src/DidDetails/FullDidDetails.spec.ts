@@ -129,7 +129,7 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.identifier).toStrictEqual(existingIdentifier)
 
     const expectedDid = getKiltDidFromIdentifier(existingIdentifier, 'full')
-    expect(fullDidDetails?.did).toStrictEqual(expectedDid)
+    expect(fullDidDetails?.uri).toStrictEqual(expectedDid)
 
     expect(fullDidDetails?.getKey('auth#1')).toStrictEqual<DidKey>({
       id: 'auth#1',
