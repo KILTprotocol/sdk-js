@@ -22,7 +22,6 @@ jobs:
         with:
           labels: 'bug, incompatible dependencies, automation'
           project: 10
-          project-type: organization
           column: Backlog
           pinned: false
           close-previous: true
