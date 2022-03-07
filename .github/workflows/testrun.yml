@@ -21,8 +21,6 @@ jobs:
         uses: imjohnbo/issue-bot@v3
         with:
           labels: 'bug, incompatible dependencies, automation'
-          project: 10
-          column: Backlog
           pinned: false
           close-previous: true
           linked-comments: true
