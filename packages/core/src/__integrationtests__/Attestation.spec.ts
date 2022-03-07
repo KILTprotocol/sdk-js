@@ -40,11 +40,11 @@ beforeAll(async () => {
   await initializeApi()
   tokenHolder = await createEndowedTestAccount()
   signer = new DemoKeystore()
-    ;[attester, anotherAttester, claimer] = await Promise.all([
-      createFullDidFromSeed(tokenHolder, signer),
-      createFullDidFromSeed(tokenHolder, signer),
-      createFullDidFromSeed(tokenHolder, signer),
-    ])
+  ;[attester, anotherAttester, claimer] = await Promise.all([
+    createFullDidFromSeed(tokenHolder, signer),
+    createFullDidFromSeed(tokenHolder, signer),
+    createFullDidFromSeed(tokenHolder, signer),
+  ])
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {

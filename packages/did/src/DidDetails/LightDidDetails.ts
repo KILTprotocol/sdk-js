@@ -38,7 +38,7 @@ import { DidDetails } from './DidDetails.js'
 import {
   checkLightDidCreationDetails,
   decodeAndDeserializeAdditionalLightDidDetails,
-  DidMigrationHandler,
+  DidMigrationCallback,
   getEncodingForVerificationKeyType,
   getVerificationKeyTypeForEncoding,
   LightDidCreationDetails,
@@ -220,14 +220,14 @@ export class LightDidDetails extends DidDetails {
    *
    * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
    * @param signer The keystore signer to sign the operation.
-   * @param migrationHandler A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
+   * @param migrationCallback A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
    *
    * @returns The migrated [[FullDidDetails]] if the user-provided handler successfully writes the full DID on the chain. It throws an error otherwise.
    */
   public async migrate(
     submitterAddress: IIdentity['address'],
     signer: KeystoreSigner,
-    migrationHandler: DidMigrationHandler
+    migrationCallback: DidMigrationCallback
   ): Promise<FullDidDetails> {
     const { api } = await BlockchainApiConnection.getConnectionOrConnect()
     const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
@@ -235,7 +235,7 @@ export class LightDidDetails extends DidDetails {
       this
     ).build(signer, submitterAddress)
 
-    await migrationHandler(creationTx)
+    await migrationCallback(creationTx)
 
     const fullDidDetails = await FullDidDetails.fromChainInfo(
       getKiltDidFromIdentifier(this.identifier, 'full')

@@ -131,16 +131,16 @@ describe('DidBatchBuilder', () => {
   })
 
   // TODO: complete these tests once SDK has been refactored to work with generic api object
-  describe('.consume()', () => {
+  describe('.build()', () => {
     it('throws if batch is empty', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      await expect(builder.generateSignedBatchTx(keystore, 'test-account')).rejects.toThrow()
+      await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
     })
-    it.todo('successfully consume builder with only 1 extrinsic')
-    it.todo('successfully consume builder with 1 extrinsic per required key')
-    it.todo('successfully consume builder with 2 extrinsics per required key')
+    it.todo('successfully use the builder with only 1 extrinsic')
+    it.todo('successfully use the builder with 1 extrinsic per required key')
+    it.todo('successfully use the builder with 2 extrinsics per required key')
     it.todo(
-      'successfully consume builder with 1 extrinsic per required key, repeated two times'
+      'successfully use the builder with 1 extrinsic per required key, repeated two times'
     )
   })
 })

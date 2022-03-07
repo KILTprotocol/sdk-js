@@ -9,7 +9,7 @@
  * KILT participants can communicate via a 1:1 messaging system.
  *
  * All messages are **encrypted** with the encryption keys of the involved identities.
- * Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
+ * Messages are encrypted using authenticated encryption: the two parties authenticate to each other, but the message authentication provides repudiation possibilities.
  *
  * The [[Message]] class exposes methods to construct and verify messages.
  *
@@ -129,8 +129,13 @@ export class Message implements IMessage {
       resolver?: IDidResolver
     } = {}
   ): Promise<IMessage> {
-    const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
-      encrypted
+    const {
+      senderKeyUri: senderKeyId,
+      receiverKeyUri: receiverKeyId,
+      ciphertext,
+      nonce,
+      receivedAt,
+    } = encrypted
 
     const senderKeyDetails = await resolver.resolveKey(senderKeyId)
     if (!senderKeyDetails) {
@@ -251,7 +256,7 @@ export class Message implements IMessage {
    * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
    * @param senderDetails The sender's DID to use to fetch the right encryption key.
    * @param keystore The keystore used to perform the cryptographic operations.
-   * @param receiverKeyId The full key ID of the receiver.
+   * @param receiverKeyUri The key URI of the receiver.
    * @param encryptionOptions Options to perform the encryption operation.
    * @param encryptionOptions.resolver The DID resolver to use.
    *
@@ -261,16 +266,16 @@ export class Message implements IMessage {
     senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     keystore: Pick<NaclBoxCapable, 'encrypt'>,
-    receiverKeyId: DidPublicKey['uri'],
+    receiverKeyUri: DidPublicKey['uri'],
     {
       resolver = DidResolver,
     }: {
       resolver?: IDidResolver
     } = {}
   ): Promise<IEncryptedMessage> {
-    const receiverKey = await resolver.resolveKey(receiverKeyId)
+    const receiverKey = await resolver.resolveKey(receiverKeyUri)
     if (!receiverKey) {
-      throw SDKErrors.ERROR_DID_ERROR(`Cannot resolve key ${receiverKeyId}`)
+      throw SDKErrors.ERROR_DID_ERROR(`Cannot resolve key ${receiverKeyUri}`)
     }
     if (this.receiver !== receiverKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
@@ -319,8 +324,8 @@ export class Message implements IMessage {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      senderKeyId: senderDetails.assembleKeyUri(senderKey.id),
-      receiverKeyId: receiverKey.uri,
+      senderKeyUri: senderDetails.assembleKeyUri(senderKey.id),
+      receiverKeyUri: receiverKey.uri,
     }
   }
 

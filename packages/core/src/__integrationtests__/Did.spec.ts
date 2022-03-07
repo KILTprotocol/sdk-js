@@ -54,7 +54,7 @@ import {
   submitExtrinsicWithResign,
   addressFromRandom,
   getDefaultMigrationHandler,
-  getDefaultConsumeHandler,
+  getDefaultSubmitCallback,
   createFullDidFromSeed,
 } from './utils'
 import { DelegationNode } from '../delegation'
@@ -853,7 +853,7 @@ describe('DID management batching', () => {
       const initialFullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
-        getDefaultConsumeHandler(paymentAccount)
+        getDefaultSubmitCallback(paymentAccount)
       )
 
       const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
@@ -902,7 +902,7 @@ describe('DID management batching', () => {
       const initialFullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
-        getDefaultConsumeHandler(paymentAccount)
+        getDefaultSubmitCallback(paymentAccount)
       )
 
       const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
@@ -1115,7 +1115,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .generateSignedBatchTx(keystore, paymentAccount.address, { atomic: false })
+      .build(keystore, paymentAccount.address, { atomic: false })
 
     // The entire submission promise is resolves and does not throw
     await expect(
@@ -1148,7 +1148,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .generateSignedBatchTx(keystore, paymentAccount.address, { atomic: true })
+      .build(keystore, paymentAccount.address, { atomic: true })
 
     // The entire submission promise is rejected and throws.
     await expect(
@@ -1175,7 +1175,7 @@ describe('DID extrinsics batching', () => {
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([web3Name1ReleaseExt, web3Name2ClaimExt])
-      .generateSignedBatchTx(keystore, paymentAccount.address)
+      .build(keystore, paymentAccount.address)
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
@@ -1230,7 +1230,7 @@ describe('DID extrinsics batching', () => {
       .addSingleExtrinsic(ctype2Creation)
       .addSingleExtrinsic(delegationHierarchyRemoval)
 
-    const batchedExtrinsics = await builder.generateSignedBatchTx(
+    const batchedExtrinsics = await builder.build(
       keystore,
       paymentAccount.address
     )
@@ -1253,11 +1253,6 @@ describe('DID extrinsics batching', () => {
     await expect(
       DelegationNode.query(rootNode.id).then((node) => node?.revoked)
     ).resolves.toBeTruthy()
-
-    // Cannot consume the builder again
-    await expect(
-      builder.generateSignedBatchTx(keystore, paymentAccount.address)
-    ).rejects.toThrow()
   })
 })
 

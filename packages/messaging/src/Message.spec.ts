@@ -236,8 +236,8 @@ describe('Messaging', () => {
     const encryptedMessageWrongBody: IEncryptedMessage = {
       ciphertext: u8aToHex(encryptedWrongBody.data),
       nonce: u8aToHex(encryptedWrongBody.nonce),
-      senderKeyId: aliceLightDid.assembleKeyUri(aliceLightDid.encryptionKey!.id),
-      receiverKeyId: bobLightDid.assembleKeyUri(bobLightDid.encryptionKey!.id),
+      senderKeyUri: aliceLightDid.assembleKeyUri(aliceLightDid.encryptionKey!.id),
+      receiverKeyUri: bobLightDid.assembleKeyUri(bobLightDid.encryptionKey!.id),
     }
     await expect(() =>
       Message.decrypt(encryptedMessageWrongBody, keystore, bobLightDid, {

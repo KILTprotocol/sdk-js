@@ -162,8 +162,8 @@ export abstract class DidDetails implements IDidDetails {
   public getEndpoints(type?: string): DidServiceEndpoint[] {
     const serviceEndpointsEntries = type
       ? [...this.serviceEndpoints.entries()].filter(([, details]) => {
-        return details.types.includes(type)
-      })
+          return details.types.includes(type)
+        })
       : [...this.serviceEndpoints.entries()]
 
     return serviceEndpointsEntries.map(([id, details]) => {
@@ -176,7 +176,7 @@ export abstract class DidDetails implements IDidDetails {
    *
    * @param keyId The key ID, without the leading subject's DID prefix.
    *
-   * @returns The full [[DidPublicKey['id']]], which includes the subject's DID and the provided key ID.
+   * @returns The full [[DidPublicKey['uri']]], which includes the subject's DID and the provided key ID.
    */
   public assembleKeyUri(keyId: DidKey['id']): DidPublicKey['uri'] {
     return assembleKeyUri(this.uri, keyId)

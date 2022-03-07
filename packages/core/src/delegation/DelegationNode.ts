@@ -34,7 +34,7 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { DidKeySelectionHandler } from '@kiltprotocol/did'
+import type { DidKeySelectionCallback } from '@kiltprotocol/did'
 import {
   DidDetails,
   Chain as DidChain,
@@ -296,9 +296,9 @@ export class DelegationNode implements IDelegationNode {
     delegeeDid: DidDetails,
     signer: KeystoreSigner,
     {
-      keySelection = DidUtils.defaultKeySelectionHandler,
+      keySelection = DidUtils.defaultKeySelectionCallback,
     }: {
-      keySelection?: DidKeySelectionHandler<DidVerificationKey>
+      keySelection?: DidKeySelectionCallback<DidVerificationKey>
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(

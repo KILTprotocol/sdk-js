@@ -149,7 +149,7 @@ export class Attestation implements IAttestation {
    * [STATIC] Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
    *
    * @param request - The base request for attestation.
-   * @param attesterDid - The attester's did, used to attest to the underlying claim.
+   * @param attesterDid - The attester's DID, used to attest to the underlying claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the `RequestForAttestation` and all other needed properties

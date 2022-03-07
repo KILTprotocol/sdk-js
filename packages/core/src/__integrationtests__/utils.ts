@@ -154,7 +154,7 @@ export function getDefaultMigrationHandler(
   }
 }
 
-export function getDefaultConsumeHandler(
+export function getDefaultSubmitCallback(
   submitter: KeyringPair
 ): FullDidUpdateHandler {
   return async (e) => {

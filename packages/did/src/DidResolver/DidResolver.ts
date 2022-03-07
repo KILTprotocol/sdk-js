@@ -30,7 +30,7 @@ import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
  *
  * The URI can also identify a key or a service, but it will be ignored during resolution.
  *
- * @param did The subject's identifier.
+ * @param did The subject's DID.
  * @returns The details associated with the DID subject.
  */
 export async function resolveDoc(
@@ -211,7 +211,7 @@ export async function resolveServiceEndpoint(
  * Resolve a DID URI (including a key ID or a service ID).
  *
  * @param didUri The DID URI to resolve.
- * @returns The DID, key details or service details depending on the input URI. If not resource can be resolved, null is returned.
+ * @returns The DID, key details or service details depending on the input URI. Null otherwise.
  */
 export async function resolve(
   didUri: string

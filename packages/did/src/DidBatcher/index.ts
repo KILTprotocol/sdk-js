@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export type { BatchSigningKeySelection } from './DidBatchBuilder.js'
+export type { BatchSigningKeySelectionCallback as BatchSigningKeySelection } from './DidBatchBuilder.js'
 export { DidBatchBuilder } from './DidBatchBuilder.js'
 
 export { FullDidBuilder } from './FullDidBuilder.js'

@@ -87,11 +87,11 @@ beforeAll(async () => {
   await initializeApi()
   paymentAccount = await createEndowedTestAccount()
   signer = new DemoKeystore()
-    ;[attester, root, claimer] = await Promise.all([
-      createFullDidFromSeed(paymentAccount, signer),
-      createFullDidFromSeed(paymentAccount, signer),
-      createFullDidFromSeed(paymentAccount, signer),
-    ])
+  ;[attester, root, claimer] = await Promise.all([
+    createFullDidFromSeed(paymentAccount, signer),
+    createFullDidFromSeed(paymentAccount, signer),
+    createFullDidFromSeed(paymentAccount, signer),
+  ])
 
   if (!(await isCtypeOnChain(driversLicenseCType))) {
     await driversLicenseCType

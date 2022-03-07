@@ -40,14 +40,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
     differentNick = `different_${randomAsHex(2)}`
-      ;[paymentAccount, otherPaymentAccount] = await Promise.all([
-        createEndowedTestAccount(),
-        createEndowedTestAccount(),
-      ])
-      ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      ])
+    ;[paymentAccount, otherPaymentAccount] = await Promise.all([
+      createEndowedTestAccount(),
+      createEndowedTestAccount(),
+    ])
+    ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
+      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
+      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
+    ])
 
     if (paymentAccount === otherPaymentAccount) {
       throw new Error('The payment accounts are the same.')

@@ -89,7 +89,7 @@ export type LightDidCreationDetails = {
   serviceEndpoints?: DidServiceEndpoint[]
 }
 
-export type DidMigrationHandler = (
+export type DidMigrationCallback = (
   migrationExtrinsic: SubmittableExtrinsic
 ) => Promise<void>
 

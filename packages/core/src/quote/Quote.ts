@@ -31,7 +31,7 @@ import {
   Utils as DidUtils,
   DidResolver,
   DidDetails,
-  DidKeySelectionHandler,
+  DidKeySelectionCallback,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
@@ -112,9 +112,9 @@ export async function createAttesterSignature(
   attesterIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultKeySelectionHandler,
+    keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
-    keySelection?: DidKeySelectionHandler<DidVerificationKey>
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   const authenticationKey = await keySelection(
@@ -154,9 +154,9 @@ export async function fromQuoteDataAndIdentity(
   attesterIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultKeySelectionHandler,
+    keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
-    keySelection?: DidKeySelectionHandler<DidVerificationKey>
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
@@ -184,10 +184,10 @@ export async function createQuoteAgreement(
   claimerIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultKeySelectionHandler,
+    keySelection = DidUtils.defaultKeySelectionCallback,
     resolver = DidResolver,
   }: {
-    keySelection?: DidKeySelectionHandler<DidVerificationKey>
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
     resolver?: IDidResolver
   } = {}
 ): Promise<IQuoteAgreement> {

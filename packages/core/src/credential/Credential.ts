@@ -19,7 +19,7 @@
 import {
   DidDetails,
   Utils as DidUtils,
-  DidKeySelectionHandler,
+  DidKeySelectionCallback,
 } from '@kiltprotocol/did'
 import type {
   ICredential,
@@ -230,13 +230,13 @@ export class Credential implements ICredential {
     signer,
     challenge,
     claimerDid,
-    keySelection = DidUtils.defaultKeySelectionHandler,
+    keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
     selectedAttributes?: string[]
     signer: KeystoreSigner
     challenge?: string
     claimerDid: DidDetails
-    keySelection?: DidKeySelectionHandler<DidVerificationKey>
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
   }): Promise<Credential> {
     const credential = new Credential(
       // clone the attestation and request for attestation because properties will be deleted later.
@@ -247,8 +247,8 @@ export class Credential implements ICredential {
     // filter attributes that are not in public attributes
     const excludedClaimProperties = selectedAttributes
       ? Array.from(this.getAttributes()).filter(
-        (property) => !selectedAttributes.includes(property)
-      )
+          (property) => !selectedAttributes.includes(property)
+        )
       : []
 
     // remove these attributes

@@ -51,7 +51,7 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
-export const defaultKeySelectionHandler = <T>(keys: T[]): Promise<T | null> =>
+export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
   Promise.resolve(keys[0] || null)
 
 export function getKiltDidFromIdentifier(
@@ -168,18 +168,18 @@ export function getVerificationKeyTypeForSigningAlgorithm(
 }
 
 const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
-{
-  [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
-}
+  {
+    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+  }
 export function getEncryptionAlgorithmForEncryptionKeyType(
   keyType: EncryptionKeyType
 ): EncryptionAlgorithms {
   return encryptionAlgForKeyType[keyType]
 }
 const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
-{
-  [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
-}
+  {
+    [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
+  }
 export function getEncryptionKeyTypeForEncryptionAlgorithm(
   encryptionAlg: EncryptionAlgorithms
 ): EncryptionKeyType {
@@ -306,7 +306,7 @@ export type DidSignatureVerificationInput = {
   resolver?: IDidResolver
 }
 
-// Verify a DID signature given the key ID of the signature.
+// Verify a DID signature given the key URI of the signature.
 // A signature verification returns false if a migrated and then deleted DID is used.
 export async function verifyDidSignature({
   message,
@@ -348,7 +348,7 @@ export async function verifyDidSignature({
   const details = (
     resolutionDetails.metadata.canonicalId
       ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
-        ?.details
+          ?.details
       : resolutionDetails.details
   ) as IDidDetails
 
@@ -362,12 +362,12 @@ export async function verifyDidSignature({
 }
 
 /**
- * Compute the full identifier (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
+ * Compute the full key URI (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
  *
  * @param did The DID URI, with no trailing fragment (i.e., no "#" symbol).
  * @param keyId The key ID, without the leading subject's DID prefix.
  *
- * @returns The full [[DidPublicKey['id']]], which includes the subject's DID and the provided key ID.
+ * @returns The full [[DidPublicKey['uri']]], which includes the subject's DID and the provided key ID.
  */
 export function assembleKeyUri(
   did: IDidDetails['uri'],

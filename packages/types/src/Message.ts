@@ -371,10 +371,10 @@ export type CompressedMessageBody =
 /**
  * - `body` - The body of the message, see [[MessageBody]].
  * - `createdAt` - The timestamp of the message construction.
- * - `receiverAddress` - The public SS58 address of the receiver.
- * - `senderAddress` - The public SS58 address of the sender.
- * - `senderBoxPublicKex` - The public encryption key of the sender.
+ * - `sender` - The DID of the sender.
+ * - `receiver` - The DID of the receiver.
  * - `messageId` - The message id.
+ * - `receivedAt` - The timestamp of the message reception.
  * - `inReplyTo` - The id of the parent-message.
  * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
  */
@@ -399,12 +399,12 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * This adds the following fields:
  * - `ciphertext` - The encrypted message content.
  * - `nonce` - The encryption nonce.
- * - `receiverKeyId` - The identifier of a DID-associated public key to which to encrypt.
- * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
+ * - `receiverKeyUri` - The URI of the receiver's encryption key.
+ * - `senderKeyUri` - The URI of the sender's encryption key.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: DidPublicKey['uri']
-  senderKeyId: DidPublicKey['uri']
+  receiverKeyUri: DidPublicKey['uri']
+  senderKeyUri: DidPublicKey['uri']
   ciphertext: string
   nonce: string
 }

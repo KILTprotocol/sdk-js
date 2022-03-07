@@ -393,29 +393,29 @@ describe('Different deposits scenarios', () => {
         ),
       ])
 
-      ;[
-        testFullDidOne,
-        testFullDidTwo,
-        testFullDidThree,
-        testFullDidFour,
-        testFullDidFive,
-        testFullDidSix,
-        testFullDidSeven,
-        testFullDidEight,
-        testFullDidNine,
-        testFullDidTen,
-      ] = await Promise.all([
-        createFullDidFromSeed(testIdentities[0], keystore, testMnemonics[0]),
-        createFullDidFromSeed(testIdentities[1], keystore, testMnemonics[1]),
-        createFullDidFromSeed(testIdentities[2], keystore, testMnemonics[2]),
-        createFullDidFromSeed(testIdentities[3], keystore, testMnemonics[3]),
-        createFullDidFromLightDid(testIdentities[4], testDidFive, keystore),
-        createFullDidFromLightDid(testIdentities[5], testDidSix, keystore),
-        createFullDidFromLightDid(testIdentities[6], testDidSeven, keystore),
-        createFullDidFromLightDid(testIdentities[7], testDidEight, keystore),
-        createFullDidFromLightDid(testIdentities[8], testDidNine, keystore),
-        createFullDidFromSeed(testIdentities[9], keystore, testMnemonics[9]),
-      ])
+    ;[
+      testFullDidOne,
+      testFullDidTwo,
+      testFullDidThree,
+      testFullDidFour,
+      testFullDidFive,
+      testFullDidSix,
+      testFullDidSeven,
+      testFullDidEight,
+      testFullDidNine,
+      testFullDidTen,
+    ] = await Promise.all([
+      createFullDidFromSeed(testIdentities[0], keystore, testMnemonics[0]),
+      createFullDidFromSeed(testIdentities[1], keystore, testMnemonics[1]),
+      createFullDidFromSeed(testIdentities[2], keystore, testMnemonics[2]),
+      createFullDidFromSeed(testIdentities[3], keystore, testMnemonics[3]),
+      createFullDidFromLightDid(testIdentities[4], testDidFive, keystore),
+      createFullDidFromLightDid(testIdentities[5], testDidSix, keystore),
+      createFullDidFromLightDid(testIdentities[6], testDidSeven, keystore),
+      createFullDidFromLightDid(testIdentities[7], testDidEight, keystore),
+      createFullDidFromLightDid(testIdentities[8], testDidNine, keystore),
+      createFullDidFromSeed(testIdentities[9], keystore, testMnemonics[9]),
+    ])
   }, 240_000)
 
   it('Check if deleting full DID returns deposit', async () => {

@@ -34,7 +34,7 @@ type BatchInfo = {
 /**
  * Type of a callback used to select one of the key candidates for a DID to sign a given batch of extrinsics.
  */
-export type BatchSigningKeySelection = (
+export type BatchSigningKeySelectionCallback = (
   batch: Extrinsic[],
   keys: DidVerificationKey[]
 ) => Promise<DidVerificationKey>
@@ -46,7 +46,7 @@ export type BatchSigningKeySelection = (
  *
  * @returns The selected key among the list of key candidates. If the returned key is not in the input list of candidates, the signing operation or the extrinsic submission will most likely fail.
  */
-export const defaultBatchSigningKeySelectionClosure: BatchSigningKeySelection =
+export const defaultBatchSigningKeySelectionCallback: BatchSigningKeySelectionCallback =
   (batch: Extrinsic[], keys: DidVerificationKey[]) => Promise.resolve(keys[0])
 
 /**
@@ -97,7 +97,7 @@ export class DidBatchBuilder {
    * The requirements to add a new extrinsic to the batch are the following:
    * - The extrinsic must not be a DID management extrinsic. For those, [[FullDidCreationBuilder]] and [[FullDidUpdateBuilder]] must be used
    * - The extrinsic must require a DID origin. E.g., staking extrinsics that require a simple KILT account origin cannot be added to the batch
-   * - The DID must have at least one key candidate to sign the provided extrinsic. If the DID is updated after the extrinsic is added but before the builder is consumed, it results in undefined behaviour, and most likely the extrinsic submission will fail.
+   * - The DID must have at least one key candidate to sign the provided extrinsic. If the DID is updated after the extrinsic is added but before the builder is used, it results in undefined behaviour, and most likely the extrinsic submission will fail.
    *
    * @param extrinsic The [[Extrinsic]] to add to the batch.
    * @returns The builder containing the new extrinsic in the last position of the internal queue.
@@ -128,7 +128,7 @@ export class DidBatchBuilder {
   }
 
   /**
-   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the batch of extrinsics to execute, in the order they were added to the builder.
+   * Use the builder and generate the [[SubmittableExtrinsic]] containing the batch of extrinsics to execute, in the order they were added to the builder.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the required keys to sign each batch.
    * @param submitter The KILT address of the user authorised to submit each extrinsic in the batch.
@@ -139,18 +139,18 @@ export class DidBatchBuilder {
    *
    * @returns The [[SubmittableExtrinsic]] containing the batch of batches.
    */
-  // TODO: Remove ignore when we can test the consume function
+  // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
-  public async generateSignedBatchTx(
+  public async build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     {
       atomic = true,
-      keySelection = defaultBatchSigningKeySelectionClosure,
+      keySelection = defaultBatchSigningKeySelectionCallback,
       initialNonce,
     }: {
       atomic?: boolean
-      keySelection?: BatchSigningKeySelection
+      keySelection?: BatchSigningKeySelectionCallback
       initialNonce?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
@@ -163,7 +163,7 @@ export class DidBatchBuilder {
 
     if (!batchesLength) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Builder was empty, hence it cannot be consumed.'
+        'Builder was empty, hence it cannot be used.'
       )
     }
 

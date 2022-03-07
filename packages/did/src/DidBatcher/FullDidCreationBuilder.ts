@@ -93,7 +93,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Use the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
@@ -126,7 +126,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Use the builder and generate the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
@@ -134,7 +134,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * @returns The [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    */
-  // TODO: Remove ignore when we can test the consume function
+  // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
   public async build(
     signer: KeystoreSigner,
@@ -144,7 +144,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   ): Promise<SubmittableExtrinsic> {
     if (this.consumed) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
+        'DID builder has already been used.'
       )
     }
 
