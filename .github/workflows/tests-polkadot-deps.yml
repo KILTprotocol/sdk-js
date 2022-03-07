@@ -39,12 +39,12 @@ jobs:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
 
       - name: list dependencies
-        run: echo "$(yarn info -AR --name-only)" > locked_dependencies.json
+        run: echo "$(yarn info -AR --name-only)" > locked_dependencies.txt
       - name: upload dependencies list
         uses: actions/upload-artifact@v3
         with:
           name: deps-${{ matrix.node-version }}
-          path: locked_dependencies.json
+          path: locked_dependencies.txt
 
       - name: yarn build
         run: yarn build
@@ -133,8 +133,14 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: deps-14.x
-      - run: echo "DEPS=$(cat locked_dependencies.json)" >> $GITHUB_ENV
-      - run: echo "TODAY=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+      - name: set dependencies env
+        run: |
+          echo 'DEPS<<EOF' >> $GITHUB_ENV
+          cat locked_dependencies.txt >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Set date env
+        run: |
+          echo "TODAY=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
       - name: issue-bot
         uses: imjohnbo/issue-bot@v3
         with:
@@ -153,12 +159,12 @@ jobs:
             We may need to constrain dependency ranges in our `package.json` or introduce fixes to recover compatibility.
             Below you can find a summary of depedency versions against which these tests were run.
 
-            _Note: This issue was **automatically created** as a result of scheduled CI tests on {{env.TODAY}}._
+            _Note: This issue was **automatically created** as a result of scheduled CI tests on ${{env.TODAY}}._
 
             <details>
               <summary>Dependency versions</summary>
 
-              {{env.DEPS}}
+              ${{env.DEPS}}
             </details>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
