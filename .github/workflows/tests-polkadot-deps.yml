@@ -1,8 +1,6 @@
 name: Test with updated polkadot dependencies
 
-on:
-  schedule:
-    - cron: 59 23 * * SAT
+on: [push]
 
 jobs:
   build:
