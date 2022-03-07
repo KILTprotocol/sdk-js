@@ -32,14 +32,14 @@ type BatchInfo = {
 }
 
 /**
- * Type of a closure used to select one of the key candidates for a DID to sign a given batch of extrinsics.
+ * Type of a callback used to select one of the key candidates for a DID to sign a given batch of extrinsics.
  */
 export type BatchSigningKeySelection = (
   batch: Extrinsic[],
   keys: DidVerificationKey[]
 ) => Promise<DidVerificationKey>
 /**
- * The default signing key selection closure which returns the first key in the list of key candidates.
+ * The default signing key selection callback which returns the first key in the list of key candidates.
  *
  * @param batch The batch of extrinsics to sign. All extrinsics are guaranteed to require the same signing key relationship.
  * @param keys The list of key candidates that match the required key relationship for the given extrinsic batch.
@@ -57,7 +57,6 @@ export class DidBatchBuilder {
   protected api: ApiPromise
 
   protected batches: BatchInfo[] = []
-  protected isConsumed = false
 
   /**
    * Create a new builder with the provided WS connection and [[FullDidDetails]].
@@ -104,12 +103,6 @@ export class DidBatchBuilder {
    * @returns The builder containing the new extrinsic in the last position of the internal queue.
    */
   public addSingleExtrinsic(extrinsic: Extrinsic): this {
-    if (this.isConsumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID batcher has already been consumed.'
-      )
-    }
-
     const keyRelationship = checkExtrinsicInput(extrinsic, this.did)
     this.pushNewExtrinsic(extrinsic, keyRelationship)
 
@@ -141,14 +134,14 @@ export class DidBatchBuilder {
    * @param submitter The KILT address of the user authorised to submit each extrinsic in the batch.
    * @param submissionOptions The additional options to customise the signing operation.
    * @param submissionOptions.atomic A flag indicating whether the whole batch must be reverted (true) or not (false) in case any extrinsic in the batch fails. It defaults to true.
-   * @param submissionOptions.keySelection The [[BatchSigningKeySelection]] closure to specify the DID key to use for each batch. It defaults to [[defaultBatchSigningKeySelectionClosure]].
+   * @param submissionOptions.keySelection The [[BatchSigningKeySelection]] callback to specify the DID key to use for each batch. It defaults to [[defaultBatchSigningKeySelectionClosure]].
    * @param submissionOptions.initialNonce The initial nonce to use for the first batch, after which the nonce is increased by the builder. It defaults to the next valid DID nonce as stored on chain at the time this function is called.
    *
    * @returns The [[SubmittableExtrinsic]] containing the batch of batches.
    */
   // TODO: Remove ignore when we can test the consume function
   /* istanbul ignore next */
-  public async consume(
+  public async generateSignedBatchTx(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     {
@@ -161,12 +154,6 @@ export class DidBatchBuilder {
       initialNonce?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
-    if (this.isConsumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID batcher has already been consumed.'
-      )
-    }
-
     const nonce = initialNonce || (await this.did.getNextNonce())
     const batchFunction = atomic
       ? this.api.tx.utility.batchAll
@@ -204,8 +191,6 @@ export class DidBatchBuilder {
         })
       })
     )
-
-    this.isConsumed = true
 
     return signedBatches.length > 1
       ? batchFunction(signedBatches)

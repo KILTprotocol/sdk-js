@@ -185,7 +185,7 @@ export abstract class FullDidBuilder {
   }
 
   /* istanbul ignore next */
-  public abstract consume(
+  public abstract build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     atomic: boolean

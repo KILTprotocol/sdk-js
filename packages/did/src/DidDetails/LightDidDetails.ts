@@ -220,7 +220,7 @@ export class LightDidDetails extends DidDetails {
    *
    * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
    * @param signer The keystore signer to sign the operation.
-   * @param migrationHandler A user-provided closure to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
+   * @param migrationHandler A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
    *
    * @returns The migrated [[FullDidDetails]] if the user-provided handler successfully writes the full DID on the chain. It throws an error otherwise.
    */
@@ -233,7 +233,7 @@ export class LightDidDetails extends DidDetails {
     const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
       api,
       this
-    ).consume(signer, submitterAddress)
+    ).build(signer, submitterAddress)
 
     await migrationHandler(creationTx)
 

@@ -586,7 +586,7 @@ describe('DID authorization', () => {
     )
       .setAttestationKey(newKey)
       .setDelegationKey(newKey)
-      .consumeWithHandler(keystore, paymentAccount.address, async (tx) =>
+      .buildAndSubmit(keystore, paymentAccount.address, async (tx) =>
         submitExtrinsicWithResign(tx, paymentAccount)
       )
   }, 60_000)
@@ -703,7 +703,7 @@ describe('DID management batching', () => {
 
       await expect(
         builder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -786,7 +786,7 @@ describe('DID management batching', () => {
 
       await expect(
         builder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -850,7 +850,7 @@ describe('DID management batching', () => {
           urls: ['url-2'],
         })
 
-      const initialFullDid = await createBuilder.consumeWithHandler(
+      const initialFullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
         getDefaultConsumeHandler(paymentAccount)
@@ -864,7 +864,7 @@ describe('DID management batching', () => {
 
       await expect(
         updateBuilder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -899,7 +899,7 @@ describe('DID management batching', () => {
         type: VerificationKeyType.Sr25519,
       })
 
-      const initialFullDid = await createBuilder.consumeWithHandler(
+      const initialFullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
         getDefaultConsumeHandler(paymentAccount)
@@ -924,7 +924,7 @@ describe('DID management batching', () => {
 
       await expect(
         updateBuilder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -960,7 +960,7 @@ describe('DID management batching', () => {
         urls: ['url-1'],
       })
       // Create the full DID with a service endpoint
-      const fullDid = await createBuilder.consumeWithHandler(
+      const fullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
         async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
@@ -992,7 +992,7 @@ describe('DID management batching', () => {
 
       // Now, consuming the builder will result in the second operation to fail but the batch to succeed, so we can test the atomic flag.
       await expect(
-        updateBuilder.consumeWithHandler(
+        updateBuilder.buildAndSubmit(
           keystore,
           paymentAccount.address,
           async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
@@ -1027,7 +1027,7 @@ describe('DID management batching', () => {
         urls: ['url-1'],
       })
       // Create the full DID with a service endpoint
-      const fullDid = await createBuilder.consumeWithHandler(
+      const fullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
         async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
@@ -1059,7 +1059,7 @@ describe('DID management batching', () => {
 
       // Now, consuming the builder will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
       await expect(
-        updateBuilder.consumeWithHandler(
+        updateBuilder.buildAndSubmit(
           keystore,
           paymentAccount.address,
           async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
@@ -1115,7 +1115,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .consume(keystore, paymentAccount.address, { atomic: false })
+      .generateSignedBatchTx(keystore, paymentAccount.address, { atomic: false })
 
     // The entire submission promise is resolves and does not throw
     await expect(
@@ -1148,7 +1148,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .consume(keystore, paymentAccount.address, { atomic: true })
+      .generateSignedBatchTx(keystore, paymentAccount.address, { atomic: true })
 
     // The entire submission promise is rejected and throws.
     await expect(
@@ -1175,7 +1175,7 @@ describe('DID extrinsics batching', () => {
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([web3Name1ReleaseExt, web3Name2ClaimExt])
-      .consume(keystore, paymentAccount.address)
+      .generateSignedBatchTx(keystore, paymentAccount.address)
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
@@ -1230,7 +1230,7 @@ describe('DID extrinsics batching', () => {
       .addSingleExtrinsic(ctype2Creation)
       .addSingleExtrinsic(delegationHierarchyRemoval)
 
-    const batchedExtrinsics = await builder.consume(
+    const batchedExtrinsics = await builder.generateSignedBatchTx(
       keystore,
       paymentAccount.address
     )
@@ -1256,7 +1256,7 @@ describe('DID extrinsics batching', () => {
 
     // Cannot consume the builder again
     await expect(
-      builder.consume(keystore, paymentAccount.address)
+      builder.generateSignedBatchTx(keystore, paymentAccount.address)
     ).rejects.toThrow()
   })
 })

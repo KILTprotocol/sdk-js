@@ -172,7 +172,7 @@ export abstract class DidDetails implements IDidDetails {
   }
 
   /**
-   * Compute the full identifier (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
+   * Compute the full URI (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
    *
    * @param keyId The key ID, without the leading subject's DID prefix.
    *

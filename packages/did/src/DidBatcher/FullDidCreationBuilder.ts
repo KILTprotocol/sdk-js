@@ -93,23 +93,23 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and delegates to the closure the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
-   * @param handler A closure to submit the extrinsic and return the created [[FullDidDetails]] instance.
+   * @param handler A callback to submit the extrinsic and return the created [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
-   * @returns The [[FullDidDetails]] as returned by the provided closure.
+   * @returns The [[FullDidDetails]] as returned by the provided callback.
    */
   /* istanbul ignore next */
-  public async consumeWithHandler(
+  public async buildAndSubmit(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     handler: FullDidCreationHandler,
     atomic = true
   ): Promise<FullDidDetails> {
-    const extrinsic = await this.consume(signer, submitter, atomic)
+    const extrinsic = await this.build(signer, submitter, atomic)
     await handler(extrinsic)
     const encodedAddress = encodeVerificationKeyToAddress(
       this.authenticationKey
@@ -136,7 +136,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    */
   // TODO: Remove ignore when we can test the consume function
   /* istanbul ignore next */
-  public async consume(
+  public async build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

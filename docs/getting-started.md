@@ -225,7 +225,7 @@ const attesterFullDid = await new Kilt.Did.FullDidCreationBuilder(
 )
   .addEncryptionKey(attesterEncryptionKey)
   .setAttestationKey(attesterAuthenticationKey)
-  .consumeWithHandler(keystore, devAccount.address, async (tx) => {
+  .buildAndSubmit(keystore, devAccount.address, async (tx) => {
     await Kilt.BlockchainUtils.signAndSubmitTx(tx, devAccount, {
       resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
       reSign: true,

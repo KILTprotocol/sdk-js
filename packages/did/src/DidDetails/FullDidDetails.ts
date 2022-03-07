@@ -54,7 +54,7 @@ export class FullDidDetails extends DidDetails {
    *
    * @param creationDetails The creation details.
    * @param creationDetails.identifier The DID subject identifier.
-   * @param creationDetails.uri The full DID identifier.
+   * @param creationDetails.uri The full DID URI.
    * @param creationDetails.keys The set of public keys associated with the given full DID.
    * @param creationDetails.keyRelationships The map of key ID -> relationship (e.g., authentication, attestation).
    * @param creationDetails.serviceEndpoints The set of service endpoints controlled by the specified DID.

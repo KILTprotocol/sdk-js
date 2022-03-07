@@ -481,23 +481,23 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and delegates to the closure the [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
-   * @param handler A closure to submit the extrinsic and return the update [[FullDidDetails]] instance.
+   * @param handler A callback to submit the extrinsic and return the update [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
-   * @returns The [[FullDidDetails]] as returned by the provided closure.
+   * @returns The [[FullDidDetails]] as returned by the provided callback.
    */
   /* istanbul ignore next */
-  public async consumeWithHandler(
+  public async buildAndSubmit(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     handler: FullDidUpdateHandler,
     atomic = true
   ): Promise<FullDidDetails> {
-    const extrinsic = await this.consume(signer, submitter, atomic)
+    const extrinsic = await this.build(signer, submitter, atomic)
     await handler(extrinsic)
     const fetchedDidDetails = await FullDidDetails.fromChainInfo(this.uri)
     if (!fetchedDidDetails) {
@@ -519,7 +519,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    */
   // TODO: Remove ignore when we can test the consume function
   /* istanbul ignore next */
-  public async consume(
+  public async build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     atomic = true

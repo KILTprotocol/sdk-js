@@ -134,7 +134,7 @@ describe('DidBatchBuilder', () => {
   describe('.consume()', () => {
     it('throws if batch is empty', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      await expect(builder.consume(keystore, 'test-account')).rejects.toThrow()
+      await expect(builder.generateSignedBatchTx(keystore, 'test-account')).rejects.toThrow()
     })
     it.todo('successfully consume builder with only 1 extrinsic')
     it.todo('successfully consume builder with 1 extrinsic per required key')

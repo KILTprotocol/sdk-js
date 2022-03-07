@@ -181,7 +181,7 @@ export async function createFullDidFromLightDid(
   const authenticatedBatch = await new FullDidUpdateBuilder(api, fullDid)
     .setAttestationKey(fullDid.authenticationKey)
     .setDelegationKey(fullDid.authenticationKey)
-    .consume(keystore, identity.address)
+    .build(keystore, identity.address)
   await submitExtrinsicWithResign(authenticatedBatch, identity)
 
   return FullDidDetails.fromChainInfo(fullDid.uri) as Promise<FullDidDetails>

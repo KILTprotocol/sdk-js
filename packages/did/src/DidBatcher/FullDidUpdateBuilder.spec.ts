@@ -545,7 +545,7 @@ describe('FullDidUpdateBuilder', () => {
       it('throws if batch is empty', async () => {
         const builder = new FullDidUpdateBuilder(mockApi, fullDid)
         await expect(
-          builder.consume(keystore, 'test-account')
+          builder.build(keystore, 'test-account')
         ).rejects.toThrow()
       })
       it.todo('properly consumes the builder')
