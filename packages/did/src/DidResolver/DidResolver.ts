@@ -40,7 +40,8 @@ export async function resolveDoc(
 
   switch (type) {
     case 'full': {
-      const details = await FullDidDetails.fromChainInfo(did)
+      const uriWithoutFragment = getKiltDidFromIdentifier(identifier, 'full')
+      const details = await FullDidDetails.fromChainInfo(uriWithoutFragment)
       // If the details are found, return those details.
       if (details) {
         return {
