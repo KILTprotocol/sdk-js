@@ -18,7 +18,6 @@ import {
   DidMigrationCallback,
   FullDidDetails,
   FullDidUpdateBuilder,
-  FullDidUpdateCallback,
   LightDidDetails,
 } from '@kiltprotocol/did'
 import {
