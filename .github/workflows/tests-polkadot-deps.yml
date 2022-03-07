@@ -133,7 +133,7 @@ jobs:
       - name: issue-bot
         uses: imjohnbo/issue-bot@v3
         with:
-          labels: ["🧰 sdk", "📌 update dependencies", "incompatibilities detected"]
+          labels: 'incompatible dependencies'
           project: 10
           project-type: organization
           column: Backlog
