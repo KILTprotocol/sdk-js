@@ -6,7 +6,11 @@ jobs:
   create-issue:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "├─ yargs-parser@npm:20.2.7\n├─ yargs-parser@npm:20.2.9\n├─ yargs@npm:16.2.0" > locked_dependencies.txt
+      - name:
+        run: |
+          echo "├─ yargs-parser@npm:20.2.7
+          ├─ yargs-parser@npm:20.2.9
+          ├─ yargs@npm:16.2.0" > locked_dependencies.txt
       - name: stuff
         run: |
           echo 'DEPS<<EOF' >> $GITHUB_ENV
