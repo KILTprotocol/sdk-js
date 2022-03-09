@@ -89,7 +89,7 @@ jobs:
         image: ['latest']
         required: ['required']
         include:
-          - image: 'latest-rc'
+          - image: 'latest-master'
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
