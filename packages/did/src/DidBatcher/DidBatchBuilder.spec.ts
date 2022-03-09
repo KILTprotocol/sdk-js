@@ -136,11 +136,11 @@ describe('DidBatchBuilder', () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
       await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
     })
-    it.todo('successfully use the builder with only 1 extrinsic')
-    it.todo('successfully use the builder with 1 extrinsic per required key')
-    it.todo('successfully use the builder with 2 extrinsics per required key')
+    it.todo('successfully create a batch with only 1 extrinsic')
+    it.todo('successfully create a batch with 1 extrinsic per required key')
+    it.todo('successfully create a batch with 2 extrinsics per required key')
     it.todo(
-      'successfully use the builder with 1 extrinsic per required key, repeated two times'
+      'successfully create a batch with 1 extrinsic per required key, repeated two times'
     )
   })
 })

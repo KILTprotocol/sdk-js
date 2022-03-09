@@ -93,7 +93,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Use the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
@@ -126,7 +126,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Use the builder and generate the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.

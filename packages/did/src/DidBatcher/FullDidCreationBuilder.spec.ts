@@ -98,6 +98,6 @@ describe('FullDidCreationBuilder', () => {
 
   // TODO: complete these tests once SDK has been refactored to work with generic api object
   describe('.build()', () => {
-    it.todo('properly uses the builder')
+    it.todo('properly consumes the builder')
   })
 })

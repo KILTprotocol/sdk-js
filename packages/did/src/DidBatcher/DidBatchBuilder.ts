@@ -97,7 +97,7 @@ export class DidBatchBuilder {
    * The requirements to add a new extrinsic to the batch are the following:
    * - The extrinsic must not be a DID management extrinsic. For those, [[FullDidCreationBuilder]] and [[FullDidUpdateBuilder]] must be used
    * - The extrinsic must require a DID origin. E.g., staking extrinsics that require a simple KILT account origin cannot be added to the batch
-   * - The DID must have at least one key candidate to sign the provided extrinsic. If the DID is updated after the extrinsic is added but before the builder is used, it results in undefined behaviour, and most likely the extrinsic submission will fail.
+   * - The DID must have at least one key candidate to sign the provided extrinsic. If the DID is updated after the extrinsic is added but before the final batch is created, it results in undefined behaviour, and most likely the extrinsic submission will fail.
    *
    * @param extrinsic The [[Extrinsic]] to add to the batch.
    * @returns The builder containing the new extrinsic in the last position of the internal queue.
@@ -128,7 +128,7 @@ export class DidBatchBuilder {
   }
 
   /**
-   * Use the builder and generate the [[SubmittableExtrinsic]] containing the batch of extrinsics to execute, in the order they were added to the builder.
+   * Generate the [[SubmittableExtrinsic]] containing the batch of extrinsics to execute, in the order they were added to the builder.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the required keys to sign each batch.
    * @param submitter The KILT address of the user authorised to submit each extrinsic in the batch.
@@ -163,7 +163,7 @@ export class DidBatchBuilder {
 
     if (!batchesLength) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Builder was empty, hence it cannot be used.'
+        'Cannot build a batch with no transactions.'
       )
     }
 

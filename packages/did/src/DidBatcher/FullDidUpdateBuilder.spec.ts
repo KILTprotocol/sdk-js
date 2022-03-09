@@ -546,7 +546,7 @@ describe('FullDidUpdateBuilder', () => {
         const builder = new FullDidUpdateBuilder(mockApi, fullDid)
         await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
       })
-      it.todo('properly uses the builder')
+      it.todo('properly consumes the builder')
     })
   })
 })

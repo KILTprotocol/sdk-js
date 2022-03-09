@@ -118,7 +118,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * All update operations after this function is called are batched and signed with the new authentication key.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new authentication key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
@@ -153,7 +153,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * The operation will fail in the following cases:
    *   - The starting state already has the provided encryption key
    *   - There was already a key with the same ID marked for deletion.
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a key with the same ID marked for addition.
    *
    * @param key The new [[NewDidEncryptionKey]] to add to the DID.
@@ -187,7 +187,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark an encryption key to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have a key with the provided ID
    *   - There was already a key with the same ID marked for addition.
    *   - There was already a key with the same ID marked for deletion.
@@ -254,7 +254,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * The operation will fail in the following cases:
    *   - The old attestation key was already marked for deletion.
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new attestation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
@@ -281,7 +281,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark the attestation key to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have an attestation key
    *   - There was already an attestation key marked for addition
    *   - The old attestation key was already marked for deletion.
@@ -326,7 +326,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * The operation will fail in the following cases:
    *   - The old delegation key was already marked for deletion.
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new delegation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
@@ -353,7 +353,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark the delegation key to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have an delegation key
    *   - There was already an attestation key marked for addition
    *   - The old attestation key was already marked for deletion.
@@ -396,7 +396,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * The operation will fail in the following cases:
    *   - The starting state already has the provided service endpoint
    *   - There was already a service with the same ID marked for deletion.
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a service with the same ID marked for addition.
    *
    * @param service The new [[DidServiceEndpoint]] to add to the DID.
@@ -424,7 +424,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark an service endpoint to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have a service with the provided ID
    *   - There was already a service with the same ID marked for addition.
    *   - There was already a service with the same ID marked for deletion.
@@ -481,7 +481,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Use the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
@@ -509,7 +509,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Use the builder and generate the [[SubmittableExtrinsic]] containing the details of the DID update with the provided details.
+   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of the DID update with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
@@ -530,7 +530,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
 
     if (!this.batch.length) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Builder was empty, hence it cannot be used.'
+        'Builder was empty, hence it cannot be consumed.'
       )
     }
 

@@ -68,7 +68,7 @@ export abstract class FullDidBuilder {
    * Mark a new encryption key to be added to the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a key with the same ID marked for addition.
    *
    * @param key The new [[NewDidEncryptionKey]] to add to the DID.
@@ -99,7 +99,7 @@ export abstract class FullDidBuilder {
    * Mark a new attestation key to replace the old one, if present, in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`) (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new attestation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
@@ -128,7 +128,7 @@ export abstract class FullDidBuilder {
    * Mark a new delegation key to replace the old one, if present, in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new delegation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
@@ -157,7 +157,7 @@ export abstract class FullDidBuilder {
    * Mark a new service endpoint to be added to the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been used
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a service with the same ID marked for addition.
    *
    * @param service The new [[DidServiceEndpoint]] to add to the DID.
