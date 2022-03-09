@@ -129,30 +129,25 @@ export class Message implements IMessage {
       resolver?: IDidResolver
     } = {}
   ): Promise<IMessage> {
-    const {
-      senderKeyUri: senderKeyId,
-      receiverKeyUri: receiverKeyId,
-      ciphertext,
-      nonce,
-      receivedAt,
-    } = encrypted
+    const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
+      encrypted
 
-    const senderKeyDetails = await resolver.resolveKey(senderKeyId)
+    const senderKeyDetails = await resolver.resolveKey(senderKeyUri)
     if (!senderKeyDetails) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve sender encryption key ${senderKeyId}`
+        `Could not resolve sender encryption key ${senderKeyUri}`
       )
     }
-    const { fragment } = DidUtils.parseDidUri(receiverKeyId)
+    const { fragment } = DidUtils.parseDidUri(receiverKeyUri)
     if (!fragment) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `No fragment for the receiver key ID ${receiverKeyId}`
+        `No fragment for the receiver key ID ${receiverKeyUri}`
       )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
     if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve receiver encryption key ${receiverKeyId}`
+        `Could not resolve receiver encryption key ${receiverKeyUri}`
       )
     }
     const receiverKeyAlgType =
