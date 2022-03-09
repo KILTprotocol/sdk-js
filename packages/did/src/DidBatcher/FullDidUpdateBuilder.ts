@@ -125,11 +125,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public setAuthenticationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check that no other authentication key has already been set.
     if (this.newAuthenticationKey) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -196,11 +192,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeEncryptionKey(keyId: DidKey['id']): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the key exists in the DID.
     if (!this.oldKeyAgreementKeys.has(keyId)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -236,12 +228,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeAllEncryptionKeys(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
-
+    this.checkBuilderConsumption()
     ;[...this.oldKeyAgreementKeys.keys()].forEach((kId) => {
       this.removeEncryptionKey(kId)
     })
@@ -289,11 +276,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeAttestationKey(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the DID has an attestation key.
     if (!this.oldAssertionKey) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -361,11 +344,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeDelegationKey(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the DID has a delegation key.
     if (!this.oldDelegationKey) {
       throw new Error('The DID does not have a delegation key to remove.')
@@ -433,11 +412,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeServiceEndpoint(serviceId: DidServiceEndpoint['id']): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the service exists in the DID.
     if (!this.oldServiceEndpoints.has(serviceId)) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -467,12 +442,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeAllServiceEndpoints(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
-
+    this.checkBuilderConsumption()
     ;[...this.oldServiceEndpoints.keys()].forEach((sId) => {
       this.removeServiceEndpoint(sId)
     })
@@ -524,6 +494,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     submitter: IIdentity['address'],
     atomic = true
   ): Promise<SubmittableExtrinsic> {
+    this.checkBuilderConsumption()
+
     const batchFunction = atomic
       ? this.apiObject.tx.utility.batchAll
       : this.apiObject.tx.utility.batch
@@ -539,7 +511,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
 
     const lastDidNonce = await queryNonce(this.identifier)
 
-    return generateDidAuthenticatedTx({
+    const outputTx = generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: this.oldAuthenticationKey.publicKey,
       alg: getSigningAlgorithmForVerificationKeyType(
@@ -550,5 +522,9 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       txCounter: increaseNonce(lastDidNonce),
       submitter,
     })
+
+    this.consumed = true
+
+    return outputTx
   }
 }

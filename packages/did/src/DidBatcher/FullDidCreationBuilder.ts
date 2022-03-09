@@ -142,19 +142,13 @@ export class FullDidCreationBuilder extends FullDidBuilder {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _atomic = true
   ): Promise<SubmittableExtrinsic> {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
-
-    this.consumed = true
+    this.checkBuilderConsumption()
 
     const encodedAddress = encodeVerificationKeyToAddress(
       this.authenticationKey
     )
 
-    return generateCreateTxFromCreationDetails(
+    const outputTx = generateCreateTxFromCreationDetails(
       {
         identifier: encodedAddress,
         authenticationKey: this.authenticationKey,
@@ -176,5 +170,9 @@ export class FullDidCreationBuilder extends FullDidBuilder {
       submitter,
       signer
     )
+
+    this.consumed = true
+
+    return outputTx
   }
 }

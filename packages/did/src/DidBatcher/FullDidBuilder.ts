@@ -60,6 +60,14 @@ export abstract class FullDidBuilder {
 
   protected consumed = false
 
+  protected checkBuilderConsumption(): void {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
+  }
+
   public constructor(api: ApiPromise) {
     this.apiObject = api
   }
@@ -75,11 +83,7 @@ export abstract class FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public addEncryptionKey(key: NewDidEncryptionKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // Check if a key with the same ID has already been added.
     if (this.newKeyAgreementKeys.has(newKeyId)) {
@@ -106,11 +110,7 @@ export abstract class FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public setAttestationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check if another attestation key was already marked for addition.
     if (this.newAssertionKey.action === 'update') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -135,11 +135,7 @@ export abstract class FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public setDelegationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check if another delegation key was already marked for addition.
     if (this.newDelegationKey.action === 'update') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -164,11 +160,7 @@ export abstract class FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public addServiceEndpoint(service: DidServiceEndpoint): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been used.'
-      )
-    }
+    this.checkBuilderConsumption()
     const { id, ...details } = service
     // Check if the service has already been added.
     if (this.newServiceEndpoints.has(id)) {
