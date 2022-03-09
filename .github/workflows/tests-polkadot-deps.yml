@@ -1,4 +1,4 @@
-name: Test with updated polkadot dependencies
+name: Compatible with latest dependencies
 
 on:
   schedule:

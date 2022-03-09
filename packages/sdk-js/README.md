@@ -2,6 +2,7 @@
 ](https://kilt.io)
 
 ![Lint and Test](https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg)
+![Compatible with latest dependencies](https://github.com/KILTprotocol/sdk-js/actions/workflows/tests-polkadot-deps.yml/badge.svg?event=schedule)
 
 Data sovereignty and interoperability
 
