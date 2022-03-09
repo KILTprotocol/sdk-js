@@ -533,20 +533,18 @@ describe('FullDidUpdateBuilder', () => {
   })
 
   // TODO: complete these tests once SDK has been refactored to work with generic api object
-  describe('Consuming', () => {
+  describe('Building', () => {
     let fullDid: FullDidDetails
     beforeAll(async () => {
       fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
         keystore,
-        '//test-consuming'
+        '//test-building'
       )
     })
-    describe('.consume()', () => {
+    describe('.build()', () => {
       it('throws if batch is empty', async () => {
         const builder = new FullDidUpdateBuilder(mockApi, fullDid)
-        await expect(
-          builder.consume(keystore, 'test-account')
-        ).rejects.toThrow()
+        await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
       })
       it.todo('properly consumes the builder')
     })

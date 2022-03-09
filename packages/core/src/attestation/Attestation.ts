@@ -149,7 +149,7 @@ export class Attestation implements IAttestation {
    * [STATIC] Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
    *
    * @param request - The base request for attestation.
-   * @param attesterDid - The attester's did, used to attest to the underlying claim.
+   * @param attesterDid - The attester's DID, used to attest to the underlying claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the `RequestForAttestation` and all other needed properties
@@ -158,7 +158,7 @@ export class Attestation implements IAttestation {
    */
   public static fromRequestAndDid(
     request: IRequestForAttestation,
-    attesterDid: IDidDetails['did']
+    attesterDid: IDidDetails['uri']
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,
@@ -263,7 +263,7 @@ export class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Prepares an extrinisc to revoke the attestation. Also available as a static method.
+   * [ASYNC] Prepares an extrinsic to revoke the attestation. Also available as a static method.
    *
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).

@@ -16,7 +16,7 @@ import type { IDelegationNode } from './Delegation'
 export interface IAttestation {
   claimHash: string
   cTypeHash: ICType['hash']
-  owner: IDidDetails['did']
+  owner: IDidDetails['uri']
   delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }

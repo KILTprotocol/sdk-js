@@ -36,10 +36,10 @@ export type ServiceEndpoints = Record<
   Omit<DidServiceEndpoint, 'id'>
 >
 
-export type DidKeySelectionHandler<T> = (keys: T[]) => Promise<T | null>
+export type DidKeySelectionCallback<T> = (keys: T[]) => Promise<T | null>
 
 export type DidConstructorDetails = {
-  did: IDidDetails['did']
+  uri: IDidDetails['uri']
   // Accepts a list of keys where the ID does not include the DID URI.
   keys: PublicKeys
   keyRelationships: MapKeysToRelationship

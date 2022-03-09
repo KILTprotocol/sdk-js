@@ -18,7 +18,7 @@ import type {
   ICType,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import * as CredentialUtils from '../credential/Credential.utils.js'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'

@@ -38,7 +38,7 @@ import { DidDetails } from './DidDetails.js'
 import {
   checkLightDidCreationDetails,
   decodeAndDeserializeAdditionalLightDidDetails,
-  DidMigrationHandler,
+  DidMigrationCallback,
   getEncodingForVerificationKeyType,
   getVerificationKeyTypeForEncoding,
   LightDidCreationDetails,
@@ -55,13 +55,13 @@ export class LightDidDetails extends DidDetails {
   private constructor(
     identifier: IDidIdentifier,
     {
-      did,
+      uri,
       keys,
       keyRelationships,
       serviceEndpoints = {},
     }: DidConstructorDetails
   ) {
-    super({ did, keys, keyRelationships, serviceEndpoints })
+    super({ uri, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
   }
@@ -107,9 +107,9 @@ export class LightDidDetails extends DidDetails {
       encodeAddress(authenticationKey.publicKey, 38)
     )
 
-    let did = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
+    let uri = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
     if (encodedDetails) {
-      did = did.concat(':', encodedDetails)
+      uri = uri.concat(':', encodedDetails)
     }
 
     // Authentication key always has the #authentication ID.
@@ -135,7 +135,7 @@ export class LightDidDetails extends DidDetails {
     )
 
     return new LightDidDetails(id.substring(2), {
-      did,
+      uri,
       keys,
       keyRelationships,
       serviceEndpoints: endpoints,
@@ -153,7 +153,7 @@ export class LightDidDetails extends DidDetails {
    * @returns The resulting [[LightDidDetails]].
    */
   public static fromUri(
-    uri: IDidDetails['did'],
+    uri: IDidDetails['uri'],
     failIfFragmentPresent = true
   ): LightDidDetails {
     const { identifier, version, encodedDetails, fragment, type } =
@@ -220,24 +220,26 @@ export class LightDidDetails extends DidDetails {
    *
    * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
    * @param signer The keystore signer to sign the operation.
-   * @param migrationHandler A user-provided closure to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
+   * @param migrationCallback A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
    *
-   * @returns The migrated [[FullDidDetails]] if the user-provided handler successfully writes the full DID on the chain. It throws an error otherwise.
+   * @returns The migrated [[FullDidDetails]] if the user-provided callback successfully writes the full DID on the chain. It throws an error otherwise.
    */
   public async migrate(
     submitterAddress: IIdentity['address'],
     signer: KeystoreSigner,
-    migrationHandler: DidMigrationHandler
+    migrationCallback: DidMigrationCallback
   ): Promise<FullDidDetails> {
     const { api } = await BlockchainApiConnection.getConnectionOrConnect()
     const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
       api,
       this
-    ).consume(signer, submitterAddress)
+    ).build(signer, submitterAddress)
 
-    await migrationHandler(creationTx)
+    await migrationCallback(creationTx)
 
-    const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(this.identifier, 'full')
+    )
     if (!fullDidDetails) {
       throw SDKErrors.ERROR_DID_ERROR(
         'Something went wrong during the migration.'

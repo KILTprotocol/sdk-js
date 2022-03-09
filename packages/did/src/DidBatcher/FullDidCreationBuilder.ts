@@ -24,6 +24,7 @@ import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
+import { getKiltDidFromIdentifier } from '../Did.utils.js'
 
 function encodeVerificationKeyToAddress({
   publicKey,
@@ -43,7 +44,7 @@ function encodeVerificationKeyToAddress({
   }
 }
 
-export type FullDidCreationHandler = (
+export type FullDidCreationCallback = (
   didCreationExtrinsic: SubmittableExtrinsic
 ) => Promise<void>
 
@@ -92,28 +93,30 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and delegates to the closure the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
-   * @param handler A closure to submit the extrinsic and return the created [[FullDidDetails]] instance.
+   * @param callback A callback to submit the extrinsic and return the created [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
-   * @returns The [[FullDidDetails]] as returned by the provided closure.
+   * @returns The [[FullDidDetails]] as returned by the provided callback.
    */
   /* istanbul ignore next */
-  public async consumeWithHandler(
+  public async buildAndSubmit(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
-    handler: FullDidCreationHandler,
+    callback: FullDidCreationCallback,
     atomic = true
   ): Promise<FullDidDetails> {
-    const extrinsic = await this.consume(signer, submitter, atomic)
-    await handler(extrinsic)
+    const extrinsic = await this.build(signer, submitter, atomic)
+    await callback(extrinsic)
     const encodedAddress = encodeVerificationKeyToAddress(
       this.authenticationKey
     )
-    const fetchedDidDetails = await FullDidDetails.fromChainInfo(encodedAddress)
+    const fetchedDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(encodedAddress, 'full')
+    )
     if (!fetchedDidDetails) {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Something went wrong during the creation.'
@@ -131,27 +134,21 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * @returns The [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    */
-  // TODO: Remove ignore when we can test the consume function
+  // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
-  public async consume(
+  public async build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _atomic = true
   ): Promise<SubmittableExtrinsic> {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
-
-    this.consumed = true
+    this.checkBuilderConsumption()
 
     const encodedAddress = encodeVerificationKeyToAddress(
       this.authenticationKey
     )
 
-    return generateCreateTxFromCreationDetails(
+    const outputTx = generateCreateTxFromCreationDetails(
       {
         identifier: encodedAddress,
         authenticationKey: this.authenticationKey,
@@ -173,5 +170,9 @@ export class FullDidCreationBuilder extends FullDidBuilder {
       submitter,
       signer
     )
+
+    this.consumed = true
+
+    return outputTx
   }
 }

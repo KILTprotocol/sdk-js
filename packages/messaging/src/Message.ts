@@ -9,7 +9,7 @@
  * KILT participants can communicate via a 1:1 messaging system.
  *
  * All messages are **encrypted** with the encryption keys of the involved identities.
- * Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
+ * Messages are encrypted using authenticated encryption: the two parties authenticate to each other, but the message authentication provides repudiation possibilities.
  *
  * The [[Message]] class exposes methods to construct and verify messages.
  *
@@ -36,7 +36,7 @@ import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import {
   DidDetails,
   DidResolver,
-  DidUtils,
+  Utils as DidUtils,
   EncryptionAlgorithms,
 } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
@@ -129,25 +129,25 @@ export class Message implements IMessage {
       resolver?: IDidResolver
     } = {}
   ): Promise<IMessage> {
-    const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
+    const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
       encrypted
 
-    const senderKeyDetails = await resolver.resolveKey(senderKeyId)
+    const senderKeyDetails = await resolver.resolveKey(senderKeyUri)
     if (!senderKeyDetails) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve sender encryption key ${senderKeyId}`
+        `Could not resolve sender encryption key ${senderKeyUri}`
       )
     }
-    const { fragment } = DidUtils.parseDidUri(receiverKeyId)
+    const { fragment } = DidUtils.parseDidUri(receiverKeyUri)
     if (!fragment) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `No fragment for the receiver key ID ${receiverKeyId}`
+        `No fragment for the receiver key ID ${receiverKeyUri}`
       )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
     if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve receiver encryption key ${receiverKeyId}`
+        `Could not resolve receiver encryption key ${receiverKeyUri}`
       )
     }
     const receiverKeyAlgType =
@@ -251,7 +251,7 @@ export class Message implements IMessage {
    * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
    * @param senderDetails The sender's DID to use to fetch the right encryption key.
    * @param keystore The keystore used to perform the cryptographic operations.
-   * @param receiverKeyId The full key ID of the receiver.
+   * @param receiverKeyUri The key URI of the receiver.
    * @param encryptionOptions Options to perform the encryption operation.
    * @param encryptionOptions.resolver The DID resolver to use.
    *
@@ -261,21 +261,21 @@ export class Message implements IMessage {
     senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     keystore: Pick<NaclBoxCapable, 'encrypt'>,
-    receiverKeyId: DidPublicKey['id'],
+    receiverKeyUri: DidPublicKey['uri'],
     {
       resolver = DidResolver,
     }: {
       resolver?: IDidResolver
     } = {}
   ): Promise<IEncryptedMessage> {
-    const receiverKey = await resolver.resolveKey(receiverKeyId)
+    const receiverKey = await resolver.resolveKey(receiverKeyUri)
     if (!receiverKey) {
-      throw SDKErrors.ERROR_DID_ERROR(`Cannot resolve key ${receiverKeyId}`)
+      throw SDKErrors.ERROR_DID_ERROR(`Cannot resolve key ${receiverKeyUri}`)
     }
     if (this.receiver !== receiverKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
     }
-    if (this.sender !== senderDetails.did) {
+    if (this.sender !== senderDetails.uri) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
     }
     const senderKey = senderDetails.getKey(senderKeyId)
@@ -319,8 +319,8 @@ export class Message implements IMessage {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      senderKeyId: senderDetails.assembleKeyId(senderKey.id),
-      receiverKeyId: receiverKey.id,
+      senderKeyUri: senderDetails.assembleKeyUri(senderKey.id),
+      receiverKeyUri: receiverKey.uri,
     }
   }
 

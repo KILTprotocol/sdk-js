@@ -94,7 +94,7 @@ export async function createLocalDemoFullDidFromSeed(
   } = {}
 ): Promise<FullDidDetails> {
   const identifier = encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 256), 38)
-  const did = getKiltDidFromIdentifier(identifier, 'full')
+  const uri = getKiltDidFromIdentifier(identifier, 'full')
 
   const generateKeypairForDid = async (
     derivation: string,
@@ -117,7 +117,7 @@ export async function createLocalDemoFullDidFromSeed(
   const authKey = await generateKeypairForDid('auth', signingKeyType)
 
   const fullDidCreationDetails: DidConstructorDetails = {
-    did,
+    uri,
     keyRelationships: {
       authentication: new Set([authKey.id]),
     },
@@ -170,7 +170,7 @@ export async function createLocalDemoFullDidFromLightDid(
   }
 
   const fullDidCreationDetails: DidConstructorDetails = {
-    did: getKiltDidFromIdentifier(identifier, 'full'),
+    uri: getKiltDidFromIdentifier(identifier, 'full'),
     keyRelationships: {
       authentication: new Set([authKey.id]),
       keyAgreement: encKey ? new Set([encKey.id]) : new Set([]),

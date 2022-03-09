@@ -82,7 +82,7 @@ describe('DidBatchBuilder', () => {
     it('fails if the DID does not any key required to sign the batch', async () => {
       // Full DID with only an authentication key.
       const newFullDid = new FullDidDetails({
-        did: fullDid.did,
+        uri: fullDid.uri,
         identifier: fullDid.identifier,
         keys: { [fullDid.authenticationKey.id]: fullDid.authenticationKey },
         keyRelationships: {
@@ -131,16 +131,16 @@ describe('DidBatchBuilder', () => {
   })
 
   // TODO: complete these tests once SDK has been refactored to work with generic api object
-  describe('.consume()', () => {
+  describe('.build()', () => {
     it('throws if batch is empty', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      await expect(builder.consume(keystore, 'test-account')).rejects.toThrow()
+      await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
     })
-    it.todo('successfully consume builder with only 1 extrinsic')
-    it.todo('successfully consume builder with 1 extrinsic per required key')
-    it.todo('successfully consume builder with 2 extrinsics per required key')
+    it.todo('successfully create a batch with only 1 extrinsic')
+    it.todo('successfully create a batch with 1 extrinsic per required key')
+    it.todo('successfully create a batch with 2 extrinsics per required key')
     it.todo(
-      'successfully consume builder with 1 extrinsic per required key, repeated two times'
+      'successfully create a batch with 1 extrinsic per required key, repeated two times'
     )
   })
 })

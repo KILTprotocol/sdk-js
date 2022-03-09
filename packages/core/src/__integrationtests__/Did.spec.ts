@@ -15,7 +15,7 @@ import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
   DemoKeystore,
-  DidChain,
+  Chain as DidChain,
   SigningAlgorithms,
   LightDidDetails,
   FullDidDetails,
@@ -29,7 +29,7 @@ import {
   FullDidUpdateBuilder,
   Web3Names,
   DidBatchBuilder,
-  DidUtils,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
@@ -53,8 +53,8 @@ import {
   initializeApi,
   submitExtrinsicWithResign,
   addressFromRandom,
-  getDefaultMigrationHandler,
-  getDefaultConsumeHandler,
+  getDefaultMigrationCallback,
+  getDefaultSubmitCallback,
   createFullDidFromSeed,
 } from './utils'
 import { DelegationNode } from '../delegation'
@@ -124,7 +124,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     details = (await FullDidDetails.fromChainInfo(
-      newDetails.identifier
+      DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
     )) as FullDidDetails
 
     // details and newDetails have the same identifier as the former is a resolved version of the latter.
@@ -266,7 +266,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDetails = (await FullDidDetails.fromChainInfo(
-    newDetails.identifier
+    DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
   )) as FullDidDetails
 
   const newKeypair = await keystore.generateKeypair({
@@ -295,7 +295,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // Authentication key changed, so details must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   fullDetails = (await FullDidDetails.fromChainInfo(
-    fullDetails.identifier
+    DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
   )) as FullDidDetails
 
   // Add a new service endpoint
@@ -387,7 +387,7 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationHandler(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount)
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light
@@ -413,10 +413,10 @@ describe('DID migration', () => {
     ).resolves.not.toBeNull()
 
     const { metadata } = (await resolveDoc(
-      lightDidDetails.did
+      lightDidDetails.uri
     )) as DidResolvedDetails
 
-    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBeFalsy()
   })
 
@@ -436,7 +436,7 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationHandler(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount)
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light
@@ -462,10 +462,10 @@ describe('DID migration', () => {
     ).resolves.not.toBeNull()
 
     const { metadata } = (await resolveDoc(
-      lightDidDetails.did
+      lightDidDetails.uri
     )) as DidResolvedDetails
 
-    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBeFalsy()
   })
 
@@ -503,7 +503,7 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationHandler(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount)
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light
@@ -529,10 +529,10 @@ describe('DID migration', () => {
     ).resolves.not.toBeNull()
 
     const { metadata } = (await resolveDoc(
-      lightDidDetails.did
+      lightDidDetails.uri
     )) as DidResolvedDetails
 
-    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.did)
+    expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBeFalsy()
 
     // Remove and claim the deposit back
@@ -586,7 +586,7 @@ describe('DID authorization', () => {
     )
       .setAttestationKey(newKey)
       .setDelegationKey(newKey)
-      .consumeWithHandler(keystore, paymentAccount.address, async (tx) =>
+      .buildAndSubmit(keystore, paymentAccount.address, async (tx) =>
         submitExtrinsicWithResign(tx, paymentAccount)
       )
   }, 60_000)
@@ -703,12 +703,12 @@ describe('DID management batching', () => {
 
       await expect(
         builder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
       const fullDid = await FullDidDetails.fromChainInfo(
-        lightDidDetails.identifier
+        DidUtils.getKiltDidFromIdentifier(lightDidDetails.identifier, 'full')
       )
 
       expect(fullDid).not.toBeNull()
@@ -786,11 +786,13 @@ describe('DID management batching', () => {
 
       await expect(
         builder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
-      const fullDid = await FullDidDetails.fromChainInfo(encodedEcdsaAddress)
+      const fullDid = await FullDidDetails.fromChainInfo(
+        DidUtils.getKiltDidFromIdentifier(encodedEcdsaAddress, 'full')
+      )
 
       expect(fullDid).not.toBeNull()
 
@@ -848,10 +850,10 @@ describe('DID management batching', () => {
           urls: ['url-2'],
         })
 
-      const initialFullDid = await createBuilder.consumeWithHandler(
+      const initialFullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
-        getDefaultConsumeHandler(paymentAccount)
+        getDefaultSubmitCallback(paymentAccount)
       )
 
       const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
@@ -862,12 +864,12 @@ describe('DID management batching', () => {
 
       await expect(
         updateBuilder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
       const finalFullDid = await FullDidDetails.fromChainInfo(
-        initialFullDid.identifier
+        initialFullDid.uri
       ).then((did) => did as FullDidDetails)
 
       expect(finalFullDid).not.toBeNull()
@@ -897,10 +899,10 @@ describe('DID management batching', () => {
         type: VerificationKeyType.Sr25519,
       })
 
-      const initialFullDid = await createBuilder.consumeWithHandler(
+      const initialFullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
-        getDefaultConsumeHandler(paymentAccount)
+        getDefaultSubmitCallback(paymentAccount)
       )
 
       const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
@@ -922,12 +924,12 @@ describe('DID management batching', () => {
 
       await expect(
         updateBuilder
-          .consume(keystore, paymentAccount.address)
+          .build(keystore, paymentAccount.address)
           .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
       ).resolves.not.toThrow()
 
       const finalFullDid = await FullDidDetails.fromChainInfo(
-        initialFullDid.identifier
+        initialFullDid.uri
       ).then((did) => did as FullDidDetails)
 
       expect(finalFullDid).not.toBeNull()
@@ -958,7 +960,7 @@ describe('DID management batching', () => {
         urls: ['url-1'],
       })
       // Create the full DID with a service endpoint
-      const fullDid = await createBuilder.consumeWithHandler(
+      const fullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
         async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
@@ -990,7 +992,7 @@ describe('DID management batching', () => {
 
       // Now, consuming the builder will result in the second operation to fail but the batch to succeed, so we can test the atomic flag.
       await expect(
-        updateBuilder.consumeWithHandler(
+        updateBuilder.buildAndSubmit(
           keystore,
           paymentAccount.address,
           async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
@@ -999,9 +1001,7 @@ describe('DID management batching', () => {
         )
       ).resolves.not.toThrow()
 
-      const updatedFullDid = await FullDidDetails.fromChainInfo(
-        fullDid.identifier
-      )
+      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
       // .setAttestationKey() extrinsic went through in the batch
       expect(updatedFullDid!.attestationKey).toBeDefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.
@@ -1027,7 +1027,7 @@ describe('DID management batching', () => {
         urls: ['url-1'],
       })
       // Create the full DID with a service endpoint
-      const fullDid = await createBuilder.consumeWithHandler(
+      const fullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
         async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
@@ -1059,7 +1059,7 @@ describe('DID management batching', () => {
 
       // Now, consuming the builder will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
       await expect(
-        updateBuilder.consumeWithHandler(
+        updateBuilder.buildAndSubmit(
           keystore,
           paymentAccount.address,
           async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
@@ -1071,9 +1071,7 @@ describe('DID management batching', () => {
         name: 'ServiceAlreadyPresent',
       })
 
-      const updatedFullDid = await FullDidDetails.fromChainInfo(
-        fullDid.identifier
-      )
+      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
       // .setAttestationKey() extrinsic went through but it was then reverted
       expect(updatedFullDid!.attestationKey).toBeUndefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.
@@ -1104,12 +1102,12 @@ describe('DID extrinsics batching', () => {
     })
     const ctypeCreationTx = await ctype.getStoreTx()
     const rootNode = DelegationNode.newRoot({
-      account: fullDid.did,
+      account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
     const delegationCreationTx = await rootNode.getStoreTx()
-    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.did)
+    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([
         ctypeCreationTx,
@@ -1117,7 +1115,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .consume(keystore, paymentAccount.address, { atomic: false })
+      .build(keystore, paymentAccount.address, { atomic: false })
 
     // The entire submission promise is resolves and does not throw
     await expect(
@@ -1137,12 +1135,12 @@ describe('DID extrinsics batching', () => {
     })
     const ctypeCreationTx = await ctype.getStoreTx()
     const rootNode = DelegationNode.newRoot({
-      account: fullDid.did,
+      account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
     const delegationCreationTx = await rootNode.getStoreTx()
-    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.did)
+    const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([
         ctypeCreationTx,
@@ -1150,7 +1148,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .consume(keystore, paymentAccount.address, { atomic: true })
+      .build(keystore, paymentAccount.address, { atomic: true })
 
     // The entire submission promise is rejected and throws.
     await expect(
@@ -1177,7 +1175,7 @@ describe('DID extrinsics batching', () => {
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([web3Name1ReleaseExt, web3Name2ClaimExt])
-      .consume(keystore, paymentAccount.address)
+      .build(keystore, paymentAccount.address)
     await expect(
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
@@ -1205,7 +1203,7 @@ describe('DID extrinsics batching', () => {
     const ctype1Creation = await ctype1.getStoreTx()
     // Delegation key
     const rootNode = DelegationNode.newRoot({
-      account: fullDid.did,
+      account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype1.hash,
     })
@@ -1222,7 +1220,7 @@ describe('DID extrinsics batching', () => {
     })
     const ctype2Creation = await ctype2.getStoreTx()
     // Delegation key
-    const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.did)
+    const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)
 
     const builder = new DidBatchBuilder(api, fullDid)
       .addSingleExtrinsic(web3NameReleaseExt)
@@ -1232,7 +1230,7 @@ describe('DID extrinsics batching', () => {
       .addSingleExtrinsic(ctype2Creation)
       .addSingleExtrinsic(delegationHierarchyRemoval)
 
-    const batchedExtrinsics = await builder.consume(
+    const batchedExtrinsics = await builder.build(
       keystore,
       paymentAccount.address
     )
@@ -1255,11 +1253,6 @@ describe('DID extrinsics batching', () => {
     await expect(
       DelegationNode.query(rootNode.id).then((node) => node?.revoked)
     ).resolves.toBeTruthy()
-
-    // Cannot consume the builder again
-    await expect(
-      builder.consume(keystore, paymentAccount.address)
-    ).rejects.toThrow()
   })
 })
 

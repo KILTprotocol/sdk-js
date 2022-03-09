@@ -60,6 +60,14 @@ export abstract class FullDidBuilder {
 
   protected consumed = false
 
+  protected checkBuilderConsumption(): void {
+    if (this.consumed) {
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
+  }
+
   public constructor(api: ApiPromise) {
     this.apiObject = api
   }
@@ -68,18 +76,14 @@ export abstract class FullDidBuilder {
    * Mark a new encryption key to be added to the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a key with the same ID marked for addition.
    *
    * @param key The new [[NewDidEncryptionKey]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public addEncryptionKey(key: NewDidEncryptionKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // Check if a key with the same ID has already been added.
     if (this.newKeyAgreementKeys.has(newKeyId)) {
@@ -99,18 +103,14 @@ export abstract class FullDidBuilder {
    * Mark a new attestation key to replace the old one, if present, in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`) (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new attestation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public setAttestationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check if another attestation key was already marked for addition.
     if (this.newAssertionKey.action === 'update') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -128,18 +128,14 @@ export abstract class FullDidBuilder {
    * Mark a new delegation key to replace the old one, if present, in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new delegation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public setDelegationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check if another delegation key was already marked for addition.
     if (this.newDelegationKey.action === 'update') {
       throw SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -157,18 +153,14 @@ export abstract class FullDidBuilder {
    * Mark a new service endpoint to be added to the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a service with the same ID marked for addition.
    *
    * @param service The new [[DidServiceEndpoint]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public addServiceEndpoint(service: DidServiceEndpoint): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     const { id, ...details } = service
     // Check if the service has already been added.
     if (this.newServiceEndpoints.has(id)) {
@@ -185,7 +177,7 @@ export abstract class FullDidBuilder {
   }
 
   /* istanbul ignore next */
-  public abstract consume(
+  public abstract build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     atomic: boolean

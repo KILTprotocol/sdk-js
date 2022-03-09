@@ -35,7 +35,7 @@ export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
 
 export interface ICType {
   hash: string
-  owner: IDidDetails['did'] | null
+  owner: IDidDetails['uri'] | null
   schema: ICTypeSchema
 }
 

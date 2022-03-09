@@ -18,7 +18,7 @@ import type { Option, Bytes, Struct, u128 } from '@polkadot/types'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN } from '@polkadot/util'
 
-import { DidUtils } from '../index.js'
+import { Utils as DidUtils } from '../index.js'
 
 /**
  * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.
@@ -114,7 +114,7 @@ export async function queryDidIdentifierForWeb3Name(
  * @returns The registered web3name for this DID if any.
  */
 export async function queryWeb3NameForDid(
-  did: IDidDetails['did']
+  did: IDidDetails['uri']
 ): Promise<Web3Name | null> {
   const details = DidUtils.parseDidUri(did)
   return queryWeb3NameForDidIdentifier(details.identifier)
@@ -128,7 +128,7 @@ export async function queryWeb3NameForDid(
  */
 export async function queryDidForWeb3Name(
   name: Web3Name
-): Promise<IDidDetails['did'] | null> {
+): Promise<IDidDetails['uri'] | null> {
   const identifier = await queryDidIdentifierForWeb3Name(name)
   if (identifier === null) {
     return null
