@@ -55,6 +55,7 @@ import {
   getVerificationKeyTypeForSigningAlgorithm,
 } from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
+import { ApiPromise } from '@polkadot/api'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
@@ -355,6 +356,55 @@ export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   return { [type]: publicKey }
 }
 
+function checkServiceEndpointInput(
+  api: ApiPromise,
+  endpoint: DidServiceEndpoint
+): void {
+  const [
+    maxServiceIdLength,
+    maxNumberOfTypesPerService,
+    maxNumberOfUrlsPerService,
+    maxServiceTypeLength,
+    maxServiceUrlLength,
+  ] = [
+    (api.consts.did.maxServiceIdLength as u32).toNumber(),
+    (api.consts.did.maxNumberOfTypesPerService as u32).toNumber(),
+    (api.consts.did.maxNumberOfUrlsPerService as u32).toNumber(),
+    (api.consts.did.maxServiceTypeLength as u32).toNumber(),
+    (api.consts.did.maxServiceUrlLength as u32).toNumber(),
+  ]
+
+  if (endpoint.id.length > maxServiceIdLength) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID ${endpoint.id} has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+    )
+  }
+  if (endpoint.types.length > maxNumberOfTypesPerService) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID ${endpoint.id} has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
+    )
+  }
+  if (endpoint.urls.length > maxNumberOfUrlsPerService) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID ${endpoint.id} has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
+    )
+  }
+  endpoint.types.forEach((type) => {
+    if (type.length > maxServiceTypeLength) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `The service with ID ${endpoint.id} has the type ${type} that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
+      )
+    }
+  })
+  endpoint.urls.forEach((url) => {
+    if (url.length > maxServiceUrlLength) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `The service with ID ${endpoint.id} has the URL ${url} that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
+      )
+    }
+  })
+}
+
 export async function generateCreateTxFromCreationDetails(
   details: FullDidCreationDetails,
   submitterAddress: IIdentity['address'],
@@ -375,12 +425,36 @@ export async function generateCreateTxFromCreationDetails(
       formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
   )
 
+  const maxKeyAgreementKeys = (
+    api.consts.did.maxNewKeyAgreementKeys as u32
+  ).toNumber()
+
+  if (newKeyAgreementKeys.length > maxKeyAgreementKeys) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
+    )
+  }
+
   const newAssertionKey = assertionKey
     ? formatPublicKey(assertionKey)
     : undefined
   const newDelegationKey = delegationKey
     ? formatPublicKey(delegationKey)
     : undefined
+
+  const maxNumberOfServicesPerDid = (
+    api.consts.did.maxNumberOfServicesPerDid as u32
+  ).toNumber()
+
+  if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID.`
+    )
+  }
+
+  serviceEndpoints.forEach((service) => {
+    checkServiceEndpointInput(api, service)
+  })
 
   const newServiceDetails = serviceEndpoints.map((service) => {
     const { id, urls } = service
@@ -547,6 +621,7 @@ export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  checkServiceEndpointInput(api, endpoint)
 
   return api.tx.did.addServiceEndpoint({
     serviceTypes: endpoint.types,
