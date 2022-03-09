@@ -635,6 +635,15 @@ export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const maxServiceIdLength = (
+    api.consts.did.maxServiceIdLength as u32
+  ).toNumber()
+  if (endpointId.length > maxServiceIdLength) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service ID ${endpointId} has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+    )
+  }
+
   return api.tx.did.removeServiceEndpoint(endpointId)
 }
 
