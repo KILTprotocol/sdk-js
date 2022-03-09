@@ -12,9 +12,9 @@ import {
   IDidDetails,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DecoderUtils } from '@kiltprotocol/utils'
+import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import type { Option, Bytes, Struct, u128 } from '@polkadot/types'
+import type { Option, Bytes, Struct, u128, u32 } from '@polkadot/types'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN } from '@polkadot/util'
 
@@ -44,6 +44,20 @@ export async function getClaimTx(
   name: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const [minLength, maxLength] = [
+    (blockchain.api.consts.web3Names.minNameLength as u32).toNumber(),
+    (blockchain.api.consts.web3Names.maxNameLength as u32).toNumber(),
+  ]
+  if (name.length < minLength) {
+    throw SDKErrors.ERROR_WEB3_NAME_ERROR(
+      `The provided name ${name} is shorter than the minimum number of characters allowed, which is ${minLength}`
+    )
+  }
+  if (name.length > maxLength) {
+    throw SDKErrors.ERROR_WEB3_NAME_ERROR(
+      `The provided name ${name} is longer than the maximum number of characters allowed, which is ${maxLength}`
+    )
+  }
   return blockchain.api.tx.web3Names.claim(name)
 }
 
