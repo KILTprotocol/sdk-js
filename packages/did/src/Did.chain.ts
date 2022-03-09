@@ -49,13 +49,13 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
+import { ApiPromise } from '@polkadot/api'
 import { DidDetails } from './DidDetails/index.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
 } from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
-import { ApiPromise } from '@polkadot/api'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
@@ -376,30 +376,30 @@ function checkServiceEndpointInput(
 
   if (endpoint.id.length > maxServiceIdLength) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `The service with ID ${endpoint.id} has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+      `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
     )
   }
   if (endpoint.types.length > maxNumberOfTypesPerService) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `The service with ID ${endpoint.id} has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
+      `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
     )
   }
   if (endpoint.urls.length > maxNumberOfUrlsPerService) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `The service with ID ${endpoint.id} has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
+      `The service with ID "${endpoint.id}" has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
     )
   }
   endpoint.types.forEach((type) => {
     if (type.length > maxServiceTypeLength) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `The service with ID ${endpoint.id} has the type ${type} that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
+        `The service with ID "${endpoint.id}" has the type "${type}" that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
       )
     }
   })
   endpoint.urls.forEach((url) => {
     if (url.length > maxServiceUrlLength) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `The service with ID ${endpoint.id} has the URL ${url} that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
+        `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
       )
     }
   })
@@ -640,7 +640,7 @@ export async function getRemoveEndpointExtrinsic(
   ).toNumber()
   if (endpointId.length > maxServiceIdLength) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `The service ID ${endpointId} has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+      `The service ID "${endpointId}" has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
     )
   }
 
