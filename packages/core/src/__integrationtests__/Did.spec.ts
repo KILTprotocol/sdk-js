@@ -38,6 +38,7 @@ import {
   EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
+  NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
   Permission,
@@ -1253,6 +1254,409 @@ describe('DID extrinsics batching', () => {
     await expect(
       DelegationNode.query(rootNode.id).then((node) => node?.revoked)
     ).resolves.toBeTruthy()
+  })
+})
+
+describe.only('Runtime constraints', () => {
+  let testAuthKey: NewDidVerificationKey
+  beforeAll(async () => {
+    testAuthKey = await keystore
+      .generateKeypair({ alg: SigningAlgorithms.Ed25519 })
+      .then(({ publicKey }) => {
+        return {
+          publicKey,
+          type: VerificationKeyType.Ed25519,
+        }
+      })
+  })
+  describe('DID creation', () => {
+    it('should not be possible to create a DID with too many encryption keys', async () => {
+      // Maximum is 10
+      const newKeyAgreementKeys = Array(10).map(
+        (_, index): NewDidEncryptionKey => {
+          return {
+            publicKey: Uint8Array.from(new Array(32).fill(index)),
+            type: EncryptionKeyType.X25519,
+          }
+        }
+      )
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            keyAgreementKeys: newKeyAgreementKeys,
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).resolves.not.toThrow()
+      // One more than the maximum
+      newKeyAgreementKeys.push({
+        publicKey: Uint8Array.from(new Array(32).fill(100)),
+        type: EncryptionKeyType.X25519,
+      })
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            keyAgreementKeys: newKeyAgreementKeys,
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The number of key agreement keys in the creation operation is greater than the maximum allowed, which is 10."'
+      )
+    }, 30_000)
+
+    it('should not be possible to create a DID with too many service endpoints', async () => {
+      // Maximum is 25
+      const newServiceEndpoints = Array(25).map(
+        (_, index): DidServiceEndpoint => {
+          return {
+            id: `service-${index}`,
+            types: [`type-${index}`],
+            urls: [`url-${index}`],
+          }
+        }
+      )
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: newServiceEndpoints,
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).resolves.not.toThrow()
+      // One more than the maximum
+      newServiceEndpoints.push({
+        id: 'service-100',
+        types: ['type-100'],
+        urls: ['url-100'],
+      })
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: newServiceEndpoints,
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"Cannot store more than 25 service endpoints per DID."'
+      )
+    }, 30_000)
+
+    it('should not be possible to create a DID with a service endpoint that is too long', async () => {
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [
+              {
+                // Maximum is 50
+                id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                types: ['type-a'],
+                urls: ['url-a'],
+              },
+            ],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).resolves.not.toThrow()
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [
+              {
+                // One more than the maximum
+                id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                types: ['type-a'],
+                urls: ['url-a'],
+              },
+            ],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" has an ID that is too long. Max number of characters allowed for a service ID is 50."'
+      )
+    }, 30_000)
+
+    it('should not be possible to create a DID with a service endpoint that has too many types', async () => {
+      const newEndpoint: DidServiceEndpoint = {
+        id: 'id-1',
+        // Maximum is 1
+        types: Array(1).map((_, index): string => `type-${index}`),
+        urls: ['url-1'],
+      }
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [newEndpoint],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).resolves.not.toThrow()
+      // One more than the maximum
+      newEndpoint.types.push('new-type')
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [newEndpoint],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has too many types. Max number of types allowed per service is 1."'
+      )
+    }, 30_000)
+
+    it('should not be possible to create a DID with a service endpoint that has too many URLs', async () => {
+      const newEndpoint: DidServiceEndpoint = {
+        id: 'id-1',
+        // Maximum is 1
+        types: ['type-1'],
+        urls: Array(1).map((_, index): string => `url-${index}`),
+      }
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [newEndpoint],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).resolves.not.toThrow()
+      // One more than the maximum
+      newEndpoint.urls.push('new-url')
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [newEndpoint],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has too many URLs. Max number of URLs allowed per service is 1."'
+      )
+    }, 30_000)
+
+    it('should not be possible to create a DID with a service endpoint that has a type that is too long', async () => {
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [
+              {
+                id: 'id-1',
+                // Maximum is 50
+                types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+                urls: ['url-1'],
+              },
+            ],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).resolves.not.toThrow()
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [
+              {
+                id: 'id-1',
+                // One more than the maximum
+                types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+                urls: ['url-1'],
+              },
+            ],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service type is 50."'
+      )
+    }, 30_000)
+
+    it('should not be possible to create a DID with a service endpoint that has a URL that is too long', async () => {
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [
+              {
+                id: 'id-1',
+                types: ['type-1'],
+                // Maximum is 100
+                urls: [
+                  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                ],
+              },
+            ],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).resolves.not.toThrow()
+      await expect(
+        DidChain.generateCreateTxFromCreationDetails(
+          {
+            authenticationKey: testAuthKey,
+            identifier: encodeAddress(testAuthKey.publicKey),
+            serviceEndpoints: [
+              {
+                id: 'id-1',
+                types: ['type-1'],
+                // One more than the maximum
+                urls: [
+                  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                ],
+              },
+            ],
+          },
+          paymentAccount.address,
+          keystore
+        )
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 100."'
+      )
+    }, 30_000)
+  })
+
+  describe('Service endpoint addition', () => {
+    it('should not be possible to add a service endpoint that is too long', async () => {
+      await expect(
+        DidChain.getAddEndpointExtrinsic({
+          // Maximum is 50
+          id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          types: ['type-a'],
+          urls: ['url-a'],
+        })
+      ).resolves.not.toThrow()
+      await expect(
+        DidChain.getAddEndpointExtrinsic({
+          // One more than maximum
+          id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          types: ['type-a'],
+          urls: ['url-a'],
+        })
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" has an ID that is too long. Max number of characters allowed for a service ID is 50."'
+      )
+    }, 30_000)
+
+    it('should not be possible to add a service endpoint that has too many types', async () => {
+      const newEndpoint: DidServiceEndpoint = {
+        id: 'id-1',
+        // Maximum is 1
+        types: Array(1).map((_, index): string => `type-${index}`),
+        urls: ['url-1'],
+      }
+      await expect(
+        DidChain.getAddEndpointExtrinsic(newEndpoint)
+      ).resolves.not.toThrow()
+      // One more than the maximum
+      newEndpoint.types.push('new-type')
+      await expect(
+        DidChain.getAddEndpointExtrinsic(newEndpoint)
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has too many types. Max number of types allowed per service is 1."'
+      )
+    }, 30_000)
+
+    it('should not be possible to add a service endpoint that has too many URLs', async () => {
+      const newEndpoint: DidServiceEndpoint = {
+        id: 'id-1',
+        // Maximum is 1
+        types: ['type-1'],
+        urls: Array(1).map((_, index): string => `url-${index}`),
+      }
+      await expect(
+        DidChain.getAddEndpointExtrinsic(newEndpoint)
+      ).resolves.not.toThrow()
+      // One more than the maximum
+      newEndpoint.urls.push('new-url')
+      await expect(
+        DidChain.getAddEndpointExtrinsic(newEndpoint)
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has too many URLs. Max number of URLs allowed per service is 1."'
+      )
+    }, 30_000)
+
+    it('should not be possible to add a service endpoint that has a type that is too long', async () => {
+      await expect(
+        DidChain.getAddEndpointExtrinsic({
+          id: 'id-1',
+          // Maximum is 50
+          types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+          urls: ['url-1'],
+        })
+      ).resolves.not.toThrow()
+      await expect(
+        DidChain.getAddEndpointExtrinsic({
+          id: 'id-1',
+          // One more than the maximum
+          types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+          urls: ['url-1'],
+        })
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service type is 50."'
+      )
+    }, 30_000)
+
+    it('should not be possible to add a service endpoint that has a URL that is too long', async () => {
+      await expect(
+        DidChain.getAddEndpointExtrinsic({
+          id: 'id-1',
+          types: ['type-1'],
+          // Maximum is 100
+          urls: [
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          ],
+        })
+      ).resolves.not.toThrow()
+      await expect(
+        DidChain.getAddEndpointExtrinsic({
+          id: 'id-1',
+          types: ['type-1'],
+          // One more than the maximum
+          urls: [
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          ],
+        })
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 100."'
+      )
+    }, 30_000)
   })
 })
 
