@@ -1257,7 +1257,7 @@ describe('DID extrinsics batching', () => {
   })
 })
 
-describe.only('Runtime constraints', () => {
+describe('Runtime constraints', () => {
   let testAuthKey: NewDidVerificationKey
   beforeAll(async () => {
     testAuthKey = await keystore
