@@ -420,20 +420,20 @@ export async function generateCreateTxFromCreationDetails(
     serviceEndpoints = [],
   } = details
 
-  const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
-    ({ publicKey }) =>
-      formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
-  )
-
   const maxKeyAgreementKeys = (
     api.consts.did.maxNewKeyAgreementKeys as u32
   ).toNumber()
 
-  if (newKeyAgreementKeys.length > maxKeyAgreementKeys) {
+  if (keyAgreementKeys.length > maxKeyAgreementKeys) {
     throw SDKErrors.ERROR_DID_ERROR(
       `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
     )
   }
+
+  const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
+    ({ publicKey }) =>
+      formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
+  )
 
   const newAssertionKey = assertionKey
     ? formatPublicKey(assertionKey)
