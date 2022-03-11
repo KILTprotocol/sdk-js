@@ -405,6 +405,29 @@ function checkServiceEndpointInput(
   })
 }
 
+/**
+ * Create a DID creation operation which includes the provided [[FullDidCreationDetails]].
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that contains the information provided.
+ *
+ * @param details The creation details.
+ * @param details.identifier The identifier of the new DID.
+ * @param details.authenticationKey The authentication key of the new DID.
+ * @param details.keyAgreementKeys The optional key agreement keys of the new DID.
+ * A DID creation operation can contain at most 10 new key agreement keys.
+ * @param details.assertionKey The optional attestation key of the new DID.
+ * @param details.delegationKey The optional delegation key of the new DID.
+ * @param details.serviceEndpoints The optional service endpoints of the new DID.
+ * A DID creation operation can contain at most 25 new service endpoints.
+ * Additionally, each service endpoint must respect the following conditions:
+ *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ * @param submitterAddress The KILT address authorised to submit the creation operation.
+ * @param signer The keystore signer.
+ *
+ * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ */
 export async function generateCreateTxFromCreationDetails(
   details: FullDidCreationDetails,
   submitterAddress: IIdentity['address'],
@@ -617,6 +640,16 @@ export async function getAddKeyExtrinsic(
   )
 }
 
+/**
+ * Generate an extrinsic to add the provided [[DidServiceEndpoint]] to the authorising DID.
+ *
+ * @param endpoint The new service endpoint to include in the extrinsic.
+ * The service endpoint must respect the following conditions:
+ *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
@@ -629,8 +662,13 @@ export async function getAddEndpointExtrinsic(
   })
 }
 
-// The endpointId parameter is the service endpoint ID without the DID prefix.
-// So for a endpoint of the form did:kilt:<identifier>#<endpoint_id>, only <endpoint_id> must be passed as parameter here.
+/**
+ * Generate an extrinsic to remove the service endpoint with the provided ID from to the state of the authorising DID.
+ *
+ * @param endpointId The ID of the service endpoint to include in the extrinsic.
+ * The ID must be at most 50 ASCII characters long.
+ * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
 ): Promise<Extrinsic> {
