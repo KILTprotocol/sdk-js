@@ -73,7 +73,7 @@ beforeAll(async () => {
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DidChain.queryDepositAmount()
   expect(depositAmount.toString()).toStrictEqual(
-    new BN(2071900000000000).toString()
+    new BN(2007900000000000).toString()
   )
 })
 
@@ -1547,7 +1547,7 @@ describe('Runtime constraints', () => {
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 100."'
+        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."'
       )
     }, 30_000)
   })
@@ -1654,7 +1654,7 @@ describe('Runtime constraints', () => {
           ],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 100."'
+        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."'
       )
     }, 30_000)
   })

@@ -50,7 +50,7 @@ beforeAll(async () => {
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await Attestation.queryDepositAmount()
   expect(depositAmount.toString()).toStrictEqual(
-    new BN(134900000000000).toString()
+    new BN(120900000000000).toString()
   )
 })
 
