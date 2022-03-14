@@ -19,7 +19,7 @@ import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import { Attestation } from './Attestation.js'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
@@ -32,7 +32,7 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
  * @param attestation The attestation to write on the blockchain.
  * @returns The [[SubmittableExtrinsic]] for the `add` call.
  */
-export async function store(
+export async function getStoreTx(
   attestation: IAttestation
 ): Promise<SubmittableExtrinsic> {
   const { claimHash, cTypeHash, delegationId } = attestation
@@ -112,7 +112,7 @@ export async function query(claimHash: string): Promise<Attestation | null> {
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
  * @returns The [[SubmittableExtrinsic]] for the `revoke` call.
  */
-export async function revoke(
+export async function getRevokeTx(
   claimHash: string,
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
@@ -132,7 +132,7 @@ export async function revoke(
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the removal.
  * @returns The [[SubmittableExtrinsic]] for the `remove` call.
  */
-export async function remove(
+export async function getRemoveTx(
   claimHash: string,
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
@@ -149,9 +149,9 @@ export async function remove(
  * Generate the extrinsic to delete a given attestation and reclaim back its deposit. The submitter **must** be the KILT account that initially paid for the deposit.
  *
  * @param claimHash The attestation claim hash.
- * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ * @returns The [[SubmittableExtrinsic]] for the `getReclaimDepositTx` call.
  */
-export async function reclaimDeposit(
+export async function getReclaimDepositTx(
   claimHash: string
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()

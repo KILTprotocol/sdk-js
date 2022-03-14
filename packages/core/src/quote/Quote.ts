@@ -23,14 +23,15 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   KeystoreSigner,
+  DidVerificationKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import {
-  DidUtils,
+  Utils as DidUtils,
   DidResolver,
   DidDetails,
-  DidKeySelectionHandler,
+  DidKeySelectionCallback,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
@@ -111,17 +112,17 @@ export async function createAttesterSignature(
   attesterIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultDidKeySelection,
+    keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
-    keySelection?: DidKeySelectionHandler
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   const authenticationKey = await keySelection(
-    attesterIdentity.getKeys(KeyRelationship.authentication)
+    attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!authenticationKey) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `The attester ${attesterIdentity.did} does not have a valid authentication key.`
+      `The attester ${attesterIdentity.uri} does not have a valid authentication key.`
     )
   }
   const signature = await attesterIdentity.signPayload(
@@ -132,7 +133,7 @@ export async function createAttesterSignature(
   return {
     ...quoteInput,
     attesterSignature: {
-      keyId: attesterIdentity.assembleKeyId(authenticationKey.id),
+      keyUri: attesterIdentity.assembleKeyUri(authenticationKey.id),
       signature: signature.signature,
     },
   }
@@ -153,9 +154,9 @@ export async function fromQuoteDataAndIdentity(
   attesterIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultDidKeySelection,
+    keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
-    keySelection?: DidKeySelectionHandler
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
@@ -179,14 +180,14 @@ export async function fromQuoteDataAndIdentity(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: string,
-  attesterIdentity: IDidDetails['did'],
+  attesterIdentity: IDidDetails['uri'],
   claimerIdentity: DidDetails,
   signer: KeystoreSigner,
   {
-    keySelection = DidUtils.defaultDidKeySelection,
+    keySelection = DidUtils.defaultKeySelectionCallback,
     resolver = DidResolver,
   }: {
-    keySelection?: DidKeySelectionHandler
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
     resolver?: IDidResolver
   } = {}
 ): Promise<IQuoteAgreement> {
@@ -206,11 +207,11 @@ export async function createQuoteAgreement(
   })
 
   const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getKeys(KeyRelationship.authentication)
+    claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!claimerAuthenticationKey) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `Claimer DID ${claimerIdentity.did} does not have an authentication key.`
+      `Claimer DID ${claimerIdentity.uri} does not have an authentication key.`
     )
   }
 

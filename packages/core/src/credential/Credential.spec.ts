@@ -22,15 +22,15 @@ import type {
   DidResolvedDetails,
   DidKey,
 } from '@kiltprotocol/types'
+import { VerificationKeyType } from '@kiltprotocol/types'
 import {
   DemoKeystore,
   DemoKeystoreUtils,
   LightDidDetails,
   SigningAlgorithms,
   DidDetails,
-  LightDidSupportedSigningKeyTypes,
   FullDidDetails,
-  DidUtils,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
 import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
@@ -45,7 +45,7 @@ jest.mock('../attestation/Attestation.chain')
 
 async function buildCredential(
   claimer: DidDetails,
-  attesterDid: IDidDetails['did'],
+  attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
   legitimations: Credential[],
   signer: DemoKeystore
@@ -67,7 +67,7 @@ async function buildCredential(
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
-    claimer.did
+    claimer.uri
   )
   // build request for attestation with legitimations
   const requestForAttestation = RequestForAttestation.fromClaim(claim, {
@@ -96,7 +96,7 @@ function createMinimalFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   newAuthenticationKey?: DidKey
 ): FullDidDetails {
-  const did = DidUtils.getKiltDidFromIdentifier(
+  const uri = DidUtils.getKiltDidFromIdentifier(
     lightDidForId.identifier,
     'full'
   )
@@ -104,7 +104,7 @@ function createMinimalFullDidFromLightDid(
 
   return new FullDidDetails({
     identifier: lightDidForId.identifier,
-    did,
+    uri,
     keyRelationships: {
       authentication: new Set([authKey.id]),
     },
@@ -130,21 +130,21 @@ describe('RequestForAttestation', () => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
       switch (did) {
-        case identityAlice?.did:
+        case identityAlice?.uri:
           return { details: identityAlice, metadata: { deactivated: false } }
-        case identityBob?.did:
+        case identityBob?.uri:
           return { details: identityBob, metadata: { deactivated: false } }
-        case identityCharlie?.did:
+        case identityCharlie?.uri:
           return { details: identityCharlie, metadata: { deactivated: false } }
-        case identityDave?.did:
+        case identityDave?.uri:
           return { details: identityDave, metadata: { deactivated: false } }
-        case migratedAndDeletedLightDid?.did:
+        case migratedAndDeletedLightDid?.uri:
           return {
             metadata: {
               deactivated: true,
             },
           }
-        case migratedAndDeletedFullDid?.did:
+        case migratedAndDeletedFullDid?.uri:
           return {
             metadata: {
               deactivated: true,
@@ -178,7 +178,7 @@ describe('RequestForAttestation', () => {
 
     legitimation = await buildCredential(
       identityAlice,
-      identityBob.did,
+      identityBob.uri,
       {},
       [],
       keystore
@@ -210,7 +210,7 @@ describe('RequestForAttestation', () => {
   it('verify credentials signed by a full DID', async () => {
     const credential = await buildCredential(
       identityCharlie,
-      identityAlice.did,
+      identityAlice.uri,
       {
         a: 'a',
         b: 'b',
@@ -237,12 +237,12 @@ describe('RequestForAttestation', () => {
     })
     identityDave = await LightDidDetails.fromIdentifier(
       encodeAddress(daveKey.publicKey, 38),
-      LightDidSupportedSigningKeyTypes.ed25519
+      VerificationKeyType.Ed25519
     )
 
     const credential = await buildCredential(
       identityDave,
-      identityAlice.did,
+      identityAlice.uri,
       {
         a: 'a',
         b: 'b',
@@ -270,11 +270,11 @@ describe('RequestForAttestation', () => {
     })
     migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedAndDeletedKey.publicKey, 38),
-      LightDidSupportedSigningKeyTypes.ed25519
+      VerificationKeyType.Ed25519
     )
     migratedAndDeletedFullDid = new FullDidDetails({
       identifier: migratedAndDeletedLightDid.identifier,
-      did: DidUtils.getKiltDidFromIdentifier(
+      uri: DidUtils.getKiltDidFromIdentifier(
         migratedAndDeletedLightDid.identifier,
         'full'
       ),
@@ -291,7 +291,7 @@ describe('RequestForAttestation', () => {
 
     const credential = await buildCredential(
       migratedAndDeletedLightDid,
-      identityAlice.did,
+      identityAlice.uri,
       {
         a: 'a',
         b: 'b',
@@ -350,7 +350,7 @@ describe('RequestForAttestation', () => {
   it('Typeguard should return true on complete Credentials', async () => {
     const testAttestation = await buildCredential(
       identityAlice,
-      identityBob.did,
+      identityBob.uri,
       {},
       [],
       keystore
@@ -364,7 +364,7 @@ describe('RequestForAttestation', () => {
   it('Should throw error when attestation is from different request', async () => {
     const testAttestation = await buildCredential(
       identityAlice,
-      identityBob.did,
+      identityBob.uri,
       {},
       [],
       keystore
@@ -381,7 +381,7 @@ describe('RequestForAttestation', () => {
   it('returns Claim Hash of the attestation', async () => {
     const testAttestation = await buildCredential(
       identityAlice,
-      identityBob.did,
+      identityBob.uri,
       {},
       [],
       keystore
@@ -411,37 +411,37 @@ describe('create presentation', () => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
       switch (did) {
-        case migratedClaimerLightDid?.did:
+        case migratedClaimerLightDid?.uri:
           return {
             details: migratedClaimerLightDid,
             metadata: {
-              canonicalId: migratedClaimerFullDid.did,
+              canonicalId: migratedClaimerFullDid.uri,
               deactivated: false,
             },
           }
-        case migratedThenDeletedClaimerLightDid?.did:
+        case migratedThenDeletedClaimerLightDid?.uri:
           return {
             metadata: {
               deactivated: true,
             },
           }
-        case migratedThenDeletedClaimerFullDid?.did:
+        case migratedThenDeletedClaimerFullDid?.uri:
           return {
             metadata: {
               deactivated: true,
             },
           }
-        case unmigratedClaimerLightDid?.did:
+        case unmigratedClaimerLightDid?.uri:
           return {
             details: unmigratedClaimerLightDid,
             metadata: { deactivated: false },
           }
-        case migratedClaimerFullDid?.did:
+        case migratedClaimerFullDid?.uri:
           return {
             details: migratedClaimerFullDid,
             metadata: { deactivated: false },
           }
-        case attester?.did:
+        case attester?.uri:
           return { details: attester, metadata: { deactivated: false } }
         default:
           return null
@@ -465,7 +465,7 @@ describe('create presentation', () => {
     })
     unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(unmigratedClaimerKey.publicKey, 38),
-      LightDidSupportedSigningKeyTypes.sr25519
+      VerificationKeyType.Sr25519
     )
     const migratedClaimerKey = await keystore.generateKeypair({
       alg: SigningAlgorithms.Sr25519,
@@ -473,7 +473,7 @@ describe('create presentation', () => {
     })
     migratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedClaimerKey.publicKey, 38),
-      LightDidSupportedSigningKeyTypes.sr25519
+      VerificationKeyType.Sr25519
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
@@ -484,7 +484,7 @@ describe('create presentation', () => {
     migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
       migratedClaimerLightDid as LightDidDetails,
       {
-        type: DemoKeystore.getKeypairTypeForAlg(
+        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
           newKeyForMigratedClaimerDid.alg
         ),
         publicKey: newKeyForMigratedClaimerDid.publicKey,
@@ -497,7 +497,7 @@ describe('create presentation', () => {
     })
     migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedThenDeletedKey.publicKey, 38),
-      LightDidSupportedSigningKeyTypes.ed25519
+      VerificationKeyType.Ed25519
     )
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedThenDeletedClaimerLightDid as LightDidDetails
@@ -513,7 +513,7 @@ describe('create presentation', () => {
       type: 'object',
     }
 
-    ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.did)
+    ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
     reqForAtt = RequestForAttestation.fromClaim(
@@ -523,11 +523,11 @@ describe('create presentation', () => {
           name: 'Peter',
           age: 12,
         },
-        migratedClaimerFullDid.did
+        migratedClaimerFullDid.uri
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
   })
 
   it('should build from reqForAtt and Attestation', async () => {
@@ -565,7 +565,7 @@ describe('create presentation', () => {
       },
       type: 'object',
     }
-    ctype = CType.fromSchema(rawCType, attester.did)
+    ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
     reqForAtt = RequestForAttestation.fromClaim(
@@ -575,11 +575,11 @@ describe('create presentation', () => {
           name: 'Peter',
           age: 12,
         },
-        unmigratedClaimerLightDid.did
+        unmigratedClaimerLightDid.uri
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
     ;(query as jest.Mock).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
@@ -609,7 +609,7 @@ describe('create presentation', () => {
       },
       type: 'object',
     }
-    ctype = CType.fromSchema(rawCType, attester.did)
+    ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
     reqForAtt = RequestForAttestation.fromClaim(
@@ -620,11 +620,11 @@ describe('create presentation', () => {
           age: 12,
         },
         // Use of light DID in the claim.
-        migratedClaimerLightDid.did
+        migratedClaimerLightDid.uri
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
     ;(query as jest.Mock).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
@@ -656,7 +656,7 @@ describe('create presentation', () => {
       },
       type: 'object',
     }
-    ctype = CType.fromSchema(rawCType, attester.did)
+    ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
     reqForAtt = RequestForAttestation.fromClaim(
@@ -667,11 +667,11 @@ describe('create presentation', () => {
           age: 12,
         },
         // Use of light DID in the claim.
-        migratedClaimerLightDid.did
+        migratedClaimerLightDid.uri
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
     ;(query as jest.Mock).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
@@ -702,7 +702,7 @@ describe('create presentation', () => {
       },
       type: 'object',
     }
-    ctype = CType.fromSchema(rawCType, attester.did)
+    ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
     reqForAtt = RequestForAttestation.fromClaim(
@@ -713,11 +713,11 @@ describe('create presentation', () => {
           age: 12,
         },
         // Use of light DID in the claim.
-        migratedThenDeletedClaimerLightDid.did
+        migratedThenDeletedClaimerLightDid.uri
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
     ;(query as jest.Mock).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)

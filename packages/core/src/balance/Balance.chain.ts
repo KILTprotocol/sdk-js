@@ -113,7 +113,7 @@ export async function listenToBalanceChanges(
  *
  * @param accountAddressTo Address of the receiver account.
  * @param amount Amount of Units to transfer.
- * @param exponent Magnitude of the amount. Default magnitude of Femto-Kilt.
+ * @param exponent Magnitude of the amount. Default magnitude of -15 represents Femto-Kilt. Use 0 for KILT.
  * @returns Promise containing unsigned SubmittableExtrinsic.
  *
  * @example
@@ -124,15 +124,15 @@ export async function listenToBalanceChanges(
  * const address = ...
  * const amount: BN = new BN(42)
  * const blockchain = await sdk.getConnectionOrConnect()
- * sdk.Balance.makeTransfer(address, amount, 0) //
- *   .then(tx => BlockchainUtils.signAndSendTx(tx, identity))
- *   .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
+ * sdk.Balance.getTransferTx(address, amount, 0) // transfer 42 KILT
+ *   .then(tx => sdk.BlockchainUtils.signAndSubmitTx(tx, identity))
+ *   .then(() => console.log(`Successfully transferred ${amount.toNumber()} tokens`))
  *   .catch(err => {
  *     console.log('Transfer failed')
  *   })
  * ```
  */
-export async function makeTransfer(
+export async function getTransferTx(
   accountAddressTo: KeyringPair['address'],
   amount: BN,
   exponent = -15

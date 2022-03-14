@@ -9,10 +9,11 @@
  * @group unit/messaging
  */
 
-import type {
+import {
   DidKey,
   DidPublicKey,
   DidResolvedDetails,
+  EncryptionKeyType,
   ICredential,
   IDidDetails,
   IDidResolver,
@@ -28,11 +29,12 @@ import { Quote, RequestForAttestation } from '@kiltprotocol/core'
 import {
   DemoKeystore,
   LightDidDetails,
-  DidUtils,
+  Utils as DidUtils,
   EncryptionAlgorithms,
   SigningAlgorithms,
   FullDidDetails,
   DemoKeystoreUtils,
+  LightDidSupportedVerificationKeyType,
 } from '@kiltprotocol/did'
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -50,49 +52,49 @@ let bobLightDidWithDetails: LightDidDetails
 let bobFullDid: FullDidDetails
 
 const resolveDoc = async (
-  did: IDidDetails['did']
+  did: IDidDetails['uri']
 ): Promise<DidResolvedDetails | null> => {
-  if (did.startsWith(aliceLightDidWithDetails.did)) {
+  if (did.startsWith(aliceLightDidWithDetails.uri)) {
     return {
       details: aliceLightDidWithDetails,
-      metadata: { deactivated: false, canonicalId: aliceFullDid.did },
+      metadata: { deactivated: false, canonicalId: aliceFullDid.uri },
     }
   }
-  if (did.startsWith(aliceLightDid.did)) {
+  if (did.startsWith(aliceLightDid.uri)) {
     return {
       details: aliceLightDid,
-      metadata: { deactivated: false, canonicalId: aliceFullDid.did },
+      metadata: { deactivated: false, canonicalId: aliceFullDid.uri },
     }
   }
-  if (did.startsWith(aliceFullDid.did)) {
+  if (did.startsWith(aliceFullDid.uri)) {
     return { details: aliceFullDid, metadata: { deactivated: false } }
   }
-  if (did.startsWith(bobLightDidWithDetails.did)) {
+  if (did.startsWith(bobLightDidWithDetails.uri)) {
     return {
       details: bobLightDidWithDetails,
-      metadata: { deactivated: false, canonicalId: bobFullDid.did },
+      metadata: { deactivated: false, canonicalId: bobFullDid.uri },
     }
   }
-  if (did.startsWith(bobLightDid.did)) {
+  if (did.startsWith(bobLightDid.uri)) {
     return {
       details: bobLightDid,
-      metadata: { deactivated: false, canonicalId: bobFullDid.did },
+      metadata: { deactivated: false, canonicalId: bobFullDid.uri },
     }
   }
-  if (did.startsWith(bobFullDid.did)) {
+  if (did.startsWith(bobFullDid.uri)) {
     return { details: bobFullDid, metadata: { deactivated: false } }
   }
   return null
 }
 const resolveKey = async (
-  did: DidPublicKey['id']
+  did: DidPublicKey['uri']
 ): Promise<ResolvedDidKey | null> => {
   const { fragment } = DidUtils.parseDidUri(did)
   const { details } = (await resolveDoc(did)) as DidResolvedDetails
   const key = details?.getKey(fragment!) as DidKey
   return {
-    controller: details!.did,
-    id: did,
+    controller: details!.uri,
+    uri: did,
     publicKey: key.publicKey,
     type: key.type,
   }
@@ -122,12 +124,22 @@ beforeAll(async () => {
     alg: EncryptionAlgorithms.NaclBox,
   })
   aliceLightDid = LightDidDetails.fromDetails({
-    authenticationKey: { type: aliceAuthKey.alg, ...aliceAuthKey },
-    encryptionKey: { type: 'x25519', ...aliceEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...aliceAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
   })
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: { type: aliceAuthKey.alg, ...aliceAuthKey },
-    encryptionKey: { type: 'x25519', ...aliceEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...aliceAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
   })
   aliceFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
@@ -143,12 +155,22 @@ beforeAll(async () => {
     alg: EncryptionAlgorithms.NaclBox,
   })
   bobLightDid = LightDidDetails.fromDetails({
-    authenticationKey: { type: bobAuthKey.alg, ...bobAuthKey },
-    encryptionKey: { type: 'x25519', ...bobEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...bobAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
   })
   bobLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: { type: bobAuthKey.alg, ...bobAuthKey },
-    encryptionKey: { type: 'x25519', ...bobEncKey },
+    authenticationKey: {
+      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        aliceAuthKey.alg
+      ) as LightDidSupportedVerificationKeyType,
+      ...bobAuthKey,
+    },
+    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
   })
   bobFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
@@ -165,14 +187,14 @@ describe('Messaging', () => {
           cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
         },
       },
-      aliceLightDid.did,
-      bobLightDid.did
+      aliceLightDid.uri,
+      bobLightDid.uri
     )
     const encryptedMessage = await message.encrypt(
       'encryption',
       aliceLightDid,
       keystore,
-      `${bobLightDid.did}#encryption`,
+      `${bobLightDid.uri}#encryption`,
       {
         resolver: mockResolver,
       }
@@ -214,8 +236,10 @@ describe('Messaging', () => {
     const encryptedMessageWrongBody: IEncryptedMessage = {
       ciphertext: u8aToHex(encryptedWrongBody.data),
       nonce: u8aToHex(encryptedWrongBody.nonce),
-      senderKeyId: aliceLightDid.assembleKeyId(aliceLightDid.encryptionKey!.id),
-      receiverKeyId: bobLightDid.assembleKeyId(bobLightDid.encryptionKey!.id),
+      senderKeyUri: aliceLightDid.assembleKeyUri(
+        aliceLightDid.encryptionKey!.id
+      ),
+      receiverKeyUri: bobLightDid.assembleKeyUri(bobLightDid.encryptionKey!.id),
     }
     await expect(() =>
       Message.decrypt(encryptedMessageWrongBody, keystore, bobLightDid, {
@@ -227,13 +251,13 @@ describe('Messaging', () => {
   it('verifies the message with sender is the owner (as full DID)', async () => {
     const content = RequestForAttestation.fromClaim({
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-      owner: aliceFullDid.did,
+      owner: aliceFullDid.uri,
       contents: {},
     })
     const date: string = new Date(2019, 11, 10).toISOString()
 
     const quoteData: IQuote = {
-      attesterDid: bobFullDid.did,
+      attesterDid: bobFullDid.uri,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
@@ -252,7 +276,7 @@ describe('Messaging', () => {
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
-      bobFullDid.did,
+      bobFullDid.uri,
       aliceFullDid,
       keystore,
       {
@@ -270,7 +294,7 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceFullDid.did, bobFullDid.did)
+        new Message(requestAttestationBody, aliceFullDid.uri, bobFullDid.uri)
       )
     ).not.toThrow()
 
@@ -278,14 +302,14 @@ describe('Messaging', () => {
     // This is technically not to be allowed but message verification is not concerned with that.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceLightDid.did, bobFullDid.did)
+        new Message(requestAttestationBody, aliceLightDid.uri, bobFullDid.uri)
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, bobFullDid.did, aliceFullDid.did)
+        new Message(requestAttestationBody, bobFullDid.uri, aliceFullDid.uri)
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender'))
 
@@ -293,7 +317,7 @@ describe('Messaging', () => {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-      owner: bobFullDid.did,
+      owner: bobFullDid.uri,
       revoked: false,
     }
 
@@ -307,7 +331,7 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobFullDid.did, aliceFullDid.did)
+        new Message(submitAttestationBody, bobFullDid.uri, aliceFullDid.uri)
       )
     ).not.toThrow()
 
@@ -315,14 +339,14 @@ describe('Messaging', () => {
     // This is technically not to be allowed but message verification is not concerned with that.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobLightDid.did, aliceFullDid.did)
+        new Message(submitAttestationBody, bobLightDid.uri, aliceFullDid.uri)
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, aliceFullDid.did, bobFullDid.did)
+        new Message(submitAttestationBody, aliceFullDid.uri, bobFullDid.uri)
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender'))
 
@@ -339,7 +363,7 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, aliceFullDid.did, bobFullDid.did)
+        new Message(submitClaimsForCTypeBody, aliceFullDid.uri, bobFullDid.uri)
       )
     ).not.toThrow()
 
@@ -347,14 +371,14 @@ describe('Messaging', () => {
     // This is technically not to be allowed but message verification is not concerned with that.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, aliceLightDid.did, bobFullDid.did)
+        new Message(submitClaimsForCTypeBody, aliceLightDid.uri, bobFullDid.uri)
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, bobFullDid.did, aliceFullDid.did)
+        new Message(submitClaimsForCTypeBody, bobFullDid.uri, aliceFullDid.uri)
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender'))
   })
@@ -363,13 +387,13 @@ describe('Messaging', () => {
     // Create request for attestation to the light DID with no encoded details
     const content = RequestForAttestation.fromClaim({
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-      owner: aliceLightDid.did,
+      owner: aliceLightDid.uri,
       contents: {},
     })
 
     const date: string = new Date(2019, 11, 10).toISOString()
     const quoteData: IQuote = {
-      attesterDid: bobLightDid.did,
+      attesterDid: bobLightDid.uri,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
@@ -388,7 +412,7 @@ describe('Messaging', () => {
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
-      bobLightDid.did,
+      bobLightDid.uri,
       aliceLightDid,
       keystore,
       {
@@ -406,12 +430,12 @@ describe('Messaging', () => {
     // Create request for attestation to the light DID with encoded details
     const contentWithEncodedDetails = RequestForAttestation.fromClaim({
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-      owner: aliceLightDidWithDetails.did,
+      owner: aliceLightDidWithDetails.uri,
       contents: {},
     })
 
     const quoteDataEncodedDetails: IQuote = {
-      attesterDid: bobLightDidWithDetails.did,
+      attesterDid: bobLightDidWithDetails.uri,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
@@ -431,7 +455,7 @@ describe('Messaging', () => {
     const bothSignedEncodedDetails = await Quote.createQuoteAgreement(
       quoteAttesterSignedEncodedDetails,
       content.rootHash,
-      bobLightDidWithDetails.did,
+      bobLightDidWithDetails.uri,
       aliceLightDidWithDetails,
       keystore,
       {
@@ -449,7 +473,7 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceLightDid.did, bobLightDid.did)
+        new Message(requestAttestationBody, aliceLightDid.uri, bobLightDid.uri)
       )
     ).not.toThrow()
 
@@ -458,8 +482,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           requestAttestationBodyWithEncodedDetails,
-          aliceLightDidWithDetails.did,
-          bobLightDid.did
+          aliceLightDidWithDetails.uri,
+          bobLightDid.uri
         )
       )
     ).not.toThrow()
@@ -469,8 +493,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           requestAttestationBodyWithEncodedDetails,
-          aliceLightDid.did,
-          bobLightDid.did
+          aliceLightDid.uri,
+          bobLightDid.uri
         )
       )
     ).not.toThrow()
@@ -478,14 +502,14 @@ describe('Messaging', () => {
     // Should not throw if the sender is the full DID version of the owner.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceFullDid.did, bobLightDid.did)
+        new Message(requestAttestationBody, aliceFullDid.uri, bobLightDid.uri)
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, bobLightDid.did, aliceLightDid.did)
+        new Message(requestAttestationBody, bobLightDid.uri, aliceLightDid.uri)
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender'))
 
@@ -493,7 +517,7 @@ describe('Messaging', () => {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-      owner: bobLightDid.did,
+      owner: bobLightDid.uri,
       revoked: false,
     }
 
@@ -508,7 +532,7 @@ describe('Messaging', () => {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-      owner: bobLightDidWithDetails.did,
+      owner: bobLightDidWithDetails.uri,
       revoked: false,
     }
 
@@ -522,7 +546,7 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobLightDid.did, aliceLightDid.did)
+        new Message(submitAttestationBody, bobLightDid.uri, aliceLightDid.uri)
       )
     ).not.toThrow()
 
@@ -531,8 +555,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitAttestationBody,
-          bobLightDidWithDetails.did,
-          aliceLightDid.did
+          bobLightDidWithDetails.uri,
+          aliceLightDid.uri
         )
       )
     ).not.toThrow()
@@ -542,8 +566,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitAttestationBodyWithEncodedDetails,
-          bobLightDid.did,
-          aliceLightDid.did
+          bobLightDid.uri,
+          aliceLightDid.uri
         )
       )
     ).not.toThrow()
@@ -551,14 +575,14 @@ describe('Messaging', () => {
     // Should not throw if the sender is the full DID version of the owner.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobFullDid.did, aliceLightDid.did)
+        new Message(submitAttestationBody, bobFullDid.uri, aliceLightDid.uri)
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, aliceLightDid.did, bobLightDid.did)
+        new Message(submitAttestationBody, aliceLightDid.uri, bobLightDid.uri)
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender'))
 
@@ -587,8 +611,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitClaimsForCTypeBody,
-          aliceLightDid.did,
-          bobLightDid.did
+          aliceLightDid.uri,
+          bobLightDid.uri
         )
       )
     ).not.toThrow()
@@ -598,8 +622,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitClaimsForCTypeBody,
-          aliceLightDidWithDetails.did,
-          bobLightDid.did
+          aliceLightDidWithDetails.uri,
+          bobLightDid.uri
         )
       )
     ).not.toThrow()
@@ -609,8 +633,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitClaimsForCTypeBodyWithEncodedDetails,
-          aliceLightDid.did,
-          bobLightDid.did
+          aliceLightDid.uri,
+          bobLightDid.uri
         )
       )
     ).not.toThrow()
@@ -618,7 +642,7 @@ describe('Messaging', () => {
     // Should not throw if the sender is the full DID version of the owner.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, aliceFullDid.did, bobLightDid.did)
+        new Message(submitClaimsForCTypeBody, aliceFullDid.uri, bobLightDid.uri)
       )
     ).not.toThrow()
 
@@ -627,8 +651,8 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitClaimsForCTypeBody,
-          bobLightDid.did,
-          aliceLightDid.did
+          bobLightDid.uri,
+          aliceLightDid.uri
         )
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender'))

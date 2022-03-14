@@ -54,7 +54,7 @@ export type CompressedQuoteAttesterSigned = [
   ...CompressedQuote,
   [
     IQuoteAttesterSigned['attesterSignature']['signature'],
-    IQuoteAttesterSigned['attesterSignature']['keyId']
+    IQuoteAttesterSigned['attesterSignature']['keyUri']
   ]
 ]
 
@@ -62,7 +62,7 @@ export type CompressedQuoteAgreed = [
   ...CompressedQuoteAttesterSigned,
   [
     IQuoteAgreement['claimerSignature']['signature'],
-    IQuoteAgreement['claimerSignature']['keyId']
+    IQuoteAgreement['claimerSignature']['keyUri']
   ],
   IQuoteAgreement['rootHash']
 ]

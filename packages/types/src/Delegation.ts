@@ -23,7 +23,7 @@ export interface IDelegationNode {
   hierarchyId: IDelegationNode['id']
   parentId?: IDelegationNode['id']
   childrenIds: Array<IDelegationNode['id']>
-  account: IDidDetails['did']
+  account: IDidDetails['uri']
   permissions: Permission[]
   revoked: boolean
 }

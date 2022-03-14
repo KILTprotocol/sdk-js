@@ -8,15 +8,16 @@
 import { SDKErrors } from '@kiltprotocol/utils'
 import { KeyRelationship } from '@kiltprotocol/types'
 
-import type { DidCreationDetails } from '../types.js'
-import { validateKiltDid } from '../Did.utils.js'
+import type { DidConstructorDetails } from '../types.js'
+
+import { validateKiltDidUri } from '../Did.utils.js'
 
 export function checkDidCreationDetails({
-  did,
+  uri,
   keys,
   keyRelationships,
-}: DidCreationDetails): void {
-  validateKiltDid(did, false)
+}: DidConstructorDetails): void {
+  validateKiltDidUri(uri, false)
   if (keyRelationships[KeyRelationship.authentication]?.size !== 1) {
     throw Error(
       `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`
@@ -46,20 +47,4 @@ export function checkDidCreationDetails({
     if (!keyIds.has(id))
       throw SDKErrors.ERROR_DID_ERROR(`No key with id ${id} in "keys"`)
   })
-}
-
-enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
-  ed25519 = 'ed25519',
-  sr25519 = 'sr25519',
-  secp256k1 = 'secp256k1',
-}
-
-const signatureAlgForKeyType = {
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.ed25519]: 'ed25519',
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.sr25519]: 'sr25519',
-  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.secp256k1]: 'ecdsa-secp256k1',
-}
-
-export function getSignatureAlgForKeyType(keyType: string): string | undefined {
-  return signatureAlgForKeyType[keyType]
 }

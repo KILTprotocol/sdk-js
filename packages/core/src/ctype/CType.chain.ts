@@ -20,7 +20,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { getSchemaPropertiesForHash } from './CType.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
@@ -33,7 +33,7 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
  * @param ctype The CType to write on the blockchain.
  * @returns The [[SubmittableExtrinsic]] for the `add` call.
  */
-export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
+export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
   const preparedSchema = Crypto.encodeObjectAsStr(
@@ -43,7 +43,7 @@ export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
   return tx
 }
 
-function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
+function decode(encoded: Option<AccountId>): IDidDetails['uri'] | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
     ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
@@ -58,7 +58,7 @@ function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
  */
 export async function getOwner(
   ctypeHash: ICType['hash']
-): Promise<IDidDetails['did'] | null> {
+): Promise<IDidDetails['uri'] | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.ctype.ctypes<Option<AccountId>>(
     ctypeHash

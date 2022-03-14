@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { HexString } from '@polkadot/util/types'
+
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { Metadata, TypeRegistry } from '@polkadot/types'
 
@@ -13,7 +15,7 @@ import metaStatic from './metadata/spiritnet.json'
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
 export type StaticMetadata =
   | Uint8Array
-  | string
+  | HexString
   | Map<string, unknown>
   | Record<string, unknown>
 

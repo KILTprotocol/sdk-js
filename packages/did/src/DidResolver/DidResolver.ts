@@ -30,17 +30,18 @@ import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
  *
  * The URI can also identify a key or a service, but it will be ignored during resolution.
  *
- * @param did The subject's identifier.
+ * @param did The subject's DID.
  * @returns The details associated with the DID subject.
  */
 export async function resolveDoc(
-  did: IDidDetails['did']
+  did: IDidDetails['uri']
 ): Promise<DidResolvedDetails | null> {
-  const { identifier, type, version } = parseDidUri(did)
+  const { identifier, type } = parseDidUri(did)
 
   switch (type) {
     case 'full': {
-      const details = await FullDidDetails.fromChainInfo(identifier, version)
+      const uriWithoutFragment = getKiltDidFromIdentifier(identifier, 'full')
+      const details = await FullDidDetails.fromChainInfo(uriWithoutFragment)
       // If the details are found, return those details.
       if (details) {
         return {
@@ -72,11 +73,7 @@ export async function resolveDoc(
       const fullDidDetails = await queryDetails(details.identifier)
       // If a full DID with same identifier is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
-        const fullDidUri = getKiltDidFromIdentifier(
-          details.identifier,
-          'full',
-          version
-        )
+        const fullDidUri = getKiltDidFromIdentifier(details.identifier, 'full')
         return {
           details,
           metadata: {
@@ -116,7 +113,7 @@ export async function resolveDoc(
  * @returns The details associated with the key.
  */
 export async function resolveKey(
-  didUri: DidPublicKey['id']
+  didUri: DidPublicKey['uri']
 ): Promise<ResolvedDidKey | null> {
   const { did, identifier, fragment: keyId, type } = parseDidUri(didUri)
 
@@ -133,7 +130,7 @@ export async function resolveKey(
       }
       const result: ResolvedDidKey = {
         controller: did,
-        id: didUri,
+        uri: didUri,
         publicKey: key.publicKey,
         type: key.type,
       }
@@ -153,7 +150,7 @@ export async function resolveKey(
       }
       return {
         controller: did,
-        id: didUri,
+        uri: didUri,
         publicKey: key.publicKey,
         type: key.type,
       }
@@ -170,7 +167,7 @@ export async function resolveKey(
  * @returns The details associated with the service endpoint.
  */
 export async function resolveServiceEndpoint(
-  didUri: DidPublicServiceEndpoint['id']
+  didUri: DidPublicServiceEndpoint['uri']
 ): Promise<ResolvedDidServiceEndpoint | null> {
   const { identifier, fragment: serviceId, type } = parseDidUri(didUri)
 
@@ -186,7 +183,7 @@ export async function resolveServiceEndpoint(
         return null
       }
       return {
-        id: didUri,
+        uri: didUri,
         type: serviceEndpoint.types,
         serviceEndpoint: serviceEndpoint.urls,
       }
@@ -201,7 +198,7 @@ export async function resolveServiceEndpoint(
         return null
       }
       return {
-        id: didUri,
+        uri: didUri,
         type: serviceEndpoint.types,
         serviceEndpoint: serviceEndpoint.urls,
       }
@@ -215,7 +212,7 @@ export async function resolveServiceEndpoint(
  * Resolve a DID URI (including a key ID or a service ID).
  *
  * @param didUri The DID URI to resolve.
- * @returns The DID, key details or service details depending on the input URI. If not resource can be resolved, null is returned.
+ * @returns The DID, key details or service details depending on the input URI. Null otherwise.
  */
 export async function resolve(
   didUri: string

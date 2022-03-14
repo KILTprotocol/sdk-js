@@ -7,15 +7,19 @@
 
 import { BN } from '@polkadot/util'
 
-import type {
+import {
   DidKey,
   DidServiceEndpoint,
+  EncryptionKeyType,
   IDidIdentifier,
+  NewDidVerificationKey,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { exportToDidDocument } from './DidDocumentExporter'
 import { FullDidDetails, LightDidDetails } from '../index.js'
+import { getKiltDidFromIdentifier } from '../Did.utils'
 
 /**
  * @group unit/did
@@ -26,7 +30,7 @@ const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 function generateAuthenticationKeyDetails(): DidKey {
   return {
     id: 'auth',
-    type: 'ed25519',
+    type: VerificationKeyType.Ed25519,
     publicKey: new Uint8Array(32).fill(0),
   }
 }
@@ -34,7 +38,7 @@ function generateAuthenticationKeyDetails(): DidKey {
 function generateEncryptionKeyDetails(): DidKey {
   return {
     id: 'enc',
-    type: 'x25519',
+    type: EncryptionKeyType.X25519,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(15),
   }
@@ -43,7 +47,7 @@ function generateEncryptionKeyDetails(): DidKey {
 function generateAttestationKeyDetails(): DidKey {
   return {
     id: 'att',
-    type: 'sr25519',
+    type: VerificationKeyType.Sr25519,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(20),
   }
@@ -52,7 +56,7 @@ function generateAttestationKeyDetails(): DidKey {
 function generateDelegationKeyDetails(): DidKey {
   return {
     id: 'del',
-    type: 'ecdsa',
+    type: VerificationKeyType.Ecdsa,
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(25),
   }
@@ -132,7 +136,7 @@ jest.mock('../Did.chain', () => {
 describe('When exporting a DID Document from a full DID', () => {
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
     const fullDidDetails = (await FullDidDetails.fromChainInfo(
-      identifier
+      getKiltDidFromIdentifier(identifier, 'full')
     )) as FullDidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
@@ -198,7 +202,7 @@ describe('When exporting a DID Document from a full DID', () => {
 
   it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
     const fullDidDetails = (await FullDidDetails.fromChainInfo(
-      identifier
+      getKiltDidFromIdentifier(identifier, 'full')
     )) as FullDidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
@@ -265,7 +269,7 @@ describe('When exporting a DID Document from a full DID', () => {
 
   it('fails to export to an unsupported mimetype', async () => {
     const fullDidDetails = (await FullDidDetails.fromChainInfo(
-      identifier
+      getKiltDidFromIdentifier(identifier, 'full')
     )) as FullDidDetails
 
     expect(() =>
@@ -275,7 +279,7 @@ describe('When exporting a DID Document from a full DID', () => {
 })
 
 describe('When exporting a DID Document from a light DID', () => {
-  const authKey: DidKey = generateAuthenticationKeyDetails()
+  const authKey = generateAuthenticationKeyDetails() as NewDidVerificationKey
   const encKey: DidKey = generateEncryptionKeyDetails()
   const serviceEndpoints: DidServiceEndpoint[] = [
     generateServiceEndpointDetails('id-1'),
@@ -284,11 +288,11 @@ describe('When exporting a DID Document from a light DID', () => {
   const lightDidDetails = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: authKey.type,
+      type: VerificationKeyType.Ed25519,
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: 'x25519',
+      type: EncryptionKeyType.X25519,
     },
     serviceEndpoints,
   })

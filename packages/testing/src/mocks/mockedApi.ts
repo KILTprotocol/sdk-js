@@ -172,6 +172,7 @@ function makeSubmittableResult(
         },
       } as any,
     ],
+    txHash: registry.createType('Hash'),
   })
 }
 
@@ -200,6 +201,9 @@ export function getMockedApi(): MockApiPromise {
     __setDefaultResult: (status: Partial<ExtrinsicStatus>) => {
       defaultTxResult = makeSubmittableResult(TYPE_REGISTRY, status)
     },
+    on: jest.fn(),
+    off: jest.fn(),
+    once: jest.fn(),
     rpc: {
       system: {
         chain: jest.fn(),

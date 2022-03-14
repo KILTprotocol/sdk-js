@@ -19,7 +19,7 @@ export type IClaimContents = Record<
 export interface IClaim {
   cTypeHash: ICType['hash']
   contents: IClaimContents
-  owner: IDidDetails['did']
+  owner: IDidDetails['uri']
 }
 
 /**

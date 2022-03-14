@@ -15,9 +15,9 @@ import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
   DemoKeystore,
   DemoKeystoreUtils,
-  DidChain,
-  DidMigrationHandler,
+  DidMigrationCallback,
   FullDidDetails,
+  FullDidUpdateBuilder,
   LightDidDetails,
 } from '@kiltprotocol/did'
 import {
@@ -30,7 +30,6 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { Balance } from '../balance'
 import { init } from '../kilt'
@@ -116,7 +115,7 @@ export async function endowAccounts(
 ): Promise<void> {
   await Promise.all(
     addresses.map((address) =>
-      Balance.makeTransfer(address, ENDOWMENT).then((tx) =>
+      Balance.getTransferTx(address, ENDOWMENT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn,
           reSign: true,
@@ -130,7 +129,7 @@ async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
-  const transferTx = await Balance.makeTransfer(address, amount)
+  const transferTx = await Balance.getTransferTx(address, amount)
   return submitExtrinsicWithResign(transferTx, devFaucet).catch((e) =>
     console.log(e)
   )
@@ -143,9 +142,20 @@ export async function createEndowedTestAccount(
   return keypair
 }
 
-export function getDefaultMigrationHandler(
+export function getDefaultMigrationCallback(
   submitter: KeyringPair
-): DidMigrationHandler {
+): DidMigrationCallback {
+  return async (e) => {
+    await BlockchainUtils.signAndSubmitTx(e, submitter, {
+      reSign: true,
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+  }
+}
+
+export function getDefaultSubmitCallback(
+  submitter: KeyringPair
+): DidMigrationCallback {
   return async (e) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       reSign: true,
@@ -163,33 +173,17 @@ export async function createFullDidFromLightDid(
   const fullDid = await lightDidForId.migrate(
     identity.address,
     keystore,
-    getDefaultMigrationHandler(identity)
-  )
-
-  const addAttestationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.assertionMethod,
-    fullDid.authenticationKey
-  )
-  const addDelegationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.capabilityDelegation,
-    fullDid.authenticationKey
+    getDefaultMigrationCallback(identity)
   )
 
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const authenticatedBatch = await fullDid.authorizeBatch(
-    api.tx.utility.batch([
-      addAttestationKeyExtrinsic,
-      addDelegationKeyExtrinsic,
-    ]),
-    keystore,
-    identity.address,
-    KeyRelationship.authentication
-  )
+  const authenticatedBatch = await new FullDidUpdateBuilder(api, fullDid)
+    .setAttestationKey(fullDid.authenticationKey)
+    .setDelegationKey(fullDid.authenticationKey)
+    .build(keystore, identity.address)
   await submitExtrinsicWithResign(authenticatedBatch, identity)
 
-  return FullDidDetails.fromChainInfo(
-    fullDid.identifier
-  ) as Promise<FullDidDetails>
+  return FullDidDetails.fromChainInfo(fullDid.uri) as Promise<FullDidDetails>
 }
 
 export async function createFullDidFromSeed(

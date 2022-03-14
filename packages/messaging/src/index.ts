@@ -5,5 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import '@polkadot/api-augment'
+
 export * from './Message.js'
 export * from './Message.utils.js'

@@ -14,10 +14,11 @@ import {
   naclSeal,
   randomAsHex,
   blake2AsU8a,
+  encodeAddress,
 } from '@polkadot/util-crypto'
 import { u8aEq } from '@polkadot/util'
 
-import type {
+import {
   KeyringPair,
   Keystore,
   KeystoreSigningData,
@@ -46,6 +47,24 @@ function encryptionSupported(alg: string): alg is EncryptionAlgorithms {
   return Object.values(EncryptionAlgorithms).some((i) => i === alg)
 }
 
+function encodeSigningPublicKeyToAddress(
+  publicKey: Uint8Array,
+  alg: SigningAlgorithms
+): string {
+  switch (alg) {
+    case SigningAlgorithms.Ed25519:
+    case SigningAlgorithms.Sr25519:
+      return encodeAddress(publicKey, 38)
+    case SigningAlgorithms.EcdsaSecp256k1: {
+      // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
+      const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+      return encodeAddress(pk, 38)
+    }
+    default:
+      throw SDKErrors.ERROR_KEYSTORE_ERROR(`Unsupport signing key alg ${alg}.`)
+  }
+}
+
 export interface KeyGenOpts<T extends string> {
   alg: RequestData<T>['alg']
   seed?: string
@@ -59,13 +78,11 @@ export interface NaclKeypair {
 export type KeyAddOpts<T extends string> = Pick<RequestData<T>, 'alg'> &
   NaclKeypair
 
-const KeypairTypeForAlg: Record<string, string> = {
+const keypairTypeForAlg: Record<string, KeypairType> = {
   ed25519: 'ed25519',
   sr25519: 'sr25519',
   'ecdsa-secp256k1': 'ecdsa',
-  'x25519-xsalsa20-poly1305': 'x25519',
 }
-
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
@@ -75,6 +92,10 @@ export class DemoKeystore
   private signingKeyring: Keyring = new Keyring()
   private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
 
+  private static getKeypairTypeForAlg(alg: string): KeypairType {
+    return keypairTypeForAlg[alg]
+  }
+
   private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
     if (!signingSupported(alg))
       throw SDKErrors.ERROR_KEYSTORE_ERROR(
@@ -82,7 +103,8 @@ export class DemoKeystore
       )
     const keyType = DemoKeystore.getKeypairTypeForAlg(alg)
     try {
-      const keypair = this.signingKeyring.getPair(publicKey)
+      const encodedAddress = encodeSigningPublicKeyToAddress(publicKey, alg)
+      const keypair = this.signingKeyring.getPair(encodedAddress)
       if (keypair && keyType === keypair.type) return keypair
     } catch {
       throw SDKErrors.ERROR_KEYSTORE_ERROR(
@@ -270,9 +292,5 @@ export class DemoKeystore
       ...[...this.encryptionKeypairs.values()].map((i) => i.publicKey),
     ]
     return keys.map((key) => knownKeys.some((i) => u8aEq(key.publicKey, i)))
-  }
-
-  public static getKeypairTypeForAlg(alg: string): KeypairType {
-    return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
   }
 }
