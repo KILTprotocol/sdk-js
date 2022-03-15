@@ -49,9 +49,7 @@ beforeAll(async () => {
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await Attestation.queryDepositAmount()
-  expect(depositAmount.toString()).toStrictEqual(
-    new BN(120900000000000).toString()
-  )
+  expect(depositAmount.toString()).toMatchInlineSnapshot('120900000000000')
 })
 
 describe('handling attestations that do not exist', () => {
