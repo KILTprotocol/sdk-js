@@ -14,6 +14,7 @@ import type {
   IAttestation,
   Deposit,
   SubmittableExtrinsic,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, Hash } from '@polkadot/types/interfaces'
@@ -58,7 +59,7 @@ export interface AttestationDetails extends Struct {
 
 function decode(
   encoded: Option<AttestationDetails>,
-  claimHash: string // all the other decoders do not use extra data; they just return partial types
+  claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<AttestationAttestationsAttestationDetails>',
@@ -67,7 +68,7 @@ function decode(
     const chainAttestation = encoded.unwrap()
     const attestation: IAttestation = {
       claimHash,
-      cTypeHash: chainAttestation.ctypeHash.toString(),
+      cTypeHash: chainAttestation.ctypeHash.toHex(),
       owner: DidUtils.getKiltDidFromIdentifier(
         chainAttestation.attester.toString(),
         'full'
@@ -100,7 +101,9 @@ export async function queryRaw(
  * @param claimHash The hash of the claim attested in the attestation.
  * @returns Either the retrieved [[Attestation]] or null.
  */
-export async function query(claimHash: string): Promise<Attestation | null> {
+export async function query(
+  claimHash: IRequestForAttestation['rootHash']
+): Promise<Attestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }

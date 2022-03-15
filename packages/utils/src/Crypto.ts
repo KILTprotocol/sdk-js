@@ -30,6 +30,7 @@ import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
+import type { HexString } from '@polkadot/util/types'
 import jsonabc from './jsonabc.cjs'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
@@ -221,7 +222,7 @@ export function hash(value: CryptoInput, bitLength?: BitLength): Uint8Array {
  * @param value Value to be hashed.
  * @returns Blake2b hash as hex string.
  */
-export function hashStr(value: CryptoInput): string {
+export function hashStr(value: CryptoInput): HexString {
   return u8aToHex(hash(value))
 }
 
@@ -258,7 +259,7 @@ export function encodeObjectAsStr(
 export function hashObjectAsStr(
   value: Record<string, any> | string | number | boolean,
   nonce?: string
-): string {
+): HexString {
   let objectAsStr = encodeObjectAsStr(value)
   if (nonce) {
     objectAsStr = nonce + objectAsStr
@@ -359,7 +360,7 @@ export function decryptAsymmetricAsStr(
  * @returns String representation of hash.
  */
 export interface Hasher {
-  (value: string, nonce?: string): string
+  (value: string, nonce?: string): HexString
 }
 
 /**
@@ -396,9 +397,9 @@ export function hashStatements(
   statements: string[],
   options: HashingOptions = {}
 ): Array<{
-  digest: string
+  digest: HexString
   statement: string
-  saltedHash: string
+  saltedHash: HexString
   nonce: string
 }> {
   // apply defaults

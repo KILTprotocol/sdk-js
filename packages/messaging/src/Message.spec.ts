@@ -189,7 +189,7 @@ describe('Messaging', () => {
       {
         type: Message.BodyType.REQUEST_CREDENTIAL,
         content: {
-          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+          cTypes: [{ cTypeHash: `${Crypto.hashStr('0x12345678')}` }],
         },
       },
       aliceLightDid.uri,
@@ -255,7 +255,7 @@ describe('Messaging', () => {
 
   it('verifies the message with sender is the owner (as full DID)', async () => {
     const content = RequestForAttestation.fromClaim({
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceFullDid.uri,
       contents: {},
     })
@@ -263,7 +263,7 @@ describe('Messaging', () => {
 
     const quoteData: IQuote = {
       attesterDid: bobFullDid.uri,
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
         net: 23.4,
@@ -321,7 +321,7 @@ describe('Messaging', () => {
     const attestation = {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobFullDid.uri,
       revoked: false,
     }
@@ -391,7 +391,7 @@ describe('Messaging', () => {
   it('verifies the message with sender is the owner (as light DID)', async () => {
     // Create request for attestation to the light DID with no encoded details
     const content = RequestForAttestation.fromClaim({
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceLightDid.uri,
       contents: {},
     })
@@ -399,7 +399,7 @@ describe('Messaging', () => {
     const date: string = new Date(2019, 11, 10).toISOString()
     const quoteData: IQuote = {
       attesterDid: bobLightDid.uri,
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
         net: 23.4,
@@ -434,14 +434,14 @@ describe('Messaging', () => {
 
     // Create request for attestation to the light DID with encoded details
     const contentWithEncodedDetails = RequestForAttestation.fromClaim({
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceLightDidWithDetails.uri,
       contents: {},
     })
 
     const quoteDataEncodedDetails: IQuote = {
       attesterDid: bobLightDidWithDetails.uri,
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
         net: 23.4,
@@ -521,7 +521,7 @@ describe('Messaging', () => {
     const attestation = {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobLightDid.uri,
       revoked: false,
     }
@@ -536,7 +536,7 @@ describe('Messaging', () => {
     const attestationWithEncodedDetails = {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
-      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobLightDidWithDetails.uri,
       revoked: false,
     }

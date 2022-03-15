@@ -16,6 +16,7 @@ import {
   IDelegationHierarchyDetails,
   Permission,
   DidUri,
+  ICType,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -170,7 +171,7 @@ describe('DelegationNode', () => {
         [hierarchyId]: {
           id: hierarchyId,
           cTypeHash:
-            'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84',
+            '0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84',
         },
       }
 
@@ -197,7 +198,7 @@ describe('DelegationNode', () => {
 
       expect(hierarchyDetails).toBeDefined()
       expect(hierarchyDetails.cTypeHash).toBe(
-        'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
+        '0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
       )
     })
   })
@@ -537,7 +538,7 @@ describe('DelegationNode', () => {
 })
 
 describe('DelegationHierarchy', () => {
-  let ctypeHash: string
+  let ctypeHash: ICType['hash']
   let ROOT_IDENTIFIER: string
   let ROOT_SUCCESS: string
 

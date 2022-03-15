@@ -371,6 +371,7 @@ describe('RequestForAttestation', () => {
     )
     expect(Credential.isICredential(testAttestation)).toBeTruthy()
     const { cTypeHash } = testAttestation.attestation
+    // @ts-ignore
     testAttestation.attestation.cTypeHash = [
       cTypeHash.slice(0, 15),
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),

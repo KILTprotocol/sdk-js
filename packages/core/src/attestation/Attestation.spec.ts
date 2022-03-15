@@ -24,6 +24,7 @@ import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
+import type { HexString } from '@polkadot/util/types'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
@@ -182,12 +183,10 @@ describe('Attestation', () => {
     }).toThrow()
   })
   it('error check should throw errors on faulty Attestations', () => {
-    const { cTypeHash, claimHash } = {
-      cTypeHash:
-        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-      claimHash:
-        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
-    }
+    const cTypeHash: HexString =
+      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff'
+    const claimHash: HexString =
+      '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557'
 
     const everything = {
       claimHash,
@@ -197,6 +196,7 @@ describe('Attestation', () => {
       delegationId: null,
     }
 
+    // @ts-ignore
     const noClaimHash = {
       claimHash: '',
       cTypeHash,
@@ -205,6 +205,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
+    // @ts-ignore
     const noCTypeHash = {
       claimHash,
       cTypeHash: '',

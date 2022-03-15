@@ -127,6 +127,7 @@ describe('Claim', () => {
     // build request for attestation with legitimations
     request = RequestForAttestation.fromClaim(claim)
 
+    // @ts-ignore
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',
       cost: invalidCost,

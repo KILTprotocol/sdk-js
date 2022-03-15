@@ -25,6 +25,8 @@
 
 import {
   DidVerificationKey,
+  IAttestation,
+  ICType,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
@@ -169,7 +171,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns The CType hash associated with the delegation hierarchy.
    */
-  public async getCTypeHash(): Promise<string> {
+  public async getCTypeHash(): Promise<ICType['hash']> {
     return this.getHierarchyDetails().then((details) => details.cTypeHash)
   }
 
@@ -222,7 +224,7 @@ export class DelegationNode implements IDelegationNode {
   public async getAttestations(): Promise<Attestation[]> {
     const attestationHashes = await this.getAttestationHashes()
     const attestations = await Promise.all(
-      attestationHashes.map((claimHash: string) => {
+      attestationHashes.map((claimHash) => {
         return queryAttestation(claimHash)
       })
     )
@@ -235,7 +237,9 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns Promise containing all attestation hashes attested with this node.
    */
-  public async getAttestationHashes(): Promise<string[]> {
+  public async getAttestationHashes(): Promise<
+    Array<IAttestation['claimHash']>
+  > {
     return getAttestationHashes(this.id)
   }
 
