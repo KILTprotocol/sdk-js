@@ -11,7 +11,6 @@
 
 import type { ICredential, IClaim, KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { getRevokeTx, getRemoveTx } from '../attestation/Attestation.chain'
