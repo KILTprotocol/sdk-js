@@ -15,7 +15,7 @@ import {
   DidResolvedDetails,
   DidServiceEndpoint,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   KeyringPair,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
@@ -87,7 +87,7 @@ function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
     async (
-      didIdentifier: IDidIdentifier
+      didIdentifier: DidIdentifier
     ): Promise<IDidChainRecordJSON | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
@@ -137,7 +137,7 @@ jest.mock('../Did.chain', () => {
   )
   const queryKey = jest.fn(
     async (
-      didIdentifier: IDidIdentifier,
+      didIdentifier: DidIdentifier,
       keyId: DidKey['id']
     ): Promise<DidKey | null> => {
       const details = await queryDetails(didIdentifier)
@@ -146,7 +146,7 @@ jest.mock('../Did.chain', () => {
   )
   const queryServiceEndpoint = jest.fn(
     async (
-      didIdentifier: IDidIdentifier,
+      didIdentifier: DidIdentifier,
       serviceId: DidServiceEndpoint['id']
     ): Promise<DidServiceEndpoint | null> => {
       switch (didIdentifier) {
@@ -158,7 +158,7 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: IDidIdentifier): Promise<DidServiceEndpoint[]> => {
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
       switch (didIdentifier) {
         case identifierWithServiceEndpoints:
           return [
@@ -177,7 +177,7 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryDidDeletionStatus = jest.fn(
-    async (didIdentifier: IDidIdentifier): Promise<boolean> => {
+    async (didIdentifier: DidIdentifier): Promise<boolean> => {
       return didIdentifier === deletedIdentifier
     }
   )
@@ -517,7 +517,7 @@ describe('When resolving a light DID', () => {
         'full'
       ),
     })
-    expect(details?.uri).toStrictEqual<IDidIdentifier>(migratedDid)
+    expect(details?.uri).toStrictEqual<DidIdentifier>(migratedDid)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',

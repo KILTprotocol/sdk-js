@@ -9,7 +9,7 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
 import type {
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   IIdentity,
   KeystoreSigner,
   DidUri,
@@ -51,10 +51,10 @@ const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
 
 export class LightDidDetails extends DidDetails {
-  public readonly identifier: IDidIdentifier
+  public readonly identifier: DidIdentifier
 
   private constructor(
-    identifier: IDidIdentifier,
+    identifier: DidIdentifier,
     {
       uri,
       keys,
@@ -204,7 +204,7 @@ export class LightDidDetails extends DidDetails {
    * @returns The resulting [[LightDidDetails]].
    */
   public static fromIdentifier(
-    identifier: IDidIdentifier,
+    identifier: DidIdentifier,
     keyType: LightDidSupportedVerificationKeyType = VerificationKeyType.Sr25519
   ): LightDidDetails {
     const authenticationKey: NewLightDidAuthenticationKey = {

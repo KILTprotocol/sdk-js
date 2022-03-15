@@ -13,14 +13,14 @@ import type { IIdentity } from './Identity'
 /**
  * A KILT DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
  */
-export type IDidIdentifier =
+export type DidIdentifier =
   | IIdentity['address']
   | `light:00${IIdentity['address']}${string}`
 
 /**
  * A string containing a KILT DID Uri.
  */
-export type DidUri = `did:kilt:${IDidIdentifier}`
+export type DidUri = `did:kilt:${DidIdentifier}`
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.

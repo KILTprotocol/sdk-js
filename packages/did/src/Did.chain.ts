@@ -36,7 +36,7 @@ import {
   DidSignature,
   DidVerificationKey,
   EncryptionKeyType,
-  IDidIdentifier,
+  DidIdentifier,
   IIdentity,
   KeyRelationship,
   KeystoreSigner,
@@ -105,7 +105,7 @@ interface IServiceEndpointChainRecordCodec extends Struct {
 // Query a full DID given the identifier (a KILT address for v1).
 // Interacts with the Did storage map.
 async function queryDidEncoded(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<Option<IDidChainRecordCodec>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
@@ -125,7 +125,7 @@ async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
 // Query a DID service given the DID identifier and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryServiceEncoded(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   serviceId: string
 ): Promise<Option<IServiceEndpointChainRecordCodec>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -137,7 +137,7 @@ async function queryServiceEncoded(
 // Query all services for a DID given the DID identifier.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryAllServicesEncoded(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<IServiceEndpointChainRecordCodec[]> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedEndpoints = await api.query.did.serviceEndpoints.entries<
@@ -149,7 +149,7 @@ async function queryAllServicesEncoded(
 // Query the # of services stored under a DID without fetching all the services.
 // Interacts with the DidEndpointsCount storage map.
 async function queryEndpointsCountsEncoded(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<u32> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.didEndpointsCount<u32>(didIdentifier)
@@ -243,7 +243,7 @@ function decodeDidChainRecord(
 }
 
 export async function queryDetails(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<IDidChainRecordJSON | null> {
   const result = await queryDidEncoded(didIdentifier)
   if (result.isNone) {
@@ -253,7 +253,7 @@ export async function queryDetails(
 }
 
 export async function queryKey(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   keyId: DidKey['id']
 ): Promise<DidKey | null> {
   const didDetails = await queryDetails(didIdentifier)
@@ -277,14 +277,14 @@ function decodeServiceChainRecord(
 }
 
 export async function queryServiceEndpoints(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<DidServiceEndpoint[]> {
   const encoded = await queryAllServicesEncoded(didIdentifier)
   return encoded.map((e) => decodeServiceChainRecord(e))
 }
 
 export async function queryServiceEndpoint(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   serviceId: DidServiceEndpoint['id']
 ): Promise<DidServiceEndpoint | null> {
   const serviceEncoded = await queryServiceEncoded(didIdentifier, serviceId)
@@ -294,19 +294,19 @@ export async function queryServiceEndpoint(
 }
 
 export async function queryEndpointsCounts(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<BN> {
   const endpointsCountEncoded = await queryEndpointsCountsEncoded(didIdentifier)
   return endpointsCountEncoded.toBn()
 }
 
-export async function queryNonce(didIdentifier: IDidIdentifier): Promise<BN> {
+export async function queryNonce(didIdentifier: DidIdentifier): Promise<BN> {
   const encoded = await queryDidEncoded(didIdentifier)
   return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
 }
 
 export async function queryDidDeletionStatus(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
@@ -322,7 +322,7 @@ export async function queryDepositAmount(): Promise<BN> {
   return encodedDeposit.toBn()
 }
 
-export async function queryDeletedDidIdentifiers(): Promise<IDidIdentifier[]> {
+export async function queryDeletedDidIdentifiers(): Promise<DidIdentifier[]> {
   const encodedIdentifiers = await queryDeletedDidsEncoded()
   return encodedIdentifiers.map((id) => id.toHuman())
 }
@@ -333,7 +333,7 @@ export type PublicKeyEnum = Record<string, Uint8Array>
 export type SignatureEnum = Record<string, Uint8Array>
 
 export type AuthorizeCallInput = {
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
   txCounter: AnyNumber
   call: Extrinsic
   submitter: IIdentity['address']
@@ -341,7 +341,7 @@ export type AuthorizeCallInput = {
 }
 
 interface IDidAuthorizedCallOperation extends Struct {
-  did: IDidIdentifier
+  did: DidIdentifier
   txCounter: u64
   call: Call
   submitter: GenericAccountId
@@ -571,7 +571,7 @@ export async function getDeleteDidExtrinsic(
 }
 
 export async function getReclaimDepositExtrinsic(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   endpointsCount: BN
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()

@@ -15,7 +15,7 @@ import {
   DidVerificationKey,
   EncryptionKeyType,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   IDidResolver,
   NewDidKey,
   VerificationKeyRelationship,
@@ -55,7 +55,7 @@ export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
   Promise.resolve(keys[0] || null)
 
 export function getKiltDidFromIdentifier(
-  identifier: IDidIdentifier,
+  identifier: DidIdentifier,
   didType: 'full' | 'light',
   version?: number,
   encodedDetails?: string
@@ -76,7 +76,7 @@ export type IDidParsingResult = {
   did: IDidDetails['uri']
   version: number
   type: 'light' | 'full'
-  identifier: IDidIdentifier
+  identifier: DidIdentifier
   fragment?: string
   authKeyTypeEncoding?: string
   encodedDetails?: string
@@ -123,7 +123,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
 
 export function getIdentifierFromKiltDid(
   did: IDidDetails['uri']
-): IDidIdentifier {
+): DidIdentifier {
   return parseDidUri(did).identifier
 }
 
