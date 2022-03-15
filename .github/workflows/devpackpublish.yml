@@ -33,7 +33,7 @@ jobs:
       - name: Set all other packages to same version
         env:
           PACKAGE_VERSION: ${{ steps.package_version.outputs.package_version }}
-        run: yarn set:version $PACKAGE_VERSION
+        run: yarn set:version $PACKAGE_VERSION --allow-same-version
       - name: Build packages
         run: yarn run build
       - name: Bundle library
