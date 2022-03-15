@@ -13,6 +13,7 @@ import {
   DidKey,
   DidPublicKey,
   DidResolvedDetails,
+  DidResourceUri,
   DidUri,
   EncryptionKeyType,
   ICredential,
@@ -109,7 +110,10 @@ const mockResolver = {
   ): Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
   > => {
-    return (await resolveKey(didUri)) || resolveDoc(didUri as DidUri)
+    return (
+      (await resolveKey(didUri as DidResourceUri)) ||
+      resolveDoc(didUri as DidUri)
+    )
   },
 } as IDidResolver
 

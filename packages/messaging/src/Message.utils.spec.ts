@@ -74,6 +74,7 @@ import type {
   DidPublicKey,
   ResolvedDidKey,
   DidUri,
+  DidResourceUri,
 } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import {
@@ -296,7 +297,7 @@ describe('Messaging Utilities', () => {
       resolveDoc,
       resolveKey,
       resolve: async (did: string) => {
-        return resolveKey(did) || resolveDoc(did as DidUri)
+        return resolveKey(did as DidResourceUri) || resolveDoc(did as DidUri)
       },
     } as IDidResolver
 

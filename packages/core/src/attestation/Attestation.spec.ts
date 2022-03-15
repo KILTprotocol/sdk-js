@@ -213,6 +213,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
+    // @ts-ignore
     const malformedOwner = {
       claimHash,
       cTypeHash,

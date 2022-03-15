@@ -9,6 +9,7 @@ import {
   DidPublicKey,
   DidPublicServiceEndpoint,
   DidResolvedDetails,
+  DidResourceUri,
   IDidDetails,
   IDidResolver,
   ResolvedDidKey,
@@ -222,7 +223,11 @@ export async function resolve(
   const { fragment, did } = parseDidUri(didUri)
 
   if (fragment) {
-    return resolveKey(didUri) || resolveServiceEndpoint(didUri) || null
+    return (
+      resolveKey(didUri as DidResourceUri) ||
+      resolveServiceEndpoint(didUri as DidResourceUri) ||
+      null
+    )
   }
   return resolveDoc(did)
 }

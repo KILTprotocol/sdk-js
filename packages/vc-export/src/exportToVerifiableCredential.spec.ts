@@ -11,6 +11,7 @@
 
 import {
   DidDocumentPublicKeyType,
+  DidPublicKey,
   DidUri,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
@@ -205,7 +206,7 @@ describe('proofs', () => {
   let documentLoader: DocumentLoader
   beforeAll(() => {
     VC = toVC.fromCredential(credential)
-    const keyId: string = VC.proof[0].verificationMethod
+    const keyId: DidPublicKey['uri'] = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
       uri: keyId,
       type: DidDocumentPublicKeyType.Ed25519VerificationKey,

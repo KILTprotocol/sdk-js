@@ -107,7 +107,7 @@ describe('CType', () => {
     }
     const invalidAddressCtype: ICType = {
       ...claimCtype,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // @ts-ignore
       owner: claimCtype.owner!.replace('4', 'D'),
     }
 
