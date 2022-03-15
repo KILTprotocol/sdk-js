@@ -72,7 +72,7 @@ beforeAll(async () => {
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DidChain.queryDepositAmount()
-  expect(depositAmount.toString()).toMatchInlineSnapshot('2007900000000000')
+  expect(depositAmount.toString()).toMatchInlineSnapshot('"2007900000000000"')
 })
 
 describe('write and didDeleteTx', () => {

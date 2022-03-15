@@ -104,7 +104,7 @@ beforeAll(async () => {
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DelegationNode.queryDepositAmount()
-  expect(depositAmount.toString()).toMatchInlineSnapshot('1000000000000000')
+  expect(depositAmount.toString()).toMatchInlineSnapshot('"1000000000000000"')
 })
 
 it('should be possible to delegate attestation rights', async () => {
