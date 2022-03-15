@@ -11,9 +11,16 @@ import type { DidPublicKey } from './DidDocumentExporter'
 import type { IIdentity } from './Identity'
 
 /**
- * A DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
+ * A KILT DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
  */
-export type IDidIdentifier = IIdentity['address']
+export type IDidIdentifier =
+  | IIdentity['address']
+  | `light:00${IIdentity['address']}${string}`
+
+/**
+ * A string containing a KILT DID Uri.
+ */
+export type DidUri = `did:kilt:${IDidIdentifier}`
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
@@ -130,7 +137,7 @@ export interface IDidDetails {
   /**
    * The decentralized identifier (DID) to which the remaining info pertains.
    */
-  uri: string
+  uri: DidUri
   /**
    * Retrieves a particular public key record via its id.
    *

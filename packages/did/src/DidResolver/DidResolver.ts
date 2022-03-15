@@ -163,17 +163,17 @@ export async function resolveKey(
 /**
  * Resolve a DID service URI to the service details.
  *
- * @param didUri The DID service URI.
+ * @param serviceUri The DID service URI.
  * @returns The details associated with the service endpoint.
  */
 export async function resolveServiceEndpoint(
-  didUri: DidPublicServiceEndpoint['uri']
+  serviceUri: DidPublicServiceEndpoint['uri']
 ): Promise<ResolvedDidServiceEndpoint | null> {
-  const { identifier, fragment: serviceId, type } = parseDidUri(didUri)
+  const { identifier, fragment: serviceId, type, did } = parseDidUri(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
   }
 
   switch (type) {
@@ -183,28 +183,28 @@ export async function resolveServiceEndpoint(
         return null
       }
       return {
-        uri: didUri,
+        uri: serviceUri,
         type: serviceEndpoint.types,
         serviceEndpoint: serviceEndpoint.urls,
       }
     }
     case 'light': {
-      const resolvedDetails = await resolveDoc(didUri)
+      const resolvedDetails = await resolveDoc(did)
       if (!resolvedDetails) {
-        throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+        throw SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
       }
       const serviceEndpoint = resolvedDetails.details?.getEndpoint(serviceId)
       if (!serviceEndpoint) {
         return null
       }
       return {
-        uri: didUri,
+        uri: serviceUri,
         type: serviceEndpoint.types,
         serviceEndpoint: serviceEndpoint.urls,
       }
     }
     default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(did)
   }
 }
 
@@ -219,12 +219,12 @@ export async function resolve(
 ): Promise<
   DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
 > {
-  const { fragment } = parseDidUri(didUri)
+  const { fragment, did } = parseDidUri(didUri)
 
   if (fragment) {
     return resolveKey(didUri) || resolveServiceEndpoint(didUri) || null
   }
-  return resolveDoc(didUri)
+  return resolveDoc(did)
 }
 
 export const DidResolver: IDidResolver = {

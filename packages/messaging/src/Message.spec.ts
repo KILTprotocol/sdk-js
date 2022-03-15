@@ -13,6 +13,7 @@ import {
   DidKey,
   DidPublicKey,
   DidResolvedDetails,
+  DidUri,
   EncryptionKeyType,
   ICredential,
   IDidDetails,
@@ -87,14 +88,14 @@ const resolveDoc = async (
   return null
 }
 const resolveKey = async (
-  did: DidPublicKey['uri']
+  keyUri: DidPublicKey['uri']
 ): Promise<ResolvedDidKey | null> => {
-  const { fragment } = DidUtils.parseDidUri(did)
-  const { details } = (await resolveDoc(did)) as DidResolvedDetails
+  const { fragment, did } = DidUtils.parseDidUri(keyUri)
+  const { details } = (await resolveDoc(did as DidUri)) as DidResolvedDetails
   const key = details?.getKey(fragment!) as DidKey
   return {
     controller: details!.uri,
-    uri: did,
+    uri: keyUri,
     publicKey: key.publicKey,
     type: key.type,
   }
@@ -108,7 +109,7 @@ const mockResolver = {
   ): Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
   > => {
-    return (await resolveKey(didUri)) || resolveDoc(didUri)
+    return (await resolveKey(didUri)) || resolveDoc(didUri as DidUri)
   },
 } as IDidResolver
 

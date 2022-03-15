@@ -15,6 +15,7 @@ import {
   IDelegationNode,
   IDelegationHierarchyDetails,
   Permission,
+  DidUri,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -69,7 +70,7 @@ describe('DelegationNode', () => {
   let hierarchyId: string
   let parentId: string
   let hashList: string[]
-  let addresses: string[]
+  let addresses: DidUri[]
 
   beforeAll(() => {
     successId = Crypto.hashStr('success')
@@ -82,8 +83,9 @@ describe('DelegationNode', () => {
       .map<string>((_val, index) => Crypto.hashStr(`${index + 1}`))
     addresses = Array(10002)
       .fill('')
-      .map<string>((_val, index) =>
-        encodeAddress(Crypto.hash(`${index}`, 256), 38)
+      .map<DidUri>(
+        (_val, index) =>
+          `did:kilt:${encodeAddress(Crypto.hash(`${index}`, 256), 38)}`
       )
   })
 
@@ -443,7 +445,10 @@ describe('DelegationNode', () => {
     })
 
     it('returns null if looking for non-existent account', async () => {
-      const noOnesAddress = encodeAddress(Crypto.hash('-1', 256), 38)
+      const noOnesAddress: DidUri = `did:kilt:${encodeAddress(
+        Crypto.hash('-1', 256),
+        38
+      )}`
       await Promise.all([
         expect(
           nodes[hashList[10]].findAncestorOwnedBy(noOnesAddress)
@@ -484,6 +489,7 @@ describe('DelegationNode', () => {
         permissions: [Permission.DELEGATE],
         parentId: undefined,
         revoked: false,
+        childrenIds: [],
       } as IDelegationNode
 
       // @ts-expect-error
@@ -496,6 +502,7 @@ describe('DelegationNode', () => {
         permissions: [Permission.DELEGATE],
         parentId: undefined,
         revoked: false,
+        childrenIds: [],
       } as IDelegationNode
 
       const malformedParentIdDelegationNode = {
@@ -505,6 +512,7 @@ describe('DelegationNode', () => {
         permissions: [Permission.DELEGATE],
         parentId: 'malformed',
         revoked: false,
+        childrenIds: [],
       } as IDelegationNode
 
       expect(() => errorCheck(malformedPremissionsDelegationNode)).toThrowError(

@@ -11,6 +11,7 @@
 
 import {
   DidDocumentPublicKeyType,
+  DidUri,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { Attestation, Credential, CType } from '@kiltprotocol/core'
@@ -211,7 +212,7 @@ describe('proofs', () => {
       publicKeyBase58: base58Encode(
         Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)
       ),
-      controller: VC.credentialSubject['@id'] as string,
+      controller: VC.credentialSubject['@id'] as DidUri,
     }
     documentLoader = (url) => {
       if (url === keyId) {

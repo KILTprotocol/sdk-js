@@ -20,6 +20,7 @@ import type {
   CompressedRequestForAttestation,
   IRequestForAttestation,
   DidSignature,
+  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
@@ -40,7 +41,7 @@ const rawCType: ICType['schema'] = {
 }
 
 function buildRequestForAttestation(
-  claimerDid: string,
+  claimerDid: DidUri,
   contents: IClaimContents,
   legitimations: Credential[]
 ): RequestForAttestation {
@@ -311,6 +312,7 @@ describe('RequestForAttestation', () => {
         []
       ),
     } as IRequestForAttestation
+    // @ts-ignore
     builtRequestMalformedRootHash.rootHash = [
       builtRequestMalformedRootHash.rootHash.slice(0, 15),
       (

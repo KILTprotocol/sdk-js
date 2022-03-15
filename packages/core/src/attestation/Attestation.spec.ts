@@ -15,6 +15,7 @@ import type {
   IAttestation,
   CompressedAttestation,
   ICType,
+  DidUri,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -39,9 +40,9 @@ beforeAll(() => {
 })
 
 describe('Attestation', () => {
-  const identityAlice =
+  const identityAlice: DidUri =
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
-  const identityBob =
+  const identityBob: DidUri =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
   let testCType: CType

@@ -21,6 +21,7 @@ import {
   ResolvedDidServiceEndpoint,
   VerificationKeyType,
   EncryptionKeyType,
+  DidUri,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
@@ -406,7 +407,7 @@ describe('When resolving a full DID', () => {
       identifierWithAuthenticationKey,
       'full'
     )
-    const keyIdUri = `${fullDidWithAuthenticationKey}#auth`
+    const keyIdUri: DidUri = `${fullDidWithAuthenticationKey}#auth`
     const { details, metadata } = (await DidResolver.resolveDoc(
       keyIdUri
     )) as DidResolvedDetails
@@ -548,7 +549,7 @@ describe('When resolving a light DID', () => {
         type: VerificationKeyType.Sr25519,
       },
     })
-    const keyIdUri = `${lightDid.uri}#auth`
+    const keyIdUri: DidUri = `${lightDid.uri}#auth`
     const { details, metadata } = (await DidResolver.resolveDoc(
       keyIdUri
     )) as DidResolvedDetails

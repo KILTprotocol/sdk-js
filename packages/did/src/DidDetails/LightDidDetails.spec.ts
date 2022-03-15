@@ -10,6 +10,7 @@ import { Keyring } from '@polkadot/api'
 import {
   DidKey,
   DidServiceEndpoint,
+  DidUri,
   EncryptionKeyType,
   KeyRelationship,
   VerificationKeyType,
@@ -377,7 +378,7 @@ describe('When creating an instance from a URI', () => {
     const expectedLightDidDetails: LightDidDetails =
       LightDidDetails.fromDetails(creationOptions)
 
-    const uriWithFragment = `${expectedLightDidDetails.uri}#authentication`
+    const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
 
     expect(() => LightDidDetails.fromUri(uriWithFragment, true)).toThrow()
     expect(() => LightDidDetails.fromUri(uriWithFragment, false)).not.toThrow()
@@ -400,6 +401,7 @@ describe('When creating an instance from a URI', () => {
       `did:kilt:light:00${validKiltAddress}:randomdetails`,
     ]
     incorrectURIs.forEach((uri) => {
+      // @ts-ignore
       expect(() => LightDidDetails.fromUri(uri)).toThrow()
     })
   })

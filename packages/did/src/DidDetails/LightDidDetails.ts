@@ -12,6 +12,7 @@ import type {
   IDidIdentifier,
   IIdentity,
   KeystoreSigner,
+  DidUri,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
 
@@ -109,7 +110,7 @@ export class LightDidDetails extends DidDetails {
 
     let uri = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
     if (encodedDetails) {
-      uri = uri.concat(':', encodedDetails)
+      uri = uri.concat(':', encodedDetails) as DidUri
     }
 
     // Authentication key always has the #authentication ID.

@@ -11,7 +11,7 @@
  */
 
 import type { ICType } from './CType'
-import type { DidSignature } from './DidDetails'
+import type { DidSignature, IDidDetails } from './DidDetails'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>
@@ -19,7 +19,7 @@ export interface ICostBreakdown {
   gross: number
 }
 export interface IQuote {
-  attesterDid: string
+  attesterDid: IDidDetails['uri']
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
   currency: string
