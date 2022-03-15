@@ -12,10 +12,11 @@ import {
   IDidDetails,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DecoderUtils } from '@kiltprotocol/utils'
+import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import type { Option, Bytes, Struct, u128 } from '@polkadot/types'
+import type { Option, Bytes, Struct, u128, u32 } from '@polkadot/types'
 import type { AnyNumber } from '@polkadot/types/types'
+import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import { Utils as DidUtils } from '../index.js'
@@ -34,16 +35,39 @@ interface Web3NameOwner extends Struct {
  */
 export type Web3Name = string
 
+function checkWeb3NameInputConstraints(
+  api: ApiPromise,
+  web3Name: Web3Name
+): void {
+  const [minLength, maxLength] = [
+    (api.consts.web3Names.minNameLength as u32).toNumber(),
+    (api.consts.web3Names.maxNameLength as u32).toNumber(),
+  ]
+
+  if (web3Name.length < minLength) {
+    throw SDKErrors.ERROR_WEB3_NAME_ERROR(
+      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}.`
+    )
+  }
+  if (web3Name.length > maxLength) {
+    throw SDKErrors.ERROR_WEB3_NAME_ERROR(
+      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}.`
+    )
+  }
+}
+
 /**
  * Returns a extrinsic to claim a new web3name.
  *
  * @param name Web3Name that should be claimed.
+ * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
  * @returns The [[SubmittableExtrinsic]] for the `claim` call.
  */
 export async function getClaimTx(
   name: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  checkWeb3NameInputConstraints(blockchain.api, name)
   return blockchain.api.tx.web3Names.claim(name)
 }
 
@@ -61,12 +85,14 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
  * Returns a extrinsic to release a web3name by the account that owns the deposit.
  *
  * @param name Web3Name that should be released.
+ * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
  * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
  */
 export async function getReclaimDepositTx(
   name: Web3Name
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  checkWeb3NameInputConstraints(blockchain.api, name)
   return blockchain.api.tx.web3Names.reclaimDeposit(name)
 }
 
