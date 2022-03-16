@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/types",
-  "version": "0.26.0-14",
+  "version": "0.27.0-2",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -30,9 +30,10 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
-    "@polkadot/api": "^6.11.1",
-    "@polkadot/keyring": "^8.1.2",
-    "@polkadot/types": "^6.11.1",
+    "@polkadot/api": "^7.10.1",
+    "@polkadot/api-augment": "^7.10.1",
+    "@polkadot/keyring": "^8.4.1",
+    "@polkadot/types": "^7.10.1",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {

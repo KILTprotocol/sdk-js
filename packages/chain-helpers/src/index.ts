@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import '@polkadot/api-augment'
+
 export { ErrorHandler } from './errorhandling/index.js'
 export { BlockchainApiConnection } from './blockchainApiConnection/index.js'
 export {

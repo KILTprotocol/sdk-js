@@ -1,11 +1,8 @@
-name: Test with updated polkadot dependencies
+name: Compatible with latest dependencies
 
 on:
   schedule:
     - cron: 59 23 * * SAT
-
-env:
-  YARN_ENABLE_IMMUTABLE_INSTALLS: false
 
 jobs:
   build:
@@ -33,10 +30,22 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.node-version }}-updated-dependencies
           restore-keys: |
             ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+
       - name: delete yarn.lock
         run: rm -f yarn.lock
       - name: run yarn install
         run: yarn install
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
+
+      - name: list dependencies
+        run: echo "$(yarn info -A --name-only --json)" > locked_dependencies.txt
+      - name: upload dependencies list
+        uses: actions/upload-artifact@v3
+        with:
+          name: deps-${{ matrix.node-version }}
+          path: locked_dependencies.txt
+
       - name: yarn build
         run: yarn build
       - name: zip build
@@ -77,10 +86,10 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc']
-        required: ['optional']
+        image: ['latest']
+        required: ['required']
         include:
-          - image: 'latest-develop'
+          - image: 'latest-master'
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
@@ -115,3 +124,44 @@ jobs:
           sleep 5s
           yarn test:integration:run
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
+
+  create-issue:
+    runs-on: ubuntu-latest
+    needs: [test, integration_test]
+    if: failure()
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: deps-14.x
+      - name: set dependencies env
+        run: |
+          echo 'DEPS<<EOF' >> $GITHUB_ENV
+          cat locked_dependencies.txt >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Set date env
+        run: |
+          echo "TODAY=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+      - name: issue-bot
+        uses: imjohnbo/issue-bot@v3
+        with:
+          labels: 'bug, incompatible dependencies, automation'
+          pinned: false
+          close-previous: true
+          linked-comments: true
+          title: SDK no longer compatible with latest dependecies
+          body: |-
+            ## Incompatibilities detected
+
+            A [scheduled test workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) using the latest available dependencies matching our semver ranges has failed.
+            We may need to constrain dependency ranges in our `package.json` or introduce fixes to recover compatibility.
+            Below you can find a summary of depedency versions against which these tests were run.
+
+            _Note: This issue was **automatically created** as a result of scheduled CI tests on ${{env.TODAY}}._
+
+            <details>
+              <summary>Dependency versions</summary>
+
+              ${{env.DEPS}}
+            </details>
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

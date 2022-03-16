@@ -202,7 +202,7 @@ describe('When resolving a key', () => {
     ).resolves.toStrictEqual<ResolvedDidKey>({
       controller: fullDid,
       publicKey: new Uint8Array(32).fill(0),
-      id: keyIdUri,
+      uri: keyIdUri,
       type: VerificationKeyType.Ed25519,
     })
   })
@@ -245,7 +245,7 @@ describe('When resolving a service endpoint', () => {
     await expect(
       DidResolver.resolveServiceEndpoint(serviceIdUri)
     ).resolves.toStrictEqual<ResolvedDidServiceEndpoint>({
-      id: serviceIdUri,
+      uri: serviceIdUri,
       type: [`type-service-1`],
       serviceEndpoint: [`url-service-1`],
     })
@@ -299,7 +299,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual<IDidDetails['did']>(
+    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
       fullDidWithAuthenticationKey
     )
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
@@ -323,7 +323,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual<IDidDetails['did']>(fullDidWithAllKeys)
+    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(fullDidWithAllKeys)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'auth',
@@ -363,7 +363,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual<IDidDetails['did']>(
+    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
       fullDidWithServiceEndpoints
     )
     expect(details?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
@@ -414,7 +414,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual<IDidDetails['did']>(
+    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
       fullDidWithAuthenticationKey
     )
   })
@@ -433,14 +433,14 @@ describe('When resolving a light DID', () => {
       },
     })
     const { details, metadata } = (await DidResolver.resolve(
-      lightDidWithAuthenticationKey.did
+      lightDidWithAuthenticationKey.uri
     )) as DidResolvedDetails
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual<IDidDetails['did']>(
-      lightDidWithAuthenticationKey.did
+    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
+      lightDidWithAuthenticationKey.uri
     )
     expect(lightDidWithAuthenticationKey?.getKeys()).toStrictEqual<DidKey[]>([
       {
@@ -467,13 +467,13 @@ describe('When resolving a light DID', () => {
       ],
     })
     const { details, metadata } = (await DidResolver.resolve(
-      lightDid.did
+      lightDid.uri
     )) as DidResolvedDetails
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual<IDidDetails['did']>(lightDid.did)
+    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(lightDid.uri)
     expect(lightDid?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
@@ -516,7 +516,7 @@ describe('When resolving a light DID', () => {
         'full'
       ),
     })
-    expect(details?.did).toStrictEqual<IDidIdentifier>(migratedDid)
+    expect(details?.uri).toStrictEqual<IDidIdentifier>(migratedDid)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
@@ -548,7 +548,7 @@ describe('When resolving a light DID', () => {
         type: VerificationKeyType.Sr25519,
       },
     })
-    const keyIdUri = `${lightDid.did}#auth`
+    const keyIdUri = `${lightDid.uri}#auth`
     const { details, metadata } = (await DidResolver.resolveDoc(
       keyIdUri
     )) as DidResolvedDetails
@@ -556,6 +556,6 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.did).toStrictEqual<IDidDetails['did']>(lightDid.did)
+    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(lightDid.uri)
   })
 })

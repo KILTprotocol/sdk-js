@@ -16,8 +16,8 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import type { DidChain } from '@kiltprotocol/did'
-import { DidUtils } from '@kiltprotocol/did'
+import type { Chain as DidChain } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import {
   decodeDelegationNode,

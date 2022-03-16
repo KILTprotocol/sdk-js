@@ -41,7 +41,7 @@ export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
 }
 
 export async function countNodeDepth(
-  attester: IDidDetails['did'],
+  attester: IDidDetails['uri'],
   attestation: IAttestation
 ): Promise<number> {
   let delegationTreeTraversalSteps = 0

@@ -10,14 +10,14 @@ import { KeyRelationship } from '@kiltprotocol/types'
 
 import type { DidConstructorDetails } from '../types.js'
 
-import { validateKiltDid } from '../Did.utils.js'
+import { validateKiltDidUri } from '../Did.utils.js'
 
 export function checkDidCreationDetails({
-  did,
+  uri,
   keys,
   keyRelationships,
 }: DidConstructorDetails): void {
-  validateKiltDid(did, false)
+  validateKiltDidUri(uri, false)
   if (keyRelationships[KeyRelationship.authentication]?.size !== 1) {
     throw Error(
       `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`

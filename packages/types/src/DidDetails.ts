@@ -36,9 +36,9 @@ export type VerificationKeyRelationship =
  * Possible types for a DID verification key.
  */
 export enum VerificationKeyType {
-  Sr25519 = 'Sr25519',
-  Ed25519 = 'Ed25519',
-  Ecdsa = 'Ecdsa',
+  Sr25519 = 'sr25519',
+  Ed25519 = 'ed25519',
+  Ecdsa = 'ecdsa',
 }
 
 /**
@@ -49,7 +49,7 @@ export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
  * Possible types for a DID encryption key.
  */
 export enum EncryptionKeyType {
-  X25519 = 'X25519',
+  X25519 = 'x25519',
 }
 
 /**
@@ -130,7 +130,7 @@ export interface IDidDetails {
   /**
    * The decentralized identifier (DID) to which the remaining info pertains.
    */
-  did: string
+  uri: string
   /**
    * Retrieves a particular public key record via its id.
    *
@@ -175,6 +175,6 @@ export interface IDidDetails {
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
 export type DidSignature = {
-  keyId: DidPublicKey['id']
+  keyUri: DidPublicKey['uri']
   signature: string
 }

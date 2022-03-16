@@ -18,7 +18,7 @@ import type {
   CTypeSchemaWithoutId,
 } from '@kiltprotocol/types'
 import { jsonabc, Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { getOwner, isStored } from './CType.chain.js'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema.js'
 
@@ -130,7 +130,7 @@ export function errorCheck(input: ICType): void {
       input.schema.$id
     )
   }
-  if (!(input.owner === null || DidUtils.validateKiltDid(input.owner))) {
+  if (!(input.owner === null || DidUtils.validateKiltDidUri(input.owner))) {
     throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }

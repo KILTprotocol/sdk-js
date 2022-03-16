@@ -15,10 +15,9 @@ import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import {
   DemoKeystore,
   DemoKeystoreUtils,
-  DidMigrationHandler,
+  DidMigrationCallback,
   FullDidDetails,
   FullDidUpdateBuilder,
-  FullDidUpdateHandler,
   LightDidDetails,
 } from '@kiltprotocol/did'
 import {
@@ -143,9 +142,9 @@ export async function createEndowedTestAccount(
   return keypair
 }
 
-export function getDefaultMigrationHandler(
+export function getDefaultMigrationCallback(
   submitter: KeyringPair
-): DidMigrationHandler {
+): DidMigrationCallback {
   return async (e) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       reSign: true,
@@ -154,9 +153,9 @@ export function getDefaultMigrationHandler(
   }
 }
 
-export function getDefaultConsumeHandler(
+export function getDefaultSubmitCallback(
   submitter: KeyringPair
-): FullDidUpdateHandler {
+): DidMigrationCallback {
   return async (e) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       reSign: true,
@@ -174,19 +173,17 @@ export async function createFullDidFromLightDid(
   const fullDid = await lightDidForId.migrate(
     identity.address,
     keystore,
-    getDefaultMigrationHandler(identity)
+    getDefaultMigrationCallback(identity)
   )
 
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const authenticatedBatch = await new FullDidUpdateBuilder(api, fullDid)
     .setAttestationKey(fullDid.authenticationKey)
     .setDelegationKey(fullDid.authenticationKey)
-    .consume(keystore, identity.address)
+    .build(keystore, identity.address)
   await submitExtrinsicWithResign(authenticatedBatch, identity)
 
-  return FullDidDetails.fromChainInfo(
-    fullDid.identifier
-  ) as Promise<FullDidDetails>
+  return FullDidDetails.fromChainInfo(fullDid.uri) as Promise<FullDidDetails>
 }
 
 export async function createFullDidFromSeed(

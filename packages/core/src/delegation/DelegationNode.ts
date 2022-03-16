@@ -34,8 +34,12 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { DidKeySelectionHandler } from '@kiltprotocol/did'
-import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
+import type { DidKeySelectionCallback } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  Chain as DidChain,
+  Utils as DidUtils,
+} from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain.js'
@@ -68,7 +72,7 @@ export class DelegationNode implements IDelegationNode {
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
   private childrenIdentifiers: Array<IDelegationNode['id']> = []
-  public readonly account: IDidDetails['did']
+  public readonly account: IDidDetails['uri']
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean
@@ -292,9 +296,9 @@ export class DelegationNode implements IDelegationNode {
     delegeeDid: DidDetails,
     signer: KeystoreSigner,
     {
-      keySelection = DidUtils.defaultKeySelectionHandler,
+      keySelection = DidUtils.defaultKeySelectionCallback,
     }: {
-      keySelection?: DidKeySelectionHandler<DidVerificationKey>
+      keySelection?: DidKeySelectionCallback<DidVerificationKey>
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
@@ -302,7 +306,7 @@ export class DelegationNode implements IDelegationNode {
     )
     if (!authenticationKey) {
       throw SDKErrors.ERROR_DID_ERROR(
-        `Delegee ${delegeeDid.did} does not have any authentication key.`
+        `Delegee ${delegeeDid.uri} does not have any authentication key.`
       )
     }
     const delegeeSignature = await delegeeDid.signPayload(
@@ -366,7 +370,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    did: IDidDetails['did']
+    did: IDidDetails['uri']
   ): Promise<{ steps: number; node: DelegationNode | null }> {
     if (this.account === did) {
       return {
@@ -412,7 +416,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async getRevokeTx(
-    did: IDidDetails['did']
+    did: IDidDetails['uri']
   ): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {

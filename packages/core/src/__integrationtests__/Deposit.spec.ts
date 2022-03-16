@@ -12,7 +12,7 @@
 import {
   DemoKeystore,
   DemoKeystoreUtils,
-  DidChain,
+  Chain as DidChain,
   FullDidDetails,
   Web3Names,
 } from '@kiltprotocol/did'
@@ -103,7 +103,7 @@ async function checkRemoveFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getStoreTx()
@@ -131,7 +131,7 @@ async function checkRemoveFullDidAttestation(
   const balanceBeforeRemoving = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getRemoveTx(0)
@@ -162,7 +162,7 @@ async function checkReclaimFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getStoreTx()
@@ -181,7 +181,7 @@ async function checkReclaimFullDidAttestation(
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getReclaimDepositTx()
@@ -212,7 +212,7 @@ async function checkDeletedDidReclaimAttestation(
 ): Promise<void> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getStoreTx()
@@ -232,7 +232,7 @@ async function checkDeletedDidReclaimAttestation(
 
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
@@ -346,7 +346,7 @@ beforeAll(async () => {
   const claim = Claim.fromCTypeAndClaimContents(
     driversLicenseCType,
     rawClaim,
-    claimerLightDid.did
+    claimerLightDid.uri
   )
 
   requestForAttestation = RequestForAttestation.fromClaim(claim)
@@ -488,7 +488,7 @@ describe('Different deposits scenarios', () => {
       )
     ).resolves.not.toThrow()
   }, 120_000)
-  it.only('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
+  it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
     await expect(
       checkWeb3Deposit(testIdentities[9], testFullDidTen, keystore)
     ).resolves.toBeTruthy()

@@ -60,7 +60,7 @@ async function main(): Promise<void> {
     .then((keypair) => {
       return {
         publicKey: keypair.publicKey,
-        type: Kilt.Did.DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+        type: Kilt.Did.Utils.getVerificationKeyTypeForSigningAlgorithm(
           keypair.alg
         ),
       }
@@ -73,7 +73,7 @@ async function main(): Promise<void> {
     .then((keypair) => {
       return {
         publicKey: keypair.publicKey,
-        type: Kilt.Did.DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
+        type: Kilt.Did.Utils.getEncryptionKeyTypeForEncryptionAlgorithm(
           keypair.alg
         ),
       }
@@ -85,13 +85,13 @@ async function main(): Promise<void> {
   )
     .addEncryptionKey(attesterEncryptionKey)
     .setAttestationKey(attesterAuthenticationKey)
-    .consumeWithHandler(keystore, devAccount.address, async (tx) => {
+    .buildAndSubmit(keystore, devAccount.address, async (tx) => {
       await Kilt.BlockchainUtils.signAndSubmitTx(tx, devAccount, {
         resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
     })
-  console.log(`Attester DID: ${attesterFullDid.did}`)
+  console.log(`Attester DID: ${attesterFullDid.uri}`)
 
   /* 2.2 Build a CType */
   const ctype = Kilt.CType.fromSchema({
@@ -135,7 +135,7 @@ async function main(): Promise<void> {
       .then((keypair) => {
         return {
           publicKey: keypair.publicKey,
-          type: Kilt.Did.DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+          type: Kilt.Did.Utils.getVerificationKeyTypeForSigningAlgorithm(
             keypair.alg
           ) as Kilt.Did.LightDidSupportedVerificationKeyType,
         }
@@ -147,7 +147,7 @@ async function main(): Promise<void> {
     .then((keypair) => {
       return {
         publicKey: keypair.publicKey,
-        type: Kilt.Did.DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
+        type: Kilt.Did.Utils.getEncryptionKeyTypeForEncryptionAlgorithm(
           keypair.alg
         ),
       }
@@ -156,7 +156,7 @@ async function main(): Promise<void> {
     authenticationKey: claimerAuthenticationKey,
     encryptionKey: claimerEncryptionKey,
   })
-  console.log(`Claimer DID: ${claimerLightDid.did}`)
+  console.log(`Claimer DID: ${claimerLightDid.uri}`)
 
   /* 3.2 Build a claim */
   const rawClaim = {
@@ -166,7 +166,7 @@ async function main(): Promise<void> {
   const claim = Kilt.Claim.fromCTypeAndClaimContents(
     ctype,
     rawClaim,
-    claimerLightDid.did
+    claimerLightDid.uri
   )
   console.log('Claim:')
   console.log(JSON.stringify(claim, undefined, 2))
@@ -186,8 +186,8 @@ async function main(): Promise<void> {
       content: { requestForAttestation },
       type: Kilt.Message.BodyType.REQUEST_ATTESTATION,
     },
-    claimerLightDid.did,
-    attesterFullDid.did
+    claimerLightDid.uri,
+    attesterFullDid.uri
   )
   console.log('Request for attestation message:')
   console.log(JSON.stringify(requestForAttestationMessage, undefined, 2))
@@ -197,7 +197,7 @@ async function main(): Promise<void> {
       claimerLightDid.encryptionKey!.id,
       claimerLightDid,
       keystore,
-      attesterFullDid.assembleKeyId(attesterFullDid.encryptionKey!.id)
+      attesterFullDid.assembleKeyUri(attesterFullDid.encryptionKey!.id)
     )
 
   const decryptedRequestForAttestationMessage = await Kilt.Message.decrypt(
@@ -219,7 +219,7 @@ async function main(): Promise<void> {
   /* 4.1 Build an attestation */
   const attestation = Kilt.Attestation.fromRequestAndDid(
     extractedRequestForAttestation,
-    attesterFullDid.did
+    attesterFullDid.uri
   )
   console.log('Attestation:')
   console.log(JSON.stringify(attestation, undefined, 2))
@@ -256,7 +256,7 @@ async function main(): Promise<void> {
       .then((keypair) => {
         return {
           publicKey: keypair.publicKey,
-          type: Kilt.Did.DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+          type: Kilt.Did.Utils.getVerificationKeyTypeForSigningAlgorithm(
             keypair.alg
           ) as Kilt.Did.LightDidSupportedVerificationKeyType,
         }
@@ -268,7 +268,7 @@ async function main(): Promise<void> {
     .then((keypair) => {
       return {
         publicKey: keypair.publicKey,
-        type: Kilt.Did.DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
+        type: Kilt.Did.Utils.getEncryptionKeyTypeForEncryptionAlgorithm(
           keypair.alg
         ),
       }
@@ -277,7 +277,7 @@ async function main(): Promise<void> {
     authenticationKey: verifierAuthenticationKey,
     encryptionKey: verifierEncryptionKey,
   })
-  console.log(`Verifier DID: ${verifierLightDid.did}`)
+  console.log(`Verifier DID: ${verifierLightDid.uri}`)
 
   /* 5.2 Ask for credentials */
   const challenge = Kilt.Utils.UUID.generate()
@@ -286,13 +286,13 @@ async function main(): Promise<void> {
       type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
       content: {
         cTypes: [
-          { cTypeHash: ctype.hash, trustedAttesters: [attesterFullDid.did] },
+          { cTypeHash: ctype.hash, trustedAttesters: [attesterFullDid.uri] },
         ],
         challenge,
       },
     },
-    verifierLightDid.did,
-    claimerLightDid.did
+    verifierLightDid.uri,
+    claimerLightDid.uri
   )
   console.log('Request for credential message:')
   console.log(JSON.stringify(requestForCredentialMessage, undefined, 2))
@@ -312,8 +312,8 @@ async function main(): Promise<void> {
       content: [selectedCredential],
       type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
     },
-    claimerLightDid.did,
-    verifierLightDid.did
+    claimerLightDid.uri,
+    verifierLightDid.uri
   )
   console.log('Presentation message:')
   console.log(JSON.stringify(presentationMessage, undefined, 2))
@@ -322,7 +322,7 @@ async function main(): Promise<void> {
     claimerLightDid.encryptionKey!.id,
     claimerLightDid,
     keystore,
-    verifierLightDid.assembleKeyId(verifierLightDid.encryptionKey!.id)
+    verifierLightDid.assembleKeyUri(verifierLightDid.encryptionKey!.id)
   )
 
   /* 5.4 Verify the presentation */

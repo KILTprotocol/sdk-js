@@ -88,10 +88,10 @@ describe('When creating an instance from the details', () => {
       undefined,
       encodedDetails
     )
-    expect(lightDidDetails?.did).toStrictEqual(expectedDid)
+    expect(lightDidDetails?.uri).toStrictEqual(expectedDid)
     // Verify base58 encoding
-    expect(lightDidDetails?.did).toStrictEqual(
-      `did:kilt:light:00${authKey.address}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jUtLEu9nvirB6FYFZpUvsTENM71XB9CagmSgUwNeqTbBmK6fyMNfMhgRPd9HDAZKw96A9FvSBqrXhBqKX9dhsFft6rJzSzKdVgzmmd8bn5AGjcXBVmJeGXZZcjniikWk44HUFuvdTxdvgvwpvu`
+    expect(lightDidDetails?.uri).toStrictEqual(
+      `did:kilt:light:00${authKey.address}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jXcsesDnDNaBKXmjjT6weqynvXJAzQHvxhTt8j1uwMyBSxdANHdNN1NTjczhL5rVJYYqJ12kzneFWurNAzUstsQc3n9zZiFK4BdFV9SD5i5jE7AuTuUL3VraoFZ98CgpSP72ebtLFEH1SosdDT`
     )
 
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
@@ -199,10 +199,10 @@ describe('When creating an instance from the details', () => {
       undefined,
       encodedDetails
     )
-    expect(lightDidDetails?.did).toStrictEqual(expectedDid)
+    expect(lightDidDetails?.uri).toStrictEqual(expectedDid)
     // Verify base58 encoding
-    expect(lightDidDetails?.did).toStrictEqual(
-      `did:kilt:light:01${authKey.address}:z1Ac9CMtYCTRWjetJfJqJoV7FcP9zdFudqUaupQkBCERoCQcnu2SUS5CGHdCXhWoxbihovMVymRperWATas8NsS`
+    expect(lightDidDetails?.uri).toStrictEqual(
+      `did:kilt:light:01${authKey.address}:z1Ac9CMtYCTRWjetJfJqJoV7FcP9zdFudqUaupQkBCERoCQcnu2SUS5CGHdCXhWoxbihovMVymRperWSPpRc7mJ`
     )
 
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
@@ -325,7 +325,7 @@ describe('When creating an instance from a URI', () => {
       LightDidDetails.fromDetails(creationOptions)
 
     const builtLightDidDetails = LightDidDetails.fromUri(
-      expectedLightDidDetails.did
+      expectedLightDidDetails.uri
     )
 
     expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
@@ -333,8 +333,8 @@ describe('When creating an instance from a URI', () => {
     )
 
     // Verify base58 encoding
-    expect(builtLightDidDetails.did).toStrictEqual(
-      `did:kilt:light:00${expectedLightDidDetails.identifier}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jUtLEu9nvirB6FYFZpUvsTENM71XB9CagmSgUwNeqTbBmK6fyMNfMhgRPd9HDAZKw96A9FvSBqrXhBqKX9dhsFft6rJzSzKdVgzmmd8bn5AGjcXBVmJeGXZZcjniikWk44HUFuvdTxdvgvwpvu`
+    expect(builtLightDidDetails.uri).toStrictEqual(
+      `did:kilt:light:00${expectedLightDidDetails.identifier}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jXcsesDnDNaBKXmjjT6weqynvXJAzQHvxhTt8j1uwMyBSxdANHdNN1NTjczhL5rVJYYqJ12kzneFWurNAzUstsQc3n9zZiFK4BdFV9SD5i5jE7AuTuUL3VraoFZ98CgpSP72ebtLFEH1SosdDT`
     )
     expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
       'authentication'
@@ -377,7 +377,7 @@ describe('When creating an instance from a URI', () => {
     const expectedLightDidDetails: LightDidDetails =
       LightDidDetails.fromDetails(creationOptions)
 
-    const uriWithFragment = `${expectedLightDidDetails.did}#authentication`
+    const uriWithFragment = `${expectedLightDidDetails.uri}#authentication`
 
     expect(() => LightDidDetails.fromUri(uriWithFragment, true)).toThrow()
     expect(() => LightDidDetails.fromUri(uriWithFragment, false)).not.toThrow()

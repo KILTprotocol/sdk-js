@@ -48,7 +48,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     cTypeHash:
       '0x103752ecd8e284b1c9677337ccc91ea255ac8e6651dc65d90f0504f31d7e54f0',
     delegationId: null,
-    owner: someDid.did,
+    owner: someDid.uri,
     revoked: false,
   })
   const tx = await attestation

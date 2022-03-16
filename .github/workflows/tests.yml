@@ -107,7 +107,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc']
+        image: ['latest-master']
         required: ['optional']
         include:
           - image: 'latest-develop'
@@ -222,7 +222,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc']
+        image: ['latest-master']
         required: ['required']
         include:
           - image: 'latest-develop'

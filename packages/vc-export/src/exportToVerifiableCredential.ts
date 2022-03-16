@@ -121,7 +121,7 @@ export function fromCredential(
     const sSProof: SelfSignedProof = {
       type: KILT_SELF_SIGNED_PROOF_TYPE,
       proofPurpose: 'assertionMethod',
-      verificationMethod: claimerSignature.keyId,
+      verificationMethod: claimerSignature.keyUri,
       signature: claimerSignature.signature,
       challenge: claimerSignature.challenge,
     }

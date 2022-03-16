@@ -108,11 +108,11 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
 }
 
 function compressSignature(comp: DidSignature): [string, string] {
-  return [comp.signature, comp.keyId]
+  return [comp.signature, comp.keyUri]
 }
 
 function decompressSignature(comp: [string, string]): DidSignature {
-  return { signature: comp[0], keyId: comp[1] }
+  return { signature: comp[0], keyUri: comp[1] }
 }
 
 /**
@@ -144,7 +144,7 @@ export function compressAttesterSignedQuote(
     !termsAndConditions ||
     !timeframe ||
     !attesterSignature.signature ||
-    !attesterSignature.keyId
+    !attesterSignature.keyUri
   ) {
     throw SDKErrors.ERROR_COMPRESS_OBJECT(
       attesterSignedQuote,

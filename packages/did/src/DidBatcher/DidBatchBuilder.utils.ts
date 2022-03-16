@@ -35,7 +35,7 @@ export function checkExtrinsicInput(
 
   if (did.getVerificationKeys(extrinsicKeyRelationship).length === 0) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `DidBatchBuilder.addExtrinsic() cannot be used with the provided extrinsic "${section}:${method}" because the DID ${did.did} does not have a valid key to sign the operation.`
+      `DidBatchBuilder.addExtrinsic() cannot be used with the provided extrinsic "${section}:${method}" because the DID ${did.uri} does not have a valid key to sign the operation.`
     )
   }
 

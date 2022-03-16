@@ -11,7 +11,6 @@
 
 import type { ICredential, IClaim, KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
 import { getRevokeTx, getRemoveTx } from '../attestation/Attestation.chain'
@@ -49,9 +48,7 @@ beforeAll(async () => {
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await Attestation.queryDepositAmount()
-  expect(depositAmount.toString()).toStrictEqual(
-    new BN(1000000000000000).toString()
-  )
+  expect(depositAmount.toString()).toMatchInlineSnapshot('"120900000000000"')
 })
 
 describe('handling attestations that do not exist', () => {
@@ -106,7 +103,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
-      claimer.did
+      claimer.uri
     )
     const request = RequestForAttestation.fromClaim(claim)
     await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
@@ -121,13 +118,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
-      claimer.did
+      claimer.uri
     )
     const request = RequestForAttestation.fromClaim(claim)
     expect(request.verifyData()).toBe(true)
     await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
     await expect(request.verifySignature()).resolves.toBe(true)
-    const attestation = Attestation.fromRequestAndDid(request, attester.did)
+    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
     await attestation
       .getStoreTx()
       .then((call) =>
@@ -157,13 +154,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
-      claimer.did
+      claimer.uri
     )
     const request = RequestForAttestation.fromClaim(claim)
     expect(request.verifyData()).toBe(true)
     await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
     await expect(request.verifySignature()).resolves.toBe(true)
-    const attestation = Attestation.fromRequestAndDid(request, attester.did)
+    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
 
     const bobbyBroke = keypairFromRandom()
 
@@ -205,10 +202,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
-      claimer.did
+      claimer.uri
     )
     const request = RequestForAttestation.fromClaim(claim)
-    const attestation = Attestation.fromRequestAndDid(request, attester.did)
+    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
     await expect(
       attestation
         .getStoreTx()
@@ -227,7 +224,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
         content,
-        claimer.did
+        claimer.uri
       )
       const request = RequestForAttestation.fromClaim(claim)
       await request.signWithDidKey(
@@ -235,7 +232,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer,
         claimer.authenticationKey.id
       )
-      const attestation = Attestation.fromRequestAndDid(request, attester.did)
+      const attestation = Attestation.fromRequestAndDid(request, attester.uri)
       await attestation
         .getStoreTx()
         .then((call) =>
@@ -265,7 +262,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
         content,
-        claimer.did
+        claimer.uri
       )
       const request = RequestForAttestation.fromClaim(claim)
       await request.signWithDidKey(
@@ -348,7 +345,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           LicenseType: "Driver's License",
           LicenseSubtypes: 'sportscars, tanks',
         },
-        attester.did
+        attester.uri
       )
       const request1 = RequestForAttestation.fromClaim(licenseAuthorization)
       await request1.signWithDidKey(
@@ -358,7 +355,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       const licenseAuthorizationGranted = Attestation.fromRequestAndDid(
         request1,
-        anotherAttester.did
+        anotherAttester.uri
       )
       await licenseAuthorizationGranted
         .getStoreTx()
@@ -370,7 +367,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
         { name: 'Dominic Toretto', age: 52 },
-        claimer.did
+        claimer.uri
       )
       const request2 = RequestForAttestation.fromClaim(iBelieveICanDrive, {
         legitimations: [
@@ -387,7 +384,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       const LicenseGranted = Attestation.fromRequestAndDid(
         request2,
-        attester.did
+        attester.uri
       )
       await LicenseGranted.getStoreTx()
         .then((call) =>
