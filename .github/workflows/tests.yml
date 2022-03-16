@@ -172,7 +172,7 @@ jobs:
     needs: [build, bundle_cache]
     strategy:
       matrix:
-        image: ['latest-rc']
+        image: ['latest-master', 'latest']
         required: ['optional']
         include:
           - image: 'latest-develop'
