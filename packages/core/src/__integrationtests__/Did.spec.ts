@@ -83,8 +83,11 @@ describe('write and didDeleteTx', () => {
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
     const otherAccount = devBob
-    const tx = await DidChain.generateCreateTxFromDidDetails(
-      details,
+    const tx = await DidChain.generateCreateTxFromCreationDetails(
+      {
+        authenticationKey: details.authenticationKey,
+        identifier: details.identifier,
+      },
       otherAccount.address,
       keystore
     )
@@ -112,8 +115,11 @@ describe('write and didDeleteTx', () => {
       ],
     })
 
-    const tx = await DidChain.generateCreateTxFromDidDetails(
-      newDetails,
+    const tx = await DidChain.generateCreateTxFromCreationDetails(
+      {
+        authenticationKey: newDetails.authenticationKey,
+        identifier: newDetails.identifier,
+      },
       paymentAccount.address,
       keystore
     )
@@ -253,8 +259,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     keystore
   )
 
-  const tx = await DidChain.generateCreateTxFromDidDetails(
-    newDetails,
+  const tx = await DidChain.generateCreateTxFromCreationDetails(
+    {
+      authenticationKey: newDetails.authenticationKey,
+      identifier: newDetails.identifier,
+    },
     paymentAccount.address,
     keystore
   )
@@ -1278,32 +1287,24 @@ describe('Runtime constraints', () => {
           }
         }
       )
+      let didBuilder = newKeyAgreementKeys.reduce(
+        (builder, encKey) => builder.addEncryptionKey(encKey),
+        new FullDidCreationBuilder(api, testAuthKey)
+      )
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            keyAgreementKeys: newKeyAgreementKeys,
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).resolves.not.toThrow()
       // One more than the maximum
       newKeyAgreementKeys.push({
         publicKey: Uint8Array.from(new Array(32).fill(100)),
         type: EncryptionKeyType.X25519,
       })
+      didBuilder = newKeyAgreementKeys.reduce(
+        (builder, encKey) => builder.addEncryptionKey(encKey),
+        new FullDidCreationBuilder(api, testAuthKey)
+      )
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            keyAgreementKeys: newKeyAgreementKeys,
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"The number of key agreement keys in the creation operation is greater than the maximum allowed, which is 10."'
       )
@@ -1320,16 +1321,12 @@ describe('Runtime constraints', () => {
           }
         }
       )
+      let didBuilder = newServiceEndpoints.reduce(
+        (builder, service) => builder.addServiceEndpoint(service),
+        new FullDidCreationBuilder(api, testAuthKey)
+      )
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: newServiceEndpoints,
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).resolves.not.toThrow()
       // One more than the maximum
       newServiceEndpoints.push({
@@ -1337,57 +1334,41 @@ describe('Runtime constraints', () => {
         types: ['type-100'],
         urls: ['url-100'],
       })
+      didBuilder = newServiceEndpoints.reduce(
+        (builder, service) => builder.addServiceEndpoint(service),
+        new FullDidCreationBuilder(api, testAuthKey)
+      )
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: newServiceEndpoints,
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"Cannot store more than 25 service endpoints per DID."'
       )
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that is too long', async () => {
+      let didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint({
+        // Maximum is 50
+        id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        types: ['type-a'],
+        urls: ['url-a'],
+      })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
-              {
-                // Maximum is 50
-                id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                types: ['type-a'],
-                urls: ['url-a'],
-              },
-            ],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).resolves.not.toThrow()
+      didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint({
+        // One more than the maximum
+        id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        types: ['type-a'],
+        urls: ['url-a'],
+      })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
-              {
-                // One more than the maximum
-                id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                types: ['type-a'],
-                urls: ['url-a'],
-              },
-            ],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"The service with ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" has an ID that is too long. Max number of characters allowed for a service ID is 50."'
       )
@@ -1400,29 +1381,21 @@ describe('Runtime constraints', () => {
         types: Array(1).map((_, index): string => `type-${index}`),
         urls: ['url-1'],
       }
+      let didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint(newEndpoint)
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [newEndpoint],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).resolves.not.toThrow()
       // One more than the maximum
       newEndpoint.types.push('new-type')
+      didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint(newEndpoint)
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [newEndpoint],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"The service with ID \\"id-1\\" has too many types. Max number of types allowed per service is 1."'
       )
@@ -1435,115 +1408,83 @@ describe('Runtime constraints', () => {
         types: ['type-1'],
         urls: Array(1).map((_, index): string => `url-${index}`),
       }
+      let didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint(newEndpoint)
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [newEndpoint],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).resolves.not.toThrow()
       // One more than the maximum
       newEndpoint.urls.push('new-url')
+      didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint(newEndpoint)
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [newEndpoint],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"The service with ID \\"id-1\\" has too many URLs. Max number of URLs allowed per service is 1."'
       )
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that has a type that is too long', async () => {
+      let didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint({
+        id: 'id-1',
+        // Maximum is 50
+        types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+        urls: ['url-1'],
+      })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
-              {
-                id: 'id-1',
-                // Maximum is 50
-                types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-                urls: ['url-1'],
-              },
-            ],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).resolves.not.toThrow()
+      didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint({
+        id: 'id-1',
+        // One more than the maximum
+        types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+        urls: ['url-1'],
+      })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
-              {
-                id: 'id-1',
-                // One more than the maximum
-                types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-                urls: ['url-1'],
-              },
-            ],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service type is 50."'
       )
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that has a URL that is too long', async () => {
+      let didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint({
+        id: 'id-1',
+        types: ['type-1'],
+        // Maximum is 200
+        urls: [
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        ],
+      })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
-              {
-                id: 'id-1',
-                types: ['type-1'],
-                // Maximum is 200
-                urls: [
-                  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                ],
-              },
-            ],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).resolves.not.toThrow()
+      didBuilder = new FullDidCreationBuilder(
+        api,
+        testAuthKey
+      ).addServiceEndpoint({
+        id: 'id-1',
+        types: ['type-1'],
+        // One more than the maximum
+        urls: [
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        ],
+      })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
-          {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
-              {
-                id: 'id-1',
-                types: ['type-1'],
-                // One more than the maximum
-                urls: [
-                  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                ],
-              },
-            ],
-          },
-          paymentAccount.address,
-          keystore
-        )
+        didBuilder.build(keystore, paymentAccount.address)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."'
       )
