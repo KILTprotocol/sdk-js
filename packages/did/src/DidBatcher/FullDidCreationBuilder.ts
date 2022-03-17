@@ -11,6 +11,7 @@ import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import {
   DidVerificationKey,
   IIdentity,
+  KeyRelationship,
   KeystoreSigner,
   NewDidVerificationKey,
   SubmittableExtrinsic,
@@ -21,10 +22,20 @@ import { SDKErrors } from '@kiltprotocol/utils'
 
 import { LightDidDetails } from '../DidDetails/LightDidDetails.js'
 import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
-import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
+import {
+  generateCreateTxFromCreationDetails,
+  generateDidAuthenticatedTx,
+  getAddEndpointExtrinsic,
+  getAddKeyExtrinsic,
+  getSetKeyExtrinsic,
+} from '../Did.chain.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
-import { getKiltDidFromIdentifier } from '../Did.utils.js'
+import {
+  getKiltDidFromIdentifier,
+  getSigningAlgorithmForVerificationKeyType,
+} from '../Did.utils.js'
+import { Extrinsic } from '@polkadot/types/interfaces'
 
 function encodeVerificationKeyToAddress({
   publicKey,
@@ -130,7 +141,12 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
-   * @param _atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails. At this time, this parameter is not used for a creation operation, albeit this might change in the future.
+   * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails. If atomic === false, the extrinsics are executed in the following order:
+   *    1. DID creation with the given authentication key
+   *    2. For each new key agreement key, a new `addKey` extrinsic. No guarantee is made on the order in which these keys are added.
+   *    3. If present, a new `setKey` extrinsic for the attestation key.
+   *    4. If present, a new `setKey` extrinsic for the delegation key.
+   *    5. For each new service endpoint, a new `addEndpoint` extrinsic. No guarantee is made on the order in which these services are added.
    *
    * @returns The [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
    */
@@ -139,8 +155,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   public async build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _atomic = true
+    atomic = true
   ): Promise<SubmittableExtrinsic> {
     this.checkBuilderConsumption()
 
@@ -148,28 +163,88 @@ export class FullDidCreationBuilder extends FullDidBuilder {
       this.authenticationKey
     )
 
-    const outputTx = generateCreateTxFromCreationDetails(
+    // This extrinsic expects signed origin, so does not have to be DID-authorized.
+    const creationExtrinsic = await generateCreateTxFromCreationDetails(
       {
-        identifier: encodedAddress,
         authenticationKey: this.authenticationKey,
-        keyAgreementKeys: [...this.newKeyAgreementKeys.values()],
-        assertionKey:
-          this.newAssertionKey.action === 'update'
-            ? this.newAssertionKey.newKey
-            : undefined,
-        delegationKey:
-          this.newDelegationKey.action === 'update'
-            ? this.newDelegationKey.newKey
-            : undefined,
-        serviceEndpoints: this.newServiceEndpoints.size
-          ? [...this.newServiceEndpoints.entries()].map(([id, service]) => {
-              return { id, ...service }
-            })
-          : undefined,
+        identifier: encodedAddress,
       },
       submitter,
       signer
     )
+
+    // Container for all the rest of the extrinsics, which must all be batched and the batch DID-authorized
+    const additionalCreationExtrinsics: Extrinsic[] = []
+
+    // Generate and push new key agreement key extrinsics
+    const keyAgreementKeysExtrinsics = await Promise.all(
+      [...this.newKeyAgreementKeys.values()].map((encKey) =>
+        getAddKeyExtrinsic(KeyRelationship.keyAgreement, encKey)
+      )
+    )
+    additionalCreationExtrinsics.push(...keyAgreementKeysExtrinsics)
+
+    if (this.newAssertionKey.action === 'update') {
+      additionalCreationExtrinsics.push(
+        await getSetKeyExtrinsic(
+          KeyRelationship.assertionMethod,
+          // We are sure about its type as the action === 'update'
+          this.newAssertionKey.newKey as NewDidVerificationKey
+        )
+      )
+    }
+
+    if (this.newDelegationKey.action === 'update') {
+      additionalCreationExtrinsics.push(
+        await getSetKeyExtrinsic(
+          KeyRelationship.capabilityDelegation,
+          // We are sure about its type as the action === 'update'
+          this.newDelegationKey.newKey as NewDidVerificationKey
+        )
+      )
+    }
+
+    // Generate and push new service endpoint extrinsics
+    const serviceEndpointExtrinsics = await Promise.all(
+      [...this.newServiceEndpoints.entries()].map(([id, service]) =>
+        getAddEndpointExtrinsic({ id, ...service })
+      )
+    )
+    additionalCreationExtrinsics.push(...serviceEndpointExtrinsics)
+
+    const batcher = atomic
+      ? this.apiObject.tx.utility.batchAll
+      : this.apiObject.tx.utility.batch
+
+    // Contains the batched additional creation details
+    let batchedDetailsExtrinsics: SubmittableExtrinsic | undefined
+    // batchedDetailsExtrinsics = batched extrinsics if more than 1, or the only extrinsic, if any
+    if (additionalCreationExtrinsics.length > 1) {
+      batchedDetailsExtrinsics = batcher(additionalCreationExtrinsics)
+    } else if (additionalCreationExtrinsics.length === 1) {
+      batchedDetailsExtrinsics =
+        additionalCreationExtrinsics.pop() as SubmittableExtrinsic
+    }
+
+    // DID-authorize the creation batch, if defined
+    if (batchedDetailsExtrinsics) {
+      batchedDetailsExtrinsics = await generateDidAuthenticatedTx({
+        didIdentifier: encodedAddress,
+        signingPublicKey: this.authenticationKey.publicKey,
+        alg: getSigningAlgorithmForVerificationKeyType(
+          this.authenticationKey.type
+        ),
+        signer,
+        call: batchedDetailsExtrinsics,
+        txCounter: 0,
+        submitter,
+      })
+    }
+
+    // If any details are present, they are batched with the creation. Otherwise, the sole creation tx is returned
+    const outputTx = batchedDetailsExtrinsics
+      ? batcher([creationExtrinsic, batchedDetailsExtrinsics])
+      : creationExtrinsic
 
     this.consumed = true
 

@@ -413,16 +413,6 @@ function checkServiceEndpointInput(
  * @param details The creation details.
  * @param details.identifier The identifier of the new DID.
  * @param details.authenticationKey The authentication key of the new DID.
- * @param details.keyAgreementKeys The optional key agreement keys of the new DID.
- * A DID creation operation can contain at most 10 new key agreement keys.
- * @param details.assertionKey The optional attestation key of the new DID.
- * @param details.delegationKey The optional delegation key of the new DID.
- * @param details.serviceEndpoints The optional service endpoints of the new DID.
- * A DID creation operation can contain at most 25 new service endpoints.
- * Additionally, each service endpoint must respect the following conditions:
- *     - The service endpoint ID is at most 50 ASCII characters long
- *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param signer The keystore signer.
  *
@@ -435,62 +425,11 @@ export async function generateCreateTxFromCreationDetails(
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
 
-  const {
-    authenticationKey,
-    keyAgreementKeys = [],
-    assertionKey,
-    delegationKey,
-    serviceEndpoints = [],
-  } = details
-
-  const maxKeyAgreementKeys = (
-    api.consts.did.maxNewKeyAgreementKeys as u32
-  ).toNumber()
-
-  if (keyAgreementKeys.length > maxKeyAgreementKeys) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
-    )
-  }
-
-  const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
-    ({ publicKey }) =>
-      formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
-  )
-
-  const newAssertionKey = assertionKey
-    ? formatPublicKey(assertionKey)
-    : undefined
-  const newDelegationKey = delegationKey
-    ? formatPublicKey(delegationKey)
-    : undefined
-
-  const maxNumberOfServicesPerDid = (
-    api.consts.did.maxNumberOfServicesPerDid as u32
-  ).toNumber()
-
-  if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID.`
-    )
-  }
-
-  serviceEndpoints.forEach((service) => {
-    checkServiceEndpointInput(api, service)
-  })
-
-  const newServiceDetails = serviceEndpoints.map((service) => {
-    const { id, urls } = service
-    return { id, urls, serviceTypes: service.types }
-  })
+  const { authenticationKey } = details
 
   const rawCreationDetails = {
     did: details.identifier,
     submitter: submitterAddress,
-    newKeyAgreementKeys,
-    newAttestationKey: newAssertionKey,
-    newDelegationKey,
-    newServiceDetails,
   }
 
   const encodedDidCreationDetails = api.registry.createType(
@@ -507,69 +446,6 @@ export async function generateCreateTxFromCreationDetails(
   return api.tx.did.create(encodedDidCreationDetails, {
     [getVerificationKeyTypeForSigningAlgorithm(signature.alg)]: signature.data,
   })
-}
-
-/**
- * Create a DID creation operation which includes the information present in the provided DID.
- *
- * The resulting extrinsic can be submitted to create an on-chain DID that has the same keys and service endpoints of the provided DID details.
- *
- * @param did The input DID details.
- * @param submitterAddress The KILT address authorised to submit the creation operation.
- * @param signer The keystore signer.
- *
- * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
- */
-export async function generateCreateTxFromDidDetails(
-  did: DidDetails,
-  submitterAddress: IIdentity['address'],
-  signer: KeystoreSigner
-): Promise<SubmittableExtrinsic> {
-  const { authenticationKey } = did
-  if (!authenticationKey) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The provided DID does not have an authentication key to sign the creation operation.`
-    )
-  }
-
-  const keyAgreementKeys = did.getEncryptionKeys(KeyRelationship.keyAgreement)
-
-  // For now, it only takes the first attestation key, if present.
-  const assertionKeys = did.getVerificationKeys(KeyRelationship.assertionMethod)
-  if (assertionKeys.length > 1) {
-    log.warn(
-      `More than one attestation key (${assertionKeys.length}) specified. Only the first will be stored on the chain.`
-    )
-  }
-  const assertionKey = assertionKeys.pop()
-
-  // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getVerificationKeys(
-    KeyRelationship.capabilityDelegation
-  )
-  if (delegationKeys.length > 1) {
-    log.warn(
-      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
-    )
-  }
-  const delegationKey = delegationKeys.pop()
-
-  const serviceEndpoints = did.getEndpoints()
-
-  const fullDidCreationDetails: FullDidCreationDetails = {
-    identifier: did.identifier,
-    authenticationKey,
-    keyAgreementKeys,
-    assertionKey,
-    delegationKey,
-    serviceEndpoints,
-  }
-
-  return generateCreateTxFromCreationDetails(
-    fullDidCreationDetails,
-    submitterAddress,
-    signer
-  )
 }
 
 export async function getSetKeyExtrinsic(
