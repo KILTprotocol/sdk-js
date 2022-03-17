@@ -11,7 +11,6 @@ import type {
   IDidDetails,
   IDidIdentifier,
   KeyRelationship,
-  NewDidEncryptionKey,
   NewDidVerificationKey,
   VerificationKeyType,
 } from '@kiltprotocol/types'

@@ -20,6 +20,7 @@ import {
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
+import { Extrinsic } from '@polkadot/types/interfaces'
 import { LightDidDetails } from '../DidDetails/LightDidDetails.js'
 import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import {
@@ -35,7 +36,6 @@ import {
   getKiltDidFromIdentifier,
   getSigningAlgorithmForVerificationKeyType,
 } from '../Did.utils.js'
-import { Extrinsic } from '@polkadot/types/interfaces'
 
 function encodeVerificationKeyToAddress({
   publicKey,

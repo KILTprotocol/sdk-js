@@ -45,19 +45,15 @@ import {
   SubmittableExtrinsic,
   VerificationKeyType,
 } from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { ApiPromise } from '@polkadot/api'
-import { DidDetails } from './DidDetails/index.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
 } from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
-
-const log = ConfigService.LoggingFactory.getLogger('Did')
 
 // ### Chain type definitions
 
