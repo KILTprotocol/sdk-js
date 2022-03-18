@@ -41,7 +41,7 @@ async function createFullDidFromSeed(identity, keystore, seed, api) {
   const updatedFullDid = await new Did.FullDidUpdateBuilder(api, fullDid)
     .setAttestationKey(fullDid.authenticationKey)
     .setDelegationKey(fullDid.authenticationKey)
-    .consumeWithHandler(
+    .buildAndSubmit(
       keystore,
       identity.address,
       getDefaultMigrationHandler(identity)
@@ -60,6 +60,7 @@ async function runAll() {
   else blockchain.getStats().then((t) => console.info(t))
   const keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
   // Accounts
+  console.log('Account setup started')
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const devFaucet = keyring.createFromUri(FaucetSeed)
@@ -69,12 +70,14 @@ async function runAll() {
     '//Alice',
     blockchain.api
   )
+  console.log('alice setup done')
   const bob = await createFullDidFromSeed(
     devFaucet,
     keystore,
     '//Bob',
     blockchain.api
   )
+  console.log('bob setup done')
 
   // Light Did Account creation workflow
   const authPublicKey = Crypto.coToUInt8(
@@ -87,17 +90,17 @@ async function runAll() {
   const didCreationDetails = {
     authenticationKey: {
       publicKey: authPublicKey,
-      type: 'Ed25519',
+      type: 'ed25519',
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: 'X25519',
+      type: 'x25519',
     },
   }
   const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
   if (
-    testDid.did !==
-    `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytD7HjY6Doe`
+    testDid.uri !==
+    `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
   ) {
     throw new Error('Did Test Unsuccessful')
   } else console.info(`light did successfully created`)
@@ -110,23 +113,23 @@ async function runAll() {
 
   const fullDid = await new Did.FullDidCreationBuilder(blockchain.api, {
     publicKey: keypair.publicKey,
-    type: 'Ed25519',
-  }).consumeWithHandler(keystore, devFaucet.address, async (tx) => {
+    type: 'ed25519',
+  }).buildAndSubmit(keystore, devFaucet.address, async (tx) => {
     await BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
       reSign: true,
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
   })
 
-  const resolved = await Did.resolveDoc(fullDid.did)
+  const resolved = await Did.resolveDoc(fullDid.uri)
 
-  if (!resolved.metadata.deactivated && resolved.details.did === fullDid.did) {
+  if (!resolved.metadata.deactivated && resolved.details.uri === fullDid.uri) {
     console.info('Did matches!')
   } else {
     throw new Error('Dids not matching!')
   }
 
-  const extrinsic = await Did.DidChain.getDeleteDidExtrinsic()
+  const extrinsic = await Did.Chain.getDeleteDidExtrinsic()
   const deleteTx = await fullDid.authorizeExtrinsic(
     extrinsic,
     keystore,
@@ -138,7 +141,7 @@ async function runAll() {
     reSign: true,
   })
 
-  const resolvedAgain = await Did.resolveDoc(fullDid.did)
+  const resolvedAgain = await Did.resolveDoc(fullDid.uri)
   if (resolvedAgain.metadata.deactivated) {
     console.info('Did successfully deleted!')
   } else {
@@ -183,7 +186,7 @@ async function runAll() {
 
   const result = await CTypeUtils.verifyOwner({
     ...DriversLicense,
-    owner: alice.did,
+    owner: alice.uri,
   })
   if (result) {
     console.info('owner verified')
@@ -197,7 +200,7 @@ async function runAll() {
   const claim = Claim.fromCTypeAndClaimContents(
     DriversLicense,
     content,
-    bob.did
+    bob.uri
   )
   const request = RequestForAttestation.fromClaim(claim)
   const signed = await request.signWithDidKey(
@@ -216,7 +219,7 @@ async function runAll() {
       throw new Error('Claim content inside Req4Att mismatching')
   }
 
-  const attestation = Attestation.fromRequestAndDid(signed, alice.did)
+  const attestation = Attestation.fromRequestAndDid(signed, alice.uri)
   const credential = Credential.fromRequestAndAttestation(signed, attestation)
   if (credential.verifyData()) console.info('Attested Claim Data verified!')
   else throw new Error('Attested Claim data not verifiable')
