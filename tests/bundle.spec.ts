@@ -24,7 +24,14 @@ test('html bundle integration test', async ({ page }) => {
   await expect(page).toHaveTitle('Bundle tests')
 
   await page.evaluate(async () => {
-    await window.runAll()
+    try {
+      await window.runAll()
+    } catch (e) {
+      if (e instanceof Error) {
+        console.error(e.message)
+      }
+      throw e
+    }
   })
   page.close()
 })
