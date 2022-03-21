@@ -349,6 +349,24 @@ interface IDidAuthorizedCallOperation extends Struct {
   blockNumber: AnyNumber
 }
 
+function isUri(s: string): boolean {
+  try {
+    const url = new URL(s) // this actually accepts any URI but throws if it can't be parsed
+    return url.href === s || encodeURI(decodeURI(s)) === s // make sure our URI has not been converted implictly by URL
+  } catch {
+    return false
+  }
+}
+
+const UriFragmentRegex = /^[a-zA-Z0-9.-_~%+,;=*()'&$!@:/?]+$/
+function isUriFragment(s: string): boolean {
+  try {
+    return UriFragmentRegex.test(s) && !!decodeURIComponent(s)
+  } catch {
+    return false
+  }
+}
+
 // ### EXTRINSICS
 
 export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
@@ -379,6 +397,11 @@ function checkServiceEndpointInput(
       `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
     )
   }
+  if (!isUriFragment(endpoint.id)) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service ID must be a valid URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
+    )
+  }
   if (endpoint.types.length > maxNumberOfTypesPerService) {
     throw SDKErrors.ERROR_DID_ERROR(
       `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
@@ -400,6 +423,11 @@ function checkServiceEndpointInput(
     if (url.length > maxServiceUrlLength) {
       throw SDKErrors.ERROR_DID_ERROR(
         `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
+      )
+    }
+    if (!isUri(url)) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `Service URLs must be a URIs according to RFC#3986, which "${url}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
       )
     }
   })
