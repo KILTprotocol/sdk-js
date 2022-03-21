@@ -358,7 +358,7 @@ function isUri(s: string): boolean {
   }
 }
 
-const UriFragmentRegex = /^[a-zA-Z0-9.-_~%+,;=*()'&$!@:/?]+$/
+const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
 function isUriFragment(s: string): boolean {
   try {
     return UriFragmentRegex.test(s) && !!decodeURIComponent(s)

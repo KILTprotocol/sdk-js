@@ -46,6 +46,7 @@ describe('services validation', () => {
     '@johndoe',
     'http://example.com',
     'abc.de',
+    'test-123',
   ]
 
   const unencodedTestUris = [
