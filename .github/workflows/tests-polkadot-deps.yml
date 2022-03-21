@@ -45,6 +45,9 @@ jobs:
         with:
           name: deps-${{ matrix.node-version }}
           path: locked_dependencies.txt
+      
+      - name: Update metadata to latest spiritnet metadata
+        run: yarn workspace @kiltprotocol/testing run updateMetadata
 
       - name: yarn build
         run: yarn build
