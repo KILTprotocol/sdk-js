@@ -448,9 +448,9 @@ function checkServiceEndpointInput(
  * @param details.serviceEndpoints The optional service endpoints of the new DID.
  * A DID creation operation can contain at most 25 new service endpoints.
  * Additionally, each service endpoint must respect the following conditions:
- *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param signer The keystore signer.
  *
@@ -673,9 +673,9 @@ export async function getAddKeyExtrinsic(
  *
  * @param endpoint The new service endpoint to include in the extrinsic.
  * The service endpoint must respect the following conditions:
- *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
  */
 export async function getAddEndpointExtrinsic(
