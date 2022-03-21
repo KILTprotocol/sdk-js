@@ -45,7 +45,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: deps-${{ matrix.node-version }}
-          path: locked_dependencies.txt
+          path: |
+            locked_dependencies.txt
+            yarn.lock
       
       - name: Update metadata to latest spiritnet metadata
         run: yarn workspace @kiltprotocol/testing run updateMetadata
