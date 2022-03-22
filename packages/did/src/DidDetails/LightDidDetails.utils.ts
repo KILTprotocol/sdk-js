@@ -18,7 +18,7 @@ import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { parseDidUri } from '../Did.utils.js'
+import { isUri, isUriFragment, parseDidUri } from '../Did.utils.js'
 import {
   LightDidSupportedVerificationKeyType,
   NewLightDidAuthenticationKey,
@@ -121,26 +121,36 @@ export function checkLightDidCreationDetails(
   // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
   // when upgrading to a full DID.
   details.serviceEndpoints?.forEach((service) => {
-    let isServiceIdADid = true
-    try {
-      // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-      parseDidUri(service.id)
-    } catch {
-      // Here if parseDidUrl throws -> service.id is NOT a DID.
-      isServiceIdADid = false
-    }
-
-    if (isServiceIdADid) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
-      )
-    }
     // A service ID cannot have a reserved ID that is used for key IDs.
     if (service.id === 'authentication' || service.id === 'encryption') {
       throw SDKErrors.ERROR_DID_ERROR(
         `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
       )
     }
+
+    const isServiceIdADid = (id: string): boolean => {
+      try {
+        // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
+        parseDidUri(id)
+        return true
+      } catch {
+        // Here if parseDidUrl throws -> id is NOT a DID.
+        return false
+      }
+    }
+    if (isServiceIdADid(service.id) || !isUriFragment(service.id)) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `Invalid service ID provided: ${service.id}. The service ID should be a URI fragment according to RFC#3986 and not a complete [DID] URI. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
+      )
+    }
+
+    service.urls.forEach((url) => {
+      if (!isUri(url)) {
+        throw SDKErrors.ERROR_DID_ERROR(
+          `Service URLs must be a URIs according to RFC#3986, which "${url}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
+        )
+      }
+    })
   })
 }
 

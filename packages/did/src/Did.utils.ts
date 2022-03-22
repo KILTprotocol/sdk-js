@@ -380,3 +380,21 @@ export function assembleKeyUri(
   }
   return `${did}#${keyId}`
 }
+
+export function isUri(s: string): boolean {
+  try {
+    const url = new URL(s) // this actually accepts any URI but throws if it can't be parsed
+    return url.href === s || encodeURI(decodeURI(s)) === s // make sure our URI has not been converted implictly by URL
+  } catch {
+    return false
+  }
+}
+
+const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
+export function isUriFragment(s: string): boolean {
+  try {
+    return UriFragmentRegex.test(s) && !!decodeURIComponent(s)
+  } catch {
+    return false
+  }
+}

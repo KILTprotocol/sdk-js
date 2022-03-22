@@ -54,6 +54,8 @@ import { DidDetails } from './DidDetails/index.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
+  isUri,
+  isUriFragment,
 } from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
 
@@ -347,24 +349,6 @@ interface IDidAuthorizedCallOperation extends Struct {
   call: Call
   submitter: GenericAccountId
   blockNumber: AnyNumber
-}
-
-function isUri(s: string): boolean {
-  try {
-    const url = new URL(s) // this actually accepts any URI but throws if it can't be parsed
-    return url.href === s || encodeURI(decodeURI(s)) === s // make sure our URI has not been converted implictly by URL
-  } catch {
-    return false
-  }
-}
-
-const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
-function isUriFragment(s: string): boolean {
-  try {
-    return UriFragmentRegex.test(s) && !!decodeURIComponent(s)
-  } catch {
-    return false
-  }
 }
 
 // ### EXTRINSICS
