@@ -13,7 +13,6 @@ import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation/Attestation'
 import { Claim } from '../claim/Claim'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
@@ -105,9 +104,7 @@ beforeAll(async () => {
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DelegationNode.queryDepositAmount()
-  expect(depositAmount.toString()).toStrictEqual(
-    new BN(1000000000000000).toString()
-  )
+  expect(depositAmount.toString()).toMatchInlineSnapshot('"1000000000000000"')
 })
 
 it('should be possible to delegate attestation rights', async () => {
