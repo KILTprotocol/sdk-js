@@ -49,14 +49,14 @@ describe('When creating an instance from the details', () => {
     const encKey = new Keyring().addFromMnemonic('enc')
     const endpoints: DidServiceEndpoint[] = [
       {
-        id: 'service#1',
+        id: 'service-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       },
       {
-        id: 'service#2',
+        id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['url-21', 'url-22'],
+        urls: ['x:url-21', 'x:url-22'],
       },
     ]
     const validOptions: LightDidCreationDetails = {
@@ -91,7 +91,7 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.uri).toStrictEqual(expectedDid)
     // Verify base58 encoding
     expect(lightDidDetails?.uri).toStrictEqual(
-      `did:kilt:light:00${authKey.address}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jXcsesDnDNaBKXmjjT6weqynvXJAzQHvxhTt8j1uwMyBSxdANHdNN1NTjczhL5rVJYYqJ12kzneFWurNAzUstsQc3n9zZiFK4BdFV9SD5i5jE7AuTuUL3VraoFZ98CgpSP72ebtLFEH1SosdDT`
+      `did:kilt:light:00${authKey.address}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
     )
 
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
@@ -132,36 +132,36 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.delegationKey).toBeUndefined()
 
     expect(
-      lightDidDetails?.getEndpoint('service#1')
+      lightDidDetails?.getEndpoint('service-1')
     ).toStrictEqual<DidServiceEndpoint>({
-      id: 'service#1',
+      id: 'service-1',
       types: ['type-1'],
-      urls: ['url-1'],
+      urls: ['x:url-1'],
     })
     expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
       DidServiceEndpoint[]
     >([
       {
-        id: 'service#1',
+        id: 'service-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       },
     ])
 
     expect(
-      lightDidDetails?.getEndpoint('service#2')
+      lightDidDetails?.getEndpoint('service-2')
     ).toStrictEqual<DidServiceEndpoint>({
-      id: 'service#2',
+      id: 'service-2',
       types: ['type-21', 'type-22'],
-      urls: ['url-21', 'url-22'],
+      urls: ['x:url-21', 'x:url-22'],
     })
     expect(lightDidDetails?.getEndpoints('type-21')).toStrictEqual<
       DidServiceEndpoint[]
     >([
       {
-        id: 'service#2',
+        id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['url-21', 'url-22'],
+        urls: ['x:url-21', 'x:url-22'],
       },
     ])
   })
@@ -242,7 +242,7 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.attestationKey).toBeUndefined()
     expect(lightDidDetails?.delegationKey).toBeUndefined()
 
-    expect(lightDidDetails?.getEndpoint('service#1')).toBeUndefined()
+    expect(lightDidDetails?.getEndpoint('service-1')).toBeUndefined()
 
     expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
       DidServiceEndpoint[]
@@ -299,14 +299,14 @@ describe('When creating an instance from a URI', () => {
     const encKey = new Keyring().addFromMnemonic('enc')
     const endpoints: DidServiceEndpoint[] = [
       {
-        id: 'service#1',
+        id: 'service-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       },
       {
-        id: 'service#2',
+        id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['url-21', 'url-22'],
+        urls: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {
@@ -334,7 +334,7 @@ describe('When creating an instance from a URI', () => {
 
     // Verify base58 encoding
     expect(builtLightDidDetails.uri).toStrictEqual(
-      `did:kilt:light:00${expectedLightDidDetails.identifier}:z12fAUWqFgvKum5CE8EdUjuaP3QWVZV1MXcnskZpFVN2tvCqWmXyBvVH1wvGqrK2LYCwhXBwDhoan1jXcsesDnDNaBKXmjjT6weqynvXJAzQHvxhTt8j1uwMyBSxdANHdNN1NTjczhL5rVJYYqJ12kzneFWurNAzUstsQc3n9zZiFK4BdFV9SD5i5jE7AuTuUL3VraoFZ98CgpSP72ebtLFEH1SosdDT`
+      `did:kilt:light:00${expectedLightDidDetails.identifier}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
     )
     expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
       'authentication'
@@ -352,14 +352,14 @@ describe('When creating an instance from a URI', () => {
     const encKey = new Keyring().addFromMnemonic('enc')
     const endpoints: DidServiceEndpoint[] = [
       {
-        id: 'service#1',
+        id: 'service-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       },
       {
-        id: 'service#2',
+        id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['url-21', 'url-22'],
+        urls: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {
