@@ -1,9 +1,6 @@
 name: Compatible with latest dependencies
 
 on:
-  pull_request:
-    branches:
-      - develop
   schedule:
     - cron: 59 23 * * SAT
 
