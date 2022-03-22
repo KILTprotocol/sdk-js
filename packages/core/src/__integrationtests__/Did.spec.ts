@@ -1561,7 +1561,7 @@ describe('Runtime constraints', () => {
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."'
+        `"The service with ID \\"id-1\\" has the URL \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."`
       )
     }, 30_000)
   })
@@ -1668,7 +1668,7 @@ describe('Runtime constraints', () => {
           ],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."'
+        `"The service with ID \\"id-1\\" has the URL \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."`
       )
     }, 30_000)
   })
