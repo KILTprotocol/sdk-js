@@ -48,9 +48,9 @@ jobs:
           path: |
             locked_dependencies.txt
             yarn.lock
-      
+
       - name: Update metadata to latest spiritnet metadata
-        run: yarn workspace @kiltprotocol/testing run updateMetadata
+        run: yarn workspace @kiltprotocol/testing node ./scripts/fetchMetadata.js -o ./src/mocks/metadata/spiritnet.json -e wss://spiritnet.kilt.io/
 
       - name: yarn build
         run: yarn build
