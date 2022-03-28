@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { HexString } from '@polkadot/util/types'
+import type { ICType } from './CType'
 
 /**
  * @packageDocumentation
@@ -36,5 +36,5 @@ export interface IMetadata {
 
 export interface ICTypeMetadata {
   metadata: IMetadata
-  ctypeHash: HexString | null
+  ctypeHash: ICType['hash'] | null
 }
