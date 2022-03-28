@@ -10,7 +10,6 @@
  */
 
 /* eslint-disable dot-notation */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import type {
   IClaim,

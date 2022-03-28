@@ -9,8 +9,6 @@
  * @group unit/didbuilder
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { randomAsHex } from '@polkadot/util-crypto'
 

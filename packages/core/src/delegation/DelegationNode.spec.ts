@@ -9,8 +9,6 @@
  * @group unit/delegation
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import {
   IDelegationNode,
   IDelegationHierarchyDetails,

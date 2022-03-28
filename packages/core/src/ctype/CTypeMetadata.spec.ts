@@ -9,8 +9,6 @@
  * @group unit/ctype
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
 import { CType } from './CType'

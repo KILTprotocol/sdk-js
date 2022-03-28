@@ -9,8 +9,6 @@
  * @group unit/messaging
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import type {
   CompressedQuoteAttesterSigned,
   CompressedQuoteAgreed,

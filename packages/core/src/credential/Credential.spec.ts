@@ -9,8 +9,6 @@
  * @group unit/attestation
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { encodeAddress } from '@polkadot/util-crypto'
 
 import type {

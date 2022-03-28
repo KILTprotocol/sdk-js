@@ -9,8 +9,6 @@
  * @group unit/quote
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { u8aToHex } from '@polkadot/util'
 
 import type {
