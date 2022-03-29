@@ -28,29 +28,20 @@ interface ConnectionRecord extends Struct {
   deposit: Deposit
 }
 
-interface DepositJSON {
-  amount: number
-  owner: AccountAddress | null
-}
-
 /* ### QUERY ### */
 
 export async function getAccountLinkDepositInfo(
-  linkedAccount: AccountId | string
-): Promise<DepositJSON> {
+  linkedAccount: AccountId | AccountAddress
+): Promise<Deposit | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await blockchain.api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
   >(linkedAccount)
-  const { owner, amount } = connectedDid.unwrapOrDefault().deposit
-  return {
-    amount: amount.toNumber(),
-    owner: connectedDid.isSome ? owner.toString() : null,
-  }
+  return connectedDid.isSome ? connectedDid.unwrap().deposit : null
 }
 
 export async function getConnectedDidForAccount(
-  linkedAccount: AccountId | string
+  linkedAccount: AccountId | AccountAddress
 ): Promise<IDidIdentifier | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await blockchain.api.query.didLookup.connectedDids<
