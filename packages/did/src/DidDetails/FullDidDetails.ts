@@ -44,11 +44,6 @@ import {
   increaseNonce,
 } from './FullDidDetails.utils.js'
 
-export type DidAuthorizationOptions = {
-  keySelection?: DidKeySelectionHandler<DidVerificationKey>
-  txCounter?: BN
-}
-
 export class FullDidDetails extends DidDetails {
   public readonly identifier: IDidIdentifier
 
@@ -178,7 +173,10 @@ export class FullDidDetails extends DidDetails {
     {
       keySelection = defaultKeySelectionHandler,
       txCounter,
-    }: DidAuthorizationOptions = {}
+    }: {
+      keySelection?: DidKeySelectionHandler<DidVerificationKey>
+      txCounter?: BN
+    } = {}
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
