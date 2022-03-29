@@ -6,28 +6,22 @@
  */
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type {
+import {
   Deposit,
   IDidIdentifier,
   IIdentity,
-  KeyringPair,
-  KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyType,
 } from '@kiltprotocol/types'
 
-import type { SignerOptions } from '@polkadot/api/types'
+import { signatureVerify } from '@polkadot/util-crypto'
 import type { Null, Option, Struct } from '@polkadot/types'
 import type { AccountId, Extrinsic } from '@polkadot/types/interfaces'
-import type { AnyNumber } from '@polkadot/types/types'
+import type { AnyNumber, Signer } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
-
-import type { DidAuthorizationOptions, FullDidDetails } from '../DidDetails'
-import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
 
 // TODO: update with string pattern types once available
 type AccountAddress = IIdentity['address']
-type DidUri = FullDidDetails['did']
 
 interface ConnectionRecord extends Struct {
   did: AccountId
@@ -57,39 +51,33 @@ export async function getAccountLinkDepositInfo(
 
 export async function getConnectedDidForAccount(
   linkedAccount: AccountId | string
-): Promise<DidUri | null> {
+): Promise<IDidIdentifier | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await blockchain.api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
   >(linkedAccount)
-  return connectedDid.isNone
-    ? null
-    : getKiltDidFromIdentifier(connectedDid.unwrap().did.toString(), 'full')
+  return connectedDid.isNone ? null : connectedDid.unwrap().did.toString()
 }
 
 export async function getConnectedAccountsForDid(
-  linkedDid: DidUri | IDidIdentifier
+  linkedDid: IDidIdentifier
 ): Promise<AccountAddress[]> {
-  const identifier = linkedDid.startsWith('did')
-    ? parseDidUri(linkedDid).identifier
-    : linkedDid
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
     await blockchain.api.query.didLookup.connectedAccounts.keys<
       [AccountId, AccountId]
-    >(identifier)
+    >(linkedDid)
   return connectedAccountsRecords.map((account) => account.args[1].toString())
 }
 
 export async function checkConnected(
-  did: DidUri | IDidIdentifier,
+  didIdentifier: IDidIdentifier,
   account: AccountAddress
 ): Promise<boolean> {
-  const identifier = did.startsWith('did') ? parseDidUri(did).identifier : did
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedEntry = await blockchain.api.query.didLookup.connectedAccounts<
     Option<Null>
-  >(identifier, account)
+  >(didIdentifier, account)
   return connectedEntry.isSome
 }
 
@@ -173,71 +161,49 @@ export async function getLinkRemovalByDidTx(
   return blockchain.api.tx.didLookup.removeAccountAssociation(linkedAccount)
 }
 
-/* ### HIGH-LEVEL HELPERS ### */
+/* ### HELPERS ### */
 
 /**
- * Builds an extrinsic to link `account` to `did`, where `account` must hold balance to cover for the transaction fees and deposit.
+ * Builds an extrinsic to link `account` to a `did` where the fees and deposit are covered by some third account.
+ * This extrinsic must be authorized using the [[FullDid]] whose `didIdentifier` was used here.
+ * Note that in addition to the signing account and did used here, the submitting account will also be able to dissolve the link via reclaiming its deposit!
  *
- * @param account KeyringPair of the account to be linked, used for signing the did-authorized extrinsic.
- * @param did FullDid to be linked, used for did-authorization.
- * @param didSignCallback Keystore or callback that manages the FullDid's keys.
- * @param signingOpts Options to be passed on to `FullDid.authorizeExtrinsic` & `Extrinsic.signAsync`.
- * @returns A signed SubmittableExtrinsic ready to be submitted.
+ * @param accountAddress Address of the account to be linked.
+ * @param accountSigner Signer interface that provides signing capabilities for the account with `accountAddress`.
+ * @param didIdentifier Method-specific identifier [[FullDid]] to be linked.
+ * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
+ * @returns An Extrinsic that must be did-authorized by the [[FullDid]] whose identifier was used.
  */
-export async function linkSubmitterAccount(
-  account: KeyringPair,
-  did: FullDidDetails,
-  didSignCallback: KeystoreSigner,
-  signingOpts: DidAuthorizationOptions & Partial<SignerOptions> = {}
-): Promise<SubmittableExtrinsic> {
-  const tx = await getAssociateSenderTx()
-  const authorized = await did.authorizeExtrinsic(
-    tx,
-    didSignCallback,
-    account.address,
-    signingOpts
-  )
-  return authorized.signAsync(account, signingOpts)
-}
-
-/**
- * Builds an extrinisc to link `account` to a `did` where the fees and deposit are covered by some third account.
- *
- * @param account KeyringPair of the account to be linked, used for signing a proof of authorization.
- * @param submitterAccount Address of the submitter account that will pay the deposit and fees. This account will also be able to dissolve the link!
- * @param did FullDid to be linked, used for did-authorization.
- * @param didSignCallback Keystore or callback that manages the FullDid's keys.
- * @param opts Options, including signing options to be passed on to `FullDid.authorizeExtrinsic`.
- * @param opts.nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
- * @returns A SubmittableExtrinsic that can be signed & submitted by `submitterAccount`.
- */
-export async function linkAccountToDid(
-  account: KeyringPair,
-  submitterAccount: AccountAddress,
-  did: FullDidDetails,
-  didSignCallback: KeystoreSigner,
-  {
-    nBlocksValid = 10,
-    ...didSigningOpts
-  }: { nBlocksValid?: number } & DidAuthorizationOptions = {}
-): Promise<SubmittableExtrinsic> {
+export async function authorizeLinkWithAccount(
+  accountAddress: AccountAddress,
+  accountSigner: Signer,
+  didIdentifier: IDidIdentifier,
+  nBlocksValid = 10
+): Promise<Extrinsic> {
+  if (!accountSigner.signRaw) throw new Error()
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
   const signMe = api
-    .createType('(AccountId, BlockNumber)', [did.identifier, validTill])
-    .toU8a()
-  const signature = account.sign(signMe, { withType: false })
-  const tx = await getAccountSignedAssociationTx(
-    account.address,
+    .createType('(AccountId, BlockNumber)', [didIdentifier, validTill])
+    .toHex()
+  const { signature } = await accountSigner.signRaw({
+    data: signMe,
+    address: accountAddress,
+    type: 'bytes',
+  })
+  const { crypto, isValid } = signatureVerify(signMe, signature, accountAddress)
+  if (!isValid) throw new Error('signature not valid')
+  if (!(crypto in VerificationKeyType))
+    throw new Error(
+      `Unsupported signature algorithm '${crypto}'; must be one of ${Object.values(
+        VerificationKeyType
+      )}`
+    )
+  return getAccountSignedAssociationTx(
+    accountAddress,
     validTill,
     signature,
-    account.type as VerificationKeyType
-  )
-  return did.authorizeExtrinsic(
-    tx,
-    didSignCallback,
-    submitterAccount,
-    didSigningOpts
+    crypto as VerificationKeyType
   )
 }
