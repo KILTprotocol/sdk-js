@@ -37,6 +37,8 @@ export const FULL_DID_LATEST_VERSION = 1
 
 const KILT_DID_PREFIX = 'did:kilt:'
 
+// NOTICE: The following regex patterns must be kept in sync with DidUri type in @kiltprotocol/types
+
 // Matches the following full DIDs
 // - did:kilt:<kilt_address>
 // - did:kilt:<kilt_address>#<fragment>
