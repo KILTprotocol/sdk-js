@@ -8,13 +8,12 @@
 const {
   Claim,
   Attestation,
-  Credential,
   CType,
   CTypeUtils,
   RequestForAttestation,
   Did,
   BlockchainUtils,
-  Utils: { Crypto, Keyring },
+  Utils: { Keyring },
 } = window.kilt
 
 function getDefaultMigrationHandler(submitter) {
@@ -80,13 +79,13 @@ async function runAll() {
   console.log('bob setup done')
 
   // Light Did Account creation workflow
-  const authPublicKey = Crypto.coToUInt8(
+  const authPublicKey = window.kilt.Utils.Crypto.coToUInt8(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   )
-  const encPublicKey = Crypto.coToUInt8(
+  const encPublicKey = window.kilt.Utils.Crypto.coToUInt8(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  const address = Crypto.encodeAddress(authPublicKey, 38)
+  const address = window.kilt.Utils.Crypto.encodeAddress(authPublicKey, 38)
   const didCreationDetails = {
     authenticationKey: {
       publicKey: authPublicKey,
@@ -220,7 +219,7 @@ async function runAll() {
   }
 
   const attestation = Attestation.fromRequestAndDid(signed, alice.uri)
-  const credential = Credential.fromRequestAndAttestation(signed, attestation)
+  const credential = window.kilt.Credential.fromRequestAndAttestation(signed, attestation)
   if (credential.verifyData()) console.info('Attested Claim Data verified!')
   else throw new Error('Attested Claim data not verifiable')
 
