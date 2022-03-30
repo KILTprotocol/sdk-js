@@ -33,8 +33,8 @@ interface ConnectionRecord extends Struct {
 export async function getAccountLinkDepositInfo(
   linkedAccount: AccountId | AccountAddress
 ): Promise<Deposit | null> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await blockchain.api.query.didLookup.connectedDids<
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const connectedDid = await api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
   >(linkedAccount)
   return connectedDid.isSome ? connectedDid.unwrap().deposit : null
@@ -43,8 +43,8 @@ export async function getAccountLinkDepositInfo(
 export async function getConnectedDidForAccount(
   linkedAccount: AccountId | AccountAddress
 ): Promise<IDidIdentifier | null> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await blockchain.api.query.didLookup.connectedDids<
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const connectedDid = await api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
   >(linkedAccount)
   return connectedDid.isNone ? null : connectedDid.unwrap().did.toString()
@@ -53,11 +53,11 @@ export async function getConnectedDidForAccount(
 export async function getConnectedAccountsForDid(
   linkedDid: IDidIdentifier
 ): Promise<AccountAddress[]> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
-    await blockchain.api.query.didLookup.connectedAccounts.keys<
-      [AccountId, AccountId]
-    >(linkedDid)
+    await api.query.didLookup.connectedAccounts.keys<[AccountId, AccountId]>(
+      linkedDid
+    )
   return connectedAccountsRecords.map((account) => account.args[1].toString())
 }
 
@@ -65,8 +65,8 @@ export async function checkConnected(
   didIdentifier: IDidIdentifier,
   account: AccountAddress
 ): Promise<boolean> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedEntry = await blockchain.api.query.didLookup.connectedAccounts<
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const connectedEntry = await api.query.didLookup.connectedAccounts<
     Option<Null>
   >(didIdentifier, account)
   return connectedEntry.isSome
@@ -82,8 +82,8 @@ export async function checkConnected(
  * @returns An [[Extrinsic]] that must be did-authorized.
  */
 export async function getAssociateSenderTx(): Promise<Extrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.didLookup.associateSender()
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.didLookup.associateSender()
 }
 
 /**
@@ -105,12 +105,10 @@ export async function getAccountSignedAssociationTx(
   signature: Uint8Array | HexString,
   keyType: VerificationKeyType
 ): Promise<Extrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.didLookup.associateAccount(
-    account,
-    signatureValidUntilBlock,
-    { [keyType]: signature }
-  )
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.didLookup.associateAccount(account, signatureValidUntilBlock, {
+    [keyType]: signature,
+  })
 }
 
 /**
@@ -123,8 +121,8 @@ export async function getAccountSignedAssociationTx(
 export async function getReclaimDepositTx(
   linkedAccount: AccountAddress | AccountId
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.didLookup.reclaimDeposit(linkedAccount)
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.didLookup.reclaimDeposit(linkedAccount)
 }
 
 /**
@@ -134,8 +132,8 @@ export async function getReclaimDepositTx(
  * @returns A SubmittableExtrinsic that must be signed by the linked account.
  */
 export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.didLookup.removeSenderAssociation()
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.didLookup.removeSenderAssociation()
 }
 
 /**
@@ -148,8 +146,8 @@ export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic>
 export async function getLinkRemovalByDidTx(
   linkedAccount: AccountAddress | AccountId
 ): Promise<Extrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.didLookup.removeAccountAssociation(linkedAccount)
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.didLookup.removeAccountAssociation(linkedAccount)
 }
 
 /* ### HELPERS ### */
