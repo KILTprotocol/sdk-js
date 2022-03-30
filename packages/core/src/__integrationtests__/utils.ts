@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-console */
 
-import { BN } from '@polkadot/util'
+import { assert, BN, hexToU8a, u8aToHex } from '@polkadot/util'
 
 import { Keyring } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
@@ -16,8 +16,8 @@ import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidMigrationHandler,
+  FullDidCreationBuilder,
   FullDidDetails,
-  FullDidUpdateBuilder,
   FullDidUpdateHandler,
   LightDidDetails,
 } from '@kiltprotocol/did'
@@ -34,6 +34,7 @@ import type {
 import { CType } from '../ctype/CType'
 import { Balance } from '../balance'
 import { init } from '../kilt'
+import { Registry, Signer, SignerPayloadJSON, SignerPayloadRaw, SignerResult } from '@polkadot/types/types'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
@@ -171,22 +172,13 @@ export async function createFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
 ): Promise<FullDidDetails> {
-  const fullDid = await lightDidForId.migrate(
-    identity.address,
-    keystore,
-    getDefaultMigrationHandler(identity)
-  )
-
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const authenticatedBatch = await new FullDidUpdateBuilder(api, fullDid)
-    .setAttestationKey(fullDid.authenticationKey)
-    .setDelegationKey(fullDid.authenticationKey)
-    .consume(keystore, identity.address)
-  await submitExtrinsicWithResign(authenticatedBatch, identity)
-
-  return FullDidDetails.fromChainInfo(
-    fullDid.identifier
-  ) as Promise<FullDidDetails>
+  return FullDidCreationBuilder.fromLightDidDetails(api, lightDidForId)
+    .setAttestationKey(lightDidForId.authenticationKey)
+    .setDelegationKey(lightDidForId.authenticationKey)
+    .consumeWithHandler(keystore, identity.address, async (tx) => {
+      await submitExtrinsicWithResign(tx, identity)
+    })
 }
 
 export async function createFullDidFromSeed(
@@ -199,4 +191,62 @@ export async function createFullDidFromSeed(
     seed
   )
   return createFullDidFromLightDid(identity, lightDid, keystore)
+}
+
+// From https://github.com/polkadot-js/api/blob/master/packages/api/src/test/util/SingleAccountSigner.ts
+let id = 0
+
+export class SingleAccountSigner implements Signer {
+  keyringPair: KeyringPair
+  registry: Registry
+  signDelay: number
+
+  constructor(registry: Registry, keyringPair: KeyringPair, signDelay = 0) {
+    this.keyringPair = keyringPair
+    this.registry = registry
+    this.signDelay = signDelay
+  }
+
+  public async signPayload(payload: SignerPayloadJSON): Promise<SignerResult> {
+    assert(
+      payload.address === this.keyringPair.address,
+      'Signer does not have the keyringPair'
+    )
+
+    return new Promise((resolve): void => {
+      setTimeout((): void => {
+        const signed = this.registry
+          .createType('ExtrinsicPayload', payload, { version: payload.version })
+          .sign(this.keyringPair)
+
+        resolve({
+          // eslint-disable-next-line no-plusplus
+          id: ++id,
+          ...signed,
+        })
+      }, this.signDelay)
+    })
+  }
+
+  public async signRaw({
+    address,
+    data,
+  }: SignerPayloadRaw): Promise<SignerResult> {
+    assert(
+      address === this.keyringPair.address,
+      'Signer does not have the keyringPair'
+    )
+
+    return new Promise((resolve): void => {
+      setTimeout((): void => {
+        const signature = u8aToHex(this.keyringPair.sign(hexToU8a(data)))
+
+        resolve({
+          // eslint-disable-next-line no-plusplus
+          id: ++id,
+          signature,
+        })
+      }, this.signDelay)
+    })
+  }
 }

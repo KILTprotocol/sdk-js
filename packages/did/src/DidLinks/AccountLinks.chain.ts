@@ -14,7 +14,7 @@ import {
 } from '@kiltprotocol/types'
 
 import { signatureVerify } from '@polkadot/util-crypto'
-import type { Null, Option, Struct } from '@polkadot/types'
+import type { Option, Struct, u128 } from '@polkadot/types'
 import type {
   AccountId,
   Extrinsic,
@@ -23,6 +23,7 @@ import type {
 import type { AnyNumber, Signer } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import { KeypairType } from '@polkadot/util-crypto/types'
+import { BN } from '@polkadot/util'
 
 // TODO: update with string pattern types once available
 type AccountAddress = IIdentity['address']
@@ -65,7 +66,7 @@ export async function getConnectedAccountsForDid(
     await api.query.didLookup.connectedAccounts.keys<[AccountId, AccountId]>(
       linkedDid
     )
-  return connectedAccountsRecords.map(([, account]) => account.toString())
+  return connectedAccountsRecords.map((account) => account.args[1].toString())
 }
 
 export async function checkConnected(
@@ -73,10 +74,23 @@ export async function checkConnected(
   account: AccountAddress
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedEntry = await api.query.didLookup.connectedAccounts<
-    Option<Null>
-  >(didIdentifier, account)
-  return connectedEntry.isSome
+  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
+  const connectedEntry = await api.query.didLookup.connectedAccounts.hash(
+    didIdentifier,
+    account
+  )
+  // isEmpty returns true if there is no entry for the given key -> the function should return false.
+  return !connectedEntry.isEmpty
+}
+
+/**
+ * Retrieves the deposit amount to link an account to a DID as currently stored in the runtime.
+ *
+ * @returns The deposit amount. The value is indicated in femto KILTs.
+ */
+export async function queryDepositAmount(): Promise<BN> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return (api.consts.didLookup.deposit as u128).toBn()
 }
 
 /* ### EXTRINSICS ### */
