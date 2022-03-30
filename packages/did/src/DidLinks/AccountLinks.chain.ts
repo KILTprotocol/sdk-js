@@ -11,14 +11,18 @@ import {
   IDidIdentifier,
   IIdentity,
   SubmittableExtrinsic,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { signatureVerify } from '@polkadot/util-crypto'
 import type { Null, Option, Struct } from '@polkadot/types'
-import type { AccountId, Extrinsic } from '@polkadot/types/interfaces'
+import type {
+  AccountId,
+  Extrinsic,
+  MultiSignature,
+} from '@polkadot/types/interfaces'
 import type { AnyNumber, Signer } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
+import { KeypairType } from '@polkadot/util-crypto/types'
 
 // TODO: update with string pattern types once available
 type AccountAddress = IIdentity['address']
@@ -27,6 +31,9 @@ interface ConnectionRecord extends Struct {
   did: AccountId
   deposit: Deposit
 }
+
+/// Type of signatures to link accounts to DIDs.
+export type SignatureType = MultiSignature['type']
 
 /* ### QUERY ### */
 
@@ -58,7 +65,7 @@ export async function getConnectedAccountsForDid(
     await api.query.didLookup.connectedAccounts.keys<[AccountId, AccountId]>(
       linkedDid
     )
-  return connectedAccountsRecords.map((account) => account.args[1].toString())
+  return connectedAccountsRecords.map(([, account]) => account.toString())
 }
 
 export async function checkConnected(
@@ -95,19 +102,19 @@ export async function getAssociateSenderTx(): Promise<Extrinsic> {
  *
  * @param account The account to link to the authorizing FullDid.
  * @param signatureValidUntilBlock The link request will be rejected if submitted later than this block number.
- * @param signature Account's signature over Tuple(DidIdentifier, BlockNumber).toU8a().
- * @param keyType The type of key/substrate account which produced the `signature`.
+ * @param signature Account's signature over `Tuple(DidIdentifier, BlockNumber).toU8a()`.
+ * @param sigType The type of key/substrate account which produced the `signature`.
  * @returns An [[Extrinsic]] that must be did-authorized.
  */
 export async function getAccountSignedAssociationTx(
   account: AccountAddress | AccountId,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
-  keyType: VerificationKeyType
+  sigType: SignatureType
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.associateAccount(account, signatureValidUntilBlock, {
-    [keyType]: signature,
+    [sigType]: signature,
   })
 }
 
@@ -152,6 +159,22 @@ export async function getLinkRemovalByDidTx(
 
 /* ### HELPERS ### */
 
+function getMultiSignatureTypeFromKeypairType(
+  keypairType: KeypairType
+): SignatureType {
+  switch (keypairType) {
+    case 'ed25519':
+      return 'Ed25519'
+    case 'sr25519':
+      return 'Sr25519'
+    case 'ecdsa':
+    case 'ethereum':
+      return 'Ecdsa'
+    default:
+      throw new Error(`Unsupported signature algorithm '${keypairType}'`)
+  }
+}
+
 /**
  * Builds an extrinsic to link `account` to a `did` where the fees and deposit are covered by some third account.
  * This extrinsic must be authorized using the [[FullDid]] whose `didIdentifier` was used here.
@@ -182,17 +205,12 @@ export async function authorizeLinkWithAccount(
     type: 'bytes',
   })
   const { crypto, isValid } = signatureVerify(signMe, signature, accountAddress)
-  if (!isValid) throw new Error('signature not valid')
-  if (!(crypto in VerificationKeyType))
-    throw new Error(
-      `Unsupported signature algorithm '${crypto}'; must be one of ${Object.values(
-        VerificationKeyType
-      )}`
-    )
+  if (!isValid && crypto !== 'none') throw new Error('signature not valid')
+  const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
   return getAccountSignedAssociationTx(
     accountAddress,
     validTill,
     signature,
-    crypto as VerificationKeyType
+    sigType
   )
 }
