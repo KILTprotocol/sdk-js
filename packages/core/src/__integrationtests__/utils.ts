@@ -127,7 +127,7 @@ export async function endowAccounts(
   )
 }
 
-async function fundAccount(
+export async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
