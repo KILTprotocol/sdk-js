@@ -579,4 +579,97 @@ describe('When there is an on-chain DID', () => {
       ).resolves.toBeFalsy()
     })
   })
+
+  describe.only('and a generic Ecdsa Substrate account different than the sender to link', () => {
+    let genericAccount: KeyringPair
+    beforeAll(async () => {
+      const genericKeyring = new Keyring()
+      genericAccount = genericKeyring.addFromMnemonic(
+        mnemonicGenerate(),
+        undefined,
+        'ecdsa'
+      )
+      await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
+      ;[did, newDid] = await Promise.all([
+        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
+        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
+      ])
+    }, 40_000)
+
+    it('should be possible to associate the account while the sender pays the deposit', async () => {
+      const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
+        genericAccount.address,
+        new SingleAccountSigner(api.registry, genericAccount),
+        did.identifier
+      )
+      const signedTx = await did.authorizeExtrinsic(
+        linkAuthorisation,
+        keystore,
+        paymentAccount.address
+      )
+      const balanceBefore = await Balance.getBalances(paymentAccount.address)
+      const submissionPromise = submitExtrinsicWithResign(
+        signedTx,
+        paymentAccount
+      )
+      await expect(submissionPromise).resolves.not.toThrow()
+      // Check that the deposit has been taken from the sender's balance.
+      const balanceAfter = await Balance.getBalances(paymentAccount.address)
+      // Lookup reserve - deposit == 0
+      expect(
+        balanceAfter.reserved
+          .sub(balanceBefore.reserved)
+          .sub(linkDeposit)
+          .toString()
+      ).toMatchInlineSnapshot('"0"')
+      await expect(
+        AccountLinks.getConnectedDidForAccount(genericAccount.address)
+      ).resolves.toStrictEqual(did.identifier)
+      await expect(
+        AccountLinks.getConnectedDidForAccount(paymentAccount.address)
+      ).resolves.toBeNull()
+      await expect(
+        AccountLinks.getConnectedAccountsForDid(did.identifier)
+      ).resolves.toStrictEqual([genericAccount.address])
+      await expect(
+        AccountLinks.checkConnected(did.identifier, paymentAccount.address)
+      ).resolves.toBeFalsy()
+      await expect(
+        AccountLinks.checkConnected(did.identifier, genericAccount.address)
+      ).resolves.toBeTruthy()
+    })
+    it('should be possible for the sender to remove the link', async () => {
+      // No need for DID-authorizing this.
+      const reclaimDepositTx = await AccountLinks.getReclaimDepositTx(
+        genericAccount.address
+      )
+      const balanceBefore = await Balance.getBalances(paymentAccount.address)
+      const submissionPromise = submitExtrinsicWithResign(
+        reclaimDepositTx,
+        genericAccount
+      )
+      await expect(submissionPromise).resolves.not.toThrow()
+      // Check that the deposit has been returned to the sender's balance.
+      const balanceAfter = await Balance.getBalances(paymentAccount.address)
+      expect(
+        balanceBefore.reserved.sub(balanceAfter.reserved).toString()
+      ).toStrictEqual(linkDeposit.toString())
+      // Check that the link has been removed completely
+      await expect(
+        AccountLinks.getConnectedDidForAccount(paymentAccount.address)
+      ).resolves.toBeNull()
+      await expect(
+        AccountLinks.getConnectedDidForAccount(genericAccount.address)
+      ).resolves.toBeNull()
+      await expect(
+        AccountLinks.getConnectedAccountsForDid(newDid.identifier)
+      ).resolves.toStrictEqual([])
+      await expect(
+        AccountLinks.checkConnected(did.identifier, paymentAccount.address)
+      ).resolves.toBeFalsy()
+      await expect(
+        AccountLinks.checkConnected(did.identifier, genericAccount.address)
+      ).resolves.toBeFalsy()
+    })
+  })
 })
