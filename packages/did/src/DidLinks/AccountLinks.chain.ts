@@ -17,6 +17,7 @@ import { signatureVerify } from '@polkadot/util-crypto'
 import type { Option, Struct, u128 } from '@polkadot/types'
 import type {
   AccountId,
+  BlockNumber,
   Extrinsic,
   MultiSignature,
 } from '@polkadot/types/interfaces'
@@ -208,10 +209,11 @@ export async function authorizeLinkWithAccount(
 ): Promise<Extrinsic> {
   if (!accountSigner.signRaw) throw new Error()
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const blockNo = await api.query.system.number()
+  const blockNo: BlockNumber = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
+  // FIXME: Find a way to use our definition of BlockNumber (currently u64) instead of the default one (u32).
   const signMe = api
-    .createType('(AccountId, BlockNumber)', [didIdentifier, validTill])
+    .createType('(AccountId, u64)', [didIdentifier, validTill])
     .toHex()
   const { signature } = await accountSigner.signRaw({
     data: signMe,

@@ -164,7 +164,6 @@ describe('When there is an on-chain DID', () => {
         'ed25519'
       )
     })
-    // TODO: Fix origin error
     it('should be possible to associate the account while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         ed25519Account.address,
@@ -184,9 +183,11 @@ describe('When there is an on-chain DID', () => {
       await expect(submissionPromise).resolves.not.toThrow()
       // Check that the deposit has been taken from the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
-      // Reserve should not change when replacing the link
       expect(
-        balanceAfter.reserved.sub(balanceBefore.reserved).toString()
+        balanceAfter.reserved
+          .sub(balanceBefore.reserved)
+          .sub(linkDeposit)
+          .toString()
       ).toMatchInlineSnapshot('"0"')
       await expect(
         AccountLinks.getConnectedDidForAccount(ed25519Account.address)
