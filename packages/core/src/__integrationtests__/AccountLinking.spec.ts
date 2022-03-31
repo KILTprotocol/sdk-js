@@ -54,6 +54,7 @@ describe('When there is an on-chain DID', () => {
       ])
     }, 40_000)
     it('should be possible to associate the tx sender', async () => {
+      // Check that no links exist
       await expect(
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
@@ -85,6 +86,7 @@ describe('When there is an on-chain DID', () => {
           .sub(linkDeposit)
           .toString()
       ).toMatchInlineSnapshot('"0"')
+      // Check that the link has been created correctly
       await expect(
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toStrictEqual(did.identifier)
@@ -113,15 +115,18 @@ describe('When there is an on-chain DID', () => {
       expect(
         balanceAfter.reserved.sub(balanceBefore.reserved).toString()
       ).toMatchInlineSnapshot('"0"')
+      // Check that account is linked to new DID
       await expect(
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toStrictEqual(newDid.identifier)
+      // Check that old DID has no accounts linked
       await expect(
         AccountLinks.getConnectedAccountsForDid(did.identifier)
       ).resolves.toStrictEqual([])
       await expect(
         AccountLinks.checkConnected(did.identifier, paymentAccount.address)
       ).resolves.toBeFalsy()
+      // Check that new DID has the account linked
       await expect(
         AccountLinks.getConnectedAccountsForDid(newDid.identifier)
       ).resolves.toStrictEqual([paymentAccount.address])
@@ -247,6 +252,7 @@ describe('When there is an on-chain DID', () => {
       await expect(
         AccountLinks.checkConnected(did.identifier, ed25519Account.address)
       ).resolves.toBeFalsy()
+      // Check that new DID has the account linked
       await expect(
         AccountLinks.getConnectedAccountsForDid(newDid.identifier)
       ).resolves.toStrictEqual([ed25519Account.address])
@@ -277,6 +283,7 @@ describe('When there is an on-chain DID', () => {
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
+      // Check that the link has been removed completely
       await expect(
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
@@ -389,6 +396,7 @@ describe('When there is an on-chain DID', () => {
       await expect(
         AccountLinks.checkConnected(did.identifier, sr25519Account.address)
       ).resolves.toBeFalsy()
+      // Check that new DID has the account linked
       await expect(
         AccountLinks.getConnectedAccountsForDid(newDid.identifier)
       ).resolves.toStrictEqual([sr25519Account.address])
@@ -414,6 +422,7 @@ describe('When there is an on-chain DID', () => {
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
+      // Check that the link has been removed completely
       await expect(
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
@@ -525,6 +534,7 @@ describe('When there is an on-chain DID', () => {
       await expect(
         AccountLinks.checkConnected(did.identifier, ecdsaAccount.address)
       ).resolves.toBeFalsy()
+      // Check that new DID has the account linked
       await expect(
         AccountLinks.getConnectedAccountsForDid(newDid.identifier)
       ).resolves.toStrictEqual([ecdsaAccount.address])
@@ -551,6 +561,7 @@ describe('When there is an on-chain DID', () => {
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
+      // Check that the link has been removed completely
       await expect(
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
