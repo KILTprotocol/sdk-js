@@ -31,10 +31,16 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import {
+  Registry,
+  Signer,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+  SignerResult,
+} from '@polkadot/types/types'
 import { CType } from '../ctype/CType'
 import { Balance } from '../balance'
 import { init } from '../kilt'
-import { Registry, Signer, SignerPayloadJSON, SignerPayloadRaw, SignerResult } from '@polkadot/types/types'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)

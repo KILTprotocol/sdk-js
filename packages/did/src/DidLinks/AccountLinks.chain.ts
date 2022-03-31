@@ -111,13 +111,13 @@ export async function getAssociateSenderTx(): Promise<Extrinsic> {
 /**
  * Signing (authorizing) this extrinsic with a FullDid and submitting it with any Account
  * will link Account to FullDid and remove any pre-existing links of Account.
- * Account must give permission by signing a Tuple consisting of the identifier of FullDid
- * and a block number before which this signature is valid.
+ * Account must give permission by signing a Scale-encoded tuple consisting of the FullDid identifier
+ * and a block number representing the expiration block of the signature (after which it cannot be submitted anymore).
  * Account does not need to hold balance. The submitting account will pay and own the deposit for the link.
  *
  * @param account The account to link to the authorizing FullDid.
  * @param signatureValidUntilBlock The link request will be rejected if submitted later than this block number.
- * @param signature Account's signature over `Tuple(DidIdentifier, BlockNumber).toU8a()`.
+ * @param signature Account's signature over `(DidIdentifier, BlockNumber).toU8a()`.
  * @param sigType The type of key/substrate account which produced the `signature`.
  * @returns An [[Extrinsic]] that must be did-authorized.
  */
@@ -182,7 +182,6 @@ function getMultiSignatureTypeFromKeypairType(
       return 'Ed25519'
     case 'sr25519':
       return 'Sr25519'
-    case 'ecdsa':
     case 'ethereum':
       return 'Ecdsa'
     default:
