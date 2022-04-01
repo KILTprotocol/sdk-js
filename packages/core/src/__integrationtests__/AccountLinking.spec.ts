@@ -88,7 +88,7 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toStrictEqual(did.identifier)
       await expect(
-        AccountLinks.getConnectedAccountsForDid(did.identifier)
+        AccountLinks.getConnectedAccountsForDid(did.identifier, 38)
       ).resolves.toStrictEqual([paymentAccount.address])
       await expect(
         AccountLinks.checkConnected(did.identifier, paymentAccount.address)
@@ -125,7 +125,7 @@ describe('When there is an on-chain DID', () => {
       ).resolves.toBeFalsy()
       // Check that new DID has the account linked
       await expect(
-        AccountLinks.getConnectedAccountsForDid(newDid.identifier)
+        AccountLinks.getConnectedAccountsForDid(newDid.identifier, 38)
       ).resolves.toStrictEqual([paymentAccount.address])
       await expect(
         AccountLinks.checkConnected(newDid.identifier, paymentAccount.address)
@@ -203,7 +203,7 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
       await expect(
-        AccountLinks.getConnectedAccountsForDid(did.identifier)
+        AccountLinks.getConnectedAccountsForDid(did.identifier, 38)
       ).resolves.toStrictEqual([ed25519Account.address])
       await expect(
         AccountLinks.checkConnected(did.identifier, paymentAccount.address)
@@ -251,7 +251,7 @@ describe('When there is an on-chain DID', () => {
       ).resolves.toBeFalsy()
       // Check that new DID has the account linked
       await expect(
-        AccountLinks.getConnectedAccountsForDid(newDid.identifier)
+        AccountLinks.getConnectedAccountsForDid(newDid.identifier, 38)
       ).resolves.toStrictEqual([ed25519Account.address])
       await expect(
         AccountLinks.checkConnected(newDid.identifier, paymentAccount.address)
@@ -347,7 +347,7 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
       await expect(
-        AccountLinks.getConnectedAccountsForDid(did.identifier)
+        AccountLinks.getConnectedAccountsForDid(did.identifier, 38)
       ).resolves.toStrictEqual([sr25519Account.address])
       await expect(
         AccountLinks.checkConnected(did.identifier, paymentAccount.address)
@@ -395,7 +395,7 @@ describe('When there is an on-chain DID', () => {
       ).resolves.toBeFalsy()
       // Check that new DID has the account linked
       await expect(
-        AccountLinks.getConnectedAccountsForDid(newDid.identifier)
+        AccountLinks.getConnectedAccountsForDid(newDid.identifier, 38)
       ).resolves.toStrictEqual([sr25519Account.address])
       await expect(
         AccountLinks.checkConnected(newDid.identifier, paymentAccount.address)
@@ -485,7 +485,7 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
       await expect(
-        AccountLinks.getConnectedAccountsForDid(did.identifier)
+        AccountLinks.getConnectedAccountsForDid(did.identifier, 38)
       ).resolves.toStrictEqual([ecdsaAccount.address])
       await expect(
         AccountLinks.checkConnected(did.identifier, paymentAccount.address)
@@ -533,7 +533,7 @@ describe('When there is an on-chain DID', () => {
       ).resolves.toBeFalsy()
       // Check that new DID has the account linked
       await expect(
-        AccountLinks.getConnectedAccountsForDid(newDid.identifier)
+        AccountLinks.getConnectedAccountsForDid(newDid.identifier, 38)
       ).resolves.toStrictEqual([ecdsaAccount.address])
       await expect(
         AccountLinks.checkConnected(newDid.identifier, paymentAccount.address)
@@ -581,6 +581,7 @@ describe('When there is an on-chain DID', () => {
     let genericAccount: KeyringPair
     beforeAll(async () => {
       const genericKeyring = new Keyring()
+      signingCallback = AccountLinks.defaultSignerCallback(genericKeyring)
       genericAccount = genericKeyring.addFromMnemonic(
         mnemonicGenerate(),
         undefined,
@@ -626,6 +627,7 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.getConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
       await expect(
+        // No network encoding. Account should match the generated one.
         AccountLinks.getConnectedAccountsForDid(did.identifier)
       ).resolves.toStrictEqual([genericAccount.address])
       await expect(
@@ -637,9 +639,7 @@ describe('When there is an on-chain DID', () => {
     })
     it('should be possible for the sender to remove the link', async () => {
       // No need for DID-authorizing this.
-      const reclaimDepositTx = await AccountLinks.getReclaimDepositTx(
-        genericAccount.address
-      )
+      const reclaimDepositTx = await AccountLinks.getLinkRemovalByAccountTx()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
       const submissionPromise = submitExtrinsicWithResign(
         reclaimDepositTx,

@@ -13,7 +13,7 @@ import {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
-import { signatureVerify } from '@polkadot/util-crypto'
+import { encodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import type { Option, Struct, u128 } from '@polkadot/types'
 import type {
   AccountId,
@@ -28,10 +28,15 @@ import { BN } from '@polkadot/util'
 import Keyring from '@polkadot/keyring'
 
 // TODO: update with string pattern types once available
-type AccountAddress = IIdentity['address']
+/// A KILT-chain specific address, encoded with the KILT 38 network prefix.
+export type KiltAddress = IIdentity['address']
+/// A chain-agnostic address, which can be encoded using any network prefix.
+export type SubstrateAddress = IIdentity['address']
+
+export type Address = KiltAddress | SubstrateAddress
 
 interface ConnectionRecord extends Struct {
-  did: AccountId
+  did: Address
   deposit: Deposit
 }
 
@@ -41,13 +46,13 @@ export type SignatureType = MultiSignature['type']
 /// Type of a linking payload signing function.
 export type LinkingSignerCallback = (
   payload: Uint8Array,
-  address: AccountAddress
+  address: KiltAddress
 ) => Promise<Uint8Array>
 
 /* ### QUERY ### */
 
 export async function getAccountLinkDepositInfo(
-  linkedAccount: AccountId | AccountAddress
+  linkedAccount: Address
 ): Promise<Deposit | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await api.query.didLookup.connectedDids<
@@ -56,8 +61,14 @@ export async function getAccountLinkDepositInfo(
   return connectedDid.isSome ? connectedDid.unwrap().deposit : null
 }
 
+/**
+ * Return the identifier of the DID linked to the provided account, if present.
+ *
+ * @param linkedAccount The account to use for the lookup.
+ * @returns The linked DID identifier if present, or null otherwise.
+ */
 export async function getConnectedDidForAccount(
-  linkedAccount: AccountId | AccountAddress
+  linkedAccount: Address
 ): Promise<IDidIdentifier | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await api.query.didLookup.connectedDids<
@@ -66,20 +77,38 @@ export async function getConnectedDidForAccount(
   return connectedDid.isNone ? null : connectedDid.unwrap().did.toString()
 }
 
+/**
+ * Return the KILT-encoded accounts linked to the provided DID identifier.
+ * All accounts are KILT-encoded, meaning that need to be re-encoded to be used in any other given chain.
+ *
+ * @param linkedDid The DID to use for the lookup.
+ * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to generic Substrate addresses (no network-specific prefix).
+ * @returns The list of accounts linked to the DID. All accounts are encoded using the KILT 38 network prefix.
+ */
 export async function getConnectedAccountsForDid(
-  linkedDid: IDidIdentifier
-): Promise<AccountAddress[]> {
+  linkedDid: IDidIdentifier,
+  networkPrefix: number | undefined = undefined
+): Promise<Array<KiltAddress | SubstrateAddress>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
     await api.query.didLookup.connectedAccounts.keys<[AccountId, AccountId]>(
       linkedDid
     )
-  return connectedAccountsRecords.map((account) => account.args[1].toString())
+  return connectedAccountsRecords.map((account) =>
+    encodeAddress(account.args[1].toString(), networkPrefix)
+  )
 }
 
+/**
+ * Return true whether the provided account has been linked to the provided DID.
+ *
+ * @param didIdentifier The DID to use for the lookup.
+ * @param account The account to use for the lookup.
+ * @returns True if the DID and accounts are linked, false otherwise.
+ */
 export async function checkConnected(
   didIdentifier: IDidIdentifier,
-  account: AccountAddress
+  account: Address
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
@@ -129,7 +158,7 @@ export async function getAssociateSenderTx(): Promise<Extrinsic> {
  * @returns An [[Extrinsic]] that must be did-authorized.
  */
 export async function getAccountSignedAssociationTx(
-  account: AccountAddress | AccountId,
+  account: Address,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
   sigType: SignatureType
@@ -148,7 +177,7 @@ export async function getAccountSignedAssociationTx(
  * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
  */
 export async function getReclaimDepositTx(
-  linkedAccount: AccountAddress | AccountId
+  linkedAccount: Address
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.reclaimDeposit(linkedAccount)
@@ -173,7 +202,7 @@ export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic>
  * @returns An Extrinsic that must be did-authorized by the FullDid linked to `linkedAccount`.
  */
 export async function getLinkRemovalByDidTx(
-  linkedAccount: AccountAddress | AccountId
+  linkedAccount: Address
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.removeAccountAssociation(linkedAccount)
@@ -203,7 +232,7 @@ function getMultiSignatureTypeFromKeypairType(
  * @returns The signature generating callback that uses the keyring to sign the input payload using the input address.
  */
 export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
-  return (payload: Uint8Array, address: AccountAddress): Promise<Uint8Array> =>
+  return (payload: Uint8Array, address: Address): Promise<Uint8Array> =>
     Promise.resolve(keyring.getPair(address).sign(payload))
 }
 
@@ -219,7 +248,7 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
  * @returns An Extrinsic that must be did-authorized by the [[FullDid]] whose identifier was used.
  */
 export async function authorizeLinkWithAccount(
-  accountAddress: AccountAddress,
+  accountAddress: Address,
   didIdentifier: IDidIdentifier,
   signingCallback: LinkingSignerCallback,
   nBlocksValid = 10
