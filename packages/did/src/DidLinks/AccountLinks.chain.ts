@@ -21,10 +21,11 @@ import type {
   Extrinsic,
   MultiSignature,
 } from '@polkadot/types/interfaces'
-import type { AnyNumber, Signer } from '@polkadot/types/types'
+import type { AnyNumber } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { BN } from '@polkadot/util'
+import Keyring from '@polkadot/keyring'
 
 // TODO: update with string pattern types once available
 type AccountAddress = IIdentity['address']
@@ -36,6 +37,12 @@ interface ConnectionRecord extends Struct {
 
 /// Type of signatures to link accounts to DIDs.
 export type SignatureType = MultiSignature['type']
+
+/// Type of a linking payload signing function.
+export type LinkingSignerCallback = (
+  payload: Uint8Array,
+  address: AccountAddress
+) => Promise<Uint8Array>
 
 /* ### QUERY ### */
 
@@ -182,11 +189,22 @@ function getMultiSignatureTypeFromKeypairType(
       return 'Ed25519'
     case 'sr25519':
       return 'Sr25519'
-    case 'ethereum':
+    case 'ecdsa':
       return 'Ecdsa'
     default:
       throw new Error(`Unsupported signature algorithm '${keypairType}'`)
   }
+}
+
+/**
+ * Return the default signer callback, which uses the address argument to crete a signing closure for the given payload.
+ *
+ * @param keyring The [[Keyring]] to retrieve the signing key.
+ * @returns The signature generating callback that uses the keyring to sign the input payload using the input address.
+ */
+export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
+  return (payload: Uint8Array, address: AccountAddress): Promise<Uint8Array> =>
+    Promise.resolve(keyring.getPair(address).sign(payload))
 }
 
 /**
@@ -195,30 +213,25 @@ function getMultiSignatureTypeFromKeypairType(
  * Note that in addition to the signing account and did used here, the submitting account will also be able to dissolve the link via reclaiming its deposit!
  *
  * @param accountAddress Address of the account to be linked.
- * @param accountSigner Signer interface that provides signing capabilities for the account with `accountAddress`.
  * @param didIdentifier Method-specific identifier [[FullDid]] to be linked.
+ * @param signingCallback The signature generation callback that generates the account signature over the encoded (DidIdentifier, BlockNumber) tuple.
  * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
  * @returns An Extrinsic that must be did-authorized by the [[FullDid]] whose identifier was used.
  */
 export async function authorizeLinkWithAccount(
   accountAddress: AccountAddress,
-  accountSigner: Signer,
   didIdentifier: IDidIdentifier,
+  signingCallback: LinkingSignerCallback,
   nBlocksValid = 10
 ): Promise<Extrinsic> {
-  if (!accountSigner.signRaw) throw new Error()
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const blockNo: BlockNumber = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
   // FIXME: Find a way to use our definition of BlockNumber (currently u64) instead of the default one (u32).
   const signMe = api
     .createType('(AccountId, u64)', [didIdentifier, validTill])
-    .toHex()
-  const { signature } = await accountSigner.signRaw({
-    data: signMe,
-    address: accountAddress,
-    type: 'bytes',
-  })
+    .toU8a()
+  const signature = await signingCallback(signMe, accountAddress)
   const { crypto, isValid } = signatureVerify(signMe, signature, accountAddress)
   if (!isValid && crypto !== 'none') throw new Error('signature not valid')
   const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)

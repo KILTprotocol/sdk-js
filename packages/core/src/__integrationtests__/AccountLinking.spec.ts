@@ -9,10 +9,8 @@
  * @group integration/accountLinking
  */
 
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { AccountLinks, DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { KeyringPair } from '@kiltprotocol/types'
-import { ApiPromise } from '@polkadot/api'
 import { Keyring } from '@polkadot/keyring'
 import { BN } from '@polkadot/util'
 import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
@@ -23,15 +21,14 @@ import {
   createFullDidFromSeed,
   fundAccount,
   initializeApi,
-  SingleAccountSigner,
   submitExtrinsicWithResign,
 } from './utils'
 
 let paymentAccount: KeyringPair
 let keystore: DemoKeystore
 let linkDeposit: BN
-let api: ApiPromise
 let keyring: Keyring
+let signingCallback: AccountLinks.LinkingSignerCallback
 
 beforeAll(async () => {
   await initializeApi()
@@ -39,7 +36,7 @@ beforeAll(async () => {
   keystore = new DemoKeystore()
   linkDeposit = await AccountLinks.queryDepositAmount()
   keyring = new Keyring({ ss58Format: 38 })
-  ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
+  signingCallback = AccountLinks.defaultSignerCallback(keyring)
 }, 40_000)
 
 describe('When there is an on-chain DID', () => {
@@ -176,8 +173,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         ed25519Account.address,
-        new SingleAccountSigner(api.registry, ed25519Account),
-        did.identifier
+        did.identifier,
+        signingCallback
       )
       const signedTx = await did.authorizeExtrinsic(
         linkAuthorisation,
@@ -218,8 +215,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         ed25519Account.address,
-        new SingleAccountSigner(api.registry, ed25519Account),
-        newDid.identifier
+        newDid.identifier,
+        signingCallback
       )
       const signedTx = await newDid.authorizeExtrinsic(
         linkAuthorisation,
@@ -320,8 +317,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         sr25519Account.address,
-        new SingleAccountSigner(api.registry, sr25519Account),
-        did.identifier
+        did.identifier,
+        signingCallback
       )
       const signedTx = await did.authorizeExtrinsic(
         linkAuthorisation,
@@ -362,8 +359,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         sr25519Account.address,
-        new SingleAccountSigner(api.registry, sr25519Account),
-        newDid.identifier
+        newDid.identifier,
+        signingCallback
       )
       const signedTx = await newDid.authorizeExtrinsic(
         linkAuthorisation,
@@ -458,8 +455,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         ecdsaAccount.address,
-        new SingleAccountSigner(api.registry, ecdsaAccount),
-        did.identifier
+        did.identifier,
+        signingCallback
       )
       const signedTx = await did.authorizeExtrinsic(
         linkAuthorisation,
@@ -500,8 +497,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         ecdsaAccount.address,
-        new SingleAccountSigner(api.registry, ecdsaAccount),
-        newDid.identifier
+        newDid.identifier,
+        signingCallback
       )
       const signedTx = await newDid.authorizeExtrinsic(
         linkAuthorisation,
@@ -580,7 +577,7 @@ describe('When there is an on-chain DID', () => {
     })
   })
 
-  describe.only('and a generic Ecdsa Substrate account different than the sender to link', () => {
+  describe('and a generic Ecdsa Substrate account different than the sender to link', () => {
     let genericAccount: KeyringPair
     beforeAll(async () => {
       const genericKeyring = new Keyring()
@@ -599,8 +596,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the account while the sender pays the deposit', async () => {
       const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
         genericAccount.address,
-        new SingleAccountSigner(api.registry, genericAccount),
-        did.identifier
+        did.identifier,
+        signingCallback
       )
       const signedTx = await did.authorizeExtrinsic(
         linkAuthorisation,

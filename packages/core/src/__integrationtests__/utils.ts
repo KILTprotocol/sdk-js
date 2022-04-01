@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-console */
 
-import { assert, BN, hexToU8a, u8aToHex } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 
 import { Keyring } from '@kiltprotocol/utils'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
@@ -31,13 +31,6 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import {
-  Registry,
-  Signer,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-  SignerResult,
-} from '@polkadot/types/types'
 import { CType } from '../ctype/CType'
 import { Balance } from '../balance'
 import { init } from '../kilt'
@@ -197,62 +190,4 @@ export async function createFullDidFromSeed(
     seed
   )
   return createFullDidFromLightDid(identity, lightDid, keystore)
-}
-
-// From https://github.com/polkadot-js/api/blob/master/packages/api/src/test/util/SingleAccountSigner.ts
-let id = 0
-
-export class SingleAccountSigner implements Signer {
-  keyringPair: KeyringPair
-  registry: Registry
-  signDelay: number
-
-  constructor(registry: Registry, keyringPair: KeyringPair, signDelay = 0) {
-    this.keyringPair = keyringPair
-    this.registry = registry
-    this.signDelay = signDelay
-  }
-
-  public async signPayload(payload: SignerPayloadJSON): Promise<SignerResult> {
-    assert(
-      payload.address === this.keyringPair.address,
-      'Signer does not have the keyringPair'
-    )
-
-    return new Promise((resolve): void => {
-      setTimeout((): void => {
-        const signed = this.registry
-          .createType('ExtrinsicPayload', payload, { version: payload.version })
-          .sign(this.keyringPair)
-
-        resolve({
-          // eslint-disable-next-line no-plusplus
-          id: ++id,
-          ...signed,
-        })
-      }, this.signDelay)
-    })
-  }
-
-  public async signRaw({
-    address,
-    data,
-  }: SignerPayloadRaw): Promise<SignerResult> {
-    assert(
-      address === this.keyringPair.address,
-      'Signer does not have the keyringPair'
-    )
-
-    return new Promise((resolve): void => {
-      setTimeout((): void => {
-        const signature = u8aToHex(this.keyringPair.sign(hexToU8a(data)))
-
-        resolve({
-          // eslint-disable-next-line no-plusplus
-          id: ++id,
-          signature,
-        })
-      }, this.signDelay)
-    })
-  }
 }
