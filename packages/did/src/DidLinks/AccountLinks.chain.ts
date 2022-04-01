@@ -78,8 +78,7 @@ export async function getConnectedDidForAccount(
 }
 
 /**
- * Return the KILT-encoded accounts linked to the provided DID identifier.
- * All accounts are KILT-encoded, meaning that need to be re-encoded to be used in any other given chain.
+ * Return all the accounts linked to the provided DID identifier.
  *
  * @param linkedDid The DID to use for the lookup.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to generic Substrate addresses (no network-specific prefix).
