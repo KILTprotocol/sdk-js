@@ -21,7 +21,7 @@ import type {
   Extrinsic,
   MultiSignature,
 } from '@polkadot/types/interfaces'
-import type { AnyNumber } from '@polkadot/types/types'
+import type { AnyNumber, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { BN, u8aToHex } from '@polkadot/util'
@@ -262,11 +262,14 @@ export async function authorizeLinkWithAccount(
   // Gets the current definition of BlockNumber (second tx argument) from the metadata.
   const blockNumberType =
     api.tx.didLookup.associateAccount.meta.args[1].type.toString()
-  // Gets the DidIdentifier definition from the metadata by unpacking a type from this pallet.
-  const didIdentifierType = api
-    .createType<Struct>('PalletDidLookupConnectionRecord')
-    .get('did')
-    ?.toRawType()
+  // This is some magic on the polkadot types internals to get the DidIdentifier definition from the metadata.
+  // We get it from the connectedDids storage, which is a double map from (DidIdentifier, Account) -> Null.
+  const didIdentifierType = (
+    api.registry.lookup.getTypeDef(
+      // gets the type id of the keys on the connectedAccounts storage (which is a double map).
+      api.query.didLookup.connectedAccounts.creator.meta.type.asMap.key
+    ).sub as TypeDef[]
+  )[0].type // get the type of the first key, which is the DidIdentifier
   const signMe = api
     .createType(`(${didIdentifierType}, ${blockNumberType})`, [
       didIdentifier,
