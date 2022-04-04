@@ -259,13 +259,23 @@ export async function authorizeLinkWithAccount(
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const blockNo: BlockNumber = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
-  // FIXME: Find a way to use our definition of BlockNumber (currently u64) instead of the default one (u32).
+  // Gets the current definition of BlockNumber (second tx argument) from the metadata.
+  const blockNumberType =
+    api.tx.didLookup.associateAccount.meta.args[1].type.toString()
+  // Gets the DidIdentifier definition from the metadata by unpacking a type from this pallet.
+  const didIdentifierType = api
+    .createType<Struct>('PalletDidLookupConnectionRecord')
+    .get('did')
+    ?.toRawType()
   const signMe = api
-    .createType('(AccountId, u64)', [didIdentifier, validTill])
+    .createType(`(${didIdentifierType}, ${blockNumberType})`, [
+      didIdentifier,
+      validTill,
+    ])
     .toHex()
   const signature = await signingCallback(signMe, accountAddress)
   const { crypto, isValid } = signatureVerify(signMe, signature, accountAddress)
-  if (!isValid && crypto !== 'none') throw new Error('signature not valid')
+  if (!isValid) throw new Error('signature not valid')
   const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
   return getAccountSignedAssociationTx(
     accountAddress,
