@@ -11,7 +11,6 @@ import type {
   IDidDetails,
   IDidIdentifier,
   KeyRelationship,
-  NewDidEncryptionKey,
   NewDidVerificationKey,
   VerificationKeyType,
 } from '@kiltprotocol/types'
@@ -50,10 +49,6 @@ export type DidConstructorDetails = {
 export type FullDidCreationDetails = {
   identifier: IDidIdentifier
   authenticationKey: NewDidVerificationKey
-  keyAgreementKeys?: NewDidEncryptionKey[]
-  assertionKey?: NewDidVerificationKey
-  delegationKey?: NewDidVerificationKey
-  serviceEndpoints?: DidServiceEndpoint[]
 }
 
 // Ecdsa not supported.
