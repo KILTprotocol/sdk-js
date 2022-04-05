@@ -91,12 +91,12 @@ export async function queryConnectedDidForAccount(
  * Return all the accounts linked to the provided DID identifier.
  *
  * @param linkedDid The DID to use for the lookup.
- * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to generic Substrate addresses (no network-specific prefix).
+ * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
  * @returns A list of addresses to accounts linked to the DID, encoded using `networkPrefix`.
  */
 export async function queryConnectedAccountsForDid(
   linkedDid: IDidIdentifier,
-  networkPrefix: number | undefined = undefined
+  networkPrefix = 38
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
@@ -104,7 +104,7 @@ export async function queryConnectedAccountsForDid(
       linkedDid
     )
   return connectedAccountsRecords.map((account) =>
-    encodeAddress(account.args[1].toString(), networkPrefix)
+    encodeAddress(account.args[1], networkPrefix)
   )
 }
 

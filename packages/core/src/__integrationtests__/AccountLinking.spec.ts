@@ -361,8 +361,8 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
       ).resolves.toBeNull()
       await expect(
-        // No network encoding. Account should match the generated one.
-        AccountLinks.queryConnectedAccountsForDid(did.identifier)
+        // Wildcard substrate encoding. Account should match the generated one.
+        AccountLinks.queryConnectedAccountsForDid(did.identifier, 42)
       ).resolves.toStrictEqual([genericAccount.address])
       await expect(
         AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
