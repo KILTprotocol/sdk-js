@@ -263,7 +263,7 @@ export async function authorizeLinkWithAccount(
   const blockNumberType =
     api.tx.didLookup.associateAccount.meta.args[1].type.toString()
   // This is some magic on the polkadot types internals to get the DidIdentifier definition from the metadata.
-  // We get it from the connectedDids storage, which is a double map from (DidIdentifier, Account) -> Null.
+  // We get it from the connectedAccounts storage, which is a double map from (DidIdentifier, Account) -> Null.
   const didIdentifierType = (
     api.registry.lookup.getTypeDef(
       // gets the type id of the keys on the connectedAccounts storage (which is a double map).
