@@ -236,7 +236,9 @@ function getMultiSignatureTypeFromKeypairType(
  */
 export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
   return (payload: HexString, address: Address): Promise<HexString> =>
-    Promise.resolve(u8aToHex(keyring.getPair(address).sign(payload)))
+    Promise.resolve(
+      u8aToHex(keyring.getPair(address).sign(payload, { withType: false }))
+    )
 }
 
 /**
