@@ -55,7 +55,13 @@ export type LinkingSignerCallback = (
 
 /* ### QUERY ### */
 
-export async function getAccountLinkDepositInfo(
+/**
+ * Gets deposit information for a given account link.
+ *
+ * @param linkedAccount The linked account.
+ * @returns Deposit info giving amount and owner of deposit, null if this account is not linked.
+ */
+export async function queryAccountLinkDepositInfo(
   linkedAccount: Address
 ): Promise<Deposit | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -71,7 +77,7 @@ export async function getAccountLinkDepositInfo(
  * @param linkedAccount The account to use for the lookup.
  * @returns The linked DID identifier if present, or null otherwise.
  */
-export async function getConnectedDidForAccount(
+export async function queryConnectedDidForAccount(
   linkedAccount: Address
 ): Promise<IDidIdentifier | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -86,9 +92,9 @@ export async function getConnectedDidForAccount(
  *
  * @param linkedDid The DID to use for the lookup.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to generic Substrate addresses (no network-specific prefix).
- * @returns The list of accounts linked to the DID. All accounts are encoded using the KILT 38 network prefix.
+ * @returns A list of addresses to accounts linked to the DID, encoded using `networkPrefix`.
  */
-export async function getConnectedAccountsForDid(
+export async function queryConnectedAccountsForDid(
   linkedDid: IDidIdentifier,
   networkPrefix: number | undefined = undefined
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
@@ -107,9 +113,9 @@ export async function getConnectedAccountsForDid(
  *
  * @param didIdentifier The DID to use for the lookup.
  * @param account The account to use for the lookup.
- * @returns True if the DID and accounts are linked, false otherwise.
+ * @returns True if the DID and account is linked, false otherwise.
  */
-export async function checkConnected(
+export async function queryIsConnected(
   didIdentifier: IDidIdentifier,
   account: Address
 ): Promise<boolean> {
