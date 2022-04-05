@@ -24,7 +24,7 @@ import type {
 import type { AnyNumber, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import { KeypairType } from '@polkadot/util-crypto/types'
-import { BN, u8aToHex } from '@polkadot/util'
+import { BN, u8aToHex, u8aToU8a } from '@polkadot/util'
 import Keyring from '@polkadot/keyring'
 
 // TODO: update with string pattern types once available
@@ -276,10 +276,21 @@ export async function authorizeLinkWithAccount(
       validTill,
     ])
     .toHex()
-  const signature = await signingCallback(signMe, accountAddress)
+  let signature = u8aToU8a(await signingCallback(signMe, accountAddress))
   const { crypto, isValid } = signatureVerify(signMe, signature, accountAddress)
   if (!isValid) throw new Error('signature not valid')
   const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
+  try {
+    // The signature may be prefixed; if it is, it would still verify after removing the first byte (prefix).
+    // In that case, we get rid of the prefix.
+    if (
+      signatureVerify(signMe, signature.subarray(1), accountAddress).isValid
+    ) {
+      signature = signature.subarray(1)
+    }
+  } catch {
+    // noop
+  }
   return getAccountSignedAssociationTx(
     accountAddress,
     validTill,
