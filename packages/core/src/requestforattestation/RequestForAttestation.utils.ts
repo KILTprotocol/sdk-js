@@ -31,7 +31,10 @@ import { RequestForAttestation } from './RequestForAttestation.js'
  *  Throws on invalid input.
  *
  * @param input - A potentially only partial [[IRequestForAttestation]].
- * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
+ * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]],
+ *         [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the
+ *         input's claim, legitimations, claimHashTree or DelegationId are not provided or of the
+ *         wrong type, respectively.
  * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
  *
  */
@@ -159,7 +162,11 @@ export function verifyStructure(
   requestForAttestation: IRequestForAttestation,
   ctype: ICType
 ): boolean {
-  errorCheck(requestForAttestation)
+  try {
+    errorCheck(requestForAttestation)
+  } catch {
+    return false
+  }
   return CTypeUtils.verifyClaimStructure(
     requestForAttestation.claim.contents,
     ctype.schema
