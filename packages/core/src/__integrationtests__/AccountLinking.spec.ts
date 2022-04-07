@@ -9,7 +9,12 @@
  * @group integration/accountLinking
  */
 
-import { AccountLinks, DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
+import {
+  AccountLinks,
+  DemoKeystore,
+  FullDidDetails,
+  Web3Names,
+} from '@kiltprotocol/did'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
 import { BN, u8aToHex } from '@polkadot/util'
@@ -371,6 +376,29 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.queryIsConnected(did.identifier, genericAccount.address)
       ).resolves.toBeTruthy()
     })
+
+    it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
+      const web3NameClaimTx = await Web3Names.getClaimTx('test-name')
+      const signedTx = await did.authorizeExtrinsic(
+        web3NameClaimTx,
+        keystore,
+        paymentAccount.address
+      )
+      const submissionPromise = submitExtrinsicWithResign(
+        signedTx,
+        paymentAccount
+      )
+      await expect(submissionPromise).resolves.not.toThrow()
+      // Check that the Web3 name has been linked to the DID
+      await expect(
+        Web3Names.queryDidIdentifierForWeb3Name('test-name')
+      ).resolves.toStrictEqual(did.identifier)
+      // Check that it is possible to retrieve the web3 name from the account linked to the DID
+      await expect(
+        AccountLinks.queryWeb3Name(genericAccount.address)
+      ).resolves.toStrictEqual('test-name')
+    })
+
     it('should be possible for the sender to remove the link', async () => {
       // No need for DID-authorizing this.
       const reclaimDepositTx = await AccountLinks.getLinkRemovalByAccountTx()

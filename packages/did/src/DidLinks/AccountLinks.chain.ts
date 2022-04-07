@@ -27,6 +27,8 @@ import { KeypairType } from '@polkadot/util-crypto/types'
 import { BN, u8aToHex, u8aToU8a } from '@polkadot/util'
 import Keyring from '@polkadot/keyring'
 
+import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
+
 // TODO: update with string pattern types once available
 /// A KILT-chain specific address, encoded with the KILT 38 network prefix.
 export type KiltAddress = IIdentity['address']
@@ -106,6 +108,23 @@ export async function queryConnectedAccountsForDid(
   return connectedAccountsRecords.map((account) =>
     encodeAddress(account.args[1], networkPrefix)
   )
+}
+
+/**
+ * Return the Web3 name associated with the given account, if present.
+ *
+ * @param linkedAccount The account to use for the lookup.
+ * @returns The Web3 name linked to the given account, or `null` otherwise.
+ */
+export async function queryWeb3Name(
+  linkedAccount: Address
+): Promise<Web3Name | null> {
+  // TODO: Replace with custom RPC call when available.
+  const linkedDid = await queryConnectedDidForAccount(linkedAccount)
+  if (!linkedDid) {
+    return null
+  }
+  return queryWeb3NameForDidIdentifier(linkedDid)
 }
 
 /**
