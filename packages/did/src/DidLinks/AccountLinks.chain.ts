@@ -311,7 +311,7 @@ export async function authorizeLinkWithAccount(
     isValid: false,
   }
   // TODO: Improve readability of this piece of code. The only problem here is that we don't know whether a correct signature has the type or not.
-  // Try to sign, and return false either on failing verification or error thrown (e.g., signature too short)
+  // Try to verify, and return false either on failing verification or error thrown (e.g., signature too short)
   try {
     const signatureWithoutType = signature.subarray(1)
     ;({ crypto, isValid } = signatureVerify(
@@ -320,7 +320,7 @@ export async function authorizeLinkWithAccount(
       signatureWithoutType,
       accountAddress
     ))
-    // If the trimmed signature is valid, it means that it contains type annotation -> remove it
+    // If the trimmed signature is valid, it means that the original signature contains type annotation -> remove it
     signature = isValid ? signatureWithoutType : signature
     // eslint-disable-next-line no-empty
   } catch {}
@@ -336,7 +336,7 @@ export async function authorizeLinkWithAccount(
       // eslint-disable-next-line no-empty
     } catch {}
   }
-  // Throw if both signatures failed to verify
+  // Throw if both versions of the signature failed to verify
   if (!isValid) throw new Error('signature not valid')
 
   const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
