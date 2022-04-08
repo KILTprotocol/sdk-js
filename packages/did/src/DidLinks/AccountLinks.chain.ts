@@ -24,7 +24,7 @@ import type {
 import type { AnyNumber, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
-import { assert, BN, u8aToHex, u8aToU8a } from '@polkadot/util'
+import { assert, BN, u8aToHex, u8aToU8a, u8aWrapBytes } from '@polkadot/util'
 import Keyring from '@polkadot/keyring'
 
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
@@ -262,7 +262,11 @@ function getMultiSignatureTypeFromKeypairType(
 export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
   return (payload: HexString, address: Address): Promise<HexString> =>
     Promise.resolve(
-      u8aToHex(keyring.getPair(address).sign(payload, { withType: false }))
+      u8aToHex(
+        keyring
+          .getPair(address)
+          .sign(u8aWrapBytes(payload), { withType: false })
+      )
     )
 }
 

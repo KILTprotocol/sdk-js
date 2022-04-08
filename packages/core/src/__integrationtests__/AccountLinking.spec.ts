@@ -17,7 +17,7 @@ import {
 } from '@kiltprotocol/did'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
-import { BN, u8aToHex } from '@polkadot/util'
+import { BN, u8aToHex, u8aWrapBytes } from '@polkadot/util'
 import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import { Balance } from '../balance'
@@ -319,7 +319,9 @@ describe('When there is an on-chain DID', () => {
       // also testing that signing with type bitflag works, like the polkadot extension does it
       signingCallback = async (payload, address) =>
         u8aToHex(
-          genericKeyring.getPair(address).sign(payload, { withType: true })
+          genericKeyring
+            .getPair(address)
+            .sign(u8aWrapBytes(payload), { withType: true })
         )
       genericAccount = genericKeyring.addFromMnemonic(
         mnemonicGenerate(),
