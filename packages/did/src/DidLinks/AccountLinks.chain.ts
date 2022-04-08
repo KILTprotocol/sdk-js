@@ -24,7 +24,7 @@ import type {
 import type { AnyNumber, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
-import { BN, u8aToHex, u8aToU8a } from '@polkadot/util'
+import { assert, BN, u8aToHex, u8aToU8a } from '@polkadot/util'
 import Keyring from '@polkadot/keyring'
 
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
@@ -306,38 +306,19 @@ export async function authorizeLinkWithAccount(
   // The signature may be prefixed; so we try to verify the signature without the prefix first.
   // If it fails, we try the same with the prefix and return the result of the second operation.
   let signature = u8aToU8a(await signingCallback(signMe, accountAddress))
-  let { crypto, isValid }: Pick<VerifyResult, 'crypto' | 'isValid'> = {
-    crypto: 'none',
-    isValid: false,
-  }
-  // TODO: Improve readability of this piece of code. The only problem here is that we don't know whether a correct signature has the type or not.
-  // Try to verify, and return false either on failing verification or error thrown (e.g., signature too short)
+  let result: VerifyResult
   try {
-    const signatureWithoutType = signature.subarray(1)
-    ;({ crypto, isValid } = signatureVerify(
-      signMe,
-      // Remove prefix before verifying
-      signatureWithoutType,
-      accountAddress
-    ))
-    // If the trimmed signature is valid, it means that the original signature contains type annotation -> remove it
-    signature = isValid ? signatureWithoutType : signature
-    // eslint-disable-next-line no-empty
-  } catch {}
-  if (!isValid) {
-    // We have no idea about the size of the signature, so also the untruncated one could throw
-    try {
-      ;({ crypto, isValid } = signatureVerify(
-        signMe,
-        // Retry WITH the prefix if previous attemp failed
-        signature,
-        accountAddress
-      ))
-      // eslint-disable-next-line no-empty
-    } catch {}
+    result = signatureVerify(signMe, signature.subarray(1), accountAddress)
+    // We discard this error message, as the error is caught in the catch block
+    assert(result.isValid, '')
+    // Remove type from signature if did not fail to verify
+    signature = signature.subarray(1)
+  } catch {
+    // Otherwise, try to verify the whole signature
+    result = signatureVerify(signMe, signature, accountAddress)
+    assert(result.isValid, 'signature not valid')
   }
-  // Throw if both versions of the signature failed to verify
-  if (!isValid) throw new Error('signature not valid')
+  const { crypto } = result
 
   const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
   return getAccountSignedAssociationTx(
