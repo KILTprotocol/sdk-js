@@ -16,8 +16,8 @@ import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidMigrationHandler,
+  FullDidCreationBuilder,
   FullDidDetails,
-  FullDidUpdateBuilder,
   FullDidUpdateHandler,
   LightDidDetails,
 } from '@kiltprotocol/did'
@@ -126,7 +126,7 @@ export async function endowAccounts(
   )
 }
 
-async function fundAccount(
+export async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
@@ -171,22 +171,13 @@ export async function createFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
 ): Promise<FullDidDetails> {
-  const fullDid = await lightDidForId.migrate(
-    identity.address,
-    keystore,
-    getDefaultMigrationHandler(identity)
-  )
-
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const authenticatedBatch = await new FullDidUpdateBuilder(api, fullDid)
-    .setAttestationKey(fullDid.authenticationKey)
-    .setDelegationKey(fullDid.authenticationKey)
-    .consume(keystore, identity.address)
-  await submitExtrinsicWithResign(authenticatedBatch, identity)
-
-  return FullDidDetails.fromChainInfo(
-    fullDid.identifier
-  ) as Promise<FullDidDetails>
+  return FullDidCreationBuilder.fromLightDidDetails(api, lightDidForId)
+    .setAttestationKey(lightDidForId.authenticationKey)
+    .setDelegationKey(lightDidForId.authenticationKey)
+    .consumeWithHandler(keystore, identity.address, async (tx) => {
+      await submitExtrinsicWithResign(tx, identity)
+    })
 }
 
 export async function createFullDidFromSeed(
