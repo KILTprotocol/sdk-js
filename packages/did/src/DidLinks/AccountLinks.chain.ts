@@ -262,11 +262,7 @@ function getMultiSignatureTypeFromKeypairType(
 export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
   return (payload: HexString, address: Address): Promise<HexString> =>
     Promise.resolve(
-      u8aToHex(
-        keyring
-          .getPair(address)
-          .sign(u8aWrapBytes(payload), { withType: false })
-      )
+      u8aToHex(keyring.getPair(address).sign(payload, { withType: false }))
     )
 }
 
@@ -301,25 +297,30 @@ export async function authorizeLinkWithAccount(
       api.query.didLookup.connectedAccounts.creator.meta.type.asMap.key
     ).sub as TypeDef[]
   )[0].type // get the type of the first key, which is the DidIdentifier
-  const signMe = api
+  const encodedDetails = api
     .createType(`(${didIdentifierType}, ${blockNumberType})`, [
       didIdentifier,
       validTill,
     ])
-    .toHex()
+    .toU8a()
+  const paddedDetails = u8aToHex(u8aWrapBytes(encodedDetails))
   // The signature may be prefixed; so we try to verify the signature without the prefix first.
   // If it fails, we try the same with the prefix and return the result of the second operation.
-  let signature = u8aToU8a(await signingCallback(signMe, accountAddress))
+  let signature = u8aToU8a(await signingCallback(paddedDetails, accountAddress))
   let result: VerifyResult
   try {
-    result = signatureVerify(signMe, signature.subarray(1), accountAddress)
+    result = signatureVerify(
+      paddedDetails,
+      signature.subarray(1),
+      accountAddress
+    )
     // We discard this error message, as the error is caught in the catch block
     assert(result.isValid, '')
     // Remove type from signature if did not fail to verify
     signature = signature.subarray(1)
   } catch {
     // Otherwise, try to verify the whole signature
-    result = signatureVerify(signMe, signature, accountAddress)
+    result = signatureVerify(paddedDetails, signature, accountAddress)
     assert(result.isValid, 'signature not valid')
   }
   const { crypto } = result
