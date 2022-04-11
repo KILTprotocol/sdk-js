@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
+import type {
   SubmittableExtrinsic,
   IDidIdentifier,
   Deposit,
@@ -14,10 +14,10 @@ import {
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import type { Option, Bytes, Struct, u128, u32 } from '@polkadot/types'
-import type { AnyNumber } from '@polkadot/types/types'
+import type { Option, Bytes, Struct, u128, u64, u32 } from '@polkadot/types'
+import type { AccountId } from '@polkadot/types/interfaces'
 import type { ApiPromise } from '@polkadot/api'
-import { BN } from '@polkadot/util'
+import type { BN } from '@polkadot/util'
 
 import { Utils as DidUtils } from '../index.js'
 
@@ -25,8 +25,8 @@ import { Utils as DidUtils } from '../index.js'
  * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.
  */
 interface Web3NameOwner extends Struct {
-  owner: IDidIdentifier
-  claimedAt: AnyNumber
+  owner: AccountId
+  claimedAt: u64
   deposit: Deposit
 }
 
