@@ -135,16 +135,18 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: run integration tests
-        timeout-minutes: 60
+      - name: pull image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: ${{ matrix.image }}
-          TESTCONTAINERS_NODE_IMG: '${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}'
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          yarn test:integration:ci
+          echo "TESTCONTAINERS_NODE_IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: run integration tests
+        timeout-minutes: 60
+        run: yarn test:integration:ci
 
   bundle_cache:
     runs-on: ubuntu-latest
