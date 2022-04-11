@@ -26,8 +26,6 @@ import {
 } from '@polkadot/util'
 import { blake2AsHex, signatureVerify } from '@polkadot/util-crypto'
 import { blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
-import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
-import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
@@ -42,19 +40,9 @@ export type CryptoInput = Buffer | Uint8Array | string
 
 export type Address = string
 
-export type EncryptedSymmetric = {
-  encrypted: Uint8Array
-  nonce: Uint8Array
-}
-
 export type EncryptedAsymmetric = {
   box: Uint8Array
   nonce: Uint8Array
-}
-
-export type EncryptedSymmetricString = {
-  encrypted: string
-  nonce: string
 }
 
 export type EncryptedAsymmetricString = {
@@ -121,86 +109,6 @@ export function verify(
   address: Address
 ): boolean {
   return signatureVerify(message, signature, address).isValid === true
-}
-
-/**
- * Encrypts a with a secret/key, which can be decrypted using the same key.
- *
- * @param message Message to be encrypted.
- * @param secret Secret key for encryption & decryption.
- * @param nonce Random nonce to obscure message contents when encrypted. Will be auto-generated if not supplied.
- * @returns Encrypted message & nonce used for encryption. Both are needed for decryption.
- */
-export function encryptSymmetric(
-  message: CryptoInput,
-  secret: CryptoInput,
-  nonce?: CryptoInput
-): EncryptedSymmetric {
-  return naclEncrypt(
-    coToUInt8(message, true),
-    coToUInt8(secret),
-    nonce ? coToUInt8(nonce) : undefined
-  )
-}
-
-/**
- * Encrypts a with a secret/key, which can be decrypted using the same key.
- *
- * @param message Message to be encrypted.
- * @param secret Secret key for encryption & decryption.
- * @param inputNonce Random nonce to obscure message contents that could otherwise be guessed or inferred. Will be auto-generated if not supplied.
- * @returns Encrypted message as string & nonce used for encryption as hex strings. Both are needed for decryption.
- */
-export function encryptSymmetricAsStr(
-  message: CryptoInput,
-  secret: CryptoInput,
-  inputNonce?: CryptoInput
-): EncryptedSymmetricString {
-  const result = naclEncrypt(
-    coToUInt8(message, true),
-    coToUInt8(secret),
-    inputNonce ? coToUInt8(inputNonce) : undefined
-  )
-  const nonce: string = u8aToHex(result.nonce)
-  const encrypted: string = u8aToHex(result.encrypted)
-  return { encrypted, nonce }
-}
-
-/**
- * Takes a nonce & secret to decrypt a message.
- *
- * @param data Object containing encrypted message and the nonce used for encryption.
- * @param secret Secret key for encryption & decryption.
- * @returns Decrypted message as byte array.
- */
-export function decryptSymmetric(
-  data: EncryptedSymmetric | EncryptedSymmetricString,
-  secret: CryptoInput
-): Uint8Array | null {
-  return naclDecrypt(
-    coToUInt8(data.encrypted),
-    coToUInt8(data.nonce),
-    coToUInt8(secret)
-  )
-}
-
-/**
- * Takes a nonce & secret to decrypt a message.
- *
- * @param data Object containing encrypted message and the nonce used for encryption.
- * @param secret Secret key for encryption & decryption.
- * @returns Decrypted message as string.
- */
-export function decryptSymmetricStr(
-  data: EncryptedSymmetric | EncryptedSymmetricString,
-  secret: CryptoInput
-): string | null {
-  const result = naclDecrypt(
-    coToUInt8(data.encrypted),
-    coToUInt8(data.nonce),
-    coToUInt8(secret)
-  )
-  return result ? u8aToString(result) : null
 }
 
 export type BitLength = 64 | 128 | 256 | 384 | 512

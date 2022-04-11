@@ -49,6 +49,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
+import { ApiPromise } from '@polkadot/api'
 import { DidDetails } from './DidDetails/index.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
@@ -355,6 +356,78 @@ export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   return { [type]: publicKey }
 }
 
+function checkServiceEndpointInput(
+  api: ApiPromise,
+  endpoint: DidServiceEndpoint
+): void {
+  const [
+    maxServiceIdLength,
+    maxNumberOfTypesPerService,
+    maxNumberOfUrlsPerService,
+    maxServiceTypeLength,
+    maxServiceUrlLength,
+  ] = [
+    (api.consts.did.maxServiceIdLength as u32).toNumber(),
+    (api.consts.did.maxNumberOfTypesPerService as u32).toNumber(),
+    (api.consts.did.maxNumberOfUrlsPerService as u32).toNumber(),
+    (api.consts.did.maxServiceTypeLength as u32).toNumber(),
+    (api.consts.did.maxServiceUrlLength as u32).toNumber(),
+  ]
+
+  if (endpoint.id.length > maxServiceIdLength) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+    )
+  }
+  if (endpoint.types.length > maxNumberOfTypesPerService) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
+    )
+  }
+  if (endpoint.urls.length > maxNumberOfUrlsPerService) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID "${endpoint.id}" has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
+    )
+  }
+  endpoint.types.forEach((type) => {
+    if (type.length > maxServiceTypeLength) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `The service with ID "${endpoint.id}" has the type "${type}" that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
+      )
+    }
+  })
+  endpoint.urls.forEach((url) => {
+    if (url.length > maxServiceUrlLength) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
+      )
+    }
+  })
+}
+
+/**
+ * Create a DID creation operation which includes the provided [[FullDidCreationDetails]].
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that contains the information provided.
+ *
+ * @param details The creation details.
+ * @param details.identifier The identifier of the new DID.
+ * @param details.authenticationKey The authentication key of the new DID.
+ * @param details.keyAgreementKeys The optional key agreement keys of the new DID.
+ * A DID creation operation can contain at most 10 new key agreement keys.
+ * @param details.assertionKey The optional attestation key of the new DID.
+ * @param details.delegationKey The optional delegation key of the new DID.
+ * @param details.serviceEndpoints The optional service endpoints of the new DID.
+ * A DID creation operation can contain at most 25 new service endpoints.
+ * Additionally, each service endpoint must respect the following conditions:
+ *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ * @param submitterAddress The KILT address authorised to submit the creation operation.
+ * @param signer The keystore signer.
+ *
+ * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ */
 export async function generateCreateTxFromCreationDetails(
   details: FullDidCreationDetails,
   submitterAddress: IIdentity['address'],
@@ -370,6 +443,16 @@ export async function generateCreateTxFromCreationDetails(
     serviceEndpoints = [],
   } = details
 
+  const maxKeyAgreementKeys = (
+    api.consts.did.maxNewKeyAgreementKeys as u32
+  ).toNumber()
+
+  if (keyAgreementKeys.length > maxKeyAgreementKeys) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
+    )
+  }
+
   const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
     ({ publicKey }) =>
       formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
@@ -381,6 +464,20 @@ export async function generateCreateTxFromCreationDetails(
   const newDelegationKey = delegationKey
     ? formatPublicKey(delegationKey)
     : undefined
+
+  const maxNumberOfServicesPerDid = (
+    api.consts.did.maxNumberOfServicesPerDid as u32
+  ).toNumber()
+
+  if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID.`
+    )
+  }
+
+  serviceEndpoints.forEach((service) => {
+    checkServiceEndpointInput(api, service)
+  })
 
   const newServiceDetails = serviceEndpoints.map((service) => {
     const { id, urls } = service
@@ -543,10 +640,21 @@ export async function getAddKeyExtrinsic(
   )
 }
 
+/**
+ * Generate an extrinsic to add the provided [[DidServiceEndpoint]] to the authorising DID.
+ *
+ * @param endpoint The new service endpoint to include in the extrinsic.
+ * The service endpoint must respect the following conditions:
+ *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  checkServiceEndpointInput(api, endpoint)
 
   return api.tx.did.addServiceEndpoint({
     serviceTypes: endpoint.types,
@@ -554,12 +662,26 @@ export async function getAddEndpointExtrinsic(
   })
 }
 
-// The endpointId parameter is the service endpoint ID without the DID prefix.
-// So for a endpoint of the form did:kilt:<identifier>#<endpoint_id>, only <endpoint_id> must be passed as parameter here.
+/**
+ * Generate an extrinsic to remove the service endpoint with the provided ID from to the state of the authorising DID.
+ *
+ * @param endpointId The ID of the service endpoint to include in the extrinsic.
+ * The ID must be at most 50 ASCII characters long.
+ * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const maxServiceIdLength = (
+    api.consts.did.maxServiceIdLength as u32
+  ).toNumber()
+  if (endpointId.length > maxServiceIdLength) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service ID "${endpointId}" has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+    )
+  }
+
   return api.tx.did.removeServiceEndpoint(endpointId)
 }
 

@@ -208,6 +208,56 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 40_000)
 })
 
+describe('Runtime constraints', () => {
+  it('should not be possible to create a web3 name that is too short', async () => {
+    // Minimum is 3
+    await expect(Web3Names.getClaimTx('aaa')).resolves.not.toThrow()
+    // One less than the minimum
+    await expect(
+      Web3Names.getClaimTx('aa')
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3."'
+    )
+  }, 30_000)
+
+  it('should not be possible to create a web3 name that is too long', async () => {
+    // Maximum is 32
+    await expect(
+      Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    ).resolves.not.toThrow()
+    // One more than the maximum
+    await expect(async () =>
+      Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'
+    )
+  }, 30_000)
+
+  it('should not be possible to claim deposit for a web3 name that is too short', async () => {
+    // Minimum is 3
+    await expect(Web3Names.getReclaimDepositTx('aaa')).resolves.not.toThrow()
+    // One less than the minimum
+    await expect(
+      Web3Names.getReclaimDepositTx('aa')
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3."'
+    )
+  }, 30_000)
+
+  it('should not be possible to claim deposit for a web3 name that is too long', async () => {
+    // Maximum is 32
+    await expect(
+      Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    ).resolves.not.toThrow()
+    // One more than the maximum
+    await expect(async () =>
+      Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'
+    )
+  }, 30_000)
+})
+
 afterAll(() => {
   disconnect()
 })
