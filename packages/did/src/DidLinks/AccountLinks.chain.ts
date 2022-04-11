@@ -38,7 +38,7 @@ export type SubstrateAddress = IIdentity['address']
 export type Address = KiltAddress | SubstrateAddress
 
 interface ConnectionRecord extends Struct {
-  did: Address
+  did: AccountId
   deposit: Deposit
 }
 
