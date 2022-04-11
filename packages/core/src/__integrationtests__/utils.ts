@@ -41,7 +41,7 @@ const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 const containerPromise = new GenericContainer(
   process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
 )
-  .withCmd(['--tmp', '--dev', '--ws-port', '9944', '--ws-external'])
+  .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
   .withExposedPorts(9944)
   .withWaitStrategy(Wait.forLogMessage('Listening for new connections'))
   .start()
