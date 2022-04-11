@@ -30,7 +30,7 @@ import {
 
 beforeAll(async () => {
   await initializeApi()
-})
+}, 30_000)
 
 describe('when there is a dev chain with a faucet', () => {
   let faucet: KeyringPair

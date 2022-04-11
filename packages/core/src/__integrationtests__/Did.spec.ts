@@ -68,7 +68,7 @@ beforeAll(async () => {
   await initializeApi()
   ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
   paymentAccount = await createEndowedTestAccount()
-})
+}, 30_000)
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DidChain.queryDepositAmount()

@@ -84,6 +84,9 @@ async function addDelegation(
 
 beforeAll(async () => {
   await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
   signer = new DemoKeystore()
   ;[attester, root, claimer] = await Promise.all([
