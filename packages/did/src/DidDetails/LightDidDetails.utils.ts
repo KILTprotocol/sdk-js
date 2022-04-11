@@ -11,6 +11,7 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 import type {
   DidServiceEndpoint,
+  DidUri,
   NewDidEncryptionKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -124,7 +125,7 @@ export function checkLightDidCreationDetails(
     let isServiceIdADid = true
     try {
       // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-      parseDidUri(service.id)
+      parseDidUri(service.id as DidUri)
     } catch {
       // Here if parseDidUrl throws -> service.id is NOT a DID.
       isServiceIdADid = false

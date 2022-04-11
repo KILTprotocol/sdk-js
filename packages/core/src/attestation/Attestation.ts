@@ -77,7 +77,7 @@ export class Attestation implements IAttestation {
    * ```
    */
   public static async getRevokeTx(
-    claimHash: string,
+    claimHash: IRequestForAttestation['rootHash'],
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
     return getRevokeTx(claimHash, maxDepth)
@@ -104,7 +104,7 @@ export class Attestation implements IAttestation {
    * ```
    */
   public static async getRemoveTx(
-    claimHash: string,
+    claimHash: IRequestForAttestation['rootHash'],
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
     return getRemoveTx(claimHash, maxDepth)
@@ -127,7 +127,7 @@ export class Attestation implements IAttestation {
    * ```
    */
   public static async getReclaimDepositTx(
-    claimHash: string
+    claimHash: IRequestForAttestation['rootHash']
   ): Promise<SubmittableExtrinsic> {
     return getReclaimDepositTx(claimHash)
   }

@@ -20,6 +20,7 @@ import {
   NewDidKey,
   VerificationKeyRelationship,
   VerificationKeyType,
+  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
@@ -84,7 +85,7 @@ export type IDidParsingResult = {
   encodedDetails?: string
 }
 
-export function parseDidUri(didUri: string): IDidParsingResult {
+export function parseDidUri(didUri: DidUri): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
     const version = matches.version
@@ -203,7 +204,7 @@ export function validateKiltDidUri(
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, type, fragment } = parseDidUri(input)
+  const { identifier, type, fragment } = parseDidUri(input as DidUri)
   if (!allowFragment && fragment) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }

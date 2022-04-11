@@ -19,6 +19,7 @@ import type {
   IDidResolver,
   DidResolvedDetails,
   DidKey,
+  DidUri,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
 import {
@@ -123,7 +124,7 @@ describe('RequestForAttestation', () => {
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
-      didUri: string
+      didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
@@ -405,7 +406,7 @@ describe('create presentation', () => {
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
-      didUri: string
+      didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)

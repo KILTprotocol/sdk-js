@@ -83,9 +83,8 @@ function decode(
   return null
 }
 
-// return types reflect backwards compatibility with mashnet-node v 0.22
 export async function queryRaw(
-  claimHash: string
+  claimHash: IRequestForAttestation['rootHash']
 ): Promise<Option<AttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -116,7 +115,7 @@ export async function query(
  * @returns The [[SubmittableExtrinsic]] for the `revoke` call.
  */
 export async function getRevokeTx(
-  claimHash: string,
+  claimHash: IRequestForAttestation['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -136,7 +135,7 @@ export async function getRevokeTx(
  * @returns The [[SubmittableExtrinsic]] for the `remove` call.
  */
 export async function getRemoveTx(
-  claimHash: string,
+  claimHash: IRequestForAttestation['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -155,7 +154,7 @@ export async function getRemoveTx(
  * @returns The [[SubmittableExtrinsic]] for the `getReclaimDepositTx` call.
  */
 export async function getReclaimDepositTx(
-  claimHash: string
+  claimHash: IRequestForAttestation['rootHash']
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(

@@ -98,7 +98,9 @@ export function getHashForSchema(
   return Crypto.hashObjectAsStr(preparedSchema)
 }
 
-export function getIdForCTypeHash(hash: string): string {
+export function getIdForCTypeHash(
+  hash: ICType['hash']
+): ICType['schema']['$id'] {
   return `kilt:ctype:${hash}`
 }
 
