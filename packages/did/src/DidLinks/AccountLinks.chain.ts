@@ -8,7 +8,7 @@
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   Deposit,
-  IDidIdentifier,
+  DidIdentifier,
   IIdentity,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -38,7 +38,7 @@ export type SubstrateAddress = IIdentity['address']
 export type Address = KiltAddress | SubstrateAddress
 
 interface ConnectionRecord extends Struct {
-  did: Address
+  did: AccountId
   deposit: Deposit
 }
 
@@ -81,7 +81,7 @@ export async function queryAccountLinkDepositInfo(
  */
 export async function queryConnectedDidForAccount(
   linkedAccount: Address
-): Promise<IDidIdentifier | null> {
+): Promise<DidIdentifier | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
@@ -97,7 +97,7 @@ export async function queryConnectedDidForAccount(
  * @returns A list of addresses to accounts linked to the DID, encoded using `networkPrefix`.
  */
 export async function queryConnectedAccountsForDid(
-  linkedDid: IDidIdentifier,
+  linkedDid: DidIdentifier,
   networkPrefix = 38
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -135,7 +135,7 @@ export async function queryWeb3Name(
  * @returns True if the DID and account is linked, false otherwise.
  */
 export async function queryIsConnected(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   account: Address
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -279,7 +279,7 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
  */
 export async function authorizeLinkWithAccount(
   accountAddress: Address,
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   signingCallback: LinkingSignerCallback,
   nBlocksValid = 10
 ): Promise<Extrinsic> {

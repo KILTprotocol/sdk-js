@@ -9,8 +9,6 @@
  * @group unit/attestation
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { encodeAddress } from '@polkadot/util-crypto'
 
 import type {
@@ -21,6 +19,7 @@ import type {
   IDidResolver,
   DidResolvedDetails,
   DidKey,
+  DidUri,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
 import {
@@ -125,7 +124,7 @@ describe('RequestForAttestation', () => {
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
-      didUri: string
+      didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
@@ -371,6 +370,7 @@ describe('RequestForAttestation', () => {
     )
     expect(Credential.isICredential(testAttestation)).toBeTruthy()
     const { cTypeHash } = testAttestation.attestation
+    // @ts-ignore
     testAttestation.attestation.cTypeHash = [
       cTypeHash.slice(0, 15),
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
@@ -406,7 +406,7 @@ describe('create presentation', () => {
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
-      didUri: string
+      didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)

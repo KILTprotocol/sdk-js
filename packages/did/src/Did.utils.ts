@@ -15,11 +15,12 @@ import {
   DidVerificationKey,
   EncryptionKeyType,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   IDidResolver,
   NewDidKey,
   VerificationKeyRelationship,
   VerificationKeyType,
+  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
@@ -36,6 +37,8 @@ export const LIGHT_DID_LATEST_VERSION = 1
 export const FULL_DID_LATEST_VERSION = 1
 
 const KILT_DID_PREFIX = 'did:kilt:'
+
+// NOTICE: The following regex patterns must be kept in sync with DidUri type in @kiltprotocol/types
 
 // Matches the following full DIDs
 // - did:kilt:<kilt_address>
@@ -55,7 +58,7 @@ export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
   Promise.resolve(keys[0] || null)
 
 export function getKiltDidFromIdentifier(
-  identifier: IDidIdentifier,
+  identifier: DidIdentifier,
   didType: 'full' | 'light',
   version?: number,
   encodedDetails?: string
@@ -76,13 +79,13 @@ export type IDidParsingResult = {
   did: IDidDetails['uri']
   version: number
   type: 'light' | 'full'
-  identifier: IDidIdentifier
+  identifier: DidIdentifier
   fragment?: string
   authKeyTypeEncoding?: string
   encodedDetails?: string
 }
 
-export function parseDidUri(didUri: string): IDidParsingResult {
+export function parseDidUri(didUri: DidUri): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
     const version = matches.version
@@ -123,7 +126,7 @@ export function parseDidUri(didUri: string): IDidParsingResult {
 
 export function getIdentifierFromKiltDid(
   did: IDidDetails['uri']
-): IDidIdentifier {
+): DidIdentifier {
   return parseDidUri(did).identifier
 }
 
@@ -201,7 +204,7 @@ export function validateKiltDidUri(
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, type, fragment } = parseDidUri(input)
+  const { identifier, type, fragment } = parseDidUri(input as DidUri)
   if (!allowFragment && fragment) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }

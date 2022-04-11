@@ -15,6 +15,7 @@ import {
   DidServiceEndpoint,
   VerificationKeyType,
   EncryptionKeyType,
+  DidUri,
 } from './DidDetails.js'
 
 export enum DidDocumentPublicKeyType {
@@ -45,13 +46,18 @@ export const EncryptionKeyTypesMap: Record<
 }
 
 /**
+ * URI for DID resources like public keys or service endpoints.
+ */
+export type DidResourceUri = `${DidUri}#${string}`
+
+/**
  * A spec-compliant description of a DID key.
  */
 export type DidPublicKey = {
   /**
    * The full key URI, in the form of <did_subject>#<key_identifier>.
    */
-  uri: string
+  uri: DidResourceUri
   /**
    * The key controller, in the form of <did_subject>.
    */
@@ -73,7 +79,7 @@ export type DidPublicServiceEndpoint = {
   /**
    * The full service URI, in the form of <did_subject>#<service_identifier>.
    */
-  uri: string
+  uri: DidResourceUri
   /**
    * The set of types for this endpoint.
    */

@@ -25,6 +25,7 @@ import {
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 import type {
+  IIdentity,
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
@@ -57,7 +58,7 @@ export const devCharlie = keyring.createFromUri('//Charlie')
 export function keypairFromRandom(): KeyringPair {
   return keyring.addFromSeed(randomAsU8a(32))
 }
-export function addressFromRandom(): string {
+export function addressFromRandom(): IIdentity['address'] {
   return keypairFromRandom().address
 }
 

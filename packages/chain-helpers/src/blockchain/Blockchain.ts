@@ -125,7 +125,7 @@ export class Blockchain implements IBlockchainApi {
    * @param accountAddress The address of the identity that we retrieve the nonce for.
    * @returns Representation of the Tx nonce for the identity.
    */
-  public async getNonce(accountAddress: string): Promise<BN> {
+  public async getNonce(accountAddress: IIdentity['address']): Promise<BN> {
     let nonce = this.accountNonces.get(accountAddress)
     if (!nonce) {
       // the account nonce is unknown, we will query it from chain

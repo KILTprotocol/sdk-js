@@ -9,8 +9,6 @@
  * @group unit/didbuilder
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import type { ApiPromise } from '@polkadot/api'
 
 import { ApiMocks } from '@kiltprotocol/testing'

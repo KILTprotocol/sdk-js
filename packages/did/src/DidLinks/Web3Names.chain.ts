@@ -7,7 +7,7 @@
 
 import type {
   SubmittableExtrinsic,
-  IDidIdentifier,
+  DidIdentifier,
   Deposit,
   IDidDetails,
 } from '@kiltprotocol/types'
@@ -103,7 +103,7 @@ export async function getReclaimDepositTx(
  * @returns The registered web3name for this DID if any.
  */
 export async function queryWeb3NameForDidIdentifier(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<Web3Name | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.web3Names.names<Option<Bytes>>(
@@ -121,7 +121,7 @@ export async function queryWeb3NameForDidIdentifier(
  */
 export async function queryDidIdentifierForWeb3Name(
   name: Web3Name
-): Promise<IDidIdentifier | null> {
+): Promise<DidIdentifier | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.web3Names.owner<
     Option<Web3NameOwner>

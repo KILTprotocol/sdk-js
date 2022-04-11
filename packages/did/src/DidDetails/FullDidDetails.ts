@@ -11,7 +11,7 @@ import { BN } from '@polkadot/util'
 import type {
   DidVerificationKey,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   IIdentity,
   KeystoreSigner,
   SubmittableExtrinsic,
@@ -45,7 +45,7 @@ import {
 } from './FullDidDetails.utils.js'
 
 export class FullDidDetails extends DidDetails {
-  public readonly identifier: IDidIdentifier
+  public readonly identifier: DidIdentifier
 
   /**
    * Create an instance of [[FullDidDetails]] with the provided details.
@@ -65,7 +65,7 @@ export class FullDidDetails extends DidDetails {
     keys,
     keyRelationships,
     serviceEndpoints = {},
-  }: DidConstructorDetails & { identifier: IDidIdentifier }) {
+  }: DidConstructorDetails & { identifier: DidIdentifier }) {
     super({ uri, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier

@@ -26,7 +26,6 @@ import type {
   ICredential,
   KeystoreSigner,
   IDidResolver,
-  DidSignature,
   DidPublicKey,
   DidVerificationKey,
 } from '@kiltprotocol/types'
@@ -131,13 +130,13 @@ export class RequestForAttestation implements IRequestForAttestation {
     return true
   }
 
-  public claim: IClaim
-  public legitimations: Credential[]
-  public claimerSignature?: DidSignature & { challenge?: string }
-  public claimHashes: string[]
-  public claimNonceMap: Record<string, string>
-  public rootHash: Hash
-  public delegationId: IDelegationNode['id'] | null
+  public claim: IRequestForAttestation['claim']
+  public legitimations: IRequestForAttestation['legitimations']
+  public claimerSignature?: IRequestForAttestation['claimerSignature']
+  public claimHashes: IRequestForAttestation['claimHashes']
+  public claimNonceMap: IRequestForAttestation['claimNonceMap']
+  public rootHash: IRequestForAttestation['rootHash']
+  public delegationId: IRequestForAttestation['delegationId']
 
   /**
    * Builds a new [[RequestForAttestation]] instance.
