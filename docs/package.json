@@ -21,6 +21,7 @@
     "@polkadot/types": "^5.4.1",
     "@polkadot/util": "^7.1.2",
     "typescript-logging": "^0.6.4",
-    "@polkadot/util-crypto": "^7.6.1" 
+    "@polkadot/util-crypto": "^7.6.1",
+    "testcontainers": "^8.6.1"
   }
 }
