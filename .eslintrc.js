@@ -36,6 +36,7 @@ module.exports = {
         devDependencies: [
           '**/*.test.ts',
           '**/*.spec.ts',
+          '**/__integrationtests__/*',
           '**/webpack.config.js',
         ],
       },
