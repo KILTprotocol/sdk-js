@@ -1,7 +1,5 @@
 {
   "extends": [
-    ":prHourlyLimit2",
-    ":prConcurrentLimit10",
     ":preserveSemverRanges",
     ":disableDevDependencies",
     ":disablePeerDependencies"
@@ -16,6 +14,8 @@
   "postUpdateOptions": [
     "yarnDedupeHighest"
   ],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 2,
   "packageRules": [
     {
       "matchUpdateTypes": [
