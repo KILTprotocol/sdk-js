@@ -2,7 +2,8 @@
   "extends": [
     ":preserveSemverRanges",
     ":disableDevDependencies",
-    ":disablePeerDependencies"
+    ":disablePeerDependencies",
+    ":semanticCommits"
   ],
   "enabledManagers": ["npm"],
   "semanticCommitType": "chore",
