@@ -15,7 +15,7 @@
     "yarnDedupeHighest"
   ],
   "prConcurrentLimit": 10,
-  "prHourlyLimit": 2,
+  "prHourlyLimit": 10,
   "packageRules": [
     {
       "matchUpdateTypes": [
