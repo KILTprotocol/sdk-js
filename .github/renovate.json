@@ -34,7 +34,7 @@
       "separateMajorMinor": false,
       "separateMultipleMajor": false,
       "separateMinorPatch": false,
-      "groupName": "polkadot updates",
+      "groupName": "polkadot dependencies",
       "groupSlug": "polkadot"
     }
   ]
