@@ -72,22 +72,28 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * @param api The [[ApiPromise]] object to encode/decoded types as needed.
    * @param details The [[LightDidDetails]] object.
+   * @param upgradeOptions Optional.
+   * @param upgradeOptions.withEncryptionKey When set to true (default) the LightDID's encryption key is added to the on-chain DID.
+   * @param upgradeOptions.withServiceEndpoints When set to true the LightDID's ServiceEndpoints are added to the on-chain DID. This is strictly opt-in as there are more restrictive size limits for on-chain service records.
    * @returns The builder initialized with the information contained in the light DID.
    */
   public static fromLightDidDetails(
     api: ApiPromise,
-    details: LightDidDetails
+    details: LightDidDetails,
+    { withEncryptionKey = true, withServiceEndpoints = false } = {}
   ): FullDidCreationBuilder {
     let builder = new FullDidCreationBuilder(api, details.authenticationKey)
-    if (details.encryptionKey) {
+    if (withEncryptionKey && details.encryptionKey) {
       builder = builder.addEncryptionKey(details.encryptionKey)
     }
-    details
-      .getEndpoints()
-      .reduce(
-        (builderState, endpoint) => builderState.addServiceEndpoint(endpoint),
-        builder
-      )
+    if (withServiceEndpoints) {
+      details
+        .getEndpoints()
+        .reduce(
+          (builderState, endpoint) => builderState.addServiceEndpoint(endpoint),
+          builder
+        )
+    }
 
     return builder
   }

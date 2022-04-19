@@ -67,7 +67,8 @@ describe('FullDidCreationBuilder', () => {
       it('sets the right keys when creating from a light DID', async () => {
         const builder = FullDidCreationBuilder.fromLightDidDetails(
           mockApi,
-          lightDidDetails
+          lightDidDetails,
+          { withEncryptionKey: true, withServiceEndpoints: true }
         )
 
         // @ts-ignore

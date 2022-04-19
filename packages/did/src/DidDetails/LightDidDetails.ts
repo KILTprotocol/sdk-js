@@ -221,18 +221,22 @@ export class LightDidDetails extends DidDetails {
    * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
    * @param signer The keystore signer to sign the operation.
    * @param migrationCallback A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
-   *
+   * @param upgradeOptions Optional.
+   * @param upgradeOptions.withEncryptionKey When set to true (default) the LightDID's encryption key is added to the on-chain DID.
+   * @param upgradeOptions.withServiceEndpoints When set to true the LightDID's ServiceEndpoints are added to the on-chain DID. This is strictly opt-in as there are more restrictive size limits for on-chain service records.
    * @returns The migrated [[FullDidDetails]] if the user-provided callback successfully writes the full DID on the chain. It throws an error otherwise.
    */
   public async migrate(
     submitterAddress: IIdentity['address'],
     signer: KeystoreSigner,
-    migrationCallback: DidMigrationCallback
+    migrationCallback: DidMigrationCallback,
+    { withEncryptionKey = true, withServiceEndpoints = false } = {}
   ): Promise<FullDidDetails> {
     const { api } = await BlockchainApiConnection.getConnectionOrConnect()
     const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
       api,
-      this
+      this,
+      { withEncryptionKey, withServiceEndpoints }
     ).build(signer, submitterAddress)
 
     await migrationCallback(creationTx)

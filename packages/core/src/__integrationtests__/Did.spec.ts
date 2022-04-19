@@ -502,7 +502,8 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationCallback(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount),
+      { withServiceEndpoints: true, withEncryptionKey: true }
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light
@@ -671,7 +672,8 @@ describe('DID management batching', () => {
       })
       const builder = FullDidCreationBuilder.fromLightDidDetails(
         api,
-        lightDidDetails
+        lightDidDetails,
+        { withServiceEndpoints: true, withEncryptionKey: true }
       )
         .addEncryptionKey({
           publicKey: Uint8Array.from(Array(32).fill(2)),
@@ -1463,7 +1465,7 @@ describe('Runtime constraints', () => {
         )
       ).resolves.not.toThrow()
       // One more than the maximum
-      newEndpoint.urls.push('new-url')
+      newEndpoint.urls.push('x:new-url')
       await expect(
         DidChain.generateCreateTxFromCreationDetails(
           {
@@ -1618,7 +1620,7 @@ describe('Runtime constraints', () => {
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).resolves.not.toThrow()
       // One more than the maximum
-      newEndpoint.urls.push('new-url')
+      newEndpoint.urls.push('x:new-url')
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
