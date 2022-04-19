@@ -19,6 +19,9 @@ on:
       - develop
       - master
 
+env:
+  TESTCONTAINERS_WATCHER_IMG: testcontainers/ryuk:0.3.2
+
 jobs:
   check_skip:
     runs-on: ubuntu-latest
@@ -144,6 +147,22 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "TESTCONTAINERS_NODE_IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
+      - id: image-cache
+        name: get cached testcontainers image
+        uses: actions/cache@v2
+        with:
+            path: ~/image-cache
+            key: image-cache-${{ env.TESTCONTAINERS_WATCHER_IMG }}
+
+      - if: steps.image-cache.outputs.cache-hit != 'true'
+        run: |
+            docker pull $TESTCONTAINERS_WATCHER_IMG
+            mkdir -p ~/image-cache
+            docker save -o ~/image-cache/image.tar $TESTCONTAINERS_WATCHER_IMG
+
+      - if: steps.image-cache.outputs.cache-hit == 'true'
+        run: docker load -i ~/image-cache/image.tar
+
       - name: run integration tests
         timeout-minutes: 60
         run: yarn test:integration:ci
@@ -258,6 +277,22 @@ jobs:
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "TESTCONTAINERS_NODE_IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - id: image-cache
+        name: get cached testcontainers image
+        uses: actions/cache@v2
+        with:
+            path: ~/image-cache
+            key: image-cache-${{ env.TESTCONTAINERS_WATCHER_IMG }}
+
+      - if: steps.image-cache.outputs.cache-hit != 'true'
+        run: |
+            docker pull $TESTCONTAINERS_WATCHER_IMG
+            mkdir -p ~/image-cache
+            docker save -o ~/image-cache/image.tar $TESTCONTAINERS_WATCHER_IMG
+
+      - if: steps.image-cache.outputs.cache-hit == 'true'
+        run: docker load -i ~/image-cache/image.tar
 
       - name: run getting started
         timeout-minutes: 10
