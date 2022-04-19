@@ -8,15 +8,15 @@
   "typedocOptions": {
     "entryPointStrategy": "resolve",
     "entryPoints": [
-      "packages/chain-helpers/src/index.ts",
-      "packages/config/src/index.ts",
-      "packages/core/src/index.ts",
-      "packages/did/src/index.ts",
-      "packages/messaging/src/index.ts",
-      "packages/sdk-js/src/index.ts",
       "packages/types/src/index.ts",
       "packages/utils/src/index.ts",
-      "packages/vc-export/src/index.ts"
+      "packages/config/src/index.ts",
+      "packages/chain-helpers/src/index.ts",
+      "packages/did/src/index.ts",
+      "packages/messaging/src/index.ts",
+      "packages/vc-export/src/index.ts",
+      "packages/core/src/index.ts",
+      "packages/sdk-js/src/index.ts",
     ],
     "out": "docs/api",
     "theme": "default",
