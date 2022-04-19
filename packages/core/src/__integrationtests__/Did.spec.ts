@@ -67,6 +67,9 @@ let api: ApiPromise
 beforeAll(async () => {
   await initializeApi()
   ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
+}, 30_000)
+
+beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
 }, 30_000)
 
