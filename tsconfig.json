@@ -15,43 +15,7 @@
       "@kiltprotocol/did": ["did/src"],
       "@kiltprotocol/docs": ["docs/src"],
       "@kiltprotocol/testing": ["testing/src"]
-    },
-    "lib": [
-      // "es6",
-      "dom"
-    ]
+    }
   },
   "skipLibCheck": true,
-  "typedocOptions": {
-    "entryPointStrategy": "expand",
-    "entryPoints": [
-      "packages/chain-helpers/src",
-      "packages/config/src",
-      "packages/core/src",
-      "packages/did/src",
-      "packages/messaging/src",
-      "packages/sdk-js/src",
-      "packages/testing/src",
-      "packages/types/src",
-      "packages/utils/src",
-      "packages/vc-export/src"   
-    ],
-    "out": "docs/api",
-    "theme": "default",
-    "exclude": [
-      "**/*spec.ts",
-      "**/__mocks__/**",
-      "**/testingTools/**",
-      "**/*.js",
-      "**/node_modules/**",
-      "**/__integrationtests__/**",
-      "**/index.ts"
-    ],
-    "excludeExternals": false,
-    "excludePrivate": true,
-    "hideGenerator": true,
-    "name": "@kiltprotocol/sdk-js",
-    "listInvalidSymbolLinks": true,
-    "readme": "README.md"
-  }
 }
