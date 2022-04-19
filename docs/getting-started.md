@@ -267,8 +267,8 @@ With the built CType object, the attester can now create and sign a transaction 
 
 ```typescript
 /* The attester signs the ctype creation transaction resulting from calling `ctype.store()` with its DID. */
-const attesterAuthorisedCtypeTx = await ctype
-  .getStoreTx()
+const attesterAuthorisedCtypeTx = await Kilt.CType
+  .getStoreTx(ctype)
   .then((tx) =>
     attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
   )
@@ -368,7 +368,8 @@ _Request for attestations offer many more functionalities. However, we do not go
 const requestForAttestation = Kilt.RequestForAttestation.fromClaim(claim)
 
 /* Request for attestation must be digitally signed by the claimer using its DID. */
-await requestForAttestation.signWithDidKey(
+await Kilt.RequestForAttestation.signWithDidKey(
+  requestForAttestation,
   keystore,
   claimerLightDid,
   claimerLightDid.authenticationKey.id
@@ -447,8 +448,8 @@ With the attestation built, the attester can now write the attestation informati
 
 ```typescript
 /* Write the attestation on the blockchain. */
-const attesterAuthorisedAttestationTx = await attestation
-  .getStoreTx()
+const attesterAuthorisedAttestationTx = await Kilt.Attestation
+  .getStoreTx(attestation)
   .then((tx) =>
     attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
   )
@@ -551,7 +552,8 @@ A claimer can also hide selected properties from their credential: this is an **
 
 ```typescript
 /* Select one or more credentials according to the presentation requirements. */
-const selectedCredential = await credential.createPresentation({
+const selectedCredential = await Kilt.Credential.createPresentation({
+  credential,
   // Hide the `age` property, and only reveal the `name` one.
   selectedAttributes: ['name'],
   signer: keystore,
@@ -602,7 +604,7 @@ const decryptedPresentationMessage = await Kilt.Message.decrypt(
     /* Verify all credentials in the presentation */
     const credentials = decryptedPresentationMessage.body.content
     const credentialsValidity = await Promise.all(
-      credentials.map((cred) => Kilt.Credential.fromCredential(cred).verify())
+      credentials.map((cred) => Kilt.Credential.verify(cred))
     )
     console.log(credentialsValidity)
     const isPresentationValid = credentialsValidity.every(

@@ -111,11 +111,10 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(ctype, undefined, 2))
 
   /* 2.3 Store the CType on the KILT blockchain */
-  const attesterAuthorisedCtypeTx = await ctype
-    .getStoreTx()
-    .then((tx) =>
+  const attesterAuthorisedCtypeTx = await Kilt.CType.getStoreTx(ctype).then(
+    (tx) =>
       attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
-    )
+  )
   await Kilt.BlockchainUtils.signAndSubmitTx(
     attesterAuthorisedCtypeTx,
     attesterAccount,
@@ -173,7 +172,8 @@ async function main(): Promise<void> {
 
   /* 3.3 Build a request for attestation */
   const requestForAttestation = Kilt.RequestForAttestation.fromClaim(claim)
-  await requestForAttestation.signWithDidKey(
+  await Kilt.RequestForAttestation.signWithDidKey(
+    requestForAttestation,
     keystore,
     claimerLightDid,
     claimerLightDid.authenticationKey.id
@@ -225,11 +225,11 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(attestation, undefined, 2))
 
   /* 4.2 Store the attestation on the KILT blockchain */
-  const attesterAuthorisedAttestationTx = await attestation
-    .getStoreTx()
-    .then((tx) =>
-      attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
-    )
+  const attesterAuthorisedAttestationTx = await Kilt.Attestation.getStoreTx(
+    attestation
+  ).then((tx) =>
+    attesterFullDid.authorizeExtrinsic(tx, keystore, attesterAccount.address)
+  )
   await Kilt.BlockchainUtils.signAndSubmitTx(
     attesterAuthorisedAttestationTx,
     attesterAccount,
@@ -298,7 +298,8 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(requestForCredentialMessage, undefined, 2))
 
   /* 5.3 Build a presentation */
-  const selectedCredential = await credential.createPresentation({
+  const selectedCredential = await Kilt.Credential.createPresentation({
+    credential,
     selectedAttributes: ['name'],
     signer: keystore,
     claimerDid: claimerLightDid,
@@ -337,7 +338,7 @@ async function main(): Promise<void> {
   ) {
     const credentials = decryptedPresentationMessage.body.content
     const credentialsValidity = await Promise.all(
-      credentials.map((cred) => Kilt.Credential.fromCredential(cred).verify())
+      credentials.map((cred) => Kilt.Credential.verify(cred))
     )
     const isPresentationValid = credentialsValidity.every(
       (isValid) => isValid === true

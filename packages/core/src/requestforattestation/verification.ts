@@ -24,7 +24,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { DidResolver, DidUtils } from '@kiltprotocol/did'
+import { DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/utils.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
 import { Credential } from '../credential/index.js'

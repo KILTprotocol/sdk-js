@@ -235,7 +235,7 @@ export async function createPresentation({
 /**
  * Compresses a [[Credential]] object.
  *
- * @param credential - The credential to compress
+ * @param credential - The credential to compress.
  * @returns An array that contains the same properties of a [[Credential]].
  */
 export function compress(credential: ICredential): CompressedCredential {
