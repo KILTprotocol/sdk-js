@@ -5,12 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module BlockchchainUtils
- * @typedef {SubscriptionPromise.Options} Options
- */
-
 import { ConfigService } from '@kiltprotocol/config'
 import type {
   IIdentity,

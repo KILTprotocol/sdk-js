@@ -10,9 +10,6 @@
  *
  * To connect to the blockchain:
  * ```Kilt.connect('ws://localhost:9944');```.
- *
- * @packageDocumentation
- * @module Kilt
  */
 
 import { ConfigService } from '@kiltprotocol/config'
@@ -22,6 +19,12 @@ import {
 } from '@kiltprotocol/chain-helpers'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 
+/**
+ * Connects to the KILT Blockchain and caches the connection.
+ * When used again, the cached instance is returned.
+ *
+ * @returns An instance of [[Blockchain]].
+ */
 export function connect(): Promise<Blockchain> {
   return BlockchainApiConnection.getConnectionOrConnect()
 }

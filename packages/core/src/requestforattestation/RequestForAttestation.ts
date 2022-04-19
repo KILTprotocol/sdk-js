@@ -5,18 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * Requests for attestation are a core building block of the KILT SDK.
- * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
- *
- * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
- * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
- * A RequestForAttestation also supports hiding of claim data during a credential presentation.
- *
- * @packageDocumentation
- * @module RequestForAttestation
- */
-
 import type {
   IRequestForAttestation,
   CompressedRequestForAttestation,
@@ -57,6 +45,15 @@ export type Options = {
   delegationId?: IDelegationNode['id']
 }
 
+/**
+ * Requests for attestation are a core building block of the KILT SDK.
+ * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
+ *
+ * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
+ * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
+ * A RequestForAttestation also supports hiding of claim data during a credential presentation.
+ *
+ */
 export class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.

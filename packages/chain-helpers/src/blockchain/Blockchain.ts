@@ -5,15 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * Blockchain bridges that connects the SDK and the KILT Blockchain.
- *
- * Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[signTx]] function that performs the necessary tx signing.
- *
- * @packageDocumentation
- * @module Blockchain
- */
-
 import type { ApiPromise } from '@polkadot/api'
 import type { Header } from '@polkadot/types/interfaces/types'
 import type { AnyJson, AnyNumber, Codec } from '@polkadot/types/types'
@@ -37,6 +28,11 @@ const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
+/**
+ * Blockchain bridges that connects the SDK and the KILT Blockchain.
+ *
+ * Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[signTx]] function that performs the necessary tx signing.
+ */
 export class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: Codec): AnyJson[] {
     const json = queryResult.toJSON()

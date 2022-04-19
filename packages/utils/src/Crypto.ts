@@ -11,7 +11,6 @@
  * The utility types and methods are wrappers for existing Polkadot functions and imported throughout KILT's protocol for various cryptographic needs.
  *
  * @packageDocumentation
- * @module Crypto
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'

@@ -7,11 +7,6 @@
 
 import type { IDidDetails } from './DidDetails'
 
-/**
- * @packageDocumentation
- * @module ICType
- */
-
 export type InstanceType =
   | 'array'
   | 'boolean'

@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IClaim
- */
 import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
 

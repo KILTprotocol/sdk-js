@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module Deposit
- */
-
 import type { AccountId, Balance } from '@polkadot/types/interfaces'
 import { Struct } from '@polkadot/types'
 

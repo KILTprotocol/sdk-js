@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IIdentity
- */
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type { BoxKeyPair } from 'tweetnacl'
 import type { Index } from '@polkadot/types/interfaces'

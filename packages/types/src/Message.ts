@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IMessage
- */
-
 import type { AnyJson } from '@polkadot/types/types'
 import type { DidSignature, IDidDetails } from './DidDetails.js'
 import type { CompressedAttestation, IAttestation } from './Attestation.js'

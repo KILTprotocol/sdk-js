@@ -5,14 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DataUtils
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import type { IIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import * as SDKErrors from './SDKErrors.js'

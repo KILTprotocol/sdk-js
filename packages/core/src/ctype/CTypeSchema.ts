@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module CTypeSchema
- */
 import { JsonSchema } from '@kiltprotocol/utils'
 
 export const CTypeModel: JsonSchema.Schema = {

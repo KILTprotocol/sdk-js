@@ -20,11 +20,6 @@ import {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-/**
- * @packageDocumentation
- * @module DID
- */
-
 function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   const result: any = {}
 

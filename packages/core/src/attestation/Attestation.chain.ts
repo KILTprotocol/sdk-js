@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module Attestation
- */
 import { Option, Struct, U128 } from '@polkadot/types'
 import type {
   IAttestation,

@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module CType
- */
-
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 import { DecoderUtils, Crypto } from '@kiltprotocol/utils'

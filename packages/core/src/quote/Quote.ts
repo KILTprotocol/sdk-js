@@ -13,7 +13,6 @@
  * A [[Quote]] comes with a versionable spec, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
  *
  * @packageDocumentation
- * @module Quote
  */
 
 import type {

@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module VCExport
- */
-
 import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
 import { ClaimUtils } from '@kiltprotocol/core'

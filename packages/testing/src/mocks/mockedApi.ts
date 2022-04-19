@@ -10,8 +10,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
- * @packageDocumentation
- * @module BlockchainApiConnection
  * @ignore
  */
 
