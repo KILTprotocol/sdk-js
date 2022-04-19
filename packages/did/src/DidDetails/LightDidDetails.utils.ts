@@ -18,7 +18,7 @@ import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { isUri, isUriFragment, parseDidUri } from '../Did.utils.js'
+import { checkServiceEndpointSyntax } from '../Did.utils.js'
 import {
   LightDidSupportedVerificationKeyType,
   NewLightDidAuthenticationKey,
@@ -127,30 +127,10 @@ export function checkLightDidCreationDetails(
         `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
       )
     }
-
-    const isServiceIdADid = (id: string): boolean => {
-      try {
-        // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-        parseDidUri(id)
-        return true
-      } catch {
-        // Here if parseDidUrl throws -> id is NOT a DID.
-        return false
-      }
+    const [, errors] = checkServiceEndpointSyntax(service)
+    if (errors && errors.length) {
+      throw errors[0]
     }
-    if (isServiceIdADid(service.id) || !isUriFragment(service.id)) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `Invalid service ID provided: ${service.id}. The service ID should be a URI fragment according to RFC#3986 and not a complete [DID] URI. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
-      )
-    }
-
-    service.urls.forEach((url) => {
-      if (!isUri(url)) {
-        throw SDKErrors.ERROR_DID_ERROR(
-          `Service URLs must be a URIs according to RFC#3986, which "${url}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
-        )
-      }
-    })
   })
 }
 

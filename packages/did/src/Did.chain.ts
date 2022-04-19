@@ -54,8 +54,8 @@ import { DidDetails } from './DidDetails/index.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
-  isUri,
-  isUriFragment,
+  checkServiceEndpointSyntax,
+  checkServiceEndpointSizeConstraints,
 } from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
 
@@ -362,59 +362,10 @@ function checkServiceEndpointInput(
   api: ApiPromise,
   endpoint: DidServiceEndpoint
 ): void {
-  const [
-    maxServiceIdLength,
-    maxNumberOfTypesPerService,
-    maxNumberOfUrlsPerService,
-    maxServiceTypeLength,
-    maxServiceUrlLength,
-  ] = [
-    (api.consts.did.maxServiceIdLength as u32).toNumber(),
-    (api.consts.did.maxNumberOfTypesPerService as u32).toNumber(),
-    (api.consts.did.maxNumberOfUrlsPerService as u32).toNumber(),
-    (api.consts.did.maxServiceTypeLength as u32).toNumber(),
-    (api.consts.did.maxServiceUrlLength as u32).toNumber(),
-  ]
-
-  if (endpoint.id.length > maxServiceIdLength) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
-    )
-  }
-  if (!isUriFragment(endpoint.id)) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The service ID must be a valid URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
-    )
-  }
-  if (endpoint.types.length > maxNumberOfTypesPerService) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
-    )
-  }
-  if (endpoint.urls.length > maxNumberOfUrlsPerService) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The service with ID "${endpoint.id}" has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
-    )
-  }
-  endpoint.types.forEach((type) => {
-    if (type.length > maxServiceTypeLength) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `The service with ID "${endpoint.id}" has the type "${type}" that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
-      )
-    }
-  })
-  endpoint.urls.forEach((url) => {
-    if (url.length > maxServiceUrlLength) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
-      )
-    }
-    if (!isUri(url)) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `Service URLs must be a URIs according to RFC#3986, which "${url}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
-      )
-    }
-  })
+  const [, syntaxErrors] = checkServiceEndpointSyntax(endpoint)
+  if (syntaxErrors && syntaxErrors.length) throw syntaxErrors[0]
+  const [, sizeErrors] = checkServiceEndpointSizeConstraints(api, endpoint)
+  if (sizeErrors && sizeErrors.length) throw sizeErrors[0]
 }
 
 /**
