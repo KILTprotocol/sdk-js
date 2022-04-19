@@ -405,10 +405,10 @@ export function isUriFragment(s: string): boolean {
   }
 }
 
-function isServiceIdADid(id: string): boolean {
+function isServiceIdADid(id: DidServiceEndpoint['id']): boolean {
   try {
     // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-    parseDidUri(id)
+    parseDidUri(id as DidUri)
     return true
   } catch {
     // Here if parseDidUrl throws -> id is NOT a DID.
