@@ -8120,7 +8120,7 @@ fsevents@^2.3.2:
     ts-jest: ^27.1.2
     ts-jest-resolver: ^2.0.0
     ts-node: ^10.4.0
-    typedoc: ^0.22.13
+    typedoc: ^0.22.15
     typescript: ^4.5.4
   languageName: unknown
   linkType: soft
@@ -9153,9 +9153,9 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.22.13":
-  version: 0.22.13
-  resolution: "typedoc@npm:0.22.13"
+"typedoc@npm:^0.22.15":
+  version: 0.22.15
+  resolution: "typedoc@npm:0.22.15"
   dependencies:
     glob: ^7.2.0
     lunr: ^2.3.9
@@ -9166,7 +9166,7 @@ fsevents@^2.3.2:
     typescript: 4.0.x || 4.1.x || 4.2.x || 4.3.x || 4.4.x || 4.5.x || 4.6.x
   bin:
     typedoc: bin/typedoc
-  checksum: e453114fbbb5e3e366bcfde40fc3f7d76a038dbc3953e6cc9c9dd8f9747048ed77c2d082671e91537fb26bb11f7fc5846f9568262adf0087b328b3f96a47a85a
+  checksum: 3f5f1cb9288bf811f42df59750c7062a026a23257b38dfe227515a30007a28e3d8139187949fcd19300fd6b2ef76bcdc4cf54549100bff3e000e61bb19958fb2
   languageName: node
   linkType: hard
 
