@@ -1,7 +1,7 @@
 {
   "name": "@kiltprotocol/testing",
   "private": true,
-  "version": "0.27.0-0",
+  "version": "0.28.0-2",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -16,7 +16,7 @@
     "lib/**/*"
   ],
   "scripts": {
-    "updateMetadata": "node ./scripts/fetchMetadata.js -o './src/mocks/metadata/spiritnet.json' -e 'https://spiritnet.api.onfinality.io/public-http'",
+    "updateMetadata": "node ./scripts/fetchMetadata.js -o './src/mocks/metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/'",
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm",

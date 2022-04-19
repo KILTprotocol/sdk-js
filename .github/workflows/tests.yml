@@ -148,6 +148,75 @@ jobs:
           yarn test:integration:run
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
+  bundle_cache:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-16.x
+      - name: unzip
+        run: unzip build.zip -d .
+      - name: yarn bundle
+        run: yarn bundle
+      - name: upload bundle artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: checked-nonmin-bundle
+          path: packages/sdk-js/dist/sdk-js.umd.js
+
+  bundle_test:
+    runs-on: ubuntu-latest
+
+    needs: [build, bundle_cache]
+    strategy:
+      matrix:
+        image: ['latest-master', 'latest']
+        required: ['optional']
+        include:
+          - image: 'latest-develop'
+            required: 'required'
+
+    continue-on-error: ${{ matrix.required == 'optional' }}
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-16.x
+      - name: unzip
+        run: unzip build.zip -d .
+      - uses: actions/download-artifact@v2
+        with:
+          name: checked-nonmin-bundle
+          path: packages/sdk-js/dist
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+      - run: basename /packages/sdk-js/dist/
+      - name: prepare bundle test
+        timeout-minutes: 60
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: kilt/prototype-chain
+          IMAGE_TAG: ${{ matrix.image }}
+        run: |
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
+          sleep 5s
+          yarn test:ci:bundle
+          sleep 5s
+          docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
+
   run_getting-started:
     runs-on: ubuntu-latest
 

@@ -203,7 +203,7 @@ export class Credential implements ICredential {
    * attestation.getHash();
    * ```
    */
-  public getHash(): string {
+  public getHash(): IAttestation['claimHash'] {
     return this.attestation.claimHash
   }
 

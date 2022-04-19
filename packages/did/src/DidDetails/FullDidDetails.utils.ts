@@ -33,6 +33,7 @@ const methodMapping: SectionMapping<
     submitDidCall: 'paymentAccount',
     default: KeyRelationship.authentication,
   },
+  didLookup: { default: KeyRelationship.authentication },
   web3Names: { default: KeyRelationship.authentication },
   // Batch calls are not included here
   default: { default: 'paymentAccount' },

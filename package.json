@@ -24,7 +24,10 @@
     "test:ci": "yarn test --ci",
     "test:integration:run": "jest --group=integration -b -w 3 --silent",
     "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
-    "test:watch": "yarn test --watch"
+    "test:watch": "yarn test --watch",
+    "test:bundle": "yarn ./tests playwright test --config playwright.config.ts",
+    "test:ci:bundle": "yarn test:ci:bundle:preparation && yarn test:bundle",
+    "test:ci:bundle:preparation": "yarn playwright install-deps && yarn playwright install chromium"
   },
   "husky": {
     "hooks": {
@@ -40,6 +43,7 @@
   "devDependencies": {
     "@commitlint/cli": "^9.0.1",
     "@commitlint/config-conventional": "^9.0.1",
+    "@playwright/test": "^1.15.2",
     "@types/jest": "^27.4.0",
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
@@ -64,6 +68,6 @@
     "typedoc-plugin-external-module-name": "^4.0.6",
     "typescript": "^4.5.4"
   },
-  "version": "0.27.0-2",
+  "version": "0.28.0-2",
   "packageManager": "yarn@2.4.3"
 }

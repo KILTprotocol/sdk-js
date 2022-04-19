@@ -9,7 +9,6 @@
  * @group unit/errorhandling
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { ISubmittableResult } from '@kiltprotocol/types'
 import type { EventRecord } from '@polkadot/types/interfaces'
 import { ErrorHandler } from './index'

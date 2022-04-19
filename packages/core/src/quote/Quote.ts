@@ -24,6 +24,7 @@ import type {
   IQuoteAttesterSigned,
   KeystoreSigner,
   DidVerificationKey,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
@@ -179,7 +180,7 @@ export async function fromQuoteDataAndIdentity(
 
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
-  requestRootHash: string,
+  requestRootHash: IRequestForAttestation['rootHash'],
   attesterIdentity: IDidDetails['uri'],
   claimerIdentity: DidDetails,
   signer: KeystoreSigner,

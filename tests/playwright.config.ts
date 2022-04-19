@@ -5,4 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as Web3Names from './Web3Names.chain.js'
+import { PlaywrightTestConfig } from '@playwright/test'
+
+const config: PlaywrightTestConfig = {
+  timeout: 10 * 60 * 1000, // Timeout for each test
+}
+
+export default config

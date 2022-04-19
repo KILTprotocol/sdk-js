@@ -25,6 +25,8 @@
 
 import {
   DidVerificationKey,
+  IAttestation,
+  ICType,
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
@@ -41,6 +43,7 @@ import {
   Utils as DidUtils,
 } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
+import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain.js'
 import {
@@ -169,7 +172,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns The CType hash associated with the delegation hierarchy.
    */
-  public async getCTypeHash(): Promise<string> {
+  public async getCTypeHash(): Promise<ICType['hash']> {
     return this.getHierarchyDetails().then((details) => details.cTypeHash)
   }
 
@@ -222,7 +225,7 @@ export class DelegationNode implements IDelegationNode {
   public async getAttestations(): Promise<Attestation[]> {
     const attestationHashes = await this.getAttestationHashes()
     const attestations = await Promise.all(
-      attestationHashes.map((claimHash: string) => {
+      attestationHashes.map((claimHash) => {
         return queryAttestation(claimHash)
       })
     )
@@ -235,7 +238,9 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns Promise containing all attestation hashes attested with this node.
    */
-  public async getAttestationHashes(): Promise<string[]> {
+  public async getAttestationHashes(): Promise<
+    Array<IAttestation['claimHash']>
+  > {
     return getAttestationHashes(this.id)
   }
 
@@ -248,7 +253,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns The hash representation of this delegation **as a hex string**.
    */
-  public generateHash(): string {
+  public generateHash(): HexString {
     const propsToHash: Array<Uint8Array | string> = [this.id, this.hierarchyId]
     if (this.parentId) {
       propsToHash.push(this.parentId)
@@ -257,7 +262,7 @@ export class DelegationNode implements IDelegationNode {
       return Crypto.coToUInt8(value)
     })
     uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
-    const generated: string = Crypto.u8aToHex(
+    const generated = Crypto.u8aToHex(
       Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
     )
     log.debug(`generateHash(): ${generated}`)
@@ -464,7 +469,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the [[DelegationNode]] or [null].
    */
   public static async query(
-    delegationId: string
+    delegationId: IDelegationNode['id']
   ): Promise<DelegationNode | null> {
     log.info(`:: query('${delegationId}')`)
     const result = await query(delegationId)

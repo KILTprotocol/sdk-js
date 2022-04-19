@@ -14,6 +14,7 @@ import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
 import { ClaimUtils } from '@kiltprotocol/core'
 import type { ICredential, ICType } from '@kiltprotocol/types'
+import type { HexString } from '@polkadot/util/types'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
@@ -34,7 +35,7 @@ import type {
   VerifiableCredential,
 } from './types.js'
 
-export function fromCredentialIRI(credentialId: string): string {
+export function fromCredentialIRI(credentialId: string): HexString {
   const hexString = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
     ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
     : credentialId
