@@ -19,6 +19,7 @@ import type {
 } from '@kiltprotocol/types'
 import { jsonabc, Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+import type { HexString } from '@polkadot/util/types'
 import { getOwner, isStored } from './CType.chain.js'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema.js'
 
@@ -92,12 +93,14 @@ export function getSchemaPropertiesForHash(
 
 export function getHashForSchema(
   schema: CTypeSchemaWithoutId | ICType['schema']
-): string {
+): HexString {
   const preparedSchema = getSchemaPropertiesForHash(schema)
   return Crypto.hashObjectAsStr(preparedSchema)
 }
 
-export function getIdForCTypeHash(hash: string): string {
+export function getIdForCTypeHash(
+  hash: ICType['hash']
+): ICType['schema']['$id'] {
   return `kilt:ctype:${hash}`
 }
 

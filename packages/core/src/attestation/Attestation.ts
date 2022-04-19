@@ -50,7 +50,9 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
-  public static async query(claimHash: string): Promise<Attestation | null> {
+  public static async query(
+    claimHash: IAttestation['claimHash']
+  ): Promise<Attestation | null> {
     return query(claimHash)
   }
 
@@ -75,7 +77,7 @@ export class Attestation implements IAttestation {
    * ```
    */
   public static async getRevokeTx(
-    claimHash: string,
+    claimHash: IRequestForAttestation['rootHash'],
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
     return getRevokeTx(claimHash, maxDepth)
@@ -102,7 +104,7 @@ export class Attestation implements IAttestation {
    * ```
    */
   public static async getRemoveTx(
-    claimHash: string,
+    claimHash: IRequestForAttestation['rootHash'],
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
     return getRemoveTx(claimHash, maxDepth)
@@ -125,7 +127,7 @@ export class Attestation implements IAttestation {
    * ```
    */
   public static async getReclaimDepositTx(
-    claimHash: string
+    claimHash: IRequestForAttestation['rootHash']
   ): Promise<SubmittableExtrinsic> {
     return getReclaimDepositTx(claimHash)
   }
@@ -335,7 +337,7 @@ export class Attestation implements IAttestation {
    */
   public static async checkValidity(
     attestation: IAttestation,
-    claimHash: string = attestation.claimHash
+    claimHash: IAttestation['claimHash'] = attestation.claimHash
   ): Promise<boolean> {
     // Query attestation by claimHash. null if no attestation is found on-chain for this hash
     const chainAttestation: Attestation | null = await Attestation.query(

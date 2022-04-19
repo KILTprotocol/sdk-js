@@ -11,7 +11,7 @@ import {
   DidKey,
   DidServiceEndpoint,
   EncryptionKeyType,
-  IDidIdentifier,
+  DidIdentifier,
   NewDidVerificationKey,
   VerificationKeyType,
 } from '@kiltprotocol/types'
@@ -74,7 +74,7 @@ jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
     async (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      didIdentifier: IDidIdentifier
+      didIdentifier: DidIdentifier
     ): Promise<IDidChainRecordJSON | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
@@ -97,7 +97,7 @@ jest.mock('../Did.chain', () => {
   )
   const queryKey = jest.fn(
     async (
-      didIdentifier: IDidIdentifier,
+      didIdentifier: DidIdentifier,
       keyId: DidKey['id']
     ): Promise<DidKey | null> => {
       const details = await queryDetails(didIdentifier)
@@ -106,13 +106,13 @@ jest.mock('../Did.chain', () => {
   )
   const queryServiceEndpoint = jest.fn(
     async (
-      didIdentifier: IDidIdentifier,
+      didIdentifier: DidIdentifier,
       serviceId: DidServiceEndpoint['id']
     ): Promise<DidServiceEndpoint | null> =>
       generateServiceEndpointDetails(serviceId)
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: IDidIdentifier): Promise<DidServiceEndpoint[]> => {
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
       return [
         (await queryServiceEndpoint(
           didIdentifier,

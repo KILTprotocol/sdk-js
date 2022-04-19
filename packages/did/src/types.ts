@@ -9,7 +9,7 @@ import type {
   DidKey,
   DidServiceEndpoint,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   KeyRelationship,
   NewDidEncryptionKey,
   NewDidVerificationKey,
@@ -48,7 +48,7 @@ export type DidConstructorDetails = {
 }
 
 export type FullDidCreationDetails = {
-  identifier: IDidIdentifier
+  identifier: DidIdentifier
   authenticationKey: NewDidVerificationKey
   keyAgreementKeys?: NewDidEncryptionKey[]
   assertionKey?: NewDidVerificationKey

@@ -9,8 +9,6 @@
  * @group unit/ctype
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { SDKErrors } from '@kiltprotocol/utils'
 import type {
   ICType,
@@ -107,7 +105,7 @@ describe('CType', () => {
     }
     const invalidAddressCtype: ICType = {
       ...claimCtype,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // @ts-ignore
       owner: claimCtype.owner!.replace('4', 'D'),
     }
 

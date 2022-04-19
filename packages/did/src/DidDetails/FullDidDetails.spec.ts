@@ -10,7 +10,7 @@ import { BN } from '@polkadot/util'
 import {
   DidKey,
   DidServiceEndpoint,
-  IDidIdentifier,
+  DidIdentifier,
   KeyRelationship,
   VerificationKeyType,
   EncryptionKeyType,
@@ -91,7 +91,7 @@ jest.mock('../Did.chain.ts', () => {
   return {
     queryDetails: jest.fn(
       async (
-        didIdentifier: IDidIdentifier
+        didIdentifier: DidIdentifier
       ): Promise<IDidChainRecordJSON | null> => {
         if (didIdentifier === existingIdentifier) {
           return existingDidDetails
@@ -100,7 +100,7 @@ jest.mock('../Did.chain.ts', () => {
       }
     ),
     queryServiceEndpoints: jest.fn(
-      async (didIdentifier: IDidIdentifier): Promise<DidServiceEndpoint[]> => {
+      async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
         if (didIdentifier === existingIdentifier) {
           return existingServiceEndpoints
         }

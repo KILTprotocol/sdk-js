@@ -15,12 +15,15 @@ import {
   DidResolvedDetails,
   DidServiceEndpoint,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   KeyringPair,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
   VerificationKeyType,
   EncryptionKeyType,
+  DidUri,
+  DidPublicKey,
+  DidResourceUri,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
@@ -86,7 +89,7 @@ function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
     async (
-      didIdentifier: IDidIdentifier
+      didIdentifier: DidIdentifier
     ): Promise<IDidChainRecordJSON | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
@@ -136,7 +139,7 @@ jest.mock('../Did.chain', () => {
   )
   const queryKey = jest.fn(
     async (
-      didIdentifier: IDidIdentifier,
+      didIdentifier: DidIdentifier,
       keyId: DidKey['id']
     ): Promise<DidKey | null> => {
       const details = await queryDetails(didIdentifier)
@@ -145,7 +148,7 @@ jest.mock('../Did.chain', () => {
   )
   const queryServiceEndpoint = jest.fn(
     async (
-      didIdentifier: IDidIdentifier,
+      didIdentifier: DidIdentifier,
       serviceId: DidServiceEndpoint['id']
     ): Promise<DidServiceEndpoint | null> => {
       switch (didIdentifier) {
@@ -157,7 +160,7 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: IDidIdentifier): Promise<DidServiceEndpoint[]> => {
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
       switch (didIdentifier) {
         case identifierWithServiceEndpoints:
           return [
@@ -176,7 +179,7 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryDidDeletionStatus = jest.fn(
-    async (didIdentifier: IDidIdentifier): Promise<boolean> => {
+    async (didIdentifier: DidIdentifier): Promise<boolean> => {
       return didIdentifier === deletedIdentifier
     }
   )
@@ -195,7 +198,7 @@ describe('When resolving a key', () => {
       identifierWithAuthenticationKey,
       'full'
     )
-    const keyIdUri = `${fullDid}#auth`
+    const keyIdUri: DidPublicKey['uri'] = `${fullDid}#auth`
 
     await expect(
       DidResolver.resolveKey(keyIdUri)
@@ -209,7 +212,7 @@ describe('When resolving a key', () => {
 
   it('returns null if either the DID or the key do not exist', async () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
-    let keyIdUri = `${deletedFullDid}#enc`
+    let keyIdUri: DidPublicKey['uri'] = `${deletedFullDid}#enc`
 
     await expect(DidResolver.resolveKey(keyIdUri)).resolves.toBeNull()
 
@@ -227,9 +230,11 @@ describe('When resolving a key', () => {
       deletedIdentifier,
       'full'
     )
+    // @ts-ignore
     await expect(DidResolver.resolveKey(uriWithoutFragment)).rejects.toThrow()
 
     const invalidUri = 'invalid-uri'
+    // @ts-ignore
     await expect(DidResolver.resolveKey(invalidUri)).rejects.toThrow()
   })
 })
@@ -240,7 +245,7 @@ describe('When resolving a service endpoint', () => {
       identifierWithServiceEndpoints,
       'full'
     )
-    const serviceIdUri = `${fullDid}#service-1`
+    const serviceIdUri: DidResourceUri = `${fullDid}#service-1`
 
     await expect(
       DidResolver.resolveServiceEndpoint(serviceIdUri)
@@ -253,7 +258,7 @@ describe('When resolving a service endpoint', () => {
 
   it('returns null if either the DID or the service do not exist', async () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
-    let serviceIdUri = `${deletedFullDid}#service-1`
+    let serviceIdUri: DidResourceUri = `${deletedFullDid}#service-1`
 
     await expect(
       DidResolver.resolveServiceEndpoint(serviceIdUri)
@@ -271,16 +276,18 @@ describe('When resolving a service endpoint', () => {
   })
 
   it('throws for invalid URIs', async () => {
-    const uriWithoutFragment = getKiltDidFromIdentifier(
+    const uriWithoutFragment: DidUri = getKiltDidFromIdentifier(
       deletedIdentifier,
       'full'
     )
     await expect(
+      // @ts-ignore
       DidResolver.resolveServiceEndpoint(uriWithoutFragment)
     ).rejects.toThrow()
 
     const invalidUri = 'invalid-uri'
     await expect(
+      // @ts-ignore
       DidResolver.resolveServiceEndpoint(invalidUri)
     ).rejects.toThrow()
   })
@@ -406,7 +413,7 @@ describe('When resolving a full DID', () => {
       identifierWithAuthenticationKey,
       'full'
     )
-    const keyIdUri = `${fullDidWithAuthenticationKey}#auth`
+    const keyIdUri: DidUri = `${fullDidWithAuthenticationKey}#auth`
     const { details, metadata } = (await DidResolver.resolveDoc(
       keyIdUri
     )) as DidResolvedDetails
@@ -516,7 +523,7 @@ describe('When resolving a light DID', () => {
         'full'
       ),
     })
-    expect(details?.uri).toStrictEqual<IDidIdentifier>(migratedDid)
+    expect(details?.uri).toStrictEqual<DidIdentifier>(migratedDid)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
@@ -548,7 +555,7 @@ describe('When resolving a light DID', () => {
         type: VerificationKeyType.Sr25519,
       },
     })
-    const keyIdUri = `${lightDid.uri}#auth`
+    const keyIdUri: DidUri = `${lightDid.uri}#auth`
     const { details, metadata } = (await DidResolver.resolveDoc(
       keyIdUri
     )) as DidResolvedDetails

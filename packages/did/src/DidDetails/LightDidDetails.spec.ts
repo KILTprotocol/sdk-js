@@ -10,6 +10,7 @@ import { Keyring } from '@polkadot/api'
 import {
   DidKey,
   DidServiceEndpoint,
+  DidUri,
   EncryptionKeyType,
   KeyRelationship,
   VerificationKeyType,
@@ -260,8 +261,7 @@ describe('When creating an instance from the details', () => {
     const invalidOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-ignore Not an authentication key type
         type: VerificationKeyType.Ecdsa,
       },
     }
@@ -281,8 +281,7 @@ describe('When creating an instance from the details', () => {
       },
       encryptionKey: {
         publicKey: encKey.publicKey,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-ignore Not an encryption key type
         type: 'bls',
       },
     }
@@ -377,7 +376,7 @@ describe('When creating an instance from a URI', () => {
     const expectedLightDidDetails: LightDidDetails =
       LightDidDetails.fromDetails(creationOptions)
 
-    const uriWithFragment = `${expectedLightDidDetails.uri}#authentication`
+    const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
 
     expect(() => LightDidDetails.fromUri(uriWithFragment, true)).toThrow()
     expect(() => LightDidDetails.fromUri(uriWithFragment, false)).not.toThrow()
@@ -387,8 +386,9 @@ describe('When creating an instance from a URI', () => {
     const validKiltAddress = new Keyring({ ss58Format: 38 }).addFromMnemonic(
       'random'
     )
-    const incorrectURIs: string[] = [
+    const incorrectURIs: DidUri[] = [
       'did:kilt:light:sdasdsadas',
+      // @ts-ignore not a valid did uri
       'random-uri',
       'did:kilt:light',
       'did:kilt:light:',
