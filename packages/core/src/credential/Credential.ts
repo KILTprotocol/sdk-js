@@ -16,7 +16,11 @@
  * @module Credential
  */
 
-import { DidDetails, DidKeySelectionHandler, DidUtils } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  Utils as DidUtils,
+  DidKeySelectionCallback,
+} from '@kiltprotocol/did'
 import type {
   ICredential,
   CompressedCredential,
@@ -24,6 +28,7 @@ import type {
   IRequestForAttestation,
   IDidResolver,
   KeystoreSigner,
+  DidVerificationKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -148,12 +153,10 @@ export function validateLegitimations(legitimations: ICredential[]): boolean {
 /**
  * Gets the hash of the claim that corresponds to this attestation.
  *
+ * @param credential - The credential to get the hash from.
  * @returns The hash of the claim for this attestation (claimHash).
- * @example ```javascript
- * attestation.getHash();
- * ```
  */
-export function getHash(credential: ICredential): string {
+export function getHash(credential: ICredential): IAttestation['claimHash'] {
   return credential.attestation.claimHash
 }
 
@@ -167,6 +170,7 @@ export function getAttributes(credential: ICredential): Set<string> {
  * This presentation is signed.
  *
  * @param presentationOptions The additional options to use upon presentation generation.
+ * @param presentationOptions.credential The credential to create the presentation for.
  * @param presentationOptions.signer Keystore signer to sign the presentation.
  * @param presentationOptions.claimerDid The DID details of the presenter.
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
@@ -181,14 +185,14 @@ export async function createPresentation({
   signer,
   challenge,
   claimerDid,
-  keySelection = DidUtils.defaultDidKeySelection,
+  keySelection = DidUtils.defaultKeySelectionCallback,
 }: {
   credential: ICredential
   selectedAttributes?: string[]
   signer: KeystoreSigner
   challenge?: string
   claimerDid: DidDetails
-  keySelection?: DidKeySelectionHandler
+  keySelection?: DidKeySelectionCallback<DidVerificationKey>
 }): Promise<ICredential> {
   const presentation =
     // clone the attestation and request for attestation because properties will be deleted later.
@@ -208,7 +212,7 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const keys = claimerDid.getKeys(KeyRelationship.authentication)
+  const keys = claimerDid.getVerificationKeys(KeyRelationship.authentication)
   const selectedKeyId = (await keySelection(keys))?.id
 
   if (!selectedKeyId) {

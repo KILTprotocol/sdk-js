@@ -13,7 +13,6 @@ import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { BN } from '@polkadot/util'
 import { Attestation } from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
@@ -32,7 +31,7 @@ import {
 } from './utils'
 import {
   getAttestationHashes,
-  revoke,
+  getRevokeTx,
 } from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
@@ -46,13 +45,13 @@ async function writeHierarchy(
   ctypeHash: ICType['hash']
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
-    account: delegator.did,
+    account: delegator.uri,
     permissions: [Permission.DELEGATE],
     cTypeHash: ctypeHash,
   })
 
   await rootNode
-    .store()
+    .getStoreTx()
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
@@ -71,12 +70,12 @@ async function addDelegation(
   const delegationNode = DelegationNode.newNode({
     hierarchyId,
     parentId,
-    account: delegee.did,
+    account: delegee.uri,
     permissions,
   })
   const signature = await delegationNode.delegeeSign(delegee, signer)
   await delegationNode
-    .store(signature)
+    .getStoreTx(signature)
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
@@ -95,7 +94,7 @@ beforeAll(async () => {
   ])
 
   if (!(await isCtypeOnChain(driversLicenseCType))) {
-    await CType.store(driversLicenseCType)
+    await CType.getStoreTx(driversLicenseCType)
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -105,9 +104,7 @@ beforeAll(async () => {
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await DelegationNode.queryDepositAmount()
-  expect(depositAmount.toString()).toStrictEqual(
-    new BN(1000000000000000).toString()
-  )
+  expect(depositAmount.toString()).toMatchInlineSnapshot('"1000000000000000"')
 })
 
 it('should be possible to delegate attestation rights', async () => {
@@ -151,7 +148,7 @@ describe('and attestation rights have been delegated', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
-      claimer.did
+      claimer.uri
     )
     const request = RequestForAttestation.fromClaim(claim, {
       delegationId: delegatedNode.id,
@@ -167,8 +164,8 @@ describe('and attestation rights have been delegated', () => {
       RequestForAttestation.verifySignature(request)
     ).resolves.toBeTruthy()
 
-    const attestation = Attestation.fromRequestAndDid(request, attester.did)
-    await Attestation.store(attestation)
+    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
+    await Attestation.getStoreTx(attestation)
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -182,7 +179,7 @@ describe('and attestation rights have been delegated', () => {
     await expect(Credential.verify(credential)).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await Attestation.revoke(credential.attestation, 1)
+    await Attestation.getRevokeTx(credential.attestation, 1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(Credential.verify(credential)).resolves.toBeFalsy()
@@ -212,7 +209,7 @@ describe('revocation', () => {
     // Test revocation
     await expect(
       delegationA
-        .revoke(delegator.did)
+        .getRevokeTx(delegator.uri)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -225,7 +222,7 @@ describe('revocation', () => {
     // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
     await expect(
       delegationA
-        .remove()
+        .getRemoveTx()
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -252,7 +249,7 @@ describe('revocation', () => {
       firstDelegee
     )
     await expect(
-      revoke(delegationRoot.id, 1, 1)
+      getRevokeTx(delegationRoot.id, 1, 1)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -265,7 +262,7 @@ describe('revocation', () => {
 
     await expect(
       delegationA
-        .revoke(firstDelegee.did)
+        .getRevokeTx(firstDelegee.uri)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -294,7 +291,7 @@ describe('revocation', () => {
     delegationRoot = await delegationRoot.getLatestState()
     await expect(
       delegationRoot
-        .revoke(delegator.did)
+        .getRevokeTx(delegator.uri)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -331,7 +328,7 @@ describe('Deposit claiming', () => {
       DelegationNode.query(subDelegatedNode.id)
     ).resolves.not.toBeNull()
 
-    const depositClaimTx = await delegatedNode.reclaimDeposit()
+    const depositClaimTx = await delegatedNode.getReclaimDepositTx()
 
     // Test removal failure with an account that is not the deposit payer.
     await expect(

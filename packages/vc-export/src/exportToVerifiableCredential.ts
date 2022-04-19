@@ -14,6 +14,7 @@ import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
 import { Claim } from '@kiltprotocol/core'
 import type { ICredential, ICType } from '@kiltprotocol/types'
+import type { HexString } from '@polkadot/util/types'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
@@ -34,7 +35,7 @@ import type {
   VerifiableCredential,
 } from './types.js'
 
-export function fromCredentialIRI(credentialId: string): string {
+export function fromCredentialIRI(credentialId: string): HexString {
   const hexString = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
     ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
     : credentialId
@@ -121,7 +122,7 @@ export function fromCredential(
     const sSProof: SelfSignedProof = {
       type: KILT_SELF_SIGNED_PROOF_TYPE,
       proofPurpose: 'assertionMethod',
-      verificationMethod: claimerSignature.keyId,
+      verificationMethod: claimerSignature.keyUri,
       signature: claimerSignature.signature,
       challenge: claimerSignature.challenge,
     }

@@ -12,6 +12,7 @@
 
 import type { ICType, CTypeSchemaWithoutId } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import { HexString } from '@polkadot/util/types'
 
 export function getSchemaPropertiesForHash(
   ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
@@ -30,12 +31,14 @@ export function getSchemaPropertiesForHash(
 
 export function getHashForSchema(
   schema: CTypeSchemaWithoutId | ICType['schema']
-): string {
+): HexString {
   const preparedSchema = getSchemaPropertiesForHash(schema)
   return Crypto.hashObjectAsStr(preparedSchema)
 }
 
-export function getIdForCTypeHash(hash: string): string {
+export function getIdForCTypeHash(
+  hash: ICType['hash']
+): ICType['schema']['$id'] {
   return `kilt:ctype:${hash}`
 }
 

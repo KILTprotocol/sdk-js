@@ -11,13 +11,17 @@
  */
 
 import type { Option, Vec, U128 } from '@polkadot/types'
-import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IAttestation,
+  IDelegationNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import type { DidChain } from '@kiltprotocol/did'
-import { DidUtils } from '@kiltprotocol/did'
+import type { Chain as DidChain } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import {
   decodeDelegationNode,
@@ -34,7 +38,7 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
  * @param delegation The delegation node to store as hierarchy root.
  * @returns The [[SubmittableExtrinsic]] for the `createHierarchy` call.
  */
-export async function storeAsRoot(
+export async function getStoreAsRootTx(
   delegation: DelegationNode
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -55,7 +59,7 @@ export async function storeAsRoot(
  * @param signature The DID signature of the delegee owner of the new delegation node.
  * @returns The [[SubmittableExtrinsic]] for the `addDelegation` call.
  */
-export async function storeAsDelegation(
+export async function getStoreAsDelegationTx(
   delegation: DelegationNode,
   signature: DidChain.SignatureEnum
 ): Promise<SubmittableExtrinsic> {
@@ -106,7 +110,7 @@ export async function query(
  * @param maxRevocations The max number of children nodes that will be revoked as part of the revocation operation. This value does not include the node itself being removed.
  * @returns The [[SubmittableExtrinsic]] for the `revokeDelegation` call.
  */
-export async function revoke(
+export async function getRevokeTx(
   delegationId: IDelegationNode['id'],
   maxParentChecks: number,
   maxRevocations: number
@@ -128,7 +132,7 @@ export async function revoke(
  * @param maxRevocations The max number of children nodes that will be removed as part of the removal operation. This value does not include the node itself being removed.
  * @returns The [[SubmittableExtrinsic]] for the `removeDelegation` call.
  */
-export async function remove(
+export async function getRemoveTx(
   delegationId: IDelegationNode['id'],
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
@@ -145,9 +149,9 @@ export async function remove(
  *
  * @param delegationId The identifier of the delegation node to claim back deposit for.
  * @param maxRemovals The max number of children nodes that will be removed as part of the operation. This value does not include the node itself being removed.
- * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ * @returns The [[SubmittableExtrinsic]] for the `getReclaimDepositTx` call.
  */
-export async function reclaimDeposit(
+export async function getReclaimDepositTx(
   delegationId: IDelegationNode['id'],
   maxRemovals: number
 ): Promise<SubmittableExtrinsic> {
@@ -182,7 +186,9 @@ export async function getChildren(
   return childrenNodes
 }
 
-function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
+function decodeDelegatedAttestations(
+  queryResult: Option<Vec<Hash>>
+): Array<IAttestation['claimHash']> {
   DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<H256>>'])
   return queryResult.unwrapOrDefault().map((hash) => hash.toHex())
 }
@@ -195,7 +201,7 @@ function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
  */
 export async function getAttestationHashes(
   id: IDelegationNode['id']
-): Promise<string[]> {
+): Promise<Array<IAttestation['claimHash']>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedHashes =
     await blockchain.api.query.attestation.delegatedAttestations<

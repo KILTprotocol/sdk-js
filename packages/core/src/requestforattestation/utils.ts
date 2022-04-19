@@ -17,7 +17,7 @@ import type {
   IRequestForAttestation,
   DidPublicKey,
   KeystoreSigner,
-  DidKey,
+  DidVerificationKey,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { DidDetails } from '@kiltprotocol/did'
@@ -105,7 +105,7 @@ export function makeSigningData(
 export async function addSignature(
   req4Att: IRequestForAttestation,
   sig: string | Uint8Array,
-  keyId: DidPublicKey['id'],
+  keyUri: DidPublicKey['uri'],
   {
     challenge,
   }: {
@@ -114,21 +114,21 @@ export async function addSignature(
 ): Promise<void> {
   const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
   // eslint-disable-next-line no-param-reassign
-  req4Att.claimerSignature = { signature, keyId, challenge }
+  req4Att.claimerSignature = { signature, keyUri, challenge }
 }
 
 export async function signWithDidKey(
   req4Att: IRequestForAttestation,
   signer: KeystoreSigner,
   didDetails: DidDetails,
-  keyId: DidKey['id'],
+  keyId: DidVerificationKey['id'],
   {
     challenge,
   }: {
     challenge?: string
   } = {}
 ): Promise<void> {
-  const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
+  const { signature, keyUri: signatureKeyId } = await didDetails.signPayload(
     makeSigningData(req4Att, challenge),
     signer,
     keyId

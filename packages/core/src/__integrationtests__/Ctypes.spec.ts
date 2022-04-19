@@ -38,7 +38,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     return CType.fromSchema({
       $id: `kilt:ctype:0x${ctypeCounter}`,
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: `ctype1${ctypeCounter}`,
+      title: `ctype${ctypeCounter}`,
       properties: {
         name: { type: 'string' },
       },
@@ -55,7 +55,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const bobbyBroke = keypairFromRandom()
     await expect(
-      CType.store(ctype)
+      CType.getStoreTx(ctype)
         .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
         )
@@ -66,35 +66,35 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    await CType.store(ctype)
+    await CType.getStoreTx(ctype)
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await Promise.all([
-      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did),
+      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri),
       expect(CType.verifyStored(ctype)).resolves.toBeTruthy(),
     ])
-    ctype.owner = ctypeCreator.did
+    ctype.owner = ctypeCreator.uri
     await expect(CType.verifyStored(ctype)).resolves.toBeTruthy()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    await CType.store(ctype)
+    await CType.getStoreTx(ctype)
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(
-      CType.store(ctype)
+      CType.getStoreTx(ctype)
         .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
     // console.log('Triggered error on re-submit')
-    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did)
+    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri)
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -118,7 +118,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         },
         type: 'object',
       },
-      ctypeCreator.did
+      ctypeCreator.uri
     )
 
     await Promise.all([

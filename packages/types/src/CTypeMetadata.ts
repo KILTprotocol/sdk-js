@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ICType } from './CType'
+
 /**
  * @packageDocumentation
  * @module ICTypeMetadata
@@ -34,5 +36,5 @@ export interface IMetadata {
 
 export interface ICTypeMetadata {
   metadata: IMetadata
-  ctypeHash: string | null
+  ctypeHash: ICType['hash'] | null
 }

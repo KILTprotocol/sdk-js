@@ -10,6 +10,20 @@ Data sovereignty and interoperability
 This package helps you to translate KILT credentials to the popular [Verifiable Credential](https://www.w3.org/TR/vc-data-model/) format and structure.
 It provides you with tools to export your existing KILT credentials to the widely understood Verifiable Credential, produce Verifiable Presentations from a Verifiable Credential, and to verify the associated proofs.
 
+## Installation
+
+NPM:
+
+```
+npm install @kiltprotocol/vc-export
+```
+
+YARN:
+
+```
+yarn add @kiltprotocol/vc-export
+```
+
 ## Contents
 
 - exporting

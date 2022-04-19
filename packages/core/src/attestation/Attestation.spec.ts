@@ -14,17 +14,19 @@
 import type {
   IAttestation,
   CompressedAttestation,
+  DidUri,
   ICType,
   IClaim,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ApiMocks } from '@kiltprotocol/testing'
 import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
+import type { HexString } from '@polkadot/util/types'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
@@ -40,9 +42,9 @@ beforeAll(() => {
 })
 
 describe('Attestation', () => {
-  const identityAlice =
+  const identityAlice: DidUri =
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
-  const identityBob =
+  const identityBob: DidUri =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
   let testCType: ICType
@@ -168,12 +170,10 @@ describe('Attestation', () => {
     }).toThrow()
   })
   it('error check should throw errors on faulty Attestations', () => {
-    const { cTypeHash, claimHash } = {
-      cTypeHash:
-        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-      claimHash:
-        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
-    }
+    const cTypeHash: HexString =
+      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff'
+    const claimHash: HexString =
+      '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557'
 
     const everything = {
       claimHash,
@@ -183,6 +183,7 @@ describe('Attestation', () => {
       delegationId: null,
     }
 
+    // @ts-ignore
     const noClaimHash = {
       claimHash: '',
       cTypeHash,
@@ -191,6 +192,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
+    // @ts-ignore
     const noCTypeHash = {
       claimHash,
       cTypeHash: '',
@@ -199,6 +201,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
+    // @ts-ignore
     const malformedOwner = {
       claimHash,
       cTypeHash,

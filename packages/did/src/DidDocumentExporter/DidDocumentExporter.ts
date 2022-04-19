@@ -28,65 +28,65 @@ import { SDKErrors } from '@kiltprotocol/utils'
 function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   const result: any = {}
 
-  result.id = details.did
+  result.id = details.uri
   result.verificationMethod = new Array<string>()
 
   // Populate the `verificationMethod` array and then sets the `authentication` array with the key IDs (or undefined if no auth key is present - which should never happen)
   const authenticationKeysIds = details
-    .getKeys(KeyRelationship.authentication)
+    .getVerificationKeys(KeyRelationship.authentication)
     .map((authKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${authKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${authKey.id}`,
+        controller: details.uri,
         type: VerificationKeyTypesMap[authKey.type],
         publicKeyBase58: base58Encode(authKey.publicKey),
       })
-      return `${details.did}#${authKey.id}`
+      return `${details.uri}#${authKey.id}`
     })
   if (authenticationKeysIds.length) {
     result.authentication = authenticationKeysIds
   }
 
   const keyAgreementKeysIds = details
-    .getKeys(KeyRelationship.keyAgreement)
+    .getEncryptionKeys(KeyRelationship.keyAgreement)
     .map((keyAgrKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${keyAgrKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${keyAgrKey.id}`,
+        controller: details.uri,
         type: EncryptionKeyTypesMap[keyAgrKey.type],
         publicKeyBase58: base58Encode(keyAgrKey.publicKey),
       })
-      return `${details.did}#${keyAgrKey.id}`
+      return `${details.uri}#${keyAgrKey.id}`
     })
   if (keyAgreementKeysIds.length) {
     result.keyAgreement = keyAgreementKeysIds
   }
 
   const assertionKeysIds = details
-    .getKeys(KeyRelationship.assertionMethod)
+    .getVerificationKeys(KeyRelationship.assertionMethod)
     .map((assKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${assKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${assKey.id}`,
+        controller: details.uri,
         type: VerificationKeyTypesMap[assKey.type],
         publicKeyBase58: base58Encode(assKey.publicKey),
       })
-      return `${details.did}#${assKey.id}`
+      return `${details.uri}#${assKey.id}`
     })
   if (assertionKeysIds.length) {
     result.assertionMethod = assertionKeysIds
   }
 
   const delegationKeyIds = details
-    .getKeys(KeyRelationship.capabilityDelegation)
+    .getVerificationKeys(KeyRelationship.capabilityDelegation)
     .map((delKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${delKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${delKey.id}`,
+        controller: details.uri,
         type: VerificationKeyTypesMap[delKey.type],
         publicKeyBase58: base58Encode(delKey.publicKey),
       })
-      return `${details.did}#${delKey.id}`
+      return `${details.uri}#${delKey.id}`
     })
   if (delegationKeyIds.length) {
     result.capabilityDelegation = delegationKeyIds
@@ -96,7 +96,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   if (serviceEndpoints.length) {
     result.service = serviceEndpoints.map((service) => {
       return {
-        id: `${details.did}#${service.id}`,
+        id: `${details.uri}#${service.id}`,
         type: service.types,
         serviceEndpoint: service.urls,
       }

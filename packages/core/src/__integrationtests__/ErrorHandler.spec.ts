@@ -13,7 +13,7 @@ import { BN } from '@polkadot/util'
 import type { IAttestation, KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { Attestation } from '../index'
-import { makeTransfer } from '../balance/Balance.chain'
+import { getTransferTx } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
@@ -35,7 +35,7 @@ beforeAll(async () => {
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
-    makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
+    getTransferTx(addressFromRandom(), new BN(1)).then((tx) =>
       submitExtrinsicWithResign(tx, paymentAccount)
     )
   ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
@@ -48,10 +48,10 @@ it('records an extrinsic error when ctype does not exist', async () => {
     cTypeHash:
       '0x103752ecd8e284b1c9677337ccc91ea255ac8e6651dc65d90f0504f31d7e54f0',
     delegationId: null,
-    owner: someDid.did,
+    owner: someDid.uri,
     revoked: false,
   }
-  const tx = await Attestation.store(attestation).then((ex) =>
+  const tx = await Attestation.getStoreTx(attestation).then((ex) =>
     someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
   )
   await expect(

@@ -12,11 +12,12 @@
 import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
+import type { IRequestForAttestation } from './RequestForAttestation'
 
 export interface IAttestation {
-  claimHash: string
+  claimHash: IRequestForAttestation['rootHash']
   cTypeHash: ICType['hash']
-  owner: IDidDetails['did']
+  owner: IDidDetails['uri']
   delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }

@@ -9,8 +9,6 @@
  * @group unit/quote
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { u8aToHex } from '@polkadot/util'
 
 import type {
@@ -29,7 +27,7 @@ import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidDetails,
-  DidUtils,
+  Utils as DidUtils,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
 import * as CType from '../ctype'
@@ -62,9 +60,9 @@ describe('Quote', () => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
-        case claimerIdentity?.did:
+        case claimerIdentity?.uri:
           return { details: claimerIdentity, metadata: { deactivated: false } }
-        case attesterIdentity?.did:
+        case attesterIdentity?.uri:
           return { details: attesterIdentity, metadata: { deactivated: false } }
         default:
           return null
@@ -82,12 +80,16 @@ describe('Quote', () => {
     claimerIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Alice',
-      SigningAlgorithms.Ed25519
+      {
+        signingKeyType: SigningAlgorithms.Ed25519,
+      }
     )
     attesterIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Bob',
-      SigningAlgorithms.Ed25519
+      {
+        signingKeyType: SigningAlgorithms.Ed25519,
+      }
     )
 
     invalidCost = {
@@ -111,12 +113,13 @@ describe('Quote', () => {
     claim = {
       cTypeHash: testCType.hash,
       contents: {},
-      owner: claimerIdentity.did,
+      owner: claimerIdentity.uri,
     }
 
     // build request for attestation with legitimations
     request = RequestForAttestation.fromClaim(claim)
 
+    // @ts-ignore
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',
       cost: invalidCost,
@@ -138,7 +141,7 @@ describe('Quote', () => {
     } as unknown as IQuote
 
     validQuoteData = {
-      attesterDid: attesterIdentity.did,
+      attesterDid: attesterIdentity.uri,
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -157,7 +160,7 @@ describe('Quote', () => {
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       request.rootHash,
-      attesterIdentity.did,
+      attesterIdentity.uri,
       claimerIdentity,
       keystore,
       {
@@ -169,7 +172,7 @@ describe('Quote', () => {
   })
 
   it('tests created quote data against given data', async () => {
-    expect(validQuoteData.attesterDid).toEqual(attesterIdentity.did)
+    expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
     await expect(
       claimerIdentity.signPayload(
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
@@ -179,7 +182,7 @@ describe('Quote', () => {
     ).resolves.toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = DidUtils.parseDidUri(
-      validAttesterSignedQuote.attesterSignature.keyId
+      validAttesterSignedQuote.attesterSignature.keyUri
     )
 
     expect(

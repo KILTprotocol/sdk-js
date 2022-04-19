@@ -12,7 +12,7 @@
 
 import type { ICType, IClaim, ICTypeMetadata } from '@kiltprotocol/types'
 import { SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { getOwner, isStored } from './chain.js'
 import { CTypeModel, CTypeWrapperModel, MetadataModel } from './schemas.js'
 import { getHashForSchema, getIdForSchema } from './utils.js'
@@ -88,7 +88,7 @@ export function verifyDataStructure(input: ICType): void {
       input.schema.$id
     )
   }
-  if (!(input.owner === null || DidUtils.validateKiltDid(input.owner))) {
+  if (!(input.owner === null || DidUtils.validateKiltDidUri(input.owner))) {
     throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }

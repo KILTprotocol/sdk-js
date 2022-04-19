@@ -10,14 +10,19 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
+import type {
+  IClaim,
+  CompressedClaim,
+  ICType,
+  DidUri,
+} from '@kiltprotocol/types'
 import * as CType from '../ctype'
 import * as Claim from './base'
 import * as ClaimCompression from './compression'
 import * as ClaimUtils from './utils'
 
 describe('Claim', () => {
-  let did: string
+  let did: DidUri
   let claimContents: any
   let rawCType: ICType['schema']
   let testCType: ICType
@@ -102,6 +107,7 @@ describe('Claim', () => {
       owner: ownerAddress,
     } as IClaim
 
+    // @ts-ignore
     const noCTypeHash = {
       cTypeHash: '',
       contents: claimContents,

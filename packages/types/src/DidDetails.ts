@@ -10,10 +10,22 @@ import type { BN } from '@polkadot/util'
 import type { DidPublicKey } from './DidDocumentExporter'
 import type { IIdentity } from './Identity'
 
+type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+
 /**
- * A DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
+ * A KILT DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
  */
-export type IDidIdentifier = IIdentity['address']
+export type DidIdentifier = IIdentity['address']
+
+// NOTICE: The following string pattern types must be kept in sync with regex patterns @kiltprotocol/did/Utils
+
+/**
+ * A string containing a KILT DID Uri.
+ */
+export type DidUri =
+  | `did:kilt:${DidIdentifier}`
+  | `did:kilt:light:${Digit}${Digit}${DidIdentifier}`
+  | `did:kilt:light:${Digit}${Digit}${DidIdentifier}:${string}`
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
@@ -32,33 +44,78 @@ export type VerificationKeyRelationship =
   | KeyRelationship.authentication
   | KeyRelationship.capabilityDelegation
   | KeyRelationship.assertionMethod
+/**
+ * Possible types for a DID verification key.
+ */
+export enum VerificationKeyType {
+  Sr25519 = 'sr25519',
+  Ed25519 = 'ed25519',
+  Ecdsa = 'ecdsa',
+}
 
 /**
  * Subset of key relationships which pertain to key agreement/encryption keys.
  */
 export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
+/**
+ * Possible types for a DID encryption key.
+ */
+export enum EncryptionKeyType {
+  X25519 = 'x25519',
+}
 
 /**
- * The SDK-specific details of a new DID public key.
+ * Type of a new key material to add under a DID.
  */
-export type DidKey<T extends string = string> = {
+export type BaseNewDidKey = {
+  publicKey: Uint8Array
+}
+
+/**
+ * Type of a new verification key to add under a DID.
+ */
+export type NewDidVerificationKey = BaseNewDidKey & {
+  type: VerificationKeyType
+}
+/**
+ * Type of a new encryption key to add under a DID.
+ */
+export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
+/**
+ * Type of a new key (verification or encryption) to add under a DID.
+ */
+export type NewDidKey = NewDidVerificationKey | NewDidEncryptionKey
+
+/**
+ * The SDK-specific base details of a DID key.
+ */
+export type BaseDidKey = {
   /**
    * Key id without the leading did:kilt:<did_identifier> prefix.
    */
   id: string
   /**
-   * Key type, e.g. Ed25519.
-   */
-  type: T
-  /**
    * The public key material.
    */
-  publicKey: Uint8Array
+  publicKey: NewDidKey['publicKey']
   /**
    * The inclusion block of the key, if stored on chain.
    */
   includedAt?: BN
 }
+
+/**
+ * The SDK-specific details of a DID verification key.
+ */
+export type DidVerificationKey = BaseDidKey & { type: VerificationKeyType }
+/**
+ * The SDK-specific details of a DID encryption key.
+ */
+export type DidEncryptionKey = BaseDidKey & { type: EncryptionKeyType }
+/**
+ * The SDK-specific details of a DID key.
+ */
+export type DidKey = DidVerificationKey | DidEncryptionKey
 
 /**
  * The SDK-specific details of a new DID service endpoint.
@@ -85,7 +142,7 @@ export interface IDidDetails {
   /**
    * The decentralized identifier (DID) to which the remaining info pertains.
    */
-  did: string
+  uri: DidUri
   /**
    * Retrieves a particular public key record via its id.
    *
@@ -94,13 +151,24 @@ export interface IDidDetails {
    */
   getKey(id: DidKey['id']): DidKey | undefined
   /**
-   * Retrieves public key details from the [[IDid]], optionally filtering by [[KeyRelationship]].
+   * Retrieves public key details from the [[IDid]].
    *
    * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
    * relationship, undefined to return all keys.
    * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
    */
-  getKeys(relationship?: KeyRelationship | 'none'): DidKey[]
+  getVerificationKeys(
+    relationship: VerificationKeyRelationship
+  ): DidVerificationKey[]
+  /**
+   * Retrieves public key details from the [[IDid]].
+   *
+   * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
+   * relationship, undefined to return all keys.
+   * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
+   */
+  getEncryptionKeys(relationship: EncryptionKeyRelationship): DidEncryptionKey[]
+  getKeys(): DidKey[]
   /**
    * Retrieves the service endpoint associated with the DID, if any.
    *
@@ -119,6 +187,6 @@ export interface IDidDetails {
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
 export type DidSignature = {
-  keyId: DidPublicKey['id']
+  keyUri: DidPublicKey['uri']
   signature: string
 }

@@ -10,7 +10,6 @@
  */
 
 /* eslint-disable dot-notation */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import type {
   IClaim,
@@ -20,6 +19,7 @@ import type {
   CompressedRequestForAttestation,
   IRequestForAttestation,
   DidSignature,
+  DidUri,
   IAttestation,
   ICredential,
 } from '@kiltprotocol/types'
@@ -41,7 +41,7 @@ const rawCType: ICType['schema'] = {
 }
 
 function buildRequestForAttestation(
-  claimerDid: string,
+  claimerDid: DidUri,
   contents: IClaimContents,
   legitimations: ICredential[]
 ): IRequestForAttestation {
@@ -314,6 +314,7 @@ describe('RequestForAttestation', () => {
         []
       ),
     } as IRequestForAttestation
+    // @ts-ignore
     builtRequestMalformedRootHash.rootHash = [
       builtRequestMalformedRootHash.rootHash.slice(0, 15),
       (

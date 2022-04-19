@@ -83,7 +83,7 @@ export async function verifySelfSignedProof(
     let { verificationMethod } = proof
     // we always fetch the verification method to make sure the key is in fact associated with the did
     if (typeof verificationMethod !== 'string') {
-      verificationMethod = verificationMethod.id
+      verificationMethod = verificationMethod.uri
     }
     if (!verificationMethod) {
       throw new Error('verificationMethod not understood')
@@ -124,7 +124,7 @@ export async function verifySelfSignedProof(
     if (
       !(
         verification.isValid &&
-        VerificationKeyTypesMap[verification.crypto] === keyType
+        Object.values(VerificationKeyTypesMap).includes(keyType)
       )
     ) {
       throw new Error('signature could not be verified')

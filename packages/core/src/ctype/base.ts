@@ -21,7 +21,7 @@ import type { ICType, CTypeSchemaWithoutId } from '@kiltprotocol/types'
 import { getHashForSchema, getIdForSchema } from './utils.js'
 import { verifyDataStructure } from './verification.js'
 
-export { getOwner, isStored, store } from './chain.js'
+export { getOwner, isStored, getStoreTx } from './chain.js'
 
 /**
  *  [STATIC] Creates a new [[CType]] from an [[ICTypeSchema]].

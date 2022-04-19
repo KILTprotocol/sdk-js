@@ -11,12 +11,14 @@
 
 import {
   DidDocumentPublicKeyType,
+  DidPublicKey,
+  DidUri,
   ICredential,
   ICType,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { Attestation } from '@kiltprotocol/core'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
 import { base58Encode } from '@polkadot/util-crypto'
@@ -89,7 +91,7 @@ const credential: ICredential = {
     claimerSignature: {
       signature:
         '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
-      keyId: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#key1',
+      keyUri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#key1',
     },
   },
   attestation: {
@@ -206,14 +208,14 @@ describe('proofs', () => {
   let documentLoader: DocumentLoader
   beforeAll(() => {
     VC = toVC.fromCredential(credential)
-    const keyId: string = VC.proof[0].verificationMethod
+    const keyId: DidPublicKey['uri'] = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
-      id: keyId,
+      uri: keyId,
       type: DidDocumentPublicKeyType.Ed25519VerificationKey,
       publicKeyBase58: base58Encode(
         Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)
       ),
-      controller: VC.credentialSubject['@id'] as string,
+      controller: VC.credentialSubject['@id'] as DidUri,
     }
     documentLoader = (url) => {
       if (url === keyId) {

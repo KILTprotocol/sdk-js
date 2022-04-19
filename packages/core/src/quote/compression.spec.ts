@@ -57,9 +57,9 @@ describe('Quote compression', () => {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
-        case claimerIdentity?.did:
+        case claimerIdentity?.uri:
           return { details: claimerIdentity, metadata: { deactivated: false } }
-        case attesterIdentity?.did:
+        case attesterIdentity?.uri:
           return { details: attesterIdentity, metadata: { deactivated: false } }
         default:
           return null
@@ -77,12 +77,12 @@ describe('Quote compression', () => {
     claimerIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Alice',
-      SigningAlgorithms.Ed25519
+      { signingKeyType: SigningAlgorithms.Ed25519 }
     )
     attesterIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
       keystore,
       '//Bob',
-      SigningAlgorithms.Ed25519
+      { signingKeyType: SigningAlgorithms.Ed25519 }
     )
 
     cTypeSchema = {
@@ -100,14 +100,14 @@ describe('Quote compression', () => {
     claim = {
       cTypeHash: testCType.hash,
       contents: {},
-      owner: claimerIdentity.did,
+      owner: claimerIdentity.uri,
     }
 
     // build request for attestation with legitimations
     request = RequestForAttestation.fromClaim(claim)
 
     validQuoteData = {
-      attesterDid: attesterIdentity.did,
+      attesterDid: attesterIdentity.uri,
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -126,7 +126,7 @@ describe('Quote compression', () => {
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       request.rootHash,
-      attesterIdentity.did,
+      attesterIdentity.uri,
       claimerIdentity,
       keystore,
       {
@@ -161,7 +161,7 @@ describe('Quote compression', () => {
       validQuoteData.timeframe,
       [
         validAttesterSignedQuote.attesterSignature.signature,
-        validAttesterSignedQuote.attesterSignature.keyId,
+        validAttesterSignedQuote.attesterSignature.keyUri,
       ],
     ]
 
@@ -178,11 +178,11 @@ describe('Quote compression', () => {
       validQuoteData.timeframe,
       [
         validAttesterSignedQuote.attesterSignature.signature,
-        validAttesterSignedQuote.attesterSignature.keyId,
+        validAttesterSignedQuote.attesterSignature.keyUri,
       ],
       [
         quoteBothAgreed.claimerSignature.signature,
-        quoteBothAgreed.claimerSignature.keyId,
+        quoteBothAgreed.claimerSignature.keyUri,
       ],
       quoteBothAgreed.rootHash,
     ]

@@ -28,67 +28,69 @@ import type {
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
 
-import type {
+import {
   Deposit,
+  DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
-  IDidIdentifier,
+  DidVerificationKey,
+  EncryptionKeyType,
+  DidIdentifier,
   IIdentity,
+  KeyRelationship,
+  KeystoreSigner,
   KeystoreSigningOptions,
+  NewDidKey,
   SubmittableExtrinsic,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { DidDetails, getSignatureAlgForKeyType } from './DidDetails/index.js'
+import { ApiPromise } from '@polkadot/api'
+import { DidDetails } from './DidDetails/index.js'
+import {
+  getSigningAlgorithmForVerificationKeyType,
+  getVerificationKeyTypeForSigningAlgorithm,
+} from './Did.utils.js'
+import { FullDidCreationDetails } from './types.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
 // ### Chain type definitions
 
 type KeyId = Hash
-type DidKeyAgreementKeys = BTreeSet<KeyId>
+type ChainDidKeyAgreementKeys = BTreeSet<KeyId>
 
-type SupportedSignatureKeys = 'sr25519' | 'ed25519' | 'ecdsa'
-type SupportedEncryptionKeys = 'x25519'
-
-interface DidVerificationKey<T extends string = SupportedSignatureKeys>
-  extends Enum {
-  type: T
+export interface ChainDidKey extends Enum {
+  type: string
   value: Vec<u8>
 }
 
-interface DidEncryptionKey<T extends string = SupportedEncryptionKeys>
-  extends Enum {
-  type: T
-  value: Vec<u8>
-}
-
-interface DidPublicKey extends Enum {
+export interface ChainDidPublicKey extends Enum {
   isPublicVerificationKey: boolean
-  asPublicVerificationKey: DidVerificationKey
+  asPublicVerificationKey: ChainDidKey
   isPublicEncryptionKey: boolean
-  asPublicEncryptionKey: DidEncryptionKey
+  asPublicEncryptionKey: ChainDidKey
   type: 'PublicVerificationKey' | 'PublicEncryptionKey'
-  value: DidVerificationKey | DidEncryptionKey
+  value: ChainDidKey
 }
 
-interface DidPublicKeyDetails extends Struct {
-  key: DidPublicKey
+interface ChainDidPublicKeyDetails extends Struct {
+  key: ChainDidPublicKey
   blockNumber: BlockNumber
 }
 
-type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
+type ChainDidPublicKeyMap = BTreeMap<KeyId, ChainDidPublicKeyDetails>
 
 interface IDidChainRecordCodec extends Struct {
   authenticationKey: KeyId
-  keyAgreementKeys: DidKeyAgreementKeys
+  keyAgreementKeys: ChainDidKeyAgreementKeys
   delegationKey: Option<KeyId>
   attestationKey: Option<KeyId>
-  publicKeys: DidPublicKeyMap
+  publicKeys: ChainDidPublicKeyMap
   lastTxCounter: u64
   deposit: Deposit
 }
@@ -104,7 +106,7 @@ interface IServiceEndpointChainRecordCodec extends Struct {
 // Query a full DID given the identifier (a KILT address for v1).
 // Interacts with the Did storage map.
 async function queryDidEncoded(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<Option<IDidChainRecordCodec>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
@@ -124,7 +126,7 @@ async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
 // Query a DID service given the DID identifier and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryServiceEncoded(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   serviceId: string
 ): Promise<Option<IServiceEndpointChainRecordCodec>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -136,7 +138,7 @@ async function queryServiceEncoded(
 // Query all services for a DID given the DID identifier.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryAllServicesEncoded(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<IServiceEndpointChainRecordCodec[]> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedEndpoints = await api.query.did.serviceEndpoints.entries<
@@ -148,7 +150,7 @@ async function queryAllServicesEncoded(
 // Query the # of services stored under a DID without fetching all the services.
 // Interacts with the DidEndpointsCount storage map.
 async function queryEndpointsCountsEncoded(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<u32> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.didEndpointsCount<u32>(didIdentifier)
@@ -167,10 +169,10 @@ export type IChainDeposit = {
 }
 
 export type IDidChainRecordJSON = {
-  authenticationKey: DidKey['id']
-  keyAgreementKeys: Array<DidKey['id']>
-  capabilityDelegationKey?: DidKey['id']
-  assertionMethodKey?: DidKey['id']
+  authenticationKey: DidVerificationKey['id']
+  keyAgreementKeys: Array<DidEncryptionKey['id']>
+  capabilityDelegationKey?: DidVerificationKey['id']
+  assertionMethodKey?: DidVerificationKey['id']
   publicKeys: DidKey[]
   lastTxCounter: BN
   deposit: IChainDeposit
@@ -185,14 +187,26 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
   }
 }
 
+const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
+  Sr25519: VerificationKeyType.Sr25519,
+  Ed25519: VerificationKeyType.Ed25519,
+  Ecdsa: VerificationKeyType.Ecdsa,
+  X25519: EncryptionKeyType.X25519,
+}
 function decodeDidPublicKeyDetails(
   keyId: Hash,
-  keyDetails: DidPublicKeyDetails
+  keyDetails: ChainDidPublicKeyDetails
 ): DidKey {
   const key = keyDetails.key.value
+  const keyType = chainTypeToDidKeyType[key.type]
+  if (!keyType) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `Unsupported key type "${key.type}" found on chain.`
+    )
+  }
   return {
     id: keyId.toHex(),
-    type: key.type.toLowerCase(),
+    type: keyType,
     publicKey: key.value.toU8a(),
     includedAt: keyDetails.blockNumber.toBn(),
   }
@@ -230,7 +244,7 @@ function decodeDidChainRecord(
 }
 
 export async function queryDetails(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<IDidChainRecordJSON | null> {
   const result = await queryDidEncoded(didIdentifier)
   if (result.isNone) {
@@ -239,9 +253,8 @@ export async function queryDetails(
   return decodeDidChainRecord(result.unwrap())
 }
 
-// TODO: Find a better way to not decode the whole details struct to only fetch one key.
 export async function queryKey(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   keyId: DidKey['id']
 ): Promise<DidKey | null> {
   const didDetails = await queryDetails(didIdentifier)
@@ -265,14 +278,14 @@ function decodeServiceChainRecord(
 }
 
 export async function queryServiceEndpoints(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<DidServiceEndpoint[]> {
   const encoded = await queryAllServicesEncoded(didIdentifier)
   return encoded.map((e) => decodeServiceChainRecord(e))
 }
 
 export async function queryServiceEndpoint(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   serviceId: DidServiceEndpoint['id']
 ): Promise<DidServiceEndpoint | null> {
   const serviceEncoded = await queryServiceEncoded(didIdentifier, serviceId)
@@ -282,19 +295,19 @@ export async function queryServiceEndpoint(
 }
 
 export async function queryEndpointsCounts(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<BN> {
   const endpointsCountEncoded = await queryEndpointsCountsEncoded(didIdentifier)
   return endpointsCountEncoded.toBn()
 }
 
-export async function queryNonce(didIdentifier: IDidIdentifier): Promise<BN> {
+export async function queryNonce(didIdentifier: DidIdentifier): Promise<BN> {
   const encoded = await queryDidEncoded(didIdentifier)
   return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
 }
 
 export async function queryDidDeletionStatus(
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
@@ -310,7 +323,7 @@ export async function queryDepositAmount(): Promise<BN> {
   return encodedDeposit.toBn()
 }
 
-export async function queryDeletedDidIdentifiers(): Promise<IDidIdentifier[]> {
+export async function queryDeletedDidIdentifiers(): Promise<DidIdentifier[]> {
   const encodedIdentifiers = await queryDeletedDidsEncoded()
   return encodedIdentifiers.map((id) => id.toHuman())
 }
@@ -321,17 +334,15 @@ export type PublicKeyEnum = Record<string, Uint8Array>
 export type SignatureEnum = Record<string, Uint8Array>
 
 export type AuthorizeCallInput = {
-  didIdentifier: IDidIdentifier
+  didIdentifier: DidIdentifier
   txCounter: AnyNumber
   call: Extrinsic
   submitter: IIdentity['address']
   blockNumber?: AnyNumber
 }
 
-export type NewDidKey = Pick<DidKey, 'type' | 'publicKey'>
-
 interface IDidAuthorizedCallOperation extends Struct {
-  did: IDidIdentifier
+  did: DidIdentifier
   txCounter: u64
   call: Call
   submitter: GenericAccountId
@@ -340,57 +351,144 @@ interface IDidAuthorizedCallOperation extends Struct {
 
 // ### EXTRINSICS
 
-function formatPublicKey(key: NewDidKey): PublicKeyEnum {
+export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   const { type, publicKey } = key
   return { [type]: publicKey }
 }
 
-export async function generateCreateTxFromDidDetails(
-  did: DidDetails,
+function checkServiceEndpointInput(
+  api: ApiPromise,
+  endpoint: DidServiceEndpoint
+): void {
+  const [
+    maxServiceIdLength,
+    maxNumberOfTypesPerService,
+    maxNumberOfUrlsPerService,
+    maxServiceTypeLength,
+    maxServiceUrlLength,
+  ] = [
+    (api.consts.did.maxServiceIdLength as u32).toNumber(),
+    (api.consts.did.maxNumberOfTypesPerService as u32).toNumber(),
+    (api.consts.did.maxNumberOfUrlsPerService as u32).toNumber(),
+    (api.consts.did.maxServiceTypeLength as u32).toNumber(),
+    (api.consts.did.maxServiceUrlLength as u32).toNumber(),
+  ]
+
+  if (endpoint.id.length > maxServiceIdLength) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+    )
+  }
+  if (endpoint.types.length > maxNumberOfTypesPerService) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
+    )
+  }
+  if (endpoint.urls.length > maxNumberOfUrlsPerService) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service with ID "${endpoint.id}" has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
+    )
+  }
+  endpoint.types.forEach((type) => {
+    if (type.length > maxServiceTypeLength) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `The service with ID "${endpoint.id}" has the type "${type}" that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
+      )
+    }
+  })
+  endpoint.urls.forEach((url) => {
+    if (url.length > maxServiceUrlLength) {
+      throw SDKErrors.ERROR_DID_ERROR(
+        `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
+      )
+    }
+  })
+}
+
+/**
+ * Create a DID creation operation which includes the provided [[FullDidCreationDetails]].
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that contains the information provided.
+ *
+ * @param details The creation details.
+ * @param details.identifier The identifier of the new DID.
+ * @param details.authenticationKey The authentication key of the new DID.
+ * @param details.keyAgreementKeys The optional key agreement keys of the new DID.
+ * A DID creation operation can contain at most 10 new key agreement keys.
+ * @param details.assertionKey The optional attestation key of the new DID.
+ * @param details.delegationKey The optional delegation key of the new DID.
+ * @param details.serviceEndpoints The optional service endpoints of the new DID.
+ * A DID creation operation can contain at most 25 new service endpoints.
+ * Additionally, each service endpoint must respect the following conditions:
+ *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ * @param submitterAddress The KILT address authorised to submit the creation operation.
+ * @param signer The keystore signer.
+ *
+ * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ */
+export async function generateCreateTxFromCreationDetails(
+  details: FullDidCreationDetails,
   submitterAddress: IIdentity['address'],
-  signingOptions: KeystoreSigningOptions
+  signer: KeystoreSigner
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const { signer, signingPublicKey, alg } = signingOptions
 
-  const newKeyAgreementKeys: PublicKeyEnum[] = did
-    .getKeys(KeyRelationship.keyAgreement)
-    .map((key) => {
-      return formatPublicKey(key)
-    })
+  const {
+    authenticationKey,
+    keyAgreementKeys = [],
+    assertionKey,
+    delegationKey,
+    serviceEndpoints = [],
+  } = details
 
-  // For now, it only takes the first attestation key, if present.
-  const attestationKeys = did.getKeys(KeyRelationship.assertionMethod)
-  if (attestationKeys.length > 1) {
-    log.warn(
-      `More than one attestation key (${attestationKeys.length}) specified. Only the first will be stored on the chain.`
+  const maxKeyAgreementKeys = (
+    api.consts.did.maxNewKeyAgreementKeys as u32
+  ).toNumber()
+
+  if (keyAgreementKeys.length > maxKeyAgreementKeys) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
     )
   }
-  const newAttestationKey: PublicKeyEnum | undefined = attestationKeys[0]
-    ? formatPublicKey(attestationKeys[0])
+
+  const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
+    ({ publicKey }) =>
+      formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
+  )
+
+  const newAssertionKey = assertionKey
+    ? formatPublicKey(assertionKey)
+    : undefined
+  const newDelegationKey = delegationKey
+    ? formatPublicKey(delegationKey)
     : undefined
 
-  // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getKeys(KeyRelationship.capabilityDelegation)
-  if (delegationKeys.length > 1) {
-    log.warn(
-      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
+  const maxNumberOfServicesPerDid = (
+    api.consts.did.maxNumberOfServicesPerDid as u32
+  ).toNumber()
+
+  if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID.`
     )
   }
-  const newDelegationKey: PublicKeyEnum | undefined = delegationKeys[0]
-    ? formatPublicKey(delegationKeys[0])
-    : undefined
 
-  const newServiceDetails = did.getEndpoints().map((service) => {
+  serviceEndpoints.forEach((service) => {
+    checkServiceEndpointInput(api, service)
+  })
+
+  const newServiceDetails = serviceEndpoints.map((service) => {
     const { id, urls } = service
     return { id, urls, serviceTypes: service.types }
   })
 
   const rawCreationDetails = {
-    did: did.identifier,
+    did: details.identifier,
     submitter: submitterAddress,
     newKeyAgreementKeys,
-    newAttestationKey,
+    newAttestationKey: newAssertionKey,
     newDelegationKey,
     newServiceDetails,
   }
@@ -403,12 +501,75 @@ export async function generateCreateTxFromDidDetails(
   const signature = await signer.sign({
     data: encodedDidCreationDetails.toU8a(),
     meta: {},
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
+    publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
+    alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
   return api.tx.did.create(encodedDidCreationDetails, {
-    [signature.alg]: signature.data,
+    [getVerificationKeyTypeForSigningAlgorithm(signature.alg)]: signature.data,
   })
+}
+
+/**
+ * Create a DID creation operation which includes the information present in the provided DID.
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the same keys and service endpoints of the provided DID details.
+ *
+ * @param did The input DID details.
+ * @param submitterAddress The KILT address authorised to submit the creation operation.
+ * @param signer The keystore signer.
+ *
+ * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ */
+export async function generateCreateTxFromDidDetails(
+  did: DidDetails,
+  submitterAddress: IIdentity['address'],
+  signer: KeystoreSigner
+): Promise<SubmittableExtrinsic> {
+  const { authenticationKey } = did
+  if (!authenticationKey) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The provided DID does not have an authentication key to sign the creation operation.`
+    )
+  }
+
+  const keyAgreementKeys = did.getEncryptionKeys(KeyRelationship.keyAgreement)
+
+  // For now, it only takes the first attestation key, if present.
+  const assertionKeys = did.getVerificationKeys(KeyRelationship.assertionMethod)
+  if (assertionKeys.length > 1) {
+    log.warn(
+      `More than one attestation key (${assertionKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const assertionKey = assertionKeys.pop()
+
+  // For now, it only takes the first delegation key, if present.
+  const delegationKeys = did.getVerificationKeys(
+    KeyRelationship.capabilityDelegation
+  )
+  if (delegationKeys.length > 1) {
+    log.warn(
+      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
+    )
+  }
+  const delegationKey = delegationKeys.pop()
+
+  const serviceEndpoints = did.getEndpoints()
+
+  const fullDidCreationDetails: FullDidCreationDetails = {
+    identifier: did.identifier,
+    authenticationKey,
+    keyAgreementKeys,
+    assertionKey,
+    delegationKey,
+    serviceEndpoints,
+  }
+
+  return generateCreateTxFromCreationDetails(
+    fullDidCreationDetails,
+    submitterAddress,
+    signer
+  )
 }
 
 export async function getSetKeyExtrinsic(
@@ -479,10 +640,21 @@ export async function getAddKeyExtrinsic(
   )
 }
 
+/**
+ * Generate an extrinsic to add the provided [[DidServiceEndpoint]] to the authorising DID.
+ *
+ * @param endpoint The new service endpoint to include in the extrinsic.
+ * The service endpoint must respect the following conditions:
+ *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  checkServiceEndpointInput(api, endpoint)
 
   return api.tx.did.addServiceEndpoint({
     serviceTypes: endpoint.types,
@@ -490,12 +662,26 @@ export async function getAddEndpointExtrinsic(
   })
 }
 
-// The endpointId parameter is the service endpoint ID without the DID prefix.
-// So for a endpoint of the form did:kilt:<identifier>#<endpoint_id>, only <endpoint_id> must be passed as parameter here.
+/**
+ * Generate an extrinsic to remove the service endpoint with the provided ID from to the state of the authorising DID.
+ *
+ * @param endpointId The ID of the service endpoint to include in the extrinsic.
+ * The ID must be at most 50 ASCII characters long.
+ * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const maxServiceIdLength = (
+    api.consts.did.maxServiceIdLength as u32
+  ).toNumber()
+  if (endpointId.length > maxServiceIdLength) {
+    throw SDKErrors.ERROR_DID_ERROR(
+      `The service ID "${endpointId}" has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+    )
+  }
+
   return api.tx.did.removeServiceEndpoint(endpointId)
 }
 
@@ -507,7 +693,7 @@ export async function getDeleteDidExtrinsic(
 }
 
 export async function getReclaimDepositExtrinsic(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   endpointsCount: BN
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -552,21 +738,23 @@ export async function generateDidAuthenticatedTx({
     alg,
   })
   return api.tx.did.submitDidCall(signableCall, {
-    [signature.alg]: signature.data,
+    [getVerificationKeyTypeForSigningAlgorithm(signature.alg)]: signature.data,
   })
 }
 
 // ### Chain utils
 export function encodeDidSignature(
-  key: Pick<DidKey, 'type'>,
+  key: Pick<ChainDidKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  const alg = getSignatureAlgForKeyType(key.type)
-  if (!alg) {
+  if (!Object.values(VerificationKeyType).some((kt) => kt === key.type)) {
     throw SDKErrors.ERROR_DID_ERROR(
-      `The provided type ${key.type} does not match any known algorithm.`
+      `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
   }
+  const alg = getSigningAlgorithmForVerificationKeyType(
+    key.type as VerificationKeyType
+  )
   return {
     [alg]: hexToU8a(signature.signature),
   }

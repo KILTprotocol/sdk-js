@@ -9,61 +9,68 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
 import type {
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   IIdentity,
   KeystoreSigner,
-  SubmittableExtrinsic,
+  DidUri,
 } from '@kiltprotocol/types'
+import { VerificationKeyType } from '@kiltprotocol/types'
 
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
 
+import { FullDidCreationBuilder } from '../DidBatcher/FullDidCreationBuilder.js'
+
 import type {
-  DidCreationDetails,
-  LightDidCreationDetails,
-  LightDidKeyCreationInput,
+  DidConstructorDetails,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
+  LightDidSupportedVerificationKeyType,
+  NewLightDidAuthenticationKey,
 } from '../types.js'
-import {
-  checkLightDidCreationDetails,
-  decodeAndDeserializeAdditionalLightDidDetails,
-  getEncodingForSigningKeyType,
-  getSigningKeyTypeFromEncoding,
-  LightDidSupportedSigningKeyTypes,
-  serializeAndEncodeAdditionalLightDidDetails,
-} from './LightDidDetails.utils.js'
-import { DidDetails } from './DidDetails.js'
-import { getSignatureAlgForKeyType } from './DidDetails.utils.js'
-import { FullDidDetails } from './FullDidDetails.js'
 import {
   getKiltDidFromIdentifier,
   LIGHT_DID_LATEST_VERSION,
   parseDidUri,
 } from '../Did.utils.js'
-import { generateCreateTxFromDidDetails } from '../Did.chain.js'
+
+import { DidDetails } from './DidDetails.js'
+import {
+  checkLightDidCreationDetails,
+  decodeAndDeserializeAdditionalLightDidDetails,
+  DidMigrationCallback,
+  getEncodingForVerificationKeyType,
+  getVerificationKeyTypeForEncoding,
+  LightDidCreationDetails,
+  serializeAndEncodeAdditionalLightDidDetails,
+} from './LightDidDetails.utils.js'
+import { FullDidDetails } from './FullDidDetails.js'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
 
-export type DidMigrationHandler = (
-  migrationExtrinsic: SubmittableExtrinsic
-) => Promise<void>
-
 export class LightDidDetails extends DidDetails {
-  public readonly identifier: IDidIdentifier
+  public readonly identifier: DidIdentifier
 
   private constructor(
-    identifier: IDidIdentifier,
-    { did, keys, keyRelationships, serviceEndpoints = {} }: DidCreationDetails
+    identifier: DidIdentifier,
+    {
+      uri,
+      keys,
+      keyRelationships,
+      serviceEndpoints = {},
+    }: DidConstructorDetails
   ) {
-    super({ did, keys, keyRelationships, serviceEndpoints })
+    super({ uri, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
   }
 
   public get authKeyEncoding(): string {
-    return getEncodingForSigningKeyType(this.authenticationKey.type) as string
+    return getEncodingForVerificationKeyType(
+      this.authenticationKey.type
+    ) as string
   }
 
   /**
@@ -92,7 +99,7 @@ export class LightDidDetails extends DidDetails {
       serviceEndpoints,
     })
     // Validity is checked in checkLightDidCreationDetails
-    const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
+    const authenticationKeyTypeEncoding = getEncodingForVerificationKeyType(
       authenticationKey.type
     ) as string
 
@@ -101,16 +108,15 @@ export class LightDidDetails extends DidDetails {
       encodeAddress(authenticationKey.publicKey, 38)
     )
 
-    let did = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
+    let uri = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
     if (encodedDetails) {
-      did = did.concat(':', encodedDetails)
+      uri = uri.concat(':', encodedDetails) as DidUri
     }
 
     // Authentication key always has the #authentication ID.
     const keys: PublicKeys = {
-      [authenticationKeyId]: authenticationKey,
+      [authenticationKeyId]: { ...authenticationKey },
     }
-    // const keys: PublicKeys = new Map([[authenticationKeyId, authenticationKey]])
     const keyRelationships: MapKeysToRelationship = {
       authentication: new Set([authenticationKeyId]),
     }
@@ -130,7 +136,7 @@ export class LightDidDetails extends DidDetails {
     )
 
     return new LightDidDetails(id.substring(2), {
-      did,
+      uri,
       keys,
       keyRelationships,
       serviceEndpoints: endpoints,
@@ -148,7 +154,7 @@ export class LightDidDetails extends DidDetails {
    * @returns The resulting [[LightDidDetails]].
    */
   public static fromUri(
-    uri: IDidDetails['did'],
+    uri: IDidDetails['uri'],
     failIfFragmentPresent = true
   ): LightDidDetails {
     const { identifier, version, encodedDetails, fragment, type } =
@@ -166,13 +172,13 @@ export class LightDidDetails extends DidDetails {
     }
     const authKeyTypeEncoding = identifier.substring(0, 2)
     const decodedAuthKeyType =
-      getSigningKeyTypeFromEncoding(authKeyTypeEncoding)
+      getVerificationKeyTypeForEncoding(authKeyTypeEncoding)
     if (!decodedAuthKeyType) {
       throw SDKErrors.ERROR_DID_ERROR(
         `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type.`
       )
     }
-    const authenticationKey: LightDidKeyCreationInput = {
+    const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier.substring(2), false, 38),
       type: decodedAuthKeyType,
     }
@@ -198,10 +204,10 @@ export class LightDidDetails extends DidDetails {
    * @returns The resulting [[LightDidDetails]].
    */
   public static fromIdentifier(
-    identifier: IDidIdentifier,
-    keyType: LightDidSupportedSigningKeyTypes = LightDidSupportedSigningKeyTypes.sr25519
+    identifier: DidIdentifier,
+    keyType: LightDidSupportedVerificationKeyType = VerificationKeyType.Sr25519
   ): LightDidDetails {
-    const authenticationKey: LightDidKeyCreationInput = {
+    const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier, false, 38),
       type: keyType,
     }
@@ -215,26 +221,26 @@ export class LightDidDetails extends DidDetails {
    *
    * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
    * @param signer The keystore signer to sign the operation.
-   * @param migrationHandler A user-provided closure to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
+   * @param migrationCallback A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
    *
-   * @returns The migrated [[FullDidDetails]] if the user-provided handler successfully writes the full DID on the chain. It throws an error otherwise.
+   * @returns The migrated [[FullDidDetails]] if the user-provided callback successfully writes the full DID on the chain. It throws an error otherwise.
    */
   public async migrate(
     submitterAddress: IIdentity['address'],
     signer: KeystoreSigner,
-    migrationHandler: DidMigrationHandler
+    migrationCallback: DidMigrationCallback
   ): Promise<FullDidDetails> {
-    const creationTx = await generateCreateTxFromDidDetails(
-      this,
-      submitterAddress,
-      {
-        alg: getSignatureAlgForKeyType(this.authenticationKey.type),
-        signingPublicKey: this.authenticationKey.publicKey,
-        signer,
-      }
+    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+    const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
+      api,
+      this
+    ).build(signer, submitterAddress)
+
+    await migrationCallback(creationTx)
+
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(this.identifier, 'full')
     )
-    await migrationHandler(creationTx)
-    const fullDidDetails = await FullDidDetails.fromChainInfo(this.identifier)
     if (!fullDidDetails) {
       throw SDKErrors.ERROR_DID_ERROR(
         'Something went wrong during the migration.'

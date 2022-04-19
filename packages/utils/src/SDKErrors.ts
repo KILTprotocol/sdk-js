@@ -82,6 +82,8 @@ export enum ErrorCode {
   ERROR_DID_ERROR = 30014,
   ERROR_KEYSTORE_ERROR = 30015,
   ERROR_DID_EXPORTER_ERROR = 30016,
+  ERROR_DID_BUILDER_ERROR = 30017,
+  ERROR_WEB3_NAME_ERROR = 30018,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -164,6 +166,16 @@ export const ERROR_DID_EXPORTER_ERROR: (input: string) => SDKError = (
   input: string
 ) => {
   return new SDKError(ErrorCode.ERROR_DID_EXPORTER_ERROR, input)
+}
+export const ERROR_DID_BUILDER_ERROR: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(ErrorCode.ERROR_DID_BUILDER_ERROR, input)
+}
+export const ERROR_WEB3_NAME_ERROR: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(ErrorCode.ERROR_WEB3_NAME_ERROR, input)
 }
 
 export const ERROR_CLAIM_HASH_NOT_PROVIDED: () => SDKError = () => {
