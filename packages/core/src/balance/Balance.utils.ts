@@ -133,7 +133,7 @@ export function toFemtoKilt(
  * it's output can therefore be formatted via the polkadot formatting options.
  *
  * @param input [[BalanceNumber]] to convert from Femto Kilt.
- * @param decimals [[number]] Set the minimum decimal places in the formatted localized output, default is 4.
+ * @param decimals Set the minimum decimal places in the formatted localized output, default is 4.
  * @param options [[BalanceOptions]] for internationalization and formatting.
  * @returns String representation of the given [[BalanceNumber]] with unit und metric prefix.
  */

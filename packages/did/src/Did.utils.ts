@@ -367,7 +367,7 @@ export async function verifyDidSignature({
  * @param did The DID URI, with no trailing fragment (i.e., no "#" symbol).
  * @param keyId The key ID, without the leading subject's DID prefix.
  *
- * @returns The full [[DidPublicKey['uri']]], which includes the subject's DID and the provided key ID.
+ * @returns The full public key uri, which includes the subject's DID and the provided key ID.
  */
 export function assembleKeyUri(
   did: IDidDetails['uri'],

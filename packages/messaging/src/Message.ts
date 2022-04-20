@@ -95,7 +95,7 @@ export class Message implements IMessage {
   /**
    * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
    *
-   * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
+   * Checks the message structure and body contents (e.g. hashes match, ensures the owner is the sender).
    *
    * @param encrypted The encrypted message.
    * @param keystore The keystore used to perform the cryptographic operations.
@@ -194,6 +194,10 @@ export class Message implements IMessage {
       errorCheckMessage(decrypted)
       // make sure the sender is the owner of the identity
       Message.ensureOwnerIsSender(decrypted)
+
+      // TODO: It  was previously advertised, that this function would also check signatures.
+      // This does not seem to be the case anymore. The function used was called `ensureHashAndSignature`.
+      // It might've been dropped accidentally.
 
       return decrypted
     } catch (error) {

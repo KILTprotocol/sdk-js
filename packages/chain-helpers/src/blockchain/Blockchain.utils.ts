@@ -144,7 +144,7 @@ export function isRecoverableTxError(
  * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
- * @param signer The [[Identity]] or [[KeyringPair]] used to sign and potentially re-sign the tx.
+ * @param signer The [[IIdentity]] or KeyringPair used to sign and potentially re-sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.

@@ -101,7 +101,7 @@ export async function fromAttesterSignedInput(
  * Signs a [[Quote]] object as an Attester, created via [[fromQuoteDataAndIdentity]].
  *
  * @param quoteInput A [[Quote]] object.
- * @param attesterIdentity [[Identity]] used to sign the object.
+ * @param attesterIdentity The DID used to sign the object.
  *
  * @returns A signed [[Quote]] object.
  */
@@ -139,10 +139,10 @@ export async function createAttesterSignature(
 }
 
 /**
- * Creates a [[Quote]] object signed by the given [[Identity]].
+ * Creates a [[Quote]] object signed by the given DID.
  *
  * @param quoteInput A [[Quote]] object.
- * @param identity [[Identity]] used to sign the object.
+ * @param attesterIdentity The DID used to sign the object.
  * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
@@ -169,7 +169,7 @@ export async function fromQuoteDataAndIdentity(
 /**
  * Creates a [[Quote]] signed by the Attester and the Claimer.
  *
- * @param claimerIdentity [[Identity]] of the Claimer in order to sign.
+ * @param claimerIdentity The DID of the Claimer in order to sign.
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param requestRootHash A root hash of the entire object.
  *

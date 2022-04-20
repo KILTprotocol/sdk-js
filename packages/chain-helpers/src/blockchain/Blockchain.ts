@@ -68,10 +68,10 @@ export class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Signs the SubmittableExtrinsic with the given identity or keyring pair.
    *
-   * @param signer The [[Identity]] or [[KeyringPair]] to sign the tx with.
-   * @param tx The unsigned [[SubmittableExtrinsic]].
+   * @param signer The [[IIdentity]] or KeyringPair to sign the tx with.
+   * @param tx The unsigned SubmittableExtrinsic.
    * @param tip The amount of Femto-KILT to tip the validator.
-   * @returns Signed [[SubmittableExtrinsic]].
+   * @returns Signed SubmittableExtrinsic.
    */
   public async signTx(
     signer: KeyringPair | IIdentity,
@@ -94,7 +94,7 @@ export class Blockchain implements IBlockchainApi {
    * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
    *
    * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
-   * @param signer Optional [[Identity]] or [[KeyringPair]] to potentially re-sign the tx with.
+   * @param signer Optional [[IIdentity]] or KeyringPair to potentially re-sign the tx with.
    * @param opts Optional partial criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns the eventually resolved ISubmittableResult.
@@ -144,7 +144,7 @@ export class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Re-signs the given SubmittableExtrinsic with an updated Nonce.
    *
-   * @param signer The [[Identity]] or [[KeyringPair]] to re-sign the tx with.
+   * @param signer The [[IIdentity]] or KeyringPair to re-sign the tx with.
    * @param tx The tx with recoverable Error that failed.
    * @returns Original Tx, injected with signature payload with updated nonce.
    */
