@@ -10,6 +10,7 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  DidPublicKey,
   DidSignature,
   ICostBreakdown,
   IQuote,
@@ -102,11 +103,13 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
   }
 }
 
-function compressSignature(comp: DidSignature): [string, string] {
+function compressSignature(comp: DidSignature): [string, DidPublicKey['uri']] {
   return [comp.signature, comp.keyUri]
 }
 
-function decompressSignature(comp: [string, string]): DidSignature {
+function decompressSignature(
+  comp: [string, DidPublicKey['uri']]
+): DidSignature {
   return { signature: comp[0], keyUri: comp[1] }
 }
 

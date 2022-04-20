@@ -6,7 +6,11 @@
  */
 
 import type { Option, Vec, U128 } from '@polkadot/types'
-import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IAttestation,
+  IDelegationNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { Hash } from '@polkadot/types/interfaces'
@@ -177,7 +181,9 @@ export async function getChildren(
   return childrenNodes
 }
 
-function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
+function decodeDelegatedAttestations(
+  queryResult: Option<Vec<Hash>>
+): Array<IAttestation['claimHash']> {
   DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<H256>>'])
   return queryResult.unwrapOrDefault().map((hash) => hash.toHex())
 }
@@ -190,7 +196,7 @@ function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
  */
 export async function getAttestationHashes(
   id: IDelegationNode['id']
-): Promise<string[]> {
+): Promise<Array<IAttestation['claimHash']>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedHashes =
     await blockchain.api.query.attestation.delegatedAttestations<

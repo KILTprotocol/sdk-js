@@ -9,8 +9,6 @@
  * @group unit/messaging
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import type {
   CompressedQuoteAttesterSigned,
   CompressedQuoteAgreed,
@@ -73,6 +71,8 @@ import type {
   DidResolvedDetails,
   DidPublicKey,
   ResolvedDidKey,
+  DidUri,
+  DidResourceUri,
 } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import {
@@ -295,7 +295,7 @@ describe('Messaging Utilities', () => {
       resolveDoc,
       resolveKey,
       resolve: async (did: string) => {
-        return resolveKey(did) || resolveDoc(did)
+        return resolveKey(did as DidResourceUri) || resolveDoc(did as DidUri)
       },
     } as IDidResolver
 
@@ -1056,16 +1056,19 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
     ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))
+    // @ts-ignore
     messageSubmitTerms.sender = 'this is not a sender did'
     expect(() =>
       MessageUtils.errorCheckMessage(messageSubmitTerms)
     ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))
+    // @ts-ignore
     messageRejectTerms.sender = 'this is not a sender address'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRejectTerms)
     ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))
   })
   it('error check should throw errors on faulty bodies', () => {
+    // @ts-ignore
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
@@ -1086,20 +1089,24 @@ describe('Messaging Utilities', () => {
     ).toThrowErrorWithCode(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
     requestAttestationBody.content.requestForAttestation.claimerSignature = {
       signature: 'this is not the claimers signature',
+      // @ts-ignore
       keyUri: 'this is not a key id',
     }
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAttestationBody)
     ).toThrowError()
+    // @ts-ignore
     submitAttestationBody.content.attestation.claimHash =
       'this is not the claim hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAttestationBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    // @ts-ignore
     rejectAttestationForClaimBody.content = 'this is not the root hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    // @ts-ignore
     requestCredentialBody.content.cTypes[0].cTypeHash =
       'this is not a cTypeHash'
     expect(() =>
@@ -1110,6 +1117,7 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitCredentialBody)
     ).toThrowError(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
+    // @ts-ignore
     acceptCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(acceptCredentialBody)
@@ -1119,6 +1127,7 @@ describe('Messaging Utilities', () => {
         'accept credential message ctype hash invalid'
       )
     )
+    // @ts-ignore
     rejectCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectCredentialBody)
@@ -1132,6 +1141,7 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    // @ts-ignore
     submitAcceptDelegationBody.content.signatures.invitee.keyUri =
       'this is not a key id'
     expect(() =>

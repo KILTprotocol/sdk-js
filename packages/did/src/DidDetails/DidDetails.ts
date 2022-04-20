@@ -15,7 +15,7 @@ import {
   DidSignature,
   DidVerificationKey,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   KeystoreSigner,
   VerificationKeyType,
   KeyRelationship,
@@ -70,7 +70,7 @@ export abstract class DidDetails implements IDidDetails {
     this.serviceEndpoints = new Map(Object.entries(serviceEndpoints))
   }
 
-  public abstract get identifier(): IDidIdentifier
+  public abstract get identifier(): DidIdentifier
 
   /**
    * Returns the first authentication key of the DID.

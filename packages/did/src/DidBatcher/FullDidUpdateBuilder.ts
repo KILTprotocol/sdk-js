@@ -12,7 +12,7 @@ import type {
   DidEncryptionKey,
   KeystoreSigner,
   IIdentity,
-  IDidIdentifier,
+  DidIdentifier,
   DidVerificationKey,
   NewDidVerificationKey,
   NewDidEncryptionKey,
@@ -38,7 +38,7 @@ import { deriveChainKeyId } from './FullDidBuilder.utils.js'
 
 export type FullDidUpdateBuilderCreationDetails = {
   authenticationKey: DidVerificationKey
-  identifier: IDidIdentifier
+  identifier: DidIdentifier
   keyAgreementKeys?: DidEncryptionKey[]
   assertionKey?: DidVerificationKey
   delegationKey?: DidVerificationKey
@@ -55,7 +55,7 @@ export type FullDidUpdateCallback = (
  * A builder to batch multiple changes before a DID update.
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
-  protected identifier: IDidIdentifier
+  protected identifier: DidIdentifier
   protected uri: IDidDetails['uri']
   protected batch: Extrinsic[] = []
 

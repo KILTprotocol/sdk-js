@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { HexString } from '@polkadot/util/types'
 import type { IDidDetails } from './DidDetails'
 
 export type InstanceType =
@@ -29,7 +30,7 @@ export interface ICTypeSchema {
 export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
 
 export interface ICType {
-  hash: string
+  hash: HexString
   owner: IDidDetails['uri'] | null
   schema: ICTypeSchema
 }

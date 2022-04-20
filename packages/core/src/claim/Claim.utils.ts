@@ -14,6 +14,7 @@ import type {
 } from '@kiltprotocol/types'
 import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+import type { HexString } from '@polkadot/util/types'
 import { getIdForCTypeHash } from '../ctype/CType.utils.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
@@ -99,7 +100,7 @@ export function hashClaimContents(
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
 ): {
-  hashes: string[]
+  hashes: HexString[]
   nonceMap: Record<string, string>
 } {
   // apply defaults

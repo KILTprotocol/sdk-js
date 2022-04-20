@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ICType } from './CType'
+
 /**
  * String struct with string keys and a mandatory `default` field.
  * Meant to contain a default label/description and an arbitrary number of translations,
@@ -29,5 +31,5 @@ export interface IMetadata {
 
 export interface ICTypeMetadata {
   metadata: IMetadata
-  ctypeHash: string | null
+  ctypeHash: ICType['hash'] | null
 }

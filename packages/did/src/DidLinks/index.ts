@@ -6,3 +6,4 @@
  */
 
 export * as Web3Names from './Web3Names.chain.js'
+export * as AccountLinks from './AccountLinks.chain.js'

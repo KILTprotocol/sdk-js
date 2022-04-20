@@ -10,6 +10,7 @@ import type {
   IAttestation,
   Deposit,
   SubmittableExtrinsic,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, Hash } from '@polkadot/types/interfaces'
@@ -54,7 +55,7 @@ export interface AttestationDetails extends Struct {
 
 function decode(
   encoded: Option<AttestationDetails>,
-  claimHash: string // all the other decoders do not use extra data; they just return partial types
+  claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<AttestationAttestationsAttestationDetails>',
@@ -63,7 +64,7 @@ function decode(
     const chainAttestation = encoded.unwrap()
     const attestation: IAttestation = {
       claimHash,
-      cTypeHash: chainAttestation.ctypeHash.toString(),
+      cTypeHash: chainAttestation.ctypeHash.toHex(),
       owner: DidUtils.getKiltDidFromIdentifier(
         chainAttestation.attester.toString(),
         'full'
@@ -78,9 +79,8 @@ function decode(
   return null
 }
 
-// return types reflect backwards compatibility with mashnet-node v 0.22
 export async function queryRaw(
-  claimHash: string
+  claimHash: IRequestForAttestation['rootHash']
 ): Promise<Option<AttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -96,7 +96,9 @@ export async function queryRaw(
  * @param claimHash The hash of the claim attested in the attestation.
  * @returns Either the retrieved [[Attestation]] or null.
  */
-export async function query(claimHash: string): Promise<Attestation | null> {
+export async function query(
+  claimHash: IRequestForAttestation['rootHash']
+): Promise<Attestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }
@@ -109,7 +111,7 @@ export async function query(claimHash: string): Promise<Attestation | null> {
  * @returns The SubmittableExtrinsic for the `revoke` call.
  */
 export async function getRevokeTx(
-  claimHash: string,
+  claimHash: IRequestForAttestation['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -129,7 +131,7 @@ export async function getRevokeTx(
  * @returns The SubmittableExtrinsic for the `remove` call.
  */
 export async function getRemoveTx(
-  claimHash: string,
+  claimHash: IRequestForAttestation['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -148,7 +150,7 @@ export async function getRemoveTx(
  * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
  */
 export async function getReclaimDepositTx(
-  claimHash: string
+  claimHash: IRequestForAttestation['rootHash']
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(

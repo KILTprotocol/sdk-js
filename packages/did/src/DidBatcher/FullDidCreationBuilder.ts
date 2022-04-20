@@ -29,7 +29,7 @@ import { getKiltDidFromIdentifier } from '../Did.utils.js'
 function encodeVerificationKeyToAddress({
   publicKey,
   type,
-}: Pick<DidVerificationKey, 'publicKey' | 'type'>): string {
+}: Pick<DidVerificationKey, 'publicKey' | 'type'>): IIdentity['address'] {
   switch (type) {
     case VerificationKeyType.Ed25519:
     case VerificationKeyType.Sr25519:

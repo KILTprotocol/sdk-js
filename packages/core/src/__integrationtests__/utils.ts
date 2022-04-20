@@ -16,8 +16,8 @@ import {
   DemoKeystore,
   DemoKeystoreUtils,
   DidMigrationCallback,
+  FullDidCreationBuilder,
   FullDidDetails,
-  FullDidUpdateBuilder,
   LightDidDetails,
 } from '@kiltprotocol/did'
 import {
@@ -25,6 +25,7 @@ import {
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 import type {
+  IIdentity,
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
@@ -57,7 +58,7 @@ export const devCharlie = keyring.createFromUri('//Charlie')
 export function keypairFromRandom(): KeyringPair {
   return keyring.addFromSeed(randomAsU8a(32))
 }
-export function addressFromRandom(): string {
+export function addressFromRandom(): IIdentity['address'] {
   return keypairFromRandom().address
 }
 
@@ -125,7 +126,7 @@ export async function endowAccounts(
   )
 }
 
-async function fundAccount(
+export async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
@@ -170,20 +171,13 @@ export async function createFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
 ): Promise<FullDidDetails> {
-  const fullDid = await lightDidForId.migrate(
-    identity.address,
-    keystore,
-    getDefaultMigrationCallback(identity)
-  )
-
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const authenticatedBatch = await new FullDidUpdateBuilder(api, fullDid)
-    .setAttestationKey(fullDid.authenticationKey)
-    .setDelegationKey(fullDid.authenticationKey)
-    .build(keystore, identity.address)
-  await submitExtrinsicWithResign(authenticatedBatch, identity)
-
-  return FullDidDetails.fromChainInfo(fullDid.uri) as Promise<FullDidDetails>
+  return FullDidCreationBuilder.fromLightDidDetails(api, lightDidForId)
+    .setAttestationKey(lightDidForId.authenticationKey)
+    .setDelegationKey(lightDidForId.authenticationKey)
+    .buildAndSubmit(keystore, identity.address, async (tx) => {
+      await submitExtrinsicWithResign(tx, identity)
+    })
 }
 
 export async function createFullDidFromSeed(
