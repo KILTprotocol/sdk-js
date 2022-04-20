@@ -430,6 +430,11 @@ describe('FullDidUpdateBuilder', () => {
       types: ['type-new'],
       urls: ['url-new'],
     }
+    const newInvalidServiceEndpoint: DidServiceEndpoint = {
+      id: 'id-new',
+      types: ['type-new', 'type-new'],
+      urls: ['url-new', 'type-new'],
+    }
     beforeAll(async () => {
       fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
         keystore,
@@ -454,6 +459,14 @@ describe('FullDidUpdateBuilder', () => {
           builder.addServiceEndpoint(newServiceEndpoint)
         ).not.toThrow()
         expect(() => builder.addServiceEndpoint(newServiceEndpoint)).toThrow()
+      })
+
+      it('fails if service is invalid', async () => {
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
+
+        expect(() =>
+          builder.addServiceEndpoint(newInvalidServiceEndpoint)
+        ).toThrow()
       })
 
       it('adds the service endpoint successfully', async () => {

@@ -27,6 +27,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import { increaseNonce } from '../DidDetails/FullDidDetails.utils.js'
 import {
+  checkServiceEndpointInput,
   formatPublicKey,
   generateDidAuthenticatedTx,
   queryNonce,
@@ -388,6 +389,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
         `Service endpoint with ID ${service.id} already present under the DID.`
       )
     }
+    checkServiceEndpointInput(this.apiObject, service)
+
     const extrinsic = this.apiObject.tx.did.addServiceEndpoint({
       serviceTypes: service.types,
       ...service,

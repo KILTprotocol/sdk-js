@@ -356,7 +356,7 @@ export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   return { [type]: publicKey }
 }
 
-function checkServiceEndpointInput(
+export function checkServiceEndpointInput(
   api: ApiPromise,
   endpoint: DidServiceEndpoint
 ): void {
