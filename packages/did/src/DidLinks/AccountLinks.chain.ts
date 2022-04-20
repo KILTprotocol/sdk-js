@@ -277,7 +277,7 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
  * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
  * @returns An Extrinsic that must be did-authorized by the [[FullDid]] whose identifier was used.
  */
-export async function authorizeLinkWithAccount(
+export async function getAuthorizeLinkWithAccountTx(
   accountAddress: Address,
   didIdentifier: DidIdentifier,
   signingCallback: LinkingSignerCallback,

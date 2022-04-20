@@ -180,11 +180,12 @@ describe('When there is an on-chain DID', () => {
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
-        const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
-          keypair.address,
-          did.identifier,
-          signingCallback
-        )
+        const linkAuthorisation =
+          await AccountLinks.getAuthorizeLinkWithAccountTx(
+            keypair.address,
+            did.identifier,
+            signingCallback
+          )
         const signedTx = await did.authorizeExtrinsic(
           linkAuthorisation,
           keystore,
@@ -222,11 +223,12 @@ describe('When there is an on-chain DID', () => {
         ).resolves.toBeTruthy()
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
-        const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
-          keypair.address,
-          newDid.identifier,
-          signingCallback
-        )
+        const linkAuthorisation =
+          await AccountLinks.getAuthorizeLinkWithAccountTx(
+            keypair.address,
+            newDid.identifier,
+            signingCallback
+          )
         const signedTx = await newDid.authorizeExtrinsic(
           linkAuthorisation,
           keystore,
@@ -334,11 +336,12 @@ describe('When there is an on-chain DID', () => {
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
-      const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
-        genericAccount.address,
-        did.identifier,
-        signingCallback
-      )
+      const linkAuthorisation =
+        await AccountLinks.getAuthorizeLinkWithAccountTx(
+          genericAccount.address,
+          did.identifier,
+          signingCallback
+        )
       const signedTx = await did.authorizeExtrinsic(
         linkAuthorisation,
         keystore,
