@@ -5,6 +5,7 @@
       "DOM"
     ]
   },
+  "include": ["packages/**/*", "jest-setup/*"],
   "typedocOptions": {
     "entryPointStrategy": "resolve",
     "entryPoints": [
