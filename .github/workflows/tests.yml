@@ -148,18 +148,10 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "TESTCONTAINERS_NODE_IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
-      - id: image-cache
-        name: get cached testcontainers image
-        uses: actions/cache@v2
+      - name: get cached testcontainers image
+        uses: ./.github/actions/cached-image-pull
         with:
-            path: ~/image-cache
-            key: image-cache-${{ env.TESTCONTAINERS_WATCHER_IMG }}
-
-      - if: steps.image-cache.outputs.cache-hit != 'true'
-        run: |
-            docker pull $TESTCONTAINERS_WATCHER_IMG
-            mkdir -p ~/image-cache
-            docker save -o ~/image-cache/image.tar $TESTCONTAINERS_WATCHER_IMG
+          image: $TESTCONTAINERS_WATCHER_IMAGE
 
       - if: steps.image-cache.outputs.cache-hit == 'true'
         run: docker load -i ~/image-cache/image.tar
@@ -279,21 +271,10 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "TESTCONTAINERS_NODE_IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
-      - id: image-cache
-        name: get cached testcontainers image
-        uses: actions/cache@v2
+      - name: get cached testcontainers image
+        uses: ./.github/actions/cached-image-pull
         with:
-            path: ~/image-cache
-            key: image-cache-${{ env.TESTCONTAINERS_WATCHER_IMG }}
-
-      - if: steps.image-cache.outputs.cache-hit != 'true'
-        run: |
-            docker pull $TESTCONTAINERS_WATCHER_IMG
-            mkdir -p ~/image-cache
-            docker save -o ~/image-cache/image.tar $TESTCONTAINERS_WATCHER_IMG
-
-      - if: steps.image-cache.outputs.cache-hit == 'true'
-        run: docker load -i ~/image-cache/image.tar
+          image: $TESTCONTAINERS_WATCHER_IMAGE
 
       - name: run getting started
         timeout-minutes: 10
