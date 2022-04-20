@@ -9,11 +9,11 @@ inputs:
   cache-directory:
     description: 'Path where the cached image will be stored'
     required: true
-    default: "~/image-cache/"
+    default: '~/image-cache/'
   cache-file:
     description: 'Filename for the image cache file'
     required: true
-    default: "image"
+    default: 'image'
 
 runs:
   using: "composite"
