@@ -19,8 +19,11 @@ runs:
   steps:
     - name: determine image cache path
       id: image-file
+      shell: bash
+      env:
+        CACHE_PATH: ${{ inputs.cache-directory }}${{ input.cache-file }}.tar
       run: |
-        echo "::set-output name=path::${{ inputs.cache-directory }}${{ input.cache-file }}.tar"
+        echo "::set-output name=path::$CACHE_PATH"
 
     - name: check image cache
       uses: actions/cache@v2
@@ -29,10 +32,12 @@ runs:
         key: image-cache-${{ inputs.image }}
 
     - if: steps.image-cache.outputs.cache-hit != 'true'
+      shell: bash
       run: |
         docker pull ${{ inputs.image }}
         mkdir -p ${{ inputs.cache-directory }}
         docker save -o ${{ steps.image-file.outputs.path }} ${{ inputs.image }}
 
     - if: steps.image-cache.outputs.cache-hit == 'true'
+      shell: bash
       run: docker load -i ${{ steps.image-file.outputs.path }}
