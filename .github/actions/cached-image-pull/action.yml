@@ -21,7 +21,7 @@ runs:
       id: image-file
       shell: bash
       env:
-        CACHE_PATH: ${{ inputs.cache-directory }}${{ input.cache-file }}.tar
+        CACHE_PATH: ${{ inputs.cache-directory }}${{ inputs.cache-file }}.tar
       run: |
         echo "::set-output name=path::$CACHE_PATH"
 
