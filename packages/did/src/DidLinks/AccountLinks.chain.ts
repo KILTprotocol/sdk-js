@@ -167,7 +167,7 @@ export async function queryDepositAmount(): Promise<BN> {
  *
  * @returns An [[Extrinsic]] that must be did-authorized.
  */
-export async function getAssociateSenderTx(): Promise<Extrinsic> {
+export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.associateSender()
 }
@@ -185,7 +185,7 @@ export async function getAssociateSenderTx(): Promise<Extrinsic> {
  * @param sigType The type of key/substrate account which produced the `signature`.
  * @returns An [[Extrinsic]] that must be did-authorized.
  */
-export async function getAccountSignedAssociationTx(
+export async function getAccountSignedAssociationExtrinsic(
   account: Address,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
@@ -229,7 +229,7 @@ export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic>
  * @param linkedAccount An account linked to the FullDid which should be unlinked.
  * @returns An Extrinsic that must be did-authorized by the FullDid linked to `linkedAccount`.
  */
-export async function getLinkRemovalByDidTx(
+export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -277,7 +277,7 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
  * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
  * @returns An Extrinsic that must be did-authorized by the [[FullDid]] whose identifier was used.
  */
-export async function authorizeLinkWithAccount(
+export async function getAuthorizeLinkWithAccountExtrinsic(
   accountAddress: Address,
   didIdentifier: DidIdentifier,
   signingCallback: LinkingSignerCallback,
@@ -326,7 +326,7 @@ export async function authorizeLinkWithAccount(
   const { crypto } = result
 
   const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
-  return getAccountSignedAssociationTx(
+  return getAccountSignedAssociationExtrinsic(
     accountAddress,
     validTill,
     signature,
