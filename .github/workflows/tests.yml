@@ -222,19 +222,22 @@ jobs:
         with:
           node-version: '16.x'
       - run: basename /packages/sdk-js/dist/
-      - name: prepare bundle test
-        timeout-minutes: 60
+      - name: pull node image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: ${{ matrix.image }}
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
-          sleep 5s
+          echo "TESTCONTAINERS_NODE_IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+      - name: get cached testcontainers image
+        uses: ./.github/actions/cached-image-pull
+        with:
+          image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
+      - name: run bundle tests
+        timeout-minutes: 60
+        run: |
           yarn test:ci:bundle
-          sleep 5s
-          docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
   run_getting-started:
     runs-on: ubuntu-latest
