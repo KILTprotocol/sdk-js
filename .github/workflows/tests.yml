@@ -106,10 +106,19 @@ jobs:
       - name: unit tests
         run: yarn test:ci
 
+  cache_imgs:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: make sure testcontainers image is in cache
+        uses: ./.github/actions/cached-image-pull
+        with:
+          image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
+
   integration_test:
     runs-on: ubuntu-latest
 
-    needs: build
+    needs: cache_imgs
 
     strategy:
       matrix:
@@ -229,7 +238,7 @@ jobs:
   run_getting-started:
     runs-on: ubuntu-latest
 
-    needs: build
+    needs: cache_imgs
 
     strategy:
       matrix:
