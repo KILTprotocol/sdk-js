@@ -151,7 +151,7 @@ jobs:
       - name: get cached testcontainers image
         uses: ./.github/actions/cached-image-pull
         with:
-          image: $TESTCONTAINERS_WATCHER_IMG
+          image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
 
       - if: steps.image-cache.outputs.cache-hit == 'true'
         run: docker load -i ~/image-cache/image.tar
@@ -274,7 +274,7 @@ jobs:
       - name: get cached testcontainers image
         uses: ./.github/actions/cached-image-pull
         with:
-          image: $TESTCONTAINERS_WATCHER_IMG
+          image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
 
       - name: run getting started
         timeout-minutes: 10
