@@ -21,7 +21,6 @@ on:
 
 env:
   TESTCONTAINERS_WATCHER_IMG: testcontainers/ryuk:0.3.2
-  DEBUG: testcontainers
 
 jobs:
   check_skip:
