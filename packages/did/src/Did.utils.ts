@@ -472,13 +472,6 @@ export function checkServiceEndpointSizeConstraints(
       )
     )
   }
-  if (!isUriFragment(endpoint.id)) {
-    errors.push(
-      SDKErrors.ERROR_DID_ERROR(
-        `The service ID must be a valid URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
-      )
-    )
-  }
   if (endpoint.types.length > maxNumberOfTypesPerService) {
     errors.push(
       SDKErrors.ERROR_DID_ERROR(
@@ -507,13 +500,6 @@ export function checkServiceEndpointSizeConstraints(
       errors.push(
         SDKErrors.ERROR_DID_ERROR(
           `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
-        )
-      )
-    }
-    if (!isUri(url)) {
-      errors.push(
-        SDKErrors.ERROR_DID_ERROR(
-          `Service URLs must be a URIs according to RFC#3986, which "${url}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
         )
       )
     }
