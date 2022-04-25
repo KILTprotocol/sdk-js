@@ -26,18 +26,21 @@ runs:
         echo "::set-output name=path::$CACHE_PATH"
 
     - name: check image cache
+      id: image-cache
       uses: actions/cache@v2
       with:
         path: ${{ steps.image-file.outputs.path }}
         key: image-cache-${{ inputs.image }}
 
-    - if: steps.image-cache.outputs.cache-hit != 'true'
+    - name: pull image
+      if: steps.image-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         docker pull ${{ inputs.image }}
         mkdir -p ${{ inputs.cache-directory }}
         docker save -o ${{ steps.image-file.outputs.path }} ${{ inputs.image }}
 
-    - if: steps.image-cache.outputs.cache-hit == 'true'
+    - name: use cached image
+      if: steps.image-cache.outputs.cache-hit == 'true'
       shell: bash
       run: docker load -i ${{ steps.image-file.outputs.path }}

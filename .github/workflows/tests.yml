@@ -188,7 +188,7 @@ jobs:
   bundle_test:
     runs-on: ubuntu-latest
 
-    needs: [build, bundle_cache]
+    needs: [cache_imgs, bundle_cache]
     strategy:
       matrix:
         image: ['latest-master', 'latest']
