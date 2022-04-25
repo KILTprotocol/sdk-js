@@ -31,7 +31,11 @@ import {
   generateDidAuthenticatedTx,
   queryNonce,
 } from '../Did.chain.js'
-import { getSigningAlgorithmForVerificationKeyType } from '../Did.utils.js'
+import {
+  checkServiceEndpointSizeConstraints,
+  checkServiceEndpointSyntax,
+  getSigningAlgorithmForVerificationKeyType,
+} from '../Did.utils.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'
@@ -388,6 +392,23 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
         `Service endpoint with ID ${service.id} already present under the DID.`
       )
     }
+    const [syntaxOk, syntaxErrors] = checkServiceEndpointSyntax(service)
+    const [sizeOk, sizeErrors] = checkServiceEndpointSizeConstraints(
+      this.apiObject,
+      service
+    )
+    if (!(syntaxOk && sizeOk)) {
+      const errors = [...(syntaxErrors || []), ...(sizeErrors || [])]
+      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+        `Service endpoint with ID ${
+          service.id
+        } contains invalid data:${errors.reduce(
+          (str, e, i) => `${str}\n  ${i + 1}. ${e.message}`,
+          ''
+        )}`
+      )
+    }
+
     const extrinsic = this.apiObject.tx.did.addServiceEndpoint({
       serviceTypes: service.types,
       ...service,
