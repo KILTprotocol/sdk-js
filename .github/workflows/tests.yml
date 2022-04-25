@@ -110,6 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - uses: actions/checkout@v1
       - name: make sure testcontainers image is in cache
         uses: ./.github/actions/cached-image-pull
         with:
