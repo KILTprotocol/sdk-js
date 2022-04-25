@@ -234,10 +234,13 @@ jobs:
         uses: ./.github/actions/cached-image-pull
         with:
           image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
+      - name: prepare bundle tests
+        run: |
+          yarn test:ci:bundle:preparation
       - name: run bundle tests
         timeout-minutes: 60
         run: |
-          yarn test:ci:bundle
+          yarn test:bundle
 
   run_getting-started:
     runs-on: ubuntu-latest
