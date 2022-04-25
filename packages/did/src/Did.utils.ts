@@ -6,7 +6,7 @@
  */
 
 import { checkAddress } from '@polkadot/util-crypto'
-import { isHex, u8aToHex } from '@polkadot/util'
+import { isHex, stringToU8a, u8aToHex } from '@polkadot/util'
 
 import {
   DidKey,
@@ -423,14 +423,14 @@ export function checkServiceEndpointSyntax(
   if (isServiceIdADid(endpoint.id)) {
     errors.push(
       SDKErrors.ERROR_DID_ERROR(
-        `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id ${endpoint.id}`
+        `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id '${endpoint.id}'`
       )
     )
   }
   if (!isUriFragment(endpoint.id)) {
     errors.push(
       SDKErrors.ERROR_DID_ERROR(
-        `The service ID must be valid as a URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
+        `The service ID must be valid as a URI fragment according to RFC#3986, which '${endpoint.id}' is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
       )
     )
   }
@@ -438,7 +438,7 @@ export function checkServiceEndpointSyntax(
     if (!isUri(url)) {
       errors.push(
         SDKErrors.ERROR_DID_ERROR(
-          `A service URL must be a URI according to RFC#3986, which "${url}" (service id ${endpoint.id}) is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
+          `A service URL must be a URI according to RFC#3986, which '${url}' (service id '${endpoint.id}') is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
         )
       )
     }
@@ -465,41 +465,44 @@ export function checkServiceEndpointSizeConstraints(
   ]
   const errors: Error[] = []
 
-  if (endpoint.id.length > maxServiceIdLength) {
+  const idEncodedLength = stringToU8a(endpoint.id).length
+  if (idEncodedLength > maxServiceIdLength) {
     errors.push(
       SDKErrors.ERROR_DID_ERROR(
-        `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
+        `The service ID '${endpoint.id}' is too long (${idEncodedLength} bytes). Max number of bytes allowed for a service ID is ${maxServiceIdLength}.`
       )
     )
   }
   if (endpoint.types.length > maxNumberOfTypesPerService) {
     errors.push(
       SDKErrors.ERROR_DID_ERROR(
-        `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
+        `The service with ID '${endpoint.id}' has too many types (${endpoint.types.length}). Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
       )
     )
   }
   if (endpoint.urls.length > maxNumberOfUrlsPerService) {
     errors.push(
       SDKErrors.ERROR_DID_ERROR(
-        `The service with ID "${endpoint.id}" has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
+        `The service with ID '${endpoint.id}' has too many URLs (${endpoint.urls.length}). Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
       )
     )
   }
   endpoint.types.forEach((type) => {
-    if (type.length > maxServiceTypeLength) {
+    const typeEncodedLength = stringToU8a(type).length
+    if (typeEncodedLength > maxServiceTypeLength) {
       errors.push(
         SDKErrors.ERROR_DID_ERROR(
-          `The service with ID "${endpoint.id}" has the type "${type}" that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
+          `The service with ID '${endpoint.id}' has the type '${type}' that is too long (${typeEncodedLength} bytes). Max number of bytes allowed for a service type is ${maxServiceTypeLength}.`
         )
       )
     }
   })
   endpoint.urls.forEach((url) => {
-    if (url.length > maxServiceUrlLength) {
+    const urlEncodedLength = stringToU8a(url).length
+    if (urlEncodedLength > maxServiceUrlLength) {
       errors.push(
         SDKErrors.ERROR_DID_ERROR(
-          `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
+          `The service with ID '${endpoint.id}' has the URL '${url}' that is too long (${urlEncodedLength} bytes). Max number of bytes allowed for a service URL is ${maxServiceUrlLength}.`
         )
       )
     }

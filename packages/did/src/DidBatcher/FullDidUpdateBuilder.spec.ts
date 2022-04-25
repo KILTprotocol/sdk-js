@@ -432,7 +432,7 @@ describe('FullDidUpdateBuilder', () => {
     }
     const newInvalidServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
-      types: ['type-new', 'type-new'],
+      types: ['type-new', 'Ξέρω-ότι-η-θάλασσα-είναι-μπλε'],
       urls: ['x:url-new', 'type-new'],
     }
     beforeAll(async () => {
@@ -464,9 +464,14 @@ describe('FullDidUpdateBuilder', () => {
       it('fails if service is invalid', async () => {
         const builder = new FullDidUpdateBuilder(mockApi, fullDid)
 
-        expect(() =>
-          builder.addServiceEndpoint(newInvalidServiceEndpoint)
-        ).toThrow()
+        expect(() => builder.addServiceEndpoint(newInvalidServiceEndpoint))
+          .toThrowErrorMatchingInlineSnapshot(`
+          "Service endpoint with ID id-new contains invalid data:
+            1. A service URL must be a URI according to RFC#3986, which 'type-new' (service id 'id-new') is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.
+            2. The service with ID 'id-new' has too many types (2). Max number of types allowed per service is 1.
+            3. The service with ID 'id-new' has too many URLs (2). Max number of URLs allowed per service is 1.
+            4. The service with ID 'id-new' has the type 'Ξέρω-ότι-η-θάλασσα-είναι-μπλε' that is too long (53 bytes). Max number of bytes allowed for a service type is 50."
+        `)
       })
 
       it('adds the service endpoint successfully', async () => {
