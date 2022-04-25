@@ -133,7 +133,7 @@ jobs:
       - name: get cached testcontainers image
         uses: ./.github/actions/cached-image-pull
         with:
-          image: $TESTCONTAINERS_WATCHER_IMAGE
+          image: $TESTCONTAINERS_WATCHER_IMG
 
       - name: run integration tests
         timeout-minutes: 60
