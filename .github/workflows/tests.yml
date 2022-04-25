@@ -153,9 +153,6 @@ jobs:
         with:
           image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
 
-      - if: steps.image-cache.outputs.cache-hit == 'true'
-        run: docker load -i ~/image-cache/image.tar
-
       - name: run integration tests
         timeout-minutes: 60
         run: yarn test:integration:ci
