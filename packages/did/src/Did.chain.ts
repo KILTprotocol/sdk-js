@@ -27,6 +27,7 @@ import type {
 } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
+import type { ApiPromise } from '@polkadot/api'
 
 import {
   Deposit,
@@ -49,15 +50,14 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { ApiPromise } from '@polkadot/api'
 import type { DidDetails } from './DidDetails/index.js'
+import type { FullDidCreationDetails } from './types.js'
 import {
+  checkServiceEndpointSizeConstraints,
+  checkServiceEndpointSyntax,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
-  checkServiceEndpointSyntax,
-  checkServiceEndpointSizeConstraints,
-} from './Did.utils.js'
-import type { FullDidCreationDetails } from './types.js'
+} from './commonHelpers.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 

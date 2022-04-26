@@ -466,7 +466,7 @@ describe('FullDidUpdateBuilder', () => {
 
         expect(() => builder.addServiceEndpoint(newInvalidServiceEndpoint))
           .toThrowErrorMatchingInlineSnapshot(`
-          "Service endpoint with ID id-new contains invalid data:
+          "Service endpoint with ID id-new violates size and/or content constraints:
             1. A service URL must be a URI according to RFC#3986, which 'type-new' (service id 'id-new') is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.
             2. The service with ID 'id-new' has too many types (2). Max number of types allowed per service is 1.
             3. The service with ID 'id-new' has too many URLs (2). Max number of URLs allowed per service is 1.
