@@ -1403,11 +1403,12 @@ describe('Runtime constraints', () => {
               },
             ],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" has an ID that is too long. Max number of characters allowed for a service ID is 50."'
+        `"The service ID 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
       )
     }, 30_000)
 
@@ -1438,11 +1439,12 @@ describe('Runtime constraints', () => {
             identifier: encodeAddress(testAuthKey.publicKey),
             serviceEndpoints: [newEndpoint],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many types. Max number of types allowed per service is 1."'
+        `"The service with ID 'id-1' has too many types (2). Max number of types allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1473,11 +1475,12 @@ describe('Runtime constraints', () => {
             identifier: encodeAddress(testAuthKey.publicKey),
             serviceEndpoints: [newEndpoint],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many URLs. Max number of URLs allowed per service is 1."'
+        `"The service with ID 'id-1' has too many URLs (2). Max number of URLs allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1514,11 +1517,12 @@ describe('Runtime constraints', () => {
               },
             ],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service type is 50."'
+        `"The service with ID 'id-1' has the type 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
       )
     }, 30_000)
 
@@ -1559,11 +1563,12 @@ describe('Runtime constraints', () => {
               },
             ],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the URL \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."`
+        `"The service with ID 'id-1' has the URL 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (202 bytes). Max number of bytes allowed for a service URL is 200."`
       )
     }, 30_000)
   })
@@ -1586,7 +1591,7 @@ describe('Runtime constraints', () => {
           urls: ['x:url-a'],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" has an ID that is too long. Max number of characters allowed for a service ID is 50."'
+        `"The service ID 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
       )
     }, 30_000)
 
@@ -1605,7 +1610,7 @@ describe('Runtime constraints', () => {
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many types. Max number of types allowed per service is 1."'
+        `"The service with ID 'id-1' has too many types (2). Max number of types allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1624,7 +1629,7 @@ describe('Runtime constraints', () => {
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many URLs. Max number of URLs allowed per service is 1."'
+        `"The service with ID 'id-1' has too many URLs (2). Max number of URLs allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1645,7 +1650,7 @@ describe('Runtime constraints', () => {
           urls: ['x:url-1'],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service type is 50."'
+        `"The service with ID 'id-1' has the type 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
       )
     }, 30_000)
 
@@ -1666,11 +1671,11 @@ describe('Runtime constraints', () => {
           types: ['type-1'],
           // One more than the maximum
           urls: [
-            'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           ],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the URL \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."`
+        `"The service with ID 'id-1' has the URL 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (201 bytes). Max number of bytes allowed for a service URL is 200."`
       )
     }, 30_000)
   })
