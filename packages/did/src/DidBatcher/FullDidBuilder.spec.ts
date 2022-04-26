@@ -140,7 +140,7 @@ describe('FullDidBuilder', () => {
     const newServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
       types: ['type-new'],
-      urls: ['url-new'],
+      urls: ['x:url-new'],
     }
 
     describe('.addServiceEndpoint()', () => {
