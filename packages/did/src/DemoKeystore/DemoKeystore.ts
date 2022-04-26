@@ -19,24 +19,16 @@ import {
 import { u8aEq } from '@polkadot/util'
 
 import {
+  EncryptionAlgorithms,
   KeyringPair,
   Keystore,
   KeystoreSigningData,
   NaclBoxCapable,
   RequestData,
   ResponseData,
+  SigningAlgorithms,
 } from '@kiltprotocol/types'
 import { Crypto, Keyring, SDKErrors } from '@kiltprotocol/utils'
-
-export enum SigningAlgorithms {
-  Ed25519 = 'ed25519',
-  Sr25519 = 'sr25519',
-  EcdsaSecp256k1 = 'ecdsa-secp256k1',
-}
-
-export enum EncryptionAlgorithms {
-  NaclBox = 'x25519-xsalsa20-poly1305',
-}
 
 const supportedAlgs = { ...EncryptionAlgorithms, ...SigningAlgorithms }
 

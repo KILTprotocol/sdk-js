@@ -22,16 +22,14 @@ import {
   VerificationKeyRelationship,
   VerificationKeyType,
   DidUri,
+  EncryptionAlgorithms,
+  SigningAlgorithms,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import type { ApiPromise } from '@polkadot/api'
 import type { u32 } from '@polkadot/types'
 
 import { DidResolver } from './DidResolver/index.js'
-import {
-  EncryptionAlgorithms,
-  SigningAlgorithms,
-} from './DemoKeystore/DemoKeystore.js'
 
 /// The latest version for KILT light DIDs.
 export const LIGHT_DID_LATEST_VERSION = 1

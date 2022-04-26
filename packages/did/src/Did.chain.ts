@@ -50,14 +50,14 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { ApiPromise } from '@polkadot/api'
-import { DidDetails } from './DidDetails/index.js'
+import type { DidDetails } from './DidDetails/index.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
   checkServiceEndpointSyntax,
   checkServiceEndpointSizeConstraints,
 } from './Did.utils.js'
-import { FullDidCreationDetails } from './types.js'
+import type { FullDidCreationDetails } from './types.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
