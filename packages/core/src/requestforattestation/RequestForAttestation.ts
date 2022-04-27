@@ -58,7 +58,7 @@ export class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param requestForAttestationInput - An object built after the IRequestForAttestation interface.
+   * @param requestForAttestationInput - An object adhering to the [[IRequestForAttestation]] interface.
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example ```javascript
    * const serializedRequest =
