@@ -32,7 +32,7 @@
     "excludeExternals": true,
     "excludePrivate": true,
     "hideGenerator": true,
-    // "name": "@kiltprotocol/sdk-js",
+    "name": "API Documentation",
     "listInvalidSymbolLinks": true,
     "readme": "README.md"
   }
