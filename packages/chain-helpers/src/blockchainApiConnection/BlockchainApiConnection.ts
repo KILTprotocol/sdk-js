@@ -17,6 +17,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { ConfigService } from '@kiltprotocol/config'
 import { Blockchain } from '../blockchain/Blockchain.js'
+import { RPC_SPEC } from './RpcSpecification.js'
 
 let instance: Promise<Blockchain> | null
 
@@ -32,6 +33,7 @@ export async function buildConnection(
   const provider = new WsProvider(host)
   const api: ApiPromise = await ApiPromise.create({
     provider,
+    rpc: RPC_SPEC,
   })
   return new Blockchain(api)
 }

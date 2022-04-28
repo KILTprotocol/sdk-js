@@ -6,3 +6,4 @@
  */
 
 export * as BlockchainApiConnection from './BlockchainApiConnection.js'
+export * as RPC_SPEC from './RpcSpecification.js'
