@@ -159,7 +159,11 @@ export function verifyStructure(
   requestForAttestation: IRequestForAttestation,
   ctype: ICType
 ): boolean {
-  errorCheck(requestForAttestation)
+  try {
+    errorCheck(requestForAttestation)
+  } catch {
+    return false
+  }
   return CTypeUtils.verifyClaimStructure(
     requestForAttestation.claim.contents,
     ctype.schema
