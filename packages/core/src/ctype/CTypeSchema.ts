@@ -12,7 +12,7 @@
 import { JsonSchema } from '@kiltprotocol/utils'
 
 export const CTypeModel: JsonSchema.Schema = {
-  $id: 'http://kilt-protocol.org/draft-01/ctype#',
+  $id: 'ipns://k51qzi5uqu5dkglos1mtdukd4axyhwav7e98bga8g2nptrkgcbj9506ruoadiz/v1/ctype.json',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
@@ -24,7 +24,8 @@ export const CTypeModel: JsonSchema.Schema = {
     $schema: {
       type: 'string',
       format: 'uri',
-      const: 'http://kilt-protocol.org/draft-01/ctype#',
+      const:
+        'ipns://k51qzi5uqu5dkglos1mtdukd4axyhwav7e98bga8g2nptrkgcbj9506ruoadiz/v1/ctype.json',
     },
     title: {
       type: 'string',
@@ -70,7 +71,7 @@ export const CTypeModel: JsonSchema.Schema = {
 }
 
 export const CTypeWrapperModel = {
-  $id: 'http://kilt-protocol.org/draft-01/ctype-wrapper#',
+  $id: 'ipns://k51qzi5uqu5dkglos1mtdukd4axyhwav7e98bga8g2nptrkgcbj9506ruoadiz/v1/ctype-wrapper.json',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
@@ -89,7 +90,7 @@ export const CTypeWrapperModel = {
 }
 
 export const MetadataModel = {
-  $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
+  $id: 'ipns://k51qzi5uqu5dkglos1mtdukd4axyhwav7e98bga8g2nptrkgcbj9506ruoadiz/v1/ctype-metadata.json',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
