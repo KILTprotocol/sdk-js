@@ -43,10 +43,6 @@ export class Credential implements ICredential {
    *
    * @param credentialInput - The base object from which to create the credential.
    * @returns A new instantiated [[Credential]] object.
-   * @example ```javascript
-   * // create n Credential object, so we can call methods on it (`serialized` is a serialized Credential object)
-   * Credential.fromCredential(JSON.parse(serialized));
-   * ```
    */
   public static fromCredential(credentialInput: ICredential): Credential {
     return new Credential(credentialInput)
@@ -58,10 +54,6 @@ export class Credential implements ICredential {
    * @param request - The request for attestation for the claim that was attested.
    * @param attestation - The attestation for the claim by the attester.
    * @returns A new [[Credential]] object.
-   * @example ```javascript
-   * // create a Credential object after receiving the attestation from the attester
-   * Credential.fromRequestAndAttestation(request, attestation);
-   * ```
    */
   public static fromRequestAndAttestation(
     request: IRequestForAttestation,
@@ -96,10 +88,6 @@ export class Credential implements ICredential {
    * Builds a new [[Credential]] instance.
    *
    * @param credentialInput - The base object with all required input, from which to create the credential.
-   * @example ```javascript
-   * // Create a `Credential` upon successful `Attestation` creation:
-   * const credential = new Credential(credentialInput);
-   * ```
    */
   public constructor(credentialInput: ICredential) {
     CredentialUtils.errorCheck(credentialInput)
@@ -121,11 +109,6 @@ export class Credential implements ICredential {
    * Defaults to [[DidResolver]].
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether the provided credential is valid.
-   * @example ```javascript
-   * Credential.verify().then((isVerified) => {
-   *   // `isVerified` is true if the credential is verified, false otherwise
-   * });
-   * ```
    */
   public static async verify(
     credential: ICredential,
@@ -161,9 +144,6 @@ export class Credential implements ICredential {
    *
    * @param credential - The credential to verify.
    * @returns Whether the credential's data is valid.
-   * @example ```javascript
-   * const verificationResult = Credential.verifyData(credential);
-   * ```
    */
   public static verifyData(credential: ICredential): boolean {
     if (credential.request.claim.cTypeHash !== credential.attestation.cTypeHash)
@@ -199,9 +179,6 @@ export class Credential implements ICredential {
    * Gets the hash of the claim that corresponds to this attestation.
    *
    * @returns The hash of the claim for this attestation (claimHash).
-   * @example ```javascript
-   * attestation.getHash();
-   * ```
    */
   public getHash(): IAttestation['claimHash'] {
     return this.attestation.claimHash
