@@ -27,7 +27,10 @@ beforeAll(async () => {
   await initializeApi()
 })
 
-describe('When there is an CtypeCreator and a verifier', () => {
+describe.each([
+  'http://kilt-protocol.org/draft-01/ctype#',
+  'ipns://k51qzi5uqu5dkglos1mtdukd4axyhwav7e98bga8g2nptrkgcbj9506ruoadiz/v1/ctype.json',
+])('schema id %s', (schemaId) => {
   let ctypeCreator: FullDidDetails
   let paymentAccount: KeyringPair
   let ctypeCounter = 0
@@ -37,7 +40,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     ctypeCounter += 1
     return CType.fromSchema({
       $id: `kilt:ctype:0x${ctypeCounter}`,
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      $schema: schemaId,
       title: `ctype${ctypeCounter}`,
       properties: {
         name: { type: 'string' },
@@ -104,7 +107,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should tell when a ctype is not on chain', async () => {
     const iAmNotThere = CType.fromSchema({
       $id: 'kilt:ctype:0x2',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      $schema: schemaId,
       title: 'ctype2',
       properties: {
         game: { type: 'string' },
@@ -115,7 +118,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const iAmNotThereWithOwner = CType.fromSchema(
       {
         $id: 'kilt:ctype:0x3',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        $schema: schemaId,
         title: 'ctype2',
         properties: {
           game: { type: 'string' },

@@ -24,8 +24,10 @@ export const CTypeModel: JsonSchema.Schema = {
     $schema: {
       type: 'string',
       format: 'uri',
-      const:
+      enum: [
+        'http://kilt-protocol.org/draft-01/ctype#',
         'ipns://k51qzi5uqu5dkglos1mtdukd4axyhwav7e98bga8g2nptrkgcbj9506ruoadiz/v1/ctype.json',
+      ],
     },
     title: {
       type: 'string',
