@@ -95,7 +95,7 @@ async function main(): Promise<void> {
 
   /* 2.2 Build a CType */
   const ctype = Kilt.CType.fromSchema({
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    $schema: 'ipns://k51qzi5uqu5dkglos1mtdukd4axyhwav7e98bga8g2nptrkgcbj9506ruoadiz/v1/ctype.json',
     title: 'Drivers License',
     properties: {
       name: {
