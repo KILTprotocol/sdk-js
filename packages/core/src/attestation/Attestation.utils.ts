@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module AttestationUtils
- */
-
 import type { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'

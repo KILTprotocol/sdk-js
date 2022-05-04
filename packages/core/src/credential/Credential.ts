@@ -5,17 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * In KILT, a [[Credential]] is an attested claim, which a Claimer can store locally and share with Verifiers as they wish.
- *
- * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in a [[Credential]] object.
- * This [[Credential]] also contains the original request for attestation.
- * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
- *
- * @packageDocumentation
- * @module Credential
- */
-
 import {
   DidDetails,
   Utils as DidUtils,
@@ -36,6 +25,13 @@ import { Attestation } from '../attestation/Attestation.js'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation.js'
 import * as CredentialUtils from './Credential.utils.js'
 
+/**
+ * In KILT, a [[Credential]] is an attested claim, which a Claimer can store locally and share with Verifiers as they wish.
+ *
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in a [[Credential]] object.
+ * This [[Credential]] also contains the original request for attestation.
+ * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
+ */
 export class Credential implements ICredential {
   /**
    * [STATIC] Builds an instance of [[Credential]], from a simple object with the same properties.

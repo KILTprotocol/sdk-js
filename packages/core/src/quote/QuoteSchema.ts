@@ -7,11 +7,6 @@
 
 import { JsonSchema } from '@kiltprotocol/utils'
 
-/**
- * @packageDocumentation
- * @module QuoteSchema
- */
-
 export const QuoteSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'kilt:quote:v1',

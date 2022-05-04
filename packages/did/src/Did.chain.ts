@@ -426,7 +426,7 @@ function checkServiceEndpointInput(
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param signer The keystore signer.
  *
- * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function generateCreateTxFromCreationDetails(
   details: FullDidCreationDetails,
@@ -518,7 +518,7 @@ export async function generateCreateTxFromCreationDetails(
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param signer The keystore signer.
  *
- * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function generateCreateTxFromDidDetails(
   did: DidDetails,
@@ -648,7 +648,7 @@ export async function getAddKeyExtrinsic(
  *     - The service endpoint ID is at most 50 ASCII characters long
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
  *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
- * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ * @returns The Extrinsic that can be submitted to add the provided service endpoint.
  */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
@@ -667,7 +667,7 @@ export async function getAddEndpointExtrinsic(
  *
  * @param endpointId The ID of the service endpoint to include in the extrinsic.
  * The ID must be at most 50 ASCII characters long.
- * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ * @returns The Extrinsic that can be submitted to add the provided service endpoint.
  */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']

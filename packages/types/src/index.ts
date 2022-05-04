@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @module @kiltprotocol/types
+ */
+
 import '@polkadot/api-augment'
 
 export type { ISubmittableResult } from '@polkadot/types/types'

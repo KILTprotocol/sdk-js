@@ -5,24 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
- *
- * Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
- *
- * A delegation object is stored on-chain, and can be revoked.
- *
- * A delegation can and may restrict permissions.
- *
- * Permissions:
- *   * Delegate.
- *   * Attest.
- *
- * @packageDocumentation
- * @module DelegationNode
- * @preferred
- */
-
 import {
   DidVerificationKey,
   IAttestation,
@@ -70,6 +52,19 @@ type NewDelegationNodeInput = Required<
 type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
   DelegationHierarchyDetailsRecord
 
+/**
+ * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
+ *
+ * Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
+ *
+ * A delegation object is stored on-chain, and can be revoked.
+ *
+ * A delegation can and may restrict permissions.
+ *
+ * Permissions:
+ *   * Delegate.
+ *   * Attest.
+ */
 export class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
@@ -180,7 +175,7 @@ export class DelegationNode implements IDelegationNode {
    * [ASYNC] Fetches the details of the hierarchy this delegation node belongs to.
    *
    * @throws [[ERROR_HIERARCHY_QUERY]] when the hierarchy details could not be queried.
-   * @returns Promise containing the [[DelegationHierarchyDetails]] of this delegation node.
+   * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {

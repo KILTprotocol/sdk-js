@@ -9,8 +9,6 @@
  * ErrorHandler helps spot and determine transaction errors.
  *
  * @packageDocumentation
- * @module ErrorHandler
- * @preferred
  */
 
 import type { DispatchError, EventRecord } from '@polkadot/types/interfaces'

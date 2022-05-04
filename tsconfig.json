@@ -17,5 +17,5 @@
       "@kiltprotocol/testing": ["testing/src"]
     }
   },
-  "skipLibCheck": true
+  "skipLibCheck": true,
 }

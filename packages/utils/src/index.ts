@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @module @kiltprotocol/utils
+ */
+
 import '@polkadot/api-augment'
 
 import * as jsonabcCjs from './jsonabc.cjs'

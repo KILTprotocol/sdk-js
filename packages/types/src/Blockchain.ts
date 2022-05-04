@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IBlockchain
- */
-
 import type { ApiPromise } from '@polkadot/api'
 import type { Header } from '@polkadot/types/interfaces/types'
 import type { AnyNumber } from '@polkadot/types/types'

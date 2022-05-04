@@ -12,7 +12,6 @@
  *  * Transfer of assets between accounts.
  *
  * @packageDocumentation
- * @module Balance
  */
 
 import type { UnsubscribePromise } from '@polkadot/api/types'

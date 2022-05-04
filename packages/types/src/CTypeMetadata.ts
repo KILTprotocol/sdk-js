@@ -8,11 +8,6 @@
 import type { ICType } from './CType'
 
 /**
- * @packageDocumentation
- * @module ICTypeMetadata
- */
-
-/**
  * String struct with string keys and a mandatory `default` field.
  * Meant to contain a default label/description and an arbitrary number of translations,
  * where keys represent the use case (language) and values are the labels for this use case.

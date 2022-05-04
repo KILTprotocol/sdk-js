@@ -61,7 +61,7 @@ export class DidBatchBuilder {
   /**
    * Create a new builder with the provided WS connection and [[FullDidDetails]].
    *
-   * @param api The [[ApiPromise]] wrapping the WS connection to a KILT RPC node.
+   * @param api The ApiPromise wrapping the WS connection to a KILT RPC node.
    * @param did The [[FullDidDetails]] used to fetch the key material needed to authorise the batched operations.
    */
   public constructor(api: ApiPromise, did: FullDidDetails) {
@@ -92,14 +92,14 @@ export class DidBatchBuilder {
    * Add a new extrinsic to the batch.
    *
    * If the new extrinsic requires a different key type than the previous one, a new batch is created internally.
-   * Order of all extrinsics is maintained throughtout the lifetime of the builder and when they are submitted to the KILT blockchain.
+   * Order of all extrinsics is maintained throughout the lifetime of the builder and when they are submitted to the KILT blockchain.
    *
    * The requirements to add a new extrinsic to the batch are the following:
    * - The extrinsic must not be a DID management extrinsic. For those, [[FullDidCreationBuilder]] and [[FullDidUpdateBuilder]] must be used
    * - The extrinsic must require a DID origin. E.g., staking extrinsics that require a simple KILT account origin cannot be added to the batch
-   * - The DID must have at least one key candidate to sign the provided extrinsic. If the DID is updated after the extrinsic is added but before the final batch is created, it results in undefined behaviour, and most likely the extrinsic submission will fail.
+   * - The DID must have at least one key candidate to sign the provided extrinsic. If the DID is updated after the extrinsic is added but before the final batch is created, it results in undefined behavior, and most likely the extrinsic submission will fail.
    *
-   * @param extrinsic The [[Extrinsic]] to add to the batch.
+   * @param extrinsic The Extrinsic to add to the batch.
    * @returns The builder containing the new extrinsic in the last position of the internal queue.
    */
   public addSingleExtrinsic(extrinsic: Extrinsic): this {
@@ -115,7 +115,7 @@ export class DidBatchBuilder {
    * The order of the extrinsics is maintained in respect to how they are provided in the function.
    * All extrinsics are appended to the internal queue, so that the first in the provided list is added after the last in the builder's queue.
    *
-   * @param extrinsics The list of [[Extrinsic]] to add to the batch.
+   * @param extrinsics The list of Extrinsic to add to the batch.
    * @returns The builder containing the new extrinsics.
    */
   /* istanbul ignore next */
@@ -128,7 +128,7 @@ export class DidBatchBuilder {
   }
 
   /**
-   * Generate the [[SubmittableExtrinsic]] containing the batch of extrinsics to execute, in the order they were added to the builder.
+   * Generate the SubmittableExtrinsic containing the batch of extrinsics to execute, in the order they were added to the builder.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the required keys to sign each batch.
    * @param submitter The KILT address of the user authorised to submit each extrinsic in the batch.
@@ -137,7 +137,7 @@ export class DidBatchBuilder {
    * @param submissionOptions.keySelection The [[BatchSigningKeySelection]] callback to specify the DID key to use for each batch. It defaults to [[defaultBatchSigningKeySelectionCallback]].
    * @param submissionOptions.initialNonce The initial nonce to use for the first batch, after which the nonce is increased by the builder. It defaults to the next valid DID nonce as stored on chain at the time this function is called.
    *
-   * @returns The [[SubmittableExtrinsic]] containing the batch of batches.
+   * @returns The SubmittableExtrinsic containing the batch of batches.
    */
   // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */

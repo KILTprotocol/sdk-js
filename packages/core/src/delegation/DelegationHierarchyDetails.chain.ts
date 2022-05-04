@@ -18,11 +18,6 @@ import {
 } from './DelegationDecoder.js'
 
 /**
- * @packageDocumentation
- * @module DelegationHierarchyDetails
- */
-
-/**
  * Query a delegation hierarchy node from the blockchain given its identifier.
  *
  * @param rootId The root delegation node ID to query.

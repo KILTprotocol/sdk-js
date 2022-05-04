@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IQuote
- */
-
 import type { ICType } from './CType'
 import type { DidSignature, IDidDetails } from './DidDetails'
 import type { IRequestForAttestation } from './RequestForAttestation'

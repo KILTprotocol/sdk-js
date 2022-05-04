@@ -88,7 +88,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   /**
    * Initialize a DID update with the information contained in the provided full DID.
    *
-   * @param api The [[ApiPromise]] object to encode/decoded types as needed.
+   * @param api The ApiPromise object to encode/decoded types as needed.
    * @param details The [[FullDidDetails]] object.
    */
   public constructor(api: ApiPromise, details: FullDidDetails) {
@@ -451,7 +451,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   * Consume the builder and delegates to the callback the SubmittableExtrinsic containing the details of a DID update with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
@@ -479,13 +479,13 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of the DID update with the provided details.
+   * Consume the builder and generate the SubmittableExtrinsic containing the details of the DID update with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
-   * @returns The [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   * @returns The SubmittableExtrinsic containing the details of a DID update with the provided details.
    */
   // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */

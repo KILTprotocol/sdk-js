@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module PresentationUtils
- */
-
 import { blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import { Crypto } from '@kiltprotocol/utils'

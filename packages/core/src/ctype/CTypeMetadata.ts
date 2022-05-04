@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module CTypeMetadata
- */
-
 import type { ICTypeMetadata } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CTypeUtils from './CType.utils.js'
