@@ -73,19 +73,6 @@ export type LightDidCreationDetails = {
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
-   *
-   * @example ```typescript
-   * const authenticationKey = exampleKey;
-   * const services = [
-   *   {
-   *     id: 'test-service',
-   *     types: ['CredentialExposureService'],
-   *     urls: ['http://my_domain.example.org'],
-   *   },
-   * ];
-   * const lightDid = new LightDid({ authenticationKey, services });
-   * RequestForAttestation.fromRequest(parsedRequest);
-   * ```
    */
   serviceEndpoints?: DidServiceEndpoint[]
 }

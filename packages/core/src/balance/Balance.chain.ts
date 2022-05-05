@@ -30,18 +30,6 @@ import * as BalanceUtils from './Balance.utils.js'
  *
  * @param accountAddress Address of the account for which to get the balances.
  * @returns A promise containing the current balances of the account.
- *
- * @example
- * <BR>
- *
- * ```javascript
- *
- * const address = ...
- * sdk.Balance.getBalances(address)
- *   .then((balanceData: AccountData) => {
- *     console.log(`free balances is ${balanceData.free.toNumber()}`)
- *   })
- * ```
  */
 export async function getBalances(
   accountAddress: KeyringPair['address']
@@ -58,19 +46,6 @@ export async function getBalances(
  * @param accountAddress Address of the account on which to listen for all balance changes.
  * @param listener Listener to receive all balance change updates.
  * @returns A promise containing a function that let's you unsubscribe from all balance changes.
- *
- * @example
- * <BR>
- *
- * ```javascript
- * const address = ...
- * const unsubscribe = await sdk.Balance.listenToBalanceChanges(address,
- *   (account: KeyringPair['address'], balances: Balances, changes: Balances) => {
- *     console.log(`Balance has changed by ${changes.free.toNumber()} to ${balances.free.toNumber()}`)
- *   });
- * // later
- * unsubscribe();
- * ```
  */
 export async function listenToBalanceChanges(
   accountAddress: KeyringPair['address'],
@@ -114,22 +89,6 @@ export async function listenToBalanceChanges(
  * @param amount Amount of Units to transfer.
  * @param exponent Magnitude of the amount. Default magnitude of -15 represents Femto-Kilt. Use 0 for KILT.
  * @returns Promise containing unsigned SubmittableExtrinsic.
- *
- * @example
- * <BR>
- *
- * ```javascript
- * const identity = ...
- * const address = ...
- * const amount: BN = new BN(42)
- * const blockchain = await sdk.getConnectionOrConnect()
- * sdk.Balance.getTransferTx(address, amount, 0) // transfer 42 KILT
- *   .then(tx => sdk.BlockchainUtils.signAndSubmitTx(tx, identity))
- *   .then(() => console.log(`Successfully transferred ${amount.toNumber()} tokens`))
- *   .catch(err => {
- *     console.log('Transfer failed')
- *   })
- * ```
  */
 export async function getTransferTx(
   accountAddressTo: KeyringPair['address'],

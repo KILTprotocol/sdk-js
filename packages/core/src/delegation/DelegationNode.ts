@@ -273,23 +273,6 @@ export class DelegationNode implements IDelegationNode {
    * @param signer The keystore responsible for signing the delegation creation details for the delegee.
    * @param options The additional signing options.
    * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
-   * @example
-   * ```
-   * // Sign the hash of the delegation node...
-   * let myNewDelegation: DelegationNode
-   * let myDidDetails: DidDetails
-   * let myKeyStore: Keystore
-   * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
-   *
-   * // produce the extrinsic that stores the delegation node on the Kilt chain
-   * const extrinsic = await newDelegationNode.store(signature)
-   *
-   * // now the delegating DID must sign as well
-   * const submittable = await delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
-   *
-   * // and we can put it on chain
-   * await submittable.signAndSend()
-   * ```
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegeeSign(
