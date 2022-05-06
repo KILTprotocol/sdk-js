@@ -11,10 +11,12 @@ jobs:
     steps:      
       - uses: actions/checkout@v3
         with:
-          #ref: ${{ github.event.client_payload.ref }}
-          ref: 0.27.0
-
-      - run: echo ${{ github.event.client_payload.sha }}
+          fetch-depth: 0
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 0.27.0
       - name: Get the latest tag version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
