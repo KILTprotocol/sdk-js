@@ -2,6 +2,9 @@ name: Dispatch test on docs repo
 on:
   repository_dispatch:
     types: [dispatch-test]
+  push:
+    branches:
+      - test-docs
 jobs:
   myEvent:
     runs-on: ubuntu-latest
