@@ -6,12 +6,14 @@ on:
     branches:
       - test-docs
 jobs:
-  myEvent:
+  releaseTagEvent:
     runs-on: ubuntu-latest
     steps:      
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.client_payload.ref }}
+          #ref: ${{ github.event.client_payload.ref }}
+          ref: 0.27.0
+
       - run: echo ${{ github.event.client_payload.sha }}
       - name: Get the latest tag version
         id: get_version
