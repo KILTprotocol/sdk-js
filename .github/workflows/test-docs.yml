@@ -1,0 +1,15 @@
+name: Dispatch test on docs repo
+on:
+  repository_dispatch:
+    types: [dispatch-test]
+jobs:
+  myEvent:
+    runs-on: ubuntu-latest
+    steps:      
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.ref }}
+      - run: echo ${{ github.event.client_payload.sha }}
+      - name: Get the latest tag version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
