@@ -16,16 +16,10 @@ jobs:
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
           fallback: 0.27.0
-      - name: get release candicate tag
-        id: latestTag
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{github.ref_name}}
-          path: Release
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: KILTprotocol/docs
           event-type: sdk-update
-          client-payload: '{"previousTag": "${{ steps.previousTag.outputs.tag }}",{"latestTag": "${{ steps.latestTag.outputs.tag }}"'
+          client-payload: '{"previousTag": "${{ steps.previousTag.outputs.tag }}",{"latestTag": "${{github.ref_name}}"'
