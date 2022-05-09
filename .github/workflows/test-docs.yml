@@ -2,8 +2,8 @@ name: Dispatch test on docs repo
 on:
   repository_dispatch:
   push:
-    branches:
-      - test-docs
+    tags:
+      - '*'
 jobs:
   releaseTagEvent:
     runs-on: ubuntu-latest
@@ -22,4 +22,4 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: KILTprotocol/docs
           event-type: sdk-update
-          client-payload: '{"previousTag": "${{ steps.previousTag.outputs.tag }}",{"latestTag": "${{github.ref_name}}"'
+          client-payload: '{"previousTag": "${{ steps.previousTag.outputs.tag }}",{"latestTag": "${{github.ref_name}}"}'
