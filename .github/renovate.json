@@ -1,0 +1,41 @@
+{
+  "extends": [
+    ":preserveSemverRanges",
+    ":disableDevDependencies",
+    ":disablePeerDependencies",
+    ":semanticCommits"
+  ],
+  "enabledManagers": ["npm"],
+  "semanticCommitType": "chore",
+  "labels": [
+    "dependencies"
+  ],
+  "dependencyDashboard": false,
+  "updateLockFiles": true,
+  "postUpdateOptions": [
+    "yarnDedupeHighest"
+  ],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "enabled": false
+    },
+    {
+      "matchPackagePatterns": [
+        "^@polkadot/*"
+      ],
+      "separateMajorMinor": false,
+      "separateMultipleMajor": false,
+      "separateMinorPatch": false,
+      "groupName": "polkadot dependencies",
+      "groupSlug": "polkadot"
+    }
+  ]
+}

@@ -5,18 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * Requests for attestation are a core building block of the KILT SDK.
- * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
- *
- * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
- * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
- * A RequestForAttestation also supports hiding of claim data during a credential presentation.
- *
- * @packageDocumentation
- * @module RequestForAttestation
- */
-
 import type {
   IRequestForAttestation,
   CompressedRequestForAttestation,
@@ -56,19 +44,22 @@ export type Options = {
   delegationId?: IDelegationNode['id']
 }
 
+/**
+ * Requests for attestation are a core building block of the KILT SDK.
+ * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
+ *
+ * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
+ * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
+ * A RequestForAttestation also supports hiding of claim data during a credential presentation.
+ *
+ */
 export class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param requestForAttestationInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @param requestForAttestationInput - An object adhering to the [[IRequestForAttestation]] interface.
    * @returns  A new [[RequestForAttestation]] `object`.
-   * @example ```javascript
-   * const serializedRequest =
-   *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
-   * const parsedRequest = JSON.parse(serializedRequest);
-   * RequestForAttestation.fromRequest(parsedRequest);
-   * ```
    */
   public static fromRequest(
     requestForAttestationInput: IRequestForAttestation
@@ -84,9 +75,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    * @param option.legitimations Array of [[Credential]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
    * @returns A new [[RequestForAttestation]] object.
-   * @example ```javascript
-   * const input = RequestForAttestation.fromClaim(claim);
-   * ```
    */
   public static fromClaim(
     claim: IClaim,
@@ -142,10 +130,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    * Builds a new [[RequestForAttestation]] instance.
    *
    * @param requestForAttestationInput - The base object from which to create the input.
-   * @example ```javascript
-   * // create a new request for attestation
-   * const reqForAtt = new RequestForAttestation(requestForAttestationInput);
-   * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
     RequestForAttestationUtils.errorCheck(requestForAttestationInput)
@@ -174,16 +158,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    *
    * @param properties - Properties to remove from the [[Claim]] object.
    * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
-   * @example ```javascript
-   * const rawClaim = {
-   *   name: 'Alice',
-   *   age: 29,
-   * };
-   * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
-   * const reqForAtt = RequestForAttestation.fromClaim(claim);
-   * reqForAtt.removeClaimProperties(['name']);
-   * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
-   * ```
    */
   public removeClaimProperties(properties: string[]): void {
     properties.forEach((key) => {
@@ -201,10 +175,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether the data is valid.
    * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
    * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
-   * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaim(claim);
-   * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
-   * ```
    */
   public static verifyData(input: IRequestForAttestation): boolean {
     // check claim hash
@@ -246,11 +216,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
    * @returns Whether the signature is correct.
-   * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaim(claim);
-   * await reqForAtt.signWithDid(myKeystore, myDidDetails);
-   * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
-   * ```
    */
   public static async verifySignature(
     input: IRequestForAttestation,

@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @module @kiltprotocol/sdk-js
+ */
+
 import '@polkadot/api-augment'
 
 export * from '@kiltprotocol/core'

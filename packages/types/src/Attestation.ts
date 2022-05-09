@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IAttestation
- */
 import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'

@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module VerificationUtils
- */
-
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import {
   signatureVerify,

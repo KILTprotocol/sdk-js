@@ -10,7 +10,6 @@
  * the logging level as well as storing custom configuration options.
  *
  * @packageDocumentation
- * @module ConfigService
  */
 
 import {

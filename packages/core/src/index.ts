@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @module @kiltprotocol/core
+ */
+
 import '@polkadot/api-augment'
 
 export { Attestation, AttestationUtils } from './attestation/index.js'

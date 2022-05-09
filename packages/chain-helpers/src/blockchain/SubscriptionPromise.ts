@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module SubscriptionPromise
- */
-
 import type { SubscriptionPromise } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 

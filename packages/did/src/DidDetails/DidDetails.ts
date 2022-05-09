@@ -176,7 +176,7 @@ export abstract class DidDetails implements IDidDetails {
    *
    * @param keyId The key ID, without the leading subject's DID prefix.
    *
-   * @returns The full [[DidPublicKey['uri']]], which includes the subject's DID and the provided key ID.
+   * @returns The full public key URI, which includes the subject's DID and the provided key ID.
    */
   public assembleKeyUri(keyId: DidKey['id']): DidPublicKey['uri'] {
     return assembleKeyUri(this.uri, keyId)

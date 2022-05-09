@@ -5,11 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IRequestForAttestation
- */
-
 import type { HexString } from '@polkadot/util/types'
 import type { DidSignature } from './DidDetails'
 import type { ICredential, CompressedCredential } from './Credential'

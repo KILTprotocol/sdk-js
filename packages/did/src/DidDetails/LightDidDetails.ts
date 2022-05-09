@@ -199,7 +199,7 @@ export class LightDidDetails extends DidDetails {
    * The resulting DID will only have an authentication key, and no encryption key nor service endpoints.
    *
    * @param identifier The KILT address to generate the DID from.
-   * @param keyType One of the [[LightDidSupportedSigningKeyTypes]] to set the type of the authentication key derived from the provided address. It defaults to Sr25519.
+   * @param keyType One of the [[LightDidSupportedVerificationKeyType]]s to set the type of the authentication key derived from the provided address. It defaults to Sr25519.
    *
    * @returns The resulting [[LightDidDetails]].
    */

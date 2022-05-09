@@ -11,7 +11,6 @@
  * Other modules can access the [[Blockchain]] as such: `const blockchain = await getConnectionOrConnect()`.
  *
  * @packageDocumentation
- * @module BlockchainApiConnection
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'

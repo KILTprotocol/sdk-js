@@ -5,12 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module BlockchchainUtils
- * @typedef {SubscriptionPromise.Options} Options
- */
-
 import { ConfigService } from '@kiltprotocol/config'
 import type {
   IIdentity,
@@ -150,7 +144,7 @@ export function isRecoverableTxError(
  * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
- * @param signer The [[Identity]] or [[KeyringPair]] used to sign and potentially re-sign the tx.
+ * @param signer The [[IIdentity]] or KeyringPair used to sign and potentially re-sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.

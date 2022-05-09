@@ -61,7 +61,7 @@ function checkWeb3NameInputConstraints(
  *
  * @param name Web3Name that should be claimed.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The [[SubmittableExtrinsic]] for the `claim` call.
+ * @returns The SubmittableExtrinsic for the `claim` call.
  */
 export async function getClaimTx(
   name: Web3Name
@@ -74,7 +74,7 @@ export async function getClaimTx(
 /**
  * Returns a extrinsic to release a web3name by its owner.
  *
- * @returns The [[SubmittableExtrinsic]] for the `releaseByOwner` call.
+ * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
  */
 export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -86,7 +86,7 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
  *
  * @param name Web3Name that should be released.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ * @returns The SubmittableExtrinsic for the `reclaimDeposit` call.
  */
 export async function getReclaimDepositTx(
   name: Web3Name

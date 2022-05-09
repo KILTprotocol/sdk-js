@@ -5,10 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module Attestation
- */
 import { Option, Struct, U128 } from '@polkadot/types'
 import type {
   IAttestation,
@@ -31,7 +27,7 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
  * Generate the extrinsic to store the provided [[IAttestation]].
  *
  * @param attestation The attestation to write on the blockchain.
- * @returns The [[SubmittableExtrinsic]] for the `add` call.
+ * @returns The SubmittableExtrinsic for the `add` call.
  */
 export async function getStoreTx(
   attestation: IAttestation
@@ -112,7 +108,7 @@ export async function query(
  *
  * @param claimHash The attestation claim hash.
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
- * @returns The [[SubmittableExtrinsic]] for the `revoke` call.
+ * @returns The SubmittableExtrinsic for the `revoke` call.
  */
 export async function getRevokeTx(
   claimHash: IRequestForAttestation['rootHash'],
@@ -132,7 +128,7 @@ export async function getRevokeTx(
  *
  * @param claimHash The attestation claim hash.
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the removal.
- * @returns The [[SubmittableExtrinsic]] for the `remove` call.
+ * @returns The SubmittableExtrinsic for the `remove` call.
  */
 export async function getRemoveTx(
   claimHash: IRequestForAttestation['rootHash'],
@@ -151,7 +147,7 @@ export async function getRemoveTx(
  * Generate the extrinsic to delete a given attestation and reclaim back its deposit. The submitter **must** be the KILT account that initially paid for the deposit.
  *
  * @param claimHash The attestation claim hash.
- * @returns The [[SubmittableExtrinsic]] for the `getReclaimDepositTx` call.
+ * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
  */
 export async function getReclaimDepositTx(
   claimHash: IRequestForAttestation['rootHash']

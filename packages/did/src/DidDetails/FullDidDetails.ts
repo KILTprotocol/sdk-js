@@ -138,7 +138,7 @@ export class FullDidDetails extends DidDetails {
 
   /**
    * Returns all the DID keys that could be used to sign the provided extrinsic for submission.
-   * This function should never be used directly by SDK users, who should rather call [[FulLDidDetails.authorizeExtrinsic]].
+   * This function should never be used directly by SDK users, who should rather call [[FullDidDetails.authorizeExtrinsic]].
    *
    * @param extrinsic The unsigned extrinsic to perform the lookup.
    *

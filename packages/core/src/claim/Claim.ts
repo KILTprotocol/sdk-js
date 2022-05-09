@@ -5,19 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[RequestForAttestation]].
- *
- * A claim object has:
- * * contents - among others, the pure content of a claim, for example `"isOver18": yes`;
- * * a [[CType]] that represents its data structure.
- *
- * A claim object's owner is (should be) the same entity as the claimer.
- *
- * @packageDocumentation
- * @module Claim
- */
-
 import type {
   IClaim,
   CompressedClaim,
@@ -37,6 +24,15 @@ function verifyClaim(
   return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
 }
 
+/**
+ * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[RequestForAttestation]].
+ *
+ * A claim object has:
+ * * contents - among others, the pure content of a claim, for example `"isOver18": yes`;
+ * * a [[CType]] that represents its data structure.
+ *
+ * A claim object's owner is (should be) the same entity as the claimer.
+ */
 export class Claim implements IClaim {
   /**
    * Instantiates a new Claim from the given [[IClaim]] and [[schema]].

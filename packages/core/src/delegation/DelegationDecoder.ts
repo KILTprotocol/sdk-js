@@ -10,14 +10,8 @@
  * DelegationDecoder helps to decode them when they're queried from the chain.
  *
  * The DelegationDecoder methods transform a Codec type into an object of a KILT type.
- *
- * @packageDocumentation
- * @module DelegationDecoder
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import type {
   Deposit,
   IDelegationNode,

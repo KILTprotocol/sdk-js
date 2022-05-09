@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @module @kiltprotocol/chain-helpers
+ */
+
 import '@polkadot/api-augment'
 
 export { ErrorHandler } from './errorhandling/index.js'

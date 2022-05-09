@@ -5,18 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * KILT participants can communicate via a 1:1 messaging system.
- *
- * All messages are **encrypted** with the encryption keys of the involved identities.
- * Messages are encrypted using authenticated encryption: the two parties authenticate to each other, but the message authentication provides repudiation possibilities.
- *
- * The [[Message]] class exposes methods to construct and verify messages.
- *
- * @packageDocumentation
- * @module Messaging
- */
-
 import {
   CompressedMessageBody,
   IMessage,
@@ -107,7 +95,7 @@ export class Message implements IMessage {
   /**
    * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
    *
-   * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
+   * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
    *
    * @param encrypted The encrypted message.
    * @param keystore The keystore used to perform the cryptographic operations.
