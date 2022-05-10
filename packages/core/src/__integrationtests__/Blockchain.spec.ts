@@ -25,10 +25,9 @@ import { connect, disconnect } from '../kilt'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
-  await initializeApi().then(async () => {
-    blockchain = await connect()
-  })
-})
+  await initializeApi()
+  blockchain = await connect()
+}, 30_000)
 
 describe('Chain returns specific errors, that we check for', () => {
   let faucet: KeyringPair

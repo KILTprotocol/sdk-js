@@ -29,6 +29,9 @@ const keystore = new DemoKeystore()
 
 beforeAll(async () => {
   await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
   someDid = await createFullDidFromSeed(paymentAccount, keystore)
 }, 60_000)

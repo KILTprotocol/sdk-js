@@ -9,13 +9,24 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { mnemonicGenerate } from '@polkadot/util-crypto'
+import { GenericContainer, Wait } from 'testcontainers'
 
 import * as Kilt from '@kiltprotocol/sdk-js'
 import { BN } from '@polkadot/util'
 
-const NODE_URL = 'ws://127.0.0.1:9944'
-
 async function main(): Promise<void> {
+  // spin up testcontainer
+  const containerPromise = new GenericContainer(
+    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+  )
+    .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
+    .withExposedPorts(9944)
+    .withWaitStrategy(Wait.forLogMessage('Listening for new connections'))
+    .start()
+  const NODE_URL = `ws://127.0.0.1:${(await containerPromise).getMappedPort(
+    9944
+  )}`
+
   /* 1.2 Connect to a KILT node and setup the crypto */
   await Kilt.init({ address: NODE_URL })
   const { api } =

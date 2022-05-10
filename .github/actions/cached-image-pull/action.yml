@@ -1,0 +1,46 @@
+name: 'cached-image-pull'
+description: 'Pull a docker image with caching'
+
+inputs:
+  image: # id of input
+    description: 'Image Name and Tag'
+    required: true
+  cache-directory:
+    description: 'Path where the cached image will be stored'
+    required: true
+    default: '~/image-cache/'
+  cache-file:
+    description: 'Filename for the image cache file'
+    required: true
+    default: 'image'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: determine image cache path
+      id: image-file
+      shell: bash
+      env:
+        CACHE_PATH: ${{ inputs.cache-directory }}${{ inputs.cache-file }}.tar
+      run: |
+        echo "::set-output name=path::$CACHE_PATH"
+
+    - name: check image cache
+      id: image-cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.image-file.outputs.path }}
+        key: image-cache-${{ inputs.image }}
+
+    - name: pull image
+      if: steps.image-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        docker pull ${{ inputs.image }}
+        mkdir -p ${{ inputs.cache-directory }}
+        docker save -o ${{ steps.image-file.outputs.path }} ${{ inputs.image }}
+
+    - name: use cached image
+      if: steps.image-cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: docker load -i ${{ steps.image-file.outputs.path }}

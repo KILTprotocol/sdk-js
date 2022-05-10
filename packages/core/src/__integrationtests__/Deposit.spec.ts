@@ -300,8 +300,10 @@ const keystore = new DemoKeystore()
 let requestForAttestation: RequestForAttestation
 
 beforeAll(async () => {
-  /* Initialize KILT SDK and set up node endpoint */
   await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'sr25519' })
 
   for (let i = 0; i < 10; i += 1) {

@@ -17,7 +17,7 @@ import { initializeApi } from './utils'
 
 beforeAll(async () => {
   await initializeApi()
-})
+}, 30_000)
 
 describe('Blockchain', () => {
   it('should get stats', async () => {

@@ -25,7 +25,7 @@ import {
 
 beforeAll(async () => {
   await initializeApi()
-})
+}, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCreator: FullDidDetails

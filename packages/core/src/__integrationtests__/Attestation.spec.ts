@@ -37,6 +37,9 @@ let claimer: FullDidDetails
 
 beforeAll(async () => {
   await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   tokenHolder = await createEndowedTestAccount()
   signer = new DemoKeystore()
   ;[attester, anotherAttester, claimer] = await Promise.all([
