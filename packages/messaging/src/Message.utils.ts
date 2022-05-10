@@ -31,7 +31,12 @@ import { Utils as DidUtils } from '@kiltprotocol/did'
 
 import { Message } from './Message.js'
 
-// Had to add the check as differs from the delegation types
+/**
+ * Checks if delegation data is well formed.
+ *
+ * @param delegationData Delegation data to check.
+ * @throws [[SDKError]] if delegationData is not a valid instance of [[IDelegationData]].
+ */
 export function errorCheckDelegationData(
   delegationData: IDelegationData
 ): boolean | void {
@@ -68,6 +73,12 @@ export function errorCheckDelegationData(
   }
 }
 
+/**
+ * Checks if the message body is well formed.
+ *
+ * @param body The message body.
+ * @throws [[SDKError]] if there are issues with form or content of the message body.
+ */
 export function errorCheckMessageBody(body: MessageBody): boolean | void {
   switch (body.type) {
     case Message.BodyType.REQUEST_TERMS: {
@@ -195,6 +206,12 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
   return true
 }
 
+/**
+ * Checks if the message object is well formed.
+ *
+ * @param message The message object.
+ * @throws [[SDKError]] if there are issues with form or content of the message object.
+ */
 export function errorCheckMessage(message: IMessage): boolean | void {
   const {
     body,
