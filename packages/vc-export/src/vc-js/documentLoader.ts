@@ -9,6 +9,13 @@ import type { RemoteDocument, Url } from 'jsonld/jsonld-spec'
 import vcjs from 'vc-js'
 import { validationContexts } from './context/index.js'
 
+/**
+ * Document loader that provides access to the JSON-LD contexts required for verifying Kilt VCs.
+ * Essentially wraps the vc-js defaultDocumentLoader, but additionally loads KILTs [[validationContexts]].
+ *
+ * @param url Document/context URL to resolve.
+ * @returns An object containing the resolution result.
+ */
 export async function documentLoader(url: Url): Promise<RemoteDocument> {
   const context = validationContexts[url]
   if (context)
