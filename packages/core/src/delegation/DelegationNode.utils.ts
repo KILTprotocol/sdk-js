@@ -35,6 +35,14 @@ export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
   return uint8
 }
 
+/**
+ * Traverses a delegation tree and counts the number of delegation nodes between an attestation and an ancestral delegation node owned by `attester`.
+ *
+ * @param attester Identity to be located in the delegation tree.
+ * @param attestation Attestation whose delegation tree to search.
+ * @returns 0 if `attester` is the owner of `attestation`, the number of delegation nodes traversed otherwise.
+ * @throws [[SDKError]] If the `attester` is neither the owner nor in the delegation tree of `attestation`.
+ */
 export async function countNodeDepth(
   attester: IDidDetails['uri'],
   attestation: IAttestation
@@ -64,6 +72,12 @@ export async function countNodeDepth(
   return delegationTreeTraversalSteps
 }
 
+/**
+ * Checks for errors on delegation node data.
+ *
+ * @param delegationNodeInput Delegation node data.
+ * @throws [[SDKError]] in case of errors.
+ */
 export function errorCheck(delegationNodeInput: IDelegationNode): void {
   const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 

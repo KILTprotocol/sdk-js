@@ -210,6 +210,11 @@ async function queryDepositAmountEncoded(): Promise<U128> {
   return api.consts.delegation.deposit as U128
 }
 
+/**
+ * Gets the current deposit amount due for the creation of new delegation node.
+ *
+ * @returns Deposit amount in Femto Kilt as a BigNumber.
+ */
 export async function queryDepositAmount(): Promise<BN> {
   const encodedDeposit = await queryDepositAmountEncoded()
   return encodedDeposit.toBn()
