@@ -5,6 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+// This module is not part of the public-facing api.
+/* eslint-disable jsdoc/require-jsdoc */
+
 import { blake2AsHex } from '@polkadot/util-crypto'
 import type { DidKey } from '@kiltprotocol/types'
 

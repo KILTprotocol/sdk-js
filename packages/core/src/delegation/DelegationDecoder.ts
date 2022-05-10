@@ -12,6 +12,9 @@
  * The DelegationDecoder methods transform a Codec type into an object of a KILT type.
  */
 
+// This module is not part of the public-facing api.
+/* eslint-disable jsdoc/require-jsdoc */
+
 import type {
   Deposit,
   IDelegationNode,

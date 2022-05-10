@@ -8,6 +8,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+// This module is not part of the public-facing api.
+/* eslint-disable jsdoc/require-jsdoc */
 
 /**
  * @ignore
