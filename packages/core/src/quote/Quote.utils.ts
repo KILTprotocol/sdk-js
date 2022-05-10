@@ -27,7 +27,6 @@ import { SDKErrors } from '@kiltprotocol/utils'
  *
  * @returns An ordered array of a cost.
  */
-
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
     throw SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
@@ -43,7 +42,6 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  *
  * @returns An object that has the same properties as a cost.
  */
-
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
@@ -59,7 +57,6 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  *
  * @returns An ordered array of an [[Quote]].
  */
-
 export function compressQuote(quote: IQuote): CompressedQuote {
   if (
     !quote.attesterDid ||
@@ -88,7 +85,6 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quote is not an Array and it's length does not equal the defined length of 6.
  * @returns An object that has the same properties as an [[Quote]].
  */
-
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
@@ -121,7 +117,6 @@ function decompressSignature(
  *
  * @returns An ordered array of an attester signed [[Quote]].
  */
-
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
 ): CompressedQuoteAttesterSigned {
@@ -168,7 +163,6 @@ export function compressAttesterSignedQuote(
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
-
 export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
@@ -194,7 +188,6 @@ export function decompressAttesterSignedQuote(
  *
  * @returns An ordered array of a [[Quote]] Agreement.
  */
-
 export function compressQuoteAgreement(
   quoteAgreement: IQuoteAgreement
 ): CompressedQuoteAgreed {
@@ -230,7 +223,6 @@ export function compressQuoteAgreement(
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */
-
 export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {

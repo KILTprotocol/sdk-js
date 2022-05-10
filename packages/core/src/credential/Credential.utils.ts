@@ -46,7 +46,6 @@ export function errorCheck(input: ICredential): void {
  *
  * @returns An ordered array of a [[Credential]] that comprises of an [[Attestation]] and [[RequestForAttestation]] arrays.
  */
-
 export function compress(credential: ICredential): CompressedCredential {
   errorCheck(credential)
 
@@ -64,7 +63,6 @@ export function compress(credential: ICredential): CompressedCredential {
  *
  * @returns An object that has the same properties as a [[Credential]].
  */
-
 export function decompress(credential: CompressedCredential): ICredential {
   if (!Array.isArray(credential) || credential.length !== 2) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
@@ -83,7 +81,6 @@ export function decompress(credential: CompressedCredential): ICredential {
  *
  * @returns A boolean if the [[Claim]] structure in the [[Credential]] is valid.
  */
-
 export function verifyStructure(
   credential: ICredential,
   ctype: ICType

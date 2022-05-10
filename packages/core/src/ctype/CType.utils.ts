@@ -141,7 +141,6 @@ export function errorCheck(input: ICType): void {
  *
  * @returns An ordered array of a [[CType]] schema.
  */
-
 export function compressSchema(
   cTypeSchema: ICType['schema']
 ): CompressedCTypeSchema {
@@ -172,7 +171,6 @@ export function compressSchema(
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
-
 export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
@@ -195,7 +193,6 @@ export function decompressSchema(
  *
  * @returns An ordered array of a [[CType]].
  */
-
 export function compress(cType: ICType): CompressedCType {
   errorCheck(cType)
   return [cType.hash, cType.owner, compressSchema(cType.schema)]
@@ -209,7 +206,6 @@ export function compress(cType: ICType): CompressedCType {
  *
  * @returns An object that has the same properties as a [[CType]].
  */
-
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
@@ -231,7 +227,6 @@ export function decompress(cType: CompressedCType): ICType {
  *
  * @returns Whether the contents is valid.
  */
-
 export function validateNestedSchemas(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,

@@ -44,7 +44,6 @@ import { QuoteSchema } from './QuoteSchema.js'
  *
  * @returns Whether the quote schema is valid.
  */
-
 export function validateQuoteSchema(
   schema: JsonSchema.Schema,
   validate: unknown,
@@ -71,7 +70,6 @@ export function validateQuoteSchema(
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
-
 export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
   {
@@ -106,7 +104,6 @@ export async function fromAttesterSignedInput(
  *
  * @returns A signed [[Quote]] object.
  */
-
 export async function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
@@ -148,7 +145,6 @@ export async function createAttesterSignature(
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
-
 export async function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
@@ -176,7 +172,6 @@ export async function fromQuoteDataAndIdentity(
  *
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
-
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: IRequestForAttestation['rootHash'],
