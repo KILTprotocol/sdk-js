@@ -60,7 +60,7 @@ export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
  * Compiles a KILT DID uri for a full or light DID from a unique identifier and associated data.
  *
  * @param identifier A ss58 encoded address valid on the KILT network.
- * @param didType 'full' to produce a [[FullDid]]'s uri, 'light' for a [[LightDid]].
+ * @param didType 'full' to produce a FullDid's uri, 'light' for a LightDid.
  * @param version KILT DID specification version number.
  * @param encodedDetails When compiling a LightDid uri, encoded DidDetails can be appeneded to the end of the uri.
  * @returns A DID uri as a string.
