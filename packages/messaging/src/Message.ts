@@ -320,6 +320,7 @@ export class Message implements IMessage {
     requiredProperties: string[],
     cType: ICType
   ): boolean {
-    return verifyRequiredCTypeProperties(requiredProperties, cType)
+    verifyRequiredCTypeProperties(requiredProperties, cType)
+    return true
   }
 }
