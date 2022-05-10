@@ -98,6 +98,12 @@ export enum ErrorCode {
 export class SDKError extends Error {
   public errorCode: ErrorCode
 
+  /**
+   * Constructs an SDKError instance.
+   *
+   * @param errorCode Numerical error code identifying the error.
+   * @param message Error message for additional info.
+   */
   public constructor(errorCode: ErrorCode, message: string) {
     super(message)
     this.errorCode = errorCode

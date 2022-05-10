@@ -71,6 +71,9 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
     ) as Promise<VerifiableCredential>
   }
 
+  /**
+   * @inheritdoc
+   */
   public async matchProof(options: {
     proof: JsonLdObj
     document?: JsonLdObj
@@ -84,6 +87,9 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
     return type instanceof Array ? type.includes(this.type) : type === this.type
   }
 
+  /**
+   * @inheritdoc
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async createProof(options: {
     document: JsonLdObj

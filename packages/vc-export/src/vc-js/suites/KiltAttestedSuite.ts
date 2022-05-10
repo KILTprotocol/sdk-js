@@ -54,6 +54,9 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
     BlockchainApiConnection.setConnection(Promise.resolve(this.provider))
   }
 
+  /**
+   * @inheritdoc
+   */
   public async verifyProof(options: {
     proof: Proof
     document: JsonLdObj

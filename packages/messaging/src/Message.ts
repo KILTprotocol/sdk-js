@@ -312,10 +312,22 @@ export class Message implements IMessage {
     }
   }
 
+  /**
+   * Compresses a [[MessageBody]] depending on the message body type.
+   *
+   * @returns Returns the compressed message optimised for sending.
+   */
   public compress(): CompressedMessageBody {
     return compressMessage(this.body)
   }
 
+  /**
+   * Verifies required properties for a given [[CType]] before sending or receiving a message.
+   *
+   * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
+   * @param cType A [[CType]] used to verify the properties.
+   * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
+   */
   public static verifyRequiredCTypeProperties(
     requiredProperties: string[],
     cType: ICType
