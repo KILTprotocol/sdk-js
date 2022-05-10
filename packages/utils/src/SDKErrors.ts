@@ -104,6 +104,12 @@ export class SDKError extends Error {
   }
 }
 
+/**
+ * Type guard checking whether input can be read as an [[SDKError]].
+ *
+ * @param input Arbitrary input.
+ * @returns True if the input has the signature of an SDKError, false otherwise.
+ */
 export function isSDKError(input: unknown): input is SDKError {
   return (
     ((i: unknown): i is Error & Partial<SDKError> => i instanceof Error)(
