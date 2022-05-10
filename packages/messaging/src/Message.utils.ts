@@ -232,7 +232,6 @@ export function errorCheckMessage(message: IMessage): boolean | void {
  *
  * @returns Returns the properties back.
  */
-
 export function verifyRequiredCTypeProperties(
   requiredProperties: string[],
   cType: ICType
@@ -256,7 +255,6 @@ export function verifyRequiredCTypeProperties(
  *
  * @returns Returns the compressed message optimised for sending.
  */
-
 export function compressMessage(body: MessageBody): CompressedMessageBody {
   let compressedContents: CompressedMessageBody[1]
   switch (body.type) {
@@ -385,7 +383,6 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
  *
  * @returns Returns the compressed message back to its original form and more human readable.
  */
-
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // body[0] is the [[MessageBodyType]] being sent.
   // body[1] is the content order of the [[compressMessage]] for each [[MessageBodyType]].
