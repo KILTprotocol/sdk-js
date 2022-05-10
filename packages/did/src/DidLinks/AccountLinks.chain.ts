@@ -165,7 +165,7 @@ export async function queryDepositAmount(): Promise<BN> {
  * will link Account to FullDid and remove any pre-existing links of Account.
  * Account must hold balance to cover for submission fees and storage deposit.
  *
- * @returns An [[Extrinsic]] that must be did-authorized.
+ * @returns An extrinsic that must be did-authorized.
  */
 export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -183,7 +183,7 @@ export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
  * @param signatureValidUntilBlock The link request will be rejected if submitted later than this block number.
  * @param signature Account's signature over `(DidIdentifier, BlockNumber).toU8a()`.
  * @param sigType The type of key/substrate account which produced the `signature`.
- * @returns An [[Extrinsic]] that must be did-authorized.
+ * @returns An extrinsic that must be did-authorized.
  */
 export async function getAccountSignedAssociationExtrinsic(
   account: Address,
@@ -202,7 +202,7 @@ export async function getAccountSignedAssociationExtrinsic(
  * Must be signed and submitted by the deposit owner account.
  *
  * @param linkedAccount Account whose link should be released (not the deposit owner).
- * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ * @returns The a submittable extrinsic for the `reclaimDeposit` call.
  */
 export async function getReclaimDepositTx(
   linkedAccount: Address
@@ -256,7 +256,7 @@ function getMultiSignatureTypeFromKeypairType(
 /**
  * Return the default signer callback, which uses the address argument to crete a signing closure for the given payload.
  *
- * @param keyring The [[Keyring]] to retrieve the signing key.
+ * @param keyring The keyring to retrieve the signing key.
  * @returns The signature generating callback that uses the keyring to sign the input payload using the input address.
  */
 export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
@@ -268,14 +268,14 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
 
 /**
  * Builds an extrinsic to link `account` to a `did` where the fees and deposit are covered by some third account.
- * This extrinsic must be authorized using the [[FullDid]] whose `didIdentifier` was used here.
+ * This extrinsic must be authorized using the FullDid whose `didIdentifier` was used here.
  * Note that in addition to the signing account and did used here, the submitting account will also be able to dissolve the link via reclaiming its deposit!
  *
  * @param accountAddress Address of the account to be linked.
- * @param didIdentifier Method-specific identifier [[FullDid]] to be linked.
+ * @param didIdentifier Method-specific identifier FullDid to be linked.
  * @param signingCallback The signature generation callback that generates the account signature over the encoded (DidIdentifier, BlockNumber) tuple.
  * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
- * @returns An Extrinsic that must be did-authorized by the [[FullDid]] whose identifier was used.
+ * @returns An Extrinsic that must be did-authorized by the FullDid whose identifier was used.
  */
 export async function getAuthorizeLinkWithAccountExtrinsic(
   accountAddress: Address,

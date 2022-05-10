@@ -32,7 +32,13 @@ import {
   SigningAlgorithms,
 } from './DemoKeystore.js'
 
-// Given a seed, creates a light DID with an authentication and an encryption key.
+/**
+ * Given a seed, creates a light DID with an authentication and an encryption key.
+ *
+ * @param keystore Keystore instance.
+ * @param seed Seed from which to derive all keys.
+ * @returns LightDidDetails whose keys have been added to the keystore instance.
+ */
 export async function createMinimalLightDidFromSeed(
   keystore: DemoKeystore,
   seed?: string
@@ -153,6 +159,13 @@ export async function createLocalDemoFullDidFromSeed(
   })
 }
 
+/**
+ * Creates a FullDid from a LightDid where the verification keypair is enabled for all verification purposes (authentication, assertionMethod, capabilityDelegation).
+ * This is not recommended, use for demo purposes only!
+ *
+ * @param lightDid The LightDid whose keys will be used on the FullDid.
+ * @returns A FullDid instance that is not yet written to the blockchain.
+ */
 export async function createLocalDemoFullDidFromLightDid(
   lightDid: LightDidDetails
 ): Promise<FullDidDetails> {
@@ -161,8 +174,6 @@ export async function createLocalDemoFullDidFromLightDid(
   const encKey = lightDid.encryptionKey
 
   const keys: PublicKeys = {
-    [authKey.id]: authKey,
-    [authKey.id]: authKey,
     [authKey.id]: authKey,
   }
   if (encKey) {

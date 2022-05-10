@@ -61,6 +61,12 @@ function checkAddress(): void {
   }
 }
 
+/**
+ * Get the value set for a configuration.
+ *
+ * @param configOpt Key of the configuration.
+ * @returns Value for this key.
+ */
 export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
   switch (configOpt) {
     case 'address':
@@ -79,6 +85,11 @@ function setLogLevel(logLevel: LogLevel | undefined): void {
   }
 }
 
+/**
+ * Set values for one or multiple configurations.
+ *
+ * @param opts Object of configurations as key-value pairs.
+ */
 export function set<K extends Partial<configOpts>>(opts: K): void {
   configuration = { ...configuration, ...opts }
   setLogLevel(configuration.logLevel)

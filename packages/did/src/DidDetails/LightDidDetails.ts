@@ -67,6 +67,11 @@ export class LightDidDetails extends DidDetails {
     this.identifier = identifier
   }
 
+  /**
+   * Authentication key type of this LightDid.
+   *
+   * @returns Authentication key type.
+   */
   public get authKeyEncoding(): string {
     return getEncodingForVerificationKeyType(
       this.authenticationKey.type

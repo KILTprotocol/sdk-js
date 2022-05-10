@@ -22,6 +22,9 @@ export class KiltSignatureSuite extends KiltAbstractSuite {
     super({ type: KILT_SELF_SIGNED_PROOF_TYPE, verificationMethod: '<none>' })
   }
 
+  /**
+   * @inheritdoc
+   */
   public async verifyProof(options: {
     proof: JsonLdObj
     document: JsonLdObj

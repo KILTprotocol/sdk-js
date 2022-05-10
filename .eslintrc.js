@@ -78,7 +78,22 @@ module.exports = {
     'jsdoc/no-types': 'warn',
     'jsdoc/require-param-type': 'off',
     'jsdoc/require-returns-type': 'off',
-    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/require-jsdoc': [
+      'warn',
+      {
+        publicOnly: true,
+        exemptEmptyConstructors: true,
+        contexts: ['MethodDefinition:has([accessibility="public"])'],
+        require: {
+          FunctionDeclaration: true, // require jsdoc on exported functions
+          FunctionExpression: true,
+          ArrowFunctionExpression: false, // do not require jsdoc on arrow functions
+          MethodDefinition: false, // bc we only want to enforce jsdoc on public methods, this must be false
+          ClassDeclaration: false, // do not require jsdoc on declarations of exported classes
+          ClassExpression: false,
+        },
+      },
+    ],
     'jsdoc/check-examples': [
       'warn',
       {
@@ -114,6 +129,7 @@ module.exports = {
         '@typescript-eslint/no-object-literal-type-assertion': 'off',
         'no-underscore-dangle': 'off',
         'global-require': 'off',
+        'jsdoc/require-jsdoc': 'off',
         'jsdoc/check-tag-names': [
           'warn',
           {
@@ -123,13 +139,14 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
-        '@typescript-eslint/ban-ts-comment': 'off'
+        '@typescript-eslint/ban-ts-comment': 'off',
       },
     },
     {
       files: ['**/__integrationtests__/*.ts'],
       rules: {
         'import/extensions': 'off',
+        'jsdoc/require-jsdoc': 'off',
       },
     },
   ],

@@ -27,6 +27,9 @@ export class KiltDisclosureSuite extends KiltAbstractSuite {
     })
   }
 
+  /**
+   * @inheritdoc
+   */
   public async verifyProof(options: {
     proof: JsonLdObj
     document?: JsonLdObj

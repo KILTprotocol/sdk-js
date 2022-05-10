@@ -31,10 +31,15 @@ import { Utils as DidUtils } from '@kiltprotocol/did'
 
 import { Message } from './Message.js'
 
-// Had to add the check as differs from the delegation types
+/**
+ * Checks if delegation data is well formed.
+ *
+ * @param delegationData Delegation data to check.
+ * @throws [[SDKError]] if delegationData is not a valid instance of [[IDelegationData]].
+ */
 export function errorCheckDelegationData(
   delegationData: IDelegationData
-): boolean | void {
+): void {
   const { permissions, id, parentId, isPCR, account } = delegationData
 
   if (!id) {
@@ -68,7 +73,13 @@ export function errorCheckDelegationData(
   }
 }
 
-export function errorCheckMessageBody(body: MessageBody): boolean | void {
+/**
+ * Checks if the message body is well formed.
+ *
+ * @param body The message body.
+ * @throws [[SDKError]] if there are issues with form or content of the message body.
+ */
+export function errorCheckMessageBody(body: MessageBody): void {
   switch (body.type) {
     case Message.BodyType.REQUEST_TERMS: {
       ClaimUtils.errorCheck(body.content)
@@ -191,11 +202,15 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     default:
       throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
-
-  return true
 }
 
-export function errorCheckMessage(message: IMessage): boolean | void {
+/**
+ * Checks if the message object is well formed.
+ *
+ * @param message The message object.
+ * @throws [[SDKError]] if there are issues with form or content of the message object.
+ */
+export function errorCheckMessage(message: IMessage): void {
   const {
     body,
     messageId,
@@ -220,7 +235,6 @@ export function errorCheckMessage(message: IMessage): boolean | void {
     throw new TypeError('in reply to is expected to be a string')
   }
   errorCheckMessageBody(body)
-  return true
 }
 
 /**
@@ -229,14 +243,11 @@ export function errorCheckMessage(message: IMessage): boolean | void {
  * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
  * @param cType A [[CType]] used to verify the properties.
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
- *
- * @returns Returns the properties back.
  */
-
 export function verifyRequiredCTypeProperties(
   requiredProperties: string[],
   cType: ICType
-): boolean {
+): void {
   CTypeUtils.errorCheck(cType as ICType)
 
   const validProperties = requiredProperties.find(
@@ -245,8 +256,6 @@ export function verifyRequiredCTypeProperties(
   if (validProperties) {
     throw SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
   }
-
-  return true
 }
 
 /**
@@ -256,7 +265,6 @@ export function verifyRequiredCTypeProperties(
  *
  * @returns Returns the compressed message optimised for sending.
  */
-
 export function compressMessage(body: MessageBody): CompressedMessageBody {
   let compressedContents: CompressedMessageBody[1]
   switch (body.type) {
@@ -385,7 +393,6 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
  *
  * @returns Returns the compressed message back to its original form and more human readable.
  */
-
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // body[0] is the [[MessageBodyType]] being sent.
   // body[1] is the content order of the [[compressMessage]] for each [[MessageBodyType]].

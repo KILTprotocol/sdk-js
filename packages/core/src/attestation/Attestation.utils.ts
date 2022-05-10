@@ -47,7 +47,6 @@ export function errorCheck(input: IAttestation): void {
  *
  * @returns An ordered array of an [[Attestation]].
  */
-
 export function compress(attestation: IAttestation): CompressedAttestation {
   errorCheck(attestation)
   return [
@@ -67,7 +66,6 @@ export function compress(attestation: IAttestation): CompressedAttestation {
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */
-
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')

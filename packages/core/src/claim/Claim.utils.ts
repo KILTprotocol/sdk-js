@@ -207,7 +207,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
 }
 
 /**
- *  Compresses the [[IClaim]] for storage and/or messaging.
+ *  Compresses an [[IClaim]] for storage and/or messaging.
  *
  * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
@@ -215,13 +215,20 @@ export function errorCheck(input: IClaim | PartialClaim): void {
  */
 export function compress(claim: IClaim): CompressedClaim
 /**
- *  Compresses the [[PartialClaim]] for storage and/or messaging.
+ *  Compresses a [[PartialClaim]] for storage and/or messaging.
  *
  * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
  *
  * @returns An ordered array of a [[CompressedPartialClaim]].
  */
 export function compress(claim: PartialClaim): CompressedPartialClaim
+/**
+ *  Compresses a claim object for storage and/or messaging.
+ *
+ * @param claim A (partial) claim object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of that represents the underlying data in a more compact form.
+ */
 export function compress(
   claim: IClaim | PartialClaim
 ): CompressedClaim | CompressedPartialClaim {
@@ -234,22 +241,28 @@ export function compress(
 }
 
 /**
- *  Decompresses the [[IClaim]] from storage and/or message.
+ *  Decompresses an [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedClaim]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when a [[CompressedClaim]] is not an Array or it's length is unequal 3.
- * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
+ * @returns An [[IClaim]] object that has the same properties compressed representation.
  */
 export function decompress(claim: CompressedClaim): IClaim
 /**
- *  Decompresses the Partial [[IClaim]] from storage and/or message.
+ *  Decompresses a partial [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
- * @throws When a [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns A [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
+ * @returns A [[PartialClaim]] object that has the same properties compressed representation.
  */
 export function decompress(claim: CompressedPartialClaim): PartialClaim
+/**
+ *  Decompresses compressed representation of a (partial) [[IClaim]] from storage and/or message.
+ *
+ * @param claim A [[CompressedClaim]] or [[CompressedPartialClaim]] array that is reverted back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
+ * @returns An [[IClaim]] or [[PartialClaim]] object that has the same properties compressed representation.
+ */
 export function decompress(
   claim: CompressedClaim | CompressedPartialClaim
 ): IClaim | PartialClaim {

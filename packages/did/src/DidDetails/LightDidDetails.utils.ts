@@ -5,6 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+// This module is not part of the public-facing api.
+/* eslint-disable jsdoc/require-jsdoc */
+
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'

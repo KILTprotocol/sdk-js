@@ -73,7 +73,6 @@ export function errorCheck(input: IRequestForAttestation): void {
  *
  * @returns An ordered array of [[Credential]]s.
  */
-
 export function compressLegitimation(
   leg: ICredential[]
 ): CompressedCredential[] {
@@ -99,7 +98,6 @@ function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
  *
  * @returns An ordered array of a [[RequestForAttestation]].
  */
-
 export function compress(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
@@ -123,7 +121,6 @@ export function compress(
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
-
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
@@ -144,12 +141,11 @@ export function decompress(
 /**
  *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
  *
- * @param RequestForAttestation A [[RequestForAttestation]] object for the attester.
+ * @param requestForAttestation A [[RequestForAttestation]] object for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
  *
  * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
  */
-
 export function verifyStructure(
   requestForAttestation: IRequestForAttestation,
   ctype: ICType

@@ -79,6 +79,12 @@ function decode(
   return null
 }
 
+/**
+ * Query an attestation from the blockchain, returning the SCALE encoded value.
+ *
+ * @param claimHash The hash of the claim attested in the attestation.
+ * @returns An Option wrapping scale encoded attestation data.
+ */
 export async function queryRaw(
   claimHash: IRequestForAttestation['rootHash']
 ): Promise<Option<AttestationDetails>> {
@@ -166,6 +172,11 @@ async function queryDepositAmountEncoded(): Promise<U128> {
   return api.consts.attestation.deposit as U128
 }
 
+/**
+ * Gets the current deposit amount due for the creation of new attestations.
+ *
+ * @returns Deposit amount in Femto Kilt as a BigNumber.
+ */
 export async function queryDepositAmount(): Promise<BN> {
   const encodedDeposit = await queryDepositAmountEncoded()
   return encodedDeposit.toBn()

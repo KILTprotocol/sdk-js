@@ -98,12 +98,24 @@ export enum ErrorCode {
 export class SDKError extends Error {
   public errorCode: ErrorCode
 
+  /**
+   * Constructs an SDKError instance.
+   *
+   * @param errorCode Numerical error code identifying the error.
+   * @param message Error message for additional info.
+   */
   public constructor(errorCode: ErrorCode, message: string) {
     super(message)
     this.errorCode = errorCode
   }
 }
 
+/**
+ * Type guard checking whether input can be read as an [[SDKError]].
+ *
+ * @param input Arbitrary input.
+ * @returns True if the input has the signature of an SDKError, false otherwise.
+ */
 export function isSDKError(input: unknown): input is SDKError {
   return (
     ((i: unknown): i is Error & Partial<SDKError> => i instanceof Error)(

@@ -882,12 +882,12 @@ describe('Messaging Utilities', () => {
       )
     ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
 
-    expect(
+    expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(
         ['id', 'name'],
         testCTypeWithMultipleProperties
       )
-    ).toEqual(true)
+    ).not.toThrowError()
   })
 
   beforeAll(async () => {
