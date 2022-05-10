@@ -139,12 +139,12 @@ describe('Claim', () => {
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
-    expect(() =>
-      ClaimUtils.errorCheck(malformedCTypeHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowErrorWithCode(
-      SDKErrors.ERROR_ADDRESS_INVALID()
+    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
+      SDKErrors.ERROR_ADDRESS_INVALID
     )
   })
 })

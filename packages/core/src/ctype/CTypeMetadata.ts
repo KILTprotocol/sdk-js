@@ -23,7 +23,7 @@ export class CTypeMetadata implements ICTypeMetadata {
    */
   public constructor(metadata: ICTypeMetadata) {
     if (!CTypeUtils.verifySchema(metadata, MetadataModel)) {
-      throw SDKErrors.ERROR_OBJECT_MALFORMED()
+      throw new SDKErrors.ERROR_OBJECT_MALFORMED()
     }
     this.metadata = metadata.metadata
     this.ctypeHash = metadata.ctypeHash

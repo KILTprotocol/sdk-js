@@ -28,14 +28,14 @@ import { Credential } from './Credential.js'
 export function errorCheck(input: ICredential): void {
   if (input.attestation) {
     AttestationUtils.errorCheck(input.attestation)
-  } else throw SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
+  } else throw new SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
 
   if (input.request) {
     RequestForAttestationUtils.errorCheck(input.request)
-  } else throw SDKErrors.ERROR_RFA_NOT_PROVIDED()
+  } else throw new SDKErrors.ERROR_RFA_NOT_PROVIDED()
 
   if (!Credential.verifyData(input as ICredential)) {
-    throw SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
+    throw new SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
   }
 }
 
@@ -65,7 +65,7 @@ export function compress(credential: ICredential): CompressedCredential {
  */
 export function decompress(credential: CompressedCredential): ICredential {
   if (!Array.isArray(credential) || credential.length !== 2) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
   }
   return {
     request: RequestForAttestationUtils.decompress(credential[0]),

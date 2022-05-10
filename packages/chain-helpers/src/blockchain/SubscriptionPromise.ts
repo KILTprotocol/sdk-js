@@ -47,7 +47,7 @@ export function makeSubscriptionPromise<SubscriptionType>(
         }
   if (timeout)
     setTimeout(() => {
-      reject(SDKErrors.ERROR_TIMEOUT())
+      reject(new SDKErrors.ERROR_TIMEOUT())
     }, timeout)
   return { promise, subscription }
 }

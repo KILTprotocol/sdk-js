@@ -24,20 +24,20 @@ export function checkExtrinsicInput(
   const { section, method } = ext.method
   // Cannot batch DID extrinsics
   if (section === 'did') {
-    throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+    throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
       'DidBatchBuilder.addExtrinsic() cannot be used to queue DID extrinsics. Please use FullDidBuilder and its subclasses for those.'
     )
   }
 
   const extrinsicKeyRelationship = getKeyRelationshipForExtrinsic(ext)
   if (extrinsicKeyRelationship === 'paymentAccount') {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       'DidBatchBuilder.addExtrinsic() cannot be used to queue extrinsics that do not require a DID signature.'
     )
   }
 
   if (did.getVerificationKeys(extrinsicKeyRelationship).length === 0) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `DidBatchBuilder.addExtrinsic() cannot be used with the provided extrinsic "${section}:${method}" because the DID ${did.uri} does not have a valid key to sign the operation.`
     )
   }

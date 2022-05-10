@@ -519,15 +519,15 @@ describe('DelegationNode', () => {
       )
 
       expect(() => errorCheck(missingRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_MISSING()
+        SDKErrors.ERROR_DELEGATION_ID_MISSING
       )
 
       expect(() => errorCheck(malformedRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE()
+        SDKErrors.ERROR_DELEGATION_ID_TYPE
       )
 
       expect(() => errorCheck(malformedParentIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE()
+        SDKErrors.ERROR_DELEGATION_ID_TYPE
       )
     })
   })

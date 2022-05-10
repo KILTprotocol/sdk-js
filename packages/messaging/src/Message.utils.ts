@@ -43,15 +43,15 @@ export function errorCheckDelegationData(
   const { permissions, id, parentId, isPCR, account } = delegationData
 
   if (!id) {
-    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+    throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
   } else if (typeof id !== 'string') {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   } else if (!isHex(id)) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
 
   if (!account) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   } else DidUtils.validateKiltDidUri(account)
 
   if (typeof isPCR !== 'boolean') {
@@ -66,9 +66,9 @@ export function errorCheckDelegationData(
 
   if (parentId) {
     if (typeof parentId !== 'string') {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     } else if (!isHex(parentId)) {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     }
   }
 }
@@ -128,7 +128,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
     case Message.BodyType.REJECT_ATTESTATION: {
       if (!isHex(body.content)) {
-        throw SDKErrors.ERROR_HASH_MALFORMED()
+        throw new SDKErrors.ERROR_HASH_MALFORMED()
       }
       break
     }
@@ -176,7 +176,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       errorCheckDelegationData(body.content.delegationData)
       DidUtils.validateDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
-        throw SDKErrors.ERROR_OBJECT_MALFORMED()
+        throw new SDKErrors.ERROR_OBJECT_MALFORMED()
       }
       break
     }
@@ -200,7 +200,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
 
     default:
-      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
 }
 
@@ -381,7 +381,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     default:
-      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
   return [body.type, compressedContents] as CompressedMessageBody
 }
@@ -518,7 +518,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     default:
-      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
 
   return { type: body[0], content: decompressedContents } as MessageBody

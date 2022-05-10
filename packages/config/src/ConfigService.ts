@@ -57,7 +57,7 @@ let configuration: configOpts = {
 
 function checkAddress(): void {
   if (!configuration.address) {
-    throw SDKErrors.ERROR_WS_ADDRESS_NOT_SET()
+    throw new SDKErrors.ERROR_WS_ADDRESS_NOT_SET()
   }
 }
 

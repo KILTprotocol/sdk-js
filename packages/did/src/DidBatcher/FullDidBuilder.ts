@@ -62,7 +62,7 @@ export abstract class FullDidBuilder {
 
   protected checkBuilderConsumption(): void {
     if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'DID builder has already been consumed.'
       )
     }
@@ -87,7 +87,7 @@ export abstract class FullDidBuilder {
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // Check if a key with the same ID has already been added.
     if (this.newKeyAgreementKeys.has(newKeyId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${newKeyId} has already been marked for addition. Failing since this may lead to unexpected behaviour.`
       )
     }
@@ -113,7 +113,7 @@ export abstract class FullDidBuilder {
     this.checkBuilderConsumption()
     // Check if another attestation key was already marked for addition.
     if (this.newAssertionKey.action === 'update') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another assertion key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
       )
     }
@@ -138,7 +138,7 @@ export abstract class FullDidBuilder {
     this.checkBuilderConsumption()
     // Check if another delegation key was already marked for addition.
     if (this.newDelegationKey.action === 'update') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another delegation key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
       )
     }
@@ -164,7 +164,7 @@ export abstract class FullDidBuilder {
     const { id, ...details } = service
     // Check if the service has already been added.
     if (this.newServiceEndpoints.has(id)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Service endpoint with ID ${id} has already been marked for addition. Failing since this may lead to unexpected behaviour.`
       )
     }

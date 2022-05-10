@@ -72,7 +72,7 @@ export function verifyClaimStructure(
   schema: ICType['schema']
 ): boolean {
   if (!verifySchema(schema, CTypeModel)) {
-    throw SDKErrors.ERROR_OBJECT_MALFORMED()
+    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   return verifySchema(claimContents, schema)
 }
@@ -168,10 +168,10 @@ export function getIdForSchema(
  */
 export function errorCheck(input: ICType): void {
   if (!verifySchema(input, CTypeWrapperModel)) {
-    throw SDKErrors.ERROR_OBJECT_MALFORMED()
+    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
-    throw SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
+    throw new SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
   }
   if (getIdForSchema(input.schema) !== input.schema.$id) {
     throw new SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING(
@@ -180,7 +180,7 @@ export function errorCheck(input: ICType): void {
     )
   }
   if (!(input.owner === null || DidUtils.validateKiltDidUri(input.owner))) {
-    throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
+    throw new SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }
 
@@ -202,7 +202,7 @@ export function compressSchema(
     !cTypeSchema.properties ||
     !cTypeSchema.type
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
   }
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
@@ -226,7 +226,7 @@ export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 5) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
   }
   return {
     $id: cTypeSchema[0],
@@ -259,7 +259,7 @@ export function compress(cType: ICType): CompressedCType {
  */
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
   }
   return {
     hash: cType[0],

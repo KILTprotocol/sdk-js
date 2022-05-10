@@ -67,7 +67,7 @@ describe('CType', () => {
     // @ts-expect-error
     delete faultyMetadata.metadata.properties
     expect(() => new CTypeMetadata(faultyMetadata)).toThrow(
-      SDKErrors.ERROR_OBJECT_MALFORMED()
+      SDKErrors.ERROR_OBJECT_MALFORMED
     )
   })
 })

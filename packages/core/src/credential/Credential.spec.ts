@@ -748,8 +748,8 @@ describe('create presentation', () => {
     expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
 
-    expect(() =>
-      CredentialUtils.verifyStructure(cred, ctype)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    expect(() => CredentialUtils.verifyStructure(cred, ctype)).toThrowError(
+      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
+    )
   })
 })

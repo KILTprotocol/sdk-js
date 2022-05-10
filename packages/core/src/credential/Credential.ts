@@ -165,7 +165,7 @@ export class Credential implements ICredential {
   public static validateLegitimations(legitimations: ICredential[]): boolean {
     legitimations.forEach((legitimation: ICredential) => {
       if (!Credential.verifyData(legitimation)) {
-        throw SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
+        throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
       }
     })
     return true
@@ -231,7 +231,7 @@ export class Credential implements ICredential {
     const selectedKeyId = (await keySelection(keys))?.id
 
     if (!selectedKeyId) {
-      throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
+      throw new SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
     }
 
     await credential.request.signWithDidKey(signer, claimerDid, selectedKeyId, {

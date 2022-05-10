@@ -88,17 +88,17 @@ export function errorCheck(delegationNodeInput: IDelegationNode): void {
   }
 
   if (!rootId) {
-    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+    throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
   } else if (typeof rootId !== 'string') {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   } else if (!isHex(rootId)) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (parentId) {
     if (typeof parentId !== 'string') {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     } else if (!isHex(parentId)) {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     }
   }
 }

@@ -179,7 +179,7 @@ export class RequestForAttestation implements IRequestForAttestation {
   public static verifyData(input: IRequestForAttestation): boolean {
     // check claim hash
     if (!RequestForAttestation.verifyRootHash(input)) {
-      throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
+      throw new SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
     }
 
     // verify properties against selective disclosure proof
@@ -192,7 +192,9 @@ export class RequestForAttestation implements IRequestForAttestation {
     )
     // TODO: how do we want to deal with multiple errors during claim verification?
     if (!verificationResult.verified)
-      throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+      throw (
+        verificationResult.errors[0] || new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+      )
 
     // check legitimations
     Credential.validateLegitimations(input.legitimations)

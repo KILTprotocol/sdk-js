@@ -25,18 +25,18 @@ export function errorCheck(input: IAttestation): void {
   } else DataUtils.validateHash(input.cTypeHash, 'CType')
 
   if (!input.claimHash) {
-    throw SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
   } else DataUtils.validateHash(input.claimHash, 'Claim')
 
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (!input.owner) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   } else DidUtils.validateKiltDidUri(input.owner)
 
   if (typeof input.revoked !== 'boolean') {
-    throw SDKErrors.ERROR_REVOCATION_BIT_MISSING()
+    throw new SDKErrors.ERROR_REVOCATION_BIT_MISSING()
   }
 }
 
@@ -68,7 +68,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
  */
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
   }
   return {
     claimHash: attestation[0],

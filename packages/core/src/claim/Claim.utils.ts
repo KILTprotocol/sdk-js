@@ -118,7 +118,7 @@ export function hashClaimContents(
   const nonceMap = {}
   processed.forEach(({ digest, nonce, statement }) => {
     // throw if we can't map a digest to a nonce - this should not happen if the nonce map is complete and the credential has not been tampered with
-    if (!nonce) throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED(statement)
+    if (!nonce) throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED(statement)
     nonceMap[digest] = nonce
   }, {})
   return { hashes, nonceMap }
@@ -145,7 +145,7 @@ export function verifyDisclosedAttributes(
   options: Pick<Crypto.HashingOptions, 'hasher'> & {
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
-): { verified: boolean; errors: SDKErrors.SDKError[] } {
+): { verified: boolean; errors: Error[] } {
   // apply defaults
   const defaults = { canonicalisation: makeStatementsJsonLD }
   const canonicalisation = options.canonicalisation || defaults.canonicalisation
@@ -156,17 +156,19 @@ export function verifyDisclosedAttributes(
   const hashed = Crypto.hashStatements(statements, { ...options, nonces })
   // check resulting hashes
   const digestsInProof = Object.keys(nonces)
-  return hashed.reduce<{ verified: boolean; errors: SDKErrors.SDKError[] }>(
+  return hashed.reduce<{ verified: boolean; errors: Error[] }>(
     (status, { saltedHash, statement, digest, nonce }) => {
       // check if the statement digest was contained in the proof and mapped it to a nonce
       if (!digestsInProof.includes(digest) || !nonce) {
-        status.errors.push(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT(statement))
+        status.errors.push(
+          new SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT(statement)
+        )
         return { ...status, verified: false }
       }
       // check if the hash is whitelisted in the proof
       if (!proof.hashes.includes(saltedHash)) {
         status.errors.push(
-          SDKErrors.ERROR_INVALID_PROOF_FOR_STATEMENT(statement)
+          new SDKErrors.ERROR_INVALID_PROOF_FOR_STATEMENT(statement)
         )
         return { ...status, verified: false }
       }
@@ -199,7 +201,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
         typeof key !== 'string' ||
         !['string', 'number', 'boolean', 'object'].includes(typeof value)
       ) {
-        throw SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
+        throw new SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
       }
     })
   }
@@ -267,7 +269,7 @@ export function decompress(
   claim: CompressedClaim | CompressedPartialClaim
 ): IClaim | PartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
     cTypeHash: claim[0],

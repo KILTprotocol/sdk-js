@@ -89,7 +89,7 @@ export async function fromAttesterSignedInput(
   })
   const messages: string[] = []
   if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    throw SDKErrors.ERROR_QUOTE_MALFORMED()
+    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 
   return {
@@ -122,7 +122,7 @@ export async function createAttesterSignature(
     attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!authenticationKey) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The attester ${attesterIdentity.uri} does not have a valid authentication key.`
     )
   }
@@ -163,7 +163,7 @@ export async function fromQuoteDataAndIdentity(
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw SDKErrors.ERROR_QUOTE_MALFORMED()
+    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
   }
   return createAttesterSignature(quoteInput, attesterIdentity, signer, {
     keySelection,
@@ -200,7 +200,7 @@ export async function createQuoteAgreement(
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   if (attesterIdentity !== attesterSignedQuote.attesterDid)
-    throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
+    throw new SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
       attesterIdentity,
       attesterSignedQuote.attesterDid
     )
@@ -216,7 +216,7 @@ export async function createQuoteAgreement(
     claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!claimerAuthenticationKey) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `Claimer DID ${claimerIdentity.uri} does not have an authentication key.`
     )
   }

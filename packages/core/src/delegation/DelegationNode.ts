@@ -181,7 +181,7 @@ export class DelegationNode implements IDelegationNode {
     if (!this.hierarchyDetails) {
       const hierarchyDetails = await queryDetails(this.hierarchyId)
       if (!hierarchyDetails) {
-        throw SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
+        throw new SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
       }
       this.hierarchyDetails = hierarchyDetails
       return hierarchyDetails
@@ -288,7 +288,7 @@ export class DelegationNode implements IDelegationNode {
       delegeeDid.getVerificationKeys(KeyRelationship.authentication)
     )
     if (!authenticationKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Delegee ${delegeeDid.uri} does not have any authentication key.`
       )
     }
