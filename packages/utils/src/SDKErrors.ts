@@ -129,8 +129,6 @@ export function isSDKError(input: unknown): input is SDKError {
 
 export class ERROR_UNAUTHORIZED extends Error {}
 
-export class ERROR_NOT_FOUND extends Error {}
-
 export class ERROR_CTYPE_HASH_NOT_PROVIDED extends Error {
   constructor() {
     super('CType hash missing')
@@ -218,24 +216,6 @@ export const ERROR_LEGITIMATIONS_NOT_PROVIDED: () => SDKError = () => {
     'Legitimations missing'
   )
 }
-export const ERROR_ATTESTATION_SESSION_MISSING: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_ATTESTATION_SESSION_MISSING,
-    'Privacy enhancement was forced, but attestation session is missing.'
-  )
-}
-export const ERROR_PE_MISSING: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_PE_MISSING,
-    'Privacy enhancement is missing.'
-  )
-}
-export const ERROR_PE_CREDENTIAL_MISSING: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_PE_CREDENTIAL_MISSING,
-    'Missing privacy enhanced credential.'
-  )
-}
 export const ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED,
@@ -292,24 +272,10 @@ export const ERROR_DELEGATION_ID_MISSING: () => SDKError = () => {
   )
 }
 
-export const ERROR_HIERARCHY_DETAILS_MISSING: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_HIERARCHY_DETAILS_MISSING,
-    'Delegation hierarchy details missing'
-  )
-}
-
 export const ERROR_DELEGATION_SIGNATURE_MISSING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_DELEGATION_SIGNATURE_MISSING,
     "Delegatee's signature missing"
-  )
-}
-
-export const ERROR_DELEGATION_PARENT_MISSING: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_DELEGATION_PARENT_MISSING,
-    'Delegation parentId missing'
   )
 }
 
@@ -345,12 +311,6 @@ export const ERROR_CTYPE_OWNER_TYPE: () => SDKError = () => {
     'CType owner of wrong type'
   )
 }
-export const ERROR_MNEMONIC_PHRASE_MALFORMED: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_MNEMONIC_PHRASE_MALFORMED,
-    'Mnemonic phrase malformed or too short'
-  )
-}
 export const ERROR_QUOTE_MALFORMED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_QUOTE_MALFORMED,
@@ -377,22 +337,6 @@ export const ERROR_MESSAGE_BODY_MALFORMED: () => SDKError = () => {
   )
 }
 
-export const ERROR_CLAIM_HASHTREE_MISMATCH: (key?: string) => SDKError = (
-  key?: string
-) => {
-  if (key) {
-    return new SDKError(
-      ErrorCode.ERROR_CLAIM_HASHTREE_MISMATCH,
-      `Property '${key}' not found in claim`
-    )
-  }
-
-  return new SDKError(
-    ErrorCode.ERROR_CLAIM_HASHTREE_MISMATCH,
-    `Property not found in claim`
-  )
-}
-
 export const ERROR_SIGNATURE_DATA_TYPE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_SIGNATURE_DATA_TYPE,
@@ -408,26 +352,12 @@ export const ERROR_DID_IDENTIFIER_MISMATCH: (
     `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
   )
 }
-export const ERROR_PE_MISMATCH: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_PE_MISMATCH,
-    'Verifier requested public presentation, but privacy enhancement was forced.'
-  )
-}
 export const ERROR_HIERARCHY_QUERY: (rootId: string) => SDKError = (
   rootId: string
 ) => {
   return new SDKError(
     ErrorCode.ERROR_HIERARCHY_QUERY,
     `Could not find root node with id ${rootId}`
-  )
-}
-export const ERROR_NODE_QUERY: (nodeId: string) => SDKError = (
-  nodeId: string
-) => {
-  return new SDKError(
-    ErrorCode.ERROR_NODE_QUERY,
-    `Could not find node with id ${nodeId}`
   )
 }
 export const ERROR_INVALID_DID_FORMAT: (identifier: string) => SDKError = (
@@ -470,28 +400,6 @@ export const ERROR_ADDRESS_INVALID: (
   )
 }
 
-export const ERROR_NONCE_HASH_INVALID: (
-  nonceHash?: NonceHash,
-  type?: string
-) => SDKError = (nonceHash?: NonceHash, type?: string) => {
-  if (nonceHash && type) {
-    return new SDKError(
-      ErrorCode.ERROR_NONCE_HASH_INVALID,
-      `Provided ${type} NonceHash invalid \n    Hash: ${nonceHash.hash} \n    Nonce: ${nonceHash.nonce}`
-    )
-  }
-  if (nonceHash) {
-    return new SDKError(
-      ErrorCode.ERROR_NONCE_HASH_INVALID,
-      `Provided NonceHash invalid \nHash: ${nonceHash}`
-    )
-  }
-
-  return new SDKError(
-    ErrorCode.ERROR_NONCE_HASH_INVALID,
-    'NonceHash could not be validated'
-  )
-}
 export const ERROR_LEGITIMATIONS_UNVERIFIABLE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_LEGITIMATIONS_UNVERIFIABLE,
@@ -525,19 +433,6 @@ export const ERROR_NESTED_CLAIM_UNVERIFIABLE: () => SDKError = () => {
   )
 }
 
-export const ERROR_CTYPE_HASH_INVALID: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_CTYPE_HASH_INVALID,
-    'CType Hash could not be validated'
-  )
-}
-
-export const ERROR_MNEMONIC_PHRASE_INVALID: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_MNEMONIC_PHRASE_INVALID,
-    'Mnemonic phrase invalid'
-  )
-}
 export const ERROR_IDENTITY_MISMATCH: (
   context?: string,
   type?: string
@@ -560,12 +455,6 @@ export const ERROR_IDENTITY_MISMATCH: (
   )
 }
 
-export const ERROR_IDENTITY_NOT_PE_ENABLED: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_IDENTITY_NOT_PE_ENABLED,
-    'Identity is not privacy enhaced'
-  )
-}
 export const ERROR_WS_ADDRESS_NOT_SET: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_WS_ADDRESS_NOT_SET,
@@ -639,46 +528,8 @@ export const ERROR_PARSING_MESSAGE: () => SDKError = () => {
   )
 }
 
-export const ERROR_MESSAGE_TYPE: (
-  type: string,
-  expectedType: string,
-  alternativeType?: string
-) => SDKError = (
-  type: string,
-  expectedType: string,
-  alternativeType?: string
-) => {
-  if (alternativeType) {
-    return new SDKError(
-      ErrorCode.ERROR_MESSAGE_TYPE,
-      `Unexpected message type. Received ${type}, expected ${expectedType} or ${alternativeType}`
-    )
-  }
-  return new SDKError(
-    ErrorCode.ERROR_MESSAGE_TYPE,
-    `Unexpected message type. Received ${type}, expected ${expectedType}`
-  )
-}
-
-export const ERROR_UNKNOWN: () => SDKError = () => {
-  return new SDKError(ErrorCode.ERROR_UNKNOWN, 'an unknown error ocurred')
-}
-
 export const ERROR_TIMEOUT: () => SDKError = () => {
   return new SDKError(ErrorCode.ERROR_TIMEOUT, 'operation timed out')
-}
-
-export const ERROR_PE_VERIFICATION: (
-  accFailure: boolean,
-  keyFailure: boolean
-) => SDKError = (accFailure: boolean, keyFailure: boolean) => {
-  return new SDKError(
-    ErrorCode.ERROR_PE_VERIFICATION,
-    `Received privacy enhanced presentation with insufficient data. 
-    \n\tMissing accumulators? ${accFailure}
-    \n\tMissing attester public keys? ${keyFailure}
-    `
-  )
 }
 
 export const ERROR_INVALID_PROOF_FOR_STATEMENT: (
