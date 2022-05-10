@@ -331,8 +331,7 @@ export class Message implements IMessage {
   public static verifyRequiredCTypeProperties(
     requiredProperties: string[],
     cType: ICType
-  ): boolean {
+  ): void {
     verifyRequiredCTypeProperties(requiredProperties, cType)
-    return true
   }
 }
