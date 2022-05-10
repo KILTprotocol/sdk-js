@@ -56,6 +56,13 @@ export function formatKiltBalance(
   return formatBalance(amount, options)
 }
 
+/**
+ * Converts balance from KILT denomination to base unit.
+ *
+ * @param balance Balance in KILT denomination.
+ * @param power Allows modifying conversion. Set to 0 for conversion to base unit, set to <0 for various larger denominations. -15 is KILT denomination.
+ * @returns Converted (redenominated) balance.
+ */
 export function convertToTxUnit(balance: BN, power: number): BN {
   return new BN(balance).mul(new BN(10).pow(new BN(15 + power)))
 }

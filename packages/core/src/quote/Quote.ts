@@ -66,6 +66,8 @@ export function validateQuoteSchema(
  * Builds a [[Quote]] object, from a simple object with the same properties.
  *
  * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
+ * @param options Optional settings.
+ * @param options.resolver DidResolver used in the process of verifying the attester signature.
  * @throws [[ERROR_QUOTE_MALFORMED]] when the derived basicQuote can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object signed by an Attester.
@@ -101,7 +103,9 @@ export async function fromAttesterSignedInput(
  *
  * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity The DID used to sign the object.
- *
+ * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param options Optional settings.
+ * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @returns A signed [[Quote]] object.
  */
 export async function createAttesterSignature(
@@ -141,6 +145,9 @@ export async function createAttesterSignature(
  *
  * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity The DID used to sign the object.
+ * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param options Optional settings.
+ * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
@@ -166,10 +173,14 @@ export async function fromQuoteDataAndIdentity(
 /**
  * Creates a [[Quote]] signed by the Attester and the Claimer.
  *
- * @param claimerIdentity The DID of the Claimer in order to sign.
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param requestRootHash A root hash of the entire object.
- *
+ * @param attesterIdentity The uri of the Attester DID.
+ * @param claimerIdentity The DID of the Claimer in order to sign.
+ * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param options Optional settings.
+ * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
+ * @param options.resolver DidResolver used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 export async function createQuoteAgreement(

@@ -29,6 +29,11 @@ export function connect(): Promise<Blockchain> {
   return BlockchainApiConnection.getConnectionOrConnect()
 }
 
+/**
+ * Allows setting global configuration such as the blockchain endpoint and log level.
+ *
+ * @param configs Config options object.
+ */
 export function config<K extends Partial<ConfigService.configOpts>>(
   configs: K
 ): void {

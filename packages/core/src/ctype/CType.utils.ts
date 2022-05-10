@@ -18,6 +18,14 @@ import type { HexString } from '@polkadot/util/types'
 import { getOwner, isStored } from './CType.chain.js'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema.js'
 
+/**
+ * Verifies data against CType schema or CType schema against metaschema.
+ *
+ * @param object Data to be verified against schema.
+ * @param schema Schema to verify against.
+ * @param messages Optional empty array. If passed, this receives all verification errors.
+ * @returns Whether or not verification was successful.
+ */
 export function verifySchemaWithErrors(
   object: Record<string, unknown>,
   schema: Record<string, unknown>,
@@ -36,6 +44,13 @@ export function verifySchemaWithErrors(
   return result.valid
 }
 
+/**
+ * Verifies data against CType schema or CType schema against metaschema.
+ *
+ * @param object Data to be verified against schema.
+ * @param schema Schema to verify against.
+ * @returns Whether or not verification was successful.
+ */
 export function verifySchema(
   object: Record<string, any>,
   schema: Record<string, any>
@@ -62,15 +77,33 @@ export function verifyClaimStructure(
   return verifySchema(claimContents, schema)
 }
 
+/**
+ * Checks on the KILT blockchain whether a CType is registered.
+ *
+ * @param ctype CType data.
+ * @returns Whether or not the CType is registered on-chain.
+ */
 export async function verifyStored(ctype: ICType): Promise<boolean> {
   return isStored(ctype.hash)
 }
 
+/**
+ * Checks on the KILT blockchain whether a CType is registered to the owner listed in the CType record.
+ *
+ * @param ctype CType data.
+ * @returns Whether or not the CType is registered on-chain to `ctype.owner`.
+ */
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
   const owner = await getOwner(ctype.hash)
   return owner ? owner === ctype.owner : false
 }
 
+/**
+ * Utility for (re)creating ctype hashes. For this, the $id property needs to be stripped from the CType schema.
+ *
+ * @param ctypeSchema The CType schema (with or without $id).
+ * @returns CtypeSchema without the $id property.
+ */
 export function getSchemaPropertiesForHash(
   ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
 ): Partial<ICType['schema']> {
@@ -86,6 +119,12 @@ export function getSchemaPropertiesForHash(
   return shallowCopy
 }
 
+/**
+ * Calculates the CType hash from a schema.
+ *
+ * @param schema The CType schema (with or without $id).
+ * @returns Hash as hex string.
+ */
 export function getHashForSchema(
   schema: CTypeSchemaWithoutId | ICType['schema']
 ): HexString {
@@ -93,12 +132,24 @@ export function getHashForSchema(
   return Crypto.hashObjectAsStr(preparedSchema)
 }
 
+/**
+ * Calculates the schema $id from a CType hash.
+ *
+ * @param hash CType hash as hex string.
+ * @returns Schema id uri.
+ */
 export function getIdForCTypeHash(
   hash: ICType['hash']
 ): ICType['schema']['$id'] {
   return `kilt:ctype:${hash}`
 }
 
+/**
+ * Calculates the schema $id for a CType schema by hashing it.
+ *
+ * @param schema CType schema for which to create schema id.
+ * @returns Schema id uri.
+ */
 export function getIdForSchema(
   schema: CTypeSchemaWithoutId | ICType['schema']
 ): string {
@@ -223,7 +274,7 @@ export function decompress(cType: CompressedCType): ICType {
  * @param cType - A [[CType]] that has nested [[CType]]s inside.
  * @param nestedCTypes - An array of [[CType]] schemas.
  * @param claimContents - The contents of a [[Claim]] to be validated.
- * @param messages
+ * @param messages Optional empty array. If passed, this receives all verification errors.
  *
  * @returns Whether the contents is valid.
  */
