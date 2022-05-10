@@ -175,8 +175,6 @@ export async function createLocalDemoFullDidFromLightDid(
 
   const keys: PublicKeys = {
     [authKey.id]: authKey,
-    [authKey.id]: authKey,
-    [authKey.id]: authKey,
   }
   if (encKey) {
     keys[encKey.id] = encKey
