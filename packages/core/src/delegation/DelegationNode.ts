@@ -403,7 +403,7 @@ export class DelegationNode implements IDelegationNode {
   ): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
-      throw SDKErrors.ERROR_UNAUTHORIZED(
+      throw new SDKErrors.ERROR_UNAUTHORIZED(
         `The DID ${did} is not among the delegators and may not revoke this node`
       )
     }

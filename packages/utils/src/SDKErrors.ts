@@ -11,6 +11,7 @@
  * @packageDocumentation
  */
 
+// eslint-disable-next-line max-classes-per-file
 import type { NonceHash } from '@kiltprotocol/types'
 
 export enum ErrorCode {
@@ -104,7 +105,7 @@ export class SDKError extends Error {
    * @param errorCode Numerical error code identifying the error.
    * @param message Error message for additional info.
    */
-  public constructor(errorCode: ErrorCode, message: string) {
+  public constructor(errorCode: ErrorCode, message?: string) {
     super(message)
     this.errorCode = errorCode
   }
@@ -126,35 +127,28 @@ export function isSDKError(input: unknown): input is SDKError {
   )
 }
 
-export const ERROR_UNAUTHORIZED: (msg: string) => SDKError = (msg: string) => {
-  return new SDKError(ErrorCode.ERROR_UNAUTHORIZED, msg)
-}
-export const ERROR_NOT_FOUND: (msg: string) => SDKError = (msg: string) => {
-  return new SDKError(ErrorCode.ERROR_NOT_FOUND, msg)
+export class ERROR_UNAUTHORIZED extends Error {}
+
+export class ERROR_NOT_FOUND extends Error {}
+
+export class ERROR_CTYPE_HASH_NOT_PROVIDED extends Error {
+  constructor() {
+    super('CType hash missing')
+  }
 }
 
-export const ERROR_CTYPE_HASH_NOT_PROVIDED: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_CTYPE_HASH_NOT_PROVIDED,
-    'CType hash missing'
-  )
+export class ERROR_CTYPE_ID_NOT_MATCHING extends Error {
+  constructor(fromSchema: string, provided: string) {
+    super(
+      `Provided $id "${provided}" and schema $id "${fromSchema}" are not matching`
+    )
+  }
 }
 
-export const ERROR_CTYPE_ID_NOT_MATCHING: (
-  fromSchema: string,
-  provided: string
-) => SDKError = (fromSchema: string, provided: string) => {
-  return new SDKError(
-    ErrorCode.ERROR_CTYPE_ID_NOT_MATCHING,
-    `Provided $id "${provided}" and schema $id "${fromSchema}" are not matching`
-  )
-}
-
-export const ERROR_CTYPE_PROPERTIES_NOT_MATCHING: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_CTYPE_PROPERTIES_NOT_MATCHING,
-    'Required properties do not match CType properties'
-  )
+export class ERROR_CTYPE_PROPERTIES_NOT_MATCHING extends Error {
+  constructor() {
+    super('Required properties do not match CType properties')
+  }
 }
 
 export const ERROR_UNSUPPORTED_KEY: (keyType: string) => SDKError = (

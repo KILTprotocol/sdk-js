@@ -33,7 +33,7 @@ function jsonLDcontents(
   expanded = true
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
-  if (!cTypeHash) SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+  if (!cTypeHash) throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   const vocabulary = `${getIdForCTypeHash(cTypeHash)}#`
   const result: Record<string, unknown> = {}
   if (owner) result['@id'] = owner
@@ -187,7 +187,7 @@ export function verifyDisclosedAttributes(
  */
 export function errorCheck(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
-    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
   if (input.owner) {
     DidUtils.validateKiltDidUri(input.owner)

@@ -21,7 +21,7 @@ import { Utils as DidUtils } from '@kiltprotocol/did'
  */
 export function errorCheck(input: IAttestation): void {
   if (!input.cTypeHash) {
-    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   } else DataUtils.validateHash(input.cTypeHash, 'CType')
 
   if (!input.claimHash) {

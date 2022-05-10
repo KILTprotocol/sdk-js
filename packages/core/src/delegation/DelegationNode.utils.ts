@@ -58,13 +58,13 @@ export async function countNodeDepth(
       const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
       delegationTreeTraversalSteps += steps
       if (node === null) {
-        throw SDKErrors.ERROR_UNAUTHORIZED(
+        throw new SDKErrors.ERROR_UNAUTHORIZED(
           'Attester is not athorized to revoke this attestation. (attester not in delegation tree)'
         )
       }
     }
   } else if (attestation.owner !== attester) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.ERROR_UNAUTHORIZED(
       'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
     )
   }
@@ -82,7 +82,7 @@ export function errorCheck(delegationNodeInput: IDelegationNode): void {
   const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.ERROR_UNAUTHORIZED(
       'Must have at least one permission and no more then two'
     )
   }

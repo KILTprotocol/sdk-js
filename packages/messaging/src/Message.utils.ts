@@ -59,7 +59,7 @@ export function errorCheckDelegationData(
   }
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.ERROR_UNAUTHORIZED(
       'Must have at least one permission and no more then two'
     )
   }
@@ -254,7 +254,7 @@ export function verifyRequiredCTypeProperties(
     (property) => !(property in cType.schema.properties)
   )
   if (validProperties) {
-    throw SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
+    throw new SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
   }
 }
 

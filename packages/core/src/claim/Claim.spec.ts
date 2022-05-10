@@ -135,8 +135,8 @@ describe('Claim', () => {
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
     expect(() =>

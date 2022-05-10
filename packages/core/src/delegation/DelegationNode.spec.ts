@@ -515,9 +515,7 @@ describe('DelegationNode', () => {
       } as IDelegationNode
 
       expect(() => errorCheck(malformedPremissionsDelegationNode)).toThrowError(
-        SDKErrors.ERROR_UNAUTHORIZED(
-          'Must have at least one permission and no more then two'
-        )
+        SDKErrors.ERROR_UNAUTHORIZED
       )
 
       expect(() => errorCheck(missingRootIdDelegationNode)).toThrowError(

@@ -258,8 +258,8 @@ describe('Attestation', () => {
       SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
     )
 
-    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowError(
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
     expect(() =>

@@ -873,14 +873,14 @@ describe('Messaging Utilities', () => {
   it('Checking required properties for given CType', () => {
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(['id', 'name'], testCType)
-    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING)
 
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(
         ['id', 'name'],
         testCTypeWithMultipleProperties
       )
-    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING)
 
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(
@@ -1086,7 +1086,7 @@ describe('Messaging Utilities', () => {
     delete rejectTermsBody.content.claim.cTypeHash
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
+    ).toThrowError(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED)
     requestAttestationBody.content.requestForAttestation.claimerSignature = {
       signature: 'this is not the claimers signature',
       // @ts-ignore
@@ -1186,11 +1186,7 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckDelegationData(
         submitAcceptDelegationBody.content.delegationData
       )
-    ).toThrowErrorWithCode(
-      SDKErrors.ERROR_UNAUTHORIZED(
-        'Must have at least one permission and no more then two'
-      )
-    )
+    ).toThrowError(SDKErrors.ERROR_UNAUTHORIZED)
     // @ts-expect-error
     delete submitAcceptDelegationBody.content.delegationData.id
     expect(() =>
