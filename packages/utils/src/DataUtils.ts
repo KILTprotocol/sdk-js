@@ -24,11 +24,11 @@ export function validateAddress(
   name: string
 ): boolean {
   if (typeof address !== 'string') {
-    throw SDKErrors.ERROR_ADDRESS_TYPE()
+    throw new SDKErrors.ERROR_ADDRESS_TYPE()
   }
   // KILT has registered ss58 prefix 38
   if (!checkAddress(address, 38)[0]) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID(address, name)
+    throw new SDKErrors.ERROR_ADDRESS_INVALID(address, name)
   }
   return true
 }
@@ -44,11 +44,11 @@ export function validateAddress(
  */
 export function validateHash(hash: string, name: string): boolean {
   if (typeof hash !== 'string') {
-    throw SDKErrors.ERROR_HASH_TYPE()
+    throw new SDKErrors.ERROR_HASH_TYPE()
   }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
   if (!hash.match(blake2bPattern)) {
-    throw SDKErrors.ERROR_HASH_MALFORMED(hash, name)
+    throw new SDKErrors.ERROR_HASH_MALFORMED(hash, name)
   }
   return true
 }
@@ -74,10 +74,10 @@ export function validateSignature(
     typeof signature !== 'string' ||
     typeof signer !== 'string'
   ) {
-    throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
   }
   if (!verify(data, signature, signer)) {
-    throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
+    throw new SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
   }
   return true
 }

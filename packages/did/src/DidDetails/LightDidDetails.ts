@@ -166,12 +166,12 @@ export class LightDidDetails extends DidDetails {
       parseDidUri(uri)
 
     if (type !== 'light') {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Cannot build a light DID from the provided URI ${uri} because it does not refer to a light DID.`
       )
     }
     if (fragment && failIfFragmentPresent) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
       )
     }
@@ -179,7 +179,7 @@ export class LightDidDetails extends DidDetails {
     const decodedAuthKeyType =
       getVerificationKeyTypeForEncoding(authKeyTypeEncoding)
     if (!decodedAuthKeyType) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type.`
       )
     }
@@ -247,7 +247,7 @@ export class LightDidDetails extends DidDetails {
       getKiltDidFromIdentifier(this.identifier, 'full')
     )
     if (!fullDidDetails) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         'Something went wrong during the migration.'
       )
     }

@@ -48,6 +48,6 @@ export function checkDidCreationDetails({
   })
   keyReferences.forEach((id) => {
     if (!keyIds.has(id))
-      throw SDKErrors.ERROR_DID_ERROR(`No key with id ${id} in "keys"`)
+      throw new SDKErrors.ERROR_DID_ERROR(`No key with id ${id} in "keys"`)
   })
 }

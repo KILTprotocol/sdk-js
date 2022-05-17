@@ -32,19 +32,19 @@ import { RequestForAttestation } from './RequestForAttestation.js'
  */
 export function errorCheck(input: IRequestForAttestation): void {
   if (!input.claim) {
-    throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
     ClaimUtils.errorCheck(input.claim)
   }
   if (!input.claim.owner) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   }
   if (!input.legitimations && !Array.isArray(input.legitimations)) {
-    throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
   }
 
   if (!input.claimNonceMap) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
   }
   if (
     typeof input.claimNonceMap !== 'object' ||
@@ -56,10 +56,10 @@ export function errorCheck(input: IRequestForAttestation): void {
         !nonce
     )
   ) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
+    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (input.claimerSignature)
     DidUtils.validateDidSignature(input.claimerSignature)
@@ -125,7 +125,7 @@ export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
     claim: ClaimUtils.decompress(reqForAtt[0]),

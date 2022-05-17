@@ -40,7 +40,9 @@ function encodeVerificationKeyToAddress({
       return encodeAddress(pk, 38)
     }
     default:
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(`Unsupported key type ${type}.`)
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
+        `Unsupported key type ${type}.`
+      )
   }
 }
 
@@ -118,7 +120,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
       getKiltDidFromIdentifier(encodedAddress, 'full')
     )
     if (!fetchedDidDetails) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Something went wrong during the creation.'
       )
     }

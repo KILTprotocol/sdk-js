@@ -125,10 +125,10 @@ describe('CType', () => {
       },
     }
     expect(() => CType.fromCType(wrongHashCtype)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(wrongHashCtype.hash, 'CType')
+      SDKErrors.ERROR_HASH_MALFORMED
     )
     expect(() => CType.fromCType(faultySchemaCtype)).toThrowError(
-      SDKErrors.ERROR_OBJECT_MALFORMED()
+      SDKErrors.ERROR_OBJECT_MALFORMED
     )
     expect(() =>
       CType.fromCType(invalidAddressCtype)

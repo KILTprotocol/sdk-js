@@ -115,8 +115,8 @@ describe('RequestForAttestation', () => {
 
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
-    expect(() => request.verifyData()).toThrowErrorWithCode(
-      SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
+    expect(() => request.verifyData()).toThrowError(
+      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
     )
   })
 
@@ -384,19 +384,19 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
-    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
+    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
-    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()

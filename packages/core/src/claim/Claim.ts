@@ -48,7 +48,7 @@ export class Claim implements IClaim {
     cTypeSchema: ICType['schema']
   ): Claim {
     if (!verifyClaim(claimInput.contents, cTypeSchema)) {
-      throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+      throw new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
     }
 
     return new Claim(claimInput)
@@ -78,7 +78,7 @@ export class Claim implements IClaim {
         claimContents
       )
     ) {
-      throw SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
+      throw new SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
     }
     return new Claim({
       cTypeHash: cTypeInput.hash,
@@ -104,7 +104,7 @@ export class Claim implements IClaim {
   ): Claim {
     if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {
-        throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+        throw new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
       }
     }
     return new Claim({

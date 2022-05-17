@@ -254,36 +254,34 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
+    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowError(
+      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
     )
 
-    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowError(
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedOwner)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
+    expect(() => AttestationUtils.errorCheck(malformedOwner)).toThrowError(
+      SDKErrors.ERROR_OWNER_NOT_PROVIDED
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(noRevocationBit)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
+    expect(() => AttestationUtils.errorCheck(noRevocationBit)).toThrowError(
+      SDKErrors.ERROR_REVOCATION_BIT_MISSING
+    )
 
     expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedClaimHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => AttestationUtils.errorCheck(malformedClaimHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedCTypeHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => AttestationUtils.errorCheck(malformedCTypeHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedAddress)
-    ).toThrowErrorWithCode(
-      SDKErrors.ERROR_INVALID_DID_FORMAT(malformedAddress.owner)
+    expect(() => AttestationUtils.errorCheck(malformedAddress)).toThrowError(
+      SDKErrors.ERROR_INVALID_DID_FORMAT
     )
   })
   it('Typeguard should return true on complete Attestations', () => {

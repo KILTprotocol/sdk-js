@@ -135,7 +135,7 @@ export function parseDidUri(didUri: IDidDetails['uri']): IDidParsingResult {
     }
   }
 
-  throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+  throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
 }
 
 /**
@@ -281,23 +281,23 @@ export function validateKiltDidUri(
     input as IDidDetails['uri']
   )
   if (!allowFragment && fragment) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
+    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
 
   switch (type) {
     case 'full':
       if (!checkAddress(identifier, 38)[0]) {
-        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
       }
       break
     case 'light':
       // Identifier includes the first two characters for the key type encoding
       if (!checkAddress(identifier.substring(2), 38)[0]) {
-        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
       }
       break
     default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(input)
+      throw new SDKErrors.ERROR_UNSUPPORTED_DID(input)
   }
   return true
 }
@@ -317,11 +317,11 @@ export function validateDidSignature(input: unknown): input is DidSignature {
       !isHex(signature.signature) ||
       !validateKiltDidUri(signature.keyUri, true)
     ) {
-      throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+      throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
     }
     return true
   } catch (e) {
-    throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
   }
 }
 
@@ -469,7 +469,7 @@ export function assembleKeyUri(
   keyId: DidKey['id']
 ): DidPublicKey['uri'] {
   if (parseDidUri(did).fragment) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `Cannot assemble key URI from a DID that already has a fragment: ${did}`
     )
   }

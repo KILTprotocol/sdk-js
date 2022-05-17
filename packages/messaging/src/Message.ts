@@ -61,7 +61,7 @@ export class Message implements IMessage {
               sender
             )
           ) {
-            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
+            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
         }
         break
@@ -74,7 +74,7 @@ export class Message implements IMessage {
               sender
             )
           ) {
-            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
+            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
         break
@@ -83,7 +83,7 @@ export class Message implements IMessage {
           const submitClaimsForCtype: ISubmitCredential = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
-              throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
+              throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
         }
@@ -122,19 +122,19 @@ export class Message implements IMessage {
 
     const senderKeyDetails = await resolver.resolveKey(senderKeyUri)
     if (!senderKeyDetails) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Could not resolve sender encryption key ${senderKeyUri}`
       )
     }
     const { fragment } = DidUtils.parseDidUri(receiverKeyUri)
     if (!fragment) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `No fragment for the receiver key ID ${receiverKeyUri}`
       )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
     if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Could not resolve receiver encryption key ${receiverKeyUri}`
       )
     }
@@ -143,7 +143,7 @@ export class Message implements IMessage {
         receiverKeyDetails.type as EncryptionKeyType
       )
     if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }
@@ -157,7 +157,7 @@ export class Message implements IMessage {
         nonce: hexToU8a(nonce),
       })
       .catch(() => {
-        throw SDKErrors.ERROR_DECODING_MESSAGE()
+        throw new SDKErrors.ERROR_DECODING_MESSAGE()
       })
 
     const decoded = u8aToString(data)
@@ -184,7 +184,7 @@ export class Message implements IMessage {
       }
 
       if (sender !== senderKeyDetails.controller) {
-        throw SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
+        throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
       }
 
       // checks the message body
@@ -197,7 +197,7 @@ export class Message implements IMessage {
 
       return decrypted
     } catch (error) {
-      throw SDKErrors.ERROR_PARSING_MESSAGE()
+      throw new SDKErrors.ERROR_PARSING_MESSAGE()
     }
   }
 
@@ -258,17 +258,22 @@ export class Message implements IMessage {
   ): Promise<IEncryptedMessage> {
     const receiverKey = await resolver.resolveKey(receiverKeyUri)
     if (!receiverKey) {
-      throw SDKErrors.ERROR_DID_ERROR(`Cannot resolve key ${receiverKeyUri}`)
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `Cannot resolve key ${receiverKeyUri}`
+      )
     }
     if (this.receiver !== receiverKey.controller) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
+      throw new SDKErrors.ERROR_IDENTITY_MISMATCH(
+        'receiver public key',
+        'receiver'
+      )
     }
     if (this.sender !== senderDetails.uri) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
+      throw new SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
     }
     const senderKey = senderDetails.getKey(senderKeyId)
     if (!senderKey || !DidUtils.isEncryptionKey(senderKey)) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Cannot find key with ID ${senderKeyId} for the sender DID.`
       )
     }
@@ -277,7 +282,7 @@ export class Message implements IMessage {
         senderKey.type as EncryptionKeyType
       )
     if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }

@@ -82,7 +82,7 @@ export abstract class DidDetails implements IDidDetails {
       KeyRelationship.authentication
     )[0]
     if (!firstAuthenticationKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         'Unexpected error. Any DID should always have at least one authentication key.'
       )
     }
@@ -233,7 +233,7 @@ export abstract class DidDetails implements IDidDetails {
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
     if (!key || !isVerificationKey(key)) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Failed to find verification key with ID ${keyId} on DID (${this.uri})`
       )
     }
@@ -241,7 +241,7 @@ export abstract class DidDetails implements IDidDetails {
       key.type as VerificationKeyType
     )
     if (!alg) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `No algorithm found for key type ${key.type}`
       )
     }

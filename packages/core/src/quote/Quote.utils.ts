@@ -29,7 +29,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
  */
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
   }
   return [cost.gross, cost.net, cost.tax]
 }
@@ -44,7 +44,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  */
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
@@ -66,7 +66,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     !quote.termsAndConditions ||
     !quote.timeframe
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
   }
   return [
     quote.attesterDid,
@@ -87,7 +87,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  */
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterDid: quote[0],
@@ -139,7 +139,7 @@ export function compressAttesterSignedQuote(
     !attesterSignature.signature ||
     !attesterSignature.keyUri
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(
       attesterSignedQuote,
       'Attester Signed Quote'
     )
@@ -167,7 +167,7 @@ export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterDid: attesterSignedQuote[0],
@@ -200,7 +200,7 @@ export function compressQuoteAgreement(
     !quoteAgreement.timeframe ||
     !quoteAgreement.attesterSignature
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
   }
   return [
     quoteAgreement.attesterDid,
@@ -227,7 +227,7 @@ export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterDid: quoteAgreement[0],
