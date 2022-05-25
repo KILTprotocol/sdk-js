@@ -7,7 +7,7 @@
 
 This package provides a configuration service, which the rest of the KILT SDK can use.
 
-For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+For more information, please visit our [official SDK documentation](https://docs.kilt.io/docs/sdk/introduction).
 
 ## Installation
 
