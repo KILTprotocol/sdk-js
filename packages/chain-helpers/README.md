@@ -7,7 +7,7 @@
 
 This package includes modules to manage and cache a blockchain connection, handle extrinsic errors and submit transactions (with resigning and Promises).
 
-For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+For more information, please visit our [official SDK documentation](https://docs.kilt.io/docs/sdk/introduction).
 
 ## Installation
 
