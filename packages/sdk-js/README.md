@@ -19,6 +19,20 @@ Head over to our [official website](https://kilt.io) or our [documentation hub](
 
 To help improve, please refer to our [contribution page](/docs/contribution-guide.md).
 
+## How to install the SDK
+
+Install the KILT-SDK by running the following commands:
+
+```bash
+npm install @kiltprotocol/sdk-js
+```
+
+or with `yarn`:
+
+```bash
+yarn add @kiltprotocol/sdk-js
+```
+
 ## Job Board
 
 Check to see if we have any [Job Offers](https://www.kilt.io/community/careers/)
