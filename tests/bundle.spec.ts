@@ -5,9 +5,23 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { GenericContainer, Wait, StartedTestContainer } from 'testcontainers'
 import { test, expect } from '@playwright/test'
 import url from 'url'
 import path from 'path'
+
+let testcontainer: StartedTestContainer
+
+test.beforeAll(async () => {
+  // start dev node with testcontainers
+  testcontainer = await new GenericContainer(
+    process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+  )
+    .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
+    .withExposedPorts({ container: 9944, host: 9944 })
+    .withWaitStrategy(Wait.forLogMessage('Listening for new connections'))
+    .start()
+})
 
 test('html bundle integration test', async ({ page }) => {
   const fileurl = url.pathToFileURL(
@@ -34,4 +48,10 @@ test('html bundle integration test', async ({ page }) => {
     }
   })
   page.close()
+})
+
+test.afterAll(() => {
+  if (testcontainer) {
+    testcontainer.stop()
+  }
 })

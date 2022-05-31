@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module ClaimUtils
  */
 
 import { hexToBn } from '@polkadot/util'
@@ -38,7 +33,7 @@ function jsonLDcontents(
   expanded = true
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
-  if (!cTypeHash) SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+  if (!cTypeHash) throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   const vocabulary = `${getIdForCTypeHash(cTypeHash)}#`
   const result: Record<string, unknown> = {}
   if (owner) result['@id'] = owner
@@ -123,7 +118,7 @@ export function hashClaimContents(
   const nonceMap = {}
   processed.forEach(({ digest, nonce, statement }) => {
     // throw if we can't map a digest to a nonce - this should not happen if the nonce map is complete and the credential has not been tampered with
-    if (!nonce) throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED(statement)
+    if (!nonce) throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED(statement)
     nonceMap[digest] = nonce
   }, {})
   return { hashes, nonceMap }
@@ -150,7 +145,7 @@ export function verifyDisclosedAttributes(
   options: Pick<Crypto.HashingOptions, 'hasher'> & {
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
-): { verified: boolean; errors: SDKErrors.SDKError[] } {
+): { verified: boolean; errors: Error[] } {
   // apply defaults
   const defaults = { canonicalisation: makeStatementsJsonLD }
   const canonicalisation = options.canonicalisation || defaults.canonicalisation
@@ -161,17 +156,19 @@ export function verifyDisclosedAttributes(
   const hashed = Crypto.hashStatements(statements, { ...options, nonces })
   // check resulting hashes
   const digestsInProof = Object.keys(nonces)
-  return hashed.reduce<{ verified: boolean; errors: SDKErrors.SDKError[] }>(
+  return hashed.reduce<{ verified: boolean; errors: Error[] }>(
     (status, { saltedHash, statement, digest, nonce }) => {
       // check if the statement digest was contained in the proof and mapped it to a nonce
       if (!digestsInProof.includes(digest) || !nonce) {
-        status.errors.push(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT(statement))
+        status.errors.push(
+          new SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT(statement)
+        )
         return { ...status, verified: false }
       }
       // check if the hash is whitelisted in the proof
       if (!proof.hashes.includes(saltedHash)) {
         status.errors.push(
-          SDKErrors.ERROR_INVALID_PROOF_FOR_STATEMENT(statement)
+          new SDKErrors.ERROR_INVALID_PROOF_FOR_STATEMENT(statement)
         )
         return { ...status, verified: false }
       }
@@ -192,7 +189,7 @@ export function verifyDisclosedAttributes(
  */
 export function errorCheck(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
-    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
   if (input.owner) {
     DidUtils.validateKiltDidUri(input.owner)
@@ -204,7 +201,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
         typeof key !== 'string' ||
         !['string', 'number', 'boolean', 'object'].includes(typeof value)
       ) {
-        throw SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
+        throw new SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
       }
     })
   }
@@ -212,7 +209,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
 }
 
 /**
- *  Compresses the [[IClaim]] for storage and/or messaging.
+ *  Compresses an [[IClaim]] for storage and/or messaging.
  *
  * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
@@ -220,13 +217,20 @@ export function errorCheck(input: IClaim | PartialClaim): void {
  */
 export function compress(claim: IClaim): CompressedClaim
 /**
- *  Compresses the [[PartialClaim]] for storage and/or messaging.
+ *  Compresses a [[PartialClaim]] for storage and/or messaging.
  *
  * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
  *
  * @returns An ordered array of a [[CompressedPartialClaim]].
  */
 export function compress(claim: PartialClaim): CompressedPartialClaim
+/**
+ *  Compresses a claim object for storage and/or messaging.
+ *
+ * @param claim A (partial) claim object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of that represents the underlying data in a more compact form.
+ */
 export function compress(
   claim: IClaim | PartialClaim
 ): CompressedClaim | CompressedPartialClaim {
@@ -239,27 +243,33 @@ export function compress(
 }
 
 /**
- *  Decompresses the [[IClaim]] from storage and/or message.
+ *  Decompresses an [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedClaim]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when a [[CompressedClaim]] is not an Array or it's length is unequal 3.
- * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
+ * @returns An [[IClaim]] object that has the same properties compressed representation.
  */
 export function decompress(claim: CompressedClaim): IClaim
 /**
- *  Decompresses the Partial [[IClaim]] from storage and/or message.
+ *  Decompresses a partial [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
- * @throws When a [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns A [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
+ * @returns A [[PartialClaim]] object that has the same properties compressed representation.
  */
 export function decompress(claim: CompressedPartialClaim): PartialClaim
+/**
+ *  Decompresses compressed representation of a (partial) [[IClaim]] from storage and/or message.
+ *
+ * @param claim A [[CompressedClaim]] or [[CompressedPartialClaim]] array that is reverted back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
+ * @returns An [[IClaim]] or [[PartialClaim]] object that has the same properties compressed representation.
+ */
 export function decompress(
   claim: CompressedClaim | CompressedPartialClaim
 ): IClaim | PartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
     cTypeHash: claim[0],

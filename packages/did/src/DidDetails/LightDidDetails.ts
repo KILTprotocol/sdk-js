@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -67,6 +67,11 @@ export class LightDidDetails extends DidDetails {
     this.identifier = identifier
   }
 
+  /**
+   * Authentication key type of this LightDid.
+   *
+   * @returns Authentication key type.
+   */
   public get authKeyEncoding(): string {
     return getEncodingForVerificationKeyType(
       this.authenticationKey.type
@@ -161,12 +166,12 @@ export class LightDidDetails extends DidDetails {
       parseDidUri(uri)
 
     if (type !== 'light') {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Cannot build a light DID from the provided URI ${uri} because it does not refer to a light DID.`
       )
     }
     if (fragment && failIfFragmentPresent) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
       )
     }
@@ -174,7 +179,7 @@ export class LightDidDetails extends DidDetails {
     const decodedAuthKeyType =
       getVerificationKeyTypeForEncoding(authKeyTypeEncoding)
     if (!decodedAuthKeyType) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type.`
       )
     }
@@ -199,7 +204,7 @@ export class LightDidDetails extends DidDetails {
    * The resulting DID will only have an authentication key, and no encryption key nor service endpoints.
    *
    * @param identifier The KILT address to generate the DID from.
-   * @param keyType One of the [[LightDidSupportedSigningKeyTypes]] to set the type of the authentication key derived from the provided address. It defaults to Sr25519.
+   * @param keyType One of the [[LightDidSupportedVerificationKeyType]]s to set the type of the authentication key derived from the provided address. It defaults to Sr25519.
    *
    * @returns The resulting [[LightDidDetails]].
    */
@@ -246,7 +251,7 @@ export class LightDidDetails extends DidDetails {
       getKiltDidFromIdentifier(this.identifier, 'full')
     )
     if (!fullDidDetails) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         'Something went wrong during the migration.'
       )
     }

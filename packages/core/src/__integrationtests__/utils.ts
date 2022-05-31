@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -31,16 +31,30 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import { GenericContainer, Wait } from 'testcontainers'
 import { CType } from '../ctype/CType'
 import { Balance } from '../balance'
-import { init } from '../kilt'
+import { connect, init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
-const WS_ADDRESS = 'ws://127.0.0.1:9944'
+const containerPromise = new GenericContainer(
+  process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+)
+  .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
+  .withExposedPorts(9944)
+  .withWaitStrategy(Wait.forLogMessage('Listening for new connections'))
+  .start()
 export async function initializeApi(): Promise<void> {
-  return init({ address: WS_ADDRESS })
+  const started = await containerPromise
+  const port = started.getMappedPort(9944)
+  const host = started.getHost()
+  const WS_ADDRESS = `ws://${host}:${port}`
+  await init({ address: WS_ADDRESS })
+  connect().then(({ api }) =>
+    api.once('disconnected', () => started.stop().catch())
+  )
 }
 
 const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })

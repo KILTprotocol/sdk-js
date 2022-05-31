@@ -1,26 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
- *
- * Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
- *
- * A delegation object is stored on-chain, and can be revoked.
- *
- * A delegation can and may restrict permissions.
- *
- * Permissions:
- *   * Delegate.
- *   * Attest.
- *
- * @packageDocumentation
- * @module DelegationNode
- * @preferred
  */
 
 import {
@@ -70,6 +52,19 @@ type NewDelegationNodeInput = Required<
 type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
   DelegationHierarchyDetailsRecord
 
+/**
+ * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
+ *
+ * Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
+ *
+ * A delegation object is stored on-chain, and can be revoked.
+ *
+ * A delegation can and may restrict permissions.
+ *
+ * Permissions:
+ *   * Delegate.
+ *   * Attest.
+ */
 export class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
@@ -180,13 +175,13 @@ export class DelegationNode implements IDelegationNode {
    * [ASYNC] Fetches the details of the hierarchy this delegation node belongs to.
    *
    * @throws [[ERROR_HIERARCHY_QUERY]] when the hierarchy details could not be queried.
-   * @returns Promise containing the [[DelegationHierarchyDetails]] of this delegation node.
+   * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
       const hierarchyDetails = await queryDetails(this.hierarchyId)
       if (!hierarchyDetails) {
-        throw SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
+        throw new SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
       }
       this.hierarchyDetails = hierarchyDetails
       return hierarchyDetails
@@ -278,23 +273,6 @@ export class DelegationNode implements IDelegationNode {
    * @param signer The keystore responsible for signing the delegation creation details for the delegee.
    * @param options The additional signing options.
    * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
-   * @example
-   * ```
-   * // Sign the hash of the delegation node...
-   * let myNewDelegation: DelegationNode
-   * let myDidDetails: DidDetails
-   * let myKeyStore: Keystore
-   * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
-   *
-   * // produce the extrinsic that stores the delegation node on the Kilt chain
-   * const extrinsic = await newDelegationNode.store(signature)
-   *
-   * // now the delegating DID must sign as well
-   * const submittable = await delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
-   *
-   * // and we can put it on chain
-   * await submittable.signAndSend()
-   * ```
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegeeSign(
@@ -310,7 +288,7 @@ export class DelegationNode implements IDelegationNode {
       delegeeDid.getVerificationKeys(KeyRelationship.authentication)
     )
     if (!authenticationKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Delegee ${delegeeDid.uri} does not have any authentication key.`
       )
     }
@@ -425,7 +403,7 @@ export class DelegationNode implements IDelegationNode {
   ): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
-      throw SDKErrors.ERROR_UNAUTHORIZED(
+      throw new SDKErrors.ERROR_UNAUTHORIZED(
         `The DID ${did} is not among the delegators and may not revoke this node`
       )
     }

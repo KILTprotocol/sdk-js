@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module BalanceUtils
  */
 
 import { BN, formatBalance } from '@polkadot/util'
@@ -61,6 +56,13 @@ export function formatKiltBalance(
   return formatBalance(amount, options)
 }
 
+/**
+ * Converts balance from KILT denomination to base unit.
+ *
+ * @param balance Balance in KILT denomination.
+ * @param power Allows modifying conversion. Set to 0 for conversion to base unit, set to <0 for various larger denominations. -15 is KILT denomination.
+ * @returns Converted (redenominated) balance.
+ */
 export function convertToTxUnit(balance: BN, power: number): BN {
   return new BN(balance).mul(new BN(10).pow(new BN(15 + power)))
 }
@@ -138,7 +140,7 @@ export function toFemtoKilt(
  * it's output can therefore be formatted via the polkadot formatting options.
  *
  * @param input [[BalanceNumber]] to convert from Femto Kilt.
- * @param decimals [[number]] Set the minimum decimal places in the formatted localized output, default is 4.
+ * @param decimals Set the minimum decimal places in the formatted localized output, default is 4.
  * @param options [[BalanceOptions]] for internationalization and formatting.
  * @returns String representation of the given [[BalanceNumber]] with unit und metric prefix.
  */

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -45,12 +45,12 @@ function checkWeb3NameInputConstraints(
   ]
 
   if (web3Name.length < minLength) {
-    throw SDKErrors.ERROR_WEB3_NAME_ERROR(
+    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
       `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}.`
     )
   }
   if (web3Name.length > maxLength) {
-    throw SDKErrors.ERROR_WEB3_NAME_ERROR(
+    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
       `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}.`
     )
   }
@@ -61,7 +61,7 @@ function checkWeb3NameInputConstraints(
  *
  * @param name Web3Name that should be claimed.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The [[SubmittableExtrinsic]] for the `claim` call.
+ * @returns The SubmittableExtrinsic for the `claim` call.
  */
 export async function getClaimTx(
   name: Web3Name
@@ -74,7 +74,7 @@ export async function getClaimTx(
 /**
  * Returns a extrinsic to release a web3name by its owner.
  *
- * @returns The [[SubmittableExtrinsic]] for the `releaseByOwner` call.
+ * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
  */
 export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -86,7 +86,7 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
  *
  * @param name Web3Name that should be released.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ * @returns The SubmittableExtrinsic for the `reclaimDeposit` call.
  */
 export async function getReclaimDepositTx(
   name: Web3Name

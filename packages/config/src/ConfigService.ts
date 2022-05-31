@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,7 +10,6 @@
  * the logging level as well as storing custom configuration options.
  *
  * @packageDocumentation
- * @module ConfigService
  */
 
 import {
@@ -58,10 +57,16 @@ let configuration: configOpts = {
 
 function checkAddress(): void {
   if (!configuration.address) {
-    throw SDKErrors.ERROR_WS_ADDRESS_NOT_SET()
+    throw new SDKErrors.ERROR_WS_ADDRESS_NOT_SET()
   }
 }
 
+/**
+ * Get the value set for a configuration.
+ *
+ * @param configOpt Key of the configuration.
+ * @returns Value for this key.
+ */
 export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
   switch (configOpt) {
     case 'address':
@@ -80,6 +85,11 @@ function setLogLevel(logLevel: LogLevel | undefined): void {
   }
 }
 
+/**
+ * Set values for one or multiple configurations.
+ *
+ * @param opts Object of configurations as key-value pairs.
+ */
 export function set<K extends Partial<configOpts>>(opts: K): void {
   configuration = { ...configuration, ...opts }
   setLogLevel(configuration.logLevel)

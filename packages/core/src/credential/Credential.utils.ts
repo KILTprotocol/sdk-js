@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module CredentialUtils
  */
 
 import type {
@@ -33,14 +28,14 @@ import { Credential } from './Credential.js'
 export function errorCheck(input: ICredential): void {
   if (input.attestation) {
     AttestationUtils.errorCheck(input.attestation)
-  } else throw SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
+  } else throw new SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
 
   if (input.request) {
     RequestForAttestationUtils.errorCheck(input.request)
-  } else throw SDKErrors.ERROR_RFA_NOT_PROVIDED()
+  } else throw new SDKErrors.ERROR_RFA_NOT_PROVIDED()
 
   if (!Credential.verifyData(input as ICredential)) {
-    throw SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
+    throw new SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
   }
 }
 
@@ -51,7 +46,6 @@ export function errorCheck(input: ICredential): void {
  *
  * @returns An ordered array of a [[Credential]] that comprises of an [[Attestation]] and [[RequestForAttestation]] arrays.
  */
-
 export function compress(credential: ICredential): CompressedCredential {
   errorCheck(credential)
 
@@ -69,10 +63,9 @@ export function compress(credential: ICredential): CompressedCredential {
  *
  * @returns An object that has the same properties as a [[Credential]].
  */
-
 export function decompress(credential: CompressedCredential): ICredential {
   if (!Array.isArray(credential) || credential.length !== 2) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
   }
   return {
     request: RequestForAttestationUtils.decompress(credential[0]),
@@ -88,7 +81,6 @@ export function decompress(credential: CompressedCredential): ICredential {
  *
  * @returns A boolean if the [[Claim]] structure in the [[Credential]] is valid.
  */
-
 export function verifyStructure(
   credential: ICredential,
   ctype: ICType

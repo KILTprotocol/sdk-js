@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module VCExport
  */
 
 import { isHex } from '@polkadot/util'
@@ -35,6 +30,12 @@ import type {
   VerifiableCredential,
 } from './types.js'
 
+/**
+ * Extracts the credential root hash from a KILT VC's id.
+ *
+ * @param credentialId The IRI that serves as the credential id on KILT VCs.
+ * @returns The credential root hash as a hex string.
+ */
 export function fromCredentialIRI(credentialId: string): HexString {
   const hexString = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
     ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
@@ -46,6 +47,12 @@ export function fromCredentialIRI(credentialId: string): HexString {
   return hexString
 }
 
+/**
+ * Transforms the credential root hash to an IRI that functions as the VC's id.
+ *
+ * @param rootHash Credential root hash as a hex string.
+ * @returns An IRI composed by prefixing the root hash with the [[KILT_CREDENTIAL_IRI_PREFIX]].
+ */
 export function toCredentialIRI(rootHash: string): string {
   if (rootHash.startsWith(KILT_CREDENTIAL_IRI_PREFIX)) {
     return rootHash
@@ -55,6 +62,13 @@ export function toCredentialIRI(rootHash: string): string {
   return KILT_CREDENTIAL_IRI_PREFIX + rootHash
 }
 
+/**
+ * Transforms a regular KILT credential to its VC representation.
+ *
+ * @param input The credential to transform.
+ * @param ctype (optional) The full specification of the credential's CType. If specified, the CType will be included with the VC on its `credentialSchema` property.
+ * @returns The VC representation of the KILT credential and optionally its CType.
+ */
 export function fromCredential(
   input: ICredential,
   ctype?: ICType

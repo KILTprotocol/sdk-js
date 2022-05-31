@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -40,7 +40,9 @@ function encodeVerificationKeyToAddress({
       return encodeAddress(pk, 38)
     }
     default:
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(`Unsupported key type ${type}.`)
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
+        `Unsupported key type ${type}.`
+      )
   }
 }
 
@@ -70,7 +72,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * All the details in the DID are marked as to-add in the resulting creation operation.
    *
-   * @param api The [[ApiPromise]] object to encode/decoded types as needed.
+   * @param api The ApiPromise object to encode/decoded types as needed.
    * @param details The [[LightDidDetails]] object.
    * @param upgradeOptions Optional.
    * @param upgradeOptions.withEncryptionKey When set to true (default) the LightDID's encryption key is added to the on-chain DID.
@@ -99,7 +101,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and delegates to the callback the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Consume the builder and delegates to the callback the SubmittableExtrinsic containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
@@ -124,7 +126,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
       getKiltDidFromIdentifier(encodedAddress, 'full')
     )
     if (!fetchedDidDetails) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Something went wrong during the creation.'
       )
     }
@@ -132,13 +134,13 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * Consume the builder and generate the SubmittableExtrinsic containing the details of a DID creation with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
    * @param _atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails. At this time, this parameter is not used for a creation operation, albeit this might change in the future.
    *
-   * @returns The [[SubmittableExtrinsic]] containing the details of a DID creation with the provided details.
+   * @returns The SubmittableExtrinsic containing the details of a DID creation with the provided details.
    */
   // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */

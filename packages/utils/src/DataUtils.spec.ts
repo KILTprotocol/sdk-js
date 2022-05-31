@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,9 +10,8 @@
  */
 
 import { encodeAddress } from '@polkadot/keyring'
-import { Keyring } from './index'
+import { Keyring, SDKErrors } from './index'
 import { validateAddress, validateHash, validateSignature } from './DataUtils'
-import { ErrorCode } from './SDKErrors'
 import * as Crypto from './Crypto'
 
 const key = Buffer.from([0, 0, 7, 0])
@@ -27,24 +26,24 @@ it('throws on address with other prefix', () => {
 })
 
 it('throws for random strings', () => {
-  expect(() => validateAddress('', 'test')).toThrowErrorWithCode(
-    ErrorCode.ERROR_ADDRESS_INVALID
+  expect(() => validateAddress('', 'test')).toThrowError(
+    SDKErrors.ERROR_ADDRESS_INVALID
   )
-  expect(() => validateAddress('0x123', 'test')).toThrowErrorWithCode(
-    ErrorCode.ERROR_ADDRESS_INVALID
+  expect(() => validateAddress('0x123', 'test')).toThrowError(
+    SDKErrors.ERROR_ADDRESS_INVALID
   )
-  expect(() => validateAddress('bananenbabara', 'test')).toThrowErrorWithCode(
-    ErrorCode.ERROR_ADDRESS_INVALID
+  expect(() => validateAddress('bananenbabara', 'test')).toThrowError(
+    SDKErrors.ERROR_ADDRESS_INVALID
   )
-  expect(() =>
-    validateAddress('ax843zoidsfho38290rdusa', 'test')
-  ).toThrowErrorWithCode(ErrorCode.ERROR_ADDRESS_INVALID)
+  expect(() => validateAddress('ax843zoidsfho38290rdusa', 'test')).toThrowError(
+    SDKErrors.ERROR_ADDRESS_INVALID
+  )
 })
 
 it('throws if address is no string', () => {
   expect(() =>
     validateAddress(Buffer.from([0, 0, 7]) as any, 'test')
-  ).toThrowErrorWithCode(ErrorCode.ERROR_ADDRESS_TYPE)
+  ).toThrowError(SDKErrors.ERROR_ADDRESS_TYPE)
 })
 
 it('validates hash', () => {
@@ -58,25 +57,25 @@ it('throws on broken hashes', () => {
   const hash = Crypto.hashStr('test')
   expect(() => {
     validateHash(hash.substr(2), 'test')
-  }).toThrowErrorWithCode(ErrorCode.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
   expect(() => {
     validateHash(hash.substr(0, 60), 'test')
-  }).toThrowErrorWithCode(ErrorCode.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
   expect(() => {
     validateHash(hash.replace('0', 'O'), 'test')
-  }).toThrowErrorWithCode(ErrorCode.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
   expect(() => {
     validateHash(`${hash.substr(0, hash.length - 1)}ß`, 'test')
-  }).toThrowErrorWithCode(ErrorCode.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
   expect(() => {
     validateHash(hash.replace(/\w/i, 'P'), 'test')
-  }).toThrowErrorWithCode(ErrorCode.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
 })
 
 it('throws if hash is no string', () => {
   expect(() =>
     validateHash(Buffer.from([0, 0, 7]) as any, 'test')
-  ).toThrowErrorWithCode(ErrorCode.ERROR_HASH_TYPE)
+  ).toThrowError(SDKErrors.ERROR_HASH_TYPE)
 })
 
 describe('validate signature util', () => {
@@ -96,7 +95,7 @@ describe('validate signature util', () => {
   it('throws when signature does not check out', () => {
     expect(() =>
       validateSignature('dörte', signature, signer.address)
-    ).toThrowErrorWithCode(ErrorCode.ERROR_SIGNATURE_UNVERIFIABLE)
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE)
   })
 
   it('throws non-sdk error if input is bogus', () => {
@@ -108,17 +107,17 @@ describe('validate signature util', () => {
   })
 
   it('throws when input is incomplete', () => {
-    expect(() =>
-      validateSignature('data', null as any, 'signer')
-    ).toThrowErrorWithCode(ErrorCode.ERROR_SIGNATURE_DATA_TYPE)
+    expect(() => validateSignature('data', null as any, 'signer')).toThrowError(
+      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+    )
     expect(() =>
       validateSignature('data', 'signature', undefined as any)
-    ).toThrowErrorWithCode(ErrorCode.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
     expect(() =>
       validateSignature({ key: ['value'] } as any, 'signature', 'signer')
-    ).toThrowErrorWithCode(ErrorCode.ERROR_SIGNATURE_DATA_TYPE)
-    expect(() => (validateSignature as any)()).toThrowErrorWithCode(
-      ErrorCode.ERROR_SIGNATURE_DATA_TYPE
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    expect(() => (validateSignature as any)()).toThrowError(
+      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
     )
   })
 })

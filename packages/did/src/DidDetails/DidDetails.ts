@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -82,7 +82,7 @@ export abstract class DidDetails implements IDidDetails {
       KeyRelationship.authentication
     )[0]
     if (!firstAuthenticationKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         'Unexpected error. Any DID should always have at least one authentication key.'
       )
     }
@@ -116,6 +116,12 @@ export abstract class DidDetails implements IDidDetails {
     return this.getVerificationKeys(KeyRelationship.capabilityDelegation)[0]
   }
 
+  /**
+   * Returns a key with a given id, if associated with this Did.
+   *
+   * @param id Key id (not the full key uri).
+   * @returns The respective public key data or undefined.
+   */
   public getKey(id: DidKey['id']): DidKey | undefined {
     const keyDetails = this.publicKeys.get(id)
     if (!keyDetails) {
@@ -127,6 +133,12 @@ export abstract class DidDetails implements IDidDetails {
     }
   }
 
+  /**
+   * Gets all verification public keys for this Did with a given verification relationship.
+   *
+   * @param relationship The verification relationship.
+   * @returns Array of keys matching this verification relationship.
+   */
   public getVerificationKeys(
     relationship: VerificationKeyRelationship
   ): DidVerificationKey[] {
@@ -134,6 +146,12 @@ export abstract class DidDetails implements IDidDetails {
     return [...keyIds].map((keyId) => this.getKey(keyId) as DidVerificationKey)
   }
 
+  /**
+   * Gets all key agreement public keys for this Did with a given relationship.
+   *
+   * @param relationship The public key's relationship to the DID.
+   * @returns Array of keys matching this relationship.
+   */
   public getEncryptionKeys(
     relationship: EncryptionKeyRelationship
   ): DidEncryptionKey[] {
@@ -141,11 +159,22 @@ export abstract class DidDetails implements IDidDetails {
     return [...keyIds].map((keyId) => this.getKey(keyId) as DidEncryptionKey)
   }
 
+  /**
+   * Gets all public keys associated with this Did.
+   *
+   * @returns Array of public keys.
+   */
   public getKeys(): DidKey[] {
     const keyIds = this.publicKeys.keys()
     return [...keyIds].map((keyId) => this.getKey(keyId) as DidKey)
   }
 
+  /**
+   * Returns a service endpoint with a given id, if associated with this Did.
+   *
+   * @param id Endpoint id (not the full endpoint uri).
+   * @returns The respective endpoint data or undefined.
+   */
   public getEndpoint(
     id: DidServiceEndpoint['id']
   ): DidServiceEndpoint | undefined {
@@ -159,6 +188,12 @@ export abstract class DidDetails implements IDidDetails {
     }
   }
 
+  /**
+   * Gets all service endpoints associated with this Did, optionally filtered by endpoint type.
+   *
+   * @param type Optionally pass type by which to filter endpoints.
+   * @returns Array of service endpoints.
+   */
   public getEndpoints(type?: string): DidServiceEndpoint[] {
     const serviceEndpointsEntries = type
       ? [...this.serviceEndpoints.entries()].filter(([, details]) => {
@@ -176,7 +211,7 @@ export abstract class DidDetails implements IDidDetails {
    *
    * @param keyId The key ID, without the leading subject's DID prefix.
    *
-   * @returns The full [[DidPublicKey['uri']]], which includes the subject's DID and the provided key ID.
+   * @returns The full public key URI, which includes the subject's DID and the provided key ID.
    */
   public assembleKeyUri(keyId: DidKey['id']): DidPublicKey['uri'] {
     return assembleKeyUri(this.uri, keyId)
@@ -198,7 +233,7 @@ export abstract class DidDetails implements IDidDetails {
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
     if (!key || !isVerificationKey(key)) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Failed to find verification key with ID ${keyId} on DID (${this.uri})`
       )
     }
@@ -206,7 +241,7 @@ export abstract class DidDetails implements IDidDetails {
       key.type as VerificationKeyType
     )
     if (!alg) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `No algorithm found for key type ${key.type}`
       )
     }

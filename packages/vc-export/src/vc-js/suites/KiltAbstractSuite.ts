@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -71,6 +71,9 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
     ) as Promise<VerifiableCredential>
   }
 
+  /**
+   * @inheritdoc
+   */
   public async matchProof(options: {
     proof: JsonLdObj
     document?: JsonLdObj
@@ -84,6 +87,9 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
     return type instanceof Array ? type.includes(this.type) : type === this.type
   }
 
+  /**
+   * @inheritdoc
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async createProof(options: {
     document: JsonLdObj

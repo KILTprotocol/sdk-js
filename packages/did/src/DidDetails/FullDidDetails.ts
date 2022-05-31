@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -84,12 +84,12 @@ export class FullDidDetails extends DidDetails {
   ): Promise<FullDidDetails | null> {
     const { identifier, fragment, type } = parseDidUri(didUri)
     if (fragment) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `DID URI cannot contain fragment: ${didUri}`
       )
     }
     if (type !== 'full') {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `DID URI does not refer to a full DID: ${didUri}`
       )
     }
@@ -138,7 +138,7 @@ export class FullDidDetails extends DidDetails {
 
   /**
    * Returns all the DID keys that could be used to sign the provided extrinsic for submission.
-   * This function should never be used directly by SDK users, who should rather call [[FulLDidDetails.authorizeExtrinsic]].
+   * This function should never be used directly by SDK users, who should rather call [[FullDidDetails.authorizeExtrinsic]].
    *
    * @param extrinsic The unsigned extrinsic to perform the lookup.
    *
@@ -187,7 +187,7 @@ export class FullDidDetails extends DidDetails {
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `The details for did ${this.uri} do not contain the required keys for this operation`
       )
     }

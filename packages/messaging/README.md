@@ -7,7 +7,7 @@
 
 This package provides tools to create messages, encrypt, decrypt and verify them and compress and decompress them.
 
-For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+For more information, please visit our [official SDK documentation](https://docs.kilt.io/docs/sdk/introduction).
 
 ## Installation
 

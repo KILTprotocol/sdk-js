@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -13,7 +13,6 @@
  * A [[Quote]] comes with a versionable spec, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
  *
  * @packageDocumentation
- * @module Quote
  */
 
 import type {
@@ -45,7 +44,6 @@ import { QuoteSchema } from './QuoteSchema.js'
  *
  * @returns Whether the quote schema is valid.
  */
-
 export function validateQuoteSchema(
   schema: JsonSchema.Schema,
   validate: unknown,
@@ -68,11 +66,12 @@ export function validateQuoteSchema(
  * Builds a [[Quote]] object, from a simple object with the same properties.
  *
  * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
+ * @param options Optional settings.
+ * @param options.resolver DidResolver used in the process of verifying the attester signature.
  * @throws [[ERROR_QUOTE_MALFORMED]] when the derived basicQuote can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
-
 export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
   {
@@ -90,7 +89,7 @@ export async function fromAttesterSignedInput(
   })
   const messages: string[] = []
   if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    throw SDKErrors.ERROR_QUOTE_MALFORMED()
+    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 
   return {
@@ -103,11 +102,12 @@ export async function fromAttesterSignedInput(
  * Signs a [[Quote]] object as an Attester, created via [[fromQuoteDataAndIdentity]].
  *
  * @param quoteInput A [[Quote]] object.
- * @param attesterIdentity [[Identity]] used to sign the object.
- *
+ * @param attesterIdentity The DID used to sign the object.
+ * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param options Optional settings.
+ * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @returns A signed [[Quote]] object.
  */
-
 export async function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
@@ -122,7 +122,7 @@ export async function createAttesterSignature(
     attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!authenticationKey) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The attester ${attesterIdentity.uri} does not have a valid authentication key.`
     )
   }
@@ -141,15 +141,17 @@ export async function createAttesterSignature(
 }
 
 /**
- * Creates a [[Quote]] object signed by the given [[Identity]].
+ * Creates a [[Quote]] object signed by the given DID.
  *
  * @param quoteInput A [[Quote]] object.
- * @param identity [[Identity]] used to sign the object.
+ * @param attesterIdentity The DID used to sign the object.
+ * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param options Optional settings.
+ * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
-
 export async function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
@@ -161,7 +163,7 @@ export async function fromQuoteDataAndIdentity(
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw SDKErrors.ERROR_QUOTE_MALFORMED()
+    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
   }
   return createAttesterSignature(quoteInput, attesterIdentity, signer, {
     keySelection,
@@ -171,13 +173,16 @@ export async function fromQuoteDataAndIdentity(
 /**
  * Creates a [[Quote]] signed by the Attester and the Claimer.
  *
- * @param claimerIdentity [[Identity]] of the Claimer in order to sign.
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param requestRootHash A root hash of the entire object.
- *
+ * @param attesterIdentity The uri of the Attester DID.
+ * @param claimerIdentity The DID of the Claimer in order to sign.
+ * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param options Optional settings.
+ * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
+ * @param options.resolver DidResolver used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
-
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: IRequestForAttestation['rootHash'],
@@ -195,7 +200,7 @@ export async function createQuoteAgreement(
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   if (attesterIdentity !== attesterSignedQuote.attesterDid)
-    throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
+    throw new SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
       attesterIdentity,
       attesterSignedQuote.attesterDid
     )
@@ -211,7 +216,7 @@ export async function createQuoteAgreement(
     claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
   )
   if (!claimerAuthenticationKey) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `Claimer DID ${claimerIdentity.uri} does not have an authentication key.`
     )
   }

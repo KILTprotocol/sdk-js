@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module CType
  */
 
 import type { Option } from '@polkadot/types'
@@ -31,7 +26,7 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
  * If present, the CType schema id is stripped out before submission, as the same is computed on chain.
  *
  * @param ctype The CType to write on the blockchain.
- * @returns The [[SubmittableExtrinsic]] for the `add` call.
+ * @returns The SubmittableExtrinsic for the `add` call.
  */
 export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()

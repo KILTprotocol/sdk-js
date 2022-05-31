@@ -7,7 +7,7 @@
 
 This package provides different generic utility (and stateless) functions.
 
-For more information, please visit our [official SDK documentation](https://dev.kilt.io/docs/sdk/introduction).
+For more information, please visit our [official SDK documentation](https://docs.kilt.io/docs/sdk/introduction).
 
 ## Installation
 

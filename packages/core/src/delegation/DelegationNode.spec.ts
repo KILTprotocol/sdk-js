@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -515,21 +515,19 @@ describe('DelegationNode', () => {
       } as IDelegationNode
 
       expect(() => errorCheck(malformedPremissionsDelegationNode)).toThrowError(
-        SDKErrors.ERROR_UNAUTHORIZED(
-          'Must have at least one permission and no more then two'
-        )
+        SDKErrors.ERROR_UNAUTHORIZED
       )
 
       expect(() => errorCheck(missingRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_MISSING()
+        SDKErrors.ERROR_DELEGATION_ID_MISSING
       )
 
       expect(() => errorCheck(malformedRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE()
+        SDKErrors.ERROR_DELEGATION_ID_TYPE
       )
 
       expect(() => errorCheck(malformedParentIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE()
+        SDKErrors.ERROR_DELEGATION_ID_TYPE
       )
     })
   })

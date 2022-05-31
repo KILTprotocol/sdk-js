@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module RequestForAttestationUtils
  */
 
 import type {
@@ -37,19 +32,19 @@ import { RequestForAttestation } from './RequestForAttestation.js'
  */
 export function errorCheck(input: IRequestForAttestation): void {
   if (!input.claim) {
-    throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
     ClaimUtils.errorCheck(input.claim)
   }
   if (!input.claim.owner) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   }
   if (!input.legitimations && !Array.isArray(input.legitimations)) {
-    throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
   }
 
   if (!input.claimNonceMap) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
   }
   if (
     typeof input.claimNonceMap !== 'object' ||
@@ -61,10 +56,10 @@ export function errorCheck(input: IRequestForAttestation): void {
         !nonce
     )
   ) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
+    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (input.claimerSignature)
     DidUtils.validateDidSignature(input.claimerSignature)
@@ -78,7 +73,6 @@ export function errorCheck(input: IRequestForAttestation): void {
  *
  * @returns An ordered array of [[Credential]]s.
  */
-
 export function compressLegitimation(
   leg: ICredential[]
 ): CompressedCredential[] {
@@ -104,7 +98,6 @@ function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
  *
  * @returns An ordered array of a [[RequestForAttestation]].
  */
-
 export function compress(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
@@ -128,12 +121,11 @@ export function compress(
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
-
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
     claim: ClaimUtils.decompress(reqForAtt[0]),
@@ -149,17 +141,20 @@ export function decompress(
 /**
  *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
  *
- * @param RequestForAttestation A [[RequestForAttestation]] object for the attester.
+ * @param requestForAttestation A [[RequestForAttestation]] object for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
  *
  * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
  */
-
 export function verifyStructure(
   requestForAttestation: IRequestForAttestation,
   ctype: ICType
 ): boolean {
-  errorCheck(requestForAttestation)
+  try {
+    errorCheck(requestForAttestation)
+  } catch {
+    return false
+  }
   return CTypeUtils.verifyClaimStructure(
     requestForAttestation.claim.contents,
     ctype.schema

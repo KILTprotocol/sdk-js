@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module MessageUtils
  */
 
 import {
@@ -36,22 +31,27 @@ import { Utils as DidUtils } from '@kiltprotocol/did'
 
 import { Message } from './Message.js'
 
-// Had to add the check as differs from the delegation types
+/**
+ * Checks if delegation data is well formed.
+ *
+ * @param delegationData Delegation data to check.
+ * @throws [[SDKError]] if delegationData is not a valid instance of [[IDelegationData]].
+ */
 export function errorCheckDelegationData(
   delegationData: IDelegationData
-): boolean | void {
+): void {
   const { permissions, id, parentId, isPCR, account } = delegationData
 
   if (!id) {
-    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+    throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
   } else if (typeof id !== 'string') {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   } else if (!isHex(id)) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
 
   if (!account) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   } else DidUtils.validateKiltDidUri(account)
 
   if (typeof isPCR !== 'boolean') {
@@ -59,21 +59,27 @@ export function errorCheckDelegationData(
   }
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.ERROR_UNAUTHORIZED(
       'Must have at least one permission and no more then two'
     )
   }
 
   if (parentId) {
     if (typeof parentId !== 'string') {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     } else if (!isHex(parentId)) {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     }
   }
 }
 
-export function errorCheckMessageBody(body: MessageBody): boolean | void {
+/**
+ * Checks if the message body is well formed.
+ *
+ * @param body The message body.
+ * @throws [[SDKError]] if there are issues with form or content of the message body.
+ */
+export function errorCheckMessageBody(body: MessageBody): void {
   switch (body.type) {
     case Message.BodyType.REQUEST_TERMS: {
       ClaimUtils.errorCheck(body.content)
@@ -122,7 +128,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
     case Message.BodyType.REJECT_ATTESTATION: {
       if (!isHex(body.content)) {
-        throw SDKErrors.ERROR_HASH_MALFORMED()
+        throw new SDKErrors.ERROR_HASH_MALFORMED()
       }
       break
     }
@@ -170,7 +176,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       errorCheckDelegationData(body.content.delegationData)
       DidUtils.validateDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
-        throw SDKErrors.ERROR_OBJECT_MALFORMED()
+        throw new SDKErrors.ERROR_OBJECT_MALFORMED()
       }
       break
     }
@@ -194,13 +200,17 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
 
     default:
-      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
-
-  return true
 }
 
-export function errorCheckMessage(message: IMessage): boolean | void {
+/**
+ * Checks if the message object is well formed.
+ *
+ * @param message The message object.
+ * @throws [[SDKError]] if there are issues with form or content of the message object.
+ */
+export function errorCheckMessage(message: IMessage): void {
   const {
     body,
     messageId,
@@ -225,7 +235,6 @@ export function errorCheckMessage(message: IMessage): boolean | void {
     throw new TypeError('in reply to is expected to be a string')
   }
   errorCheckMessageBody(body)
-  return true
 }
 
 /**
@@ -234,24 +243,19 @@ export function errorCheckMessage(message: IMessage): boolean | void {
  * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
  * @param cType A [[CType]] used to verify the properties.
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
- *
- * @returns Returns the properties back.
  */
-
 export function verifyRequiredCTypeProperties(
   requiredProperties: string[],
   cType: ICType
-): boolean {
+): void {
   CTypeUtils.errorCheck(cType as ICType)
 
   const validProperties = requiredProperties.find(
     (property) => !(property in cType.schema.properties)
   )
   if (validProperties) {
-    throw SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
+    throw new SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
   }
-
-  return true
 }
 
 /**
@@ -261,7 +265,6 @@ export function verifyRequiredCTypeProperties(
  *
  * @returns Returns the compressed message optimised for sending.
  */
-
 export function compressMessage(body: MessageBody): CompressedMessageBody {
   let compressedContents: CompressedMessageBody[1]
   switch (body.type) {
@@ -378,7 +381,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     default:
-      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
   return [body.type, compressedContents] as CompressedMessageBody
 }
@@ -390,7 +393,6 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
  *
  * @returns Returns the compressed message back to its original form and more human readable.
  */
-
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // body[0] is the [[MessageBodyType]] being sent.
   // body[1] is the content order of the [[compressMessage]] for each [[MessageBodyType]].
@@ -516,7 +518,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     default:
-      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
 
   return { type: body[0], content: decompressedContents } as MessageBody

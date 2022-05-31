@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module QuoteUtils
  */
 
 import type {
@@ -32,10 +27,9 @@ import { SDKErrors } from '@kiltprotocol/utils'
  *
  * @returns An ordered array of a cost.
  */
-
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
   }
   return [cost.gross, cost.net, cost.tax]
 }
@@ -48,10 +42,9 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  *
  * @returns An object that has the same properties as a cost.
  */
-
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
@@ -64,7 +57,6 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  *
  * @returns An ordered array of an [[Quote]].
  */
-
 export function compressQuote(quote: IQuote): CompressedQuote {
   if (
     !quote.attesterDid ||
@@ -74,7 +66,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     !quote.termsAndConditions ||
     !quote.timeframe
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
   }
   return [
     quote.attesterDid,
@@ -93,10 +85,9 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quote is not an Array and it's length does not equal the defined length of 6.
  * @returns An object that has the same properties as an [[Quote]].
  */
-
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterDid: quote[0],
@@ -126,7 +117,6 @@ function decompressSignature(
  *
  * @returns An ordered array of an attester signed [[Quote]].
  */
-
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
 ): CompressedQuoteAttesterSigned {
@@ -149,7 +139,7 @@ export function compressAttesterSignedQuote(
     !attesterSignature.signature ||
     !attesterSignature.keyUri
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(
       attesterSignedQuote,
       'Attester Signed Quote'
     )
@@ -173,12 +163,11 @@ export function compressAttesterSignedQuote(
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
-
 export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterDid: attesterSignedQuote[0],
@@ -199,7 +188,6 @@ export function decompressAttesterSignedQuote(
  *
  * @returns An ordered array of a [[Quote]] Agreement.
  */
-
 export function compressQuoteAgreement(
   quoteAgreement: IQuoteAgreement
 ): CompressedQuoteAgreed {
@@ -212,7 +200,7 @@ export function compressQuoteAgreement(
     !quoteAgreement.timeframe ||
     !quoteAgreement.attesterSignature
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
   }
   return [
     quoteAgreement.attesterDid,
@@ -235,12 +223,11 @@ export function compressQuoteAgreement(
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */
-
 export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterDid: quoteAgreement[0],

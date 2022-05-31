@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -19,11 +19,6 @@ import {
   EncryptionKeyTypesMap,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-
-/**
- * @packageDocumentation
- * @module DID
- */
 
 function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   const result: any = {}
@@ -129,7 +124,7 @@ export function exportToDidDocument(
     case 'application/ld+json':
       return exportToJsonLdDidDocument(details)
     default:
-      throw SDKErrors.ERROR_DID_EXPORTER_ERROR(
+      throw new SDKErrors.ERROR_DID_EXPORTER_ERROR(
         `${mimeType} not supported by any of the available exporters.`
       )
   }

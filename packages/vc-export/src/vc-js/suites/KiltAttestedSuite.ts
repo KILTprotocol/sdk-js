@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -54,6 +54,9 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
     BlockchainApiConnection.setConnection(Promise.resolve(this.provider))
   }
 
+  /**
+   * @inheritdoc
+   */
   public async verifyProof(options: {
     proof: Proof
     document: JsonLdObj
