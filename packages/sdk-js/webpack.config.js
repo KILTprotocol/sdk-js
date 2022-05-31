@@ -28,15 +28,8 @@ module.exports = {
     extensions: ['.ts', '.js', '.d.ts', '.mjs', '.json'],
     symlinks: false,
     // Explicit fallbacks to include these in bundle
-    alias: {
-      buffer: 'buffer',
-    },
     fallback: {
-      buffer: require.resolve('buffer'),
-      crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify'),
-      url: require.resolve('url'),
-      util: require.resolve('util'),
     },
   },
   stats: {
@@ -49,7 +42,7 @@ module.exports = {
   },
   plugins: [
     new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
     }),
   ],
 }
