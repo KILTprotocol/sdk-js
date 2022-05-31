@@ -15,6 +15,8 @@ const {
   Did,
   BlockchainUtils,
   Utils: { Crypto, Keyring },
+  Message,
+  MessageBodyType,
 } = window.kilt
 
 function getDefaultMigrationHandler(submitter) {
@@ -217,6 +219,31 @@ async function runAll() {
     else throw new Error('Req4Att Signature mismatch')
     if (signed.claim.contents !== content)
       throw new Error('Claim content inside Req4Att mismatching')
+  }
+
+  console.log('Test Messaging with encryption + decryption')
+  const body = {
+    content: {
+      requestForAttestation: signed,
+    },
+    type: MessageBodyType.REQUEST_ATTESTATION,
+  }
+
+  const message = new Message(body, bob.uri, alice.uri)
+  const encryptedMessage = await message.encrypt(
+    bob.encryptionKey.id,
+    bob,
+    keystore,
+    `${alice.uri}#${alice.encryptionKey.id}`
+  )
+
+  const decryptedMessage = await Message.decrypt(
+    encryptedMessage,
+    keystore,
+    alice
+  )
+  if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
+    throw new Error('original and decrypted message are not the same')
   }
 
   const attestation = Attestation.fromRequestAndDid(signed, alice.uri)
