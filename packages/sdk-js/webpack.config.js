@@ -30,7 +30,6 @@ module.exports = {
     // Explicit fallbacks to include these in bundle
     alias: {
       buffer: 'buffer',
-      process: 'process',
     },
     fallback: {
       buffer: require.resolve('buffer'),
@@ -50,7 +49,6 @@ module.exports = {
   },
   plugins: [
     new webpack.ProvidePlugin({
-      process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
     }),
   ],
