@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Option, Vec, U128 } from '@polkadot/types'
+import type { Option, U128 } from '@polkadot/types'
 import type {
   IAttestation,
   IDelegationNode,
@@ -13,7 +13,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { Hash } from '@polkadot/types/interfaces'
+import type { H256 } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import type { Chain as DidChain } from '@kiltprotocol/did'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -24,6 +24,7 @@ import {
 } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
+import type { AuthorizationId } from '../attestation/Attestation.chain.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -181,13 +182,6 @@ export async function getChildren(
   return childrenNodes
 }
 
-function decodeDelegatedAttestations(
-  queryResult: Option<Vec<Hash>>
-): Array<IAttestation['claimHash']> {
-  DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<H256>>'])
-  return queryResult.unwrapOrDefault().map((hash) => hash.toHex())
-}
-
 /**
  * Query the blockchain to retrieve all the attestations (their claim hashes) creating with the provided delegation.
  *
@@ -198,11 +192,15 @@ export async function getAttestationHashes(
   id: IDelegationNode['id']
 ): Promise<Array<IAttestation['claimHash']>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedHashes =
-    await blockchain.api.query.attestation.delegatedAttestations<
-      Option<Vec<Hash>>
-    >(id)
-  return decodeDelegatedAttestations(encodedHashes)
+  const entries =
+    await blockchain.api.query.attestation.externalAttestations.keys<
+      [AuthorizationId, H256]
+    >({ delegation: id })
+  return entries.map((keys) => {
+    const claimHash = keys.args[1]
+    DecoderUtils.assertCodecIsType(claimHash, ['H256'])
+    return claimHash.toHex()
+  })
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
