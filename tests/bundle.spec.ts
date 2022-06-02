@@ -28,7 +28,7 @@ test('html bundle integration test', async ({ page }) => {
     path.join(__dirname, 'bundle-test.html')
   ).href
   page.on('pageerror', (exception) => {
-    console.error(`uncaught exception: "${exception}"`)
+    console.error(exception)
     throw new Error('-1')
   })
   page.on('console', async (msg) => {
@@ -42,7 +42,7 @@ test('html bundle integration test', async ({ page }) => {
       await window.runAll()
     } catch (e) {
       if (e instanceof Error) {
-        console.error(e.message)
+        console.error(e)
       }
       throw e
     }

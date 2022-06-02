@@ -28,10 +28,6 @@ module.exports = {
     extensions: ['.ts', '.js', '.d.ts', '.mjs', '.json'],
     symlinks: false,
     // Explicit fallbacks to include these in bundle
-    alias: {
-      buffer: 'buffer',
-      process: 'process',
-    },
     fallback: {
       buffer: require.resolve('buffer'),
       crypto: require.resolve('crypto-browserify'),
