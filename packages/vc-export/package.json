@@ -48,7 +48,7 @@
     "@polkadot/util": "^8.4.1",
     "@polkadot/util-crypto": "^8.4.1",
     "jsonld": "^2.0.2",
-    "jsonld-signatures": "^5.0.0",
+    "jsonld-signatures": "^9.0.0",
     "vc-js": "^0.6.4"
   }
 }
