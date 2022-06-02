@@ -37,7 +37,7 @@ export async function getStoreTx(
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
   const authorization = delegationId
-    ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused
+    ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
     : undefined
   const tx = blockchain.api.tx.attestation.add(
     claimHash,
@@ -76,8 +76,9 @@ function decode(
         chainAttestation.attester.toString(),
         'full'
       ),
-      delegationId:
-        chainAttestation.authorizationId.unwrapOr(null)?.value.toHex() || null,
+      delegationId: chainAttestation.authorizationId.isSome
+        ? chainAttestation.authorizationId.unwrap().value.toHex()
+        : null,
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
@@ -131,7 +132,7 @@ export async function getRevokeTx(
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,
-    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined
+    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
   )
   return tx
 }
@@ -151,7 +152,7 @@ export async function getRemoveTx(
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
     claimHash,
-    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined
+    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
   )
   return tx
 }
