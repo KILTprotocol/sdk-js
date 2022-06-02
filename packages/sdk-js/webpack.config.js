@@ -29,7 +29,11 @@ module.exports = {
     symlinks: false,
     // Explicit fallbacks to include these in bundle
     fallback: {
+      buffer: require.resolve('buffer'),
+      crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify'),
+      url: require.resolve('url'),
+      util: require.resolve('util'),
     },
   },
   stats: {
@@ -43,6 +47,7 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       process: 'process/browser',
+      Buffer: ['buffer', 'Buffer'],
     }),
   ],
 }
