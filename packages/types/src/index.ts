@@ -9,10 +9,7 @@
  * @module @kiltprotocol/types
  */
 
-import '@polkadot/api-augment'
-
-import { Kilt } from './chainTypes/definitions'
-
+// import '@polkadot/api-augment'
 import './chainTypes/augment-api'
 
 export type { ISubmittableResult } from '@polkadot/types/types'
@@ -39,5 +36,3 @@ export * from './DidDetails.js'
 export * from './Keystore.js'
 export * from './DidResolver.js'
 export * from './DidDocumentExporter.js'
-
-export const apiConstructorTypes = Kilt.types
