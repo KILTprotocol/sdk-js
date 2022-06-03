@@ -4,7 +4,7 @@ import fs from 'fs'
 import { w3cwebsocket as WebSocket } from 'websocket'
 
 const main = (): void => {
-  const endpoint = 'ws://localhost:9944'
+  const endpoint = 'wss://spiritnet.kilt.io/'
   console.log('Connecting to', endpoint)
   const ws = new WebSocket(endpoint)
   ws.onopen = (): void => {
@@ -15,6 +15,7 @@ const main = (): void => {
   ws.onmessage = (msg: any): void => {
     fs.writeFileSync('./metadata.json', msg.data)
     console.log('Done')
+    ws.close()
     process.exit(0)
   }
 }
