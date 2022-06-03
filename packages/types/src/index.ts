@@ -9,8 +9,7 @@
  * @module @kiltprotocol/types
  */
 
-// import '@polkadot/api-augment'
-import './chainTypes/augment-api'
+import './api-augment/augment-api'
 
 export type { ISubmittableResult } from '@polkadot/types/types'
 export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'

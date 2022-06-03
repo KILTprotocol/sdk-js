@@ -20,8 +20,8 @@
     "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
     "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
-    "generate:defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/types/chainTypes --input ./src/chainTypes --endpoint ./metadata.json",
-    "generate:meta": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/types/chainTypes --endpoint ./metadata.json --output ./src/chainTypes  --strict",
+    "generate:defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/types/api-augment --input ./src/api-augment --endpoint ./metadata.json",
+    "generate:meta": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/types/api-augment --endpoint ./metadata.json --output ./src/api-augment  --strict",
     "update-metadata": "ts-node scripts/updateMetadata.ts"
   },
   "repository": "github:kiltprotocol/sdk-js",
@@ -34,7 +34,6 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
     "@polkadot/api": "^7.10.1",
-    "@polkadot/api-augment": "^7.10.1",
     "@polkadot/keyring": "^8.4.1",
     "@polkadot/types": "^7.10.1",
     "tweetnacl": "^1.0.3"
