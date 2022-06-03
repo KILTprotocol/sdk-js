@@ -16,17 +16,18 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type {
-  Deposit,
   IDelegationNode,
   IDelegationHierarchyDetails,
 } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
-import type { Struct, Vec } from '@polkadot/types/codec'
-import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
-import type { Bool, u32 } from '@polkadot/types/primitive'
+import type { Hash } from '@polkadot/types/interfaces/runtime'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+import type {
+  DelegationDelegationHierarchyDelegationHierarchyDetails,
+  DelegationDelegationHierarchyDelegationNode,
+} from '@kiltprotocol/augment-api'
 
 export type CodecWithId<C> = {
   id: string
@@ -40,12 +41,8 @@ export type DelegationHierarchyDetailsRecord = Pick<
 
 export type CtypeHash = Hash
 
-export interface IChainDelegationHierarchyDetails extends Struct {
-  readonly ctypeHash: CtypeHash
-}
-
 export function decodeDelegationHierarchyDetails(
-  encoded: Option<IChainDelegationHierarchyDetails>
+  encoded: Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
 ): DelegationHierarchyDetailsRecord | null {
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<DelegationDelegationHierarchyDelegationHierarchyDetails>',
@@ -83,28 +80,8 @@ export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 
 export type DelegationNodeId = Hash
 
-type DelegationOwnerIdentifier = AccountId
-
-interface IPermissions extends Struct {
-  bits: u32
-}
-
-export interface IChainDelegationDetails extends Struct {
-  readonly owner: DelegationOwnerIdentifier
-  readonly revoked: Bool
-  readonly permissions: IPermissions
-}
-
-export interface IChainDelegationNode extends Struct {
-  readonly hierarchyRootId: DelegationNodeId
-  readonly parent: Option<DelegationNodeId>
-  readonly children: Vec<DelegationNodeId>
-  readonly details: IChainDelegationDetails
-  readonly deposit: Deposit
-}
-
 export function decodeDelegationNode(
-  encoded: Option<IChainDelegationNode>
+  encoded: Option<DelegationDelegationHierarchyDelegationNode>
 ): DelegationNodeRecord | null {
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<DelegationDelegationHierarchyDelegationNode>',

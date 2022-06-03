@@ -18,6 +18,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
+import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
 import { Attestation } from './Attestation.js'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
@@ -54,7 +55,7 @@ export interface AttestationDetails extends Struct {
 }
 
 function decode(
-  encoded: Option<AttestationDetails>,
+  encoded: Option<AttestationAttestationsAttestationDetails>,
   claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
@@ -87,12 +88,10 @@ function decode(
  */
 export async function queryRaw(
   claimHash: IRequestForAttestation['rootHash']
-): Promise<Option<AttestationDetails>> {
+): Promise<Option<AttestationAttestationsAttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const result = await blockchain.api.query.attestation.attestations<
-    Option<AttestationDetails>
-  >(claimHash)
+  const result = await blockchain.api.query.attestation.attestations(claimHash)
   return result
 }
 

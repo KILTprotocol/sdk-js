@@ -18,10 +18,7 @@ import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import type { Chain as DidChain } from '@kiltprotocol/did'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
-import {
-  decodeDelegationNode,
-  IChainDelegationNode,
-} from './DelegationDecoder.js'
+import { decodeDelegationNode } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
 
@@ -66,7 +63,7 @@ export async function getStoreAsDelegationTx(
 
   return blockchain.api.tx.delegation.addDelegation(
     delegation.id,
-    delegation.parentId,
+    delegation.parentId || '',
     DidUtils.getIdentifierFromKiltDid(delegation.account),
     permissionsAsBitset(delegation),
     signature
@@ -84,9 +81,7 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegationNodes<
-      Option<IChainDelegationNode>
-    >(delegationId)
+    await blockchain.api.query.delegation.delegationNodes(delegationId)
   )
   if (!decoded) {
     return null
@@ -199,15 +194,13 @@ export async function getAttestationHashes(
 ): Promise<Array<IAttestation['claimHash']>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedHashes =
-    await blockchain.api.query.attestation.delegatedAttestations<
-      Option<Vec<Hash>>
-    >(id)
+    await blockchain.api.query.attestation.delegatedAttestations(id)
   return decodeDelegatedAttestations(encodedHashes)
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.delegation.deposit as U128
+  return api.consts.delegation.deposit
 }
 
 /**
