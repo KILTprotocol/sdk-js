@@ -5,15 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { BN } from '@polkadot/util'
 import { AnyNumber } from '@polkadot/types/types'
+import type { PalletBalancesAccountData } from '@kiltprotocol/augment-api'
 
-export type Balances = {
-  free: BN
-  reserved: BN
-  miscFrozen: BN
-  feeFrozen: BN
-}
+export type Balances = PalletBalancesAccountData
 
 // Extracted options from polkadot/util
 export interface BalanceOptions {
