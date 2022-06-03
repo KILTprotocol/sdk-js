@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import '@kiltprotocol/augment-api/augment'
+// Auto-generated via `yarn polkadot-types-from-defs`, do not edit
+/* eslint-disable */
 
-export * as ApiMocks from './mocks/index.js'
+export * from './types';

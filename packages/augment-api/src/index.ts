@@ -5,6 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import '@kiltprotocol/augment-api/augment'
-
-export * as ApiMocks from './mocks/index.js'
+/* eslint-disable import/no-extraneous-dependencies */
+export * from '@polkadot/types/lookup'
+export * from './interfaces/types.js'

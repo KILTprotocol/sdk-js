@@ -5,6 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import '@kiltprotocol/augment-api/augment'
-
-export * as ApiMocks from './mocks/index.js'
+import './interfaces/augment-api.js'
+import './interfaces/augment-types.js'

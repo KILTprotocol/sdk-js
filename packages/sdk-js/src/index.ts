@@ -9,7 +9,7 @@
  * @module @kiltprotocol/sdk-js
  */
 
-import '@polkadot/api-augment'
+import '@kiltprotocol/augment-api/augment'
 
 export * from '@kiltprotocol/core'
 export { Message } from '@kiltprotocol/messaging'

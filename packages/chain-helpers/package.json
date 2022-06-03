@@ -35,11 +35,11 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
+    "@kiltprotocol/augment-api": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^7.10.1",
-    "@polkadot/api-augment": "^7.10.1",
     "@polkadot/keyring": "^8.4.1",
     "@polkadot/types": "^7.10.1",
     "@polkadot/util": "^8.4.1",

@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api-augment": "^7.10.1",
     "@polkadot/keyring": "^8.4.1",
     "@polkadot/types": "^7.10.1",
     "@polkadot/util": "^8.4.1",

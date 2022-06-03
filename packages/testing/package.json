@@ -32,9 +32,9 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
+    "@kiltprotocol/augment-api": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@polkadot/api": "^7.10.1",
-    "@polkadot/api-augment": "^7.10.1",
     "@polkadot/types": "^7.10.1"
   },
   "devDependencies": {
