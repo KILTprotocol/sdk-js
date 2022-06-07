@@ -30,10 +30,10 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
-    "@polkadot/api": "^7.10.1",
-    "@polkadot/api-augment": "^7.10.1",
-    "@polkadot/keyring": "^8.4.1",
-    "@polkadot/types": "^7.10.1",
+    "@polkadot/api": "^8.0.0",
+    "@polkadot/api-augment": "^8.0.0",
+    "@polkadot/keyring": "^9.0.0",
+    "@polkadot/types": "^8.0.0",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {

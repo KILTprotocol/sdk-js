@@ -51,6 +51,6 @@
     "@kiltprotocol/messaging": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api-augment": "^7.10.1"
+    "@polkadot/api-augment": "^8.0.0"
   }
 }
