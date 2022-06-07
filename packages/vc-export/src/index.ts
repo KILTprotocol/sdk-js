@@ -9,7 +9,7 @@
  * @module @kiltprotocol/vc-export
  */
 
-import '@kiltprotocol/augment-api/augment'
+import '@kiltprotocol/augment-api'
 
 import type * as types from './types.js'
 

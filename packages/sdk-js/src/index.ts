@@ -9,7 +9,7 @@
  * @module @kiltprotocol/sdk-js
  */
 
-import '@kiltprotocol/augment-api/augment'
+import '@kiltprotocol/augment-api'
 
 export * from '@kiltprotocol/core'
 export { Message } from '@kiltprotocol/messaging'

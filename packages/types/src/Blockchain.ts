@@ -7,7 +7,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Header } from '@polkadot/types/interfaces/types'
-import type { AnyNumber } from '@polkadot/types/types'
+import type { AnyNumber } from '@polkadot/types/types/codec'
 import type { BN } from '@polkadot/util'
 import type {
   IIdentity,

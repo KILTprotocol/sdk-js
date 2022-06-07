@@ -9,7 +9,7 @@
  * @module @kiltprotocol/chain-helpers
  */
 
-import '@kiltprotocol/augment-api/augment'
+import '@kiltprotocol/augment-api'
 
 export { ErrorHandler } from './errorhandling/index.js'
 export { BlockchainApiConnection } from './blockchainApiConnection/index.js'

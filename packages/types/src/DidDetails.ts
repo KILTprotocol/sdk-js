@@ -48,9 +48,9 @@ export type VerificationKeyRelationship =
  * Possible types for a DID verification key.
  */
 export enum VerificationKeyType {
-  Sr25519 = 'sr25519',
-  Ed25519 = 'ed25519',
-  Ecdsa = 'ecdsa',
+  Sr25519 = 'Sr25519',
+  Ed25519 = 'Ed25519',
+  Ecdsa = 'Ecdsa',
 }
 
 /**
@@ -61,7 +61,7 @@ export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
  * Possible types for a DID encryption key.
  */
 export enum EncryptionKeyType {
-  X25519 = 'x25519',
+  X25519 = 'X25519',
 }
 
 /**
@@ -190,3 +190,7 @@ export type DidSignature = {
   keyUri: DidPublicKey['uri']
   signature: string
 }
+
+export type JsonEnum<K extends string, V> = K extends any
+  ? { [P in K]: V }
+  : never

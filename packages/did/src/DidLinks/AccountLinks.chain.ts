@@ -14,13 +14,8 @@ import {
 } from '@kiltprotocol/types'
 
 import { encodeAddress, signatureVerify } from '@polkadot/util-crypto'
-import type { Option, Struct, u128 } from '@polkadot/types'
-import type {
-  AccountId,
-  BlockNumber,
-  Extrinsic,
-  MultiSignature,
-} from '@polkadot/types/interfaces'
+import type { u128 } from '@polkadot/types'
+import type { Extrinsic, MultiSignature } from '@polkadot/types/interfaces'
 import type { AnyNumber, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
@@ -28,6 +23,7 @@ import { assert, BN, u8aToHex, u8aToU8a, u8aWrapBytes } from '@polkadot/util'
 import Keyring from '@polkadot/keyring'
 
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
+import { makeJsonEnum } from '../Did.utils.js'
 
 // TODO: update with string pattern types once available
 /// A KILT-chain specific address, encoded with the KILT 38 network prefix.
@@ -36,11 +32,6 @@ export type KiltAddress = IIdentity['address']
 export type SubstrateAddress = IIdentity['address']
 
 export type Address = KiltAddress | SubstrateAddress
-
-interface ConnectionRecord extends Struct {
-  did: AccountId
-  deposit: Deposit
-}
 
 /// Type of signatures to link accounts to DIDs.
 export type SignatureType = MultiSignature['type']
@@ -67,9 +58,7 @@ export async function queryAccountLinkDepositInfo(
   linkedAccount: Address
 ): Promise<Deposit | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await api.query.didLookup.connectedDids<
-    Option<ConnectionRecord>
-  >(linkedAccount)
+  const connectedDid = await api.query.didLookup.connectedDids(linkedAccount)
   return connectedDid.isSome ? connectedDid.unwrap().deposit : null
 }
 
@@ -83,9 +72,7 @@ export async function queryConnectedDidForAccount(
   linkedAccount: Address
 ): Promise<DidIdentifier | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await api.query.didLookup.connectedDids<
-    Option<ConnectionRecord>
-  >(linkedAccount)
+  const connectedDid = await api.query.didLookup.connectedDids(linkedAccount)
   return connectedDid.isNone ? null : connectedDid.unwrap().did.toString()
 }
 
@@ -102,9 +89,7 @@ export async function queryConnectedAccountsForDid(
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
-    await api.query.didLookup.connectedAccounts.keys<[AccountId, AccountId]>(
-      linkedDid
-    )
+    await api.query.didLookup.connectedAccounts.keys(linkedDid)
   return connectedAccountsRecords.map((account) =>
     encodeAddress(account.args[1], networkPrefix)
   )
@@ -192,9 +177,11 @@ export async function getAccountSignedAssociationExtrinsic(
   sigType: SignatureType
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.didLookup.associateAccount(account, signatureValidUntilBlock, {
-    [sigType]: signature,
-  })
+  return api.tx.didLookup.associateAccount(
+    account,
+    signatureValidUntilBlock,
+    makeJsonEnum(sigType, signature)
+  )
 }
 
 /**
@@ -284,7 +271,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   nBlocksValid = 10
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const blockNo: BlockNumber = await api.query.system.number()
+  const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
   // Gets the current definition of BlockNumber (second tx argument) from the metadata.
   const blockNumberType =

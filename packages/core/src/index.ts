@@ -9,7 +9,7 @@
  * @module @kiltprotocol/core
  */
 
-import '@kiltprotocol/augment-api/augment'
+import '@kiltprotocol/augment-api'
 
 export { Attestation, AttestationUtils } from './attestation/index.js'
 export { Credential, CredentialUtils } from './credential/index.js'

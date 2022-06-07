@@ -8,27 +8,16 @@
 import type {
   SubmittableExtrinsic,
   DidIdentifier,
-  Deposit,
   IDidDetails,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import type { Option, Bytes, Struct, u128, u64, u32 } from '@polkadot/types'
-import type { AccountId } from '@polkadot/types/interfaces'
+import type { u128, u32 } from '@polkadot/types'
 import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
 import { Utils as DidUtils } from '../index.js'
-
-/**
- * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.
- */
-interface Web3NameOwner extends Struct {
-  owner: AccountId
-  claimedAt: u64
-  deposit: Deposit
-}
 
 /**
  *  Web3Name is the type of a nickname for a DID.
@@ -106,9 +95,7 @@ export async function queryWeb3NameForDidIdentifier(
   didIdentifier: DidIdentifier
 ): Promise<Web3Name | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.web3Names.names<Option<Bytes>>(
-    didIdentifier
-  )
+  const encoded = await blockchain.api.query.web3Names.names(didIdentifier)
   DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
   return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
@@ -123,9 +110,7 @@ export async function queryDidIdentifierForWeb3Name(
   name: Web3Name
 ): Promise<DidIdentifier | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.web3Names.owner<
-    Option<Web3NameOwner>
-  >(name)
+  const encoded = await blockchain.api.query.web3Names.owner(name)
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])
