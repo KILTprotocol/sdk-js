@@ -17,8 +17,6 @@
       "@kiltprotocol/docs": ["docs/src"],
       "@kiltprotocol/testing": ["testing/src"],
       "@kiltprotocol/augment-api": ["augment-api/src"],
-      "@kiltprotocol/augment-api/augment": ["augment-api/src/augment.ts"],
       }
   },
-  "skipLibCheck": true,
 }

@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/* eslint-disable import/no-extraneous-dependencies */
-export * from '@polkadot/types/lookup'
-export * from './interfaces/types.js'
+import './interfaces/augment-api-consts.js'
+import './interfaces/augment-api-query.js'
+import './interfaces/augment-api-rpc.js'
+import './interfaces/augment-api-tx.js'
+import './interfaces/augment-types.js'
+
+export * from './types.js'

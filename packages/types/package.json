@@ -16,13 +16,10 @@
   ],
   "scripts": {
     "clean": "rimraf ./lib",
-    "build": "yarn clean && yarn generate:defs && yarn generate:meta && yarn build:ts",
+    "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
-    "generate:defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/types/api-augment --input ./src/api-augment --endpoint ./metadata.json",
-    "generate:meta": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/types/api-augment --endpoint ./metadata.json --output ./src/api-augment  --strict",
-    "update-metadata": "ts-node scripts/updateMetadata.ts"
+    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -33,6 +30,7 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
+    "@kiltprotocol/augment-api": "workspace:*",
     "@polkadot/api": "^7.10.1",
     "@polkadot/keyring": "^8.4.1",
     "@polkadot/types": "^7.10.1",
