@@ -4029,6 +4029,12 @@
                       "fields": [],
                       "index": 4,
                       "docs": []
+                    },
+                    {
+                      "name": "NonDepositClaiming",
+                      "fields": [],
+                      "index": 5,
+                      "docs": []
                     }
                   ]
                 }
@@ -16025,8 +16031,8 @@
                         "",
                         "# <weight>",
                         "Weight: O(1)",
-                        "- Reads: ConnectedDids + DID Origin Check",
-                        "- Writes: ConnectedDids",
+                        "- Reads: ConnectedDids + ConnectedAccounts + DID Origin Check",
+                        "- Writes: ConnectedDids + ConnectedAccounts",
                         "# </weight>"
                       ]
                     },
@@ -16043,8 +16049,8 @@
                         "",
                         "# <weight>",
                         "Weight: O(1)",
-                        "- Reads: ConnectedDids + DID Origin Check",
-                        "- Writes: ConnectedDids",
+                        "- Reads: ConnectedDids + ConnectedAccounts + DID Origin Check",
+                        "- Writes: ConnectedDids + ConnectedAccounts",
                         "# </weight>"
                       ]
                     },
@@ -16060,8 +16066,8 @@
                         "",
                         "# <weight>",
                         "Weight: O(1)",
-                        "- Reads: ConnectedDids",
-                        "- Writes: ConnectedDids",
+                        "- Reads: ConnectedDids + ConnectedAccounts + DID Origin Check",
+                        "- Writes: ConnectedDids + ConnectedAccounts",
                         "# </weight>"
                       ]
                     },
@@ -16085,8 +16091,8 @@
                         "",
                         "# <weight>",
                         "Weight: O(1)",
-                        "- Reads: ConnectedDids + DID Origin Check",
-                        "- Writes: ConnectedDids",
+                        "- Reads: ConnectedDids + ConnectedAccounts + DID Origin Check",
+                        "- Writes: ConnectedDids + ConnectedAccounts",
                         "# </weight>"
                       ]
                     },
@@ -19632,6 +19638,20 @@
           {
             "id": 307,
             "type": {
+              "path": [],
+              "params": [],
+              "def": {
+                "tuple": [
+                  0,
+                  0
+                ]
+              },
+              "docs": []
+            }
+          },
+          {
+            "id": 308,
+            "type": {
               "path": [
                 "pallet_did_lookup",
                 "pallet",
@@ -19668,7 +19688,7 @@
                       "fields": [],
                       "index": 2,
                       "docs": [
-                        "The supplied proof of ownership was outdated and will not"
+                        "The supplied proof of ownership was outdated."
                       ]
                     },
                     {
@@ -19689,7 +19709,7 @@
             }
           },
           {
-            "id": 308,
+            "id": 309,
             "type": {
               "path": [
                 "pallet_web3_names",
@@ -19738,7 +19758,7 @@
             }
           },
           {
-            "id": 309,
+            "id": 310,
             "type": {
               "path": [
                 "pallet_web3_names",
@@ -19860,7 +19880,7 @@
             }
           },
           {
-            "id": 310,
+            "id": 311,
             "type": {
               "path": [
                 "Option"
@@ -19868,7 +19888,7 @@
               "params": [
                 {
                   "name": "T",
-                  "type": 311
+                  "type": 312
                 }
               ],
               "def": {
@@ -19885,7 +19905,7 @@
                       "fields": [
                         {
                           "name": null,
-                          "type": 311,
+                          "type": 312,
                           "typeName": null,
                           "docs": []
                         }
@@ -19900,7 +19920,7 @@
             }
           },
           {
-            "id": 311,
+            "id": 312,
             "type": {
               "path": [
                 "polkadot_primitives",
@@ -19924,7 +19944,7 @@
             }
           },
           {
-            "id": 312,
+            "id": 313,
             "type": {
               "path": [
                 "cumulus_pallet_parachain_system",
@@ -19943,19 +19963,19 @@
                     },
                     {
                       "name": "relay_dispatch_queue_size",
-                      "type": 313,
+                      "type": 314,
                       "typeName": "(u32, u32)",
                       "docs": []
                     },
                     {
                       "name": "ingress_channels",
-                      "type": 314,
+                      "type": 315,
                       "typeName": "Vec<(ParaId, AbridgedHrmpChannel)>",
                       "docs": []
                     },
                     {
                       "name": "egress_channels",
-                      "type": 314,
+                      "type": 315,
                       "typeName": "Vec<(ParaId, AbridgedHrmpChannel)>",
                       "docs": []
                     }
@@ -19966,7 +19986,7 @@
             }
           },
           {
-            "id": 313,
+            "id": 314,
             "type": {
               "path": [],
               "params": [],
@@ -19980,34 +20000,34 @@
             }
           },
           {
-            "id": 314,
+            "id": 315,
             "type": {
               "path": [],
               "params": [],
               "def": {
                 "sequence": {
-                  "type": 315
+                  "type": 316
                 }
               },
               "docs": []
             }
           },
           {
-            "id": 315,
+            "id": 316,
             "type": {
               "path": [],
               "params": [],
               "def": {
                 "tuple": [
                   243,
-                  316
+                  317
                 ]
               },
               "docs": []
             }
           },
           {
-            "id": 316,
+            "id": 317,
             "type": {
               "path": [
                 "polkadot_primitives",
@@ -20061,7 +20081,7 @@
             }
           },
           {
-            "id": 317,
+            "id": 318,
             "type": {
               "path": [
                 "polkadot_primitives",
@@ -20133,7 +20153,7 @@
             }
           },
           {
-            "id": 318,
+            "id": 319,
             "type": {
               "path": [
                 "cumulus_primitives_parachain_inherent",
@@ -20156,7 +20176,7 @@
             }
           },
           {
-            "id": 319,
+            "id": 320,
             "type": {
               "path": [
                 "BTreeMap"
@@ -20168,7 +20188,7 @@
                 },
                 {
                   "name": "V",
-                  "type": 318
+                  "type": 319
                 }
               ],
               "def": {
@@ -20176,24 +20196,11 @@
                   "fields": [
                     {
                       "name": null,
-                      "type": 320,
+                      "type": 321,
                       "typeName": null,
                       "docs": []
                     }
                   ]
-                }
-              },
-              "docs": []
-            }
-          },
-          {
-            "id": 320,
-            "type": {
-              "path": [],
-              "params": [],
-              "def": {
-                "sequence": {
-                  "type": 321
                 }
               },
               "docs": []
@@ -20205,10 +20212,9 @@
               "path": [],
               "params": [],
               "def": {
-                "tuple": [
-                  243,
-                  318
-                ]
+                "sequence": {
+                  "type": 322
+                }
               },
               "docs": []
             }
@@ -20219,15 +20225,29 @@
               "path": [],
               "params": [],
               "def": {
-                "sequence": {
-                  "type": 323
-                }
+                "tuple": [
+                  243,
+                  319
+                ]
               },
               "docs": []
             }
           },
           {
             "id": 323,
+            "type": {
+              "path": [],
+              "params": [],
+              "def": {
+                "sequence": {
+                  "type": 324
+                }
+              },
+              "docs": []
+            }
+          },
+          {
+            "id": 324,
             "type": {
               "path": [
                 "polkadot_core_primitives",
@@ -20261,7 +20281,7 @@
             }
           },
           {
-            "id": 324,
+            "id": 325,
             "type": {
               "path": [
                 "cumulus_pallet_parachain_system",
@@ -20351,7 +20371,7 @@
             }
           },
           {
-            "id": 325,
+            "id": 326,
             "type": {
               "path": [
                 "sp_runtime",
@@ -20374,7 +20394,7 @@
                 },
                 {
                   "name": "Extra",
-                  "type": 326
+                  "type": 327
                 }
               ],
               "def": {
@@ -20393,26 +20413,26 @@
             }
           },
           {
-            "id": 326,
+            "id": 327,
             "type": {
               "path": [],
               "params": [],
               "def": {
                 "tuple": [
-                  327,
                   328,
                   329,
                   330,
-                  332,
+                  331,
                   333,
-                  334
+                  334,
+                  335
                 ]
               },
               "docs": []
             }
           },
           {
-            "id": 327,
+            "id": 328,
             "type": {
               "path": [
                 "frame_system",
@@ -20435,7 +20455,7 @@
             }
           },
           {
-            "id": 328,
+            "id": 329,
             "type": {
               "path": [
                 "frame_system",
@@ -20458,7 +20478,7 @@
             }
           },
           {
-            "id": 329,
+            "id": 330,
             "type": {
               "path": [
                 "frame_system",
@@ -20481,7 +20501,7 @@
             }
           },
           {
-            "id": 330,
+            "id": 331,
             "type": {
               "path": [
                 "frame_system",
@@ -20500,7 +20520,7 @@
                   "fields": [
                     {
                       "name": null,
-                      "type": 331,
+                      "type": 332,
                       "typeName": "Era",
                       "docs": []
                     }
@@ -20511,7 +20531,7 @@
             }
           },
           {
-            "id": 331,
+            "id": 332,
             "type": {
               "path": [
                 "sp_runtime",
@@ -23851,7 +23871,7 @@
             }
           },
           {
-            "id": 332,
+            "id": 333,
             "type": {
               "path": [
                 "frame_system",
@@ -23881,7 +23901,7 @@
             }
           },
           {
-            "id": 333,
+            "id": 334,
             "type": {
               "path": [
                 "frame_system",
@@ -23904,7 +23924,7 @@
             }
           },
           {
-            "id": 334,
+            "id": 335,
             "type": {
               "path": [
                 "pallet_transaction_payment",
@@ -23932,7 +23952,7 @@
             }
           },
           {
-            "id": 335,
+            "id": 336,
             "type": {
               "path": [
                 "spiritnet_runtime",
@@ -24212,7 +24232,7 @@
             {
               "name": "Version",
               "type": 84,
-              "value": "0x386b696c742d7370697269746e6574386b696c742d7370697269746e657401000000042900000000000028df6acb689907609b0400000037e397fc7c91f5e401000000bc9d89904f5b923f0100000037c8bb1350a9a2a80100000040fe3ad401f8959a05000000d2bc9897eed08f1503000000f78b278be53f454c02000000ab3c0572291feb8b01000000dd718d5cc53262d401000000ea93e3f16f3d6962020000000100000000",
+              "value": "0x386b696c742d7370697269746e6574386b696c742d7370697269746e6574010000007c2900000000000028df6acb689907609b0400000037e397fc7c91f5e401000000bc9d89904f5b923f0100000037c8bb1350a9a2a80100000040fe3ad401f8959a05000000d2bc9897eed08f1503000000f78b278be53f454c02000000ab3c0572291feb8b01000000dd718d5cc53262d401000000ea93e3f16f3d6962020000000200000000",
               "docs": [
                 " Get the chain's current version."
               ]
@@ -26797,6 +26817,26 @@
                 "docs": [
                   " Mapping from account identifiers to DIDs."
                 ]
+              },
+              {
+                "name": "ConnectedAccounts",
+                "modifier": "Optional",
+                "type": {
+                  "map": {
+                    "hashers": [
+                      "Blake2_128Concat",
+                      "Blake2_128Concat"
+                    ],
+                    "key": 307,
+                    "value": 36
+                  }
+                },
+                "fallback": "0x00",
+                "docs": [
+                  " Mapping from (DID + account identifier) -> ().",
+                  " The empty tuple is used as a sentinel value to simply indicate the",
+                  " presence of a given tuple in the map."
+                ]
               }
             ]
           },
@@ -26819,7 +26859,7 @@
             }
           ],
           "errors": {
-            "type": 307
+            "type": 308
           },
           "index": 67
         },
@@ -26837,7 +26877,7 @@
                       "Blake2_128Concat"
                     ],
                     "key": 63,
-                    "value": 308
+                    "value": 309
                   }
                 },
                 "fallback": "0x00",
@@ -26916,7 +26956,7 @@
             }
           ],
           "errors": {
-            "type": 309
+            "type": 310
           },
           "index": 68
         },
@@ -26984,7 +27024,7 @@
                 "name": "UpgradeRestrictionSignal",
                 "modifier": "Default",
                 "type": {
-                  "plain": 310
+                  "plain": 311
                 },
                 "fallback": "0x00",
                 "docs": [
@@ -27001,7 +27041,7 @@
                 "name": "RelevantMessagingState",
                 "modifier": "Optional",
                 "type": {
-                  "plain": 312
+                  "plain": 313
                 },
                 "fallback": "0x00",
                 "docs": [
@@ -27018,7 +27058,7 @@
                 "name": "HostConfiguration",
                 "modifier": "Optional",
                 "type": {
-                  "plain": 317
+                  "plain": 318
                 },
                 "fallback": "0x00",
                 "docs": [
@@ -27034,7 +27074,7 @@
                 "name": "LastDmqMqcHead",
                 "modifier": "Default",
                 "type": {
-                  "plain": 318
+                  "plain": 319
                 },
                 "fallback": "0x0000000000000000000000000000000000000000000000000000000000000000",
                 "docs": [
@@ -27048,7 +27088,7 @@
                 "name": "LastHrmpMqcHeads",
                 "modifier": "Default",
                 "type": {
-                  "plain": 319
+                  "plain": 320
                 },
                 "fallback": "0x00",
                 "docs": [
@@ -27088,7 +27128,7 @@
                 "name": "HrmpOutboundMessages",
                 "modifier": "Default",
                 "type": {
-                  "plain": 322
+                  "plain": 323
                 },
                 "fallback": "0x00",
                 "docs": [
@@ -27191,7 +27231,7 @@
           },
           "constants": [],
           "errors": {
-            "type": 324
+            "type": 325
           },
           "index": 80
         },
@@ -27219,47 +27259,47 @@
         }
       ],
       "extrinsic": {
-        "type": 325,
+        "type": 326,
         "version": 4,
         "signedExtensions": [
           {
             "identifier": "CheckSpecVersion",
-            "type": 327,
-            "additionalSigned": 7
-          },
-          {
-            "identifier": "CheckTxVersion",
             "type": 328,
             "additionalSigned": 7
           },
           {
-            "identifier": "CheckGenesis",
+            "identifier": "CheckTxVersion",
             "type": 329,
-            "additionalSigned": 9
+            "additionalSigned": 7
           },
           {
-            "identifier": "CheckMortality",
+            "identifier": "CheckGenesis",
             "type": 330,
             "additionalSigned": 9
           },
           {
-            "identifier": "CheckNonce",
-            "type": 332,
-            "additionalSigned": 36
+            "identifier": "CheckMortality",
+            "type": 331,
+            "additionalSigned": 9
           },
           {
-            "identifier": "CheckWeight",
+            "identifier": "CheckNonce",
             "type": 333,
             "additionalSigned": 36
           },
           {
-            "identifier": "ChargeTransactionPayment",
+            "identifier": "CheckWeight",
             "type": 334,
+            "additionalSigned": 36
+          },
+          {
+            "identifier": "ChargeTransactionPayment",
+            "type": 335,
             "additionalSigned": 36
           }
         ]
       },
-      "type": 335
+      "type": 336
     }
   }
 }
