@@ -33,9 +33,9 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api": "^7.10.1",
-    "@polkadot/api-augment": "^7.10.1",
-    "@polkadot/types": "^7.10.1"
+    "@polkadot/api": "^8.0.0",
+    "@polkadot/api-augment": "^8.0.0",
+    "@polkadot/types": "^8.0.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
