@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module CType
  */
 
 import type {
@@ -26,7 +21,6 @@ import { verifyDataStructure } from './verification.js'
  *
  * @returns An ordered array of a [[CType]] schema.
  */
-
 export function compressSchema(
   cTypeSchema: ICType['schema']
 ): CompressedCTypeSchema {
@@ -37,7 +31,7 @@ export function compressSchema(
     !cTypeSchema.properties ||
     !cTypeSchema.type
   ) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
   }
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
@@ -57,12 +51,11 @@ export function compressSchema(
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
-
 export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 5) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
   }
   return {
     $id: cTypeSchema[0],
@@ -80,7 +73,6 @@ export function decompressSchema(
  *
  * @returns An ordered array of a [[CType]].
  */
-
 export function compress(cType: ICType): CompressedCType {
   verifyDataStructure(cType)
   return [cType.hash, cType.owner, compressSchema(cType.schema)]
@@ -94,10 +86,9 @@ export function compress(cType: ICType): CompressedCType {
  *
  * @returns An object that has the same properties as a [[CType]].
  */
-
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
   }
   return {
     hash: cType[0],

@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module CType
  */
 
 import type { ICType, IClaim, ICTypeMetadata } from '@kiltprotocol/types'
@@ -17,6 +12,14 @@ import { getOwner, isStored } from './chain.js'
 import { CTypeModel, CTypeWrapperModel, MetadataModel } from './schemas.js'
 import { getHashForSchema, getIdForSchema } from './utils.js'
 
+/**
+ * Verifies data against CType schema or CType schema against metaschema.
+ *
+ * @param object Data to be verified against schema.
+ * @param schema Schema to verify against.
+ * @param messages Optional empty array. If passed, this receives all verification errors.
+ * @returns Whether or not verification was successful.
+ */
 export function verifyObjectAgainstSchema(
   object: Record<string, any>,
   schema: Record<string, any>,
@@ -51,15 +54,27 @@ export function verifyClaimAgainstSchema(
   messages?: string[]
 ): boolean {
   if (!verifyObjectAgainstSchema(schema, CTypeModel)) {
-    throw SDKErrors.ERROR_OBJECT_MALFORMED()
+    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   return verifyObjectAgainstSchema(claimContents, schema, messages)
 }
 
+/**
+ * Checks on the KILT blockchain whether a CType is registered.
+ *
+ * @param ctype CType data.
+ * @returns Whether or not the CType is registered on-chain.
+ */
 export async function verifyStored(ctype: ICType): Promise<boolean> {
   return isStored(ctype.hash)
 }
 
+/**
+ * Checks on the KILT blockchain whether a CType is registered to the owner listed in the CType record.
+ *
+ * @param ctype CType data.
+ * @returns Whether or not the CType is registered on-chain to `ctype.owner`.
+ */
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
   const owner = await getOwner(ctype.hash)
   return owner ? owner === ctype.owner : false
@@ -77,19 +92,19 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
  */
 export function verifyDataStructure(input: ICType): void {
   if (!verifyObjectAgainstSchema(input, CTypeWrapperModel)) {
-    throw SDKErrors.ERROR_OBJECT_MALFORMED()
+    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
-    throw SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
+    throw new SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
   }
   if (getIdForSchema(input.schema) !== input.schema.$id) {
-    throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING(
+    throw new SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING(
       getIdForSchema(input.schema),
       input.schema.$id
     )
   }
   if (!(input.owner === null || DidUtils.validateKiltDidUri(input.owner))) {
-    throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
+    throw new SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }
 
@@ -99,7 +114,7 @@ export function verifyDataStructure(input: ICType): void {
  * @param cType - A [[CType]] that has nested [[CType]]s inside.
  * @param nestedCTypes - An array of [[CType]] schemas.
  * @param claimContents - The contents of a [[Claim]] to be validated.
- * @param messages
+ * @param messages - Optional empty array. If passed, this receives all verification errors.
  *
  * @returns Whether the contents is valid.
  */
@@ -132,6 +147,6 @@ export function verifyClaimAgainstNestedSchemas(
  */
 export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
   if (!verifyObjectAgainstSchema(metadata, MetadataModel)) {
-    throw SDKErrors.ERROR_OBJECT_MALFORMED()
+    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
   }
 }

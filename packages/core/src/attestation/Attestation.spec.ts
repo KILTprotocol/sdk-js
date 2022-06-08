@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -243,34 +243,34 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    expect(() => Attestation.errorCheck(noClaimHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
+    expect(() => Attestation.errorCheck(noClaimHash)).toThrowError(
+      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
     )
 
-    expect(() => Attestation.errorCheck(noCTypeHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    expect(() => Attestation.errorCheck(noCTypeHash)).toThrowError(
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
-    expect(() => Attestation.errorCheck(malformedOwner)).toThrowErrorWithCode(
-      SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    expect(() => Attestation.errorCheck(malformedOwner)).toThrowError(
+      SDKErrors.ERROR_OWNER_NOT_PROVIDED
     )
 
-    expect(() => Attestation.errorCheck(noRevocationBit)).toThrowErrorWithCode(
-      SDKErrors.ERROR_REVOCATION_BIT_MISSING()
+    expect(() => Attestation.errorCheck(noRevocationBit)).toThrowError(
+      SDKErrors.ERROR_REVOCATION_BIT_MISSING
     )
 
     expect(() => Attestation.errorCheck(everything)).not.toThrow()
 
-    expect(() =>
-      Attestation.errorCheck(malformedClaimHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => Attestation.errorCheck(malformedClaimHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() =>
-      Attestation.errorCheck(malformedCTypeHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => Attestation.errorCheck(malformedCTypeHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() => Attestation.errorCheck(malformedAddress)).toThrowErrorWithCode(
-      SDKErrors.ERROR_INVALID_DID_FORMAT(malformedAddress.owner)
+    expect(() => Attestation.errorCheck(malformedAddress)).toThrowError(
+      SDKErrors.ERROR_INVALID_DID_FORMAT
     )
   })
   it('Typeguard should return true on complete Attestations', () => {

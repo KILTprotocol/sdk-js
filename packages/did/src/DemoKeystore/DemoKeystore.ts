@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -61,7 +61,9 @@ function encodeSigningPublicKeyToAddress(
       return encodeAddress(pk, 38)
     }
     default:
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(`Unsupport signing key alg ${alg}.`)
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
+        `Unsupport signing key alg ${alg}.`
+      )
   }
 }
 
@@ -98,7 +100,7 @@ export class DemoKeystore
 
   private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
     if (!signingSupported(alg))
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
         `alg ${alg} is not supported for signing`
       )
     const keyType = DemoKeystore.getKeypairTypeForAlg(alg)
@@ -107,11 +109,11 @@ export class DemoKeystore
       const keypair = this.signingKeyring.getPair(encodedAddress)
       if (keypair && keyType === keypair.type) return keypair
     } catch {
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
         `no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`
       )
     }
-    throw SDKErrors.ERROR_KEYSTORE_ERROR(
+    throw new SDKErrors.ERROR_KEYSTORE_ERROR(
       `no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`
     )
   }
@@ -121,7 +123,7 @@ export class DemoKeystore
     alg: string
   ): NaclKeypair {
     if (!encryptionSupported(alg))
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
         `alg ${alg} is not supported for encryption`
       )
     const publicKeyHex = Crypto.u8aToHex(publicKey)
@@ -177,7 +179,7 @@ export class DemoKeystore
     if (encryptionSupported(alg)) {
       return this.generateEncryptionKeypair({ alg, seed })
     }
-    throw SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
+    throw new SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
   }
 
   private async addSigningKeypair<T extends SigningAlgorithms>({
@@ -190,7 +192,7 @@ export class DemoKeystore
   }> {
     await cryptoWaitReady()
     if (this.signingKeyring.publicKeys.some((i) => u8aEq(publicKey, i)))
-      throw SDKErrors.ERROR_KEYSTORE_ERROR('public key already stored')
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR('public key already stored')
     const keypairType = DemoKeystore.getKeypairTypeForAlg(alg)
     const keypair = this.signingKeyring.addFromPair(
       { publicKey, secretKey },
@@ -211,7 +213,7 @@ export class DemoKeystore
     const { publicKey } = keypair
     const publicKeyHex = Crypto.u8aToHex(publicKey)
     if (this.encryptionKeypairs.has(publicKeyHex))
-      throw SDKErrors.ERROR_KEYSTORE_ERROR('public key already used')
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR('public key already used')
     this.encryptionKeypairs.set(publicKeyHex, keypair)
     return { alg, publicKey }
   }
@@ -230,7 +232,7 @@ export class DemoKeystore
     if (encryptionSupported(alg)) {
       return this.addEncryptionKeypair({ alg, publicKey, secretKey })
     }
-    throw SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
+    throw new SDKErrors.ERROR_KEYSTORE_ERROR(`alg ${alg} is not supported`)
   }
 
   public async sign<A extends SigningAlgorithms>({
@@ -272,7 +274,7 @@ export class DemoKeystore
     const decrypted = naclOpen(data, nonce, peerPublicKey, keypair.secretKey)
     if (!decrypted)
       return Promise.reject(
-        SDKErrors.ERROR_KEYSTORE_ERROR('failed to decrypt with given key')
+        new SDKErrors.ERROR_KEYSTORE_ERROR('failed to decrypt with given key')
       )
     return { data: decrypted, alg }
   }

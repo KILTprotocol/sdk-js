@@ -1,21 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
- * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as a [[Credential]].
- *
- * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
- * * the key is the hash of the corresponding claim;
- * * the value is a tuple ([[CType]] hash, account, id of the Delegation, and revoked flag).
- *
- * @packageDocumentation
- * @module Attestation
- * @preferred
  */
 
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
@@ -38,6 +25,17 @@ import {
   queryDepositAmount as chainQueryDepositAmount,
 } from './Attestation.chain.js'
 import { DelegationNode } from '../delegation/DelegationNode.js'
+
+/**
+ * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
+ * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as a [[Credential]].
+ *
+ * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
+ * * the key is the hash of the corresponding claim;
+ * * the value is a tuple ([[CType]] hash, account, id of the Delegation, and revoked flag).
+ *
+ * @packageDocumentation
+ */
 
 /**
  * [STATIC] [ASYNC] Queries the chain for a given attestation, by `claimHash`.
@@ -129,22 +127,22 @@ export async function getReclaimDepositTx(
  */
 export function errorCheck(input: IAttestation): void {
   if (!input.cTypeHash) {
-    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   } else DataUtils.validateHash(input.cTypeHash, 'CType')
 
   if (!input.claimHash) {
-    throw SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
   } else DataUtils.validateHash(input.claimHash, 'Claim')
 
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (!input.owner) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   } else DidUtils.validateKiltDidUri(input.owner)
 
   if (typeof input.revoked !== 'boolean') {
-    throw SDKErrors.ERROR_REVOCATION_BIT_MISSING()
+    throw new SDKErrors.ERROR_REVOCATION_BIT_MISSING()
   }
 }
 
@@ -290,7 +288,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
   }
   const decompressedAttestation = {
     claimHash: attestation[0],

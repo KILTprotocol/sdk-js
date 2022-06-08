@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -15,7 +15,6 @@
  * A claim object's owner is (should be) the same entity as the claimer.
  *
  * @packageDocumentation
- * @module Claim
  */
 
 import type { IClaim, IDidDetails, ICType } from '@kiltprotocol/types'
@@ -44,7 +43,7 @@ export function verify(
   cTypeSchema: ICType['schema']
 ): void {
   if (!verifyAgainstCType(claimInput.contents, cTypeSchema)) {
-    throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+    throw new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
   }
 
   ClaimUtils.verifyDataStructure(claimInput)
@@ -74,7 +73,7 @@ export function fromNestedCTypeClaim(
       claimContents
     )
   ) {
-    throw SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
+    throw new SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
   }
   const claim = {
     cTypeHash: cTypeInput.hash,
@@ -102,7 +101,7 @@ export function fromCTypeAndClaimContents(
 ): IClaim {
   if (ctypeInput.schema) {
     if (!verifyAgainstCType(claimContents, ctypeInput.schema)) {
-      throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+      throw new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
     }
   }
   const claim = {

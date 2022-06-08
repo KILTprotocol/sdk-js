@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -757,8 +757,8 @@ describe('create presentation', () => {
     expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
 
-    expect(() =>
-      CredentialUtils.verifyStructure(cred, ctype)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    expect(() => CredentialUtils.verifyStructure(cred, ctype)).toThrowError(
+      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
+    )
   })
 })

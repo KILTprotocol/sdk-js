@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -13,7 +13,6 @@
  * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
  *
  * @packageDocumentation
- * @module Credential
  */
 
 import {
@@ -144,7 +143,7 @@ export async function verify(
 export function validateLegitimations(legitimations: ICredential[]): boolean {
   legitimations.forEach((legitimation: ICredential) => {
     if (!verifyData(legitimation)) {
-      throw SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
+      throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
     }
   })
   return true
@@ -216,7 +215,7 @@ export async function createPresentation({
   const selectedKeyId = (await keySelection(keys))?.id
 
   if (!selectedKeyId) {
-    throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
+    throw new SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
   }
 
   await RequestForAttestation.signWithDidKey(

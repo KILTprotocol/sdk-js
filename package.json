@@ -9,7 +9,7 @@
   "scripts": {
     "check": "tsc -p tsconfig.json --noEmit",
     "build": "yarn workspaces foreach -p --topological-dev --exclude '{root-workspace}' run build",
-    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
+    "build:docs": "typedoc --theme default --out docs/api --tsconfig tsconfig.docs.json && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
     "clean": "yarn workspaces foreach -p --exclude '{root-workspace}' run clean",
     "clean:docs": "rm -rf docs/api",
@@ -21,9 +21,10 @@
     "style": "prettier -l packages",
     "style:fix": "yarn style --write",
     "test": "jest --coverage --group=unit",
-    "test:ci": "yarn test --ci",
-    "test:integration:run": "jest --group=integration -b -w 3 --silent",
-    "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
+    "test:ci": "yarn test --ci --forceExit",
+    "test:integration": "jest --group=integration -w 3 --testTimeout=30000",
+    "test:integration:ci": "jest --group=integration -b -w 3 --testTimeout=60000",
+    "test:integration:latest-develop": "TESTCONTAINERS_NODE_IMG=kiltprotocol/mashnet-node:latest-develop yarn test:integration",
     "test:watch": "yarn test --watch",
     "test:bundle": "yarn ./tests playwright test --config playwright.config.ts",
     "test:ci:bundle": "yarn test:ci:bundle:preparation && yarn test:bundle",
@@ -64,10 +65,9 @@
     "ts-jest": "^27.1.2",
     "ts-jest-resolver": "^2.0.0",
     "ts-node": "^10.4.0",
-    "typedoc": "^0.22.7",
-    "typedoc-plugin-external-module-name": "^4.0.6",
+    "typedoc": "^0.22.15",
     "typescript": "^4.5.4"
   },
-  "version": "0.28.0-2",
-  "packageManager": "yarn@2.4.3"
+  "version": "0.28.0-10",
+  "packageManager": "yarn@3.0.2"
 }

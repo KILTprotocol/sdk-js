@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -37,6 +37,9 @@ let claimer: FullDidDetails
 
 beforeAll(async () => {
   await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   tokenHolder = await createEndowedTestAccount()
   signer = new DemoKeystore()
   ;[attester, anotherAttester, claimer] = await Promise.all([
@@ -48,7 +51,7 @@ beforeAll(async () => {
 
 it('fetches the correct deposit amount', async () => {
   const depositAmount = await Attestation.queryDepositAmount()
-  expect(depositAmount.toString()).toMatchInlineSnapshot('"120900000000000"')
+  expect(depositAmount.toString()).toMatchInlineSnapshot(`"120950000000000"`)
 })
 
 describe('handling attestations that do not exist', () => {

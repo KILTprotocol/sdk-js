@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -200,7 +200,7 @@ function decodeDidPublicKeyDetails(
   const key = keyDetails.key.value
   const keyType = chainTypeToDidKeyType[key.type]
   if (!keyType) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `Unsupported key type "${key.type}" found on chain.`
     )
   }
@@ -243,6 +243,12 @@ function decodeDidChainRecord(
   return didRecord
 }
 
+/**
+ * Query data associated with a FullDid from the KILT blockchain.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @returns Data associated with this Did or null if the Did has not been claimed or has been deleted.
+ */
 export async function queryDetails(
   didIdentifier: DidIdentifier
 ): Promise<IDidChainRecordJSON | null> {
@@ -253,6 +259,13 @@ export async function queryDetails(
   return decodeDidChainRecord(result.unwrap())
 }
 
+/**
+ * Query a key record associated with a FullDid from the KILT blockchain.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param keyId Identifier of the requested public key (not the full key uri).
+ * @returns Public key data or null if the requested key is not found on this FullDid, or if the FullDid does not exist.
+ */
 export async function queryKey(
   didIdentifier: DidIdentifier,
   keyId: DidKey['id']
@@ -277,6 +290,12 @@ function decodeServiceChainRecord(
   }
 }
 
+/**
+ * Query service endpoint records associated with a FullDid from the KILT blockchain.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @returns An array of service endpoint data or an empty array if the FullDid does not exist or has no service endpoints associated with it.
+ */
 export async function queryServiceEndpoints(
   didIdentifier: DidIdentifier
 ): Promise<DidServiceEndpoint[]> {
@@ -284,6 +303,13 @@ export async function queryServiceEndpoints(
   return encoded.map((e) => decodeServiceChainRecord(e))
 }
 
+/**
+ * Query a service endpoint record associated with a FullDid from the KILT blockchain.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param serviceId Identifier of the requested service endpoint (not the full endpoint uri).
+ * @returns Service endpoint data or null if the requested endpoint is not found on this FullDid, or if the FullDid does not exist.
+ */
 export async function queryServiceEndpoint(
   didIdentifier: DidIdentifier,
   serviceId: DidServiceEndpoint['id']
@@ -294,6 +320,12 @@ export async function queryServiceEndpoint(
   return decodeServiceChainRecord(serviceEncoded.unwrap())
 }
 
+/**
+ * Gets the total number of service endpoints associated with a given FullDid.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @returns Number of endpoints.
+ */
 export async function queryEndpointsCounts(
   didIdentifier: DidIdentifier
 ): Promise<BN> {
@@ -301,11 +333,23 @@ export async function queryEndpointsCounts(
   return endpointsCountEncoded.toBn()
 }
 
+/**
+ * Gets the state of a FullDid's transaction counter which is bumped with each transaction authorized by that DID for replay protection purposes.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @returns Current state of the transaction counter which must be increased by one to yield the next transaction's nonce.
+ */
 export async function queryNonce(didIdentifier: DidIdentifier): Promise<BN> {
   const encoded = await queryDidEncoded(didIdentifier)
   return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
 }
 
+/**
+ * Checks whether a FullDid with a given identifier had previously been deleted, resulting in it being blocked from (re)creation.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @returns Whether or not the didIdentifier is listed in the block list.
+ */
 export async function queryDidDeletionStatus(
   didIdentifier: DidIdentifier
 ): Promise<boolean> {
@@ -318,11 +362,21 @@ export async function queryDidDeletionStatus(
   return !encodedStorageHash.isEmpty
 }
 
+/**
+ * Gets the current deposit amount due for the creation of new FullDids.
+ *
+ * @returns Deposit amount in Femto Kilt as a BigNumber.
+ */
 export async function queryDepositAmount(): Promise<BN> {
   const encodedDeposit = await queryDepositAmountEncoded()
   return encodedDeposit.toBn()
 }
 
+/**
+ * Queries the full list of FullDids that have previously been deleted, resulting in them being blocked from (re)creation.
+ *
+ * @returns An array of DID identifiers that have been deleted.
+ */
 export async function queryDeletedDidIdentifiers(): Promise<DidIdentifier[]> {
   const encodedIdentifiers = await queryDeletedDidsEncoded()
   return encodedIdentifiers.map((id) => id.toHuman())
@@ -351,6 +405,12 @@ interface IDidAuthorizedCallOperation extends Struct {
 
 // ### EXTRINSICS
 
+/**
+ * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
+ *
+ * @param key Object describing data associated with a public key.
+ * @returns Data restructured to allow SCALE encoding by polkadot api.
+ */
 export function formatPublicKey(key: NewDidKey): PublicKeyEnum {
   const { type, publicKey } = key
   return { [type]: publicKey }
@@ -375,30 +435,30 @@ function checkServiceEndpointInput(
   ]
 
   if (endpoint.id.length > maxServiceIdLength) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
     )
   }
   if (endpoint.types.length > maxNumberOfTypesPerService) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
     )
   }
   if (endpoint.urls.length > maxNumberOfUrlsPerService) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The service with ID "${endpoint.id}" has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
     )
   }
   endpoint.types.forEach((type) => {
     if (type.length > maxServiceTypeLength) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `The service with ID "${endpoint.id}" has the type "${type}" that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
       )
     }
   })
   endpoint.urls.forEach((url) => {
     if (url.length > maxServiceUrlLength) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
       )
     }
@@ -426,7 +486,7 @@ function checkServiceEndpointInput(
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param signer The keystore signer.
  *
- * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function generateCreateTxFromCreationDetails(
   details: FullDidCreationDetails,
@@ -448,7 +508,7 @@ export async function generateCreateTxFromCreationDetails(
   ).toNumber()
 
   if (keyAgreementKeys.length > maxKeyAgreementKeys) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
     )
   }
@@ -470,7 +530,7 @@ export async function generateCreateTxFromCreationDetails(
   ).toNumber()
 
   if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID.`
     )
   }
@@ -518,7 +578,7 @@ export async function generateCreateTxFromCreationDetails(
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param signer The keystore signer.
  *
- * @returns The [[SubmittableExtrinsic]] for the DID creation operation.
+ * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function generateCreateTxFromDidDetails(
   did: DidDetails,
@@ -527,7 +587,7 @@ export async function generateCreateTxFromDidDetails(
 ): Promise<SubmittableExtrinsic> {
   const { authenticationKey } = did
   if (!authenticationKey) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The provided DID does not have an authentication key to sign the creation operation.`
     )
   }
@@ -572,6 +632,13 @@ export async function generateCreateTxFromDidDetails(
   )
 }
 
+/**
+ * Builds an extrinsic to set a new public key for a given verification relationship, replacing any keys that occupied this role previously.
+ *
+ * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (e.g. Authentication, assertionMethod, capabilityDelegation...).
+ * @param key Data describing the public key.
+ * @returns An extrinsic that must be authorized (signed) by the FullDid whose keys should be changed.
+ */
 export async function getSetKeyExtrinsic(
   keyRelationship: KeyRelationship,
   key: NewDidKey
@@ -586,7 +653,7 @@ export async function getSetKeyExtrinsic(
     case KeyRelationship.assertionMethod:
       return api.tx.did.setAttestationKey(keyAsEnum)
     default:
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `setting a key is only allowed for the following key types: ${[
           KeyRelationship.authentication,
           KeyRelationship.capabilityDelegation,
@@ -596,6 +663,13 @@ export async function getSetKeyExtrinsic(
   }
 }
 
+/**
+ * Builds an extrinsic to remove a public key for a given verification relationship.
+ *
+ * @param keyRelationship The key's role or relationship according to the DID specifications (e.g. Authentication, assertionMethod, capabilityDelegation, keyAgreement...).
+ * @param keyId Where a verification relationship allows multiple keys in the same role, you will need to identify the key to be removed with its id (not the full key uri).
+ * @returns An extrinsic that must be authorized (signed) by the FullDid whose keys should be changed.
+ */
 export async function getRemoveKeyExtrinsic(
   keyRelationship: KeyRelationship,
   keyId?: DidKey['id']
@@ -608,13 +682,13 @@ export async function getRemoveKeyExtrinsic(
       return api.tx.did.removeAttestationKey()
     case KeyRelationship.keyAgreement:
       if (!keyId) {
-        throw SDKErrors.ERROR_DID_ERROR(
+        throw new SDKErrors.ERROR_DID_ERROR(
           `When removing a ${KeyRelationship.keyAgreement} key it is required to specify the id of the key to be removed.`
         )
       }
       return api.tx.did.removeKeyAgreementKey(keyId)
     default:
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `key removal is only allowed for the following key types: ${[
           KeyRelationship.keyAgreement,
           KeyRelationship.capabilityDelegation,
@@ -624,6 +698,13 @@ export async function getRemoveKeyExtrinsic(
   }
 }
 
+/**
+ * Builds an extrinsic to add an additional public key for a given verification relationship if this allows multiple keys in the same role.
+ *
+ * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (currently only keyAgreement allows multiple keys).
+ * @param key Data describing the public key.
+ * @returns An extrinsic that must be authorized (signed) by the FullDid whose keys should be changed.
+ */
 export async function getAddKeyExtrinsic(
   keyRelationship: KeyRelationship,
   key: NewDidKey
@@ -633,7 +714,7 @@ export async function getAddKeyExtrinsic(
   if (keyRelationship === KeyRelationship.keyAgreement) {
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
-  throw SDKErrors.ERROR_DID_ERROR(
+  throw new SDKErrors.ERROR_DID_ERROR(
     `adding to the key set is only allowed for the following key types:  ${[
       KeyRelationship.keyAgreement,
     ]}`
@@ -648,7 +729,7 @@ export async function getAddKeyExtrinsic(
  *     - The service endpoint ID is at most 50 ASCII characters long
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
  *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
- * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ * @returns An extrinsic that must be authorized (signed) by the FullDid with which the service endpoint should be associated.
  */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
@@ -667,7 +748,7 @@ export async function getAddEndpointExtrinsic(
  *
  * @param endpointId The ID of the service endpoint to include in the extrinsic.
  * The ID must be at most 50 ASCII characters long.
- * @returns The [[Extrinsic]] that can be submitted to add the provided service endpoint.
+ * @returns An extrinsic that must be authorized (signed) by the FullDid associated with the service endpoint to be removed.
  */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
@@ -677,7 +758,7 @@ export async function getRemoveEndpointExtrinsic(
     api.consts.did.maxServiceIdLength as u32
   ).toNumber()
   if (endpointId.length > maxServiceIdLength) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `The service ID "${endpointId}" has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
     )
   }
@@ -685,6 +766,12 @@ export async function getRemoveEndpointExtrinsic(
   return api.tx.did.removeServiceEndpoint(endpointId)
 }
 
+/**
+ * Produces an extrinsic to remove the signing FullDid from the KILT blockchain.
+ *
+ * @param endpointsCount The current number of service endpoints associated with the FullDid to be deleted, which is important for the precalculation of the deletion fee.
+ * @returns An extrinsic that must be authorized (signed) by the FullDid to be deleted.
+ */
 export async function getDeleteDidExtrinsic(
   endpointsCount: BN
 ): Promise<Extrinsic> {
@@ -692,6 +779,13 @@ export async function getDeleteDidExtrinsic(
   return api.tx.did.delete(endpointsCount)
 }
 
+/**
+ * Produces an extrinsic to reclaim a deposit paid for storing a FullDid record on the KILT blockchain, resulting in the deletion of that Did.
+ *
+ * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param endpointsCount The current number of service endpoints associated with the FullDid to be deleted, which is important for the precalculation of the deletion fee.
+ * @returns An extrinsic that is to be signed by the payment account owning the deposit, without prior DID authorization.
+ */
 export async function getReclaimDepositExtrinsic(
   didIdentifier: DidIdentifier,
   endpointsCount: BN
@@ -700,8 +794,21 @@ export async function getReclaimDepositExtrinsic(
   return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)
 }
 
-// The block number can either be provided by the DID subject,
-// or the latest one will automatically be fetched from the blockchain.
+/**
+ * DID related operations on the KILT blockchain require authorization by a FullDid. This is realized by requiring that relevant extrinsics are signed with a key featured by a FullDid as a verification method.
+ * Such extrinsics can be produced using this function.
+ *
+ * @param params Object wrapping all input to the function.
+ * @param params.didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param params.signingPublicKey Public key of the keypair to be used for authorization as hex string or Uint8Array.
+ * @param params.alg Identifier of the cryptographic signing algorithm to be used.
+ * @param params.signer A signer callback to interface with the key store managing the private key to be used.
+ * @param params.call The call or extrinsic to be authorized.
+ * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing FullDid.
+ * @param params.submitter Payment account allowed to submit this extrinsic and cover its fees, which will end up owning any deposit associated with newly created records.
+ * @param params.blockNumber Block number for determining the validity period of this authorization. If omitted, the current block number will be fetched from chain.
+ * @returns A DID authenticated extrinsic that, after signing with the payment account mentioned in the params, is ready for submission.
+ */
 export async function generateDidAuthenticatedTx({
   didIdentifier,
   signingPublicKey,
@@ -743,12 +850,19 @@ export async function generateDidAuthenticatedTx({
 }
 
 // ### Chain utils
+/**
+ * Compiles an enum-type key-value pair representation of a signature created with a FullDid verification method. Required for creating FullDid signed extrinsics.
+ *
+ * @param key Object describing data associated with a public key.
+ * @param signature Object containing a signature generated with a FullDid associated public key.
+ * @returns Data restructured to allow SCALE encoding by polkadot api.
+ */
 export function encodeDidSignature(
   key: Pick<ChainDidKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
   if (!Object.values(VerificationKeyType).some((kt) => kt === key.type)) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
   }

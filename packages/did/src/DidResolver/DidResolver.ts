@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -68,7 +68,7 @@ export async function resolveDoc(
       try {
         details = LightDidDetails.fromUri(did, false)
       } catch {
-        throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
+        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(did)
       }
 
       const fullDidDetails = await queryDetails(details.identifier)
@@ -103,7 +103,7 @@ export async function resolveDoc(
       }
     }
     default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(did)
+      throw new SDKErrors.ERROR_UNSUPPORTED_DID(did)
   }
 }
 
@@ -120,7 +120,7 @@ export async function resolveKey(
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
   }
 
   switch (type) {
@@ -143,7 +143,7 @@ export async function resolveKey(
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
       if (!resolvedDetails) {
-        throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
       const key = resolvedDetails.details?.getKey(keyId)
       if (!key) {
@@ -157,7 +157,7 @@ export async function resolveKey(
       }
     }
     default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
+      throw new SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
   }
 }
 
@@ -174,7 +174,7 @@ export async function resolveServiceEndpoint(
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
+    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
   }
 
   switch (type) {
@@ -192,7 +192,7 @@ export async function resolveServiceEndpoint(
     case 'light': {
       const resolvedDetails = await resolveDoc(did)
       if (!resolvedDetails) {
-        throw SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
+        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
       }
       const serviceEndpoint = resolvedDetails.details?.getEndpoint(serviceId)
       if (!serviceEndpoint) {
@@ -205,7 +205,7 @@ export async function resolveServiceEndpoint(
       }
     }
     default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(did)
+      throw new SDKErrors.ERROR_UNSUPPORTED_DID(did)
   }
 }
 

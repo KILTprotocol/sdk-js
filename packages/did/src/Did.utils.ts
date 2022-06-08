@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -20,7 +20,6 @@ import {
   NewDidKey,
   VerificationKeyRelationship,
   VerificationKeyType,
-  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
@@ -57,6 +56,15 @@ const LIGHT_KILT_DID_REGEX =
 export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
   Promise.resolve(keys[0] || null)
 
+/**
+ * Compiles a KILT DID uri for a full or light DID from a unique identifier and associated data.
+ *
+ * @param identifier A ss58 encoded address valid on the KILT network.
+ * @param didType 'full' to produce a FullDid's uri, 'light' for a LightDid.
+ * @param version KILT DID specification version number.
+ * @param encodedDetails When compiling a LightDid uri, encoded DidDetails can be appeneded to the end of the uri.
+ * @returns A DID uri as a string.
+ */
 export function getKiltDidFromIdentifier(
   identifier: DidIdentifier,
   didType: 'full' | 'light',
@@ -85,7 +93,13 @@ export type IDidParsingResult = {
   encodedDetails?: string
 }
 
-export function parseDidUri(didUri: DidUri): IDidParsingResult {
+/**
+ * Parses a KILT DID uri and returns the information contained within in a structured form.
+ *
+ * @param didUri A KILT DID uri as a string.
+ * @returns Object containing information extracted from the DID uri.
+ */
+export function parseDidUri(didUri: IDidDetails['uri']): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
     const version = matches.version
@@ -121,16 +135,28 @@ export function parseDidUri(didUri: DidUri): IDidParsingResult {
     }
   }
 
-  throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+  throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
 }
 
+/**
+ * Parses a KILT DID uri and returns its unique identifier.
+ *
+ * @param didUri A KILT DID uri as a string.
+ * @returns The identifier contained within the DID uri.
+ */
 export function getIdentifierFromKiltDid(
-  did: IDidDetails['uri']
+  didUri: IDidDetails['uri']
 ): DidIdentifier {
-  return parseDidUri(did).identifier
+  return parseDidUri(didUri).identifier
 }
 
-// Returns true if both didA and didB refer to the same DID subject, i.e., whether they have the same identifier as specified in the method spec.
+/**
+ * Returns true if both didA and didB refer to the same DID subject, i.e., whether they have the same identifier as specified in the method spec.
+ *
+ * @param didA A KILT DID uri as a string.
+ * @param didB A second KILT DID uri as a string.
+ * @returns Whether didA and didB refer to the same DID subject.
+ */
 export function isSameSubject(
   didA: IDidDetails['uri'],
   didB: IDidDetails['uri']
@@ -154,16 +180,31 @@ const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
   [VerificationKeyType.Sr25519]: SigningAlgorithms.Sr25519,
   [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
 }
+const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
+  (obj, [key, value]) => {
+    return { ...obj, [value]: key }
+  },
+  {}
+) as Record<SigningAlgorithms, VerificationKeyType>
+
+/**
+ * Given the identifier of a key type, returns the identifier of the signature algorithm for which it is used.
+ *
+ * @param keyType Key type identifier.
+ * @returns Signing algorithm identifier.
+ */
 export function getSigningAlgorithmForVerificationKeyType(
   keyType: VerificationKeyType
 ): SigningAlgorithms {
   return signatureAlgForKeyType[keyType]
 }
-const keyTypeForSignatureAlg: Record<SigningAlgorithms, VerificationKeyType> = {
-  [SigningAlgorithms.Ed25519]: VerificationKeyType.Ed25519,
-  [SigningAlgorithms.Sr25519]: VerificationKeyType.Sr25519,
-  [SigningAlgorithms.EcdsaSecp256k1]: VerificationKeyType.Ecdsa,
-}
+
+/**
+ * Given the identifier of a signature algorithm, returns the identifier of the key type required for it.
+ *
+ * @param signatureAlg Signature algorithm identifier.
+ * @returns Key type identifier.
+ */
 export function getVerificationKeyTypeForSigningAlgorithm(
   signatureAlg: SigningAlgorithms
 ): VerificationKeyType {
@@ -174,6 +215,12 @@ const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
   {
     [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
   }
+/**
+ * Given the identifier of a key type, returns the identifier of the encryption algorithm for which it is used.
+ *
+ * @param keyType Key type identifier.
+ * @returns Encryption algorithm indentifier.
+ */
 export function getEncryptionAlgorithmForEncryptionKeyType(
   keyType: EncryptionKeyType
 ): EncryptionAlgorithms {
@@ -183,20 +230,46 @@ const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
   {
     [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
   }
+/**
+ * Given the identifier of an encryption algorithm, returns the identifier of the key type required for it.
+ *
+ * @param encryptionAlg Encryption algorithm identifier.
+ * @returns Key type identifier.
+ */
 export function getEncryptionKeyTypeForEncryptionAlgorithm(
   encryptionAlg: EncryptionAlgorithms
 ): EncryptionKeyType {
   return keyTypeForEncryptionAlg[encryptionAlg]
 }
 
+/**
+ * Checks whether a DidKey is a verification key.
+ *
+ * @param key Representation of a DID key.
+ * @returns True if the key is a verification key, false otherwise.
+ */
 export function isVerificationKey(key: NewDidKey | DidKey): boolean {
   return Object.values(VerificationKeyType).some((kt) => kt === key.type)
 }
 
+/**
+ * Checks whether a DidKey is an encryption key.
+ *
+ * @param key Representation of a DID key.
+ * @returns True if the key is a encryption key, false otherwise.
+ */
 export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
   return Object.values(EncryptionKeyType).some((kt) => kt === key.type)
 }
 
+/**
+ * Type guard assuring that a string (or other input) is a valid KILT DID uri.
+ *
+ * @param input Arbitrary input.
+ * @param allowFragment Whether the uri is allowed to have a fragment (following '#').
+ * @returns True if validation has passed.
+ * @throws [[SDKError]] if validation fails.
+ */
 export function validateKiltDidUri(
   input: unknown,
   allowFragment = false
@@ -204,29 +277,39 @@ export function validateKiltDidUri(
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, type, fragment } = parseDidUri(input as DidUri)
+  const { identifier, type, fragment } = parseDidUri(
+    input as IDidDetails['uri']
+  )
   if (!allowFragment && fragment) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
+    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
 
   switch (type) {
     case 'full':
       if (!checkAddress(identifier, 38)[0]) {
-        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
       }
       break
     case 'light':
       // Identifier includes the first two characters for the key type encoding
       if (!checkAddress(identifier.substring(2), 38)[0]) {
-        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
       }
       break
     default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(input)
+      throw new SDKErrors.ERROR_UNSUPPORTED_DID(input)
   }
   return true
 }
 
+/**
+ * Type guard assuring that a the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
+ * Does not cryptographically verify the signature itself!
+ *
+ * @param input Arbitrary input.
+ * @returns True if validation of form has passed.
+ * @throws [[SDKError]] if validation fails.
+ */
 export function validateDidSignature(input: unknown): input is DidSignature {
   const signature = input as DidSignature
   try {
@@ -234,11 +317,11 @@ export function validateDidSignature(input: unknown): input is DidSignature {
       !isHex(signature.signature) ||
       !validateKiltDidUri(signature.keyUri, true)
     ) {
-      throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+      throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
     }
     return true
   } catch (e) {
-    throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
   }
 }
 
@@ -309,8 +392,17 @@ export type DidSignatureVerificationInput = {
   resolver?: IDidResolver
 }
 
-// Verify a DID signature given the key URI of the signature.
-// A signature verification returns false if a migrated and then deleted DID is used.
+/**
+ * Verify a DID signature given the key URI of the signature.
+ * A signature verification returns false if a migrated and then deleted DID is used.
+ *
+ * @param input Object wrapping all input.
+ * @param input.message The message that was signed.
+ * @param input.signature An object containing signature and signer key.
+ * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
+ * @param input.resolver Allows specifying a custom DID resolver. Defaults to the built-in [[DidResolver]].
+ * @returns Object indicating verification result and optionally reason for failure.
+ */
 export async function verifyDidSignature({
   message,
   signature,
@@ -370,14 +462,14 @@ export async function verifyDidSignature({
  * @param did The DID URI, with no trailing fragment (i.e., no "#" symbol).
  * @param keyId The key ID, without the leading subject's DID prefix.
  *
- * @returns The full [[DidPublicKey['uri']]], which includes the subject's DID and the provided key ID.
+ * @returns The full public key URI, which includes the subject's DID and the provided key ID.
  */
 export function assembleKeyUri(
   did: IDidDetails['uri'],
   keyId: DidKey['id']
 ): DidPublicKey['uri'] {
   if (parseDidUri(did).fragment) {
-    throw SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.ERROR_DID_ERROR(
       `Cannot assemble key URI from a DID that already has a fragment: ${did}`
     )
   }

@@ -1,15 +1,11 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module Attestation
- */
-import { Option, Struct, U128 } from '@polkadot/types'
+import { Enum, Option, Struct, U128 } from '@polkadot/types'
 import type {
   IAttestation,
   Deposit,
@@ -17,12 +13,11 @@ import type {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import type { AccountId, Hash } from '@polkadot/types/interfaces'
+import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
-import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
@@ -30,7 +25,7 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
  * Generate the extrinsic to store the provided [[IAttestation]].
  *
  * @param attestation The attestation to write on the blockchain.
- * @returns The [[SubmittableExtrinsic]] for the `add` call.
+ * @returns The SubmittableExtrinsic for the `add` call.
  */
 export async function getStoreTx(
   attestation: IAttestation
@@ -40,18 +35,26 @@ export async function getStoreTx(
 
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
+  const authorization = delegationId
+    ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+    : undefined
   const tx = blockchain.api.tx.attestation.add(
     claimHash,
     cTypeHash,
-    delegationId
+    authorization
   )
   return tx
+}
+
+export interface AuthorizationId extends Enum {
+  isDelegation: boolean
+  asDelegation: H256
 }
 
 export interface AttestationDetails extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
-  readonly delegationId: Option<DelegationNodeId>
+  readonly authorizationId: Option<AuthorizationId>
   readonly revoked: boolean
   readonly deposit: Deposit
 }
@@ -72,8 +75,9 @@ function decode(
         chainAttestation.attester.toString(),
         'full'
       ),
-      delegationId:
-        chainAttestation.delegationId.unwrapOr(null)?.toString() || null,
+      delegationId: chainAttestation.authorizationId.isSome
+        ? chainAttestation.authorizationId.unwrap().value.toHex()
+        : null,
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
@@ -82,6 +86,12 @@ function decode(
   return null
 }
 
+/**
+ * Query an attestation from the blockchain, returning the SCALE encoded value.
+ *
+ * @param claimHash The hash of the claim attested in the attestation.
+ * @returns An Option wrapping scale encoded attestation data.
+ */
 export async function queryRaw(
   claimHash: IRequestForAttestation['rootHash']
 ): Promise<Option<AttestationDetails>> {
@@ -111,7 +121,7 @@ export async function query(
  *
  * @param claimHash The attestation claim hash.
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
- * @returns The [[SubmittableExtrinsic]] for the `revoke` call.
+ * @returns The SubmittableExtrinsic for the `revoke` call.
  */
 export async function getRevokeTx(
   claimHash: IRequestForAttestation['rootHash'],
@@ -121,7 +131,7 @@ export async function getRevokeTx(
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,
-    maxParentChecks
+    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
   )
   return tx
 }
@@ -131,7 +141,7 @@ export async function getRevokeTx(
  *
  * @param claimHash The attestation claim hash.
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the removal.
- * @returns The [[SubmittableExtrinsic]] for the `remove` call.
+ * @returns The SubmittableExtrinsic for the `remove` call.
  */
 export async function getRemoveTx(
   claimHash: IRequestForAttestation['rootHash'],
@@ -141,7 +151,7 @@ export async function getRemoveTx(
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
     claimHash,
-    maxParentChecks
+    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
   )
   return tx
 }
@@ -150,7 +160,7 @@ export async function getRemoveTx(
  * Generate the extrinsic to delete a given attestation and reclaim back its deposit. The submitter **must** be the KILT account that initially paid for the deposit.
  *
  * @param claimHash The attestation claim hash.
- * @returns The [[SubmittableExtrinsic]] for the `getReclaimDepositTx` call.
+ * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
  */
 export async function getReclaimDepositTx(
   claimHash: IRequestForAttestation['rootHash']
@@ -169,6 +179,11 @@ async function queryDepositAmountEncoded(): Promise<U128> {
   return api.consts.attestation.deposit as U128
 }
 
+/**
+ * Gets the current deposit amount due for the creation of new attestations.
+ *
+ * @returns Deposit amount in Femto Kilt as a BigNumber.
+ */
 export async function queryDepositAmount(): Promise<BN> {
   const encodedDeposit = await queryDepositAmountEncoded()
   return encodedDeposit.toBn()

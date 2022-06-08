@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module RequestForAttestation
  */
 
 import type {
@@ -28,7 +23,6 @@ import { verifyDataStructure, verifyDataIntegrity } from './verification.js'
  *
  * @returns An ordered array of [[Credential]]s.
  */
-
 export function compressLegitimation(
   leg: ICredential[]
 ): CompressedCredential[] {
@@ -42,7 +36,6 @@ export function compressLegitimation(
  *
  * @returns An object that has the same properties as a [[Credential]].
  */
-
 function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
   return leg.map(CredentialUtils.decompress)
 }
@@ -54,7 +47,6 @@ function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
  *
  * @returns An ordered array of a [[RequestForAttestation]].
  */
-
 export function compress(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
@@ -78,12 +70,11 @@ export function compress(
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
-
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
     claim: ClaimCompression.decompress(reqForAtt[0]),

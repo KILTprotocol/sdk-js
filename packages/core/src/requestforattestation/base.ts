@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -14,7 +14,6 @@
  * A RequestForAttestation also supports hiding of claim data during a credential presentation.
  *
  * @packageDocumentation
- * @module RequestForAttestation
  */
 
 import type {
@@ -49,9 +48,6 @@ export type Options = {
  * @param option.legitimations Array of [[Credential]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
  * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
  * @returns A new [[RequestForAttestation]] object.
- * @example ```javascript
- * const input = RequestForAttestation.fromClaim(claim);
- * ```
  */
 export function fromClaim(
   claim: IClaim,
@@ -104,7 +100,7 @@ export async function verify(
 
   if (ctype) {
     const isSchemaValid = verifyAgainstCType(requestForAttestation, ctype)
-    if (!isSchemaValid) throw SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
+    if (!isSchemaValid) throw new SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
   }
 
   if (challenge) {
@@ -112,7 +108,7 @@ export async function verify(
       challenge,
       resolver,
     })
-    if (!isSignatureCorrect) throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
+    if (!isSignatureCorrect) throw new SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
   }
 }
 

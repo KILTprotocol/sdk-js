@@ -1,0 +1,39 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "DOM"
+    ]
+  },
+  "include": ["packages/**/*", "jest-setup/*"],
+  "typedocOptions": {
+    "entryPointStrategy": "resolve",
+    "entryPoints": [
+      "packages/types/src/index.ts",
+      "packages/utils/src/index.ts",
+      "packages/config/src/index.ts",
+      "packages/chain-helpers/src/index.ts",
+      "packages/did/src/index.ts",
+      "packages/core/src/index.ts",
+      "packages/messaging/src/index.ts",
+      "packages/vc-export/src/index.ts",
+      "packages/sdk-js/src/index.ts",
+    ],
+    "out": "docs/api",
+    "theme": "default",
+    "exclude": [
+      "**/*spec.ts",
+      "**/__mocks__/**",
+      "**/testingTools/**",
+      "**/*.js",
+      "**/node_modules/**",
+      "**/__integrationtests__/**"
+    ],
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "hideGenerator": true,
+    "name": "API Documentation",
+    "listInvalidSymbolLinks": true,
+    "readme": "README.md"
+  }
+}

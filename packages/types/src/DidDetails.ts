@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -147,25 +147,25 @@ export interface IDidDetails {
    * Retrieves a particular public key record via its id.
    *
    * @param id The key ID, without the leading DID URI.
-   * @returns [[IDidKey]] or undefined if no key with this id is present.
+   * @returns [[DidKey]] or undefined if no key with this id is present.
    */
   getKey(id: DidKey['id']): DidKey | undefined
   /**
-   * Retrieves public key details from the [[IDid]].
+   * Retrieves public key details from the [[IDidDetails]].
    *
    * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
    * relationship, undefined to return all keys.
-   * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
+   * @returns An array of all or selected [[DidVerificationKey]]s, depending on the `relationship` parameter.
    */
   getVerificationKeys(
     relationship: VerificationKeyRelationship
   ): DidVerificationKey[]
   /**
-   * Retrieves public key details from the [[IDid]].
+   * Retrieves public key details from the [[IDidDetails]].
    *
    * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
    * relationship, undefined to return all keys.
-   * @returns An array of all or selected [[IDid]], depending on the `relationship` parameter.
+   * @returns An array of all or selected [[DidEncryptionKey]]s, depending on the `relationship` parameter.
    */
   getEncryptionKeys(relationship: EncryptionKeyRelationship): DidEncryptionKey[]
   getKeys(): DidKey[]

@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module VerificationUtils
  */
 
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
@@ -303,6 +298,12 @@ export async function verifyCredentialDigestProof(
   }
 }
 
+/**
+ * Validates the claims in the VC's `credentialSubject` against a CType definition on the `credentialSchema` property.
+ *
+ * @param credential A verifiable credential where `credentialSchema.schema` is an [[ICTypeSchema]].
+ * @returns The [[VerificationResult]].
+ */
 export function validateSchema(
   credential: VerifiableCredential
 ): VerificationResult {

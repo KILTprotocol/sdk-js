@@ -1,20 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * Requests for attestation are a core building block of the KILT SDK.
- * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
- *
- * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
- * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
- * A RequestForAttestation also supports hiding of claim data during a credential presentation.
- *
- * @packageDocumentation
- * @module RequestForAttestation
  */
 
 import type {
@@ -42,15 +30,11 @@ export function verifyRootHash(input: IRequestForAttestation): boolean {
  * @returns Whether the data is valid.
  * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
  * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
- * @example ```javascript
- * const reqForAtt = RequestForAttestation.fromClaim(claim);
- * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
- * ```
  */
 export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
   // check claim hash
   if (!verifyRootHash(input)) {
-    throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
+    throw new SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
   }
 
   // verify properties against selective disclosure proof
@@ -60,7 +44,9 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
   })
   // TODO: how do we want to deal with multiple errors during claim verification?
   if (!verificationResult.verified)
-    throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+    throw (
+      verificationResult.errors[0] || new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+    )
 
   // check legitimations
   Credential.validateLegitimations(input.legitimations)
@@ -79,19 +65,19 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
  */
 export function verifyDataStructure(input: IRequestForAttestation): void {
   if (!input.claim) {
-    throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
     ClaimUtils.verifyDataStructure(input.claim)
   }
   if (!input.claim.owner) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   }
   if (!input.legitimations && !Array.isArray(input.legitimations)) {
-    throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
   }
 
   if (!input.claimNonceMap) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
+    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
   }
   if (
     typeof input.claimNonceMap !== 'object' ||
@@ -103,10 +89,10 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
         !nonce
     )
   ) {
-    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
+    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (input.claimerSignature)
     DidUtils.validateDidSignature(input.claimerSignature)
@@ -116,17 +102,20 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
 /**
  *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
  *
- * @param RequestForAttestation A [[RequestForAttestation]] object for the attester.
+ * @param requestForAttestation A [[RequestForAttestation]] object for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
  *
  * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
  */
-
 export function verifyAgainstCType(
   requestForAttestation: IRequestForAttestation,
   ctype: ICType
 ): boolean {
-  verifyDataStructure(requestForAttestation)
+  try {
+    verifyDataStructure(requestForAttestation)
+  } catch {
+    return false
+  }
   return verifyClaimAgainstSchema(
     requestForAttestation.claim.contents,
     ctype.schema
@@ -145,11 +134,6 @@ export function verifyAgainstCType(
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
  * @returns Whether the signature is correct.
- * @example ```javascript
- * const reqForAtt = RequestForAttestation.fromClaim(claim);
- * await reqForAtt.signWithDid(myKeystore, myDidDetails);
- * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
- * ```
  */
 export async function verifySignature(
   input: IRequestForAttestation,

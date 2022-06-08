@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -118,7 +118,7 @@ describe('RequestForAttestation', () => {
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
     expect(() =>
       RequestForAttestation.verifyDataIntegrity(request)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 
   it('throws on wrong hash in claim hash tree', async () => {
@@ -384,21 +384,21 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequestNoLegitimations)
-    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
+    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequestMalformedRootHash)
-    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
       RequestForAttestation.verifyDataStructure(
         builtRequestIncompleteClaimHashTree
       )
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequestMalformedSignature)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequestMalformedHashes)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequest)
     ).not.toThrow()
@@ -438,6 +438,6 @@ describe('RequestForAttestation', () => {
     builtRequest.claim.contents.name = 123
     expect(() =>
       RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 })

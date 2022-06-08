@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -69,7 +69,7 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
       ).resolves.toBeFalsy()
 
-      const associateSenderTx = await AccountLinks.getAssociateSenderTx()
+      const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
       const signedTx = await did.authorizeExtrinsic(
         associateSenderTx,
         keystore,
@@ -102,7 +102,7 @@ describe('When there is an on-chain DID', () => {
       ).resolves.toBeTruthy()
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
-      const associateSenderTx = await AccountLinks.getAssociateSenderTx()
+      const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
       const signedTx = await newDid.authorizeExtrinsic(
         associateSenderTx,
         keystore,
@@ -180,11 +180,12 @@ describe('When there is an on-chain DID', () => {
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
-        const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
-          keypair.address,
-          did.identifier,
-          signingCallback
-        )
+        const linkAuthorisation =
+          await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
+            keypair.address,
+            did.identifier,
+            signingCallback
+          )
         const signedTx = await did.authorizeExtrinsic(
           linkAuthorisation,
           keystore,
@@ -222,11 +223,12 @@ describe('When there is an on-chain DID', () => {
         ).resolves.toBeTruthy()
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
-        const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
-          keypair.address,
-          newDid.identifier,
-          signingCallback
-        )
+        const linkAuthorisation =
+          await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
+            keypair.address,
+            newDid.identifier,
+            signingCallback
+          )
         const signedTx = await newDid.authorizeExtrinsic(
           linkAuthorisation,
           keystore,
@@ -273,7 +275,7 @@ describe('When there is an on-chain DID', () => {
         ).resolves.toBeTruthy()
       })
       it('should be possible for the DID to remove the link', async () => {
-        const removeLinkTx = await AccountLinks.getLinkRemovalByDidTx(
+        const removeLinkTx = await AccountLinks.getLinkRemovalByDidExtrinsic(
           keypair.address
         )
         const signedTx = await newDid.authorizeExtrinsic(
@@ -334,11 +336,12 @@ describe('When there is an on-chain DID', () => {
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
-      const linkAuthorisation = await AccountLinks.authorizeLinkWithAccount(
-        genericAccount.address,
-        did.identifier,
-        signingCallback
-      )
+      const linkAuthorisation =
+        await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
+          genericAccount.address,
+          did.identifier,
+          signingCallback
+        )
       const signedTx = await did.authorizeExtrinsic(
         linkAuthorisation,
         keystore,

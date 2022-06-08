@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -25,10 +25,9 @@ import { connect, disconnect } from '../kilt'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
-  await initializeApi().then(async () => {
-    blockchain = await connect()
-  })
-})
+  await initializeApi()
+  blockchain = await connect()
+}, 30_000)
 
 describe('Chain returns specific errors, that we check for', () => {
   let faucet: KeyringPair
