@@ -26,7 +26,7 @@ import {
   initializeApi,
   createEndowedTestAccount,
   createFullDidFromSeed,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 
 let tokenHolder: KeyringPair
@@ -42,11 +42,9 @@ beforeAll(async () => {
 beforeAll(async () => {
   tokenHolder = await createEndowedTestAccount()
   signer = new DemoKeystore()
-  ;[attester, anotherAttester, claimer] = await Promise.all([
-    createFullDidFromSeed(tokenHolder, signer),
-    createFullDidFromSeed(tokenHolder, signer),
-    createFullDidFromSeed(tokenHolder, signer),
-  ])
+  attester = await createFullDidFromSeed(tokenHolder, signer)
+  anotherAttester = await createFullDidFromSeed(tokenHolder, signer)
+  claimer = await createFullDidFromSeed(tokenHolder, signer)
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
@@ -68,7 +66,7 @@ describe('handling attestations that do not exist', () => {
         .then((tx) =>
           attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
     ).rejects.toMatchObject({
       section: 'attestation',
       name: 'AttestationNotFound',
@@ -81,7 +79,7 @@ describe('handling attestations that do not exist', () => {
         .then((tx) =>
           attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
     ).rejects.toMatchObject({
       section: 'attestation',
       name: 'AttestationNotFound',
@@ -99,7 +97,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           signer,
           tokenHolder.address
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
     }
   }, 60_000)
 
@@ -148,7 +146,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       .then((call) =>
         attester.authorizeExtrinsic(call, signer, tokenHolder.address)
       )
-      .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+      .then((tx) => submitExtrinsic(tx, tokenHolder))
     const credential = Credential.fromRequestAndAttestation(
       request,
       attestation
@@ -158,7 +156,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
     await Attestation.getReclaimDepositTx(attestation.claimHash).then((tx) =>
-      submitExtrinsicWithResign(tx, tokenHolder)
+      submitExtrinsic(tx, tokenHolder)
     )
 
     // Test that the attestation has been deleted.
@@ -194,7 +192,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, bobbyBroke.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
+        .then((tx) => submitExtrinsic(tx, bobbyBroke))
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low"`
     )
@@ -235,7 +233,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
   }, 60_000)
 
@@ -261,7 +259,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
       credential = Credential.fromRequestAndAttestation(request, attestation)
       await expect(Credential.verify(credential)).resolves.toBe(true)
     }, 60_000)
@@ -272,7 +270,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
-          .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+          .then((tx) => submitExtrinsic(tx, tokenHolder))
       ).rejects.toMatchObject({
         section: 'attestation',
         name: 'AlreadyAttested',
@@ -307,7 +305,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           .then((call) =>
             claimer.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
-          .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+          .then((tx) => submitExtrinsic(tx, tokenHolder))
       ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
       await expect(Credential.verify(credential)).resolves.toBe(true)
     }, 45_000)
@@ -318,7 +316,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
       await expect(Credential.verify(credential)).resolves.toBeFalsy()
     }, 40_000)
 
@@ -327,7 +325,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
     }, 40_000)
   })
 
@@ -352,7 +350,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
-          .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+          .then((tx) => submitExtrinsic(tx, tokenHolder))
       }
       await expect(isCtypeOnChain(officialLicenseAuthorityCType)).resolves.toBe(
         true
@@ -384,7 +382,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           anotherAttester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
       // make request including legitimation
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
@@ -413,7 +411,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, tokenHolder))
+        .then((tx) => submitExtrinsic(tx, tokenHolder))
       const license = Credential.fromRequestAndAttestation(
         request2,
         LicenseGranted

@@ -52,7 +52,7 @@ import {
   createEndowedTestAccount,
   devBob,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
   addressFromRandom,
   getDefaultMigrationCallback,
   getDefaultSubmitCallback,
@@ -66,7 +66,7 @@ let api: ApiPromise
 
 beforeAll(async () => {
   await initializeApi()
-  ;({ api } = await BlockchainApiConnection.getConnectionOrConnect())
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 beforeAll(async () => {
@@ -92,9 +92,9 @@ describe('write and didDeleteTx', () => {
       keystore
     )
 
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).rejects.toMatchObject({ isBadOrigin: true })
+    await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
+      isBadOrigin: true,
+    })
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
@@ -121,9 +121,7 @@ describe('write and didDeleteTx', () => {
       keystore
     )
 
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).resolves.not.toThrow()
+    await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
 
     details = (await FullDidDetails.fromChainInfo(
       DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
@@ -189,7 +187,7 @@ describe('write and didDeleteTx', () => {
     )
 
     await expect(
-      submitExtrinsicWithResign(submittable, paymentAccount)
+      submitExtrinsic(submittable, paymentAccount)
     ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
@@ -203,7 +201,7 @@ describe('write and didDeleteTx', () => {
 
     // Will fail because count provided is too low
     await expect(
-      submitExtrinsicWithResign(submittable, paymentAccount)
+      submitExtrinsic(submittable, paymentAccount)
     ).rejects.toMatchObject({
       section: 'did',
       name: 'StoredEndpointsCountTooLarge',
@@ -236,7 +234,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.toBeFalsy()
 
     await expect(
-      submitExtrinsicWithResign(submittable, paymentAccount)
+      submitExtrinsic(submittable, paymentAccount)
     ).resolves.not.toThrow()
 
     await expect(DidChain.queryDetails(details.identifier)).resolves.toBeNull()
@@ -262,9 +260,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     keystore
   )
 
-  await expect(
-    submitExtrinsicWithResign(tx, paymentAccount)
-  ).resolves.not.toThrow()
+  await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDetails = (await FullDidDetails.fromChainInfo(
@@ -290,9 +286,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     keystore,
     paymentAccount.address
   )
-  await expect(
-    submitExtrinsicWithResign(tx2, paymentAccount)
-  ).resolves.not.toThrow()
+  await expect(submitExtrinsic(tx2, paymentAccount)).resolves.not.toThrow()
 
   // Authentication key changed, so details must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
@@ -313,9 +307,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     keystore,
     paymentAccount.address
   )
-  await expect(
-    submitExtrinsicWithResign(tx3, paymentAccount)
-  ).resolves.not.toThrow()
+  await expect(submitExtrinsic(tx3, paymentAccount)).resolves.not.toThrow()
   await expect(
     DidChain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
   ).resolves.toStrictEqual(newEndpoint)
@@ -329,9 +321,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     keystore,
     paymentAccount.address
   )
-  await expect(
-    submitExtrinsicWithResign(tx4, paymentAccount)
-  ).resolves.not.toThrow()
+  await expect(submitExtrinsic(tx4, paymentAccount)).resolves.not.toThrow()
 
   // There should not be any endpoint with the given ID now.
   await expect(
@@ -347,7 +337,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     storedEndpointsCount
   )
   await expect(
-    submitExtrinsicWithResign(reclaimDepositTx, paymentAccount)
+    submitExtrinsic(reclaimDepositTx, paymentAccount)
   ).resolves.not.toThrow()
   // Verify that the DID has been deleted
   await expect(
@@ -547,7 +537,7 @@ describe('DID migration', () => {
       storedEndpointsCount
     )
     await expect(
-      submitExtrinsicWithResign(reclaimDepositTx, paymentAccount)
+      submitExtrinsic(reclaimDepositTx, paymentAccount)
     ).resolves.not.toThrow()
 
     await expect(
@@ -590,7 +580,7 @@ describe('DID authorization', () => {
       .setAttestationKey(newKey)
       .setDelegationKey(newKey)
       .buildAndSubmit(keystore, paymentAccount.address, async (tx) =>
-        submitExtrinsicWithResign(tx, paymentAccount)
+        submitExtrinsic(tx, paymentAccount)
       )
   }, 60_000)
 
@@ -607,9 +597,7 @@ describe('DID authorization', () => {
       keystore,
       paymentAccount.address
     )
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).resolves.not.toThrow()
+    await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
 
     await expect(CType.verifyStored(ctype)).resolves.toEqual(true)
   }, 60_000)
@@ -626,9 +614,7 @@ describe('DID authorization', () => {
       keystore,
       paymentAccount.address
     )
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).resolves.not.toThrow()
+    await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
 
     const ctype = CType.fromSchema({
       title: UUID.generate(),
@@ -642,9 +628,10 @@ describe('DID authorization', () => {
       keystore,
       paymentAccount.address
     )
-    await expect(
-      submitExtrinsicWithResign(tx2, paymentAccount)
-    ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
+    await expect(submitExtrinsic(tx2, paymentAccount)).rejects.toMatchObject({
+      section: 'did',
+      name: 'DidNotPresent',
+    })
 
     await expect(CType.verifyStored(ctype)).resolves.toEqual(false)
   }, 60_000)
@@ -708,7 +695,7 @@ describe('DID management batching', () => {
       await expect(
         builder
           .build(keystore, paymentAccount.address)
-          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+          .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
       const fullDid = await FullDidDetails.fromChainInfo(
@@ -791,7 +778,7 @@ describe('DID management batching', () => {
       await expect(
         builder
           .build(keystore, paymentAccount.address)
-          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+          .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
       const fullDid = await FullDidDetails.fromChainInfo(
@@ -869,7 +856,7 @@ describe('DID management batching', () => {
       await expect(
         updateBuilder
           .build(keystore, paymentAccount.address)
-          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+          .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
       const finalFullDid = await FullDidDetails.fromChainInfo(
@@ -937,7 +924,7 @@ describe('DID management batching', () => {
       await expect(
         updateBuilder
           .build(keystore, paymentAccount.address)
-          .then((ext) => submitExtrinsicWithResign(ext, paymentAccount))
+          .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
       const finalFullDid = await FullDidDetails.fromChainInfo(
@@ -975,7 +962,7 @@ describe('DID management batching', () => {
       const fullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
-        async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
+        async (tx) => submitExtrinsic(tx, paymentAccount)
       )
       expect(fullDid.attestationKey).toBeUndefined()
 
@@ -1003,7 +990,7 @@ describe('DID management batching', () => {
         paymentAccount.address
       )
       await expect(
-        submitExtrinsicWithResign(authorisedTx, paymentAccount)
+        submitExtrinsic(authorisedTx, paymentAccount)
       ).resolves.not.toThrow()
 
       // Now, consuming the builder will result in the second operation to fail but the batch to succeed, so we can test the atomic flag.
@@ -1011,7 +998,7 @@ describe('DID management batching', () => {
         updateBuilder.buildAndSubmit(
           keystore,
           paymentAccount.address,
-          async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
+          async (tx) => submitExtrinsic(tx, paymentAccount),
           // Not atomic
           false
         )
@@ -1046,7 +1033,7 @@ describe('DID management batching', () => {
       const fullDid = await createBuilder.buildAndSubmit(
         keystore,
         paymentAccount.address,
-        async (tx) => submitExtrinsicWithResign(tx, paymentAccount)
+        async (tx) => submitExtrinsic(tx, paymentAccount)
       )
       expect(fullDid.attestationKey).toBeUndefined()
 
@@ -1074,7 +1061,7 @@ describe('DID management batching', () => {
         paymentAccount.address
       )
       await expect(
-        submitExtrinsicWithResign(authorisedTx, paymentAccount)
+        submitExtrinsic(authorisedTx, paymentAccount)
       ).resolves.not.toThrow()
 
       // Now, consuming the builder will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
@@ -1082,7 +1069,7 @@ describe('DID management batching', () => {
         updateBuilder.buildAndSubmit(
           keystore,
           paymentAccount.address,
-          async (tx) => submitExtrinsicWithResign(tx, paymentAccount),
+          async (tx) => submitExtrinsic(tx, paymentAccount),
           // Atomic
           true
         )
@@ -1138,9 +1125,7 @@ describe('DID extrinsics batching', () => {
       .build(keystore, paymentAccount.address, { atomic: false })
 
     // The entire submission promise is resolves and does not throw
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).resolves.not.toThrow()
+    await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
 
     // The ctype has been created, even though the delegation operations failed.
     await expect(CType.verifyStored(ctype)).resolves.toBeTruthy()
@@ -1171,9 +1156,7 @@ describe('DID extrinsics batching', () => {
       .build(keystore, paymentAccount.address, { atomic: true })
 
     // The entire submission promise is rejected and throws.
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).rejects.toMatchObject({
+    await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
       section: 'delegation',
       name: 'DelegationNotFound',
     })
@@ -1189,16 +1172,14 @@ describe('DID extrinsics batching', () => {
       keystore,
       paymentAccount.address
     )
-    await submitExtrinsicWithResign(authorisedTx, paymentAccount)
+    await submitExtrinsic(authorisedTx, paymentAccount)
 
     const web3Name1ReleaseExt = await Web3Names.getReleaseByOwnerTx()
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([web3Name1ReleaseExt, web3Name2ClaimExt])
       .build(keystore, paymentAccount.address)
-    await expect(
-      submitExtrinsicWithResign(tx, paymentAccount)
-    ).resolves.not.toThrow()
+    await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
 
     // Test for correct creation and deletion
     await expect(
@@ -1256,7 +1237,7 @@ describe('DID extrinsics batching', () => {
     )
 
     await expect(
-      submitExtrinsicWithResign(batchedExtrinsics, paymentAccount)
+      submitExtrinsic(batchedExtrinsics, paymentAccount)
     ).resolves.not.toThrow()
 
     // Test correct use of authentication keys

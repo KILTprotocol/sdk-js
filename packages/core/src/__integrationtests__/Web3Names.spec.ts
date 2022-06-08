@@ -12,14 +12,14 @@
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import type { KeyringPair } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { FullDidDetails, DemoKeystore, Web3Names } from '@kiltprotocol/did'
 import { disconnect } from '../kilt'
 import {
   keypairFromRandom,
   initializeApi,
   createFullDidFromSeed,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
   createEndowedTestAccount,
 } from './utils'
 
@@ -40,14 +40,18 @@ describe('When there is an Web3NameCreator and a payer', () => {
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
     differentNick = `different_${randomAsHex(2)}`
-    ;[paymentAccount, otherPaymentAccount] = await Promise.all([
-      createEndowedTestAccount(),
-      createEndowedTestAccount(),
-    ])
-    ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
-      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-    ])
+    paymentAccount = await createEndowedTestAccount()
+    otherPaymentAccount = await createEndowedTestAccount()
+    w3nCreator = await createFullDidFromSeed(
+      paymentAccount,
+      keystore,
+      randomAsHex(32)
+    )
+    otherWeb3NameCreator = await createFullDidFromSeed(
+      paymentAccount,
+      keystore,
+      randomAsHex(32)
+    )
 
     if (paymentAccount === otherPaymentAccount) {
       throw new Error('The payment accounts are the same.')
@@ -66,11 +70,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       bobbyBroke.address
     )
 
-    const p = submitExtrinsicWithResign(
-      authorizedTx,
-      bobbyBroke,
-      BlockchainUtils.IS_IN_BLOCK
-    )
+    const p = submitExtrinsic(authorizedTx, bobbyBroke, Blockchain.IS_IN_BLOCK)
 
     await expect(p).rejects.toThrowError('Inability to pay some fees')
   }, 30_000)
@@ -83,10 +83,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       paymentAccount.address
     )
 
-    const p = submitExtrinsicWithResign(
+    const p = submitExtrinsic(
       authorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     await expect(p).resolves.not.toThrow()
@@ -122,10 +122,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       paymentAccount.address
     )
 
-    const p = submitExtrinsicWithResign(
+    const p = submitExtrinsic(
       authorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     await expect(p).rejects.toMatchObject({
@@ -142,10 +142,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       paymentAccount.address
     )
 
-    const p = submitExtrinsicWithResign(
+    const p = submitExtrinsic(
       authorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     await expect(p).rejects.toMatchObject({
@@ -156,11 +156,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to remove a w3n by another payment account', async () => {
     const tx = await Web3Names.getReclaimDepositTx(nick)
-    const p = submitExtrinsicWithResign(
-      tx,
-      otherPaymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
-    )
+    const p = submitExtrinsic(tx, otherPaymentAccount, Blockchain.IS_IN_BLOCK)
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
       name: 'NotAuthorized',
@@ -169,11 +165,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to remove a w3n by the payment account', async () => {
     const tx = await Web3Names.getReclaimDepositTx(nick)
-    const p = submitExtrinsicWithResign(
-      tx,
-      paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
-    )
+    const p = submitExtrinsic(tx, paymentAccount, Blockchain.IS_IN_BLOCK)
 
     await expect(p).resolves.not.toThrow()
   }, 30_000)
@@ -186,10 +178,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       keystore,
       paymentAccount.address
     )
-    await submitExtrinsicWithResign(
+    await submitExtrinsic(
       prepareAuthorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     const tx = await Web3Names.getReleaseByOwnerTx()
@@ -198,10 +190,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
       keystore,
       paymentAccount.address
     )
-    const p = submitExtrinsicWithResign(
+    const p = submitExtrinsic(
       authorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     await expect(p).resolves.not.toThrow()

@@ -9,10 +9,7 @@
  * @group unit/did
  */
 
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { getAddEndpointExtrinsic } from './Did.chain'
 
@@ -20,7 +17,7 @@ let api: any
 
 beforeAll(() => {
   api = ApiMocks.createAugmentedApi()
-  BlockchainApiConnection.setConnection(Promise.resolve(new Blockchain(api)))
+  BlockchainApiConnection.setConnection(Promise.resolve(api))
 })
 
 describe('services validation', () => {

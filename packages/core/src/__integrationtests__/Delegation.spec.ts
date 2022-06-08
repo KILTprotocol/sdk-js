@@ -27,7 +27,7 @@ import {
   createFullDidFromSeed,
   initializeApi,
   createEndowedTestAccount,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 import {
   getAttestationHashes,
@@ -55,7 +55,7 @@ async function writeHierarchy(
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
-    .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+    .then((tx) => submitExtrinsic(tx, paymentAccount))
 
   return rootNode
 }
@@ -79,7 +79,7 @@ async function addDelegation(
     .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
-    .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+    .then((tx) => submitExtrinsic(tx, paymentAccount))
   return delegationNode
 }
 
@@ -90,18 +90,16 @@ beforeAll(async () => {
 beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
   signer = new DemoKeystore()
-  ;[attester, root, claimer] = await Promise.all([
-    createFullDidFromSeed(paymentAccount, signer),
-    createFullDidFromSeed(paymentAccount, signer),
-    createFullDidFromSeed(paymentAccount, signer),
-  ])
+  attester = await createFullDidFromSeed(paymentAccount, signer)
+  root = await createFullDidFromSeed(paymentAccount, signer)
+  claimer = await createFullDidFromSeed(paymentAccount, signer)
 
   if (!(await isCtypeOnChain(driversLicenseCType))) {
     await CType.getStoreTx(driversLicenseCType)
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
-      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+      .then((tx) => submitExtrinsic(tx, paymentAccount))
   }
 }, 60_000)
 
@@ -172,7 +170,7 @@ describe('and attestation rights have been delegated', () => {
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
-      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+      .then((tx) => submitExtrinsic(tx, paymentAccount))
 
     const credential = Credential.fromRequestAndAttestation(
       request,
@@ -184,7 +182,7 @@ describe('and attestation rights have been delegated', () => {
     // revoke attestation through root
     await Attestation.getRevokeTx(credential.attestation.claimHash, 1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
-      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+      .then((tx) => submitExtrinsic(tx, paymentAccount))
     await expect(Credential.verify(credential)).resolves.toBeFalsy()
   }, 75_000)
 })
@@ -216,7 +214,7 @@ describe('revocation', () => {
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+        .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).resolves.not.toThrow()
     await expect(delegationA.verify()).resolves.toBe(false)
 
@@ -229,7 +227,7 @@ describe('revocation', () => {
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+        .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).rejects.toMatchObject({
       section: 'delegation',
       name: 'UnauthorizedRemoval',
@@ -256,7 +254,7 @@ describe('revocation', () => {
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+        .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).rejects.toMatchObject({
       section: 'delegation',
       name: 'UnauthorizedRevocation',
@@ -269,7 +267,7 @@ describe('revocation', () => {
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+        .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).resolves.not.toThrow()
     await expect(delegationA.verify()).resolves.toBe(false)
   }, 60_000)
@@ -298,7 +296,7 @@ describe('revocation', () => {
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+        .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).resolves.not.toThrow()
 
     await Promise.all([
@@ -334,16 +332,16 @@ describe('Deposit claiming', () => {
     const depositClaimTx = await delegatedNode.getReclaimDepositTx()
 
     // Test removal failure with an account that is not the deposit payer.
-    await expect(
-      submitExtrinsicWithResign(depositClaimTx, devBob)
-    ).rejects.toMatchObject({
-      section: 'delegation',
-      name: 'UnauthorizedRemoval',
-    })
+    await expect(submitExtrinsic(depositClaimTx, devBob)).rejects.toMatchObject(
+      {
+        section: 'delegation',
+        name: 'UnauthorizedRemoval',
+      }
+    )
 
     // Test removal success with the right account.
     await expect(
-      submitExtrinsicWithResign(depositClaimTx, paymentAccount)
+      submitExtrinsic(depositClaimTx, paymentAccount)
     ).resolves.not.toThrow()
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()

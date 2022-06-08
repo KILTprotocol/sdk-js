@@ -66,9 +66,9 @@ function checkWeb3NameInputConstraints(
 export async function getClaimTx(
   name: Web3Name
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  checkWeb3NameInputConstraints(blockchain.api, name)
-  return blockchain.api.tx.web3Names.claim(name)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  checkWeb3NameInputConstraints(api, name)
+  return api.tx.web3Names.claim(name)
 }
 
 /**
@@ -77,8 +77,8 @@ export async function getClaimTx(
  * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
  */
 export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.web3Names.releaseByOwner()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.web3Names.releaseByOwner()
 }
 
 /**
@@ -91,9 +91,9 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
 export async function getReclaimDepositTx(
   name: Web3Name
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  checkWeb3NameInputConstraints(blockchain.api, name)
-  return blockchain.api.tx.web3Names.reclaimDeposit(name)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  checkWeb3NameInputConstraints(api, name)
+  return api.tx.web3Names.reclaimDeposit(name)
 }
 
 /**
@@ -105,10 +105,8 @@ export async function getReclaimDepositTx(
 export async function queryWeb3NameForDidIdentifier(
   didIdentifier: DidIdentifier
 ): Promise<Web3Name | null> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.web3Names.names<Option<Bytes>>(
-    didIdentifier
-  )
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.web3Names.names<Option<Bytes>>(didIdentifier)
   DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
   return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
@@ -122,10 +120,8 @@ export async function queryWeb3NameForDidIdentifier(
 export async function queryDidIdentifierForWeb3Name(
   name: Web3Name
 ): Promise<DidIdentifier | null> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.web3Names.owner<
-    Option<Web3NameOwner>
-  >(name)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.web3Names.owner<Option<Web3NameOwner>>(name)
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])
@@ -168,6 +164,6 @@ export async function queryDidForWeb3Name(
  * @returns The deposit amount. The value is indicated in femto KILTs.
  */
 export async function queryDepositAmount(): Promise<BN> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return (api.consts.web3Names.deposit as u128).toBn()
 }

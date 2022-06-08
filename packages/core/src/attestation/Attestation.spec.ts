@@ -22,10 +22,7 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ApiMocks } from '@kiltprotocol/testing'
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { HexString } from '@polkadot/util/types'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
@@ -33,12 +30,10 @@ import * as RequestForAttestation from '../requestforattestation'
 import * as Attestation from './Attestation'
 
 let mockedApi: any
-let blockchain: Blockchain
 
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  blockchain = new Blockchain(mockedApi)
-  BlockchainApiConnection.setConnection(Promise.resolve(blockchain))
+  BlockchainApiConnection.setConnection(mockedApi)
 })
 
 describe('Attestation', () => {

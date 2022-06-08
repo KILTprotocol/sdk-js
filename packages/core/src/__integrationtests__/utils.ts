@@ -22,7 +22,7 @@ import {
 } from '@kiltprotocol/did'
 import {
   BlockchainApiConnection,
-  BlockchainUtils,
+  Blockchain,
 } from '@kiltprotocol/chain-helpers'
 import type {
   ICType,
@@ -41,21 +41,39 @@ export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
 const containerPromise = new GenericContainer(
-  process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+  process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node:latest'
 )
   .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
   .withExposedPorts(9944)
   .withWaitStrategy(Wait.forLogMessage('Idle'))
   .start()
+
+async function getStartedTestContainer() {
+  try {
+    return await containerPromise
+  } catch (error) {
+    console.error(
+      'Could not start the docker container via testcontainers, run with DEBUG=testcontainers* to debug'
+    )
+    throw error
+  }
+}
+
 export async function initializeApi(): Promise<void> {
-  const started = await containerPromise
+  const started = await getStartedTestContainer()
   const port = started.getMappedPort(9944)
   const host = started.getHost()
   const WS_ADDRESS = `ws://${host}:${port}`
   await init({ address: WS_ADDRESS })
-  connect().then(({ api }) =>
-    api.once('disconnected', () => started.stop().catch())
-  )
+  const api = await connect()
+
+  api.once('disconnected', async () => {
+    try {
+      await started.stop()
+    } catch (error) {
+      console.error(error)
+    }
+  })
 }
 
 const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
@@ -73,6 +91,7 @@ export const devCharlie = keyring.createFromUri('//Charlie')
 export function keypairFromRandom(): KeyringPair {
   return keyring.addFromSeed(randomAsU8a(32))
 }
+
 export function addressFromRandom(): IIdentity['address'] {
   return keypairFromRandom().address
 }
@@ -112,14 +131,13 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
   type: 'object',
 })
 
-// Submits with resign = true by default and resolving when IS_IN_BLOCK
-export async function submitExtrinsicWithResign(
+// Submits resolving when IS_IN_BLOCK
+export async function submitExtrinsic(
   extrinsic: SubmittableExtrinsic,
   submitter: KeyringPair,
-  resolveOn: SubscriptionPromise.ResultEvaluator = BlockchainUtils.IS_IN_BLOCK
+  resolveOn: SubscriptionPromise.ResultEvaluator = Blockchain.IS_IN_BLOCK
 ): Promise<void> {
-  await BlockchainUtils.signAndSubmitTx(extrinsic, submitter, {
-    reSign: true,
+  await Blockchain.signAndSubmitTx(extrinsic, submitter, {
     resolveOn,
   })
 }
@@ -127,18 +145,18 @@ export async function submitExtrinsicWithResign(
 export async function endowAccounts(
   faucet: KeyringPair,
   addresses: string[],
-  resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = BlockchainUtils.IS_FINALIZED
+  resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = Blockchain.IS_FINALIZED
 ): Promise<void> {
-  await Promise.all(
-    addresses.map((address) =>
-      Balance.getTransferTx(address, ENDOWMENT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn,
-          reSign: true,
-        }).catch((e) => console.log(e))
-      )
+  try {
+    const api = await BlockchainApiConnection.getConnectionOrConnect()
+    const transactions = await Promise.all(
+      addresses.map((address) => Balance.getTransferTx(address, ENDOWMENT))
     )
-  )
+    const batch = api.tx.utility.batchAll(transactions)
+    await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 export async function fundAccount(
@@ -146,10 +164,9 @@ export async function fundAccount(
   amount: BN
 ): Promise<void> {
   const transferTx = await Balance.getTransferTx(address, amount)
-  return submitExtrinsicWithResign(transferTx, devFaucet).catch((e) =>
-    console.log(e)
-  )
+  return submitExtrinsic(transferTx, devFaucet).catch((e) => console.log(e))
 }
+
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
 ): Promise<KeyringPair> {
@@ -162,9 +179,8 @@ export function getDefaultMigrationCallback(
   submitter: KeyringPair
 ): DidMigrationCallback {
   return async (e) => {
-    await BlockchainUtils.signAndSubmitTx(e, submitter, {
-      reSign: true,
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    await Blockchain.signAndSubmitTx(e, submitter, {
+      resolveOn: Blockchain.IS_IN_BLOCK,
     })
   }
 }
@@ -173,9 +189,8 @@ export function getDefaultSubmitCallback(
   submitter: KeyringPair
 ): DidMigrationCallback {
   return async (e) => {
-    await BlockchainUtils.signAndSubmitTx(e, submitter, {
-      reSign: true,
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    await Blockchain.signAndSubmitTx(e, submitter, {
+      resolveOn: Blockchain.IS_IN_BLOCK,
     })
   }
 }
@@ -186,12 +201,12 @@ export async function createFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   keystore: DemoKeystore
 ): Promise<FullDidDetails> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return FullDidCreationBuilder.fromLightDidDetails(api, lightDidForId)
     .setAttestationKey(lightDidForId.authenticationKey)
     .setDelegationKey(lightDidForId.authenticationKey)
     .buildAndSubmit(keystore, identity.address, async (tx) => {
-      await submitExtrinsicWithResign(tx, identity)
+      await submitExtrinsic(tx, identity)
     })
 }
 
