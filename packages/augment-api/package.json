@@ -40,7 +40,7 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@polkadot/typegen": "^7.10.1",
+    "@polkadot/typegen": "^8.0.0",
     "@types/websocket": "^1.0.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",

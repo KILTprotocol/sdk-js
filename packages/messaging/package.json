@@ -38,6 +38,6 @@
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/util": "^8.4.1"
+    "@polkadot/util": "^9.0.0"
   }
 }

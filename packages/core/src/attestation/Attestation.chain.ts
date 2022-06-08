@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Option, Struct, U128 } from '@polkadot/types'
+import { Enum, Option, Struct, U128 } from '@polkadot/types'
 import type {
   IAttestation,
   Deposit,
@@ -13,14 +13,13 @@ import type {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import type { AccountId, Hash } from '@polkadot/types/interfaces'
+import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
 import { Attestation } from './Attestation.js'
-import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
@@ -38,18 +37,26 @@ export async function getStoreTx(
 
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
+  const authorization = delegationId
+    ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+    : undefined
   const tx = blockchain.api.tx.attestation.add(
     claimHash,
     cTypeHash,
-    delegationId
+    authorization
   )
   return tx
+}
+
+export interface AuthorizationId extends Enum {
+  isDelegation: boolean
+  asDelegation: H256
 }
 
 export interface AttestationDetails extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
-  readonly delegationId: Option<DelegationNodeId>
+  readonly authorizationId: Option<AuthorizationId>
   readonly revoked: boolean
   readonly deposit: Deposit
 }
@@ -70,8 +77,9 @@ function decode(
         chainAttestation.attester.toString(),
         'full'
       ),
-      delegationId:
-        chainAttestation.delegationId.unwrapOr(null)?.toString() || null,
+      delegationId: chainAttestation.authorizationId.isSome
+        ? chainAttestation.authorizationId.unwrap().value.toHex()
+        : null,
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
@@ -123,7 +131,7 @@ export async function getRevokeTx(
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,
-    maxParentChecks
+    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
   )
   return tx
 }
@@ -143,7 +151,7 @@ export async function getRemoveTx(
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
     claimHash,
-    maxParentChecks
+    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
   )
   return tx
 }

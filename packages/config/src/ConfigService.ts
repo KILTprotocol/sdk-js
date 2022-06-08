@@ -23,7 +23,9 @@ import {
 import { SDKErrors } from '@kiltprotocol/utils'
 
 const DEFAULT_DEBUG_LEVEL =
-  process.env.DEBUG && process.env.DEBUG === 'true'
+  typeof process !== 'undefined' &&
+  process.env?.DEBUG &&
+  process.env.DEBUG === 'true'
     ? LogLevel.Debug
     : LogLevel.Error
 
