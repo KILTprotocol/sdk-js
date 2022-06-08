@@ -41,10 +41,6 @@ import * as CredentialUtils from './Credential.utils.js'
  * @param request - The request for attestation for the claim that was attested.
  * @param attestation - The attestation for the claim by the attester.
  * @returns A new [[Credential]] object.
- * @example ```javascript
- * // create a Credential object after receiving the attestation from the attester
- * Credential.fromRequestAndAttestation(request, attestation);
- * ```
  */
 export function fromRequestAndAttestation(
   request: IRequestForAttestation,
@@ -82,9 +78,6 @@ export function isICredential(input: unknown): input is ICredential {
  *
  * @param credential - The credential to verify.
  * @returns Whether the credential's data is valid.
- * @example ```javascript
- * const verificationResult = Credential.verifyData(credential);
- * ```
  */
 export function verifyData(credential: ICredential): boolean {
   if (credential.request.claim.cTypeHash !== credential.attestation.cTypeHash)
@@ -109,11 +102,6 @@ export function verifyData(credential: ICredential): boolean {
  * Defaults to [[DidResolver]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  * @returns A promise containing whether the provided credential is valid.
- * @example ```javascript
- * Credential.verify().then((isVerified) => {
- *   // `isVerified` is true if the credential is verified, false otherwise
- * });
- * ```
  */
 export async function verify(
   credential: ICredential,

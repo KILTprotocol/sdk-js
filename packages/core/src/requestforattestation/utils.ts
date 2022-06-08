@@ -62,16 +62,6 @@ export function calculateRootHash(
  * @param req4Att - The RequestForAttestation object to remove properties from.
  * @param properties - Properties to remove from the [[Claim]] object.
  * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
- * @example ```javascript
- * const rawClaim = {
- *   name: 'Alice',
- *   age: 29,
- * };
- * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
- * const reqForAtt = RequestForAttestation.fromClaim(claim);
- * RequestForAttestation.removeClaimProperties(reqForAtt, ['name']);
- * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
- * ```
  */
 export function removeClaimProperties(
   req4Att: IRequestForAttestation,
