@@ -265,7 +265,6 @@ export function queryDepositAmount(): Promise<BN> {
  * @param attestation An [[Attestation]] object that will be sorted and stripped for messaging or storage.
  * @returns An ordered array of an [[Attestation]].
  */
-
 export function compress(attestation: IAttestation): CompressedAttestation {
   errorCheck(attestation)
   return [
@@ -285,7 +284,6 @@ export function compress(attestation: IAttestation): CompressedAttestation {
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */
-
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
     throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')

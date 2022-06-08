@@ -118,7 +118,6 @@ export function verifyDataStructure(input: ICType): void {
  *
  * @returns Whether the contents is valid.
  */
-
 export function verifyClaimAgainstNestedSchemas(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,

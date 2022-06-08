@@ -59,7 +59,6 @@ export function verify(
  *
  * @returns A [[Claim]] the owner can use.
  */
-
 export function fromNestedCTypeClaim(
   cTypeInput: ICType,
   nestedCType: Array<ICType['schema']>,
