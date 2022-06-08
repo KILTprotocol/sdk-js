@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 declare module '@polkadot/types/lookup' {
-  import type { BTreeMap, Bytes, Compact, Enum, Null, Option, Result, Struct, Text, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+  import type { BTreeMap, BTreeSet, Bytes, Compact, Enum, Null, Option, Result, Struct, Text, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
   import type { ITuple } from '@polkadot/types-codec/types';
   import type { Vote } from '@polkadot/types/interfaces/elections';
   import type { AccountId32, Call, H256, MultiAddress, Perbill, Perquintill } from '@polkadot/types/interfaces/runtime';
@@ -1988,7 +1988,7 @@ declare module '@polkadot/types/lookup' {
   export interface DidDidDetailsDidCreationDetails extends Struct {
     readonly did: AccountId32;
     readonly submitter: AccountId32;
-    readonly newKeyAgreementKeys: Vec<DidDidDetailsDidEncryptionKey>;
+    readonly newKeyAgreementKeys: BTreeSet<DidDidDetailsDidEncryptionKey>;
     readonly newAttestationKey: Option<DidDidDetailsDidVerificationKey>;
     readonly newDelegationKey: Option<DidDidDetailsDidVerificationKey>;
     readonly newServiceDetails: Vec<DidServiceEndpointsDidEndpoint>;
@@ -2000,9 +2000,6 @@ declare module '@polkadot/types/lookup' {
     readonly asX25519: U8aFixed;
     readonly type: 'X25519';
   }
-
-  /** @name BTreeSetDidEncryptionKey (215) */
-  export interface BTreeSetDidEncryptionKey extends Vec<DidDidDetailsDidEncryptionKey> {}
 
   /** @name DidDidDetailsDidVerificationKey (218) */
   export interface DidDidDetailsDidVerificationKey extends Enum {
@@ -2347,13 +2344,10 @@ declare module '@polkadot/types/lookup' {
   export interface DelegationDelegationHierarchyDelegationNode extends Struct {
     readonly hierarchyRootId: H256;
     readonly parent: Option<H256>;
-    readonly children: Vec<H256>;
+    readonly children: BTreeSet<H256>;
     readonly details: DelegationDelegationHierarchyDelegationDetails;
     readonly deposit: KiltSupportDeposit;
   }
-
-  /** @name BTreeSetH256 (292) */
-  export interface BTreeSetH256 extends Vec<H256> {}
 
   /** @name DelegationDelegationHierarchyDelegationDetails (293) */
   export interface DelegationDelegationHierarchyDelegationDetails extends Struct {
@@ -2396,7 +2390,7 @@ declare module '@polkadot/types/lookup' {
   /** @name DidDidDetails (296) */
   export interface DidDidDetails extends Struct {
     readonly authenticationKey: H256;
-    readonly keyAgreementKeys: Vec<H256>;
+    readonly keyAgreementKeys: BTreeSet<H256>;
     readonly delegationKey: Option<H256>;
     readonly attestationKey: Option<H256>;
     readonly publicKeys: BTreeMap<H256, DidDidDetailsDidPublicKeyDetails>;

@@ -1859,7 +1859,7 @@ export default {
   DidDidDetailsDidCreationDetails: {
     did: 'AccountId32',
     submitter: 'AccountId32',
-    newKeyAgreementKeys: 'Vec<DidDidDetailsDidEncryptionKey>',
+    newKeyAgreementKeys: 'BTreeSet<DidDidDetailsDidEncryptionKey>',
     newAttestationKey: 'Option<DidDidDetailsDidVerificationKey>',
     newDelegationKey: 'Option<DidDidDetailsDidVerificationKey>',
     newServiceDetails: 'Vec<DidServiceEndpointsDidEndpoint>'
@@ -1872,10 +1872,6 @@ export default {
       X25519: '[u8;32]'
     }
   },
-  /**
-   * Lookup215: BTreeSet<did::did_details::DidEncryptionKey>
-   **/
-  BTreeSetDidEncryptionKey: 'Vec<DidDidDetailsDidEncryptionKey>',
   /**
    * Lookup218: did::did_details::DidVerificationKey
    **/
@@ -2179,14 +2175,10 @@ export default {
   DelegationDelegationHierarchyDelegationNode: {
     hierarchyRootId: 'H256',
     parent: 'Option<H256>',
-    children: 'Vec<H256>',
+    children: 'BTreeSet<H256>',
     details: 'DelegationDelegationHierarchyDelegationDetails',
     deposit: 'KiltSupportDeposit'
   },
-  /**
-   * Lookup292: BTreeSet<primitive_types::H256>
-   **/
-  BTreeSetH256: 'Vec<H256>',
   /**
    * Lookup293: delegation::delegation_hierarchy::DelegationDetails<T>
    **/
@@ -2212,7 +2204,7 @@ export default {
    **/
   DidDidDetails: {
     authenticationKey: 'H256',
-    keyAgreementKeys: 'Vec<H256>',
+    keyAgreementKeys: 'BTreeSet<H256>',
     delegationKey: 'Option<H256>',
     attestationKey: 'Option<H256>',
     publicKeys: 'BTreeMap<H256, DidDidDetailsDidPublicKeyDetails>',
