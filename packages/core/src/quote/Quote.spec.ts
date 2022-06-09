@@ -204,11 +204,11 @@ describe('Quote', () => {
         )
       )
     ).toBeTruthy()
-    expect(
-      await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
+    await expect(() =>
+      Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
         resolver: mockResolver,
       })
-    ).not.toThrow()
+    ).resolves.not.toThrow()
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,

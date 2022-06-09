@@ -191,7 +191,7 @@ describe('Claim', () => {
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
-    expect(Claim.verify(claimObj, testCType.schema)).not.toThrow()
+    expect(() => Claim.verify(claimObj, testCType.schema)).not.toThrow()
   })
 
   it('allows falsy claim values', () => {

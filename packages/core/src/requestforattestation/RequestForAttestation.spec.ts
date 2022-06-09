@@ -438,6 +438,6 @@ describe('RequestForAttestation', () => {
     builtRequest.claim.contents.name = 123
     expect(() =>
       RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
-    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toBeFalsy()
   })
 })
