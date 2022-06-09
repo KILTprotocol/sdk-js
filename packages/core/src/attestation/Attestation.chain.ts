@@ -12,12 +12,13 @@ import type {
   SubmittableExtrinsic,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { DecoderUtils } from '@kiltprotocol/utils'
+import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { BN } from '@polkadot/util'
+import type { HexString } from '@polkadot/util/types'
 import { Attestation } from './Attestation.js'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder.js'
 
@@ -37,9 +38,15 @@ export async function getStoreTx(
 
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
-  const authorization = delegationId
-    ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
-    : undefined
+  const authorizationArgName =
+    blockchain.api.tx.attestation.add.meta.args[2].name.toString()
+
+  const authorization =
+    authorizationArgName === 'delegationId' // true -> uses old attestation authorization
+      ? delegationId
+      : delegationId
+      ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+      : undefined
   const tx = blockchain.api.tx.attestation.add(
     claimHash,
     cTypeHash,
@@ -80,14 +87,18 @@ function decode(
   ])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
-    const delegationId =
-      'authorizationId' in chainAttestation &&
-      chainAttestation.authorizationId.isSome
-        ? chainAttestation.authorizationId.unwrap().value.toHex()
-        : 'delegationId' in chainAttestation &&
-          chainAttestation.delegationId.isSome
-        ? chainAttestation.delegationId.unwrap().toHex()
-        : null
+    let delegationId: HexString | undefined
+    if ('authorizationId' in chainAttestation) {
+      delegationId = chainAttestation.authorizationId
+        .unwrapOr(undefined)
+        ?.value.toHex()
+    } else if ('delegationId' in chainAttestation) {
+      delegationId = chainAttestation.delegationId.unwrapOr(undefined)?.toHex()
+    } else {
+      throw new SDKErrors.SDKError(
+        'Failed to decode Attestation: unknown Codec type'
+      )
+    }
     const attestation: IAttestation = {
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toHex(),
@@ -95,7 +106,7 @@ function decode(
         chainAttestation.attester.toString(),
         'full'
       ),
-      delegationId,
+      delegationId: delegationId || null,
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
@@ -147,9 +158,17 @@ export async function getRevokeTx(
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
+  const argName =
+    blockchain.api.tx.attestation.revoke.meta.args[1].name.toString()
+  const authorization =
+    argName === 'maxParentChecks' // true -> uses old attestation authorization
+      ? maxParentChecks
+      : maxParentChecks
+      ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : undefined
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,
-    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
+    authorization
   )
   return tx
 }
@@ -167,9 +186,17 @@ export async function getRemoveTx(
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
+  const argName =
+    blockchain.api.tx.attestation.remove.meta.args[1].name.toString()
+  const authorization =
+    argName === 'maxParentChecks' // true -> uses old attestation authorization
+      ? maxParentChecks
+      : maxParentChecks
+      ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : undefined
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
     claimHash,
-    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
+    authorization
   )
   return tx
 }

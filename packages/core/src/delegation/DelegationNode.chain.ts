@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Option, U128 } from '@polkadot/types'
+import type { Option, U128, Vec } from '@polkadot/types'
 import type {
   IAttestation,
   IDelegationNode,
@@ -13,7 +13,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { H256 } from '@polkadot/types/interfaces'
+import type { H256, Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import type { Chain as DidChain } from '@kiltprotocol/did'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -192,18 +192,32 @@ export async function getAttestationHashes(
   id: IDelegationNode['id']
 ): Promise<Array<IAttestation['claimHash']>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  // this info is stored chain-side as a double map of (authorizationId, claimHash) -> boolean.
-  // the following line retrieves all keys where authorizationId is equal to the delegation id.
-  const entries =
-    await blockchain.api.query.attestation.externalAttestations.keys<
-      [AuthorizationId, H256]
-    >({ delegation: id })
-  // extract claimHash from double map key & decode
-  return entries.map((keys) => {
-    const claimHash = keys.args[1]
-    DecoderUtils.assertCodecIsType(claimHash, ['H256'])
-    return claimHash.toHex()
-  })
+  if (blockchain.api.query.attestation.externalAttestations) {
+    // this info is stored chain-side as a double map from (authorizationId, claimHash) -> boolean.
+    // the following line retrieves all keys where authorizationId is equal to the delegation id.
+    const entries =
+      await blockchain.api.query.attestation.externalAttestations.keys<
+        [AuthorizationId, H256]
+      >({ delegation: id })
+    // extract claimHash from double map key & decode
+    return entries.map((keys) => {
+      const claimHash = keys.args[1]
+      DecoderUtils.assertCodecIsType(claimHash, ['H256'])
+      return claimHash.toHex()
+    })
+  }
+  if (blockchain.api.query.attestation.delegatedAttestations) {
+    // Delegated attestations are stored as a simple map from delegationId -> Vec<claimHashes>
+    const claimHashes =
+      await blockchain.api.query.attestation.delegatedAttestations<
+        Option<Vec<Hash>>
+      >(id)
+    DecoderUtils.assertCodecIsType(claimHashes, ['Option<Vec<H256>>'])
+    return claimHashes.unwrapOrDefault().map((hash) => hash.toHex())
+  }
+  throw new SDKErrors.SDKError(
+    'Failed to query delegated attestations: Unknown pallet storage'
+  )
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
