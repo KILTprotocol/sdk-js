@@ -10,5 +10,6 @@ import './interfaces/augment-api-query.js'
 import './interfaces/augment-api-rpc.js'
 import './interfaces/augment-api-tx.js'
 import './interfaces/augment-types.js'
+import './interfaces/types-lookup.js'
 
 export * from './types.js'
