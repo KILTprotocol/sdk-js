@@ -13,7 +13,7 @@
 
 /* eslint-disable max-classes-per-file */
 
-export class SDKError extends Error {
+export abstract class SDKError extends Error {
   constructor(...args: ConstructorParameters<ErrorConstructor>) {
     super(...args)
     this.name = this.constructor.name
@@ -349,3 +349,5 @@ export class ERROR_NO_PROOF_FOR_STATEMENT extends SDKError {
     super(`No matching proof found for statement\n${statement}`)
   }
 }
+
+export class ERROR_CODEC_MISMATCH extends SDKError {}
