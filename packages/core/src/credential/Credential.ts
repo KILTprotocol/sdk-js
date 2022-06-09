@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation/index.js'
+import * as Attestation from '../attestation/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
 import * as RequestForAttestation from '../requestforattestation/index.js'
 
@@ -65,7 +65,7 @@ export function verifyDataIntegrity(credential: ICredential): boolean {
  */
 export function verifyDataStructure(input: ICredential): void {
   if (input.attestation) {
-    Attestation.errorCheck(input.attestation)
+    Attestation.verifyDataStructure(input.attestation)
   } else throw new SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
 
   if (input.request) {

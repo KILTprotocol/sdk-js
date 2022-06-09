@@ -125,7 +125,7 @@ export async function getReclaimDepositTx(
  * @throws [[ERROR_REVOCATION_BIT_MISSING]] when input.revoked is not of type 'boolean'.
  *
  */
-export function errorCheck(input: IAttestation): void {
+export function verifyDataStructure(input: IAttestation): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   } else DataUtils.validateHash(input.cTypeHash, 'CType')
@@ -164,7 +164,7 @@ export function fromRequestAndDid(
     owner: attesterDid,
     revoked: false,
   }
-  errorCheck(attestation)
+  verifyDataStructure(attestation)
   return attestation
 }
 
@@ -203,14 +203,14 @@ export async function getDelegationDetails(
 }
 
 /**
- *  [STATIC] Custom Type Guard to determine input being of type IAttestation using the AttestationUtils errorCheck.
+ * [STATIC] Custom Type Guard to determine input being of type IAttestation.
  *
  * @param input The potentially only partial IAttestation.
  * @returns Boolean whether input is of type IAttestation.
  */
 export function isIAttestation(input: unknown): input is IAttestation {
   try {
-    errorCheck(input as IAttestation)
+    verifyDataStructure(input as IAttestation)
   } catch (error) {
     return false
   }
@@ -240,7 +240,7 @@ export async function checkValidity(
   attestation: IAttestation,
   claimHash: IAttestation['claimHash'] = attestation.claimHash
 ): Promise<boolean> {
-  errorCheck(attestation)
+  verifyDataStructure(attestation)
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
   const chainAttestation: IAttestation | null = await query(claimHash)
   return !!(
@@ -266,7 +266,7 @@ export function queryDepositAmount(): Promise<BN> {
  * @returns An ordered array of an [[Attestation]].
  */
 export function compress(attestation: IAttestation): CompressedAttestation {
-  errorCheck(attestation)
+  verifyDataStructure(attestation)
   return [
     attestation.claimHash,
     attestation.cTypeHash,
@@ -295,6 +295,6 @@ export function decompress(attestation: CompressedAttestation): IAttestation {
     revoked: attestation[3],
     delegationId: attestation[4],
   }
-  errorCheck(decompressedAttestation)
+  verifyDataStructure(decompressedAttestation)
   return decompressedAttestation
 }

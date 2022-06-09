@@ -5,4 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as Attestation from './Attestation.js'
+export * from './Attestation.js'
