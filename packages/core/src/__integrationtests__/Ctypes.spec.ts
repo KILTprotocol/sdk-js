@@ -13,7 +13,7 @@ import { ICType, KeyringPair } from '@kiltprotocol/types'
 import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import * as CType from '../ctype'
-import { getOwner } from '../ctype/chain'
+import { getOwner } from '../ctype/CType.chain'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,

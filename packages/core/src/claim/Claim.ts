@@ -32,8 +32,8 @@ import { Utils as DidUtils } from '@kiltprotocol/did'
 import {
   verifyClaimAgainstSchema,
   verifyClaimAgainstNestedSchemas,
+  getIdForCTypeHash,
 } from '../ctype/index.js'
-import { getIdForCTypeHash } from '../ctype/utils.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
