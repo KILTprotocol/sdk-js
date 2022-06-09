@@ -57,7 +57,7 @@ import {
   checkServiceEndpointSyntax,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
-} from './commonHelpers.js'
+} from './Did.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 

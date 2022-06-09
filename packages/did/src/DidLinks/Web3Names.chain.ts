@@ -19,7 +19,7 @@ import type { AccountId } from '@polkadot/types/interfaces'
 import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
-import { Utils as DidUtils } from '../index.js'
+import * as DidUtils from '../Did.utils.js'
 
 /**
  * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.

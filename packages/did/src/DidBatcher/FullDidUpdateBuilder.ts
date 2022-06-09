@@ -31,7 +31,7 @@ import {
   generateDidAuthenticatedTx,
   queryNonce,
 } from '../Did.chain.js'
-import { getSigningAlgorithmForVerificationKeyType } from '../commonHelpers.js'
+import { getSigningAlgorithmForVerificationKeyType } from '../Did.utils.js'
 
 import { FullDidBuilder } from './FullDidBuilder.js'
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'

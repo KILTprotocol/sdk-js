@@ -17,7 +17,8 @@ import {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { LightDidDetails, FullDidDetails } from '../DidDetails/index.js'
+import { LightDidDetails } from '../DidDetails/LightDidDetails.js'
+import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import {
   queryDetails,
   queryDidDeletionStatus,

@@ -19,7 +19,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DidResolver, DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
+import { DidResolver, DidDetails, verifyDidSignature } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import { Credential } from '../credential/Credential.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
@@ -233,7 +233,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     if (!claimerSignature) return false
     if (challenge && challenge !== claimerSignature.challenge) return false
     const verifyData = makeSigningData(input, claimerSignature.challenge)
-    const { verified } = await DidUtils.verifyDidSignature({
+    const { verified } = await verifyDidSignature({
       signature: claimerSignature,
       message: verifyData,
       expectedVerificationMethod: KeyRelationship.authentication,

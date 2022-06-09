@@ -29,7 +29,7 @@ import { deriveChainKeyId } from './FullDidBuilder.utils.js'
 import {
   checkServiceEndpointSizeConstraints,
   checkServiceEndpointSyntax,
-} from '../commonHelpers.js'
+} from '../Did.utils.js'
 
 export type VerificationKeyAction = {
   action: 'delete' | 'update' | 'ignore'

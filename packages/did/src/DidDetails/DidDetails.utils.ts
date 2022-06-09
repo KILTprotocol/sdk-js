@@ -12,7 +12,6 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { KeyRelationship } from '@kiltprotocol/types'
 
 import type { DidConstructorDetails } from '../types.js'
-
 import { validateKiltDidUri } from '../Did.utils.js'
 
 export function checkDidCreationDetails({
