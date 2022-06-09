@@ -13,11 +13,11 @@ import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { Attestation } from '../attestation'
+import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
-import { Credential } from '../index.js'
+import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {
@@ -178,7 +178,7 @@ describe('and attestation rights have been delegated', () => {
       request,
       attestation
     )
-    expect(Credential.verifyData(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     await expect(Credential.verify(credential)).resolves.toBeTruthy()
 
     // revoke attestation through root

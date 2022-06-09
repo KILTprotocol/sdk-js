@@ -243,35 +243,35 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    expect(() => Attestation.errorCheck(noClaimHash)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(noClaimHash)).toThrowError(
       SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
     )
 
-    expect(() => Attestation.errorCheck(noCTypeHash)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(noCTypeHash)).toThrowError(
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
-    expect(() => Attestation.errorCheck(malformedOwner)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(malformedOwner)).toThrowError(
       SDKErrors.ERROR_OWNER_NOT_PROVIDED
     )
 
-    expect(() => Attestation.errorCheck(noRevocationBit)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(noRevocationBit)).toThrowError(
       SDKErrors.ERROR_REVOCATION_BIT_MISSING
     )
 
-    expect(() => Attestation.errorCheck(everything)).not.toThrow()
+    expect(() => Attestation.verifyDataStructure(everything)).not.toThrow()
 
-    expect(() => Attestation.errorCheck(malformedClaimHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED
-    )
+    expect(() =>
+      Attestation.verifyDataStructure(malformedClaimHash)
+    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
 
-    expect(() => Attestation.errorCheck(malformedCTypeHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED
-    )
+    expect(() =>
+      Attestation.verifyDataStructure(malformedCTypeHash)
+    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
 
-    expect(() => Attestation.errorCheck(malformedAddress)).toThrowError(
-      SDKErrors.ERROR_INVALID_DID_FORMAT
-    )
+    expect(() =>
+      Attestation.verifyDataStructure(malformedAddress)
+    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
   })
   it('Typeguard should return true on complete Attestations', () => {
     const attestation = Attestation.fromRequestAndDid(

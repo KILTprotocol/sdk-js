@@ -37,7 +37,7 @@ import {
   submitExtrinsicWithResign,
 } from './utils'
 import { Balance } from '../balance'
-import { Attestation } from '../attestation'
+import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as RequestForAttestation from '../requestforattestation'
 import { disconnect } from '../kilt'

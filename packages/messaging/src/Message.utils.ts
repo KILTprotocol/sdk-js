@@ -7,7 +7,7 @@
 
 import {
   Attestation,
-  CredentialUtils,
+  Credential,
   Claim,
   CType,
   Quote,
@@ -86,7 +86,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     case Message.BodyType.SUBMIT_TERMS: {
       Claim.verifyDataStructure(body.content.claim)
       body.content.legitimations.map((credential: ICredential) =>
-        CredentialUtils.errorCheck(credential)
+        Credential.verifyDataStructure(credential)
       )
       if (body.content.delegationId) {
         DataUtils.validateHash(
@@ -110,7 +110,9 @@ export function errorCheckMessageBody(body: MessageBody): void {
           'Reject terms delegation id hash'
         )
       }
-      body.content.legitimations.map((val) => CredentialUtils.errorCheck(val))
+      body.content.legitimations.map((val) =>
+        Credential.verifyDataStructure(val)
+      )
       break
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
@@ -123,7 +125,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case Message.BodyType.SUBMIT_ATTESTATION: {
-      Attestation.errorCheck(body.content.attestation)
+      Attestation.verifyDataStructure(body.content.attestation)
       break
     }
     case Message.BodyType.REJECT_ATTESTATION: {
@@ -151,7 +153,9 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case Message.BodyType.SUBMIT_CREDENTIAL: {
-      body.content.map((credential) => CredentialUtils.errorCheck(credential))
+      body.content.map((credential) =>
+        Credential.verifyDataStructure(credential)
+      )
       break
     }
     case Message.BodyType.ACCEPT_CREDENTIAL: {
@@ -279,7 +283,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
           (credential: ICredential | CompressedCredential) =>
             Array.isArray(credential)
               ? credential
-              : CredentialUtils.compress(credential)
+              : Credential.compress(credential)
         ),
         body.content.delegationId,
         body.content.quote
@@ -292,7 +296,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     case Message.BodyType.REJECT_TERMS: {
       compressedContents = [
         Claim.compress(body.content.claim),
-        body.content.legitimations.map((val) => CredentialUtils.compress(val)),
+        body.content.legitimations.map((val) => Credential.compress(val)),
         body.content.delegationId || undefined,
       ]
       break
@@ -325,7 +329,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
         (credential: ICredential | CompressedCredential) =>
           Array.isArray(credential)
             ? credential
-            : CredentialUtils.compress(credential)
+            : Credential.compress(credential)
       )
       break
     }
@@ -410,7 +414,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           (credential: ICredential | CompressedCredential) =>
             !Array.isArray(credential)
               ? credential
-              : CredentialUtils.decompress(credential)
+              : Credential.decompress(credential)
         ),
         delegationId: body[1][2],
         quote: body[1][3]
@@ -424,7 +428,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     case Message.BodyType.REJECT_TERMS: {
       decompressedContents = {
         claim: Claim.decompress(body[1][0]),
-        legitimations: body[1][1].map((val) => CredentialUtils.decompress(val)),
+        legitimations: body[1][1].map((val) => Credential.decompress(val)),
         delegationId: body[1][2] ? body[1][2] : undefined,
       }
       break
@@ -461,7 +465,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
         (credential: ICredential | CompressedCredential) =>
           !Array.isArray(credential)
             ? credential
-            : CredentialUtils.decompress(credential)
+            : Credential.decompress(credential)
       )
 
       break

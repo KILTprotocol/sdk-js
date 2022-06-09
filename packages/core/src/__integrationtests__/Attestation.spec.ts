@@ -12,9 +12,9 @@
 import type { ICredential, IClaim, KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation'
+import * as Attestation from '../attestation'
 import { getRevokeTx, getRemoveTx } from '../attestation/Attestation.chain'
-import { Credential } from '../credential'
+import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
@@ -151,7 +151,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       request,
       attestation
     )
-    expect(Credential.verifyData(credential)).toBe(true)
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await expect(Credential.verify(credential)).resolves.toBe(true)
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
