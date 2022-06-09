@@ -40,7 +40,6 @@ import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation/index'
 import * as Credential from './Credential'
-import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
 
 jest.mock('../attestation/Attestation.chain')
@@ -226,7 +225,7 @@ describe('RequestForAttestation', () => {
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
-    expect(Credential.verifyData(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     await expect(
       Credential.verify(credential, {
         resolver: mockResolver,
@@ -258,7 +257,7 @@ describe('RequestForAttestation', () => {
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
-    expect(Credential.verifyData(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     await expect(
       Credential.verify(credential, {
         resolver: mockResolver,
@@ -307,7 +306,7 @@ describe('RequestForAttestation', () => {
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
-    expect(Credential.verifyData(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     await expect(
       Credential.verify(credential, {
         resolver: mockResolver,
@@ -316,16 +315,12 @@ describe('RequestForAttestation', () => {
   })
 
   it('compresses and decompresses the credentials object', () => {
-    expect(CredentialUtils.compress(legitimation)).toEqual(
-      compressedLegitimation
-    )
+    expect(Credential.compress(legitimation)).toEqual(compressedLegitimation)
 
-    expect(CredentialUtils.decompress(compressedLegitimation)).toEqual(
-      legitimation
-    )
+    expect(Credential.decompress(compressedLegitimation)).toEqual(legitimation)
 
     expect(Credential.compress(legitimation)).toEqual(
-      CredentialUtils.compress(legitimation)
+      Credential.compress(legitimation)
     )
 
     expect(Credential.decompress(compressedLegitimation)).toEqual(legitimation)
@@ -337,11 +332,11 @@ describe('RequestForAttestation', () => {
     delete legitimation.attestation
 
     expect(() => {
-      CredentialUtils.compress(legitimation)
+      Credential.compress(legitimation)
     }).toThrow()
 
     expect(() => {
-      CredentialUtils.decompress(compressedLegitimation)
+      Credential.decompress(compressedLegitimation)
     }).toThrow()
     expect(() => {
       Credential.decompress(compressedLegitimation)
@@ -754,10 +749,10 @@ describe('create presentation', () => {
 
   it('should verify the credential claims structure against the ctype', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
+    expect(Credential.verifyAgainstCType(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
 
-    expect(() => CredentialUtils.verifyStructure(cred, ctype)).toThrowError(
+    expect(() => Credential.verifyAgainstCType(cred, ctype)).toThrowError(
       SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
     )
   })

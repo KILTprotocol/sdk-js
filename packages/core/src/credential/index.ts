@@ -5,5 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as Credential from './Credential.js'
-export * as CredentialUtils from './Credential.utils.js'
+export * from './Credential.js'

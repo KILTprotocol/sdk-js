@@ -12,7 +12,7 @@
 import '@polkadot/api-augment'
 
 export { Attestation } from './attestation/index.js'
-export { Credential, CredentialUtils } from './credential/index.js'
+export * as Credential from './credential/index.js'
 export { Balance, BalanceUtils } from './balance/index.js'
 export * as Claim from './claim/index.js'
 export * as CType from './ctype/index.js'

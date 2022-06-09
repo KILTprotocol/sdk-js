@@ -28,12 +28,73 @@ import type {
   IDidResolver,
   KeystoreSigner,
   DidVerificationKey,
+  ICType,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/index.js'
+import { verifyClaimAgainstSchema } from '../ctype/index.js'
 import * as RequestForAttestation from '../requestforattestation/index.js'
-import * as CredentialUtils from './Credential.utils.js'
+
+/**
+ * Verifies whether the data of the given credential is valid. It is valid if:
+ * * the [[RequestForAttestation]] object associated with this credential has valid data (see [[RequestForAttestation.verifyData]]);
+ * and
+ * * the hash of the [[RequestForAttestation]] object for the credential, and the hash of the [[Claim]] for the credential are the same.
+ *
+ * @param credential - The credential to verify.
+ * @returns Whether the credential's data is valid.
+ */
+export function verifyDataIntegrity(credential: ICredential): boolean {
+  if (credential.request.claim.cTypeHash !== credential.attestation.cTypeHash)
+    return false
+  return (
+    credential.request.rootHash === credential.attestation.claimHash &&
+    RequestForAttestation.verifyDataIntegrity(credential.request)
+  )
+}
+
+/**
+ *  Checks whether the input meets all the required criteria of an ICredential object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial ICredential.
+ * @throws [[ERROR_ATTESTATION_NOT_PROVIDED]] or [[ERROR_RFA_NOT_PROVIDED]] when input's attestation and request respectively do not exist.
+ * @throws [[ERROR_CREDENTIAL_UNVERIFIABLE]] when input's data could not be verified.
+ *
+ */
+export function verifyDataStructure(input: ICredential): void {
+  if (input.attestation) {
+    Attestation.errorCheck(input.attestation)
+  } else throw new SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
+
+  if (input.request) {
+    RequestForAttestation.verifyDataStructure(input.request)
+  } else throw new SDKErrors.ERROR_RFA_NOT_PROVIDED()
+
+  if (!verifyDataIntegrity(input as ICredential)) {
+    throw new SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
+  }
+}
+
+/**
+ *  Checks the [[Credential]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
+ *
+ * @param credential A [[Credential]] object of an attested claim used for verification.
+ * @param ctype A [[CType]] to verify the [[Claim]] structure.
+ *
+ * @returns A boolean if the [[Claim]] structure in the [[Credential]] is valid.
+ */
+export function verifyAgainstCType(
+  credential: ICredential,
+  ctype: ICType
+): boolean {
+  verifyDataStructure(credential)
+  return verifyClaimAgainstSchema(
+    credential.request.claim.contents,
+    ctype.schema
+  )
+}
 
 /**
  * [STATIC] Builds a new instance of [[Credential]], from all required properties.
@@ -50,7 +111,7 @@ export function fromRequestAndAttestation(
     request,
     attestation,
   }
-  CredentialUtils.errorCheck(credential)
+  verifyDataStructure(credential)
   return credential
 }
 
@@ -63,29 +124,11 @@ export function fromRequestAndAttestation(
  */
 export function isICredential(input: unknown): input is ICredential {
   try {
-    CredentialUtils.errorCheck(input as ICredential)
+    verifyDataStructure(input as ICredential)
   } catch (error) {
     return false
   }
   return true
-}
-
-/**
- * Verifies whether the data of the given credential is valid. It is valid if:
- * * the [[RequestForAttestation]] object associated with this credential has valid data (see [[RequestForAttestation.verifyData]]);
- * and
- * * the hash of the [[RequestForAttestation]] object for the credential, and the hash of the [[Claim]] for the credential are the same.
- *
- * @param credential - The credential to verify.
- * @returns Whether the credential's data is valid.
- */
-export function verifyData(credential: ICredential): boolean {
-  if (credential.request.claim.cTypeHash !== credential.attestation.cTypeHash)
-    return false
-  return (
-    credential.request.rootHash === credential.attestation.claimHash &&
-    RequestForAttestation.verifyDataIntegrity(credential.request)
-  )
 }
 
 /**
@@ -111,7 +154,7 @@ export async function verify(
   } = {}
 ): Promise<boolean> {
   return (
-    verifyData(credential) &&
+    verifyDataIntegrity(credential) &&
     (await RequestForAttestation.verifySignature(
       credential.request,
       verificationOpts
@@ -130,7 +173,7 @@ export async function verify(
  */
 export function validateLegitimations(legitimations: ICredential[]): boolean {
   legitimations.forEach((legitimation: ICredential) => {
-    if (!verifyData(legitimation)) {
+    if (!verifyDataIntegrity(legitimation)) {
       throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
     }
   })
@@ -220,23 +263,35 @@ export async function createPresentation({
 }
 
 /**
- * Compresses a [[Credential]] object.
+ * Compresses a [[Credential]] object into an array for storage and/or messaging.
  *
  * @param credential - The credential to compress.
  * @returns An array that contains the same properties of a [[Credential]].
  */
 export function compress(credential: ICredential): CompressedCredential {
-  return CredentialUtils.compress(credential)
+  verifyDataStructure(credential)
+
+  return [
+    RequestForAttestation.compress(credential.request),
+    Attestation.compress(credential.attestation),
+  ]
 }
 
 /**
- * [STATIC] Builds a [[Credential]] from the decompressed array.
+ * Decompresses a [[Credential]] array from storage and/or message into an object.
  *
  * @param credential The [[CompressedCredential]] that should get decompressed.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when credential is not an Array or it's length is unequal 2.
  * @returns A new [[Credential]] object.
  */
 export function decompress(credential: CompressedCredential): ICredential {
-  const decompressedCredential = CredentialUtils.decompress(credential)
-  CredentialUtils.errorCheck(decompressedCredential)
+  if (!Array.isArray(credential) || credential.length !== 2) {
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
+  }
+  const decompressedCredential = {
+    request: RequestForAttestation.decompress(credential[0]),
+    attestation: Attestation.decompress(credential[1]),
+  }
+  verifyDataStructure(decompressedCredential)
   return decompressedCredential
 }

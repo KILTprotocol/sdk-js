@@ -35,8 +35,7 @@ import { DidDetails, DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
 import { KeyRelationship } from '@kiltprotocol/types'
 import * as Claim from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
-import { Credential } from '../credential/index.js'
-import * as CredentialUtils from '../credential/Credential.utils.js'
+import * as Credential from '../credential/index.js'
 
 import { hashClaimContents } from '../claim/index.js'
 
@@ -387,7 +386,7 @@ export function isIRequestForAttestation(
 export function compressLegitimation(
   leg: ICredential[]
 ): CompressedCredential[] {
-  return leg.map(CredentialUtils.compress)
+  return leg.map(Credential.compress)
 }
 
 /**
@@ -398,7 +397,7 @@ export function compressLegitimation(
  * @returns An object that has the same properties as a [[Credential]].
  */
 function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
-  return leg.map(CredentialUtils.decompress)
+  return leg.map(Credential.decompress)
 }
 
 /**
