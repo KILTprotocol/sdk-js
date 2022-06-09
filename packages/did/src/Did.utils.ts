@@ -170,51 +170,17 @@ export function isSameSubject(
   return identifierA === identifierB
 }
 
-/**
- * Type guard assuring that a string (or other input) is a valid KILT DID uri.
- *
- * @param input Arbitrary input.
- * @param allowFragment Whether the uri is allowed to have a fragment (following '#').
- * @returns True if validation has passed.
- * @throws [[SDKError]] if validation fails.
- */
-export function validateKiltDidUri(
-  input: unknown,
-  allowFragment = false
-): input is IDidDetails['uri'] {
-  if (typeof input !== 'string') {
-    throw TypeError(`DID string expected, got ${typeof input}`)
-  }
-  const { identifier, type, fragment } = parseDidUri(
-    input as IDidDetails['uri']
-  )
-  if (!allowFragment && fragment) {
-    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(input)
-  }
-
-  switch (type) {
-    case 'full':
-      if (!checkAddress(identifier, 38)[0]) {
-        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
-      }
-      break
-    case 'light':
-      // Identifier includes the first two characters for the key type encoding
-      if (!checkAddress(identifier.substring(2), 38)[0]) {
-        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
-      }
-      break
-    default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(input)
-  }
-  return true
-}
-
 const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
   [VerificationKeyType.Ed25519]: SigningAlgorithms.Ed25519,
   [VerificationKeyType.Sr25519]: SigningAlgorithms.Sr25519,
   [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
 }
+const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
+  (obj, [key, value]) => {
+    return { ...obj, [value]: key }
+  },
+  {}
+) as Record<SigningAlgorithms, VerificationKeyType>
 
 /**
  * Given the identifier of a key type, returns the identifier of the signature algorithm for which it is used.
@@ -227,12 +193,6 @@ export function getSigningAlgorithmForVerificationKeyType(
 ): SigningAlgorithms {
   return signatureAlgForKeyType[keyType]
 }
-const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
-  (obj, [key, value]) => {
-    return { ...obj, [value]: key }
-  },
-  {}
-) as Record<SigningAlgorithms, VerificationKeyType>
 
 /**
  * Given the identifier of a signature algorithm, returns the identifier of the key type required for it.
@@ -298,6 +258,46 @@ export function isVerificationKey(key: NewDidKey | DidKey): boolean {
  */
 export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
   return Object.values(EncryptionKeyType).some((kt) => kt === key.type)
+}
+
+/**
+ * Type guard assuring that a string (or other input) is a valid KILT DID uri.
+ *
+ * @param input Arbitrary input.
+ * @param allowFragment Whether the uri is allowed to have a fragment (following '#').
+ * @returns True if validation has passed.
+ * @throws [[SDKError]] if validation fails.
+ */
+export function validateKiltDidUri(
+  input: unknown,
+  allowFragment = false
+): input is IDidDetails['uri'] {
+  if (typeof input !== 'string') {
+    throw TypeError(`DID string expected, got ${typeof input}`)
+  }
+  const { identifier, type, fragment } = parseDidUri(
+    input as IDidDetails['uri']
+  )
+  if (!allowFragment && fragment) {
+    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(input)
+  }
+
+  switch (type) {
+    case 'full':
+      if (!checkAddress(identifier, 38)[0]) {
+        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+      }
+      break
+    case 'light':
+      // Identifier includes the first two characters for the key type encoding
+      if (!checkAddress(identifier.substring(2), 38)[0]) {
+        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+      }
+      break
+    default:
+      throw new SDKErrors.ERROR_UNSUPPORTED_DID(input)
+  }
+  return true
 }
 
 /**
