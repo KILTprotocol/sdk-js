@@ -178,8 +178,8 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
 }
 
 /**
- *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
- *  Throws on invalid input.
+ * Checks whether the input meets all the required criteria of an IRequestForAttestation object.
+ * Throws on invalid input.
  *
  * @param input - A potentially only partial [[IRequestForAttestation]].
  * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
@@ -223,7 +223,7 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
 }
 
 /**
- *  Checks the [[RequestForAttestation]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ * Checks the [[RequestForAttestation]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
  *
  * @param requestForAttestation A [[RequestForAttestation]] object for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
@@ -246,7 +246,7 @@ export function verifyAgainstCType(
 }
 
 /**
- * [STATIC] [ASYNC] Verifies the signature of the [[RequestForAttestation]] object.
+ * Verifies the signature of the [[RequestForAttestation]] object.
  * It supports migrated DIDs, meaning that if the original claim within the [[RequestForAttestation]] included a light DID that was afterwards upgraded,
  * the signature over the presentation **must** be generated with the full DID in order for the verification to be successful.
  * On the other hand, a light DID that has been migrated and then deleted from the chain will not be allowed to generate valid presentations anymore.
@@ -287,7 +287,7 @@ export type Options = {
 }
 
 /**
- * [STATIC] Builds a new [[RequestForAttestation]] object, from a complete set of required parameters.
+ * Builds a new [[RequestForAttestation]] object, from a complete set of required parameters.
  *
  * @param claim An `IClaim` object the request for attestation is built for.
  * @param option Container for different options that can be passed to this method.
@@ -359,7 +359,7 @@ export async function verify(
 }
 
 /**
- * [STATIC] Custom Type Guard to determine input being of type IRequestForAttestation..
+ * Custom Type Guard to determine input being of type IRequestForAttestation..
  *
  * @param input - A potentially only partial [[IRequestForAttestation]].
  *
@@ -377,7 +377,7 @@ export function isIRequestForAttestation(
 }
 
 /**
- *  Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
+ * Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
  *
  * @param leg An array of [[Attestation]] and [[RequestForAttestation]] objects.
  *
@@ -390,7 +390,7 @@ export function compressLegitimation(
 }
 
 /**
- *  Decompresses [[Credential]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
+ * Decompresses [[Credential]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
  *
  * @param leg A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  *
@@ -401,7 +401,7 @@ function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
 }
 
 /**
- *  Compresses a [[RequestForAttestation]] for storage and/or messaging.
+ * Compresses a [[RequestForAttestation]] for storage and/or messaging.
  *
  * @param reqForAtt A [[RequestForAttestation]] object that will be sorted and stripped for messaging or storage.
  *
@@ -423,7 +423,7 @@ export function compress(
 }
 
 /**
- *  Decompresses a [[RequestForAttestation]] from storage and/or message.
+ * Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] when reqForAtt is not an Array and it's length is not equal to the defined length of 8.

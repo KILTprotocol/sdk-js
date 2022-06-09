@@ -197,8 +197,8 @@ export function verifyDisclosedAttributes(
 }
 
 /**
- *  Checks whether the input meets all the required criteria of an [[IClaim]] object.
- *  Throws on invalid input.
+ * Checks whether the input meets all the required criteria of an [[IClaim]] object.
+ * Throws on invalid input.
  *
  * @param input The potentially only partial IClaim.
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when input's cTypeHash do not exist.
@@ -251,7 +251,7 @@ export function verify(
 }
 
 /**
- * [STATIC] Builds a [[Claim]] from a [[CType]] which has nested [[CType]]s within the schema.
+ * Builds a [[Claim]] from a [[CType]] which has nested [[CType]]s within the schema.
  *
  * @param cTypeInput A [[CType]] object that has nested [[CType]]s.
  * @param nestedCType The array of [[CType]]s, which are used inside the main [[CType]].
@@ -314,7 +314,7 @@ export function fromCTypeAndClaimContents(
 }
 
 /**
- * [STATIC] Custom Type Guard to determine input being of type IClaim.
+ * Custom Type Guard to determine input being of type IClaim.
  *
  * @param input The potentially only partial IClaim.
  *
@@ -330,7 +330,7 @@ export function isIClaim(input: unknown): input is IClaim {
 }
 
 /**
- *  Compresses an [[IClaim]] for storage and/or messaging.
+ * Compresses an [[IClaim]] for storage and/or messaging.
  *
  * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
@@ -338,7 +338,7 @@ export function isIClaim(input: unknown): input is IClaim {
  */
 export function compress(claim: IClaim): CompressedClaim
 /**
- *  Compresses a [[PartialClaim]] for storage and/or messaging.
+ * Compresses a [[PartialClaim]] for storage and/or messaging.
  *
  * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
  *
@@ -346,7 +346,7 @@ export function compress(claim: IClaim): CompressedClaim
  */
 export function compress(claim: PartialClaim): CompressedPartialClaim
 /**
- *  Compresses a claim object for storage and/or messaging.
+ * Compresses a claim object for storage and/or messaging.
  *
  * @param claim A (partial) claim object that will be sorted and stripped for messaging or storage.
  *
@@ -364,7 +364,7 @@ export function compress(
 }
 
 /**
- *  Decompresses an [[IClaim]] from storage and/or message.
+ * Decompresses an [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedClaim]] array that is reverted back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
@@ -372,7 +372,7 @@ export function compress(
  */
 export function decompress(claim: CompressedClaim): IClaim
 /**
- *  Decompresses a partial [[IClaim]] from storage and/or message.
+ * Decompresses a partial [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
@@ -380,7 +380,7 @@ export function decompress(claim: CompressedClaim): IClaim
  */
 export function decompress(claim: CompressedPartialClaim): PartialClaim
 /**
- *  Decompresses compressed representation of a (partial) [[IClaim]] from storage and/or message.
+ * Decompresses compressed representation of a (partial) [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedClaim]] or [[CompressedPartialClaim]] array that is reverted back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.

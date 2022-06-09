@@ -66,7 +66,7 @@ export class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Signs the SubmittableExtrinsic with the given identity or keyring pair.
+   * Signs the SubmittableExtrinsic with the given identity or keyring pair.
    *
    * @param signer The [[IIdentity]] or KeyringPair to sign the tx with.
    * @param tx The unsigned SubmittableExtrinsic.
@@ -87,7 +87,7 @@ export class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Submits a signed SubmittableExtrinsic with imported function [[submitSignedTx]].
+   * Submits a signed SubmittableExtrinsic with imported function [[submitSignedTx]].
    * Handles recoverable errors if identity is provided by re-signing and re-sending the tx up to two times.
    * Uses [[parseSubscriptionOptions]] to provide complete potentially defaulted options to the called [[submitSignedTx]].
    *
@@ -116,7 +116,7 @@ export class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
+   * Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
    * @returns Representation of the Tx nonce for the identity.
@@ -142,7 +142,7 @@ export class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Re-signs the given SubmittableExtrinsic with an updated Nonce.
+   * Re-signs the given SubmittableExtrinsic with an updated Nonce.
    *
    * @param signer The [[IIdentity]] or KeyringPair to re-sign the tx with.
    * @param tx The tx with recoverable Error that failed.

@@ -120,7 +120,7 @@ export function verifyObjectAgainstSchema(
 }
 
 /**
- *  Verifies the structure of the provided IClaim['contents'] with ICType['schema'].
+ * Verifies the structure of the provided IClaim['contents'] with ICType['schema'].
  *
  * @param claimContents IClaim['contents'] to be verified against the schema.
  * @param schema ICType['schema'] to be verified against the [CTypeModel].
@@ -162,8 +162,8 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
 }
 
 /**
- *  Checks whether the input meets all the required criteria of an ICType object.
- *  Throws on invalid input.
+ * Checks whether the input meets all the required criteria of an ICType object.
+ * Throws on invalid input.
  *
  * @param input The potentially only partial ICType.
  * @throws [[ERROR_OBJECT_MALFORMED]] when input does not correspond to either it's schema, or the CTypeWrapperModel.
@@ -220,7 +220,7 @@ export function verifyClaimAgainstNestedSchemas(
 }
 
 /**
- *  Checks a CTypeMetadata object.
+ * Checks a CTypeMetadata object.
  *
  * @param metadata [[ICTypeMetadata]] that is to be instantiated.
  * @throws [[ERROR_OBJECT_MALFORMED]] when metadata is not verifiable with the MetadataModel.
@@ -232,9 +232,9 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
 }
 
 /**
- *  [STATIC] Creates a new [[CType]] from an [[ICTypeSchema]].
- *  _Note_ that you can either supply the schema as [[ICTypeSchema]] with the id
- *  or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it.
+ * Creates a new [[CType]] from an [[ICTypeSchema]].
+ * _Note_ that you can either supply the schema as [[ICTypeSchema]] with the id
+ * or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it.
  *
  * @param schema The JSON schema from which the [[CType]] should be generated.
  * @param owner The public SS58 address of the owner of the [[CType]].
@@ -258,7 +258,7 @@ export function fromSchema(
 }
 
 /**
- *  [STATIC] Custom Type Guard to determine input being of type ICType using the CTypeUtils errorCheck.
+ * Custom Type Guard to determine input being of type ICType.
  *
  * @param input The potentially only partial ICType.
  *
@@ -274,7 +274,7 @@ export function isICType(input: unknown): input is ICType {
 }
 
 /**
- *  Compresses a [[CType]] schema for storage and/or messaging.
+ * Compresses a [[CType]] schema for storage and/or messaging.
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
  * @throws [[ERROR_COMPRESS_OBJECT]] when any of the four required properties of the cTypeSchema are missing.
@@ -304,7 +304,7 @@ export function compressSchema(
 }
 
 /**
- *  Decompresses a schema of a [[CType]] from storage and/or message.
+ * Decompresses a schema of a [[CType]] from storage and/or message.
  *
  * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] when either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
@@ -327,7 +327,7 @@ export function decompressSchema(
 }
 
 /**
- *  Compresses a [[CType]] for storage and/or messaging.
+ * Compresses a [[CType]] for storage and/or messaging.
  *
  * @param cType A [[CType]] object that will be sorted and stripped for messaging or storage.
  *
@@ -339,7 +339,7 @@ export function compress(cType: ICType): CompressedCType {
 }
 
 /**
- *  Decompresses a [[CType]] from storage and/or message.
+ * Decompresses a [[CType]] from storage and/or message.
  *
  * @param cType A compressed [[CType]] array that is reverted back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] when either the cType is not an Array or it's length is not equal to the defined length of 3.

@@ -391,7 +391,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
 }
 
 /**
- * [STATIC] Takes a compressed [[MessageBody]] and decompresses it depending on the message body type.
+ * Takes a compressed [[MessageBody]] and decompresses it depending on the message body type.
  *
  * @param body The body of the compressed [[IMessage]] which depends on the [[MessageBodyType]] that needs to be decompressed.
  *

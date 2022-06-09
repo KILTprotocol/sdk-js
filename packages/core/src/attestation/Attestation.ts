@@ -38,7 +38,7 @@ import { DelegationNode } from '../delegation/DelegationNode.js'
  */
 
 /**
- * [STATIC] [ASYNC] Queries the chain for a given attestation, by `claimHash`.
+ * Queries the chain for a given attestation, by `claimHash`.
  *
  * @param input - The hash of the claim that corresponds to the attestation or the full attestation object to query.
  * @returns A promise containing the [[Attestation]] or null.
@@ -56,7 +56,7 @@ export async function query(
 }
 
 /**
- * [STATIC] [ASYNC] Prepares an extrinsic to revoke the attestation.
+ * Prepares an extrinsic to revoke the attestation.
  *
  * @param input - The hash of the claim that corresponds to the attestation to revoke, or the full attestation object.
  * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
@@ -76,7 +76,7 @@ export async function getRevokeTx(
 }
 
 /**
- * [STATIC] [ASYNC] Removes an attestation. Also available as an instance method.
+ * Removes an attestation. Also available as an instance method.
  *
  * @param input - The hash of the claim that corresponds to the attestation or the full attestation object to remove.
  * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
@@ -96,7 +96,7 @@ export async function getRemoveTx(
 }
 
 /**
- * [STATIC] [ASYNC] Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
+ * Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
  *
  * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
  *
@@ -116,8 +116,8 @@ export async function getReclaimDepositTx(
 }
 
 /**
- *  Checks whether the input meets all the required criteria of an [[IAttestation]] object.
- *  Throws on invalid input.
+ * Checks whether the input meets all the required criteria of an [[IAttestation]] object.
+ * Throws on invalid input.
  *
  * @param input The potentially only partial [[IAttestation]].
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_HASH_NOT_PROVIDED]] or [[ERROR_OWNER_NOT_PROVIDED]] when input's cTypeHash, claimHash or owner respectively do not exist.
@@ -147,7 +147,7 @@ export function verifyDataStructure(input: IAttestation): void {
 }
 
 /**
- * [STATIC] Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
+ * Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
  *
  * @param request - The base request for attestation.
  * @param attesterDid - The attester's DID, used to attest to the underlying claim.
@@ -169,7 +169,7 @@ export function fromRequestAndDid(
 }
 
 /**
- * [STATIC] [ASYNC] Tries to query the delegationId and if successful query the rootId.
+ * Tries to query the delegationId and if successful query the rootId.
  *
  * @param input - The Id of the Delegation stored in [[Attestation]] , or the whole Attestation object.
  * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
@@ -203,7 +203,7 @@ export async function getDelegationDetails(
 }
 
 /**
- * [STATIC] Custom Type Guard to determine input being of type IAttestation.
+ * Custom Type Guard to determine input being of type IAttestation.
  *
  * @param input The potentially only partial IAttestation.
  * @returns Boolean whether input is of type IAttestation.
@@ -218,7 +218,7 @@ export function isIAttestation(input: unknown): input is IAttestation {
 }
 
 /**
- * [ASYNC] Prepares an extrinsic to store the attestation on chain.
+ * Prepares an extrinsic to store the attestation on chain.
  *
  * @param attestation - The Attestation to store.
  * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
@@ -230,7 +230,7 @@ export async function getStoreTx(
 }
 
 /**
- * [STATIC] [ASYNC] Queries an attestation from the chain and checks its validity.
+ * Queries an attestation from the chain and checks its validity.
  *
  * @param attestation - The Attestation to verify.
  * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
@@ -251,7 +251,7 @@ export async function checkValidity(
 }
 
 /**
- * [STATIC] Query and return the amount of KILTs (in femto notation) needed to deposit in order to create an attestation.
+ * Query and return the amount of KILTs (in femto notation) needed to deposit in order to create an attestation.
  *
  * @returns The amount of femtoKILTs required to deposit to create the attestation.
  */
@@ -260,7 +260,7 @@ export function queryDepositAmount(): Promise<BN> {
 }
 
 /**
- *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
+ * Compresses an [[Attestation]] object into an array for storage and/or messaging.
  *
  * @param attestation An [[Attestation]] object that will be sorted and stripped for messaging or storage.
  * @returns An ordered array of an [[Attestation]].
@@ -277,7 +277,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 }
 
 /**
- *  Decompresses an [[Attestation]] from storage and/or message into an object.
+ * Decompresses an [[Attestation]] from storage and/or message into an object.
  *
  * @param attestation A compressed [[Attestation]] array that is decompressed back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] when the attestation is not an array or its length is not equal to 5.

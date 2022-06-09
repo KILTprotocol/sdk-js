@@ -115,7 +115,7 @@ describe('CType', () => {
     }
 
     // This tst is not possible as it throws the error for malformed object first
-    // TODO: Discuss whether the specific check in the errorCheck is obsolete and therefore should be removed
+    // TODO: Discuss whether the specific check in the verifyDataStructure is obsolete and therefore should be removed
     const faultyAddressTypeCType: ICType = {
       schema: claimCtype.schema,
       hash: claimCtype.hash,

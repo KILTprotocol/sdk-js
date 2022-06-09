@@ -55,8 +55,8 @@ export function verifyDataIntegrity(credential: ICredential): boolean {
 }
 
 /**
- *  Checks whether the input meets all the required criteria of an ICredential object.
- *  Throws on invalid input.
+ * Checks whether the input meets all the required criteria of an ICredential object.
+ * Throws on invalid input.
  *
  * @param input The potentially only partial ICredential.
  * @throws [[ERROR_ATTESTATION_NOT_PROVIDED]] or [[ERROR_RFA_NOT_PROVIDED]] when input's attestation and request respectively do not exist.
@@ -78,7 +78,7 @@ export function verifyDataStructure(input: ICredential): void {
 }
 
 /**
- *  Checks the [[Credential]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
+ * Checks the [[Credential]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
  *
  * @param credential A [[Credential]] object of an attested claim used for verification.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
@@ -97,7 +97,7 @@ export function verifyAgainstCType(
 }
 
 /**
- * [STATIC] Builds a new instance of [[Credential]], from all required properties.
+ * Builds a new instance of [[Credential]], from all required properties.
  *
  * @param request - The request for attestation for the claim that was attested.
  * @param attestation - The attestation for the claim by the attester.
@@ -116,7 +116,7 @@ export function fromRequestAndAttestation(
 }
 
 /**
- *  [STATIC] Custom Type Guard to determine input being of type ICredential using the CredentialUtils errorCheck.
+ * Custom Type Guard to determine input being of type ICredential.
  *
  * @param input The potentially only partial ICredential.
  *
@@ -164,7 +164,7 @@ export async function verify(
 }
 
 /**
- *  [STATIC] Verifies the data of each element of the given Array of ICredentials.
+ * Verifies the data of each element of the given Array of ICredentials.
  *
  * @param legitimations Array of ICredentials to validate.
  * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]] when one of the ICredentials data is unable to be verified.
