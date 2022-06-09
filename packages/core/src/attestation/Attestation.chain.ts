@@ -5,14 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Enum, Option, Struct, U128, u16 } from '@polkadot/types'
+import type { Enum, Option, Struct, U128 } from '@polkadot/types'
 import type {
   IAttestation,
   Deposit,
   SubmittableExtrinsic,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -71,8 +71,8 @@ interface AttestationDetailsV2 extends Struct {
 
 export type AttestationDetails = AttestationDetailsV2
 
-function decodeV1(
-  encoded: Option<AttestationDetailsV1>,
+function decode(
+  encoded: Option<AttestationDetailsV1 | AttestationDetailsV2>,
   claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
@@ -80,43 +80,22 @@ function decodeV1(
   ])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
-    const attestation: IAttestation = {
-      claimHash,
-      cTypeHash: chainAttestation.ctypeHash.toHex(),
-      owner: DidUtils.getKiltDidFromIdentifier(
-        chainAttestation.attester.toString(),
-        'full'
-      ),
-      delegationId: chainAttestation.delegationId.isSome
-        ? chainAttestation.delegationId.unwrap().toHex()
-        : null,
-      revoked: chainAttestation.revoked.valueOf(),
-    }
-    log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-    return Attestation.fromAttestation(attestation)
-  }
-  return null
-}
-
-function decodeV2(
-  encoded: Option<AttestationDetailsV2>,
-  claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
-): Attestation | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-  if (encoded.isSome) {
-    const chainAttestation = encoded.unwrap()
-    const attestation: IAttestation = {
-      claimHash,
-      cTypeHash: chainAttestation.ctypeHash.toHex(),
-      owner: DidUtils.getKiltDidFromIdentifier(
-        chainAttestation.attester.toString(),
-        'full'
-      ),
-      delegationId: chainAttestation.authorizationId.isSome
+    const delegationId =
+      'authorizationId' in chainAttestation &&
+      chainAttestation.authorizationId.isSome
         ? chainAttestation.authorizationId.unwrap().value.toHex()
-        : null,
+        : 'delegationId' in chainAttestation &&
+          chainAttestation.delegationId.isSome
+        ? chainAttestation.delegationId.unwrap().toHex()
+        : null
+    const attestation: IAttestation = {
+      claimHash,
+      cTypeHash: chainAttestation.ctypeHash.toHex(),
+      owner: DidUtils.getKiltDidFromIdentifier(
+        chainAttestation.attester.toString(),
+        'full'
+      ),
+      delegationId,
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
@@ -151,23 +130,8 @@ export async function queryRaw(
 export async function query(
   claimHash: IRequestForAttestation['rootHash']
 ): Promise<Attestation | null> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const [result, palletVersion] = await api.queryMulti<
-    [Option<AttestationDetailsV1 | AttestationDetailsV2>, u16]
-  >([
-    [api.query.attestation.attestations, claimHash],
-    api.query.attestation.palletVersion,
-  ])
-  switch (true) {
-    case palletVersion.eqn(1):
-      return decodeV1(result as Option<AttestationDetailsV1>, claimHash)
-    case palletVersion.eqn(2):
-      return decodeV2(result as Option<AttestationDetailsV2>, claimHash)
-    default:
-      throw new SDKErrors.SDKError(
-        `Cannot handle Attestation pallet version ${palletVersion.toString()}. Please upgrade @kiltprotocol/sdk-js.`
-      )
-  }
+  const encoded = await queryRaw(claimHash)
+  return decode(encoded, claimHash)
 }
 
 /**
