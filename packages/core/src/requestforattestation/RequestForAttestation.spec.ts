@@ -436,7 +436,7 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
     ).toBeTruthy()
     builtRequest.claim.contents.name = 123
-    expect(() =>
+    expect(
       RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
     ).toBeFalsy()
   })

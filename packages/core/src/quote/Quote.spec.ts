@@ -208,7 +208,7 @@ describe('Quote', () => {
       Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
         resolver: mockResolver,
       })
-    ).resolves.not.toThrow()
+    ).not.toThrow()
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,
