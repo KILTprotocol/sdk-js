@@ -58,15 +58,15 @@ export async function getStoreTx(
           : undefined
       )
     default:
-      throw new SDKErrors.SDKError(
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
         'Failed to encode call: unknown authorization type'
       )
   }
 }
 
 export interface AuthorizationId extends Enum {
-  isDelegation: boolean
-  asDelegation: H256
+  readonly isDelegation: boolean
+  readonly asDelegation: H256
 }
 
 interface AttestationDetailsV1 extends Struct {
@@ -77,12 +77,9 @@ interface AttestationDetailsV1 extends Struct {
   readonly deposit: Deposit
 }
 
-interface AttestationDetailsV2 extends Struct {
-  readonly ctypeHash: Hash
-  readonly attester: AccountId
+interface AttestationDetailsV2
+  extends Omit<AttestationDetailsV1, 'delegationId'> {
   readonly authorizationId: Option<AuthorizationId>
-  readonly revoked: boolean
-  readonly deposit: Deposit
 }
 
 export type AttestationDetails = AttestationDetailsV2
@@ -104,7 +101,7 @@ function decode(
     } else if ('delegationId' in chainAttestation) {
       delegationId = chainAttestation.delegationId.unwrapOr(undefined)?.toHex()
     } else {
-      throw new SDKErrors.SDKError(
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
         'Failed to decode Attestation: unknown Codec type'
       )
     }
@@ -182,7 +179,7 @@ export async function getRevokeTx(
           : undefined
       )
     default:
-      throw new SDKErrors.SDKError(
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
         'Failed to encode call: unknown authorization type'
       )
   }
@@ -216,7 +213,7 @@ export async function getRemoveTx(
           : undefined
       )
     default:
-      throw new SDKErrors.SDKError(
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
         'Failed to encode call: unknown authorization type'
       )
   }

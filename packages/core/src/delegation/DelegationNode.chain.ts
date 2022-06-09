@@ -215,7 +215,7 @@ export async function getAttestationHashes(
     DecoderUtils.assertCodecIsType(claimHashes, ['Option<Vec<H256>>'])
     return claimHashes.unwrapOrDefault().map((hash) => hash.toHex())
   }
-  throw new SDKErrors.SDKError(
+  throw new SDKErrors.ERROR_CODEC_MISMATCH(
     'Failed to query delegated attestations: Unknown pallet storage'
   )
 }
