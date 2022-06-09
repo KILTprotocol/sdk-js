@@ -26,7 +26,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { DidResolver } from '@kiltprotocol/did'
-import * as ClaimUtils from '../claim/utils.js'
+import * as Claim from '../claim/index.js'
 import * as RequestForAttestationUtils from './utils.js'
 import {
   verifyAgainstCType,
@@ -54,7 +54,7 @@ export function fromClaim(
   { legitimations, delegationId }: Options = {}
 ): IRequestForAttestation {
   const { hashes: claimHashes, nonceMap: claimNonceMap } =
-    ClaimUtils.hashClaimContents(claim)
+    Claim.hashClaimContents(claim)
 
   const rootHash = RequestForAttestationUtils.calculateRootHash({
     legitimations,

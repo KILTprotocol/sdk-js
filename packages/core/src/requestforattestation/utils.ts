@@ -16,7 +16,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { DidDetails } from '@kiltprotocol/did'
-import { hashClaimContents } from '../claim/utils.js'
+import { hashClaimContents } from '../claim/index.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)

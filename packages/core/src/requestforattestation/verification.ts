@@ -13,7 +13,7 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
-import * as ClaimUtils from '../claim/utils.js'
+import * as Claim from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
 import { Credential } from '../credential/index.js'
 import * as RequestForAttestationUtils from './utils.js'
@@ -38,7 +38,7 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
   }
 
   // verify properties against selective disclosure proof
-  const verificationResult = ClaimUtils.verifyDisclosedAttributes(input.claim, {
+  const verificationResult = Claim.verifyDisclosedAttributes(input.claim, {
     nonces: input.claimNonceMap,
     hashes: input.claimHashes,
   })
@@ -67,7 +67,7 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
   if (!input.claim) {
     throw new SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
-    ClaimUtils.verifyDataStructure(input.claim)
+    Claim.verifyDataStructure(input.claim)
   }
   if (!input.claim.owner) {
     throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()

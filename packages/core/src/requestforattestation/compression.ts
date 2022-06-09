@@ -13,7 +13,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CredentialUtils from '../credential/Credential.utils.js'
-import * as ClaimCompression from '../claim/compression.js'
+import * as Claim from '../claim/index.js'
 import { verifyDataStructure, verifyDataIntegrity } from './verification.js'
 
 /**
@@ -52,7 +52,7 @@ export function compress(
 ): CompressedRequestForAttestation {
   verifyDataStructure(reqForAtt)
   return [
-    ClaimCompression.compress(reqForAtt.claim),
+    Claim.compress(reqForAtt.claim),
     reqForAtt.claimNonceMap,
     reqForAtt.claimerSignature,
     reqForAtt.claimHashes,
@@ -77,7 +77,7 @@ export function decompress(
     throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
-    claim: ClaimCompression.decompress(reqForAtt[0]),
+    claim: Claim.decompress(reqForAtt[0]),
     claimNonceMap: reqForAtt[1],
     claimerSignature: reqForAtt[2],
     claimHashes: reqForAtt[3],
