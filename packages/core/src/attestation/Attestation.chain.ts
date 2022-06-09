@@ -5,19 +5,21 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Enum, Option, Struct, U128 } from '@polkadot/types'
+import type { Enum, Option, Struct, U128 } from '@polkadot/types'
 import type {
   IAttestation,
   Deposit,
   SubmittableExtrinsic,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { DecoderUtils } from '@kiltprotocol/utils'
+import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
+import type { BN } from '@polkadot/util'
+import type { HexString } from '@polkadot/util/types'
+import type { DelegationNodeId } from '../delegation/DelegationDecoder.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
@@ -35,32 +37,54 @@ export async function getStoreTx(
 
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
-  const authorization = delegationId
-    ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
-    : undefined
-  const tx = blockchain.api.tx.attestation.add(
-    claimHash,
-    cTypeHash,
-    authorization
-  )
-  return tx
+  const authorizationArgName =
+    blockchain.api.tx.attestation.add.meta.args[2].name.toString()
+  switch (authorizationArgName) {
+    case 'delegationId':
+      // uses old attestation authorization
+      return blockchain.api.tx.attestation.add(
+        claimHash,
+        cTypeHash,
+        delegationId
+      )
+    case 'authorization':
+      // uses generalized attestation authorization
+      return blockchain.api.tx.attestation.add(
+        claimHash,
+        cTypeHash,
+        delegationId
+          ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+          : undefined
+      )
+    default:
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+        'Failed to encode call: unknown authorization type'
+      )
+  }
 }
 
 export interface AuthorizationId extends Enum {
-  isDelegation: boolean
-  asDelegation: H256
+  readonly isDelegation: boolean
+  readonly asDelegation: H256
 }
 
-export interface AttestationDetails extends Struct {
+interface AttestationDetailsV1 extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
-  readonly authorizationId: Option<AuthorizationId>
+  readonly delegationId: Option<DelegationNodeId>
   readonly revoked: boolean
   readonly deposit: Deposit
 }
 
+interface AttestationDetailsV2
+  extends Omit<AttestationDetailsV1, 'delegationId'> {
+  readonly authorizationId: Option<AuthorizationId>
+}
+
+export type AttestationDetails = AttestationDetailsV2
+
 function decode(
-  encoded: Option<AttestationDetails>,
+  encoded: Option<AttestationDetailsV1 | AttestationDetailsV2>,
   claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): IAttestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
@@ -68,6 +92,18 @@ function decode(
   ])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
+    let delegationId: HexString | undefined
+    if ('authorizationId' in chainAttestation) {
+      delegationId = chainAttestation.authorizationId
+        .unwrapOr(undefined)
+        ?.value.toHex()
+    } else if ('delegationId' in chainAttestation) {
+      delegationId = chainAttestation.delegationId.unwrapOr(undefined)?.toHex()
+    } else {
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+        'Failed to decode Attestation: unknown Codec type'
+      )
+    }
     const attestation: IAttestation = {
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toHex(),
@@ -75,9 +111,7 @@ function decode(
         chainAttestation.attester.toString(),
         'full'
       ),
-      delegationId: chainAttestation.authorizationId.isSome
-        ? chainAttestation.authorizationId.unwrap().value.toHex()
-        : null,
+      delegationId: delegationId || null,
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
@@ -129,11 +163,25 @@ export async function getRevokeTx(
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
-  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
-    claimHash,
-    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
-  )
-  return tx
+  const authorizationArgName =
+    blockchain.api.tx.attestation.revoke.meta.args[1].name.toString()
+  switch (authorizationArgName) {
+    case 'maxParentChecks':
+      // uses old attestation authorization
+      return blockchain.api.tx.attestation.revoke(claimHash, maxParentChecks)
+    case 'authorization':
+      // uses generalized attestation authorization
+      return blockchain.api.tx.attestation.revoke(
+        claimHash,
+        maxParentChecks
+          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+          : undefined
+      )
+    default:
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+        'Failed to encode call: unknown authorization type'
+      )
+  }
 }
 
 /**
@@ -149,11 +197,25 @@ export async function getRemoveTx(
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
-  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
-    claimHash,
-    maxParentChecks ? { delegation: { maxChecks: maxParentChecks } } : undefined // subjectNodeId parameter is unused on the chain side and therefore omitted
-  )
-  return tx
+  const authorizationArgName =
+    blockchain.api.tx.attestation.remove.meta.args[1].name.toString()
+  switch (authorizationArgName) {
+    case 'maxParentChecks':
+      // uses old attestation authorization
+      return blockchain.api.tx.attestation.remove(claimHash, maxParentChecks)
+    case 'authorization':
+      // uses generalized attestation authorization
+      return blockchain.api.tx.attestation.remove(
+        claimHash,
+        maxParentChecks
+          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+          : undefined
+      )
+    default:
+      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+        'Failed to encode call: unknown authorization type'
+      )
+  }
 }
 
 /**

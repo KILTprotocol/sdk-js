@@ -45,7 +45,7 @@ const containerPromise = new GenericContainer(
 )
   .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
   .withExposedPorts(9944)
-  .withWaitStrategy(Wait.forLogMessage('Listening for new connections'))
+  .withWaitStrategy(Wait.forLogMessage('Idle'))
   .start()
 export async function initializeApi(): Promise<void> {
   const started = await containerPromise
