@@ -40,19 +40,28 @@ export async function getStoreTx(
 
   const authorizationArgName =
     blockchain.api.tx.attestation.add.meta.args[2].name.toString()
-
-  const authorization =
-    authorizationArgName === 'delegationId' // true -> uses old attestation authorization
-      ? delegationId
-      : delegationId
-      ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
-      : undefined
-  const tx = blockchain.api.tx.attestation.add(
-    claimHash,
-    cTypeHash,
-    authorization
-  )
-  return tx
+  switch (authorizationArgName) {
+    case 'delegationId':
+      // uses old attestation authorization
+      return blockchain.api.tx.attestation.add(
+        claimHash,
+        cTypeHash,
+        delegationId
+      )
+    case 'authorization':
+      // uses generalized attestation authorization
+      return blockchain.api.tx.attestation.add(
+        claimHash,
+        cTypeHash,
+        delegationId
+          ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+          : undefined
+      )
+    default:
+      throw new SDKErrors.SDKError(
+        'Failed to encode call: unknown authorization type'
+      )
+  }
 }
 
 export interface AuthorizationId extends Enum {
@@ -158,19 +167,25 @@ export async function getRevokeTx(
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
-  const argName =
+  const authorizationArgName =
     blockchain.api.tx.attestation.revoke.meta.args[1].name.toString()
-  const authorization =
-    argName === 'maxParentChecks' // true -> uses old attestation authorization
-      ? maxParentChecks
-      : maxParentChecks
-      ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
-      : undefined
-  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
-    claimHash,
-    authorization
-  )
-  return tx
+  switch (authorizationArgName) {
+    case 'maxParentChecks':
+      // uses old attestation authorization
+      return blockchain.api.tx.attestation.revoke(claimHash, maxParentChecks)
+    case 'authorization':
+      // uses generalized attestation authorization
+      return blockchain.api.tx.attestation.revoke(
+        claimHash,
+        maxParentChecks
+          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+          : undefined
+      )
+    default:
+      throw new SDKErrors.SDKError(
+        'Failed to encode call: unknown authorization type'
+      )
+  }
 }
 
 /**
@@ -186,19 +201,25 @@ export async function getRemoveTx(
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
-  const argName =
+  const authorizationArgName =
     blockchain.api.tx.attestation.remove.meta.args[1].name.toString()
-  const authorization =
-    argName === 'maxParentChecks' // true -> uses old attestation authorization
-      ? maxParentChecks
-      : maxParentChecks
-      ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
-      : undefined
-  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
-    claimHash,
-    authorization
-  )
-  return tx
+  switch (authorizationArgName) {
+    case 'maxParentChecks':
+      // uses old attestation authorization
+      return blockchain.api.tx.attestation.remove(claimHash, maxParentChecks)
+    case 'authorization':
+      // uses generalized attestation authorization
+      return blockchain.api.tx.attestation.remove(
+        claimHash,
+        maxParentChecks
+          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+          : undefined
+      )
+    default:
+      throw new SDKErrors.SDKError(
+        'Failed to encode call: unknown authorization type'
+      )
+  }
 }
 
 /**
