@@ -19,7 +19,7 @@ test.beforeAll(async () => {
   )
     .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
     .withExposedPorts({ container: 9944, host: 9944 })
-    .withWaitStrategy(Wait.forLogMessage('Listening for new connections'))
+    .withWaitStrategy(Wait.forLogMessage('Idle'))
     .start()
 })
 
