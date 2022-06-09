@@ -5,6 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './base.js'
-export * from './compression.js'
+export * from './Quote.js'
 export { QuoteSchema } from './QuoteSchema.js'
