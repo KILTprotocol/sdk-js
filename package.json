@@ -11,7 +11,7 @@
     "build": "yarn workspaces foreach -p --topological-dev --exclude '{root-workspace}' run build",
     "build:docs": "typedoc --theme default --out docs/api --tsconfig tsconfig.docs.json && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
-    "clean": "yarn workspaces foreach -p --exclude '{root-workspace}' run clean",
+    "clean": "rm -rf tests/dist && yarn workspaces foreach -p --exclude '{root-workspace}' run clean",
     "clean:docs": "rm -rf docs/api",
     "prepublish": "yarn workspaces foreach -p --no-private exec cp -f ../../LICENSE .",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
@@ -26,7 +26,7 @@
     "test:integration:ci": "jest --group=integration -b -w 3 --testTimeout=60000",
     "test:integration:latest-develop": "TESTCONTAINERS_NODE_IMG=kiltprotocol/mashnet-node:latest-develop yarn test:integration",
     "test:watch": "yarn test --watch",
-    "test:bundle": "yarn ./tests playwright test --config playwright.config.ts",
+    "test:bundle": "tsc -p tsconfig.bundle.json && yarn ./tests playwright test --config playwright.config.ts",
     "test:ci:bundle": "yarn test:ci:bundle:preparation && yarn test:bundle",
     "test:ci:bundle:preparation": "yarn playwright install-deps && yarn playwright install chromium"
   },
