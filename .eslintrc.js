@@ -149,5 +149,11 @@ module.exports = {
         'jsdoc/require-jsdoc': 'off',
       },
     },
+    {
+      files: ['**/augment-api/src/interfaces/**/*.ts'],
+      rules: {
+        'license-header/header': 'off',
+      },
+    },
   ],
 }
