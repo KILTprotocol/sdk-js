@@ -38,7 +38,7 @@ import * as RequestForAttestation from '../requestforattestation/index.js'
 
 /**
  * Verifies whether the data of the given credential is valid. It is valid if:
- * * the [[RequestForAttestation]] object associated with this credential has valid data (see [[RequestForAttestation.verifyData]]);
+ * * the [[RequestForAttestation]] object associated with this credential has valid data (see [[RequestForAttestation.verifyDataIntegrity]]);
  * and
  * * the hash of the [[RequestForAttestation]] object for the credential, and the hash of the [[Claim]] for the credential are the same.
  *
@@ -133,7 +133,7 @@ export function isICredential(input: unknown): input is ICredential {
 
 /**
  * (ASYNC) Verifies whether the credential is valid. It is valid if:
- * * the data is valid (see [[verifyData]]);
+ * * the data is valid (see [[verifyDataIntegrity]]);
  * and
  * * the [[Attestation]] object for this credential is valid (see [[Attestation.checkValidity]], where the **chain** is queried).
  *
