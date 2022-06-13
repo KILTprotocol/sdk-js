@@ -99,7 +99,7 @@ export type DidDocument = {
 }
 
 /**
- * A JSON+LD DID Document that extends a traditional DID Document with additional semantic informatiion.
+ * A JSON+LD DID Document that extends a traditional DID Document with additional semantic information.
  */
 export type JsonLDDidDocument = DidDocument & { '@context': string[] }
 

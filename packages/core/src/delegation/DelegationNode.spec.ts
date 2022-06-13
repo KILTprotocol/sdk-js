@@ -471,7 +471,7 @@ describe('DelegationNode', () => {
     })
 
     it('error check should throw errors on faulty delegation nodes', async () => {
-      const malformedPremissionsDelegationNode = {
+      const malformedPermissionsDelegationNode = {
         id,
         hierarchyId,
         account: didAlice,
@@ -514,7 +514,7 @@ describe('DelegationNode', () => {
         childrenIds: [],
       } as IDelegationNode
 
-      expect(() => errorCheck(malformedPremissionsDelegationNode)).toThrowError(
+      expect(() => errorCheck(malformedPermissionsDelegationNode)).toThrowError(
         SDKErrors.ERROR_UNAUTHORIZED
       )
 

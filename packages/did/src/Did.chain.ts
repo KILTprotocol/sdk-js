@@ -16,6 +16,7 @@ import type {
 import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
+import type { ApiPromise } from '@polkadot/api'
 
 import {
   Deposit,
@@ -41,7 +42,6 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { ApiPromise } from '@polkadot/api'
 import type {
   DidDidDetails,
   DidDidDetailsDidEncryptionKey,
@@ -50,14 +50,16 @@ import type {
   DidDidDetailsDidVerificationKey,
   DidServiceEndpointsDidEndpoint,
 } from '@kiltprotocol/augment-api'
-import { DidDetails } from './DidDetails/index.js'
+import type { DidDetails } from './DidDetails/index.js'
+import type { FullDidCreationDetails } from './types.js'
 import {
+  checkServiceEndpointSizeConstraints,
+  checkServiceEndpointSyntax,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
   isVerificationKey,
   makeJsonEnum,
 } from './Did.utils.js'
-import { FullDidCreationDetails } from './types.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
@@ -390,49 +392,10 @@ function checkServiceEndpointInput(
   api: ApiPromise,
   endpoint: DidServiceEndpoint
 ): void {
-  const [
-    maxServiceIdLength,
-    maxNumberOfTypesPerService,
-    maxNumberOfUrlsPerService,
-    maxServiceTypeLength,
-    maxServiceUrlLength,
-  ] = [
-    (api.consts.did.maxServiceIdLength as u32).toNumber(),
-    (api.consts.did.maxNumberOfTypesPerService as u32).toNumber(),
-    (api.consts.did.maxNumberOfUrlsPerService as u32).toNumber(),
-    (api.consts.did.maxServiceTypeLength as u32).toNumber(),
-    (api.consts.did.maxServiceUrlLength as u32).toNumber(),
-  ]
-
-  if (endpoint.id.length > maxServiceIdLength) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The service with ID "${endpoint.id}" has an ID that is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
-    )
-  }
-  if (endpoint.types.length > maxNumberOfTypesPerService) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The service with ID "${endpoint.id}" has too many types. Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
-    )
-  }
-  if (endpoint.urls.length > maxNumberOfUrlsPerService) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The service with ID "${endpoint.id}" has too many URLs. Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
-    )
-  }
-  endpoint.types.forEach((type) => {
-    if (type.length > maxServiceTypeLength) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `The service with ID "${endpoint.id}" has the type "${type}" that is too long. Max number of characters allowed for a service type is ${maxServiceTypeLength}.`
-      )
-    }
-  })
-  endpoint.urls.forEach((url) => {
-    if (url.length > maxServiceUrlLength) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `The service with ID "${endpoint.id}" has the URL "${url}" that is too long. Max number of characters allowed for a service URL is ${maxServiceUrlLength}.`
-      )
-    }
-  })
+  const [, syntaxErrors] = checkServiceEndpointSyntax(endpoint)
+  if (syntaxErrors && syntaxErrors.length) throw syntaxErrors[0]
+  const [, sizeErrors] = checkServiceEndpointSizeConstraints(api, endpoint)
+  if (sizeErrors && sizeErrors.length) throw sizeErrors[0]
 }
 
 /**
@@ -450,9 +413,9 @@ function checkServiceEndpointInput(
  * @param details.serviceEndpoints The optional service endpoints of the new DID.
  * A DID creation operation can contain at most 25 new service endpoints.
  * Additionally, each service endpoint must respect the following conditions:
- *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param signer The keystore signer.
  *
@@ -704,9 +667,9 @@ export async function getAddKeyExtrinsic(
  *
  * @param endpoint The new service endpoint to include in the extrinsic.
  * The service endpoint must respect the following conditions:
- *     - The service endpoint ID is at most 50 ASCII characters long
+ *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @returns An extrinsic that must be authorized (signed) by the FullDid with which the service endpoint should be associated.
  */
 export async function getAddEndpointExtrinsic(

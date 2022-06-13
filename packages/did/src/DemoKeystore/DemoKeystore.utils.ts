@@ -12,7 +12,12 @@ import {
   randomAsHex,
 } from '@polkadot/util-crypto'
 
-import { DidKey, KeyRelationship } from '@kiltprotocol/types'
+import {
+  DidKey,
+  KeyRelationship,
+  EncryptionAlgorithms,
+  SigningAlgorithms,
+} from '@kiltprotocol/types'
 
 import {
   getEncryptionKeyTypeForEncryptionAlgorithm,
@@ -26,11 +31,7 @@ import {
   ServiceEndpoints,
   LightDidSupportedVerificationKeyType,
 } from '../types.js'
-import {
-  DemoKeystore,
-  EncryptionAlgorithms,
-  SigningAlgorithms,
-} from './DemoKeystore.js'
+import { DemoKeystore } from './DemoKeystore.js'
 
 /**
  * Given a seed, creates a light DID with an authentication and an encryption key.

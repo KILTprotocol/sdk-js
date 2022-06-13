@@ -7,5 +7,5 @@
 
 export * from './DidDetails.js'
 export * from './LightDidDetails.js'
-export { DidMigrationCallback } from './LightDidDetails.utils.js'
+export type { DidMigrationCallback } from './LightDidDetails.utils.js'
 export * from './FullDidDetails.js'

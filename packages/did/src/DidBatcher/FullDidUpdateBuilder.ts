@@ -388,6 +388,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
         `Service endpoint with ID ${service.id} already present under the DID.`
       )
     }
+
     const extrinsic = this.apiObject.tx.did.addServiceEndpoint({
       serviceTypes: service.types,
       ...service,

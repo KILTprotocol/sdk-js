@@ -17,7 +17,7 @@ import type { u128, u32 } from '@polkadot/types'
 import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
-import { Utils as DidUtils } from '../index.js'
+import * as DidUtils from '../Did.utils.js'
 
 /**
  *  Web3Name is the type of a nickname for a DID.

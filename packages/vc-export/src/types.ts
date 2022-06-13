@@ -66,7 +66,7 @@ export interface VerifiableCredential {
   issuer: string
   // when the credential was issued
   issuanceDate: string
-  // Ids / digests of claims that empower the issuer to provide judegment
+  // Ids / digests of claims that empower the issuer to provide judgment
   legitimationIds: string[]
   // Id / digest that represents a delegation of authority to the issuer
   delegationId?: string

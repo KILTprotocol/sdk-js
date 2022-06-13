@@ -26,6 +26,10 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'
+import {
+  checkServiceEndpointSizeConstraints,
+  checkServiceEndpointSyntax,
+} from '../Did.utils.js'
 
 export type VerificationKeyAction = {
   action: 'delete' | 'update' | 'ignore'
@@ -168,6 +172,24 @@ export abstract class FullDidBuilder {
         `Service endpoint with ID ${id} has already been marked for addition. Failing since this may lead to unexpected behaviour.`
       )
     }
+    // Check syntax & size constraints
+    const [syntaxOk, syntaxErrors] = checkServiceEndpointSyntax(service)
+    const [sizeOk, sizeErrors] = checkServiceEndpointSizeConstraints(
+      this.apiObject,
+      service
+    )
+    if (!(syntaxOk && sizeOk)) {
+      const errors = [...(syntaxErrors || []), ...(sizeErrors || [])]
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
+        `Service endpoint with ID ${
+          service.id
+        } violates size and/or content constraints:${errors.reduce(
+          (str, e, i) => `${str}\n  ${i + 1}. ${e.message}`,
+          ''
+        )}`
+      )
+    }
+
     // Otherwise we can safely mark the service endpoint for addition.
     this.newServiceEndpoints.set(id, {
       types: details.types,

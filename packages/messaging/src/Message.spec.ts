@@ -145,7 +145,7 @@ beforeAll(async () => {
       ...aliceAuthKey,
     },
     encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
   })
   aliceFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
     aliceLightDid
@@ -176,7 +176,7 @@ beforeAll(async () => {
       ...bobAuthKey,
     },
     encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
   })
   bobFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
     bobLightDid

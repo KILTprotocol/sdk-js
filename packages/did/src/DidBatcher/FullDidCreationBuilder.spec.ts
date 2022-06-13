@@ -50,12 +50,12 @@ describe('FullDidCreationBuilder', () => {
       const service1: DidServiceEndpoint = {
         id: 'id-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       }
       const service2: DidServiceEndpoint = {
         id: 'id-2',
         types: ['type-2'],
-        urls: ['url-2'],
+        urls: ['x:url-2'],
       }
       const lightDidDetails = LightDidDetails.fromDetails({
         authenticationKey: authKey,
@@ -65,7 +65,8 @@ describe('FullDidCreationBuilder', () => {
       it('sets the right keys when creating from a light DID', async () => {
         const builder = FullDidCreationBuilder.fromLightDidDetails(
           mockApi,
-          lightDidDetails
+          lightDidDetails,
+          { withEncryptionKey: true, withServiceEndpoints: true }
         )
 
         // @ts-ignore
