@@ -177,7 +177,7 @@ export function hashObjectAsStr(
 /**
  * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
  *
- * @param message String or byte array to be enrypted.
+ * @param message String or byte array to be encrypted.
  * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
  * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
  * @returns Encrypted message and nonce used for encryption.
@@ -200,7 +200,7 @@ export function encryptAsymmetric(
 /**
  * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
  *
- * @param message String or byte array to be enrypted.
+ * @param message String or byte array to be encrypted.
  * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
  * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
  * @returns Encrypted message and nonce used for encryption as hex strings.

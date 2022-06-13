@@ -16,7 +16,7 @@ export interface RequestData<A extends string> {
    */
   alg: A
   /**
-   * Public key as u8a idenifying the keypair to use (in combination with the alg).
+   * Public key as u8a identifying the keypair to use (in combination with the alg).
    */
   publicKey: Uint8Array
   /**

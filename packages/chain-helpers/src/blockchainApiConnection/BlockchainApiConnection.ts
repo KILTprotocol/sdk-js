@@ -57,7 +57,7 @@ export function getConnection(): Promise<Blockchain> | null {
 }
 
 /**
- * Gets the cached blockchain connection, or builds a new one, if non-existant.
+ * Gets the cached blockchain connection, or builds a new one, if non-existent.
  *
  * @returns The cached or newly built blockchain connection instance.
  */

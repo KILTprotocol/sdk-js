@@ -10,7 +10,7 @@ The open-source KILT SDK is written in TypeScript and enables developers to quic
 KILT is a protocol for self-sovereign data and interoperability built on top of the permissionless KILT blockchain.
 The SDK provides collection of classes and methods to interact with the KILT Protocol.
 
-- **Self-sovereign data.** Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexiblity and security.
+- **Self-sovereign data.** Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexibility and security.
 - **Interoperability.** Claim Types (CTYPEs) facilitate the adoption of standardised credential content structures.
 
 ## Documentation
