@@ -105,12 +105,12 @@ describe('write and didDeleteTx', () => {
         {
           id: 'test-id-1',
           types: ['test-type-1'],
-          urls: ['test-url-1'],
+          urls: ['x:test-url-1'],
         },
         {
           id: 'test-id-2',
           types: ['test-type-2'],
-          urls: ['test-url-2'],
+          urls: ['x:test-url-2'],
         },
       ],
     })
@@ -148,12 +148,12 @@ describe('write and didDeleteTx', () => {
       {
         id: 'test-id-1',
         types: ['test-type-1'],
-        urls: ['test-url-1'],
+        urls: ['x:test-url-1'],
       },
       {
         id: 'test-id-2',
         types: ['test-type-2'],
-        urls: ['test-url-2'],
+        urls: ['x:test-url-2'],
       },
     ])
 
@@ -304,7 +304,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const newEndpoint: DidServiceEndpoint = {
     id: 'new-endpoint',
     types: ['new-type'],
-    urls: ['new-url'],
+    urls: ['x:new-url'],
   }
   const updateEndpointCall = await DidChain.getAddEndpointExtrinsic(newEndpoint)
 
@@ -483,7 +483,7 @@ describe('DID migration', () => {
       {
         id: 'id-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       },
     ]
     const lightDidDetails = LightDidDetails.fromDetails({
@@ -505,7 +505,8 @@ describe('DID migration', () => {
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
       keystore,
-      getDefaultMigrationCallback(paymentAccount)
+      getDefaultMigrationCallback(paymentAccount),
+      { withServiceEndpoints: true, withEncryptionKey: true }
     )
 
     // The key id for the authentication and encryption keys are overwritten when a light
@@ -668,13 +669,14 @@ describe('DID management batching', () => {
           {
             id: 'id-1',
             types: ['type-1'],
-            urls: ['url-1'],
+            urls: ['x:url-1'],
           },
         ],
       })
       const builder = FullDidCreationBuilder.fromLightDidDetails(
         api,
-        lightDidDetails
+        lightDidDetails,
+        { withServiceEndpoints: true, withEncryptionKey: true }
       )
         .addEncryptionKey({
           publicKey: Uint8Array.from(Array(32).fill(2)),
@@ -695,12 +697,12 @@ describe('DID management batching', () => {
         .addServiceEndpoint({
           id: 'id-2',
           types: ['type-2'],
-          urls: ['url-2'],
+          urls: ['x:url-2'],
         })
         .addServiceEndpoint({
           id: 'id-3',
           types: ['type-3'],
-          urls: ['url-3'],
+          urls: ['x:url-3'],
         })
 
       await expect(
@@ -756,17 +758,17 @@ describe('DID management batching', () => {
         {
           id: 'id-3',
           types: ['type-3'],
-          urls: ['url-3'],
+          urls: ['x:url-3'],
         },
         {
           id: 'id-1',
           types: ['type-1'],
-          urls: ['url-1'],
+          urls: ['x:url-1'],
         },
         {
           id: 'id-2',
           types: ['type-2'],
-          urls: ['url-2'],
+          urls: ['x:url-2'],
         },
       ])
     })
@@ -844,12 +846,12 @@ describe('DID management batching', () => {
         .addServiceEndpoint({
           id: 'id-1',
           types: ['type-1'],
-          urls: ['url-1'],
+          urls: ['x:url-1'],
         })
         .addServiceEndpoint({
           id: 'id-2',
           types: ['type-2'],
-          urls: ['url-2'],
+          urls: ['x:url-2'],
         })
 
       const initialFullDid = await createBuilder.buildAndSubmit(
@@ -908,12 +910,20 @@ describe('DID management batching', () => {
       )
 
       const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
-        .addServiceEndpoint({ id: 'id-1', types: ['type-1'], urls: ['url-1'] })
+        .addServiceEndpoint({
+          id: 'id-1',
+          types: ['type-1'],
+          urls: ['x:url-1'],
+        })
         .setAuthenticationKey({
           publicKey: newAuthKey.publicKey,
           type: VerificationKeyType.Ed25519,
         })
-        .addServiceEndpoint({ id: 'id-2', types: ['type-2'], urls: ['url-2'] })
+        .addServiceEndpoint({
+          id: 'id-2',
+          types: ['type-2'],
+          urls: ['x:url-2'],
+        })
 
       // Fails if an authentication key is set twice for the same builder
       const builderCopy = updateBuilder
@@ -959,7 +969,7 @@ describe('DID management batching', () => {
       }).addServiceEndpoint({
         id: 'id-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       })
       // Create the full DID with a service endpoint
       const fullDid = await createBuilder.buildAndSubmit(
@@ -975,13 +985,17 @@ describe('DID management batching', () => {
           publicKey: authKey.publicKey,
           type: VerificationKeyType.Sr25519,
         })
-        .addServiceEndpoint({ id: 'id-2', types: ['type-2'], urls: ['url-2'] })
+        .addServiceEndpoint({
+          id: 'id-2',
+          types: ['type-2'],
+          urls: ['x:url-2'],
+        })
 
       // Before consuming the builder, let's add the same service endpoint to the DID directly
       const newEndpointTx = await DidChain.getAddEndpointExtrinsic({
         id: 'id-2',
         types: ['type-22'],
-        urls: ['url-22'],
+        urls: ['x:url-22'],
       })
       const authorisedTx = await fullDid.authorizeExtrinsic(
         newEndpointTx,
@@ -1012,7 +1026,7 @@ describe('DID management batching', () => {
       ).toStrictEqual<DidServiceEndpoint>({
         id: 'id-2',
         types: ['type-22'],
-        urls: ['url-22'],
+        urls: ['x:url-22'],
       })
     }, 60_000)
 
@@ -1026,7 +1040,7 @@ describe('DID management batching', () => {
       }).addServiceEndpoint({
         id: 'id-1',
         types: ['type-1'],
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       })
       // Create the full DID with a service endpoint
       const fullDid = await createBuilder.buildAndSubmit(
@@ -1042,13 +1056,17 @@ describe('DID management batching', () => {
           publicKey: authKey.publicKey,
           type: VerificationKeyType.Sr25519,
         })
-        .addServiceEndpoint({ id: 'id-2', types: ['type-2'], urls: ['url-2'] })
+        .addServiceEndpoint({
+          id: 'id-2',
+          types: ['type-2'],
+          urls: ['x:url-2'],
+        })
 
       // Before consuming the builder, let's add the same service endpoint to the DID directly
       const newEndpointTx = await DidChain.getAddEndpointExtrinsic({
         id: 'id-2',
         types: ['type-22'],
-        urls: ['url-22'],
+        urls: ['x:url-22'],
       })
       const authorisedTx = await fullDid.authorizeExtrinsic(
         newEndpointTx,
@@ -1082,7 +1100,7 @@ describe('DID management batching', () => {
       ).toStrictEqual<DidServiceEndpoint>({
         id: 'id-2',
         types: ['type-22'],
-        urls: ['url-22'],
+        urls: ['x:url-22'],
       })
     }, 60_000)
   })
@@ -1319,7 +1337,7 @@ describe('Runtime constraints', () => {
           return {
             id: `service-${index}`,
             types: [`type-${index}`],
-            urls: [`url-${index}`],
+            urls: [`x:url-${index}`],
           }
         }
       )
@@ -1338,7 +1356,7 @@ describe('Runtime constraints', () => {
       newServiceEndpoints.push({
         id: 'service-100',
         types: ['type-100'],
-        urls: ['url-100'],
+        urls: ['x:url-100'],
       })
       await expect(
         DidChain.generateCreateTxFromCreationDetails(
@@ -1366,7 +1384,7 @@ describe('Runtime constraints', () => {
                 // Maximum is 50
                 id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                 types: ['type-a'],
-                urls: ['url-a'],
+                urls: ['x:url-a'],
               },
             ],
           },
@@ -1384,15 +1402,16 @@ describe('Runtime constraints', () => {
                 // One more than the maximum
                 id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                 types: ['type-a'],
-                urls: ['url-a'],
+                urls: ['x:url-a'],
               },
             ],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" has an ID that is too long. Max number of characters allowed for a service ID is 50."'
+        `"The service ID 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
       )
     }, 30_000)
 
@@ -1401,7 +1420,7 @@ describe('Runtime constraints', () => {
         id: 'id-1',
         // Maximum is 1
         types: Array(1).map((_, index): string => `type-${index}`),
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       }
       await expect(
         DidChain.generateCreateTxFromCreationDetails(
@@ -1423,11 +1442,12 @@ describe('Runtime constraints', () => {
             identifier: encodeAddress(testAuthKey.publicKey),
             serviceEndpoints: [newEndpoint],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many types. Max number of types allowed per service is 1."'
+        `"The service with ID 'id-1' has too many types (2). Max number of types allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1436,7 +1456,7 @@ describe('Runtime constraints', () => {
         id: 'id-1',
         // Maximum is 1
         types: ['type-1'],
-        urls: Array(1).map((_, index): string => `url-${index}`),
+        urls: Array(1).map((_, index): string => `x:url-${index}`),
       }
       await expect(
         DidChain.generateCreateTxFromCreationDetails(
@@ -1450,7 +1470,7 @@ describe('Runtime constraints', () => {
         )
       ).resolves.not.toThrow()
       // One more than the maximum
-      newEndpoint.urls.push('new-url')
+      newEndpoint.urls.push('x:new-url')
       await expect(
         DidChain.generateCreateTxFromCreationDetails(
           {
@@ -1458,11 +1478,12 @@ describe('Runtime constraints', () => {
             identifier: encodeAddress(testAuthKey.publicKey),
             serviceEndpoints: [newEndpoint],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many URLs. Max number of URLs allowed per service is 1."'
+        `"The service with ID 'id-1' has too many URLs (2). Max number of URLs allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1477,7 +1498,7 @@ describe('Runtime constraints', () => {
                 id: 'id-1',
                 // Maximum is 50
                 types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-                urls: ['url-1'],
+                urls: ['x:url-1'],
               },
             ],
           },
@@ -1495,15 +1516,16 @@ describe('Runtime constraints', () => {
                 id: 'id-1',
                 // One more than the maximum
                 types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-                urls: ['url-1'],
+                urls: ['x:url-1'],
               },
             ],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service type is 50."'
+        `"The service with ID 'id-1' has the type 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
       )
     }, 30_000)
 
@@ -1519,7 +1541,7 @@ describe('Runtime constraints', () => {
                 types: ['type-1'],
                 // Maximum is 200
                 urls: [
-                  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                  'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                 ],
               },
             ],
@@ -1539,16 +1561,17 @@ describe('Runtime constraints', () => {
                 types: ['type-1'],
                 // One more than the maximum
                 urls: [
-                  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                  'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                 ],
               },
             ],
           },
+
           paymentAccount.address,
           keystore
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."'
+        `"The service with ID 'id-1' has the URL 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (202 bytes). Max number of bytes allowed for a service URL is 200."`
       )
     }, 30_000)
   })
@@ -1560,7 +1583,7 @@ describe('Runtime constraints', () => {
           // Maximum is 50
           id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           types: ['type-a'],
-          urls: ['url-a'],
+          urls: ['x:url-a'],
         })
       ).resolves.not.toThrow()
       await expect(
@@ -1568,10 +1591,10 @@ describe('Runtime constraints', () => {
           // One more than maximum
           id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           types: ['type-a'],
-          urls: ['url-a'],
+          urls: ['x:url-a'],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" has an ID that is too long. Max number of characters allowed for a service ID is 50."'
+        `"The service ID 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
       )
     }, 30_000)
 
@@ -1580,7 +1603,7 @@ describe('Runtime constraints', () => {
         id: 'id-1',
         // Maximum is 1
         types: Array(1).map((_, index): string => `type-${index}`),
-        urls: ['url-1'],
+        urls: ['x:url-1'],
       }
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
@@ -1590,7 +1613,7 @@ describe('Runtime constraints', () => {
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many types. Max number of types allowed per service is 1."'
+        `"The service with ID 'id-1' has too many types (2). Max number of types allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1599,17 +1622,17 @@ describe('Runtime constraints', () => {
         id: 'id-1',
         // Maximum is 1
         types: ['type-1'],
-        urls: Array(1).map((_, index): string => `url-${index}`),
+        urls: Array(1).map((_, index): string => `x:url-${index}`),
       }
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).resolves.not.toThrow()
       // One more than the maximum
-      newEndpoint.urls.push('new-url')
+      newEndpoint.urls.push('x:new-url')
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has too many URLs. Max number of URLs allowed per service is 1."'
+        `"The service with ID 'id-1' has too many URLs (2). Max number of URLs allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1619,7 +1642,7 @@ describe('Runtime constraints', () => {
           id: 'id-1',
           // Maximum is 50
           types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-          urls: ['url-1'],
+          urls: ['x:url-1'],
         })
       ).resolves.not.toThrow()
       await expect(
@@ -1627,10 +1650,10 @@ describe('Runtime constraints', () => {
           id: 'id-1',
           // One more than the maximum
           types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-          urls: ['url-1'],
+          urls: ['x:url-1'],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service type is 50."'
+        `"The service with ID 'id-1' has the type 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
       )
     }, 30_000)
 
@@ -1641,7 +1664,7 @@ describe('Runtime constraints', () => {
           types: ['type-1'],
           // Maximum is 200
           urls: [
-            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           ],
         })
       ).resolves.not.toThrow()
@@ -1651,11 +1674,11 @@ describe('Runtime constraints', () => {
           types: ['type-1'],
           // One more than the maximum
           urls: [
-            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           ],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"The service with ID \\"id-1\\" has the URL \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long. Max number of characters allowed for a service URL is 200."'
+        `"The service with ID 'id-1' has the URL 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (201 bytes). Max number of bytes allowed for a service URL is 200."`
       )
     }, 30_000)
   })

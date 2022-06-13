@@ -27,7 +27,7 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { isHex, isJsonObject } from '@polkadot/util'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import { isDidSignature, Utils as DidUtils } from '@kiltprotocol/did'
 
 import { Message } from './Message.js'
 
@@ -174,7 +174,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
     case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      DidUtils.validateDidSignature(body.content.signatures.inviter)
+      isDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
         throw new SDKErrors.ERROR_OBJECT_MALFORMED()
       }
@@ -182,8 +182,8 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
     case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      DidUtils.validateDidSignature(body.content.signatures.inviter)
-      DidUtils.validateDidSignature(body.content.signatures.invitee)
+      isDidSignature(body.content.signatures.inviter)
+      isDidSignature(body.content.signatures.invitee)
       break
     }
 

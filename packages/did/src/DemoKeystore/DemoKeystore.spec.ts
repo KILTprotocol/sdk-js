@@ -7,7 +7,8 @@
 
 import { Crypto } from '@kiltprotocol/utils'
 import { u8aToHex } from '@polkadot/util'
-import { DemoKeystore, SigningAlgorithms } from './DemoKeystore'
+import { SigningAlgorithms } from '../types'
+import { DemoKeystore } from './DemoKeystore'
 
 /**
  * @group unit/did

@@ -32,6 +32,7 @@ import {
   DidResolver,
   DidDetails,
   DidKeySelectionCallback,
+  verifyDidSignature,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
@@ -81,7 +82,7 @@ export async function fromAttesterSignedInput(
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  await DidUtils.verifyDidSignature({
+  await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: KeyRelationship.authentication,
@@ -205,7 +206,7 @@ export async function createQuoteAgreement(
       attesterSignedQuote.attesterDid
     )
 
-  await DidUtils.verifyDidSignature({
+  await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: KeyRelationship.authentication,

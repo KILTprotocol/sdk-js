@@ -13,7 +13,7 @@ import type {
   ICType,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import { isDidSignature } from '@kiltprotocol/did'
 import * as CredentialUtils from '../credential/Credential.utils.js'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import * as CTypeUtils from '../ctype/CType.utils.js'
@@ -61,8 +61,7 @@ export function errorCheck(input: IRequestForAttestation): void {
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
-  if (input.claimerSignature)
-    DidUtils.validateDidSignature(input.claimerSignature)
+  if (input.claimerSignature) isDidSignature(input.claimerSignature)
   RequestForAttestation.verifyData(input as IRequestForAttestation)
 }
 
