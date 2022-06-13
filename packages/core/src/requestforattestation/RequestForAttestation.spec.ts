@@ -113,6 +113,10 @@ describe('RequestForAttestation', () => {
     )
     // check proof on complete data
     expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
+    const testCType = CType.fromSchema(rawCType)
+    expect(
+      RequestForAttestation.verify(request, { ctype: testCType })
+    ).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
