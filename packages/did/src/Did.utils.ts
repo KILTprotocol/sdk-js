@@ -21,6 +21,7 @@ import {
   VerificationKeyRelationship,
   VerificationKeyType,
   JsonEnum,
+  NewDidVerificationKey,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
@@ -249,8 +250,12 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
  * @param key Representation of a DID key.
  * @returns True if the key is a verification key, false otherwise.
  */
-export function isVerificationKey(key: NewDidKey | DidKey): boolean {
-  return Object.values(VerificationKeyType).some((kt) => kt === key.type)
+export function isVerificationKey(
+  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
+): key is NewDidVerificationKey | DidVerificationKey {
+  return Object.values(VerificationKeyType).some(
+    (kt) => kt === key.type.toLowerCase()
+  )
 }
 
 /**
@@ -485,5 +490,7 @@ export function makeJsonEnum<K extends string, V>(
   key: K,
   value: V
 ): JsonEnum<Capitalize<K>, V> {
-  return { [key.toUpperCase()]: value } as JsonEnum<Capitalize<K>, V>
+  return {
+    [key.replace(/^[a-z]/g, (s) => s.toUpperCase())]: value,
+  } as JsonEnum<Capitalize<K>, V>
 }

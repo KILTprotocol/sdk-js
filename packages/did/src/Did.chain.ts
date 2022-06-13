@@ -54,6 +54,7 @@ import { DidDetails } from './DidDetails/index.js'
 import {
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
+  isVerificationKey,
   makeJsonEnum,
 } from './Did.utils.js'
 import { FullDidCreationDetails } from './types.js'
@@ -839,21 +840,16 @@ export async function generateDidAuthenticatedTx({
  * @returns Data restructured to allow SCALE encoding by polkadot api.
  */
 export function encodeDidSignature(
-  key: Pick<ChainDidKey, 'type'>,
+  key: DidVerificationKey,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  if (
-    !Object.values(VerificationKeyType).some(
-      (kt) => kt.toLowerCase() === key.type.toLowerCase()
-    )
-  ) {
+  if (!isVerificationKey(key)) {
     throw new SDKErrors.ERROR_DID_ERROR(
-      `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
+      `encodedDidSignature requires a verification key. A key of type "${
+        (key as any).type
+      }" was used instead.`
     )
   }
 
-  return makeJsonEnum(
-    key.type as VerificationKeyType,
-    hexToU8a(signature.signature)
-  )
+  return makeJsonEnum(key.type, hexToU8a(signature.signature))
 }
