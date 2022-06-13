@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "clean": "rimraf ./lib",
-    "build": "yarn clean && yarn build:types && yarn build:ts",
+    "build": "yarn clean && yarn build:ts",
     "build:types": "yarn generate:defs && yarn generate:meta",
     "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
