@@ -103,9 +103,13 @@ export async function verifyDidSignature({
   expectedVerificationMethod,
   resolver = DidResolver,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
-  // Verification fails if the signature key ID is not valid
-  const { fragment: keyId } = parseDidUri(signature.keyUri)
-  if (!keyId) {
+  let keyId: string
+  try {
+    // Verification fails if the signature key ID is not valid
+    const { fragment } = parseDidUri(signature.keyUri)
+    if (!fragment) throw new Error()
+    keyId = fragment
+  } catch {
     return {
       verified: false,
       reason: `Signature key ID ${signature.keyUri} invalid.`,
