@@ -17,6 +17,10 @@ jobs:
     if: "! startsWith(github.event.head_commit.message, '[CI Skip]') && github.repository == 'kiltprotocol/sdk-js'"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # fetch-depth 0 and token needed to push changes on the package.json files back.
+          fetch-depth: 0
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
       - uses: actions/setup-node@v2
         with:
           node-version: 14
