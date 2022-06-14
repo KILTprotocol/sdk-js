@@ -9,9 +9,19 @@
  * @group integration/delegation
  */
 
-import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
+import type {
+  ICType,
+  IDelegationNode,
+  KeyringPair,
+  SignCallback,
+} from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
-import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
@@ -21,12 +31,11 @@ import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {
-  isCtypeOnChain,
-  driversLicenseCType,
-  devBob,
-  createFullDidFromSeed,
-  initializeApi,
   createEndowedTestAccount,
+  devBob,
+  driversLicenseCType,
+  initializeApi,
+  isCtypeOnChain,
   submitExtrinsic,
 } from './utils'
 import {
@@ -35,14 +44,19 @@ import {
 } from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
-let signer: DemoKeystore
 let root: FullDidDetails
+let rootKey: KeyTool
+
 let claimer: FullDidDetails
+let claimerKey: KeyTool
+
 let attester: FullDidDetails
+let attesterKey: KeyTool
 
 async function writeHierarchy(
   delegator: FullDidDetails,
-  ctypeHash: ICType['hash']
+  ctypeHash: ICType['hash'],
+  sign: SignCallback
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
     account: delegator.uri,
@@ -53,7 +67,7 @@ async function writeHierarchy(
   await rootNode
     .getStoreTx()
     .then((tx) =>
-      delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+      delegator.authorizeExtrinsic(tx, sign, paymentAccount.address)
     )
     .then((tx) => submitExtrinsic(tx, paymentAccount))
 
@@ -65,6 +79,8 @@ async function addDelegation(
   parentId: DelegationNode['id'],
   delegator: FullDidDetails,
   delegee: FullDidDetails,
+  delegatorSign: SignCallback,
+  delegeeSign: SignCallback,
   permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
   const delegationNode = DelegationNode.newNode({
@@ -73,11 +89,11 @@ async function addDelegation(
     account: delegee.uri,
     permissions,
   })
-  const signature = await delegationNode.delegeeSign(delegee, signer)
+  const signature = await delegationNode.delegeeSign(delegee, delegeeSign)
   await delegationNode
     .getStoreTx(signature)
     .then((tx) =>
-      delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+      delegator.authorizeExtrinsic(tx, delegatorSign, paymentAccount.address)
     )
     .then((tx) => submitExtrinsic(tx, paymentAccount))
   return delegationNode
@@ -89,15 +105,21 @@ beforeAll(async () => {
 
 beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
-  signer = new DemoKeystore()
-  attester = await createFullDidFromSeed(paymentAccount, signer)
-  root = await createFullDidFromSeed(paymentAccount, signer)
-  claimer = await createFullDidFromSeed(paymentAccount, signer)
+  rootKey = makeSigningKeyTool()
+  claimerKey = makeSigningKeyTool()
+  attesterKey = makeSigningKeyTool()
+  attester = await createFullDidFromSeed(paymentAccount, attesterKey.keypair)
+  root = await createFullDidFromSeed(paymentAccount, rootKey.keypair)
+  claimer = await createFullDidFromSeed(paymentAccount, claimerKey.keypair)
 
   if (!(await isCtypeOnChain(driversLicenseCType))) {
     await CType.getStoreTx(driversLicenseCType)
       .then((tx) =>
-        attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
+        attester.authorizeExtrinsic(
+          tx,
+          attesterKey.sign,
+          paymentAccount.address
+        )
       )
       .then((tx) => submitExtrinsic(tx, paymentAccount))
   }
@@ -109,12 +131,18 @@ it('fetches the correct deposit amount', async () => {
 })
 
 it('should be possible to delegate attestation rights', async () => {
-  const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
+  const rootNode = await writeHierarchy(
+    root,
+    driversLicenseCType.hash,
+    rootKey.sign
+  )
   const delegatedNode = await addDelegation(
     rootNode.id,
     rootNode.id,
     root,
-    attester
+    attester,
+    rootKey.sign,
+    attesterKey.sign
   )
   await Promise.all([
     expect(rootNode.verify()).resolves.toBeTruthy(),
@@ -127,12 +155,18 @@ describe('and attestation rights have been delegated', () => {
   let delegatedNode: DelegationNode
 
   beforeAll(async () => {
-    rootNode = await writeHierarchy(root, driversLicenseCType.hash)
+    rootNode = await writeHierarchy(
+      root,
+      driversLicenseCType.hash,
+      rootKey.sign
+    )
     delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
       root,
-      attester
+      attester,
+      rootKey.sign,
+      attesterKey.sign
     )
 
     await Promise.all([
@@ -156,7 +190,7 @@ describe('and attestation rights have been delegated', () => {
     })
     await RequestForAttestation.signWithDidKey(
       request,
-      signer,
+      claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
@@ -168,7 +202,11 @@ describe('and attestation rights have been delegated', () => {
     const attestation = Attestation.fromRequestAndDid(request, attester.uri)
     await Attestation.getStoreTx(attestation)
       .then((tx) =>
-        attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
+        attester.authorizeExtrinsic(
+          tx,
+          attesterKey.sign,
+          paymentAccount.address
+        )
       )
       .then((tx) => submitExtrinsic(tx, paymentAccount))
 
@@ -181,30 +219,44 @@ describe('and attestation rights have been delegated', () => {
 
     // revoke attestation through root
     await Attestation.getRevokeTx(credential.attestation.claimHash, 1)
-      .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
+      .then((tx) =>
+        root.authorizeExtrinsic(tx, rootKey.sign, paymentAccount.address)
+      )
       .then((tx) => submitExtrinsic(tx, paymentAccount))
     await expect(Credential.verify(credential)).resolves.toBeFalsy()
   }, 75_000)
 })
 
 describe('revocation', () => {
-  let delegator = root
-  let firstDelegee = attester
-  let secondDelegee = claimer
+  let delegator: FullDidDetails
+  let delegatorSign: SignCallback
+  let firstDelegee: FullDidDetails
+  let firstDelegeeSign: SignCallback
+  let secondDelegee: FullDidDetails
+  let secondDelegeeSign: SignCallback
 
   beforeAll(() => {
     delegator = root
+    delegatorSign = rootKey.sign
     firstDelegee = attester
+    firstDelegeeSign = attesterKey.sign
     secondDelegee = claimer
+    secondDelegeeSign = claimerKey.sign
   })
 
   it('delegator can revoke but not remove delegation', async () => {
-    const rootNode = await writeHierarchy(delegator, driversLicenseCType.hash)
+    const rootNode = await writeHierarchy(
+      delegator,
+      driversLicenseCType.hash,
+      delegatorSign
+    )
     const delegationA = await addDelegation(
       rootNode.id,
       rootNode.id,
       delegator,
-      firstDelegee
+      firstDelegee,
+      delegatorSign,
+      firstDelegeeSign
     )
 
     // Test revocation
@@ -212,7 +264,11 @@ describe('revocation', () => {
       delegationA
         .getRevokeTx(delegator.uri)
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          delegator.authorizeExtrinsic(
+            tx,
+            delegatorSign,
+            paymentAccount.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).resolves.not.toThrow()
@@ -225,7 +281,11 @@ describe('revocation', () => {
       delegationA
         .getRemoveTx()
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          delegator.authorizeExtrinsic(
+            tx,
+            delegatorSign,
+            paymentAccount.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).rejects.toMatchObject({
@@ -241,18 +301,25 @@ describe('revocation', () => {
   it('delegee cannot revoke root but can revoke own delegation', async () => {
     const delegationRoot = await writeHierarchy(
       delegator,
-      driversLicenseCType.hash
+      driversLicenseCType.hash,
+      delegatorSign
     )
     const delegationA = await addDelegation(
       delegationRoot.id,
       delegationRoot.id,
       delegator,
-      firstDelegee
+      firstDelegee,
+      delegatorSign,
+      firstDelegeeSign
     )
     await expect(
       getRevokeTx(delegationRoot.id, 1, 1)
         .then((tx) =>
-          firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          firstDelegee.authorizeExtrinsic(
+            tx,
+            firstDelegeeSign,
+            paymentAccount.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).rejects.toMatchObject({
@@ -265,7 +332,11 @@ describe('revocation', () => {
       delegationA
         .getRevokeTx(firstDelegee.uri)
         .then((tx) =>
-          firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          firstDelegee.authorizeExtrinsic(
+            tx,
+            firstDelegeeSign,
+            paymentAccount.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).resolves.not.toThrow()
@@ -275,26 +346,35 @@ describe('revocation', () => {
   it('delegator can revoke root, revoking all delegations in tree', async () => {
     let delegationRoot = await writeHierarchy(
       delegator,
-      driversLicenseCType.hash
+      driversLicenseCType.hash,
+      delegatorSign
     )
     const delegationA = await addDelegation(
       delegationRoot.id,
       delegationRoot.id,
       delegator,
-      firstDelegee
+      firstDelegee,
+      delegatorSign,
+      firstDelegeeSign
     )
     const delegationB = await addDelegation(
       delegationRoot.id,
       delegationA.id,
       firstDelegee,
-      secondDelegee
+      secondDelegee,
+      firstDelegeeSign,
+      secondDelegeeSign
     )
     delegationRoot = await delegationRoot.getLatestState()
     await expect(
       delegationRoot
         .getRevokeTx(delegator.uri)
         .then((tx) =>
-          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+          delegator.authorizeExtrinsic(
+            tx,
+            delegatorSign,
+            paymentAccount.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).resolves.not.toThrow()
@@ -310,18 +390,26 @@ describe('revocation', () => {
 describe('Deposit claiming', () => {
   it('deposit payer should be able to claim back its own deposit and delete any children', async () => {
     // Delegation nodes are written on the chain using `paymentAccount`.
-    const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
+    const rootNode = await writeHierarchy(
+      root,
+      driversLicenseCType.hash,
+      rootKey.sign
+    )
     const delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
       root,
-      root
+      root,
+      rootKey.sign,
+      rootKey.sign
     )
     const subDelegatedNode = await addDelegation(
       rootNode.id,
       delegatedNode.id,
       root,
-      root
+      root,
+      rootKey.sign,
+      rootKey.sign
     )
 
     await expect(DelegationNode.query(delegatedNode.id)).resolves.not.toBeNull()
@@ -359,12 +447,18 @@ describe('handling queries to data not on chain', () => {
 
 describe('hierarchyDetails', () => {
   it('can fetch hierarchyDetails', async () => {
-    const rootNode = await writeHierarchy(root, driversLicenseCType.hash)
+    const rootNode = await writeHierarchy(
+      root,
+      driversLicenseCType.hash,
+      rootKey.sign
+    )
     const delegatedNode = await addDelegation(
       rootNode.id,
       rootNode.id,
       root,
-      attester
+      attester,
+      rootKey.sign,
+      attesterKey.sign
     )
 
     const details = await delegatedNode.getHierarchyDetails()

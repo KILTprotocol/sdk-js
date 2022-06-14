@@ -11,7 +11,7 @@ import type {
   DidEncryptionKey,
   DidServiceEndpoint,
   IIdentity,
-  KeystoreSigner,
+  SignCallback,
   NewDidEncryptionKey,
   NewDidVerificationKey,
   SubmittableExtrinsic,
@@ -193,7 +193,7 @@ export abstract class FullDidBuilder {
 
   /* istanbul ignore next */
   public abstract build(
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitter: IIdentity['address'],
     atomic: boolean
   ): Promise<SubmittableExtrinsic | null>

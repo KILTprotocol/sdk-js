@@ -14,23 +14,26 @@ import { BN } from '@polkadot/util'
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
-  DemoKeystore,
   Chain as DidChain,
-  SigningAlgorithms,
-  LightDidDetails,
-  FullDidDetails,
-  DidDetails,
-  EncryptionAlgorithms,
-  resolveDoc,
-  DemoKeystoreUtils,
-  NewLightDidAuthenticationKey,
-  LightDidSupportedVerificationKeyType,
-  FullDidCreationBuilder,
-  FullDidUpdateBuilder,
-  Web3Names,
   DidBatchBuilder,
+  DidDetails,
+  FullDidCreationBuilder,
+  FullDidDetails,
+  FullDidUpdateBuilder,
+  LightDidDetails,
+  NewLightDidAuthenticationKey,
+  resolveDoc,
+  SigningAlgorithms,
   Utils as DidUtils,
+  Web3Names,
 } from '@kiltprotocol/did'
+import {
+  createFullDidFromSeed,
+  createMinimalLightDidFromKeypair,
+  KeyTool,
+  makeEncryptionKeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   DidResolvedDetails,
@@ -39,7 +42,6 @@ import {
   KeyRelationship,
   KeyringPair,
   NewDidEncryptionKey,
-  NewDidKey,
   NewDidVerificationKey,
   Permission,
   VerificationKeyType,
@@ -49,19 +51,17 @@ import { UUID } from '@kiltprotocol/utils'
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
 import {
+  addressFromRandom,
   createEndowedTestAccount,
   devBob,
-  initializeApi,
-  submitExtrinsic,
-  addressFromRandom,
   getDefaultMigrationCallback,
   getDefaultSubmitCallback,
-  createFullDidFromSeed,
+  initializeApi,
+  submitExtrinsic,
 } from './utils'
 import { DelegationNode } from '../delegation'
 
 let paymentAccount: KeyringPair
-const keystore = new DemoKeystore()
 let api: ApiPromise
 
 beforeAll(async () => {
@@ -80,8 +80,11 @@ it('fetches the correct deposit amount', async () => {
 
 describe('write and didDeleteTx', () => {
   let details: DidDetails
+  let key: KeyTool
+
   beforeAll(async () => {
-    details = await DemoKeystoreUtils.createMinimalLightDidFromSeed(keystore)
+    key = makeSigningKeyTool()
+    details = await createMinimalLightDidFromKeypair(key.keypair)
   })
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
@@ -89,7 +92,7 @@ describe('write and didDeleteTx', () => {
     const tx = await DidChain.generateCreateTxFromDidDetails(
       details,
       otherAccount.address,
-      keystore
+      key.sign
     )
 
     await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
@@ -118,7 +121,7 @@ describe('write and didDeleteTx', () => {
     const tx = await DidChain.generateCreateTxFromDidDetails(
       newDetails,
       paymentAccount.address,
-      keystore
+      key.sign
     )
 
     await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
@@ -181,7 +184,7 @@ describe('write and didDeleteTx', () => {
 
     let submittable = await (details as FullDidDetails).authorizeExtrinsic(
       call,
-      keystore,
+      key.sign,
       // Use a different account than the submitter one
       otherAccount.address
     )
@@ -195,7 +198,7 @@ describe('write and didDeleteTx', () => {
 
     submittable = await (details as FullDidDetails).authorizeExtrinsic(
       call,
-      keystore,
+      key.sign,
       paymentAccount.address
     )
 
@@ -221,7 +224,7 @@ describe('write and didDeleteTx', () => {
 
     const submittable = await (details as FullDidDetails).authorizeExtrinsic(
       call,
-      keystore,
+      key.sign,
       paymentAccount.address
     )
 
@@ -250,14 +253,13 @@ describe('write and didDeleteTx', () => {
 })
 
 it('creates and updates DID, and then reclaims the deposit back', async () => {
-  const newDetails = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
-    keystore
-  )
+  const { keypair, sign } = makeSigningKeyTool()
+  const newDetails = await createMinimalLightDidFromKeypair(keypair)
 
   const tx = await DidChain.generateCreateTxFromDidDetails(
     newDetails,
     paymentAccount.address,
-    keystore
+    sign
   )
 
   await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
@@ -267,23 +269,15 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
   )) as FullDidDetails
 
-  const newKeypair = await keystore.generateKeypair({
-    alg: SigningAlgorithms.Sr25519,
-  })
-  const newKeyDetails: NewDidKey = {
-    publicKey: newKeypair.publicKey,
-    type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-      newKeypair.alg
-    ) as LightDidSupportedVerificationKeyType,
-  }
+  const newKey = makeSigningKeyTool()
 
   const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
     KeyRelationship.authentication,
-    newKeyDetails
+    newKey.authenticationKey
   )
   const tx2 = await fullDetails.authorizeExtrinsic(
     updateAuthenticationKeyCall,
-    keystore,
+    sign,
     paymentAccount.address
   )
   await expect(submitExtrinsic(tx2, paymentAccount)).resolves.not.toThrow()
@@ -304,7 +298,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   const tx3 = await fullDetails.authorizeExtrinsic(
     updateEndpointCall,
-    keystore,
+    newKey.sign,
     paymentAccount.address
   )
   await expect(submitExtrinsic(tx3, paymentAccount)).resolves.not.toThrow()
@@ -318,7 +312,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
   const tx4 = await fullDetails.authorizeExtrinsic(
     removeEndpointCall,
-    keystore,
+    newKey.sign,
     paymentAccount.address
   )
   await expect(submitExtrinsic(tx4, paymentAccount)).resolves.not.toThrow()
@@ -354,31 +348,19 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
 describe('DID migration', () => {
   it('migrates light DID with ed25519 auth key and encryption key', async () => {
-    const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Ed25519,
-    })
-    const didEncryptionKeyDetails = await keystore.generateKeypair({
-      seed: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-      alg: EncryptionAlgorithms.NaclBox,
-    })
+    const { sign, authenticationKey } = makeSigningKeyTool(
+      SigningAlgorithms.Ed25519
+    )
     const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey: {
-        publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-          didEd25519AuthenticationKeyDetails.alg
-        ) as LightDidSupportedVerificationKeyType,
-      },
-      encryptionKey: {
-        publicKey: didEncryptionKeyDetails.publicKey,
-        type: DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
-          didEncryptionKeyDetails.alg
-        ),
-      },
+      authenticationKey,
+      encryptionKey: makeEncryptionKeyTool(
+        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+      ).keypair,
     })
 
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
-      keystore,
+      sign,
       getDefaultMigrationCallback(paymentAccount)
     )
 
@@ -413,21 +395,14 @@ describe('DID migration', () => {
   })
 
   it('migrates light DID with sr25519 auth key', async () => {
-    const didSr25519AuthenticationKeyDetails = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Sr25519,
-    })
+    const { authenticationKey, sign } = makeSigningKeyTool()
     const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey: {
-        publicKey: didSr25519AuthenticationKeyDetails.publicKey,
-        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-          didSr25519AuthenticationKeyDetails.alg
-        ) as LightDidSupportedVerificationKeyType,
-      },
+      authenticationKey,
     })
 
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
-      keystore,
+      sign,
       getDefaultMigrationCallback(paymentAccount)
     )
 
@@ -462,13 +437,9 @@ describe('DID migration', () => {
   })
 
   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
-    const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Ed25519,
-    })
-    const didEncryptionKeyDetails = await keystore.generateKeypair({
-      seed: '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-      alg: EncryptionAlgorithms.NaclBox,
-    })
+    const { sign, authenticationKey } = makeSigningKeyTool(
+      SigningAlgorithms.Ed25519
+    )
     const serviceEndpoints: DidServiceEndpoint[] = [
       {
         id: 'id-1',
@@ -477,24 +448,16 @@ describe('DID migration', () => {
       },
     ]
     const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey: {
-        publicKey: didEd25519AuthenticationKeyDetails.publicKey,
-        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-          didEd25519AuthenticationKeyDetails.alg
-        ) as LightDidSupportedVerificationKeyType,
-      },
-      encryptionKey: {
-        publicKey: didEncryptionKeyDetails.publicKey,
-        type: DidUtils.getEncryptionKeyTypeForEncryptionAlgorithm(
-          didEncryptionKeyDetails.alg
-        ),
-      },
+      authenticationKey,
+      encryptionKey: makeEncryptionKeyTool(
+        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+      ).keypair,
       serviceEndpoints,
     })
 
     const migratedFullDid = await lightDidDetails.migrate(
       paymentAccount.address,
-      keystore,
+      sign,
       getDefaultMigrationCallback(paymentAccount),
       { withServiceEndpoints: true, withEncryptionKey: true }
     )
@@ -555,31 +518,21 @@ describe('DID migration', () => {
 describe('DID authorization', () => {
   // Light DIDs cannot authorise extrinsics
   let didDetails: FullDidDetails
+  const { sign, authenticationKey } = makeSigningKeyTool(
+    SigningAlgorithms.Ed25519
+  )
 
   beforeAll(async () => {
-    const newKey: NewLightDidAuthenticationKey = await keystore
-      .generateKeypair({
-        alg: SigningAlgorithms.Ed25519,
-      })
-      .then(({ publicKey, alg }) => {
-        return {
-          publicKey,
-          type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-            alg
-          ) as LightDidSupportedVerificationKeyType,
-        }
-      })
-
     const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey: newKey,
+      authenticationKey,
     })
     didDetails = await FullDidCreationBuilder.fromLightDidDetails(
       api,
       lightDidDetails
     )
-      .setAttestationKey(newKey)
-      .setDelegationKey(newKey)
-      .buildAndSubmit(keystore, paymentAccount.address, async (tx) =>
+      .setAttestationKey(authenticationKey)
+      .setDelegationKey(authenticationKey)
+      .buildAndSubmit(sign, paymentAccount.address, async (tx) =>
         submitExtrinsic(tx, paymentAccount)
       )
   }, 60_000)
@@ -594,7 +547,7 @@ describe('DID authorization', () => {
     const call = await CType.getStoreTx(ctype)
     const tx = await didDetails.authorizeExtrinsic(
       call,
-      keystore,
+      sign,
       paymentAccount.address
     )
     await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
@@ -611,7 +564,7 @@ describe('DID authorization', () => {
     )
     const tx = await didDetails.authorizeExtrinsic(
       deleteCall,
-      keystore,
+      sign,
       paymentAccount.address
     )
     await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
@@ -625,7 +578,7 @@ describe('DID authorization', () => {
     const call = await CType.getStoreTx(ctype)
     const tx2 = await didDetails.authorizeExtrinsic(
       call,
-      keystore,
+      sign,
       paymentAccount.address
     )
     await expect(submitExtrinsic(tx2, paymentAccount)).rejects.toMatchObject({
@@ -640,14 +593,9 @@ describe('DID authorization', () => {
 describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build a complete full DID from a full light DID', async () => {
-      const authKey = await keystore.generateKeypair({
-        alg: SigningAlgorithms.Sr25519,
-      })
+      const { keypair, sign, authenticationKey } = makeSigningKeyTool()
       const lightDidDetails = LightDidDetails.fromDetails({
-        authenticationKey: {
-          publicKey: authKey.publicKey,
-          type: VerificationKeyType.Sr25519,
-        },
+        authenticationKey,
         encryptionKey: {
           publicKey: Uint8Array.from(Array(32).fill(1)),
           type: EncryptionKeyType.X25519,
@@ -694,7 +642,7 @@ describe('DID management batching', () => {
 
       await expect(
         builder
-          .build(keystore, paymentAccount.address)
+          .build(sign, paymentAccount.address)
           .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -709,7 +657,7 @@ describe('DID management batching', () => {
       )
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
-          publicKey: authKey.publicKey,
+          publicKey: keypair.publicKey,
           type: VerificationKeyType.Sr25519,
         },
       ])
@@ -761,15 +709,15 @@ describe('DID management batching', () => {
     })
 
     it('Build a minimal full DID with an Ecdsa key', async () => {
-      const authKey = await keystore.generateKeypair({
-        alg: SigningAlgorithms.EcdsaSecp256k1,
-      })
+      const { keypair, sign } = makeSigningKeyTool(
+        SigningAlgorithms.EcdsaSecp256k1
+      )
       const didAuthKey: NewDidVerificationKey = {
-        publicKey: authKey.publicKey,
+        publicKey: keypair.publicKey,
         type: VerificationKeyType.Ecdsa,
       }
       const encodedEcdsaAddress = encodeAddress(
-        blake2AsU8a(authKey.publicKey),
+        blake2AsU8a(keypair.publicKey),
         38
       )
 
@@ -777,7 +725,7 @@ describe('DID management batching', () => {
 
       await expect(
         builder
-          .build(keystore, paymentAccount.address)
+          .build(sign, paymentAccount.address)
           .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -792,7 +740,7 @@ describe('DID management batching', () => {
       )
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
-          publicKey: authKey.publicKey,
+          publicKey: keypair.publicKey,
           type: VerificationKeyType.Ecdsa,
         },
       ])
@@ -801,14 +749,9 @@ describe('DID management batching', () => {
 
   describe('FullDidUpdateBuilder', () => {
     it('Build from a complete full DID and remove everything but the authentication key', async () => {
-      const authKey = await keystore.generateKeypair({
-        alg: SigningAlgorithms.Sr25519,
-      })
+      const { keypair, sign, authenticationKey } = makeSigningKeyTool()
       const lightDidDetails = LightDidDetails.fromDetails({
-        authenticationKey: {
-          publicKey: authKey.publicKey,
-          type: VerificationKeyType.Sr25519,
-        },
+        authenticationKey,
       })
       const createBuilder = FullDidCreationBuilder.fromLightDidDetails(
         api,
@@ -842,7 +785,7 @@ describe('DID management batching', () => {
         })
 
       const initialFullDid = await createBuilder.buildAndSubmit(
-        keystore,
+        sign,
         paymentAccount.address,
         getDefaultSubmitCallback(paymentAccount)
       )
@@ -855,7 +798,7 @@ describe('DID management batching', () => {
 
       await expect(
         updateBuilder
-          .build(keystore, paymentAccount.address)
+          .build(sign, paymentAccount.address)
           .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -868,7 +811,7 @@ describe('DID management batching', () => {
       expect(
         finalFullDid.authenticationKey
       ).toMatchObject<NewDidVerificationKey>({
-        publicKey: authKey.publicKey,
+        publicKey: keypair.publicKey,
         type: VerificationKeyType.Sr25519,
       })
 
@@ -879,19 +822,17 @@ describe('DID management batching', () => {
     }, 40_000)
 
     it('Correctly handles rotation of the authentication key', async () => {
-      const authKey = await keystore.generateKeypair({
-        alg: SigningAlgorithms.Sr25519,
-      })
-      const newAuthKey = await keystore.generateKeypair({
-        alg: SigningAlgorithms.Ed25519,
-      })
+      const { keypair: authKeypair, sign } = makeSigningKeyTool()
+      const { keypair: newAuthKeypair } = makeSigningKeyTool(
+        SigningAlgorithms.Ed25519
+      )
       const createBuilder = new FullDidCreationBuilder(api, {
-        publicKey: authKey.publicKey,
+        publicKey: authKeypair.publicKey,
         type: VerificationKeyType.Sr25519,
       })
 
       const initialFullDid = await createBuilder.buildAndSubmit(
-        keystore,
+        sign,
         paymentAccount.address,
         getDefaultSubmitCallback(paymentAccount)
       )
@@ -903,7 +844,7 @@ describe('DID management batching', () => {
           urls: ['x:url-1'],
         })
         .setAuthenticationKey({
-          publicKey: newAuthKey.publicKey,
+          publicKey: newAuthKeypair.publicKey,
           type: VerificationKeyType.Ed25519,
         })
         .addServiceEndpoint({
@@ -916,14 +857,14 @@ describe('DID management batching', () => {
       const builderCopy = updateBuilder
       expect(() =>
         builderCopy.setAuthenticationKey({
-          publicKey: authKey.publicKey,
+          publicKey: authKeypair.publicKey,
           type: VerificationKeyType.Sr25519,
         })
       ).toThrow()
 
       await expect(
         updateBuilder
-          .build(keystore, paymentAccount.address)
+          .build(sign, paymentAccount.address)
           .then((ext) => submitExtrinsic(ext, paymentAccount))
       ).resolves.not.toThrow()
 
@@ -936,7 +877,7 @@ describe('DID management batching', () => {
       expect(
         finalFullDid.authenticationKey
       ).toMatchObject<NewDidVerificationKey>({
-        publicKey: newAuthKey.publicKey,
+        publicKey: newAuthKeypair.publicKey,
         type: VerificationKeyType.Ed25519,
       })
 
@@ -947,11 +888,9 @@ describe('DID management batching', () => {
     }, 40_000)
 
     it('non-atomic builder succeeds despite failures of some extrinsics', async () => {
-      const authKey = await keystore.generateKeypair({
-        alg: SigningAlgorithms.Sr25519,
-      })
+      const { keypair, sign } = makeSigningKeyTool()
       const createBuilder = new FullDidCreationBuilder(api, {
-        publicKey: authKey.publicKey,
+        publicKey: keypair.publicKey,
         type: VerificationKeyType.Sr25519,
       }).addServiceEndpoint({
         id: 'id-1',
@@ -960,7 +899,7 @@ describe('DID management batching', () => {
       })
       // Create the full DID with a service endpoint
       const fullDid = await createBuilder.buildAndSubmit(
-        keystore,
+        sign,
         paymentAccount.address,
         async (tx) => submitExtrinsic(tx, paymentAccount)
       )
@@ -969,7 +908,7 @@ describe('DID management batching', () => {
       // Configure the builder to set a new attestation key and a service endpoint
       const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
         .setAttestationKey({
-          publicKey: authKey.publicKey,
+          publicKey: keypair.publicKey,
           type: VerificationKeyType.Sr25519,
         })
         .addServiceEndpoint({
@@ -986,7 +925,7 @@ describe('DID management batching', () => {
       })
       const authorisedTx = await fullDid.authorizeExtrinsic(
         newEndpointTx,
-        keystore,
+        sign,
         paymentAccount.address
       )
       await expect(
@@ -996,7 +935,7 @@ describe('DID management batching', () => {
       // Now, consuming the builder will result in the second operation to fail but the batch to succeed, so we can test the atomic flag.
       await expect(
         updateBuilder.buildAndSubmit(
-          keystore,
+          sign,
           paymentAccount.address,
           async (tx) => submitExtrinsic(tx, paymentAccount),
           // Not atomic
@@ -1018,11 +957,9 @@ describe('DID management batching', () => {
     }, 60_000)
 
     it('atomic builder fails if any extrinsics fails', async () => {
-      const authKey = await keystore.generateKeypair({
-        alg: SigningAlgorithms.Sr25519,
-      })
+      const { keypair, sign } = makeSigningKeyTool()
       const createBuilder = new FullDidCreationBuilder(api, {
-        publicKey: authKey.publicKey,
+        publicKey: keypair.publicKey,
         type: VerificationKeyType.Sr25519,
       }).addServiceEndpoint({
         id: 'id-1',
@@ -1031,7 +968,7 @@ describe('DID management batching', () => {
       })
       // Create the full DID with a service endpoint
       const fullDid = await createBuilder.buildAndSubmit(
-        keystore,
+        sign,
         paymentAccount.address,
         async (tx) => submitExtrinsic(tx, paymentAccount)
       )
@@ -1040,7 +977,7 @@ describe('DID management batching', () => {
       // Configure the builder to set a new attestation key and a service endpoint
       const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
         .setAttestationKey({
-          publicKey: authKey.publicKey,
+          publicKey: keypair.publicKey,
           type: VerificationKeyType.Sr25519,
         })
         .addServiceEndpoint({
@@ -1057,7 +994,7 @@ describe('DID management batching', () => {
       })
       const authorisedTx = await fullDid.authorizeExtrinsic(
         newEndpointTx,
-        keystore,
+        sign,
         paymentAccount.address
       )
       await expect(
@@ -1067,7 +1004,7 @@ describe('DID management batching', () => {
       // Now, consuming the builder will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
       await expect(
         updateBuilder.buildAndSubmit(
-          keystore,
+          sign,
           paymentAccount.address,
           async (tx) => submitExtrinsic(tx, paymentAccount),
           // Atomic
@@ -1095,9 +1032,11 @@ describe('DID management batching', () => {
 
 describe('DID extrinsics batching', () => {
   let fullDid: FullDidDetails
+  let key: KeyTool
 
   beforeAll(async () => {
-    fullDid = await createFullDidFromSeed(paymentAccount, keystore)
+    key = makeSigningKeyTool()
+    fullDid = await createFullDidFromSeed(paymentAccount, key.keypair)
   }, 50_000)
 
   it('non-atomic batch succeeds despite failures of some extrinsics', async () => {
@@ -1122,7 +1061,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .build(keystore, paymentAccount.address, { atomic: false })
+      .build(key.sign, paymentAccount.address, { atomic: false })
 
     // The entire submission promise is resolves and does not throw
     await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
@@ -1153,7 +1092,7 @@ describe('DID extrinsics batching', () => {
         delegationRevocationTx,
         delegationCreationTx,
       ])
-      .build(keystore, paymentAccount.address, { atomic: true })
+      .build(key.sign, paymentAccount.address, { atomic: true })
 
     // The entire submission promise is rejected and throws.
     await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
@@ -1169,7 +1108,7 @@ describe('DID extrinsics batching', () => {
     const web3NameClaimTx = await Web3Names.getClaimTx('test-1')
     const authorisedTx = await fullDid.authorizeExtrinsic(
       web3NameClaimTx,
-      keystore,
+      key.sign,
       paymentAccount.address
     )
     await submitExtrinsic(authorisedTx, paymentAccount)
@@ -1178,7 +1117,7 @@ describe('DID extrinsics batching', () => {
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
     const tx = await new DidBatchBuilder(api, fullDid)
       .addMultipleExtrinsics([web3Name1ReleaseExt, web3Name2ClaimExt])
-      .build(keystore, paymentAccount.address)
+      .build(key.sign, paymentAccount.address)
     await expect(submitExtrinsic(tx, paymentAccount)).resolves.not.toThrow()
 
     // Test for correct creation and deletion
@@ -1232,7 +1171,7 @@ describe('DID extrinsics batching', () => {
       .addSingleExtrinsic(delegationHierarchyRemoval)
 
     const batchedExtrinsics = await builder.build(
-      keystore,
+      key.sign,
       paymentAccount.address
     )
 
@@ -1259,15 +1198,13 @@ describe('DID extrinsics batching', () => {
 
 describe('Runtime constraints', () => {
   let testAuthKey: NewDidVerificationKey
+  const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+
   beforeAll(async () => {
-    testAuthKey = await keystore
-      .generateKeypair({ alg: SigningAlgorithms.Ed25519 })
-      .then(({ publicKey }) => {
-        return {
-          publicKey,
-          type: VerificationKeyType.Ed25519,
-        }
-      })
+    testAuthKey = {
+      publicKey: keypair.publicKey,
+      type: VerificationKeyType.Ed25519,
+    }
   })
   describe('DID creation', () => {
     it('should not be possible to create a DID with too many encryption keys', async () => {
@@ -1288,7 +1225,7 @@ describe('Runtime constraints', () => {
             keyAgreementKeys: newKeyAgreementKeys,
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).resolves.not.toThrow()
       // One more than the maximum
@@ -1304,7 +1241,7 @@ describe('Runtime constraints', () => {
             keyAgreementKeys: newKeyAgreementKeys,
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"The number of key agreement keys in the creation operation is greater than the maximum allowed, which is 10."'
@@ -1330,7 +1267,7 @@ describe('Runtime constraints', () => {
             serviceEndpoints: newServiceEndpoints,
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).resolves.not.toThrow()
       // One more than the maximum
@@ -1347,7 +1284,7 @@ describe('Runtime constraints', () => {
             serviceEndpoints: newServiceEndpoints,
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         '"Cannot store more than 25 service endpoints per DID."'
@@ -1370,7 +1307,7 @@ describe('Runtime constraints', () => {
             ],
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).resolves.not.toThrow()
       await expect(
@@ -1389,7 +1326,7 @@ describe('Runtime constraints', () => {
           },
 
           paymentAccount.address,
-          keystore
+          sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         `"The service ID 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
@@ -1411,7 +1348,7 @@ describe('Runtime constraints', () => {
             serviceEndpoints: [newEndpoint],
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).resolves.not.toThrow()
       // One more than the maximum
@@ -1425,7 +1362,7 @@ describe('Runtime constraints', () => {
           },
 
           paymentAccount.address,
-          keystore
+          sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         `"The service with ID 'id-1' has too many types (2). Max number of types allowed per service is 1."`
@@ -1447,7 +1384,7 @@ describe('Runtime constraints', () => {
             serviceEndpoints: [newEndpoint],
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).resolves.not.toThrow()
       // One more than the maximum
@@ -1461,7 +1398,7 @@ describe('Runtime constraints', () => {
           },
 
           paymentAccount.address,
-          keystore
+          sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         `"The service with ID 'id-1' has too many URLs (2). Max number of URLs allowed per service is 1."`
@@ -1484,7 +1421,7 @@ describe('Runtime constraints', () => {
             ],
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).resolves.not.toThrow()
       await expect(
@@ -1503,7 +1440,7 @@ describe('Runtime constraints', () => {
           },
 
           paymentAccount.address,
-          keystore
+          sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         `"The service with ID 'id-1' has the type 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
@@ -1528,7 +1465,7 @@ describe('Runtime constraints', () => {
             ],
           },
           paymentAccount.address,
-          keystore
+          sign
         )
       ).resolves.not.toThrow()
       await expect(
@@ -1549,7 +1486,7 @@ describe('Runtime constraints', () => {
           },
 
           paymentAccount.address,
-          keystore
+          sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
         `"The service with ID 'id-1' has the URL 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' that is too long (202 bytes). Max number of bytes allowed for a service URL is 200."`

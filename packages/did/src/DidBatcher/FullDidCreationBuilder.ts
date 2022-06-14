@@ -11,7 +11,7 @@ import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import {
   DidVerificationKey,
   IIdentity,
-  KeystoreSigner,
+  SignCallback,
   NewDidVerificationKey,
   SubmittableExtrinsic,
   VerificationKeyType,
@@ -103,7 +103,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   /**
    * Consume the builder and delegates to the callback the SubmittableExtrinsic containing the details of a DID creation with the provided details.
    *
-   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
+   * @param sign The [[SignCallback]] to sign the DID operation. It must support the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
    * @param callback A callback to submit the extrinsic and return the created [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
@@ -112,12 +112,12 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    */
   /* istanbul ignore next */
   public async buildAndSubmit(
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitter: IIdentity['address'],
     callback: FullDidCreationCallback,
     atomic = true
   ): Promise<FullDidDetails> {
-    const extrinsic = await this.build(signer, submitter, atomic)
+    const extrinsic = await this.build(sign, submitter, atomic)
     await callback(extrinsic)
     const encodedAddress = encodeVerificationKeyToAddress(
       this.authenticationKey
@@ -136,7 +136,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   /**
    * Consume the builder and generate the SubmittableExtrinsic containing the details of a DID creation with the provided details.
    *
-   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key.
+   * @param sign The [[SignCallback]] to sign the DID operation. It must support the expected DID authentication key.
    * @param submitter The KILT address of the user authorised to submit the creation operation.
    * @param _atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails. At this time, this parameter is not used for a creation operation, albeit this might change in the future.
    *
@@ -145,7 +145,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
   // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
   public async build(
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitter: IIdentity['address'],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _atomic = true
@@ -176,7 +176,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
           : undefined,
       },
       submitter,
-      signer
+      sign
     )
 
     this.consumed = true

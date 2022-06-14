@@ -11,7 +11,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { ApiMocks } from '@kiltprotocol/testing'
+import { computeKeyId, ApiMocks } from '@kiltprotocol/testing'
 import {
   DidEncryptionKey,
   DidKey,
@@ -26,7 +26,6 @@ import {
 import { FullDidCreationBuilder } from './FullDidCreationBuilder'
 import { LightDidDetails } from '../DidDetails'
 import type { NewLightDidAuthenticationKey } from '../types.js'
-import { computeKeyId } from './TestUtils'
 
 jest.mock('./FullDidBuilder.utils.js', () => ({
   deriveChainKeyId: jest.fn((api: ApiPromise, key: NewDidKey): DidKey['id'] =>

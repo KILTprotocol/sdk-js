@@ -11,7 +11,7 @@ import type {
   IDidDetails,
   DidIdentifier,
   IIdentity,
-  KeystoreSigner,
+  SignCallback,
   DidUri,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
@@ -80,7 +80,7 @@ export class LightDidDetails extends DidDetails {
 
   /**
    * Create a new instance of [[LightDidDetails]] from the provided details.
-   * Private keys are assumed to already live in the keystore to be used with this DID instance, as it contains reference only to public keys.
+   * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
    *
    * @param details The DID creation details.
    * @param details.authenticationKey The light DID authentication key.
@@ -151,7 +151,7 @@ export class LightDidDetails extends DidDetails {
   /**
    * Create a new instance of [[LightDidDetails]] by parsing the provided input URI.
    * This is possible because of the self-describing and self-containing nature of light DIDs.
-   * Private keys are assumed to already live in the keystore to be used with this DID instance, as it contains reference only to public keys.
+   * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
    *
    * @param uri The DID URI to parse.
    * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
@@ -225,7 +225,7 @@ export class LightDidDetails extends DidDetails {
    * Migrate a light DID to a full DID, while maintaining the same keys and service endpoints.
    *
    * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
-   * @param signer The keystore signer to sign the operation.
+   * @param sign The callback to sign the operation.
    * @param migrationCallback A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
    * @param upgradeOptions Optional.
    * @param upgradeOptions.withEncryptionKey When set to true (default) the LightDID's encryption key is added to the on-chain DID.
@@ -234,7 +234,7 @@ export class LightDidDetails extends DidDetails {
    */
   public async migrate(
     submitterAddress: IIdentity['address'],
-    signer: KeystoreSigner,
+    sign: SignCallback,
     migrationCallback: DidMigrationCallback,
     { withEncryptionKey = true, withServiceEndpoints = false } = {}
   ): Promise<FullDidDetails> {
@@ -243,7 +243,7 @@ export class LightDidDetails extends DidDetails {
       api,
       this,
       { withEncryptionKey, withServiceEndpoints }
-    ).build(signer, submitterAddress)
+    ).build(sign, submitterAddress)
 
     await migrationCallback(creationTx)
 

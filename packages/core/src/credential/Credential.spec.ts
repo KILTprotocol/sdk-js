@@ -12,28 +12,32 @@
 import { encodeAddress } from '@polkadot/util-crypto'
 
 import type {
-  IClaim,
   CompressedCredential,
+  DidKey,
+  DidResolvedDetails,
+  DidUri,
+  IAttestation,
+  IClaim,
+  ICredential,
   ICType,
   IDidDetails,
   IDidResolver,
-  DidResolvedDetails,
-  DidKey,
-  DidUri,
   IRequestForAttestation,
-  IAttestation,
-  ICredential,
+  SignCallback,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
 import {
-  DemoKeystore,
-  DemoKeystoreUtils,
-  LightDidDetails,
-  SigningAlgorithms,
   DidDetails,
   FullDidDetails,
+  LightDidDetails,
+  SigningAlgorithms,
   Utils as DidUtils,
 } from '@kiltprotocol/did'
+import {
+  createLocalDemoFullDidFromKeypair,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import { UUID } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
@@ -49,7 +53,7 @@ async function buildCredential(
   attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
   legitimations: ICredential[],
-  signer: DemoKeystore
+  sign: SignCallback
 ): Promise<ICredential> {
   // create claim
 
@@ -76,7 +80,7 @@ async function buildCredential(
   })
   await RequestForAttestation.signWithDidKey(
     requestForAttestation,
-    signer,
+    sign,
     claimer,
     claimer.authenticationKey.id
   )
@@ -115,7 +119,8 @@ function createMinimalFullDidFromLightDid(
 }
 
 describe('RequestForAttestation', () => {
-  let keystore: DemoKeystore
+  let keyAlice: KeyTool
+  let keyCharlie: KeyTool
   let identityAlice: DidDetails
   let identityBob: DidDetails
   let identityCharlie: DidDetails
@@ -163,19 +168,15 @@ describe('RequestForAttestation', () => {
   })()
 
   beforeAll(async () => {
-    keystore = new DemoKeystore()
+    keyAlice = makeSigningKeyTool()
+    identityAlice = await createLocalDemoFullDidFromKeypair(keyAlice.keypair)
 
-    identityAlice = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Alice'
-    )
-    identityBob = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Bob'
-    )
-    identityCharlie = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Charlie'
+    const keyBob = makeSigningKeyTool()
+    identityBob = await createLocalDemoFullDidFromKeypair(keyBob.keypair)
+
+    keyCharlie = makeSigningKeyTool()
+    identityCharlie = await createLocalDemoFullDidFromKeypair(
+      keyCharlie.keypair
     )
 
     legitimation = await buildCredential(
@@ -183,7 +184,7 @@ describe('RequestForAttestation', () => {
       identityBob.uri,
       {},
       [],
-      keystore
+      keyAlice.sign
     )
     compressedLegitimation = [
       [
@@ -219,7 +220,7 @@ describe('RequestForAttestation', () => {
         c: 'c',
       },
       [legitimation],
-      keystore
+      keyCharlie.sign
     )
 
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
@@ -233,12 +234,9 @@ describe('RequestForAttestation', () => {
     ).resolves.toBe(true)
   })
   it('verify credentials signed by a light DID', async () => {
-    const daveKey = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Ed25519,
-      seed: '//Dave',
-    })
+    const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
     identityDave = await LightDidDetails.fromIdentifier(
-      encodeAddress(daveKey.publicKey, 38),
+      encodeAddress(keypair.publicKey, 38),
       VerificationKeyType.Ed25519
     )
 
@@ -251,7 +249,7 @@ describe('RequestForAttestation', () => {
         c: 'c',
       },
       [legitimation],
-      keystore
+      sign
     )
 
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
@@ -266,12 +264,9 @@ describe('RequestForAttestation', () => {
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
-    const migratedAndDeletedKey = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Ed25519,
-      seed: '//MigratedLight',
-    })
+    const migratedAndDeleted = makeSigningKeyTool(SigningAlgorithms.Ed25519)
     migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedAndDeletedKey.publicKey, 38),
+      encodeAddress(migratedAndDeleted.keypair.publicKey, 38),
       VerificationKeyType.Ed25519
     )
     migratedAndDeletedFullDid = new FullDidDetails({
@@ -300,7 +295,7 @@ describe('RequestForAttestation', () => {
         c: 'c',
       },
       [legitimation],
-      keystore
+      migratedAndDeleted.sign
     )
 
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
@@ -338,7 +333,7 @@ describe('RequestForAttestation', () => {
       identityBob.uri,
       {},
       [],
-      keystore
+      keyAlice.sign
     )
     expect(Credential.isICredential(testAttestation)).toBeTruthy()
     // @ts-expect-error
@@ -352,7 +347,7 @@ describe('RequestForAttestation', () => {
       identityBob.uri,
       {},
       [],
-      keystore
+      keyAlice.sign
     )
     expect(Credential.verifyDataIntegrity(testAttestation)).toBeTruthy()
     const { cTypeHash } = testAttestation.attestation
@@ -370,7 +365,7 @@ describe('RequestForAttestation', () => {
       identityBob.uri,
       {},
       [],
-      keystore
+      keyAlice.sign
     )
     expect(Credential.getHash(testAttestation)).toEqual(
       testAttestation.attestation.claimHash
@@ -379,11 +374,13 @@ describe('RequestForAttestation', () => {
 })
 
 describe('create presentation', () => {
-  let keystore: DemoKeystore
   let migratedClaimerLightDid: DidDetails
   let migratedClaimerFullDid: DidDetails
+  let newKeyForMigratedClaimerDid: KeyTool
   let unmigratedClaimerLightDid: DidDetails
+  let unmigratedClaimerKey: KeyTool
   let migratedThenDeletedClaimerLightDid: DidDetails
+  let migratedThenDeletedKey: KeyTool
   let migratedThenDeletedClaimerFullDid: DidDetails
   let attester: DidDetails
   let ctype: ICType
@@ -440,49 +437,32 @@ describe('create presentation', () => {
   })()
 
   beforeAll(async () => {
-    keystore = new DemoKeystore()
-    attester = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Attester'
-    )
-    const unmigratedClaimerKey = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Sr25519,
-      seed: '//UnmigratedClaimer',
-    })
+    const { keypair } = makeSigningKeyTool()
+    attester = await createLocalDemoFullDidFromKeypair(keypair)
+
+    unmigratedClaimerKey = makeSigningKeyTool()
     unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(unmigratedClaimerKey.publicKey, 38),
+      encodeAddress(unmigratedClaimerKey.keypair.publicKey, 38),
       VerificationKeyType.Sr25519
     )
-    const migratedClaimerKey = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Sr25519,
-      seed: '//MigratedClaimer',
-    })
+    const migratedClaimerKey = makeSigningKeyTool()
     migratedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedClaimerKey.publicKey, 38),
+      encodeAddress(migratedClaimerKey.keypair.publicKey, 38),
       VerificationKeyType.Sr25519
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
-    const newKeyForMigratedClaimerDid = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Sr25519,
-      seed: '//RandomSeed',
-    })
+    newKeyForMigratedClaimerDid = makeSigningKeyTool()
     migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
       migratedClaimerLightDid as LightDidDetails,
       {
-        type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-          newKeyForMigratedClaimerDid.alg
-        ),
-        publicKey: newKeyForMigratedClaimerDid.publicKey,
+        ...newKeyForMigratedClaimerDid.authenticationKey,
         id: 'new-auth',
       }
     )
-    const migratedThenDeletedKey = await keystore.generateKeypair({
-      alg: SigningAlgorithms.Ed25519,
-      seed: '//MigratedThenDeletedClaimer',
-    })
+    migratedThenDeletedKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
     migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedThenDeletedKey.publicKey, 38),
+      encodeAddress(migratedThenDeletedKey.keypair.publicKey, 38),
       VerificationKeyType.Ed25519
     )
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
@@ -530,7 +510,7 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential: cred,
       selectedAttributes: ['name'],
-      signer: keystore,
+      sign: newKeyForMigratedClaimerDid.sign,
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
@@ -575,7 +555,7 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential: cred,
       selectedAttributes: ['name'],
-      signer: keystore,
+      sign: unmigratedClaimerKey.sign,
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
@@ -621,7 +601,7 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential: cred,
       selectedAttributes: ['name'],
-      signer: keystore,
+      sign: newKeyForMigratedClaimerDid.sign,
       // Use of full DID to sign the presentation.
       claimerDid: migratedClaimerFullDid,
       challenge,
@@ -669,7 +649,7 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential: cred,
       selectedAttributes: ['name'],
-      signer: keystore,
+      sign: newKeyForMigratedClaimerDid.sign,
       // Still using the light DID, which should fail since it has been migrated
       claimerDid: migratedClaimerLightDid,
       challenge,
@@ -716,7 +696,7 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential: cred,
       selectedAttributes: ['name'],
-      signer: keystore,
+      sign: migratedThenDeletedKey.sign,
       // Still using the light DID, which should fail since it has been migrated and then deleted
       claimerDid: migratedThenDeletedClaimerLightDid,
       challenge,

@@ -11,20 +11,20 @@
 
 import { BN } from '@polkadot/util'
 import type { KeyringPair } from '@kiltprotocol/types'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   getBalances,
-  listenToBalanceChanges,
   getTransferTx,
+  listenToBalanceChanges,
 } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
-  EXISTENTIAL_DEPOSIT,
-  keypairFromRandom,
   devAlice,
   devBob,
   devFaucet,
+  EXISTENTIAL_DEPOSIT,
   initializeApi,
   submitExtrinsic,
 } from './utils'
@@ -95,10 +95,10 @@ describe('When there are haves and have-nots', () => {
   let faucet: KeyringPair
 
   beforeAll(async () => {
-    bobbyBroke = keypairFromRandom()
+    bobbyBroke = makeSigningKeyTool().keypair
     richieRich = devAlice
     faucet = devFaucet
-    stormyD = keypairFromRandom()
+    stormyD = makeSigningKeyTool().keypair
   })
 
   it('can transfer tokens from the rich to the poor', async () => {

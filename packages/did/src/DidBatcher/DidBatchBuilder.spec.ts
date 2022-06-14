@@ -14,12 +14,17 @@ import { randomAsHex } from '@polkadot/util-crypto'
 
 import {
   KeyRelationship,
+  KeyringPair,
   NewDidKey,
+  SignCallback,
   VerificationKeyType,
 } from '@kiltprotocol/types'
-import { ApiMocks } from '@kiltprotocol/testing'
-import { DemoKeystore, DemoKeystoreUtils } from '../DemoKeystore'
-import { getSetKeyExtrinsic, formatPublicKey } from '../Did.chain.js'
+import {
+  createLocalDemoFullDidFromKeypair,
+  ApiMocks,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { formatPublicKey, getSetKeyExtrinsic } from '../Did.chain.js'
 import { DidBatchBuilder } from './DidBatchBuilder'
 import { FullDidDetails } from '../DidDetails'
 
@@ -47,13 +52,13 @@ jest.mock('../Did.chain.js', () => ({
 }))
 
 describe('DidBatchBuilder', () => {
-  const keystore = new DemoKeystore()
+  let keypair: KeyringPair
+  let sign: SignCallback
   let fullDid: FullDidDetails
+
   beforeAll(async () => {
-    fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      'seed'
-    )
+    ;({ keypair, sign } = makeSigningKeyTool())
+    fullDid = await createLocalDemoFullDidFromKeypair(keypair)
   })
 
   describe('.addSingleExtrinsic()', () => {
@@ -132,7 +137,7 @@ describe('DidBatchBuilder', () => {
   describe('.build()', () => {
     it('throws if batch is empty', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
+      await expect(builder.build(sign, 'test-account')).rejects.toThrow()
     })
     it.todo('successfully create a batch with only 1 extrinsic')
     it.todo('successfully create a batch with 1 extrinsic per required key')

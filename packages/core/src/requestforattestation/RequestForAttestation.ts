@@ -17,32 +17,31 @@
  */
 
 import type {
-  IRequestForAttestation,
-  IClaim,
-  IDidResolver,
-  IDelegationNode,
-  ICredential,
-  ICType,
-  Hash,
-  DidPublicKey,
-  KeystoreSigner,
-  DidVerificationKey,
   CompressedCredential,
   CompressedRequestForAttestation,
+  DidPublicKey,
+  DidVerificationKey,
+  Hash,
+  IClaim,
+  ICredential,
+  ICType,
+  IDelegationNode,
+  IDidResolver,
+  IRequestForAttestation,
+  SignCallback,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import {
   DidDetails,
   DidResolver,
-  verifyDidSignature,
   isDidSignature,
+  verifyDidSignature,
 } from '@kiltprotocol/did'
-import { KeyRelationship } from '@kiltprotocol/types'
 import * as Claim from '../claim/index.js'
+import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
 import * as Credential from '../credential/index.js'
-
-import { hashClaimContents } from '../claim/index.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)
@@ -141,7 +140,7 @@ export async function addSignature(
  * Adds a claimer signature to a RequestForAttestation using a DID key.
  *
  * @param req4Att - The RequestForAttestation object to add the signature to.
- * @param signer - The Keystore used for the signing.
+ * @param sign - The signing callback.
  * @param didDetails - The DID details of the signer.
  * @param keyId - The DID key id to be used for the signing.
  * @param options - Optional parameters.
@@ -149,7 +148,7 @@ export async function addSignature(
  */
 export async function signWithDidKey(
   req4Att: IRequestForAttestation,
-  signer: KeystoreSigner,
+  sign: SignCallback,
   didDetails: DidDetails,
   keyId: DidVerificationKey['id'],
   {
@@ -160,7 +159,7 @@ export async function signWithDidKey(
 ): Promise<void> {
   const { signature, keyUri: signatureKeyId } = await didDetails.signPayload(
     makeSigningData(req4Att, challenge),
-    signer,
+    sign,
     keyId
   )
   addSignature(req4Att, signature, signatureKeyId, { challenge })
@@ -348,6 +347,7 @@ type VerifyOptions = {
   challenge?: string
   resolver?: IDidResolver
 }
+
 /**
  * Verifies data structure and integrity.
  *

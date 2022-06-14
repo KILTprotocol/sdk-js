@@ -9,31 +9,38 @@
  * @group integration/attestation
  */
 
-import type { ICredential, IClaim, KeyringPair } from '@kiltprotocol/types'
-import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
+import type { IClaim, ICredential, KeyringPair } from '@kiltprotocol/types'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { FullDidDetails } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation'
-import { getRevokeTx, getRemoveTx } from '../attestation/Attestation.chain'
+import { getRemoveTx, getRevokeTx } from '../attestation/Attestation.chain'
 import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
 import {
-  isCtypeOnChain,
-  driversLicenseCType,
-  keypairFromRandom,
-  initializeApi,
   createEndowedTestAccount,
-  createFullDidFromSeed,
+  driversLicenseCType,
+  initializeApi,
+  isCtypeOnChain,
   submitExtrinsic,
 } from './utils'
 
 let tokenHolder: KeyringPair
-let signer: DemoKeystore
 let attester: FullDidDetails
+let attesterKey: KeyTool
+
 let anotherAttester: FullDidDetails
+let anotherAttesterKey: KeyTool
+
 let claimer: FullDidDetails
+let claimerKey: KeyTool
 
 beforeAll(async () => {
   await initializeApi()
@@ -41,10 +48,15 @@ beforeAll(async () => {
 
 beforeAll(async () => {
   tokenHolder = await createEndowedTestAccount()
-  signer = new DemoKeystore()
-  attester = await createFullDidFromSeed(tokenHolder, signer)
-  anotherAttester = await createFullDidFromSeed(tokenHolder, signer)
-  claimer = await createFullDidFromSeed(tokenHolder, signer)
+  attesterKey = makeSigningKeyTool()
+  anotherAttesterKey = makeSigningKeyTool()
+  claimerKey = makeSigningKeyTool()
+  attester = await createFullDidFromSeed(tokenHolder, attesterKey.keypair)
+  anotherAttester = await createFullDidFromSeed(
+    tokenHolder,
+    anotherAttesterKey.keypair
+  )
+  claimer = await createFullDidFromSeed(tokenHolder, claimerKey.keypair)
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
@@ -64,7 +76,7 @@ describe('handling attestations that do not exist', () => {
     return expect(
       Attestation.getRemoveTx(claimHash, 0)
         .then((tx) =>
-          attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
+          attester.authorizeExtrinsic(tx, attesterKey.sign, tokenHolder.address)
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
     ).rejects.toMatchObject({
@@ -77,7 +89,7 @@ describe('handling attestations that do not exist', () => {
     return expect(
       Attestation.getRemoveTx(claimHash, 0)
         .then((tx) =>
-          attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
+          attester.authorizeExtrinsic(tx, attesterKey.sign, tokenHolder.address)
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
     ).rejects.toMatchObject({
@@ -94,7 +106,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await attester
         .authorizeExtrinsic(
           await CType.getStoreTx(driversLicenseCType),
-          signer,
+          attesterKey.sign,
           tokenHolder.address
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
@@ -111,7 +123,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const request = RequestForAttestation.fromClaim(claim)
     await RequestForAttestation.signWithDidKey(
       request,
-      signer,
+      claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
@@ -134,7 +146,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
     await RequestForAttestation.signWithDidKey(
       request,
-      signer,
+      claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
@@ -144,7 +156,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const attestation = Attestation.fromRequestAndDid(request, attester.uri)
     await Attestation.getStoreTx(attestation)
       .then((call) =>
-        attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+        attester.authorizeExtrinsic(call, attesterKey.sign, tokenHolder.address)
       )
       .then((tx) => submitExtrinsic(tx, tokenHolder))
     const credential = Credential.fromRequestAndAttestation(
@@ -176,7 +188,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
     await RequestForAttestation.signWithDidKey(
       request,
-      signer,
+      claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
@@ -185,14 +197,14 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     )
     const attestation = Attestation.fromRequestAndDid(request, attester.uri)
 
-    const bobbyBroke = keypairFromRandom()
+    const { keypair, sign } = makeSigningKeyTool()
 
     await expect(
       Attestation.getStoreTx(attestation)
         .then((call) =>
-          attester.authorizeExtrinsic(call, signer, bobbyBroke.address)
+          attester.authorizeExtrinsic(call, sign, keypair.address)
         )
-        .then((tx) => submitExtrinsic(tx, bobbyBroke))
+        .then((tx) => submitExtrinsic(tx, keypair))
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low"`
     )
@@ -231,7 +243,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(
       Attestation.getStoreTx(attestation)
         .then((call) =>
-          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          attester.authorizeExtrinsic(
+            call,
+            attesterKey.sign,
+            tokenHolder.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
@@ -250,14 +266,18 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const request = RequestForAttestation.fromClaim(claim)
       await RequestForAttestation.signWithDidKey(
         request,
-        signer,
+        claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
       )
       const attestation = Attestation.fromRequestAndDid(request, attester.uri)
       await Attestation.getStoreTx(attestation)
         .then((call) =>
-          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          attester.authorizeExtrinsic(
+            call,
+            attesterKey.sign,
+            tokenHolder.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
       credential = Credential.fromRequestAndAttestation(request, attestation)
@@ -268,7 +288,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await expect(
         Attestation.getStoreTx(credential.attestation)
           .then((call) =>
-            attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+            attester.authorizeExtrinsic(
+              call,
+              attesterKey.sign,
+              tokenHolder.address
+            )
           )
           .then((tx) => submitExtrinsic(tx, tokenHolder))
       ).rejects.toMatchObject({
@@ -287,7 +311,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const request = RequestForAttestation.fromClaim(claim)
       await RequestForAttestation.signWithDidKey(
         request,
-        signer,
+        claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
       )
@@ -303,7 +327,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await expect(
         getRevokeTx(Credential.getHash(credential), 0)
           .then((call) =>
-            claimer.authorizeExtrinsic(call, signer, tokenHolder.address)
+            claimer.authorizeExtrinsic(
+              call,
+              claimerKey.sign,
+              tokenHolder.address
+            )
           )
           .then((tx) => submitExtrinsic(tx, tokenHolder))
       ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
@@ -314,7 +342,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await expect(Credential.verify(credential)).resolves.toBe(true)
       await getRevokeTx(Credential.getHash(credential), 0)
         .then((call) =>
-          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          attester.authorizeExtrinsic(
+            call,
+            attesterKey.sign,
+            tokenHolder.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
       await expect(Credential.verify(credential)).resolves.toBeFalsy()
@@ -323,7 +355,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     it('should be possible for the deposit payer to remove an attestation', async () => {
       await getRemoveTx(Credential.getHash(credential), 0)
         .then((call) =>
-          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          attester.authorizeExtrinsic(
+            call,
+            attesterKey.sign,
+            tokenHolder.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
     }, 40_000)
@@ -348,7 +384,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       if (!(await isCtypeOnChain(officialLicenseAuthorityCType))) {
         await CType.getStoreTx(officialLicenseAuthorityCType)
           .then((call) =>
-            attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+            attester.authorizeExtrinsic(
+              call,
+              attesterKey.sign,
+              tokenHolder.address
+            )
           )
           .then((tx) => submitExtrinsic(tx, tokenHolder))
       }
@@ -370,7 +410,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const request1 = RequestForAttestation.fromClaim(licenseAuthorization)
       await RequestForAttestation.signWithDidKey(
         request1,
-        signer,
+        claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
       )
@@ -380,7 +420,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await Attestation.getStoreTx(licenseAuthorizationGranted)
         .then((call) =>
-          anotherAttester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          anotherAttester.authorizeExtrinsic(
+            call,
+            anotherAttesterKey.sign,
+            tokenHolder.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
       // make request including legitimation
@@ -399,7 +443,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       })
       await RequestForAttestation.signWithDidKey(
         request2,
-        signer,
+        claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
       )
@@ -409,7 +453,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await Attestation.getStoreTx(LicenseGranted)
         .then((call) =>
-          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          attester.authorizeExtrinsic(
+            call,
+            attesterKey.sign,
+            tokenHolder.address
+          )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
       const license = Credential.fromRequestAndAttestation(

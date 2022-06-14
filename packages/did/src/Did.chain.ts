@@ -40,8 +40,8 @@ import {
   DidIdentifier,
   IIdentity,
   KeyRelationship,
-  KeystoreSigner,
-  KeystoreSigningOptions,
+  SignCallback,
+  SigningOptions,
   NewDidKey,
   SubmittableExtrinsic,
   VerificationKeyType,
@@ -447,14 +447,14 @@ function checkServiceEndpointInput(
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
  *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
- * @param signer The keystore signer.
+ * @param sign The sign callback.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function generateCreateTxFromCreationDetails(
   details: FullDidCreationDetails,
   submitterAddress: IIdentity['address'],
-  signer: KeystoreSigner
+  sign: SignCallback
 ): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
 
@@ -521,7 +521,7 @@ export async function generateCreateTxFromCreationDetails(
     rawCreationDetails
   )
 
-  const signature = await signer.sign({
+  const signature = await sign({
     data: encodedDidCreationDetails.toU8a(),
     meta: {},
     publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
@@ -539,14 +539,14 @@ export async function generateCreateTxFromCreationDetails(
  *
  * @param did The input DID details.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
- * @param signer The keystore signer.
+ * @param sign The sign callback.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function generateCreateTxFromDidDetails(
   did: DidDetails,
   submitterAddress: IIdentity['address'],
-  signer: KeystoreSigner
+  sign: SignCallback
 ): Promise<SubmittableExtrinsic> {
   const { authenticationKey } = did
   if (!authenticationKey) {
@@ -591,7 +591,7 @@ export async function generateCreateTxFromDidDetails(
   return generateCreateTxFromCreationDetails(
     fullDidCreationDetails,
     submitterAddress,
-    signer
+    sign
   )
 }
 
@@ -765,7 +765,7 @@ export async function getReclaimDepositExtrinsic(
  * @param params.didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
  * @param params.signingPublicKey Public key of the keypair to be used for authorization as hex string or Uint8Array.
  * @param params.alg Identifier of the cryptographic signing algorithm to be used.
- * @param params.signer A signer callback to interface with the key store managing the private key to be used.
+ * @param params.sign The callback to interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
  * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing FullDid.
  * @param params.submitter Payment account allowed to submit this extrinsic and cover its fees, which will end up owning any deposit associated with newly created records.
@@ -776,12 +776,12 @@ export async function generateDidAuthenticatedTx({
   didIdentifier,
   signingPublicKey,
   alg,
-  signer,
+  sign,
   call,
   txCounter,
   submitter,
   blockNumber,
-}: AuthorizeCallInput & KeystoreSigningOptions): Promise<SubmittableExtrinsic> {
+}: AuthorizeCallInput & SigningOptions): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const signableCall = api.registry.createType<IDidAuthorizedCallOperation>(
     api.tx.did.submitDidCall.meta.args[0].type.toString(),
@@ -793,7 +793,7 @@ export async function generateDidAuthenticatedTx({
       blockNumber: blockNumber || (await api.query.system.number()),
     }
   )
-  const signature = await signer.sign({
+  const signature = await sign({
     data: signableCall.toU8a(),
     meta: {
       method: call.method.toHex(),
