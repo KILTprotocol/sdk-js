@@ -56,10 +56,10 @@ export type SubstrateAddress = IIdentity['address']
 
 export type EthereumAddress = HexString
 
-export type Address = KiltAddress | SubstrateAddress
+export type Address = KiltAddress | SubstrateAddress | EthereumAddress
 
 /// Type of signatures to link accounts to DIDs.
-export type SignatureType = MultiSignature['type']
+export type SignatureType = MultiSignature['type'] | 'Ethereum'
 
 /**
  * Type of a linking payload signing function.
@@ -91,7 +91,7 @@ type LinkableAccountJson = JsonEnum<
 
 type MultiSignatureJson = JsonEnum<
   'MultiSignature' | 'EthereumSignature',
-  JsonEnum<SignatureType, string | Uint8Array>
+  JsonEnum<SignatureType, string | Uint8Array> | string | Uint8Array
 >
 
 type WithEtherumSupport = {
@@ -145,7 +145,7 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
 }
 
 function encodeMultiAddress(
-  address: string
+  address: Address
 ): JsonEnum<'AccountId20' | 'AccountId32', Uint8Array> {
   const accountDecoded = decodeAddress(address)
   const isEthereumAddress = accountDecoded.length === 20
@@ -211,7 +211,7 @@ function isLinkableAccountId(
 export async function queryConnectedAccountsForDid(
   linkedDid: DidIdentifier,
   networkPrefix = 38
-): Promise<Array<KiltAddress | SubstrateAddress | EthereumAddress>> {
+): Promise<Address[]> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
     await api.query.didLookup.connectedAccounts.keys(linkedDid)
@@ -319,26 +319,24 @@ export async function getAccountSignedAssociationExtrinsic(
   sigType: SignatureType
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const sigEnum = makeJsonEnum(sigType, signature)
   if (isEthereumEnabled(api)) {
-    const accountDecoded = decodeAddress(account)
-    const isEthereumAddress = accountDecoded.length === 20
-    return api.tx.didLookup.associateAccount(
-      makeJsonEnum(
-        isEthereumAddress ? 'AccountId20' : 'AccountId32',
-        accountDecoded
-      ),
-      signatureValidUntilBlock,
-      makeJsonEnum(
-        isEthereumAddress ? 'EthereumSignature' : 'MultiSignature',
-        sigEnum
+    if (sigType === 'Ethereum') {
+      return api.tx.didLookup.associateAccount(
+        { AccountId20: account },
+        signatureValidUntilBlock,
+        { EthereumSignature: signature }
       )
+    }
+    return api.tx.didLookup.associateAccount(
+      { AccountId32: account },
+      signatureValidUntilBlock,
+      makeJsonEnum('MultiSignature', makeJsonEnum(sigType, signature))
     )
   }
   return api.tx.didLookup.associateAccount(
     account,
     signatureValidUntilBlock,
-    sigEnum
+    makeJsonEnum(sigType, signature)
   )
 }
 
@@ -398,6 +396,8 @@ function getMultiSignatureTypeFromKeypairType(
       return 'Sr25519'
     case 'ecdsa':
       return 'Ecdsa'
+    case 'ethereum':
+      return 'Ethereum'
     default:
       throw new Error(`Unsupported signature algorithm '${keypairType}'`)
   }
