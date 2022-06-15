@@ -19,7 +19,15 @@ import {
   encodeAddress,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import type { bool, Enum, Option, u128, u64, U8aFixed } from '@polkadot/types'
+import type {
+  bool,
+  Enum,
+  Option,
+  Struct,
+  u128,
+  u64,
+  U8aFixed,
+} from '@polkadot/types'
 import type {
   AccountId32,
   Extrinsic,
@@ -34,7 +42,7 @@ import type Keyring from '@polkadot/keyring'
 import type {
   AugmentedQuery,
   AugmentedQueryDoubleMap,
-  AugmentedSubmittable
+  AugmentedSubmittable,
 } from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
 import { makeJsonEnum } from '../Did.utils.js'
@@ -63,13 +71,17 @@ export type LinkingSignerCallback = (
   address: KiltAddress
 ) => Promise<HexString>
 
-/** @name PalletDidLookupLinkableAccountLinkableAccountId (47) */
-export interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
+interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly isAccountId20: boolean
   readonly asAccountId20: U8aFixed
   readonly isAccountId32: boolean
   readonly asAccountId32: AccountId32
   readonly type: 'AccountId20' | 'AccountId32'
+}
+
+interface PalletDidLookupConnectionRecord extends Struct {
+  readonly did: AccountId32
+  readonly deposit: Deposit
 }
 
 type WithEtherumSupport = {
@@ -151,7 +163,9 @@ async function queryConnectedDid(
   if (isEthereumEnabled(api)) {
     return api.query.didLookup.connectedDids(encodeMultiAddress(linkedAccount))
   }
-  return api.query.didLookup.connectedDids<Option<PalletDidLookupConnectionRecord>>(linkedAccount)
+  return api.query.didLookup.connectedDids<
+    Option<PalletDidLookupConnectionRecord>
+  >(linkedAccount)
 }
 
 /**
