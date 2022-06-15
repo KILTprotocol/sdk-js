@@ -18,6 +18,7 @@ import {
   DidIdentifier,
   NewDidKey,
   VerificationKeyType,
+  JsonEnum,
   DidServiceEndpoint,
   EncryptionAlgorithms,
   SigningAlgorithms,
@@ -461,4 +462,17 @@ export function assembleKeyUri(
     )
   }
   return `${did}#${keyId}`
+}
+
+/**
+ * @param key
+ * @param value
+ */
+export function makeJsonEnum<K extends string, V>(
+  key: K,
+  value: V
+): JsonEnum<Capitalize<K>, V> {
+  return {
+    [key.replace(/^[a-z]/g, (s) => s.toUpperCase())]: value,
+  } as JsonEnum<Capitalize<K>, V>
 }

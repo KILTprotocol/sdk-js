@@ -6,27 +6,38 @@
  */
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import {
+import type {
   Deposit,
   DidIdentifier,
   IIdentity,
+  JsonEnum,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
-import { encodeAddress, signatureVerify } from '@polkadot/util-crypto'
-import type { Option, Struct, u128 } from '@polkadot/types'
+import {
+  decodeAddress,
+  encodeAddress,
+  signatureVerify,
+} from '@polkadot/util-crypto'
+import type { bool, Enum, Option, u128, u64, U8aFixed } from '@polkadot/types'
 import type {
-  AccountId,
-  BlockNumber,
+  AccountId32,
   Extrinsic,
   MultiSignature,
 } from '@polkadot/types/interfaces'
-import type { AnyNumber, TypeDef } from '@polkadot/types/types'
+import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
-import { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
+import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
 import { assert, BN, u8aToHex, u8aToU8a, u8aWrapBytes } from '@polkadot/util'
-import Keyring from '@polkadot/keyring'
+import type Keyring from '@polkadot/keyring'
 
+import type {
+  AugmentedQuery,
+  AugmentedQueryDoubleMap,
+  AugmentedSubmittable
+} from '@polkadot/api/types'
+import { ApiPromise } from '@polkadot/api'
+import { makeJsonEnum } from '../Did.utils.js'
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
 
 // TODO: update with string pattern types once available
@@ -35,12 +46,9 @@ export type KiltAddress = IIdentity['address']
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = IIdentity['address']
 
-export type Address = KiltAddress | SubstrateAddress
+export type EthereumAddress = HexString
 
-interface ConnectionRecord extends Struct {
-  did: AccountId
-  deposit: Deposit
-}
+export type Address = KiltAddress | SubstrateAddress
 
 /// Type of signatures to link accounts to DIDs.
 export type SignatureType = MultiSignature['type']
@@ -55,7 +63,96 @@ export type LinkingSignerCallback = (
   address: KiltAddress
 ) => Promise<HexString>
 
+/** @name PalletDidLookupLinkableAccountLinkableAccountId (47) */
+export interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
+  readonly isAccountId20: boolean
+  readonly asAccountId20: U8aFixed
+  readonly isAccountId32: boolean
+  readonly asAccountId32: AccountId32
+  readonly type: 'AccountId20' | 'AccountId32'
+}
+
+type WithEtherumSupport = {
+  tx: {
+    didLookup: {
+      associateAccount: AugmentedSubmittable<
+        (
+          account: { AccountId20: any } | { AccountId32: any },
+          expiration: u64 | AnyNumber | Uint8Array,
+          proof:
+            | { MultiSignature: any }
+            | { EthereumSignature: any }
+            | string
+            | Uint8Array
+        ) => SubmittableExtrinsic
+      >
+      removeAccountAssociation: AugmentedSubmittable<
+        (
+          account: { AccountId20: any } | { AccountId32: any }
+        ) => SubmittableExtrinsic
+      >
+    }
+  }
+  query: {
+    didLookup: {
+      connectedDids: AugmentedQuery<
+        'promise',
+        (
+          arg: JsonEnum<'AccountId20' | 'AccountId32', string | Uint8Array>
+        ) => Option<PalletDidLookupConnectionRecord>
+      >
+      connectedAccounts: AugmentedQueryDoubleMap<
+        'promise',
+        (
+          didId: string | Uint8Array,
+          accountId: JsonEnum<
+            'AccountId20' | 'AccountId32',
+            string | Uint8Array
+          >
+        ) => Option<bool>,
+        [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]
+      >
+    }
+  }
+}
+
+// TODO: improve
+function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
+  return (
+    api instanceof ApiPromise &&
+    ('isAccountId20' in
+      api.createType(
+        api.tx.didLookup.associateAccount.meta.args[0].type.toString()
+      ) ||
+      'isEthereumSignature' in
+        api.createType(
+          api.tx.didLookup.associateAccount.meta.args[2].type.toString()
+        ))
+  )
+}
+
+function encodeMultiAddress(
+  address: string
+): JsonEnum<'AccountId20' | 'AccountId32', Uint8Array> {
+  const accountDecoded = decodeAddress(address)
+  const isEthereumAddress = accountDecoded.length === 20
+  return makeJsonEnum(
+    isEthereumAddress ? 'AccountId20' : 'AccountId32',
+    accountDecoded
+  )
+}
+
 /* ### QUERY ### */
+
+async function queryConnectedDid(
+  linkedAccount: Address
+): Promise<Option<PalletDidLookupConnectionRecord>> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  if (isEthereumEnabled(api)) {
+    return api.query.didLookup.connectedDids(encodeMultiAddress(linkedAccount))
+  }
+  return api.query.didLookup.connectedDids<Option<PalletDidLookupConnectionRecord>>(linkedAccount)
+}
 
 /**
  * Gets deposit information for a given account link.
@@ -66,10 +163,7 @@ export type LinkingSignerCallback = (
 export async function queryAccountLinkDepositInfo(
   linkedAccount: Address
 ): Promise<Deposit | null> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await api.query.didLookup.connectedDids<
-    Option<ConnectionRecord>
-  >(linkedAccount)
+  const connectedDid = await queryConnectedDid(linkedAccount)
   return connectedDid.isSome ? connectedDid.unwrap().deposit : null
 }
 
@@ -82,11 +176,14 @@ export async function queryAccountLinkDepositInfo(
 export async function queryConnectedDidForAccount(
   linkedAccount: Address
 ): Promise<DidIdentifier | null> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await api.query.didLookup.connectedDids<
-    Option<ConnectionRecord>
-  >(linkedAccount)
+  const connectedDid = await queryConnectedDid(linkedAccount)
   return connectedDid.isNone ? null : connectedDid.unwrap().did.toString()
+}
+
+function isLinkableAccountId(
+  arg: Codec
+): arg is PalletDidLookupLinkableAccountLinkableAccountId {
+  return 'isAccountId32' in arg && 'isAccountId20' in arg
 }
 
 /**
@@ -99,14 +196,23 @@ export async function queryConnectedDidForAccount(
 export async function queryConnectedAccountsForDid(
   linkedDid: DidIdentifier,
   networkPrefix = 38
-): Promise<Array<KiltAddress | SubstrateAddress>> {
+): Promise<Array<KiltAddress | SubstrateAddress | EthereumAddress>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
-    await api.query.didLookup.connectedAccounts.keys<[AccountId, AccountId]>(
-      linkedDid
-    )
-  return connectedAccountsRecords.map((account) =>
-    encodeAddress(account.args[1], networkPrefix)
+    await api.query.didLookup.connectedAccounts.keys(linkedDid)
+  return connectedAccountsRecords.map<string>(
+    ({ args: [, accountAddress] }) => {
+      if (isLinkableAccountId(accountAddress)) {
+        // linked account is substrate address (ethereum-enabled storage version)
+        if (accountAddress.isAccountId32)
+          return encodeAddress(accountAddress.asAccountId32, networkPrefix)
+        // linked account is ethereum address (ethereum-enabled storage version)
+        if (accountAddress.isAccountId20)
+          return accountAddress.asAccountId20.toHex()
+      }
+      // linked account is substrate account (legacy storage version)
+      return encodeAddress(accountAddress.toU8a(), networkPrefix)
+    }
   )
 }
 
@@ -139,13 +245,19 @@ export async function queryIsConnected(
   account: Address
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
-  const connectedEntry = await api.query.didLookup.connectedAccounts.hash(
-    didIdentifier,
-    account
-  )
-  // isEmpty returns true if there is no entry for the given key -> the function should return false.
-  return !connectedEntry.isEmpty
+  if (isEthereumEnabled(api)) {
+    // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
+    return !(
+      await api.query.didLookup.connectedAccounts.hash(
+        didIdentifier,
+        encodeMultiAddress(account)
+      )
+    ).isEmpty
+    // isEmpty returns true if there is no entry for the given key -> the function should return false.
+  }
+  return !(
+    await api.query.didLookup.connectedAccounts.hash(didIdentifier, account)
+  ).isEmpty
 }
 
 /**
@@ -192,9 +304,27 @@ export async function getAccountSignedAssociationExtrinsic(
   sigType: SignatureType
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.didLookup.associateAccount(account, signatureValidUntilBlock, {
-    [sigType]: signature,
-  })
+  const sigEnum = makeJsonEnum(sigType, signature)
+  if (isEthereumEnabled(api)) {
+    const accountDecoded = decodeAddress(account)
+    const isEthereumAddress = accountDecoded.length === 20
+    return api.tx.didLookup.associateAccount(
+      makeJsonEnum(
+        isEthereumAddress ? 'AccountId20' : 'AccountId32',
+        accountDecoded
+      ),
+      signatureValidUntilBlock,
+      makeJsonEnum(
+        isEthereumAddress ? 'EthereumSignature' : 'MultiSignature',
+        sigEnum
+      )
+    )
+  }
+  return api.tx.didLookup.associateAccount(
+    account,
+    signatureValidUntilBlock,
+    sigEnum
+  )
 }
 
 /**
@@ -233,6 +363,11 @@ export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  if (isEthereumEnabled(api)) {
+    return api.tx.didLookup.removeAccountAssociation(
+      encodeMultiAddress(linkedAccount)
+    )
+  }
   return api.tx.didLookup.removeAccountAssociation(linkedAccount)
 }
 
@@ -284,7 +419,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   nBlocksValid = 10
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const blockNo: BlockNumber = await api.query.system.number()
+  const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
   // Gets the current definition of BlockNumber (second tx argument) from the metadata.
   const blockNumberType =

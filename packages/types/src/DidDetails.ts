@@ -190,3 +190,7 @@ export type DidSignature = {
   keyUri: DidPublicKey['uri']
   signature: string
 }
+
+export type JsonEnum<K extends string, V> = K extends any
+  ? { [P in K]: V }
+  : never
