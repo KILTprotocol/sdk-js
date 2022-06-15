@@ -84,24 +84,29 @@ interface PalletDidLookupConnectionRecord extends Struct {
   readonly deposit: Deposit
 }
 
+type LinkableAccountJson = JsonEnum<
+  PalletDidLookupLinkableAccountLinkableAccountId['type'],
+  string | Uint8Array
+>
+
+type MultiSignatureJson = JsonEnum<
+  'MultiSignature' | 'EthereumSignature',
+  JsonEnum<SignatureType, string | Uint8Array>
+>
+
 type WithEtherumSupport = {
   tx: {
     didLookup: {
       associateAccount: AugmentedSubmittable<
         (
-          account: { AccountId20: any } | { AccountId32: any },
+          account: LinkableAccountJson,
           expiration: u64 | AnyNumber | Uint8Array,
-          proof:
-            | { MultiSignature: any }
-            | { EthereumSignature: any }
-            | string
-            | Uint8Array
+          proof: MultiSignatureJson
         ) => SubmittableExtrinsic
       >
       removeAccountAssociation: AugmentedSubmittable<
-        (
-          account: { AccountId20: any } | { AccountId32: any }
-        ) => SubmittableExtrinsic
+        (account: LinkableAccountJson) => SubmittableExtrinsic,
+        [PalletDidLookupLinkableAccountLinkableAccountId]
       >
     }
   }
@@ -109,18 +114,14 @@ type WithEtherumSupport = {
     didLookup: {
       connectedDids: AugmentedQuery<
         'promise',
-        (
-          arg: JsonEnum<'AccountId20' | 'AccountId32', string | Uint8Array>
-        ) => Option<PalletDidLookupConnectionRecord>
+        (arg: LinkableAccountJson) => Option<PalletDidLookupConnectionRecord>,
+        [PalletDidLookupLinkableAccountLinkableAccountId]
       >
       connectedAccounts: AugmentedQueryDoubleMap<
         'promise',
         (
           didId: string | Uint8Array,
-          accountId: JsonEnum<
-            'AccountId20' | 'AccountId32',
-            string | Uint8Array
-          >
+          accountId: LinkableAccountJson
         ) => Option<bool>,
         [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]
       >
