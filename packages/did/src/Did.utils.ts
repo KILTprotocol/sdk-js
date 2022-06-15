@@ -465,14 +465,17 @@ export function assembleKeyUri(
 }
 
 /**
- * @param key
- * @param value
+ * Helper function to simplify creating polkadot's SCALE codec enum types.
+ *
+ * @param variant String describing the enum variant. Will be capitalized to yield the key of the returned object's single property.
+ * @param value Value associated with the variant. Will be the value of the returned object's single property.
+ * @returns Object in the form { Variant: value }.
  */
 export function makeJsonEnum<K extends string, V>(
-  key: K,
+  variant: K,
   value: V
 ): JsonEnum<Capitalize<K>, V> {
   return {
-    [key.replace(/^[a-z]/g, (s) => s.toUpperCase())]: value,
+    [variant.replace(/^[a-z]/g, (s) => s.toUpperCase())]: value,
   } as JsonEnum<Capitalize<K>, V>
 }
