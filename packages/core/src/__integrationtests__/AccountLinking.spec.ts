@@ -163,7 +163,7 @@ describe('When there is an on-chain DID', () => {
     })
   })
 
-  describe.each(['ed25519', 'sr25519', 'ecdsa'])(
+  describe.each(['ed25519', 'sr25519', 'ecdsa', 'ethereum'])(
     'and an %s account different than the sender to link',
     (keytype) => {
       let keypair: KeyringPair

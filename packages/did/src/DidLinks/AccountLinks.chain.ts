@@ -17,6 +17,7 @@ import type {
 import {
   decodeAddress,
   encodeAddress,
+  ethereumEncode,
   signatureVerify,
 } from '@polkadot/util-crypto'
 import type {
@@ -36,7 +37,16 @@ import type {
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
-import { assert, BN, u8aToHex, u8aToU8a, u8aWrapBytes } from '@polkadot/util'
+import {
+  assert,
+  BN,
+  stringToU8a,
+  u8aConcatStrict,
+  u8aToHex,
+  u8aToU8a,
+  u8aWrapBytes,
+  U8A_WRAP_ETHEREUM,
+} from '@polkadot/util'
 import type Keyring from '@polkadot/keyring'
 
 import type {
@@ -223,7 +233,7 @@ export async function queryConnectedAccountsForDid(
           return encodeAddress(accountAddress.asAccountId32, networkPrefix)
         // linked account is ethereum address (ethereum-enabled storage version)
         if (accountAddress.isAccountId20)
-          return accountAddress.asAccountId20.toHex()
+          return ethereumEncode(accountAddress.asAccountId20)
       }
       // linked account is substrate account (legacy storage version)
       return encodeAddress(accountAddress.toU8a(), networkPrefix)
@@ -453,7 +463,15 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
       validTill,
     ])
     .toU8a()
-  const paddedDetails = u8aToHex(u8aWrapBytes(encodedDetails))
+  const paddedDetails = u8aToHex(
+    decodeAddress(accountAddress).length > 20
+      ? u8aWrapBytes(encodedDetails)
+      : u8aConcatStrict([
+          U8A_WRAP_ETHEREUM,
+          stringToU8a(`${encodedDetails.length}`),
+          encodedDetails,
+        ])
+  )
   // The signature may be prefixed; so we try to verify the signature without the prefix first.
   // If it fails, we try the same with the prefix and return the result of the second operation.
   let signature = u8aToU8a(await signingCallback(paddedDetails, accountAddress))
