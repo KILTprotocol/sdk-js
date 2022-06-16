@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const { HttpProvider, WsProvider, ApiPromise } = require('@polkadot/api')
+const { HttpProvider, WsProvider } = require('@polkadot/api')
 const yargs = require('yargs')
 const fs = require('fs')
 
@@ -19,7 +19,6 @@ const { argv } = yargs
     type: 'string',
     demandOption: true,
     requiresArg: true,
-    coerce: (val) => (Array.isArray(val) ? val.pop() : val),
   })
   .help()
   .alias('help', 'h')
@@ -48,10 +47,13 @@ async function fetch() {
 
   const metadata = JSON.stringify({ result })
 
-  console.log(
-    `writing metadata to ${argv.outfile}:\n${metadata.substring(0, 100)}...`
-  )
-  fs.writeFileSync(argv.outfile, metadata)
+  const outfile = Array.isArray(argv.outfile) ? argv.outfile : [argv.outfile]
+  outfile.forEach((file) => {
+    console.log(
+      `writing metadata to ${file}:\n${metadata.substring(0, 100)}...`
+    )
+    fs.writeFileSync(file, metadata)
+  })
   console.log('success')
   exitCode = 0
 }
