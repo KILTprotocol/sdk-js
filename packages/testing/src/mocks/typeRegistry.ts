@@ -13,7 +13,7 @@ import type { HexString } from '@polkadot/util/types'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { Metadata, TypeRegistry } from '@polkadot/types'
 
-import metaStatic from './metadata/develop.json'
+import { result as metaStatic } from './metadata/spiritnet.json'
 
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
 export type StaticMetadata =
@@ -23,7 +23,7 @@ export type StaticMetadata =
   | Record<string, unknown>
 
 export function createRegistryFromMetadata(
-  meta: StaticMetadata = metaStatic
+  meta: StaticMetadata = metaStatic as HexString
 ): TypeRegistry {
   const registry = new TypeRegistry()
   const metadata = new Metadata(registry, meta)
@@ -33,7 +33,7 @@ export function createRegistryFromMetadata(
 }
 
 export function createAugmentedApi(
-  meta: StaticMetadata = metaStatic
+  meta: StaticMetadata = metaStatic as HexString
 ): ApiPromise {
   const registry = new TypeRegistry()
   const metadata = new Metadata(registry, meta)

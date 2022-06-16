@@ -5,16 +5,6 @@ const yargs = require('yargs')
 const fs = require('fs')
 
 const { argv } = yargs
-  .option('format', {
-    alias: 'f',
-    description: 'output format: {hex, json}',
-    type: 'string',
-    default: 'json',
-    choices: ['hex', 'json'],
-    requiresArg: true,
-    // if arg is set multiple times, make the last value count
-    coerce: (val) => (Array.isArray(val) ? val.pop() : val),
-  })
   .option('endpoint', {
     alias: 'e',
     description: 'http or ws endpoint from which to fetch metadata',
@@ -49,24 +39,14 @@ switch (true) {
     )
 }
 
-const api = new ApiPromise({ provider })
-
 let exitCode
 
 async function fetch() {
-  api.connect()
-  await api.isReady
-  let metadata
-  switch (argv.format) {
-    case 'hex':
-      metadata = `"${api.runtimeMetadata.toHex()}"`
-      break
-    case 'json':
-      metadata = JSON.stringify(api.runtimeMetadata.toJSON(), null, 2)
-      break
-    default:
-      throw new Error('unexpected output format')
-  }
+  provider.connect()
+  await provider.isReady
+  const result = await provider.send('state_getMetadata')
+
+  const metadata = JSON.stringify({ result })
 
   console.log(
     `writing metadata to ${argv.outfile}:\n${metadata.substring(0, 100)}...`
@@ -90,7 +70,7 @@ Promise.race([fetch(), timeout])
   })
   .finally(() => {
     console.log('disconnecting...')
-    api.disconnect().then(process.exit(exitCode))
+    provider.disconnect().then(process.exit(exitCode))
     setTimeout(() => {
       console.error(`timeout while waiting for disconnect`)
       process.exit(exitCode)

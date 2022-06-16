@@ -16,7 +16,6 @@
     "lib/**/*"
   ],
   "scripts": {
-    "updateMetadata": "node ./scripts/fetchMetadata.js -o './src/mocks/metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/'",
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
     "build:ts": "yarn build:cjs && yarn build:esm",
