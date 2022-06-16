@@ -8543,6 +8543,7 @@ fsevents@^2.3.2:
     jest-runner: ^27.4.6
     jest-runner-groups: ^2.1.0
     prettier: ^2.4.1
+    rimraf: ^3.0.2
     ts-jest: ^27.1.2
     ts-jest-resolver: ^2.0.0
     ts-node: ^10.4.0
