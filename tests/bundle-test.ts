@@ -8,10 +8,15 @@
 /// <reference lib="dom" />
 
 import type { ApiPromise } from '@polkadot/api'
-import type * as Kilt from '@kiltprotocol/sdk-js'
+import type {
+  EncryptionKeyType,
+  KeyringPair,
+  SubmittableExtrinsic,
+  VerificationKeyType,
+} from '@kiltprotocol/types'
 import type { LightDidSupportedVerificationKeyType } from '@kiltprotocol/did/src'
 
-const kilt = (window as unknown as { kilt: typeof Kilt }).kilt as typeof Kilt
+const { kilt } = window
 
 const {
   Claim,
@@ -28,8 +33,8 @@ const {
   BalanceUtils,
 } = kilt
 
-function getDefaultMigrationHandler(submitter: Kilt.KeyringPair) {
-  return async (e: Kilt.SubmittableExtrinsic) => {
+function getDefaultMigrationHandler(submitter: KeyringPair) {
+  return async (e: SubmittableExtrinsic) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
@@ -37,8 +42,8 @@ function getDefaultMigrationHandler(submitter: Kilt.KeyringPair) {
 }
 
 async function createFullDidFromSeed(
-  identity: Kilt.KeyringPair,
-  keystore: Kilt.Did.DemoKeystore,
+  identity: KeyringPair,
+  keystore: InstanceType<typeof Did.DemoKeystore>,
   seed: string,
   api: ApiPromise
 ) {
@@ -115,7 +120,7 @@ async function runAll() {
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: 'x25519' as Kilt.EncryptionKeyType,
+      type: 'x25519' as EncryptionKeyType,
     },
   }
   const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
@@ -134,7 +139,7 @@ async function runAll() {
 
   const fullDid = await new Did.FullDidCreationBuilder(blockchain.api, {
     publicKey: keypair.publicKey,
-    type: 'ed25519' as Kilt.VerificationKeyType,
+    type: 'ed25519' as VerificationKeyType,
   }).buildAndSubmit(keystore, devFaucet.address, async (tx) => {
     await BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -292,4 +297,4 @@ async function runAll() {
   }
 }
 
-;(window as unknown as { runAll: () => Promise<void> }).runAll = runAll
+window.runAll = runAll
