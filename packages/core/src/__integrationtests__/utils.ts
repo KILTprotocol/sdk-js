@@ -39,22 +39,29 @@ import { connect, init } from '../kilt'
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
-const containerPromise = new GenericContainer(
-  process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
-)
-  .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
-  .withExposedPorts(9944)
-  .withWaitStrategy(Wait.forLogMessage('Idle'))
-  .start()
 export async function initializeApi(): Promise<void> {
-  const started = await containerPromise
-  const port = started.getMappedPort(9944)
-  const host = started.getHost()
-  const WS_ADDRESS = `ws://${host}:${port}`
-  await init({ address: WS_ADDRESS })
-  connect().then(({ api }) =>
-    api.once('disconnected', () => started.stop().catch())
-  )
+  if (process.env.TEST_WS_ADDRESS) {
+    console.log(`connecting to node ${process.env.TEST_WS_ADDRESS}`)
+    await init({ address: process.env.TEST_WS_ADDRESS })
+    connect()
+  } else {
+    const image =
+      process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+    console.log(`using testcontainer with image ${image}`)
+    const testcontainer = new GenericContainer(image)
+      .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
+      .withExposedPorts(9944)
+      .withWaitStrategy(Wait.forLogMessage(/idle/i))
+    const started = await testcontainer.start()
+    const port = started.getMappedPort(9944)
+    const host = started.getHost()
+    const WS_ADDRESS = `ws://${host}:${port}`
+    console.log(`connecting to node ${WS_ADDRESS}`)
+    await init({ address: WS_ADDRESS })
+    connect().then(({ api }) =>
+      api.once('disconnected', () => started.stop().catch())
+    )
+  }
 }
 
 const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
