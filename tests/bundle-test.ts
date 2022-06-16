@@ -1,9 +1,22 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
+
+/// <reference lib="dom" />
+
+import type { ApiPromise } from '@polkadot/api'
+import type {
+  EncryptionKeyType,
+  KeyringPair,
+  SubmittableExtrinsic,
+  VerificationKeyType,
+} from '@kiltprotocol/types'
+import type { LightDidSupportedVerificationKeyType } from '@kiltprotocol/did/src'
+
+const { kilt } = window
 
 const {
   Claim,
@@ -17,18 +30,23 @@ const {
   Utils: { Crypto, Keyring },
   Message,
   MessageBodyType,
-} = window.kilt
+  BalanceUtils,
+} = kilt
 
-function getDefaultMigrationHandler(submitter) {
-  return async (e) => {
+function getDefaultMigrationHandler(submitter: KeyringPair) {
+  return async (e: SubmittableExtrinsic) => {
     await BlockchainUtils.signAndSubmitTx(e, submitter, {
-      reSign: true,
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
   }
 }
 
-async function createFullDidFromSeed(identity, keystore, seed, api) {
+async function createFullDidFromSeed(
+  identity: KeyringPair,
+  keystore: InstanceType<typeof Did.DemoKeystore>,
+  seed: string,
+  api: ApiPromise
+) {
   const lightDid = await Did.DemoKeystoreUtils.createMinimalLightDidFromSeed(
     keystore,
     seed
@@ -55,8 +73,8 @@ async function createFullDidFromSeed(identity, keystore, seed, api) {
 async function runAll() {
   // init sdk kilt config and connect to chain
   const keystore = new Did.DemoKeystore()
-  await window.kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const blockchain = await window.kilt.connect()
+  await kilt.init({ address: 'ws://127.0.0.1:9944' })
+  const blockchain = await kilt.connect()
 
   if (!blockchain) console.error('No blockchain connection established')
   else blockchain.getStats().then((t) => console.info(t))
@@ -66,19 +84,25 @@ async function runAll() {
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const devFaucet = keyring.createFromUri(FaucetSeed)
+
   const alice = await createFullDidFromSeed(
     devFaucet,
     keystore,
     '//Alice',
     blockchain.api
   )
+  if (!alice.encryptionKey)
+    throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
+
   const bob = await createFullDidFromSeed(
     devFaucet,
     keystore,
     '//Bob',
     blockchain.api
   )
+  if (!bob.encryptionKey)
+    throw new Error('Impossible: bob has no encryptionKey')
   console.log('bob setup done')
 
   // Light Did Account creation workflow
@@ -92,11 +116,11 @@ async function runAll() {
   const didCreationDetails = {
     authenticationKey: {
       publicKey: authPublicKey,
-      type: 'ed25519',
+      type: 'ed25519' as LightDidSupportedVerificationKeyType,
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: 'x25519',
+      type: 'x25519' as EncryptionKeyType,
     },
   }
   const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
@@ -115,23 +139,28 @@ async function runAll() {
 
   const fullDid = await new Did.FullDidCreationBuilder(blockchain.api, {
     publicKey: keypair.publicKey,
-    type: 'ed25519',
+    type: 'ed25519' as VerificationKeyType,
   }).buildAndSubmit(keystore, devFaucet.address, async (tx) => {
     await BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
-      reSign: true,
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
   })
 
   const resolved = await Did.resolveDoc(fullDid.uri)
 
-  if (!resolved.metadata.deactivated && resolved.details.uri === fullDid.uri) {
+  if (
+    resolved &&
+    !resolved.metadata.deactivated &&
+    resolved.details?.uri === fullDid.uri
+  ) {
     console.info('Did matches!')
   } else {
     throw new Error('Dids not matching!')
   }
 
-  const extrinsic = await Did.Chain.getDeleteDidExtrinsic()
+  const extrinsic = await Did.Chain.getDeleteDidExtrinsic(
+    BalanceUtils.toFemtoKilt(0)
+  )
   const deleteTx = await fullDid.authorizeExtrinsic(
     extrinsic,
     keystore,
@@ -140,11 +169,10 @@ async function runAll() {
 
   await BlockchainUtils.signAndSubmitTx(deleteTx, devFaucet, {
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
-    reSign: true,
   })
 
   const resolvedAgain = await Did.resolveDoc(fullDid.uri)
-  if (resolvedAgain.metadata.deactivated) {
+  if (resolvedAgain?.metadata.deactivated) {
     console.info('Did successfully deleted!')
   } else {
     throw new Error('Did not successfully deleted')
@@ -176,7 +204,6 @@ async function runAll() {
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, devFaucet, {
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
-    reSign: true,
   })
 
   const stored = await DriversLicense.verifyStored()
@@ -215,21 +242,24 @@ async function runAll() {
   else {
     if (signed.verifyData()) console.info('Req4Att data verified')
     else throw new Error('Req4Att not verifiable')
-    if (signed.verifySignature()) console.info('Req4Att signature verified')
+    if (await signed.verifySignature())
+      console.info('Req4Att signature verified')
     else throw new Error('Req4Att Signature mismatch')
     if (signed.claim.contents !== content)
       throw new Error('Claim content inside Req4Att mismatching')
   }
 
   console.log('Test Messaging with encryption + decryption')
-  const body = {
-    content: {
-      requestForAttestation: signed,
+  const message = new Message(
+    {
+      content: {
+        requestForAttestation: signed,
+      },
+      type: MessageBodyType.REQUEST_ATTESTATION,
     },
-    type: MessageBodyType.REQUEST_ATTESTATION,
-  }
-
-  const message = new Message(body, bob.uri, alice.uri)
+    bob.uri,
+    alice.uri
+  )
   const encryptedMessage = await message.encrypt(
     bob.encryptionKey.id,
     bob,
@@ -259,9 +289,8 @@ async function runAll() {
   )
   await BlockchainUtils.signAndSubmitTx(authorizedAttTx, devFaucet, {
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
-    reSign: true,
   })
-  if (credential.verify()) {
+  if (await credential.verify()) {
     console.info('Attested Claim verified with chain.')
   } else {
     throw new Error('attested Claim not verifiable with chain')
