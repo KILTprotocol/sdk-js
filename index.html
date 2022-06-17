@@ -1,392 +1,51 @@
-<!doctype html>
-<html class="default no-js">
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>@kiltprotocol/sdk-js</title>
-	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="assets/css/main.css">
-</head>
-<body>
-<header>
-	<div class="tsd-page-toolbar">
-		<div class="container">
-			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
-					<div class="field">
-						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
-						<input id="tsd-search-field" type="text" />
-					</div>
-					<ul class="results">
-						<li class="state loading">Preparing search index...</li>
-						<li class="state failure">The search index is not available</li>
-					</ul>
-					<a href="index.html" class="title">@kiltprotocol/sdk-js</a>
-				</div>
-				<div class="table-cell" id="tsd-widgets">
-					<div id="tsd-filter">
-						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
-						<div class="tsd-filter-group">
-							<div class="tsd-select" id="tsd-filter-visibility">
-								<span class="tsd-select-label">All</span>
-								<ul class="tsd-select-list">
-									<li data-value="public">Public</li>
-									<li data-value="protected">Public/Protected</li>
-									<li data-value="private" class="selected">All</li>
-								</ul>
-							</div>
-							<input type="checkbox" id="tsd-filter-inherited" checked />
-							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-						</div>
-					</div>
-					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="tsd-page-title">
-		<div class="container">
-			<ul class="tsd-breadcrumb">
-				<li>
-					<a href="globals.html">Globals</a>
-				</li>
-			</ul>
-			<h1>@kiltprotocol/sdk-js</h1>
-		</div>
-	</div>
-</header>
-<div class="container container-main">
-	<div class="row">
-		<div class="col-8 col-content">
-			<div class="tsd-panel tsd-typography">
-				<p><a href="https://kilt.io"><img src="https://user-images.githubusercontent.com/39338561/122415864-8d6a7c00-cf88-11eb-846f-a98a936f88da.png" alt="">
-				</a></p>
-				<p><img src="https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg" alt="Lint and Test"></p>
-				<p>Data sovereignty and interoperability</p>
-				<a href="#mash-net-sdk" id="mash-net-sdk" style="color: inherit; text-decoration: none;">
-					<h1>Mash-Net SDK</h1>
-				</a>
-				<p>The open-source KILT SDK is written in TypeScript and enables you to quickly and easily build dApps around new business use cases. KILT is a protocol for self-sovereign data and interoperability built on top of the permissionless KILT blockchain. The SDK provides collection of classes and methods you can utilize to interact with the KILT Protocol.</p>
-				<ul>
-					<li><strong>Self-sovereign data.</strong> Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexiblity and security.</li>
-					<li><strong>Interoperability.</strong> Claim Types (CTYPEs) facilitate the adoption of standardised credential content structures.</li>
-				</ul>
-				<p>To learn more, checkout the KILT <a href="https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf">Whitepaper</a> or see our <a href="https://kilt.io/kilt-data-sovereignty-and-interoperability/">how it works</a> video.
-				Regarding the privacy enhancement, please have a look at our <a href="https://drive.google.com/file/d/16HHPn1BA5o-W8QCeHfoTI1tNb5yQUZzt/view?usp=sharing">lightning talk for Sub0 April 2020</a>.</p>
-				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
-					<h2>Documentation</h2>
-				</a>
-				<blockquote>
-					<p>To avoid confusion between the latest released SDK version and the <code>develop</code> default branch, the links in the list <strong>point to the master branch</strong>, which always contains the latest official release of the SDK.</p>
-				</blockquote>
-				<p><a href="https://kilt.io">KILT</a> documentation is provided in several guides and demos.</p>
-				<ul>
-					<li><a href="https://github.com/KILTprotocol/kilt-workshop-101">KILT workshop</a> 👈 Start here to get familiar with the basics</li>
-					<li><a href="https://github.com/KILTprotocol/sdk-js/blob/master/docs/getting-started.md">Getting started guide</a> 👈 Start here if you&#39;d like to include KILT in your project</li>
-					<li><a href="https://dev.kilt.io/">KILT Developer overview</a> 👈 Checkout for an overview of the codebase, infrastructure and deployed KILT instances.</li>
-					<li><a href="https://kiltprotocol.github.io/sdk-js">API documentation</a></li>
-					<li><a href="https://kilt.io/developers-sub/kilt-demo-client/">Demo client</a></li>
-					<li><a href="https://github.com/KILTprotocol/demo-client">Demo client code</a></li>
-				</ul>
-				<p>To help improve, please see our <a href="/docs/contribution-guide.md">contribution page</a>.</p>
-				<a href="#how-to-install-the-sdk" id="how-to-install-the-sdk" style="color: inherit; text-decoration: none;">
-					<h2>How to install the SDK</h2>
-				</a>
-				<p>Install the KILT-SDK by running the following commands:</p>
-				<pre><code class="language-bash">npm install @kiltprotocol/sdk-js
-</code></pre>
-				<p>Or with <code>yarn</code>:</p>
-				<pre><code class="language-bash">yarn add @kiltprotocol/sdk-js
-</code></pre>
-				<a href="#embed-bundle-in-html" id="embed-bundle-in-html" style="color: inherit; text-decoration: none;">
-					<h2>Embed bundle in HTML</h2>
-				</a>
-				<p>We include UMD bundles in our release and prerelease NPM publishes.
-				They can be used to easily embed our complete SDK.</p>
-				<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://unpkg.com/@kiltprotocol/sdk-js@dev/dist/sdk-js.min.umd.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-</code></pre>
-				<p>You can find the library on <code>window.kilt</code>, and use it completely dependency free.</p>
-				<a href="#example" id="example" style="color: inherit; text-decoration: none;">
-					<h2>Example</h2>
-				</a>
-				<p>Please have a look at our examples within our <a href="/docs/getting-started.md">getting started guide</a>.</p>
-				<p>A claim type (CTYPE) can be a credential of any kind, e.g. a drivers license, a sports club membership or even a fairtrade certificate for chocolate.</p>
-				<p>Building a claim must be done by the defined CTYPE respective fields.
-				Now we can easily create the KILT compliant claim. We have to include the full CTYPE object, the raw claim object and the address of the owner/creator of the claim in the constructor:</p>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> rawClaim = {
-    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Alice&#x27;</span>,
-    <span class="hljs-attr">age</span>: <span class="hljs-number">29</span>,
-}
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>API Documentation</title><meta name="description" content="Documentation for API Documentation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">API Documentation</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1> API Documentation </h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography"><p><a href="https://kilt.io"><img src="https://user-images.githubusercontent.com/39338561/122415864-8d6a7c00-cf88-11eb-846f-a98a936f88da.png" alt="">
+</a></p>
+<p><a href="https://github.com/KILTprotocol/sdk-js/actions/workflows/tests.yml"><img src="https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg" alt="Lint and Test"></a>
+<a href="https://github.com/KILTprotocol/sdk-js/actions/workflows/tests-polkadot-deps.yml"><img src="https://github.com/KILTprotocol/sdk-js/actions/workflows/tests-polkadot-deps.yml/badge.svg?event=schedule" alt="Compatible with latest dependencies"></a></p>
 
-<span class="hljs-keyword">const</span> claim = <span class="hljs-keyword">new</span> Kilt.Claim(ctype, rawClaim, claimer)
+<a href="#kilt-javascript--typescript-sdk" id="kilt-javascript--typescript-sdk" style="color: inherit; text-decoration: none;">
+  <h1>KILT JavaScript / TypeScript SDK</h1>
+</a>
+<p>The open-source KILT SDK is written in TypeScript and enables developers to quickly and easily build dApps around new business use cases.
+KILT is a protocol for self-sovereign data and interoperability built on top of the permissionless KILT blockchain.
+The SDK provides collection of classes and methods to interact with the KILT Protocol.</p>
+<ul>
+<li><strong>Self-sovereign data.</strong> Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexibility and security.</li>
+<li><strong>Interoperability.</strong> Claim Types (CTYPEs) facilitate the adoption of standardised credential content structures.</li>
+</ul>
 
-Claim {
-    <span class="hljs-attr">cType</span>:<span class="hljs-string">&#x27;0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0&#x27;</span>,
-    <span class="hljs-attr">contents</span>: {
-        <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Alice&#x27;</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">29</span> },
-    <span class="hljs-attr">owner</span>: <span class="hljs-string">&#x27;5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz&#x27;</span>
-}
+<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+  <h2>Documentation</h2>
+</a>
+<p>Head over to our <a href="https://kilt.io">official website</a> or our <a href="https://docs.kilt.io">documentation hub</a> to explore what KILT can offer to new and existing projects.</p>
+<p>To help improve, please refer to our <a href="/docs/contribution-guide.md">contribution page</a>.</p>
+
+<a href="#how-to-install-the-sdk" id="how-to-install-the-sdk" style="color: inherit; text-decoration: none;">
+  <h2>How to install the SDK</h2>
+</a>
+<p>Install the KILT-SDK by running the following commands:</p>
+<pre><code class="language-bash"><span class="hl-0">npm install @kiltprotocol/sdk-js</span>
 </code></pre>
-				<a href="#development-setup" id="development-setup" style="color: inherit; text-decoration: none;">
-					<h2>Development Setup</h2>
-				</a>
-				<p><a href="/docs/development-setup.md">Development Setup</a></p>
-				<a href="#job-board" id="job-board" style="color: inherit; text-decoration: none;">
-					<h2>Job Board</h2>
-				</a>
-				<p>Check to see if we have any <a href="https://kilt.io/job-offers/">Job Offers</a></p>
-				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
-					<h2>License</h2>
-				</a>
-				<p><a href="/LICENSE">License</a></p>
-			</div>
-		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
-			<nav class="tsd-navigation primary">
-				<ul>
-					<li class="globals  ">
-						<a href="globals.html"><em>Globals</em></a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/actorstypes.html">Actors<wbr>Types</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/attestationutils.html">Attestation<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/attestedclaim.html">Attested<wbr>Claim</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/attestedclaimutils.html">Attested<wbr>Claim<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/attester.html">Attester</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/balance.html">Balance</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/balanceutils.html">Balance<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/blockchchainutils.html">Blockchchain<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ctypemetadata.html">CType<wbr>Metadata</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ctypeschema.html">CType<wbr>Schema</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ctypeutils.html">CType<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/claimutils.html">Claim<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/claimer.html">Claimer</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/configservice.html">Config<wbr>Service</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/did.html">DID</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/didutils.html">DIDUtils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/datautils.html">Data<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/decode.html">Decode</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/delegationbasenode.html">Delegation<wbr>Base<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/delegationdecoder.html">Delegation<wbr>Decoder</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/delegationnode.html">Delegation<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/delegationnodeutils.html">Delegation<wbr>Node<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/delegationrootnode.html">Delegation<wbr>Root<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/errorhandler.html">Error<wbr>Handler</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/iattestation.html">IAttestation</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/iattestedclaim.html">IAttested<wbr>Claim</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ibalance.html">IBalance</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/iblockchain.html">IBlockchain</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ictype.html">ICType</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ictypemetadata.html">ICType<wbr>Metadata</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/iclaim.html">IClaim</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/idelegation.html">IDelegation</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/iidentity.html">IIdentity</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/imessage.html">IMessage</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/ipublicidentity.html">IPublic<wbr>Identity</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/iquote.html">IQuote</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/irequestforattestation.html">IRequest<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/isubscriptionpromise.html">ISubscription<wbr>Promise</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/iterms.html">ITerms</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/kilt.html">Kilt</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/messageutils.html">Message<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/messaging.html">Messaging</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/presentationutils.html">Presentation<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/publicidentity.html">Public<wbr>Identity</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/quote.html">Quote</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/quoteschema.html">Quote<wbr>Schema</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/quoteutils.html">Quote<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/requestforattestationutils.html">Request<wbr>For<wbr>Attestation<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/sdkerrors.html">SDKErrors</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/subscriptionpromise.html">Subscription<wbr>Promise</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/uuid.html">UUID</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/vcexport.html">VCExport</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/vcexporttypes.html">VCExport<wbr>Types</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/verificationutils.html">Verification<wbr>Utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/verifier.html">Verifier</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/chain_helpers_src_blockchainapiconnection.html">chain-<wbr>helpers/src/blockchain<wbr>Api<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/core_src_delegation.html">core/src/delegation</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/vc_export_src.html">vc-<wbr>export/src</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/vc_export_src_vc_js.html">vc-<wbr>export/src/vc-<wbr>js</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/vc_export_src_vc_js_suites.html">vc-<wbr>export/src/vc-<wbr>js/suites</a>
-					</li>
-				</ul>
-			</nav>
-			<nav class="tsd-navigation secondary menu-sticky">
-				<ul class="before-current">
-				</ul>
-			</nav>
-		</div>
-	</div>
-</div>
-<footer>
-	<div class="container">
-		<h2>Legend</h2>
-		<div class="tsd-legend-group">
-			<ul class="tsd-legend">
-				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
-				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
-				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-			</ul>
-		</div>
-	</div>
-</footer>
-<div class="overlay"></div>
-<script src="assets/js/main.js"></script>
-</body>
-</html>
+<p>or with <code>yarn</code>:</p>
+<pre><code class="language-bash"><span class="hl-0">yarn add @kiltprotocol/sdk-js</span>
+</code></pre>
+
+<a href="#how-to-embed-the-bundle-in-html" id="how-to-embed-the-bundle-in-html" style="color: inherit; text-decoration: none;">
+  <h2>How to embed the bundle in HTML</h2>
+</a>
+<p>We include UMD bundles in our release and prerelease NPM publishes.
+They can be used to easily embed our complete SDK.</p>
+<pre><code class="language-html"><span class="hl-1">&lt;</span><span class="hl-2">script</span><span class="hl-3"> </span><span class="hl-4">src</span><span class="hl-3">=</span><span class="hl-5">&quot;https://unpkg.com/@kiltprotocol/sdk-js@dev/dist/sdk-js.min.umd.js&quot;</span><span class="hl-1">&gt;&lt;/</span><span class="hl-2">script</span><span class="hl-1">&gt;</span>
+</code></pre>
+<p>You can find the library on <code>window.kilt</code>, and use it completely dependency free.</p>
+
+<a href="#job-board" id="job-board" style="color: inherit; text-decoration: none;">
+  <h2>Job Board</h2>
+</a>
+<p>Check to see if we have any <a href="https://www.kilt.io/community/careers/">Job Offers</a></p>
+
+<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+  <h2>License</h2>
+</a>
+<p><a href="/LICENSE">License</a></p>
+</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Modules</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_chain_helpers.html">@kiltprotocol/chain-<wbr/>helpers</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_config.html">@kiltprotocol/config</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_core.html">@kiltprotocol/core</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_did.html">@kiltprotocol/did</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_messaging.html">@kiltprotocol/messaging</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_sdk_js.html">@kiltprotocol/sdk-<wbr/>js</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_types.html">@kiltprotocol/types</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_utils.html">@kiltprotocol/utils</a></li><li class=" tsd-kind-module"><a href="modules/_kiltprotocol_vc_export.html">@kiltprotocol/vc-<wbr/>export</a></li></ul></nav></div></div></div><footer class=""><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li><li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li><li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li><li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li><li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li><li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="overlay"></div><script src="assets/main.js"></script></body></html>
