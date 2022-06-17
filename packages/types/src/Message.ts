@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module IMessage
  */
 
 import type { AnyJson } from '@polkadot/types/types'
@@ -190,7 +185,7 @@ export interface IConfirmPayment extends IMessageBodyBase {
 export interface IRequestCredentialContent {
   cTypes: Array<{
     cTypeHash: ICType['hash']
-    trustedAttesters?: Array<IDidDetails['did']>
+    trustedAttesters?: Array<IDidDetails['uri']>
     requiredProperties?: string[]
   }>
   challenge?: string
@@ -285,7 +280,7 @@ export type CompressedRequestCredentialContent = [
   Array<
     [
       ICType['hash'],
-      Array<IDidDetails['did']> | undefined,
+      Array<IDidDetails['uri']> | undefined,
       string[] | undefined
     ]
   >,
@@ -309,7 +304,7 @@ export type CompressedRequestAttestation = [
 
 export type CompressedRequestDelegationApproval = [
   CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
+  [DidSignature['signature'], DidSignature['keyUri']],
   AnyJson
 ]
 export type CompressedRequestAcceptDelegation = [
@@ -319,8 +314,8 @@ export type CompressedRequestAcceptDelegation = [
 
 export type CompressedSubmitDelegationApproval = [
   CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
-  [DidSignature['signature'], DidSignature['keyId']]
+  [DidSignature['signature'], DidSignature['keyUri']],
+  [DidSignature['signature'], DidSignature['keyUri']]
 ]
 export type CompressedSubmitAcceptDelegation = [
   MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
@@ -371,18 +366,18 @@ export type CompressedMessageBody =
 /**
  * - `body` - The body of the message, see [[MessageBody]].
  * - `createdAt` - The timestamp of the message construction.
- * - `receiverAddress` - The public SS58 address of the receiver.
- * - `senderAddress` - The public SS58 address of the sender.
- * - `senderBoxPublicKex` - The public encryption key of the sender.
+ * - `sender` - The DID of the sender.
+ * - `receiver` - The DID of the receiver.
  * - `messageId` - The message id.
+ * - `receivedAt` - The timestamp of the message reception.
  * - `inReplyTo` - The id of the parent-message.
  * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
  */
 export interface IMessage {
   body: MessageBody
   createdAt: number
-  sender: IDidDetails['did']
-  receiver: IDidDetails['did']
+  sender: IDidDetails['uri']
+  receiver: IDidDetails['uri']
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -399,12 +394,12 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * This adds the following fields:
  * - `ciphertext` - The encrypted message content.
  * - `nonce` - The encryption nonce.
- * - `receiverKeyId` - The identifier of a DID-associated public key to which to encrypt.
- * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
+ * - `receiverKeyUri` - The URI of the receiver's encryption key.
+ * - `senderKeyUri` - The URI of the sender's encryption key.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: DidPublicKey['id']
-  senderKeyId: DidPublicKey['id']
+  receiverKeyUri: DidPublicKey['uri']
+  senderKeyUri: DidPublicKey['uri']
   ciphertext: string
   nonce: string
 }

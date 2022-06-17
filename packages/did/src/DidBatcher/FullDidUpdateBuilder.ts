@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -12,13 +12,14 @@ import type {
   DidEncryptionKey,
   KeystoreSigner,
   IIdentity,
-  IDidIdentifier,
+  DidIdentifier,
   DidVerificationKey,
   NewDidVerificationKey,
   NewDidEncryptionKey,
   DidServiceEndpoint,
   DidKey,
   SubmittableExtrinsic,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -37,14 +38,14 @@ import { deriveChainKeyId } from './FullDidBuilder.utils.js'
 
 export type FullDidUpdateBuilderCreationDetails = {
   authenticationKey: DidVerificationKey
-  identifier: IDidIdentifier
+  identifier: DidIdentifier
   keyAgreementKeys?: DidEncryptionKey[]
   assertionKey?: DidVerificationKey
   delegationKey?: DidVerificationKey
   serviceEndpoints?: DidServiceEndpoint[]
 }
 
-export type FullDidUpdateHandler = (
+export type FullDidUpdateCallback = (
   didUpdateExtrinsicBatch: SubmittableExtrinsic
 ) => Promise<void>
 
@@ -54,7 +55,8 @@ export type FullDidUpdateHandler = (
  * A builder to batch multiple changes before a DID update.
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
-  protected identifier: IDidIdentifier
+  protected identifier: DidIdentifier
+  protected uri: IDidDetails['uri']
   protected batch: Extrinsic[] = []
 
   protected oldAuthenticationKey: DidVerificationKey
@@ -86,13 +88,14 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   /**
    * Initialize a DID update with the information contained in the provided full DID.
    *
-   * @param api The [[ApiPromise]] object to encode/decoded types as needed.
+   * @param api The ApiPromise object to encode/decoded types as needed.
    * @param details The [[FullDidDetails]] object.
    */
   public constructor(api: ApiPromise, details: FullDidDetails) {
     super(api)
 
     this.identifier = details.identifier
+    this.uri = details.uri
     this.oldAuthenticationKey = details.authenticationKey
     this.oldAssertionKey = details.attestationKey
     this.oldDelegationKey = details.delegationKey
@@ -115,21 +118,17 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * All update operations after this function is called are batched and signed with the new authentication key.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new authentication key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public setAuthenticationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check that no other authentication key has already been set.
     if (this.newAuthenticationKey) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'A new authentication key has already been marked for addition.'
       )
     }
@@ -150,7 +149,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * The operation will fail in the following cases:
    *   - The starting state already has the provided encryption key
    *   - There was already a key with the same ID marked for deletion.
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a key with the same ID marked for addition.
    *
    * @param key The new [[NewDidEncryptionKey]] to add to the DID.
@@ -160,13 +159,13 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // 1. Check if the key is already present in the DID.
     if (this.oldKeyAgreementKeys.has(newKeyId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${newKeyId} already present under the full DID.`
       )
     }
     // 2. Check if the key has already been marked for deletion.
     if (this.keyAgreementKeysToDelete.has(newKeyId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${newKeyId} has already been marked for deletion and cannot be re-added in the same operation.`
       )
     }
@@ -184,7 +183,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark an encryption key to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have a key with the provided ID
    *   - There was already a key with the same ID marked for addition.
    *   - There was already a key with the same ID marked for deletion.
@@ -193,26 +192,22 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeEncryptionKey(keyId: DidKey['id']): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the key exists in the DID.
     if (!this.oldKeyAgreementKeys.has(keyId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${keyId} not present under the full DID.`
       )
     }
     // 2. Check if the key has already been marked for addition.
     if (this.newKeyAgreementKeys.has(keyId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${keyId} has already been marked for addition and cannot be deleted in the same operation.`
       )
     }
     // 3. Check if the key has already been marked for deletion.
     if (this.keyAgreementKeysToDelete.has(keyId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${keyId} has already been marked for deletion. Failing since this may lead to unexpected behaviour.`
       )
     }
@@ -233,12 +228,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeAllEncryptionKeys(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
-
+    this.checkBuilderConsumption()
     ;[...this.oldKeyAgreementKeys.keys()].forEach((kId) => {
       this.removeEncryptionKey(kId)
     })
@@ -251,7 +241,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * The operation will fail in the following cases:
    *   - The old attestation key was already marked for deletion.
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new attestation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
@@ -260,7 +250,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public setAttestationKey(key: NewDidVerificationKey): this {
     // Check that the attestation key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'The assertion key has already been marked for deletion.'
       )
     }
@@ -278,7 +268,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark the attestation key to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have an attestation key
    *   - There was already an attestation key marked for addition
    *   - The old attestation key was already marked for deletion.
@@ -286,26 +276,22 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeAttestationKey(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the DID has an attestation key.
     if (!this.oldAssertionKey) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'The DID does not have an attestation key to remove.'
       )
     }
     // 2. Check if another attestation key was already marked for addition.
     if (this.newAssertionKey.action === 'update') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'A new assertion key has already been marked for addition.'
       )
     }
     // 3. Check that the old key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another assertion key was already been marked for deletion. Failing since this may lead to unexpected behaviour.'
       )
     }
@@ -323,7 +309,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * The operation will fail in the following cases:
    *   - The old delegation key was already marked for deletion.
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new delegation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
@@ -332,7 +318,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public setDelegationKey(key: NewDidVerificationKey): this {
     // Check that the delegation key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'The delegation key has already been marked for deletion.'
       )
     }
@@ -350,7 +336,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark the delegation key to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have an delegation key
    *   - There was already an attestation key marked for addition
    *   - The old attestation key was already marked for deletion.
@@ -358,24 +344,20 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeDelegationKey(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the DID has a delegation key.
     if (!this.oldDelegationKey) {
       throw new Error('The DID does not have a delegation key to remove.')
     }
     // 2. Check that a new key has not already been marked for addition.
     if (this.newDelegationKey.action === 'update') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'A new delegation key has already been marked for addition.'
       )
     }
     // 3. Check that the old key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another delegation key was already been marked for deletion. Failing since this may lead to unexpected behaviour.'
       )
     }
@@ -393,7 +375,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * The operation will fail in the following cases:
    *   - The starting state already has the provided service endpoint
    *   - There was already a service with the same ID marked for deletion.
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a service with the same ID marked for addition.
    *
    * @param service The new [[DidServiceEndpoint]] to add to the DID.
@@ -402,10 +384,11 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public addServiceEndpoint(service: DidServiceEndpoint): this {
     // Check if the service is already present in the DID.
     if (this.oldServiceEndpoints.has(service.id)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Service endpoint with ID ${service.id} already present under the DID.`
       )
     }
+
     const extrinsic = this.apiObject.tx.did.addServiceEndpoint({
       serviceTypes: service.types,
       ...service,
@@ -421,7 +404,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * Mark an service endpoint to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - The starting state does not have a service with the provided ID
    *   - There was already a service with the same ID marked for addition.
    *   - There was already a service with the same ID marked for deletion.
@@ -430,20 +413,16 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeServiceEndpoint(serviceId: DidServiceEndpoint['id']): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // 1. Check that the service exists in the DID.
     if (!this.oldServiceEndpoints.has(serviceId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Service endpoint with ID ${serviceId} not present under the full DID.`
       )
     }
     // 2. Check if the service has already been marked for deletion.
     if (this.serviceEndpointsToDelete.has(serviceId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Service endpoint with ID ${serviceId} has already been marked for deletion. Failing since this may lead to unexpected behaviour.`
       )
     }
@@ -464,12 +443,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    * @returns The builder with the provided operation saved internally.
    */
   public removeAllServiceEndpoints(): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
-
+    this.checkBuilderConsumption()
     ;[...this.oldServiceEndpoints.keys()].forEach((sId) => {
       this.removeServiceEndpoint(sId)
     })
@@ -478,29 +452,27 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and delegates to the closure the [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   * Consume the builder and delegates to the callback the SubmittableExtrinsic containing the details of a DID update with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
-   * @param handler A closure to submit the extrinsic and return the update [[FullDidDetails]] instance.
+   * @param callback A callback to submit the extrinsic and return the update [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
-   * @returns The [[FullDidDetails]] as returned by the provided closure.
+   * @returns The [[FullDidDetails]] as returned by the provided callback.
    */
   /* istanbul ignore next */
-  public async consumeWithHandler(
+  public async buildAndSubmit(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
-    handler: FullDidUpdateHandler,
+    callback: FullDidUpdateCallback,
     atomic = true
   ): Promise<FullDidDetails> {
-    const extrinsic = await this.consume(signer, submitter, atomic)
-    await handler(extrinsic)
-    const fetchedDidDetails = await FullDidDetails.fromChainInfo(
-      this.identifier
-    )
+    const extrinsic = await this.build(signer, submitter, atomic)
+    await callback(extrinsic)
+    const fetchedDidDetails = await FullDidDetails.fromChainInfo(this.uri)
     if (!fetchedDidDetails) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Something went wrong during the creation.'
       )
     }
@@ -508,27 +480,29 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Consume the builder and generate the [[SubmittableExtrinsic]] containing the details of the DID update with the provided details.
+   * Consume the builder and generate the SubmittableExtrinsic containing the details of the DID update with the provided details.
    *
    * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
-   * @returns The [[SubmittableExtrinsic]] containing the details of a DID update with the provided details.
+   * @returns The SubmittableExtrinsic containing the details of a DID update with the provided details.
    */
-  // TODO: Remove ignore when we can test the consume function
+  // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
-  public async consume(
+  public async build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     atomic = true
   ): Promise<SubmittableExtrinsic> {
+    this.checkBuilderConsumption()
+
     const batchFunction = atomic
       ? this.apiObject.tx.utility.batchAll
       : this.apiObject.tx.utility.batch
 
     if (!this.batch.length) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Builder was empty, hence it cannot be consumed.'
       )
     }
@@ -538,7 +512,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
 
     const lastDidNonce = await queryNonce(this.identifier)
 
-    return generateDidAuthenticatedTx({
+    const outputTx = generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: this.oldAuthenticationKey.publicKey,
       alg: getSigningAlgorithmForVerificationKeyType(
@@ -549,5 +523,9 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       txCounter: increaseNonce(lastDidNonce),
       submitter,
     })
+
+    this.consumed = true
+
+    return outputTx
   }
 }

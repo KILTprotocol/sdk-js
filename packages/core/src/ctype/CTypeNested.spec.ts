@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -36,7 +36,7 @@ describe('Nested CTypes', () => {
       title: 'Passport',
       properties: {
         fullName: { type: 'string' },
-        passportIdentifer: { type: 'string' },
+        passportIdentifier: { type: 'string' },
         streetAddress: { type: 'string' },
         city: { type: 'string' },
         state: { type: 'string' },
@@ -62,7 +62,7 @@ describe('Nested CTypes', () => {
 
     claimContents = {
       fullName: 'Archer Macdonald',
-      passportIdentifer: '34jd83jd',
+      passportIdentifier: '34jd83jd',
       streetAddress: '111 reichenberger Strasse',
       city: 'Berlin',
       state: 'Germany',
@@ -74,7 +74,7 @@ describe('Nested CTypes', () => {
     claimDeepContents = {
       passport: {
         fullName: 'Archer Macdonald',
-        passportIdentifer: '34jd83jd',
+        passportIdentifier: '34jd83jd',
         streetAddress: '111 reichenberger Strasse',
         city: 'Berlin',
         state: 'Germany',
@@ -95,8 +95,8 @@ describe('Nested CTypes', () => {
         fullName: {
           $ref: `${passport.schema.$id}#/properties/fullName`,
         },
-        passportIdentifer: {
-          $ref: `${passport.schema.$id}#/properties/passportIdentifer`,
+        passportIdentifier: {
+          $ref: `${passport.schema.$id}#/properties/passportIdentifier`,
         },
         streetAddress: {
           $ref: `${passport.schema.$id}#/properties/streetAddress`,

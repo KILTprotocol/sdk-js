@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module CType
  */
 
 import type { Option } from '@polkadot/types'
@@ -20,7 +15,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { getSchemaPropertiesForHash } from './CType.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
@@ -31,7 +26,7 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
  * If present, the CType schema id is stripped out before submission, as the same is computed on chain.
  *
  * @param ctype The CType to write on the blockchain.
- * @returns The [[SubmittableExtrinsic]] for the `add` call.
+ * @returns The SubmittableExtrinsic for the `add` call.
  */
 export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -43,7 +38,7 @@ export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
   return tx
 }
 
-function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
+function decode(encoded: Option<AccountId>): IDidDetails['uri'] | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
     ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
@@ -58,7 +53,7 @@ function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
  */
 export async function getOwner(
   ctypeHash: ICType['hash']
-): Promise<IDidDetails['did'] | null> {
+): Promise<IDidDetails['uri'] | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.ctype.ctypes<Option<AccountId>>(
     ctypeHash

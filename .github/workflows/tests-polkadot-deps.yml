@@ -1,0 +1,181 @@
+name: Compatible with latest dependencies
+
+on:
+  schedule:
+    - cron: 59 23 * * SAT
+
+env:
+  TESTCONTAINERS_WATCHER_IMG: testcontainers/ryuk:0.3.2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-${{ matrix.node-version }}-updated-dependencies
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.node-version }}-updated-dependencies
+            ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+
+      - name: delete yarn.lock
+        run: rm -f yarn.lock
+      - name: run yarn install
+        run: yarn install
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
+
+      - name: list dependencies
+        run: echo "$(yarn info -A --name-only --json)" > locked_dependencies.txt
+      - name: upload dependencies list
+        uses: actions/upload-artifact@v3
+        with:
+          name: deps-${{ matrix.node-version }}
+          path: |
+            locked_dependencies.txt
+            yarn.lock
+
+      - name: Update metadata to latest spiritnet metadata
+        run: yarn workspace @kiltprotocol/testing node ./scripts/fetchMetadata.js -o ./src/mocks/metadata/spiritnet.json -e wss://spiritnet.kilt.io/
+
+      - name: yarn build
+        run: yarn build
+      - name: zip build
+        run: zip -r build.zip .
+      - name: upload build
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-${{ matrix.node-version }}
+          path: build.zip
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+        required: ['required']
+        include:
+          - node-version: 16.x
+            required: 'optional'
+
+    continue-on-error: ${{ matrix.required == 'optional' }}
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-${{ matrix.node-version }}
+      - name: unzip
+        run: unzip build.zip -d .
+      - name: unit tests
+        run: yarn test:ci
+
+  integration_test:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    strategy:
+      matrix:
+        image: ['latest']
+        required: ['required']
+        include:
+          - image: 'latest-master'
+            required: 'optional'
+
+    continue-on-error: ${{ matrix.required == 'optional' }}
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-14.x
+      - name: unzip
+        run: unzip build.zip -d .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: pull image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: kilt/prototype-chain
+          IMAGE_TAG: ${{ matrix.image }}
+        run: |
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "TESTCONTAINERS_NODE_IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: get cached testcontainers image
+        uses: ./.github/actions/cached-image-pull
+        with:
+          image: ${{ env.TESTCONTAINERS_WATCHER_IMG }}
+
+      - name: run integration tests
+        timeout-minutes: 60
+        run: yarn test:integration:ci
+
+  create-issue:
+    runs-on: ubuntu-latest
+    needs: [test, integration_test]
+    if: failure()
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: deps-14.x
+      - name: set dependencies env
+        run: |
+          echo 'DEPS<<EOF' >> $GITHUB_ENV
+          cat locked_dependencies.txt >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Set date env
+        run: |
+          echo "TODAY=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+      - name: issue-bot
+        uses: imjohnbo/issue-bot@v3
+        with:
+          labels: 'bug, incompatible dependencies, automation'
+          pinned: false
+          close-previous: true
+          linked-comments: true
+          title: SDK no longer compatible with latest dependencies
+          body: |-
+            ## Incompatibilities detected
+
+            A [scheduled test workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) using the latest available dependencies matching our semver ranges has failed.
+            We may need to constrain dependency ranges in our `package.json` or introduce fixes to recover compatibility.
+            Below you can find a summary of dependency versions against which these tests were run.
+
+            _Note: This issue was **automatically created** as a result of scheduled CI tests on ${{env.TODAY}}._
+
+            <details>
+              <summary>Dependency versions</summary>
+
+              ${{env.DEPS}}
+            </details>
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

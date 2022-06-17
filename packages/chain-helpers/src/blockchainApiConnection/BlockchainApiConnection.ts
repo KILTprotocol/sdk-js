@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -11,7 +11,6 @@
  * Other modules can access the [[Blockchain]] as such: `const blockchain = await getConnectionOrConnect()`.
  *
  * @packageDocumentation
- * @module BlockchainApiConnection
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
@@ -58,7 +57,7 @@ export function getConnection(): Promise<Blockchain> | null {
 }
 
 /**
- * Gets the cached blockchain connection, or builds a new one, if non-existant.
+ * Gets the cached blockchain connection, or builds a new one, if non-existent.
  *
  * @returns The cached or newly built blockchain connection instance.
  */

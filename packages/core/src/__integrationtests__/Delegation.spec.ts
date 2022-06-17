@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -44,7 +44,7 @@ async function writeHierarchy(
   ctypeHash: ICType['hash']
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
-    account: delegator.did,
+    account: delegator.uri,
     permissions: [Permission.DELEGATE],
     cTypeHash: ctypeHash,
   })
@@ -69,7 +69,7 @@ async function addDelegation(
   const delegationNode = DelegationNode.newNode({
     hierarchyId,
     parentId,
-    account: delegee.did,
+    account: delegee.uri,
     permissions,
   })
   const signature = await delegationNode.delegeeSign(delegee, signer)
@@ -84,6 +84,9 @@ async function addDelegation(
 
 beforeAll(async () => {
   await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
   signer = new DemoKeystore()
   ;[attester, root, claimer] = await Promise.all([
@@ -148,7 +151,7 @@ describe('and attestation rights have been delegated', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
-      claimer.did
+      claimer.uri
     )
     const request = RequestForAttestation.fromClaim(claim, {
       delegationId: delegatedNode.id,
@@ -157,7 +160,7 @@ describe('and attestation rights have been delegated', () => {
     expect(request.verifyData()).toBeTruthy()
     await expect(request.verifySignature()).resolves.toBeTruthy()
 
-    const attestation = Attestation.fromRequestAndDid(request, attester.did)
+    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
     await attestation
       .getStoreTx()
       .then((tx) =>
@@ -204,7 +207,7 @@ describe('revocation', () => {
     // Test revocation
     await expect(
       delegationA
-        .getRevokeTx(delegator.did)
+        .getRevokeTx(delegator.uri)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -257,7 +260,7 @@ describe('revocation', () => {
 
     await expect(
       delegationA
-        .getRevokeTx(firstDelegee.did)
+        .getRevokeTx(firstDelegee.uri)
         .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
@@ -286,7 +289,7 @@ describe('revocation', () => {
     delegationRoot = await delegationRoot.getLatestState()
     await expect(
       delegationRoot
-        .getRevokeTx(delegator.did)
+        .getRevokeTx(delegator.uri)
         .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )

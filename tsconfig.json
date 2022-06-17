@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.build.json",
+  "include": ["packages/**/*", "jest-setup/*", "docs/*"],
   "compilerOptions": {
     "baseUrl": "./packages",
     "sourceMap": true,
@@ -17,5 +18,5 @@
       "@kiltprotocol/testing": ["testing/src"]
     }
   },
-  "skipLibCheck": true
+  "skipLibCheck": true,
 }

@@ -1,20 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * Requests for attestation are a core building block of the KILT SDK.
- * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
- *
- * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
- * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
- * A RequestForAttestation also supports hiding of claim data during a credential presentation.
- *
- * @packageDocumentation
- * @module RequestForAttestation
  */
 
 import type {
@@ -26,13 +14,12 @@ import type {
   ICredential,
   KeystoreSigner,
   IDidResolver,
-  DidSignature,
   DidPublicKey,
   DidVerificationKey,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DidResolver, DidDetails, DidUtils } from '@kiltprotocol/did'
+import { DidResolver, DidDetails, verifyDidSignature } from '@kiltprotocol/did'
 import * as ClaimUtils from '../claim/Claim.utils.js'
 import { Credential } from '../credential/Credential.js'
 import * as RequestForAttestationUtils from './RequestForAttestation.utils.js'
@@ -57,19 +44,22 @@ export type Options = {
   delegationId?: IDelegationNode['id']
 }
 
+/**
+ * Requests for attestation are a core building block of the KILT SDK.
+ * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
+ *
+ * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
+ * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
+ * A RequestForAttestation also supports hiding of claim data during a credential presentation.
+ *
+ */
 export class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param requestForAttestationInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @param requestForAttestationInput - An object adhering to the [[IRequestForAttestation]] interface.
    * @returns  A new [[RequestForAttestation]] `object`.
-   * @example ```javascript
-   * const serializedRequest =
-   *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
-   * const parsedRequest = JSON.parse(serializedRequest);
-   * RequestForAttestation.fromRequest(parsedRequest);
-   * ```
    */
   public static fromRequest(
     requestForAttestationInput: IRequestForAttestation
@@ -85,9 +75,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    * @param option.legitimations Array of [[Credential]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
    * @returns A new [[RequestForAttestation]] object.
-   * @example ```javascript
-   * const input = RequestForAttestation.fromClaim(claim);
-   * ```
    */
   public static fromClaim(
     claim: IClaim,
@@ -131,22 +118,18 @@ export class RequestForAttestation implements IRequestForAttestation {
     return true
   }
 
-  public claim: IClaim
-  public legitimations: Credential[]
-  public claimerSignature?: DidSignature & { challenge?: string }
-  public claimHashes: string[]
-  public claimNonceMap: Record<string, string>
-  public rootHash: Hash
-  public delegationId: IDelegationNode['id'] | null
+  public claim: IRequestForAttestation['claim']
+  public legitimations: IRequestForAttestation['legitimations']
+  public claimerSignature?: IRequestForAttestation['claimerSignature']
+  public claimHashes: IRequestForAttestation['claimHashes']
+  public claimNonceMap: IRequestForAttestation['claimNonceMap']
+  public rootHash: IRequestForAttestation['rootHash']
+  public delegationId: IRequestForAttestation['delegationId']
 
   /**
    * Builds a new [[RequestForAttestation]] instance.
    *
    * @param requestForAttestationInput - The base object from which to create the input.
-   * @example ```javascript
-   * // create a new request for attestation
-   * const reqForAtt = new RequestForAttestation(requestForAttestationInput);
-   * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
     RequestForAttestationUtils.errorCheck(requestForAttestationInput)
@@ -175,16 +158,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    *
    * @param properties - Properties to remove from the [[Claim]] object.
    * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
-   * @example ```javascript
-   * const rawClaim = {
-   *   name: 'Alice',
-   *   age: 29,
-   * };
-   * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
-   * const reqForAtt = RequestForAttestation.fromClaim(claim);
-   * reqForAtt.removeClaimProperties(['name']);
-   * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
-   * ```
    */
   public removeClaimProperties(properties: string[]): void {
     properties.forEach((key) => {
@@ -202,15 +175,11 @@ export class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether the data is valid.
    * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
    * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
-   * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaim(claim);
-   * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
-   * ```
    */
   public static verifyData(input: IRequestForAttestation): boolean {
     // check claim hash
     if (!RequestForAttestation.verifyRootHash(input)) {
-      throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
+      throw new SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
     }
 
     // verify properties against selective disclosure proof
@@ -223,7 +192,9 @@ export class RequestForAttestation implements IRequestForAttestation {
     )
     // TODO: how do we want to deal with multiple errors during claim verification?
     if (!verificationResult.verified)
-      throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+      throw (
+        verificationResult.errors[0] || new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+      )
 
     // check legitimations
     Credential.validateLegitimations(input.legitimations)
@@ -247,11 +218,6 @@ export class RequestForAttestation implements IRequestForAttestation {
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
    * @returns Whether the signature is correct.
-   * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaim(claim);
-   * await reqForAtt.signWithDid(myKeystore, myDidDetails);
-   * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
-   * ```
    */
   public static async verifySignature(
     input: IRequestForAttestation,
@@ -267,7 +233,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     if (!claimerSignature) return false
     if (challenge && challenge !== claimerSignature.challenge) return false
     const verifyData = makeSigningData(input, claimerSignature.challenge)
-    const { verified } = await DidUtils.verifyDidSignature({
+    const { verified } = await verifyDidSignature({
       signature: claimerSignature,
       message: verifyData,
       expectedVerificationMethod: KeyRelationship.authentication,
@@ -295,7 +261,7 @@ export class RequestForAttestation implements IRequestForAttestation {
 
   public async addSignature(
     sig: string | Uint8Array,
-    keyId: DidPublicKey['id'],
+    keyUri: DidPublicKey['uri'],
     {
       challenge,
     }: {
@@ -303,7 +269,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     } = {}
   ): Promise<this> {
     const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
-    this.claimerSignature = { signature, keyId, challenge }
+    this.claimerSignature = { signature, keyUri, challenge }
     return this
   }
 
@@ -317,7 +283,7 @@ export class RequestForAttestation implements IRequestForAttestation {
       challenge?: string
     } = {}
   ): Promise<this> {
-    const { signature, keyId: signatureKeyId } = await didDetails.signPayload(
+    const { signature, keyUri: signatureKeyId } = await didDetails.signPayload(
       makeSigningData(this, challenge),
       signer,
       keyId

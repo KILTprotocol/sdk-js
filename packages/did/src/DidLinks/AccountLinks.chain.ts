@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,7 +8,7 @@
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   Deposit,
-  IDidIdentifier,
+  DidIdentifier,
   IIdentity,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -38,7 +38,7 @@ export type SubstrateAddress = IIdentity['address']
 export type Address = KiltAddress | SubstrateAddress
 
 interface ConnectionRecord extends Struct {
-  did: Address
+  did: AccountId
   deposit: Deposit
 }
 
@@ -81,7 +81,7 @@ export async function queryAccountLinkDepositInfo(
  */
 export async function queryConnectedDidForAccount(
   linkedAccount: Address
-): Promise<IDidIdentifier | null> {
+): Promise<DidIdentifier | null> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
@@ -97,7 +97,7 @@ export async function queryConnectedDidForAccount(
  * @returns A list of addresses to accounts linked to the DID, encoded using `networkPrefix`.
  */
 export async function queryConnectedAccountsForDid(
-  linkedDid: IDidIdentifier,
+  linkedDid: DidIdentifier,
   networkPrefix = 38
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -135,7 +135,7 @@ export async function queryWeb3Name(
  * @returns True if the DID and account is linked, false otherwise.
  */
 export async function queryIsConnected(
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   account: Address
 ): Promise<boolean> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -165,9 +165,9 @@ export async function queryDepositAmount(): Promise<BN> {
  * will link Account to FullDid and remove any pre-existing links of Account.
  * Account must hold balance to cover for submission fees and storage deposit.
  *
- * @returns An [[Extrinsic]] that must be did-authorized.
+ * @returns An extrinsic that must be did-authorized.
  */
-export async function getAssociateSenderTx(): Promise<Extrinsic> {
+export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.associateSender()
 }
@@ -183,9 +183,9 @@ export async function getAssociateSenderTx(): Promise<Extrinsic> {
  * @param signatureValidUntilBlock The link request will be rejected if submitted later than this block number.
  * @param signature Account's signature over `(DidIdentifier, BlockNumber).toU8a()`.
  * @param sigType The type of key/substrate account which produced the `signature`.
- * @returns An [[Extrinsic]] that must be did-authorized.
+ * @returns An extrinsic that must be did-authorized.
  */
-export async function getAccountSignedAssociationTx(
+export async function getAccountSignedAssociationExtrinsic(
   account: Address,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
@@ -202,7 +202,7 @@ export async function getAccountSignedAssociationTx(
  * Must be signed and submitted by the deposit owner account.
  *
  * @param linkedAccount Account whose link should be released (not the deposit owner).
- * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
+ * @returns The a submittable extrinsic for the `reclaimDeposit` call.
  */
 export async function getReclaimDepositTx(
   linkedAccount: Address
@@ -229,7 +229,7 @@ export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic>
  * @param linkedAccount An account linked to the FullDid which should be unlinked.
  * @returns An Extrinsic that must be did-authorized by the FullDid linked to `linkedAccount`.
  */
-export async function getLinkRemovalByDidTx(
+export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
 ): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -256,7 +256,7 @@ function getMultiSignatureTypeFromKeypairType(
 /**
  * Return the default signer callback, which uses the address argument to crete a signing closure for the given payload.
  *
- * @param keyring The [[Keyring]] to retrieve the signing key.
+ * @param keyring The keyring to retrieve the signing key.
  * @returns The signature generating callback that uses the keyring to sign the input payload using the input address.
  */
 export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
@@ -268,18 +268,18 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
 
 /**
  * Builds an extrinsic to link `account` to a `did` where the fees and deposit are covered by some third account.
- * This extrinsic must be authorized using the [[FullDid]] whose `didIdentifier` was used here.
+ * This extrinsic must be authorized using the FullDid whose `didIdentifier` was used here.
  * Note that in addition to the signing account and did used here, the submitting account will also be able to dissolve the link via reclaiming its deposit!
  *
  * @param accountAddress Address of the account to be linked.
- * @param didIdentifier Method-specific identifier [[FullDid]] to be linked.
+ * @param didIdentifier Method-specific identifier FullDid to be linked.
  * @param signingCallback The signature generation callback that generates the account signature over the encoded (DidIdentifier, BlockNumber) tuple.
  * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
- * @returns An Extrinsic that must be did-authorized by the [[FullDid]] whose identifier was used.
+ * @returns An Extrinsic that must be did-authorized by the FullDid whose identifier was used.
  */
-export async function authorizeLinkWithAccount(
+export async function getAuthorizeLinkWithAccountExtrinsic(
   accountAddress: Address,
-  didIdentifier: IDidIdentifier,
+  didIdentifier: DidIdentifier,
   signingCallback: LinkingSignerCallback,
   nBlocksValid = 10
 ): Promise<Extrinsic> {
@@ -326,7 +326,7 @@ export async function authorizeLinkWithAccount(
   const { crypto } = result
 
   const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
-  return getAccountSignedAssociationTx(
+  return getAccountSignedAssociationExtrinsic(
     accountAddress,
     validTill,
     signature,

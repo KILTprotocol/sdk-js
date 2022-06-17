@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,7 +9,6 @@
  * @group unit/errorhandling
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { ISubmittableResult } from '@kiltprotocol/types'
 import type { EventRecord } from '@polkadot/types/interfaces'
 import { ErrorHandler } from './index'

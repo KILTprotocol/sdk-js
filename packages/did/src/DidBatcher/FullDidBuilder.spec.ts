@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,8 +8,6 @@
 /**
  * @group unit/didbuilder
  */
-
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { ApiPromise } from '@polkadot/api'
 
@@ -37,7 +35,7 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
 }))
 
 class TestAbstractFullDidBuilder extends FullDidBuilder {
-  public consume(
+  public build(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     signer: KeystoreSigner<any>,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -142,7 +140,7 @@ describe('FullDidBuilder', () => {
     const newServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
       types: ['type-new'],
-      urls: ['url-new'],
+      urls: ['x:url-new'],
     }
 
     describe('.addServiceEndpoint()', () => {

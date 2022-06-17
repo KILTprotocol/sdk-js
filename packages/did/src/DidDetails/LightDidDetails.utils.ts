@@ -1,9 +1,12 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
+
+// This module is not part of the public-facing api.
+/* eslint-disable jsdoc/require-jsdoc */
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
@@ -18,7 +21,7 @@ import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { parseDidUri } from '../Did.utils.js'
+import { checkServiceEndpointSyntax } from '../Did.utils.js'
 import {
   LightDidSupportedVerificationKeyType,
   NewLightDidAuthenticationKey,
@@ -72,24 +75,11 @@ export type LightDidCreationDetails = {
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
-   *
-   * @example ```typescript
-   * const authenticationKey = exampleKey;
-   * const services = [
-   *   {
-   *     id: 'test-service',
-   *     types: ['CredentialExposureService'],
-   *     urls: ['http://my_domain.example.org'],
-   *   },
-   * ];
-   * const lightDid = new LightDid({ authenticationKey, services });
-   * RequestForAttestation.fromRequest(parsedRequest);
-   * ```
    */
   serviceEndpoints?: DidServiceEndpoint[]
 }
 
-export type DidMigrationHandler = (
+export type DidMigrationCallback = (
   migrationExtrinsic: SubmittableExtrinsic
 ) => Promise<void>
 
@@ -106,7 +96,7 @@ export function checkLightDidCreationDetails(
 
   if (details.encryptionKey?.type) {
     if (!supportedEncryptionKeyTypes.has(details.encryptionKey.type)) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Encryption key type ${details.encryptionKey.type} is not supported.`
       )
     }
@@ -121,25 +111,15 @@ export function checkLightDidCreationDetails(
   // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
   // when upgrading to a full DID.
   details.serviceEndpoints?.forEach((service) => {
-    let isServiceIdADid = true
-    try {
-      // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-      parseDidUri(service.id)
-    } catch {
-      // Here if parseDidUrl throws -> service.id is NOT a DID.
-      isServiceIdADid = false
-    }
-
-    if (isServiceIdADid) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
-      )
-    }
     // A service ID cannot have a reserved ID that is used for key IDs.
     if (service.id === 'authentication' || service.id === 'encryption') {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
       )
+    }
+    const [, errors] = checkServiceEndpointSyntax(service)
+    if (errors && errors.length) {
+      throw errors[0]
     }
   })
 }
@@ -184,7 +164,7 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   const decoded = base58Decode(rawInput, true)
   const serializationFlag = decoded[0]
   if (serializationFlag !== 0x0) {
-    throw SDKErrors.ERROR_DID_ERROR('Serialization algorithm not supported')
+    throw new SDKErrors.ERROR_DID_ERROR('Serialization algorithm not supported')
   }
   const withoutFlag = decoded.slice(1)
   const deserialized: Map<string, unknown> = cborDecode(withoutFlag)

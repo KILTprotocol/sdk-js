@@ -1,18 +1,10 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DataUtils
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import type { IIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import * as SDKErrors from './SDKErrors.js'
@@ -32,11 +24,11 @@ export function validateAddress(
   name: string
 ): boolean {
   if (typeof address !== 'string') {
-    throw SDKErrors.ERROR_ADDRESS_TYPE()
+    throw new SDKErrors.ERROR_ADDRESS_TYPE()
   }
   // KILT has registered ss58 prefix 38
   if (!checkAddress(address, 38)[0]) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID(address, name)
+    throw new SDKErrors.ERROR_ADDRESS_INVALID(address, name)
   }
   return true
 }
@@ -52,11 +44,11 @@ export function validateAddress(
  */
 export function validateHash(hash: string, name: string): boolean {
   if (typeof hash !== 'string') {
-    throw SDKErrors.ERROR_HASH_TYPE()
+    throw new SDKErrors.ERROR_HASH_TYPE()
   }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
   if (!hash.match(blake2bPattern)) {
-    throw SDKErrors.ERROR_HASH_MALFORMED(hash, name)
+    throw new SDKErrors.ERROR_HASH_MALFORMED(hash, name)
   }
   return true
 }
@@ -82,10 +74,10 @@ export function validateSignature(
     typeof signature !== 'string' ||
     typeof signer !== 'string'
   ) {
-    throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
   }
   if (!verify(data, signature, signer)) {
-    throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
+    throw new SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
   }
   return true
 }

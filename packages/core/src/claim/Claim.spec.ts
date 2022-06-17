@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,13 +10,18 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
+import type {
+  IClaim,
+  CompressedClaim,
+  ICType,
+  DidUri,
+} from '@kiltprotocol/types'
 import { CType } from '../ctype/CType'
 import { Claim } from './Claim'
 import * as ClaimUtils from './Claim.utils'
 
 describe('Claim', () => {
-  let did: string
+  let did: DidUri
   let claimContents: any
   let rawCType: ICType['schema']
   let testCType: CType
@@ -109,6 +114,7 @@ describe('Claim', () => {
       owner: ownerAddress,
     } as IClaim
 
+    // @ts-ignore
     const noCTypeHash = {
       cTypeHash: '',
       contents: claimContents,
@@ -129,16 +135,16 @@ describe('Claim', () => {
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
-    expect(() =>
-      ClaimUtils.errorCheck(malformedCTypeHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowErrorWithCode(
-      SDKErrors.ERROR_ADDRESS_INVALID()
+    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
+      SDKErrors.ERROR_ADDRESS_INVALID
     )
   })
 })

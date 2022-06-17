@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,7 +10,8 @@ import { BN } from '@polkadot/util'
 
 import type {
   DidVerificationKey,
-  IDidIdentifier,
+  IDidDetails,
+  DidIdentifier,
   IIdentity,
   KeystoreSigner,
   SubmittableExtrinsic,
@@ -20,7 +21,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 
 import type {
   DidConstructorDetails,
-  DidKeySelectionHandler,
+  DidKeySelectionCallback,
   MapKeysToRelationship,
   PublicKeys,
   ServiceEndpoints,
@@ -32,10 +33,9 @@ import {
   queryServiceEndpoints,
 } from '../Did.chain.js'
 import {
-  defaultKeySelectionHandler,
-  FULL_DID_LATEST_VERSION,
-  getKiltDidFromIdentifier,
+  defaultKeySelectionCallback,
   getSigningAlgorithmForVerificationKeyType,
+  parseDidUri,
 } from '../Did.utils.js'
 
 import { DidDetails } from './DidDetails.js'
@@ -45,7 +45,7 @@ import {
 } from './FullDidDetails.utils.js'
 
 export class FullDidDetails extends DidDetails {
-  public readonly identifier: IDidIdentifier
+  public readonly identifier: DidIdentifier
 
   /**
    * Create an instance of [[FullDidDetails]] with the provided details.
@@ -54,19 +54,19 @@ export class FullDidDetails extends DidDetails {
    *
    * @param creationDetails The creation details.
    * @param creationDetails.identifier The DID subject identifier.
-   * @param creationDetails.did The full DID identifier.
+   * @param creationDetails.uri The full DID URI.
    * @param creationDetails.keys The set of public keys associated with the given full DID.
    * @param creationDetails.keyRelationships The map of key ID -> relationship (e.g., authentication, attestation).
    * @param creationDetails.serviceEndpoints The set of service endpoints controlled by the specified DID.
    */
   public constructor({
     identifier,
-    did,
+    uri,
     keys,
     keyRelationships,
     serviceEndpoints = {},
-  }: DidConstructorDetails & { identifier: IDidIdentifier }) {
-    super({ did, keys, keyRelationships, serviceEndpoints })
+  }: DidConstructorDetails & { identifier: DidIdentifier }) {
+    super({ uri, keys, keyRelationships, serviceEndpoints })
 
     this.identifier = identifier
   }
@@ -75,19 +75,26 @@ export class FullDidDetails extends DidDetails {
    * Create a new instance of [[FullDidDetails]] after fetching the relevant information from the blockchain.
    * Private keys are assumed to already live in the keystore to be used with this DID instance, as only the public keys are retrieved from the blockchain.
    *
-   * @param didIdentifier The identifier of the DID to reconstruct.
-   * @param version The version of the DID to recreate. It defaults to the latest version supported by the SDK.
+   * @param didUri The URI of the DID to reconstruct.
    *
    * @returns The reconstructed [[FullDidDetails]], or null if not DID with the provided identifier exists.
    */
   public static async fromChainInfo(
-    didIdentifier: IDidIdentifier,
-    version: number = FULL_DID_LATEST_VERSION
+    didUri: IDidDetails['uri']
   ): Promise<FullDidDetails | null> {
-    const didRec = await queryDetails(didIdentifier)
+    const { identifier, fragment, type } = parseDidUri(didUri)
+    if (fragment) {
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `DID URI cannot contain fragment: ${didUri}`
+      )
+    }
+    if (type !== 'full') {
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `DID URI does not refer to a full DID: ${didUri}`
+      )
+    }
+    const didRec = await queryDetails(identifier)
     if (!didRec) return null
-
-    const didUri = getKiltDidFromIdentifier(didIdentifier, 'full', version)
 
     const {
       publicKeys,
@@ -114,15 +121,15 @@ export class FullDidDetails extends DidDetails {
     }
 
     const serviceEndpoints: ServiceEndpoints = (
-      await queryServiceEndpoints(didIdentifier)
+      await queryServiceEndpoints(identifier)
     ).reduce((res, service) => {
       res[service.id] = service
       return res
     }, {})
 
     return new FullDidDetails({
-      identifier: didIdentifier,
-      did: didUri,
+      identifier,
+      uri: didUri,
       keys,
       keyRelationships,
       serviceEndpoints,
@@ -131,7 +138,7 @@ export class FullDidDetails extends DidDetails {
 
   /**
    * Returns all the DID keys that could be used to sign the provided extrinsic for submission.
-   * This function should never be used directly by SDK users, who should rather call [[FulLDidDetails.authorizeExtrinsic]].
+   * This function should never be used directly by SDK users, who should rather call [[FullDidDetails.authorizeExtrinsic]].
    *
    * @param extrinsic The unsigned extrinsic to perform the lookup.
    *
@@ -171,17 +178,17 @@ export class FullDidDetails extends DidDetails {
     signer: KeystoreSigner,
     submitterAccount: IIdentity['address'],
     {
-      keySelection = defaultKeySelectionHandler,
+      keySelection = defaultKeySelectionCallback,
       txCounter,
     }: {
-      keySelection?: DidKeySelectionHandler<DidVerificationKey>
+      keySelection?: DidKeySelectionCallback<DidVerificationKey>
       txCounter?: BN
     } = {}
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `The details for did ${this.did} do not contain the required keys for this operation`
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `The details for did ${this.uri} do not contain the required keys for this operation`
       )
     }
     return generateDidAuthenticatedTx({

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,8 +8,6 @@
 /**
  * @group unit/didbuilder
  */
-
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import type { ApiPromise } from '@polkadot/api'
 
@@ -430,7 +428,12 @@ describe('FullDidUpdateBuilder', () => {
     const newServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
       types: ['type-new'],
-      urls: ['url-new'],
+      urls: ['x:url-new'],
+    }
+    const newInvalidServiceEndpoint: DidServiceEndpoint = {
+      id: 'id-new',
+      types: ['type-new', 'Ξέρω-ότι-η-θάλασσα-είναι-μπλε'],
+      urls: ['x:url-new', 'type-new'],
     }
     beforeAll(async () => {
       fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
@@ -456,6 +459,19 @@ describe('FullDidUpdateBuilder', () => {
           builder.addServiceEndpoint(newServiceEndpoint)
         ).not.toThrow()
         expect(() => builder.addServiceEndpoint(newServiceEndpoint)).toThrow()
+      })
+
+      it('fails if service is invalid', async () => {
+        const builder = new FullDidUpdateBuilder(mockApi, fullDid)
+
+        expect(() => builder.addServiceEndpoint(newInvalidServiceEndpoint))
+          .toThrowErrorMatchingInlineSnapshot(`
+          "Service endpoint with ID id-new violates size and/or content constraints:
+            1. A service URL must be a URI according to RFC#3986, which 'type-new' (service id 'id-new') is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.
+            2. The service with ID 'id-new' has too many types (2). Max number of types allowed per service is 1.
+            3. The service with ID 'id-new' has too many URLs (2). Max number of URLs allowed per service is 1.
+            4. The service with ID 'id-new' has the type 'Ξέρω-ότι-η-θάλασσα-είναι-μπλε' that is too long (53 bytes). Max number of bytes allowed for a service type is 50."
+        `)
       })
 
       it('adds the service endpoint successfully', async () => {
@@ -533,20 +549,18 @@ describe('FullDidUpdateBuilder', () => {
   })
 
   // TODO: complete these tests once SDK has been refactored to work with generic api object
-  describe('Consuming', () => {
+  describe('Building', () => {
     let fullDid: FullDidDetails
     beforeAll(async () => {
       fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
         keystore,
-        '//test-consuming'
+        '//test-building'
       )
     })
-    describe('.consume()', () => {
+    describe('.build()', () => {
       it('throws if batch is empty', async () => {
         const builder = new FullDidUpdateBuilder(mockApi, fullDid)
-        await expect(
-          builder.consume(keystore, 'test-account')
-        ).rejects.toThrow()
+        await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
       })
       it.todo('properly consumes the builder')
     })

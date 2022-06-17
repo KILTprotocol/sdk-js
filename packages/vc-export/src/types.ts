@@ -1,14 +1,10 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module VCExportTypes
- */
 import type { AnyJson } from '@polkadot/types/types'
 import type { ICType, DidPublicKey } from '@kiltprotocol/types'
 import type {
@@ -32,7 +28,7 @@ export type IPublicKeyRecord = DidPublicKey
 
 export interface SelfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
-  verificationMethod: IPublicKeyRecord['id'] | IPublicKeyRecord
+  verificationMethod: IPublicKeyRecord['uri'] | IPublicKeyRecord
   signature: string
   challenge?: string
 }
@@ -70,7 +66,7 @@ export interface VerifiableCredential {
   issuer: string
   // when the credential was issued
   issuanceDate: string
-  // Ids / digests of claims that empower the issuer to provide judegment
+  // Ids / digests of claims that empower the issuer to provide judgment
   legitimationIds: string[]
   // Id / digest that represents a delegation of authority to the issuer
   delegationId?: string

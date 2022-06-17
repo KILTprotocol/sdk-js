@@ -1,4 +1,4 @@
-name: Publish prerelease package to npm
+name: Publish dev package to npm
 on:
   push:
     branches:
@@ -18,8 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          # fetch-depth 0 and token needed to push changes on the package.json files back.
           fetch-depth: 0
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
       - uses: actions/setup-node@v2
         with:
           node-version: 14
@@ -33,7 +34,7 @@ jobs:
       - name: Set all other packages to same version
         env:
           PACKAGE_VERSION: ${{ steps.package_version.outputs.package_version }}
-        run: yarn workspaces foreach -pt --no-private exec npm version --no-git-tag-version $PACKAGE_VERSION
+        run: yarn set:version $PACKAGE_VERSION --allow-same-version
       - name: Build packages
         run: yarn run build
       - name: Bundle library
@@ -49,22 +50,3 @@ jobs:
           git add .
           git commit -m "[CI Skip] ci: publish prerelease" -n
           git push
-  dispatch:
-    needs: build
-    strategy:
-      matrix:
-        repo:
-          [
-            'KILTprotocol/kilt-workshop-101',
-            'KILTprotocol/demo-client',
-            'KILTprotocol/prototype-services',
-          ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Repository dispatch
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: ${{ matrix.repo }}
-          event-type: sdk-update
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "github": ${{ toJson(github) }}}'

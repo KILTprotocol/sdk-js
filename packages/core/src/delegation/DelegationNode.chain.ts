@@ -1,23 +1,22 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DelegationNode
- */
-
-import type { Option, Vec, U128 } from '@polkadot/types'
-import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type { Option, U128, Vec } from '@polkadot/types'
+import type {
+  IAttestation,
+  IDelegationNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { Hash } from '@polkadot/types/interfaces'
+import type { H256, Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import type { DidChain } from '@kiltprotocol/did'
-import { DidUtils } from '@kiltprotocol/did'
+import type { Chain as DidChain } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import {
   decodeDelegationNode,
@@ -25,6 +24,7 @@ import {
 } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
+import type { AuthorizationId } from '../attestation/Attestation.chain.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -32,7 +32,7 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
  * Generate the extrinsic to store a given delegation node as the root of a new delegation hierarchy.
  *
  * @param delegation The delegation node to store as hierarchy root.
- * @returns The [[SubmittableExtrinsic]] for the `createHierarchy` call.
+ * @returns The SubmittableExtrinsic for the `createHierarchy` call.
  */
 export async function getStoreAsRootTx(
   delegation: DelegationNode
@@ -53,7 +53,7 @@ export async function getStoreAsRootTx(
  *
  * @param delegation The delegation node to store under the hierarchy specified as part of the node.
  * @param signature The DID signature of the delegee owner of the new delegation node.
- * @returns The [[SubmittableExtrinsic]] for the `addDelegation` call.
+ * @returns The SubmittableExtrinsic for the `addDelegation` call.
  */
 export async function getStoreAsDelegationTx(
   delegation: DelegationNode,
@@ -104,7 +104,7 @@ export async function query(
  * @param delegationId The identifier of the delegation node to revoke.
  * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
  * @param maxRevocations The max number of children nodes that will be revoked as part of the revocation operation. This value does not include the node itself being removed.
- * @returns The [[SubmittableExtrinsic]] for the `revokeDelegation` call.
+ * @returns The SubmittableExtrinsic for the `revokeDelegation` call.
  */
 export async function getRevokeTx(
   delegationId: IDelegationNode['id'],
@@ -126,7 +126,7 @@ export async function getRevokeTx(
  *
  * @param delegationId The identifier of the delegation node to remove.
  * @param maxRevocations The max number of children nodes that will be removed as part of the removal operation. This value does not include the node itself being removed.
- * @returns The [[SubmittableExtrinsic]] for the `removeDelegation` call.
+ * @returns The SubmittableExtrinsic for the `removeDelegation` call.
  */
 export async function getRemoveTx(
   delegationId: IDelegationNode['id'],
@@ -145,7 +145,7 @@ export async function getRemoveTx(
  *
  * @param delegationId The identifier of the delegation node to claim back deposit for.
  * @param maxRemovals The max number of children nodes that will be removed as part of the operation. This value does not include the node itself being removed.
- * @returns The [[SubmittableExtrinsic]] for the `getReclaimDepositTx` call.
+ * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
  */
 export async function getReclaimDepositTx(
   delegationId: IDelegationNode['id'],
@@ -182,26 +182,42 @@ export async function getChildren(
   return childrenNodes
 }
 
-function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
-  DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<H256>>'])
-  return queryResult.unwrapOrDefault().map((hash) => hash.toHex())
-}
-
 /**
- * Query the blockchain to retrieve all the attestations (their claim hashes) creating with the provided delegation.
+ * Query the blockchain to retrieve all the attestations (their claim hashes) created with the provided delegation.
  *
  * @param id The identifier of the delegation node to retrieve delegated attestations for.
  * @returns A list of claim hashes issued using the provided delegation.
  */
 export async function getAttestationHashes(
   id: IDelegationNode['id']
-): Promise<string[]> {
+): Promise<Array<IAttestation['claimHash']>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedHashes =
-    await blockchain.api.query.attestation.delegatedAttestations<
-      Option<Vec<Hash>>
-    >(id)
-  return decodeDelegatedAttestations(encodedHashes)
+  if (blockchain.api.query.attestation.externalAttestations) {
+    // this info is stored chain-side as a double map from (authorizationId, claimHash) -> boolean.
+    // the following line retrieves all keys where authorizationId is equal to the delegation id.
+    const entries =
+      await blockchain.api.query.attestation.externalAttestations.keys<
+        [AuthorizationId, H256]
+      >({ delegation: id })
+    // extract claimHash from double map key & decode
+    return entries.map((keys) => {
+      const claimHash = keys.args[1]
+      DecoderUtils.assertCodecIsType(claimHash, ['H256'])
+      return claimHash.toHex()
+    })
+  }
+  if (blockchain.api.query.attestation.delegatedAttestations) {
+    // Delegated attestations are stored as a simple map from delegationId -> Vec<claimHashes>
+    const claimHashes =
+      await blockchain.api.query.attestation.delegatedAttestations<
+        Option<Vec<Hash>>
+      >(id)
+    DecoderUtils.assertCodecIsType(claimHashes, ['Option<Vec<H256>>'])
+    return claimHashes.unwrapOrDefault().map((hash) => hash.toHex())
+  }
+  throw new SDKErrors.ERROR_CODEC_MISMATCH(
+    'Failed to query delegated attestations: Unknown pallet storage'
+  )
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
@@ -209,6 +225,11 @@ async function queryDepositAmountEncoded(): Promise<U128> {
   return api.consts.delegation.deposit as U128
 }
 
+/**
+ * Gets the current deposit amount due for the creation of new delegation node.
+ *
+ * @returns Deposit amount in Femto Kilt as a BigNumber.
+ */
 export async function queryDepositAmount(): Promise<BN> {
   const encodedDeposit = await queryDepositAmountEncoded()
   return encodedDeposit.toBn()

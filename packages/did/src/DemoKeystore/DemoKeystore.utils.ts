@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -12,7 +12,12 @@ import {
   randomAsHex,
 } from '@polkadot/util-crypto'
 
-import { DidKey, KeyRelationship } from '@kiltprotocol/types'
+import {
+  DidKey,
+  KeyRelationship,
+  EncryptionAlgorithms,
+  SigningAlgorithms,
+} from '@kiltprotocol/types'
 
 import {
   getEncryptionKeyTypeForEncryptionAlgorithm,
@@ -26,13 +31,15 @@ import {
   ServiceEndpoints,
   LightDidSupportedVerificationKeyType,
 } from '../types.js'
-import {
-  DemoKeystore,
-  EncryptionAlgorithms,
-  SigningAlgorithms,
-} from './DemoKeystore.js'
+import { DemoKeystore } from './DemoKeystore.js'
 
-// Given a seed, creates a light DID with an authentication and an encryption key.
+/**
+ * Given a seed, creates a light DID with an authentication and an encryption key.
+ *
+ * @param keystore Keystore instance.
+ * @param seed Seed from which to derive all keys.
+ * @returns LightDidDetails whose keys have been added to the keystore instance.
+ */
 export async function createMinimalLightDidFromSeed(
   keystore: DemoKeystore,
   seed?: string
@@ -94,7 +101,7 @@ export async function createLocalDemoFullDidFromSeed(
   } = {}
 ): Promise<FullDidDetails> {
   const identifier = encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 256), 38)
-  const did = getKiltDidFromIdentifier(identifier, 'full')
+  const uri = getKiltDidFromIdentifier(identifier, 'full')
 
   const generateKeypairForDid = async (
     derivation: string,
@@ -117,7 +124,7 @@ export async function createLocalDemoFullDidFromSeed(
   const authKey = await generateKeypairForDid('auth', signingKeyType)
 
   const fullDidCreationDetails: DidConstructorDetails = {
-    did,
+    uri,
     keyRelationships: {
       authentication: new Set([authKey.id]),
     },
@@ -153,6 +160,13 @@ export async function createLocalDemoFullDidFromSeed(
   })
 }
 
+/**
+ * Creates a FullDid from a LightDid where the verification keypair is enabled for all verification purposes (authentication, assertionMethod, capabilityDelegation).
+ * This is not recommended, use for demo purposes only!
+ *
+ * @param lightDid The LightDid whose keys will be used on the FullDid.
+ * @returns A FullDid instance that is not yet written to the blockchain.
+ */
 export async function createLocalDemoFullDidFromLightDid(
   lightDid: LightDidDetails
 ): Promise<FullDidDetails> {
@@ -162,15 +176,13 @@ export async function createLocalDemoFullDidFromLightDid(
 
   const keys: PublicKeys = {
     [authKey.id]: authKey,
-    [authKey.id]: authKey,
-    [authKey.id]: authKey,
   }
   if (encKey) {
     keys[encKey.id] = encKey
   }
 
   const fullDidCreationDetails: DidConstructorDetails = {
-    did: getKiltDidFromIdentifier(identifier, 'full'),
+    uri: getKiltDidFromIdentifier(identifier, 'full'),
     keyRelationships: {
       authentication: new Set([authKey.id]),
       keyAgreement: encKey ? new Set([encKey.id]) : new Set([]),

@@ -1,20 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * KILT participants can communicate via a 1:1 messaging system.
- *
- * All messages are **encrypted** with the encryption keys of the involved identities.
- * Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
- *
- * The [[Message]] class exposes methods to construct and verify messages.
- *
- * @packageDocumentation
- * @module Messaging
  */
 
 import {
@@ -36,7 +24,7 @@ import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import {
   DidDetails,
   DidResolver,
-  DidUtils,
+  Utils as DidUtils,
   EncryptionAlgorithms,
 } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
@@ -73,7 +61,7 @@ export class Message implements IMessage {
               sender
             )
           ) {
-            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
+            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
         }
         break
@@ -86,7 +74,7 @@ export class Message implements IMessage {
               sender
             )
           ) {
-            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
+            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
         break
@@ -95,7 +83,7 @@ export class Message implements IMessage {
           const submitClaimsForCtype: ISubmitCredential = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
-              throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
+              throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
         }
@@ -107,7 +95,7 @@ export class Message implements IMessage {
   /**
    * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
    *
-   * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
+   * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
    *
    * @param encrypted The encrypted message.
    * @param keystore The keystore used to perform the cryptographic operations.
@@ -129,25 +117,25 @@ export class Message implements IMessage {
       resolver?: IDidResolver
     } = {}
   ): Promise<IMessage> {
-    const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
+    const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
       encrypted
 
-    const senderKeyDetails = await resolver.resolveKey(senderKeyId)
+    const senderKeyDetails = await resolver.resolveKey(senderKeyUri)
     if (!senderKeyDetails) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve sender encryption key ${senderKeyId}`
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `Could not resolve sender encryption key ${senderKeyUri}`
       )
     }
-    const { fragment } = DidUtils.parseDidUri(receiverKeyId)
+    const { fragment } = DidUtils.parseDidUri(receiverKeyUri)
     if (!fragment) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `No fragment for the receiver key ID ${receiverKeyId}`
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `No fragment for the receiver key ID ${receiverKeyUri}`
       )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
     if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve receiver encryption key ${receiverKeyId}`
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `Could not resolve receiver encryption key ${receiverKeyUri}`
       )
     }
     const receiverKeyAlgType =
@@ -155,7 +143,7 @@ export class Message implements IMessage {
         receiverKeyDetails.type as EncryptionKeyType
       )
     if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }
@@ -169,7 +157,7 @@ export class Message implements IMessage {
         nonce: hexToU8a(nonce),
       })
       .catch(() => {
-        throw SDKErrors.ERROR_DECODING_MESSAGE()
+        throw new SDKErrors.ERROR_DECODING_MESSAGE()
       })
 
     const decoded = u8aToString(data)
@@ -196,7 +184,7 @@ export class Message implements IMessage {
       }
 
       if (sender !== senderKeyDetails.controller) {
-        throw SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
+        throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
       }
 
       // checks the message body
@@ -209,7 +197,7 @@ export class Message implements IMessage {
 
       return decrypted
     } catch (error) {
-      throw SDKErrors.ERROR_PARSING_MESSAGE()
+      throw new SDKErrors.ERROR_PARSING_MESSAGE()
     }
   }
 
@@ -251,7 +239,7 @@ export class Message implements IMessage {
    * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
    * @param senderDetails The sender's DID to use to fetch the right encryption key.
    * @param keystore The keystore used to perform the cryptographic operations.
-   * @param receiverKeyId The full key ID of the receiver.
+   * @param receiverKeyUri The key URI of the receiver.
    * @param encryptionOptions Options to perform the encryption operation.
    * @param encryptionOptions.resolver The DID resolver to use.
    *
@@ -261,26 +249,31 @@ export class Message implements IMessage {
     senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     keystore: Pick<NaclBoxCapable, 'encrypt'>,
-    receiverKeyId: DidPublicKey['id'],
+    receiverKeyUri: DidPublicKey['uri'],
     {
       resolver = DidResolver,
     }: {
       resolver?: IDidResolver
     } = {}
   ): Promise<IEncryptedMessage> {
-    const receiverKey = await resolver.resolveKey(receiverKeyId)
+    const receiverKey = await resolver.resolveKey(receiverKeyUri)
     if (!receiverKey) {
-      throw SDKErrors.ERROR_DID_ERROR(`Cannot resolve key ${receiverKeyId}`)
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `Cannot resolve key ${receiverKeyUri}`
+      )
     }
     if (this.receiver !== receiverKey.controller) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
+      throw new SDKErrors.ERROR_IDENTITY_MISMATCH(
+        'receiver public key',
+        'receiver'
+      )
     }
-    if (this.sender !== senderDetails.did) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
+    if (this.sender !== senderDetails.uri) {
+      throw new SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
     }
     const senderKey = senderDetails.getKey(senderKeyId)
     if (!senderKey || !DidUtils.isEncryptionKey(senderKey)) {
-      throw SDKErrors.ERROR_DID_ERROR(
+      throw new SDKErrors.ERROR_DID_ERROR(
         `Cannot find key with ID ${senderKeyId} for the sender DID.`
       )
     }
@@ -289,7 +282,7 @@ export class Message implements IMessage {
         senderKey.type as EncryptionKeyType
       )
     if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }
@@ -319,19 +312,31 @@ export class Message implements IMessage {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      senderKeyId: senderDetails.assembleKeyId(senderKey.id),
-      receiverKeyId: receiverKey.id,
+      senderKeyUri: senderDetails.assembleKeyUri(senderKey.id),
+      receiverKeyUri: receiverKey.uri,
     }
   }
 
+  /**
+   * Compresses a [[MessageBody]] depending on the message body type.
+   *
+   * @returns Returns the compressed message optimised for sending.
+   */
   public compress(): CompressedMessageBody {
     return compressMessage(this.body)
   }
 
+  /**
+   * Verifies required properties for a given [[CType]] before sending or receiving a message.
+   *
+   * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
+   * @param cType A [[CType]] used to verify the properties.
+   * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
+   */
   public static verifyRequiredCTypeProperties(
     requiredProperties: string[],
     cType: ICType
-  ): boolean {
-    return verifyRequiredCTypeProperties(requiredProperties, cType)
+  ): void {
+    verifyRequiredCTypeProperties(requiredProperties, cType)
   }
 }

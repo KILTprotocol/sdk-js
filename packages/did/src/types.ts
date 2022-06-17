@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,12 +9,14 @@ import type {
   DidKey,
   DidServiceEndpoint,
   IDidDetails,
-  IDidIdentifier,
+  DidIdentifier,
   KeyRelationship,
   NewDidEncryptionKey,
   NewDidVerificationKey,
   VerificationKeyType,
 } from '@kiltprotocol/types'
+
+export { SigningAlgorithms, EncryptionAlgorithms } from '@kiltprotocol/types'
 
 /**
  * Map from a key relationship (including the 'none' relationship) -> set of key IDs.
@@ -36,10 +38,10 @@ export type ServiceEndpoints = Record<
   Omit<DidServiceEndpoint, 'id'>
 >
 
-export type DidKeySelectionHandler<T> = (keys: T[]) => Promise<T | null>
+export type DidKeySelectionCallback<T> = (keys: T[]) => Promise<T | null>
 
 export type DidConstructorDetails = {
-  did: IDidDetails['did']
+  uri: IDidDetails['uri']
   // Accepts a list of keys where the ID does not include the DID URI.
   keys: PublicKeys
   keyRelationships: MapKeysToRelationship
@@ -48,7 +50,7 @@ export type DidConstructorDetails = {
 }
 
 export type FullDidCreationDetails = {
-  identifier: IDidIdentifier
+  identifier: DidIdentifier
   authenticationKey: NewDidVerificationKey
   keyAgreementKeys?: NewDidEncryptionKey[]
   assertionKey?: NewDidVerificationKey

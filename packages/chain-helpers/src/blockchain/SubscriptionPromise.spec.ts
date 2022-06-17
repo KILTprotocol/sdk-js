@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -29,7 +29,7 @@ it('rejects promise on timeout', async () => {
     timeout: 500,
   })
   subscription('something else')
-  await expect(promise).rejects.toThrow(SDKErrors.ERROR_TIMEOUT())
+  await expect(promise).rejects.toThrow(SDKErrors.ERROR_TIMEOUT)
 })
 
 it('resolves the promise', async () => {

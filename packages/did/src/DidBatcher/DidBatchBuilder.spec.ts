@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,8 +8,6 @@
 /**
  * @group unit/didbuilder
  */
-
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { randomAsHex } from '@polkadot/util-crypto'
@@ -82,7 +80,7 @@ describe('DidBatchBuilder', () => {
     it('fails if the DID does not any key required to sign the batch', async () => {
       // Full DID with only an authentication key.
       const newFullDid = new FullDidDetails({
-        did: fullDid.did,
+        uri: fullDid.uri,
         identifier: fullDid.identifier,
         keys: { [fullDid.authenticationKey.id]: fullDid.authenticationKey },
         keyRelationships: {
@@ -131,16 +129,16 @@ describe('DidBatchBuilder', () => {
   })
 
   // TODO: complete these tests once SDK has been refactored to work with generic api object
-  describe('.consume()', () => {
+  describe('.build()', () => {
     it('throws if batch is empty', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      await expect(builder.consume(keystore, 'test-account')).rejects.toThrow()
+      await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
     })
-    it.todo('successfully consume builder with only 1 extrinsic')
-    it.todo('successfully consume builder with 1 extrinsic per required key')
-    it.todo('successfully consume builder with 2 extrinsics per required key')
+    it.todo('successfully create a batch with only 1 extrinsic')
+    it.todo('successfully create a batch with 1 extrinsic per required key')
+    it.todo('successfully create a batch with 2 extrinsics per required key')
     it.todo(
-      'successfully consume builder with 1 extrinsic per required key, repeated two times'
+      'successfully create a batch with 1 extrinsic per required key, repeated two times'
     )
   })
 })

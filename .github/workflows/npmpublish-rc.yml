@@ -1,0 +1,44 @@
+name: Publish candidate package
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: yarn install --immutable
+      - run: yarn build
+      - run: yarn test:ci
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Build packages
+        run: yarn run build
+      - name: Bundle library
+        run: yarn run bundle
+      - name: Get current package version
+        id: package_version
+        run: echo "::set-output name=package_version::$(node -pe "require('./package.json').version")"          
+      - name: Publish to NPM
+        run: yarn run publish --tag rc
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{secrets.npm_token}}
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: KILTProtocol/docs
+          event-type: sdk-update
+          client-payload: '{"latestTag": "${{ steps.package_version.outputs.package_version }}"}'             

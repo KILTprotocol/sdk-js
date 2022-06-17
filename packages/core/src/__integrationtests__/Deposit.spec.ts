@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -12,7 +12,7 @@
 import {
   DemoKeystore,
   DemoKeystoreUtils,
-  DidChain,
+  Chain as DidChain,
   FullDidDetails,
   Web3Names,
 } from '@kiltprotocol/did'
@@ -103,7 +103,7 @@ async function checkRemoveFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getStoreTx()
@@ -131,7 +131,7 @@ async function checkRemoveFullDidAttestation(
   const balanceBeforeRemoving = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getRemoveTx(0)
@@ -162,7 +162,7 @@ async function checkReclaimFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getStoreTx()
@@ -181,7 +181,7 @@ async function checkReclaimFullDidAttestation(
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getReclaimDepositTx()
@@ -212,7 +212,7 @@ async function checkDeletedDidReclaimAttestation(
 ): Promise<void> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   tx = await attestation.getStoreTx()
@@ -232,7 +232,7 @@ async function checkDeletedDidReclaimAttestation(
 
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    fullDid.did
+    fullDid.uri
   )
 
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
@@ -300,8 +300,10 @@ const keystore = new DemoKeystore()
 let requestForAttestation: RequestForAttestation
 
 beforeAll(async () => {
-  /* Initialize KILT SDK and set up node endpoint */
   await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'sr25519' })
 
   for (let i = 0; i < 10; i += 1) {
@@ -346,7 +348,7 @@ beforeAll(async () => {
   const claim = Claim.fromCTypeAndClaimContents(
     driversLicenseCType,
     rawClaim,
-    claimerLightDid.did
+    claimerLightDid.uri
   )
 
   requestForAttestation = RequestForAttestation.fromClaim(claim)

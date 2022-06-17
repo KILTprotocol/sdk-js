@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -26,6 +26,10 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { deriveChainKeyId } from './FullDidBuilder.utils.js'
+import {
+  checkServiceEndpointSizeConstraints,
+  checkServiceEndpointSyntax,
+} from '../Did.utils.js'
 
 export type VerificationKeyAction = {
   action: 'delete' | 'update' | 'ignore'
@@ -60,6 +64,14 @@ export abstract class FullDidBuilder {
 
   protected consumed = false
 
+  protected checkBuilderConsumption(): void {
+    if (this.consumed) {
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
+        'DID builder has already been consumed.'
+      )
+    }
+  }
+
   public constructor(api: ApiPromise) {
     this.apiObject = api
   }
@@ -68,22 +80,18 @@ export abstract class FullDidBuilder {
    * Mark a new encryption key to be added to the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a key with the same ID marked for addition.
    *
    * @param key The new [[NewDidEncryptionKey]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public addEncryptionKey(key: NewDidEncryptionKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // Check if a key with the same ID has already been added.
     if (this.newKeyAgreementKeys.has(newKeyId)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Key agreement key with ID ${newKeyId} has already been marked for addition. Failing since this may lead to unexpected behaviour.`
       )
     }
@@ -99,21 +107,17 @@ export abstract class FullDidBuilder {
    * Mark a new attestation key to replace the old one, if present, in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`) (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new attestation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public setAttestationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check if another attestation key was already marked for addition.
     if (this.newAssertionKey.action === 'update') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another assertion key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
       )
     }
@@ -128,21 +132,17 @@ export abstract class FullDidBuilder {
    * Mark a new delegation key to replace the old one, if present, in the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a new delegation key marked for addition.
    *
    * @param key The new [[NewDidVerificationKey]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public setDelegationKey(key: NewDidVerificationKey): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     // Check if another delegation key was already marked for addition.
     if (this.newDelegationKey.action === 'update') {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         'Another delegation key was already been marked for addition. Failing since this may lead to unexpected behaviour.'
       )
     }
@@ -157,25 +157,39 @@ export abstract class FullDidBuilder {
    * Mark a new service endpoint to be added to the next DID operation.
    *
    * The operation will fail in the following cases:
-   *   - The builder has already been consumed
+   *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
    *   - There was already a service with the same ID marked for addition.
    *
    * @param service The new [[DidServiceEndpoint]] to add to the DID.
    * @returns The builder with the provided operation saved internally.
    */
   public addServiceEndpoint(service: DidServiceEndpoint): this {
-    if (this.consumed) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'DID builder has already been consumed.'
-      )
-    }
+    this.checkBuilderConsumption()
     const { id, ...details } = service
     // Check if the service has already been added.
     if (this.newServiceEndpoints.has(id)) {
-      throw SDKErrors.ERROR_DID_BUILDER_ERROR(
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
         `Service endpoint with ID ${id} has already been marked for addition. Failing since this may lead to unexpected behaviour.`
       )
     }
+    // Check syntax & size constraints
+    const [syntaxOk, syntaxErrors] = checkServiceEndpointSyntax(service)
+    const [sizeOk, sizeErrors] = checkServiceEndpointSizeConstraints(
+      this.apiObject,
+      service
+    )
+    if (!(syntaxOk && sizeOk)) {
+      const errors = [...(syntaxErrors || []), ...(sizeErrors || [])]
+      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
+        `Service endpoint with ID ${
+          service.id
+        } violates size and/or content constraints:${errors.reduce(
+          (str, e, i) => `${str}\n  ${i + 1}. ${e.message}`,
+          ''
+        )}`
+      )
+    }
+
     // Otherwise we can safely mark the service endpoint for addition.
     this.newServiceEndpoints.set(id, {
       types: details.types,
@@ -185,7 +199,7 @@ export abstract class FullDidBuilder {
   }
 
   /* istanbul ignore next */
-  public abstract consume(
+  public abstract build(
     signer: KeystoreSigner,
     submitter: IIdentity['address'],
     atomic: boolean

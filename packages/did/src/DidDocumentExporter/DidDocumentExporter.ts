@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -20,15 +20,10 @@ import {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-/**
- * @packageDocumentation
- * @module DID
- */
-
 function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   const result: any = {}
 
-  result.id = details.did
+  result.id = details.uri
   result.verificationMethod = new Array<string>()
 
   // Populate the `verificationMethod` array and then sets the `authentication` array with the key IDs (or undefined if no auth key is present - which should never happen)
@@ -36,12 +31,12 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getVerificationKeys(KeyRelationship.authentication)
     .map((authKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${authKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${authKey.id}`,
+        controller: details.uri,
         type: VerificationKeyTypesMap[authKey.type],
         publicKeyBase58: base58Encode(authKey.publicKey),
       })
-      return `${details.did}#${authKey.id}`
+      return `${details.uri}#${authKey.id}`
     })
   if (authenticationKeysIds.length) {
     result.authentication = authenticationKeysIds
@@ -51,12 +46,12 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getEncryptionKeys(KeyRelationship.keyAgreement)
     .map((keyAgrKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${keyAgrKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${keyAgrKey.id}`,
+        controller: details.uri,
         type: EncryptionKeyTypesMap[keyAgrKey.type],
         publicKeyBase58: base58Encode(keyAgrKey.publicKey),
       })
-      return `${details.did}#${keyAgrKey.id}`
+      return `${details.uri}#${keyAgrKey.id}`
     })
   if (keyAgreementKeysIds.length) {
     result.keyAgreement = keyAgreementKeysIds
@@ -66,12 +61,12 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getVerificationKeys(KeyRelationship.assertionMethod)
     .map((assKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${assKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${assKey.id}`,
+        controller: details.uri,
         type: VerificationKeyTypesMap[assKey.type],
         publicKeyBase58: base58Encode(assKey.publicKey),
       })
-      return `${details.did}#${assKey.id}`
+      return `${details.uri}#${assKey.id}`
     })
   if (assertionKeysIds.length) {
     result.assertionMethod = assertionKeysIds
@@ -81,12 +76,12 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     .getVerificationKeys(KeyRelationship.capabilityDelegation)
     .map((delKey) => {
       result.verificationMethod.push({
-        id: `${details.did}#${delKey.id}`,
-        controller: details.did,
+        id: `${details.uri}#${delKey.id}`,
+        controller: details.uri,
         type: VerificationKeyTypesMap[delKey.type],
         publicKeyBase58: base58Encode(delKey.publicKey),
       })
-      return `${details.did}#${delKey.id}`
+      return `${details.uri}#${delKey.id}`
     })
   if (delegationKeyIds.length) {
     result.capabilityDelegation = delegationKeyIds
@@ -96,7 +91,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   if (serviceEndpoints.length) {
     result.service = serviceEndpoints.map((service) => {
       return {
-        id: `${details.did}#${service.id}`,
+        id: `${details.uri}#${service.id}`,
         type: service.types,
         serviceEndpoint: service.urls,
       }
@@ -129,7 +124,7 @@ export function exportToDidDocument(
     case 'application/ld+json':
       return exportToJsonLdDidDocument(details)
     default:
-      throw SDKErrors.ERROR_DID_EXPORTER_ERROR(
+      throw new SDKErrors.ERROR_DID_EXPORTER_ERROR(
         `${mimeType} not supported by any of the available exporters.`
       )
   }

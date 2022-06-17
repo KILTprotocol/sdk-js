@@ -1,22 +1,15 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * In KILT, a [[Credential]] is an attested claim, which a Claimer can store locally and share with Verifiers as they wish.
- *
- * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in a [[Credential]] object.
- * This [[Credential]] also contains the original request for attestation.
- * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
- *
- * @packageDocumentation
- * @module Credential
- */
-
-import { DidDetails, DidUtils, DidKeySelectionHandler } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  Utils as DidUtils,
+  DidKeySelectionCallback,
+} from '@kiltprotocol/did'
 import type {
   ICredential,
   CompressedCredential,
@@ -32,6 +25,13 @@ import { Attestation } from '../attestation/Attestation.js'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation.js'
 import * as CredentialUtils from './Credential.utils.js'
 
+/**
+ * In KILT, a [[Credential]] is an attested claim, which a Claimer can store locally and share with Verifiers as they wish.
+ *
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in a [[Credential]] object.
+ * This [[Credential]] also contains the original request for attestation.
+ * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
+ */
 export class Credential implements ICredential {
   /**
    * [STATIC] Builds an instance of [[Credential]], from a simple object with the same properties.
@@ -39,10 +39,6 @@ export class Credential implements ICredential {
    *
    * @param credentialInput - The base object from which to create the credential.
    * @returns A new instantiated [[Credential]] object.
-   * @example ```javascript
-   * // create n Credential object, so we can call methods on it (`serialized` is a serialized Credential object)
-   * Credential.fromCredential(JSON.parse(serialized));
-   * ```
    */
   public static fromCredential(credentialInput: ICredential): Credential {
     return new Credential(credentialInput)
@@ -54,10 +50,6 @@ export class Credential implements ICredential {
    * @param request - The request for attestation for the claim that was attested.
    * @param attestation - The attestation for the claim by the attester.
    * @returns A new [[Credential]] object.
-   * @example ```javascript
-   * // create a Credential object after receiving the attestation from the attester
-   * Credential.fromRequestAndAttestation(request, attestation);
-   * ```
    */
   public static fromRequestAndAttestation(
     request: IRequestForAttestation,
@@ -92,10 +84,6 @@ export class Credential implements ICredential {
    * Builds a new [[Credential]] instance.
    *
    * @param credentialInput - The base object with all required input, from which to create the credential.
-   * @example ```javascript
-   * // Create a `Credential` upon successful `Attestation` creation:
-   * const credential = new Credential(credentialInput);
-   * ```
    */
   public constructor(credentialInput: ICredential) {
     CredentialUtils.errorCheck(credentialInput)
@@ -117,11 +105,6 @@ export class Credential implements ICredential {
    * Defaults to [[DidResolver]].
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether the provided credential is valid.
-   * @example ```javascript
-   * Credential.verify().then((isVerified) => {
-   *   // `isVerified` is true if the credential is verified, false otherwise
-   * });
-   * ```
    */
   public static async verify(
     credential: ICredential,
@@ -157,9 +140,6 @@ export class Credential implements ICredential {
    *
    * @param credential - The credential to verify.
    * @returns Whether the credential's data is valid.
-   * @example ```javascript
-   * const verificationResult = Credential.verifyData(credential);
-   * ```
    */
   public static verifyData(credential: ICredential): boolean {
     if (credential.request.claim.cTypeHash !== credential.attestation.cTypeHash)
@@ -185,7 +165,7 @@ export class Credential implements ICredential {
   public static validateLegitimations(legitimations: ICredential[]): boolean {
     legitimations.forEach((legitimation: ICredential) => {
       if (!Credential.verifyData(legitimation)) {
-        throw SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
+        throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
       }
     })
     return true
@@ -195,11 +175,8 @@ export class Credential implements ICredential {
    * Gets the hash of the claim that corresponds to this attestation.
    *
    * @returns The hash of the claim for this attestation (claimHash).
-   * @example ```javascript
-   * attestation.getHash();
-   * ```
    */
-  public getHash(): string {
+  public getHash(): IAttestation['claimHash'] {
     return this.attestation.claimHash
   }
 
@@ -226,13 +203,13 @@ export class Credential implements ICredential {
     signer,
     challenge,
     claimerDid,
-    keySelection = DidUtils.defaultKeySelectionHandler,
+    keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
     selectedAttributes?: string[]
     signer: KeystoreSigner
     challenge?: string
     claimerDid: DidDetails
-    keySelection?: DidKeySelectionHandler<DidVerificationKey>
+    keySelection?: DidKeySelectionCallback<DidVerificationKey>
   }): Promise<Credential> {
     const credential = new Credential(
       // clone the attestation and request for attestation because properties will be deleted later.
@@ -254,7 +231,7 @@ export class Credential implements ICredential {
     const selectedKeyId = (await keySelection(keys))?.id
 
     if (!selectedKeyId) {
-      throw SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
+      throw new SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
     }
 
     await credential.request.signWithDidKey(signer, claimerDid, selectedKeyId, {

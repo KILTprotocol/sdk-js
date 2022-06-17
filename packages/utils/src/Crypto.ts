@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -11,7 +11,6 @@
  * The utility types and methods are wrappers for existing Polkadot functions and imported throughout KILT's protocol for various cryptographic needs.
  *
  * @packageDocumentation
- * @module Crypto
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
@@ -26,10 +25,9 @@ import {
 } from '@polkadot/util'
 import { blake2AsHex, signatureVerify } from '@polkadot/util-crypto'
 import { blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
-import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
-import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
+import type { HexString } from '@polkadot/util/types'
 import jsonabc from './jsonabc.cjs'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
@@ -41,19 +39,9 @@ export type CryptoInput = Buffer | Uint8Array | string
 
 export type Address = string
 
-export type EncryptedSymmetric = {
-  encrypted: Uint8Array
-  nonce: Uint8Array
-}
-
 export type EncryptedAsymmetric = {
   box: Uint8Array
   nonce: Uint8Array
-}
-
-export type EncryptedSymmetricString = {
-  encrypted: string
-  nonce: string
 }
 
 export type EncryptedAsymmetricString = {
@@ -122,86 +110,6 @@ export function verify(
   return signatureVerify(message, signature, address).isValid === true
 }
 
-/**
- * Encrypts a with a secret/key, which can be decrypted using the same key.
- *
- * @param message Message to be encrypted.
- * @param secret Secret key for encryption & decryption.
- * @param nonce Random nonce to obscure message contents when encrypted. Will be auto-generated if not supplied.
- * @returns Encrypted message & nonce used for encryption. Both are needed for decryption.
- */
-export function encryptSymmetric(
-  message: CryptoInput,
-  secret: CryptoInput,
-  nonce?: CryptoInput
-): EncryptedSymmetric {
-  return naclEncrypt(
-    coToUInt8(message, true),
-    coToUInt8(secret),
-    nonce ? coToUInt8(nonce) : undefined
-  )
-}
-
-/**
- * Encrypts a with a secret/key, which can be decrypted using the same key.
- *
- * @param message Message to be encrypted.
- * @param secret Secret key for encryption & decryption.
- * @param inputNonce Random nonce to obscure message contents that could otherwise be guessed or inferred. Will be auto-generated if not supplied.
- * @returns Encrypted message as string & nonce used for encryption as hex strings. Both are needed for decryption.
- */
-export function encryptSymmetricAsStr(
-  message: CryptoInput,
-  secret: CryptoInput,
-  inputNonce?: CryptoInput
-): EncryptedSymmetricString {
-  const result = naclEncrypt(
-    coToUInt8(message, true),
-    coToUInt8(secret),
-    inputNonce ? coToUInt8(inputNonce) : undefined
-  )
-  const nonce: string = u8aToHex(result.nonce)
-  const encrypted: string = u8aToHex(result.encrypted)
-  return { encrypted, nonce }
-}
-
-/**
- * Takes a nonce & secret to decrypt a message.
- *
- * @param data Object containing encrypted message and the nonce used for encryption.
- * @param secret Secret key for encryption & decryption.
- * @returns Decrypted message as byte array.
- */
-export function decryptSymmetric(
-  data: EncryptedSymmetric | EncryptedSymmetricString,
-  secret: CryptoInput
-): Uint8Array | null {
-  return naclDecrypt(
-    coToUInt8(data.encrypted),
-    coToUInt8(data.nonce),
-    coToUInt8(secret)
-  )
-}
-
-/**
- * Takes a nonce & secret to decrypt a message.
- *
- * @param data Object containing encrypted message and the nonce used for encryption.
- * @param secret Secret key for encryption & decryption.
- * @returns Decrypted message as string.
- */
-export function decryptSymmetricStr(
-  data: EncryptedSymmetric | EncryptedSymmetricString,
-  secret: CryptoInput
-): string | null {
-  const result = naclDecrypt(
-    coToUInt8(data.encrypted),
-    coToUInt8(data.nonce),
-    coToUInt8(secret)
-  )
-  return result ? u8aToString(result) : null
-}
-
 export type BitLength = 64 | 128 | 256 | 384 | 512
 
 /**
@@ -221,7 +129,7 @@ export function hash(value: CryptoInput, bitLength?: BitLength): Uint8Array {
  * @param value Value to be hashed.
  * @returns Blake2b hash as hex string.
  */
-export function hashStr(value: CryptoInput): string {
+export function hashStr(value: CryptoInput): HexString {
   return u8aToHex(hash(value))
 }
 
@@ -258,7 +166,7 @@ export function encodeObjectAsStr(
 export function hashObjectAsStr(
   value: Record<string, any> | string | number | boolean,
   nonce?: string
-): string {
+): HexString {
   let objectAsStr = encodeObjectAsStr(value)
   if (nonce) {
     objectAsStr = nonce + objectAsStr
@@ -269,7 +177,7 @@ export function hashObjectAsStr(
 /**
  * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
  *
- * @param message String or byte array to be enrypted.
+ * @param message String or byte array to be encrypted.
  * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
  * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
  * @returns Encrypted message and nonce used for encryption.
@@ -292,7 +200,7 @@ export function encryptAsymmetric(
 /**
  * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
  *
- * @param message String or byte array to be enrypted.
+ * @param message String or byte array to be encrypted.
  * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
  * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
  * @returns Encrypted message and nonce used for encryption as hex strings.
@@ -359,7 +267,7 @@ export function decryptAsymmetricAsStr(
  * @returns String representation of hash.
  */
 export interface Hasher {
-  (value: string, nonce?: string): string
+  (value: string, nonce?: string): HexString
 }
 
 /**
@@ -396,9 +304,9 @@ export function hashStatements(
   statements: string[],
   options: HashingOptions = {}
 ): Array<{
-  digest: string
+  digest: HexString
   statement: string
-  saltedHash: string
+  saltedHash: HexString
   nonce: string
 }> {
   // apply defaults

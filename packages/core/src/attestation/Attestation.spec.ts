@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,20 +9,20 @@
  * @group unit/attestation
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import type {
   IAttestation,
   CompressedAttestation,
   ICType,
+  DidUri,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ApiMocks } from '@kiltprotocol/testing'
 import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
+import type { HexString } from '@polkadot/util/types'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
 import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
@@ -39,9 +39,9 @@ beforeAll(() => {
 })
 
 describe('Attestation', () => {
-  const identityAlice =
+  const identityAlice: DidUri =
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
-  const identityBob =
+  const identityBob: DidUri =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
   let testCType: CType
@@ -181,12 +181,10 @@ describe('Attestation', () => {
     }).toThrow()
   })
   it('error check should throw errors on faulty Attestations', () => {
-    const { cTypeHash, claimHash } = {
-      cTypeHash:
-        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-      claimHash:
-        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
-    }
+    const cTypeHash: HexString =
+      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff'
+    const claimHash: HexString =
+      '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557'
 
     const everything = {
       claimHash,
@@ -196,6 +194,7 @@ describe('Attestation', () => {
       delegationId: null,
     }
 
+    // @ts-ignore
     const noClaimHash = {
       claimHash: '',
       cTypeHash,
@@ -204,6 +203,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
+    // @ts-ignore
     const noCTypeHash = {
       claimHash,
       cTypeHash: '',
@@ -212,6 +212,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
+    // @ts-ignore
     const malformedOwner = {
       claimHash,
       cTypeHash,
@@ -253,36 +254,34 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
+    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowError(
+      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
     )
 
-    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowError(
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedOwner)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
+    expect(() => AttestationUtils.errorCheck(malformedOwner)).toThrowError(
+      SDKErrors.ERROR_OWNER_NOT_PROVIDED
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(noRevocationBit)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
+    expect(() => AttestationUtils.errorCheck(noRevocationBit)).toThrowError(
+      SDKErrors.ERROR_REVOCATION_BIT_MISSING
+    )
 
     expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedClaimHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => AttestationUtils.errorCheck(malformedClaimHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedCTypeHash)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+    expect(() => AttestationUtils.errorCheck(malformedCTypeHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedAddress)
-    ).toThrowErrorWithCode(
-      SDKErrors.ERROR_INVALID_DID_FORMAT(malformedAddress.owner)
+    expect(() => AttestationUtils.errorCheck(malformedAddress)).toThrowError(
+      SDKErrors.ERROR_INVALID_DID_FORMAT
     )
   })
   it('Typeguard should return true on complete Attestations', () => {

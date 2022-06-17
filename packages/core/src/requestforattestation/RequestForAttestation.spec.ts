@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,7 +10,6 @@
  */
 
 /* eslint-disable dot-notation */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import type {
   IClaim,
@@ -20,6 +19,7 @@ import type {
   CompressedRequestForAttestation,
   IRequestForAttestation,
   DidSignature,
+  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
@@ -40,7 +40,7 @@ const rawCType: ICType['schema'] = {
 }
 
 function buildRequestForAttestation(
-  claimerDid: string,
+  claimerDid: DidUri,
   contents: IClaimContents,
   legitimations: Credential[]
 ): RequestForAttestation {
@@ -115,8 +115,8 @@ describe('RequestForAttestation', () => {
 
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
-    expect(() => request.verifyData()).toThrowErrorWithCode(
-      SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
+    expect(() => request.verifyData()).toThrowError(
+      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
     )
   })
 
@@ -311,6 +311,7 @@ describe('RequestForAttestation', () => {
         []
       ),
     } as IRequestForAttestation
+    // @ts-ignore
     builtRequestMalformedRootHash.rootHash = [
       builtRequestMalformedRootHash.rootHash.slice(0, 15),
       (
@@ -383,19 +384,19 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
-    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
+    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
-    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()
@@ -429,10 +430,10 @@ describe('RequestForAttestation', () => {
     )
     expect(
       RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
-    ).toBeTruthy()
+    ).toBe(true)
     builtRequest.claim.contents.name = 123
-    expect(() =>
+    expect(
       RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
-    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toBe(false)
   })
 })

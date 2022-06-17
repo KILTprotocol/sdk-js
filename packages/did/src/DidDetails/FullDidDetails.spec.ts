@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,7 +10,7 @@ import { BN } from '@polkadot/util'
 import {
   DidKey,
   DidServiceEndpoint,
-  IDidIdentifier,
+  DidIdentifier,
   KeyRelationship,
   VerificationKeyType,
   EncryptionKeyType,
@@ -91,7 +91,7 @@ jest.mock('../Did.chain.ts', () => {
   return {
     queryDetails: jest.fn(
       async (
-        didIdentifier: IDidIdentifier
+        didIdentifier: DidIdentifier
       ): Promise<IDidChainRecordJSON | null> => {
         if (didIdentifier === existingIdentifier) {
           return existingDidDetails
@@ -100,7 +100,7 @@ jest.mock('../Did.chain.ts', () => {
       }
     ),
     queryServiceEndpoints: jest.fn(
-      async (didIdentifier: IDidIdentifier): Promise<DidServiceEndpoint[]> => {
+      async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
         if (didIdentifier === existingIdentifier) {
           return existingServiceEndpoints
         }
@@ -122,14 +122,16 @@ jest.mock('../Did.chain.ts', () => {
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
     const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(existingIdentifier)
+      await FullDidDetails.fromChainInfo(
+        getKiltDidFromIdentifier(existingIdentifier, 'full')
+      )
 
     expect(fullDidDetails).not.toBeNull()
 
     expect(fullDidDetails?.identifier).toStrictEqual(existingIdentifier)
 
     const expectedDid = getKiltDidFromIdentifier(existingIdentifier, 'full')
-    expect(fullDidDetails?.did).toStrictEqual(expectedDid)
+    expect(fullDidDetails?.uri).toStrictEqual(expectedDid)
 
     expect(fullDidDetails?.getKey('auth#1')).toStrictEqual<DidKey>({
       id: 'auth#1',
@@ -252,7 +254,9 @@ describe('When creating an instance from the chain', () => {
 
   it('returns null if the identifier does not exist', async () => {
     const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(nonExistingIdentifier)
+      await FullDidDetails.fromChainInfo(
+        getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
+      )
     expect(fullDidDetails).toBeNull()
   })
 })

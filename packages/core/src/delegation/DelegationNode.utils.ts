@@ -1,13 +1,8 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @packageDocumentation
- * @module DelegationNodeUtils
  */
 
 import type {
@@ -40,8 +35,16 @@ export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
   return uint8
 }
 
+/**
+ * Traverses a delegation tree and counts the number of delegation nodes between an attestation and an ancestral delegation node owned by `attester`.
+ *
+ * @param attester Identity to be located in the delegation tree.
+ * @param attestation Attestation whose delegation tree to search.
+ * @returns 0 if `attester` is the owner of `attestation`, the number of delegation nodes traversed otherwise.
+ * @throws [[SDKError]] If the `attester` is neither the owner nor in the delegation tree of `attestation`.
+ */
 export async function countNodeDepth(
-  attester: IDidDetails['did'],
+  attester: IDidDetails['uri'],
   attestation: IAttestation
 ): Promise<number> {
   let delegationTreeTraversalSteps = 0
@@ -55,41 +58,47 @@ export async function countNodeDepth(
       const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
       delegationTreeTraversalSteps += steps
       if (node === null) {
-        throw SDKErrors.ERROR_UNAUTHORIZED(
-          'Attester is not athorized to revoke this attestation. (attester not in delegation tree)'
+        throw new SDKErrors.ERROR_UNAUTHORIZED(
+          'Attester is not authorized to revoke this attestation. (attester not in delegation tree)'
         )
       }
     }
   } else if (attestation.owner !== attester) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
-      'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
+    throw new SDKErrors.ERROR_UNAUTHORIZED(
+      'Attester is not authorized to revoke this attestation. (not the owner, no delegations)'
     )
   }
 
   return delegationTreeTraversalSteps
 }
 
+/**
+ * Checks for errors on delegation node data.
+ *
+ * @param delegationNodeInput Delegation node data.
+ * @throws [[SDKError]] in case of errors.
+ */
 export function errorCheck(delegationNodeInput: IDelegationNode): void {
   const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.ERROR_UNAUTHORIZED(
       'Must have at least one permission and no more then two'
     )
   }
 
   if (!rootId) {
-    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+    throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
   } else if (typeof rootId !== 'string') {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   } else if (!isHex(rootId)) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (parentId) {
     if (typeof parentId !== 'string') {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     } else if (!isHex(parentId)) {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
     }
   }
 }
