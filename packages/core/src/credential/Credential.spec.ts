@@ -38,7 +38,7 @@ import { UUID, SDKErrors } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation/index'
+import * as RequestForAttestation from '../requestforattestation'
 import * as Credential from './Credential'
 import { query } from '../attestation/Attestation.chain'
 
@@ -316,13 +316,6 @@ describe('RequestForAttestation', () => {
 
   it('compresses and decompresses the credentials object', () => {
     expect(Credential.compress(legitimation)).toEqual(compressedLegitimation)
-
-    expect(Credential.decompress(compressedLegitimation)).toEqual(legitimation)
-
-    expect(Credential.compress(legitimation)).toEqual(
-      Credential.compress(legitimation)
-    )
-
     expect(Credential.decompress(compressedLegitimation)).toEqual(legitimation)
   })
 
@@ -337,12 +330,6 @@ describe('RequestForAttestation', () => {
 
     expect(() => {
       Credential.decompress(compressedLegitimation)
-    }).toThrow()
-    expect(() => {
-      Credential.decompress(compressedLegitimation)
-    }).toThrow()
-    expect(() => {
-      Credential.compress(legitimation)
     }).toThrow()
   })
   it('Typeguard should return true on complete Credentials', async () => {

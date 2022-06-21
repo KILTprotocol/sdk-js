@@ -436,7 +436,7 @@ export function decompress(
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
     throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
-  return {
+  const decompressedRequestForAttestation = {
     claim: Claim.decompress(reqForAtt[0]),
     claimNonceMap: reqForAtt[1],
     claimerSignature: reqForAtt[2],
@@ -445,19 +445,6 @@ export function decompress(
     legitimations: decompressLegitimation(reqForAtt[5]),
     delegationId: reqForAtt[6],
   }
-}
-
-/**
- * Builds an [[RequestForAttestation]] from the decompressed array.
- *
- * @param reqForAtt The [[CompressedRequestForAttestation]] that should get decompressed.
- * @returns A new [[RequestForAttestation]] object.
- */
-export function decompressAndVerify(
-  reqForAtt: CompressedRequestForAttestation
-): IRequestForAttestation {
-  const decompressedRequestForAttestation = decompress(reqForAtt)
   verifyDataStructure(decompressedRequestForAttestation)
-  verifyDataIntegrity(decompressedRequestForAttestation)
   return decompressedRequestForAttestation
 }

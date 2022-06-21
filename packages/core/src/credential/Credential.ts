@@ -72,7 +72,7 @@ export function verifyDataStructure(input: ICredential): void {
     RequestForAttestation.verifyDataStructure(input.request)
   } else throw new SDKErrors.ERROR_RFA_NOT_PROVIDED()
 
-  if (!verifyDataIntegrity(input as ICredential)) {
+  if (!verifyDataIntegrity(input)) {
     throw new SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
   }
 }

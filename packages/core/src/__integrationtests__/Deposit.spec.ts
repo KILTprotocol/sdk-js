@@ -136,7 +136,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.uri
   )
 
-  tx = await Attestation.getRemoveTx(attestation, 0)
+  tx = await Attestation.getRemoveTx(attestation.claimHash, 0)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -186,7 +186,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.uri
   )
 
-  tx = await Attestation.getReclaimDepositTx(attestation)
+  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
   const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
@@ -242,7 +242,7 @@ async function checkDeletedDidReclaimAttestation(
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
-  tx = await Attestation.getReclaimDepositTx(attestation)
+  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 }

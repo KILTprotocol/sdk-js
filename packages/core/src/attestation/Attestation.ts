@@ -106,9 +106,7 @@ export async function getDelegationDetails(
     return null
   }
 
-  const delegationNode: DelegationNode | null = await DelegationNode.query(
-    delegationId
-  )
+  const delegationNode = await DelegationNode.query(delegationId)
   if (!delegationNode) {
     return null
   }
@@ -143,7 +141,7 @@ export async function checkValidity(
 ): Promise<boolean> {
   verifyDataStructure(attestation)
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-  const chainAttestation: IAttestation | null = await query(claimHash)
+  const chainAttestation = await query(claimHash)
   return !!(
     chainAttestation !== null &&
     chainAttestation.owner === attestation.owner &&

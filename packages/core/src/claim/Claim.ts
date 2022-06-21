@@ -9,7 +9,7 @@
  * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[RequestForAttestation]].
  *
  * A claim object has:
- * * contents - among others, the pure content of a claim, for example `"isOver18": yes`;
+ * * contents - among others, the pure content of a claim, for example `"isOver18": true`;
  * * a [[CType]] that represents its data structure.
  *
  * A claim object's owner is (should be) the same entity as the claimer.
@@ -392,9 +392,11 @@ export function decompress(
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
-  return {
+  const decompressedClaim = {
     cTypeHash: claim[0],
     owner: claim[1],
     contents: claim[2],
   }
+  verifyDataStructure(decompressedClaim)
+  return decompressedClaim
 }

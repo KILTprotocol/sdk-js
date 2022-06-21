@@ -182,7 +182,7 @@ describe('and attestation rights have been delegated', () => {
     await expect(Credential.verify(credential)).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await Attestation.getRevokeTx(credential.attestation, 1)
+    await Attestation.getRevokeTx(credential.attestation.claimHash, 1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(Credential.verify(credential)).resolves.toBeFalsy()

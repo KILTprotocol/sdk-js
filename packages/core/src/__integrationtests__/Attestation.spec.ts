@@ -155,12 +155,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(Credential.verify(credential)).resolves.toBe(true)
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
-    await Attestation.getReclaimDepositTx(attestation).then((tx) =>
+    await Attestation.getReclaimDepositTx(attestation.claimHash).then((tx) =>
       submitExtrinsicWithResign(tx, tokenHolder)
     )
 
     // Test that the attestation has been deleted.
-    await expect(Attestation.query(attestation)).resolves.toBeNull()
+    await expect(Attestation.query(attestation.claimHash)).resolves.toBeNull()
     await expect(Attestation.checkValidity(attestation)).resolves.toBeFalsy()
   }, 60_000)
 

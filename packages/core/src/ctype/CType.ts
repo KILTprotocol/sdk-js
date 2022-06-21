@@ -348,9 +348,11 @@ export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
     throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
   }
-  return {
+  const decompressedCType = {
     hash: cType[0],
     owner: cType[1],
     schema: decompressSchema(cType[2]),
   }
+  verifyDataStructure(decompressedCType)
+  return decompressedCType
 }
