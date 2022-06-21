@@ -219,7 +219,6 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
   }
   if (input.claimerSignature)
     DidUtils.validateDidSignature(input.claimerSignature)
-  verifyDataIntegrity(input as IRequestForAttestation)
 }
 
 /**

@@ -60,7 +60,6 @@ export function verifyDataIntegrity(credential: ICredential): boolean {
  *
  * @param input The potentially only partial ICredential.
  * @throws [[ERROR_ATTESTATION_NOT_PROVIDED]] or [[ERROR_RFA_NOT_PROVIDED]] when input's attestation and request respectively do not exist.
- * @throws [[ERROR_CREDENTIAL_UNVERIFIABLE]] when input's data could not be verified.
  *
  */
 export function verifyDataStructure(input: ICredential): void {
@@ -71,10 +70,6 @@ export function verifyDataStructure(input: ICredential): void {
   if (input.request) {
     RequestForAttestation.verifyDataStructure(input.request)
   } else throw new SDKErrors.ERROR_RFA_NOT_PROVIDED()
-
-  if (!verifyDataIntegrity(input)) {
-    throw new SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
-  }
 }
 
 /**
