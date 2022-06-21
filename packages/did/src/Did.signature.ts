@@ -8,6 +8,7 @@
 import { u8aToHex, isHex } from '@polkadot/util'
 
 import {
+  DidResourceUri,
   DidSignature,
   DidVerificationKey,
   IDidDetails,
@@ -104,23 +105,28 @@ export async function verifyDidSignature({
   resolver = DidResolver,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
   let keyId: string
+  let keyUri: DidResourceUri
   try {
-    // Verification fails if the signature key ID is not valid
-    const { fragment } = parseDidUri(signature.keyUri)
+    // Add support for old signatures that had the `keyId` instead of the `keyUri`
+    const inputUri = signature.keyUri || (signature as any).keyId
+    // Verification fails if the signature key URI is not valid
+    const { fragment } = parseDidUri(inputUri)
     if (!fragment) throw new Error()
+
     keyId = fragment
+    keyUri = inputUri
   } catch {
     return {
       verified: false,
-      reason: `Signature key ID ${signature.keyUri} invalid.`,
+      reason: `Signature key URI ${signature.keyUri} invalid.`,
     }
   }
-  const resolutionDetails = await resolver.resolveDoc(signature.keyUri)
+  const resolutionDetails = await resolver.resolveDoc(keyUri)
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
     return {
       verified: false,
-      reason: `No result for provided key ID ${signature.keyUri}`,
+      reason: `No result for provided key URI ${keyUri}`,
     }
   }
   // Verification also fails if the DID has been deleted.
@@ -154,6 +160,12 @@ export async function verifyDidSignature({
   })
 }
 
+// Used solely for retro-compatibility with previously-generated DID signatures.
+// It is reasonable to think that it will be removed at some point in the future.
+type OldDidSignature = Pick<DidSignature, 'signature'> & {
+  keyId: DidSignature['keyUri']
+}
+
 /**
  * Type guard assuring that a the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
  * Does not cryptographically verify the signature itself!
@@ -162,12 +174,17 @@ export async function verifyDidSignature({
  * @returns True if validation of form has passed.
  * @throws [[SDKError]] if validation fails.
  */
-export function isDidSignature(input: unknown): input is DidSignature {
-  const signature = input as DidSignature
+export function isDidSignature(
+  input: unknown
+): input is DidSignature | OldDidSignature {
+  const signature = input as DidSignature | OldDidSignature
   try {
     if (
       !isHex(signature.signature) ||
-      !validateKiltDidUri(signature.keyUri, true)
+      !validateKiltDidUri(
+        (signature as any).keyUri || (signature as any).keyId,
+        true
+      )
     ) {
       throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
     }
