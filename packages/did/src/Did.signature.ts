@@ -8,6 +8,7 @@
 import { u8aToHex, isHex } from '@polkadot/util'
 
 import {
+  DidResourceUri,
   DidSignature,
   DidVerificationKey,
   IDidDetails,
@@ -104,23 +105,28 @@ export async function verifyDidSignature({
   resolver = DidResolver,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
   let keyId: string
+  let keyUri: DidResourceUri
   try {
-    // Verification fails if the signature key ID is not valid
-    const { fragment } = parseDidUri(signature.keyUri)
+    // Add support for old signatures that had the `keyId` instead of the `keyUri`
+    const inputUri = signature.keyUri || (signature as any).keyId
+    // Verification fails if the signature key URI is not valid
+    const { fragment } = parseDidUri(inputUri)
     if (!fragment) throw new Error()
+
     keyId = fragment
+    keyUri = inputUri
   } catch {
     return {
       verified: false,
-      reason: `Signature key ID ${signature.keyUri} invalid.`,
+      reason: `Signature key URI ${signature.keyUri} invalid.`,
     }
   }
-  const resolutionDetails = await resolver.resolveDoc(signature.keyUri)
+  const resolutionDetails = await resolver.resolveDoc(keyUri)
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
     return {
       verified: false,
-      reason: `No result for provided key ID ${signature.keyUri}`,
+      reason: `No result for provided key URI ${keyUri}`,
     }
   }
   // Verification also fails if the DID has been deleted.
