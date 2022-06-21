@@ -6,3 +6,4 @@
  */
 
 export * from './Attestation.js'
+export * from './Attestation.chain.js'

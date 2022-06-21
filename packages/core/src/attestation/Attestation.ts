@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type {
   IAttestation,
   IDelegationHierarchyDetails,
@@ -15,16 +14,8 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
-import {
-  getRevokeTx as chainRevoke,
-  query as chainQuery,
-  getStoreTx as chainStore,
-  getRemoveTx as chainRemove,
-  getReclaimDepositTx as chainReclaimDeposit,
-  queryDepositAmount as chainQueryDepositAmount,
-} from './Attestation.chain.js'
 import { DelegationNode } from '../delegation/DelegationNode.js'
+import { query } from './Attestation.chain.js'
 
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
@@ -36,84 +27,6 @@ import { DelegationNode } from '../delegation/DelegationNode.js'
  *
  * @packageDocumentation
  */
-
-/**
- * Queries the chain for a given attestation, by `claimHash`.
- *
- * @param input - The hash of the claim that corresponds to the attestation or the full attestation object to query.
- * @returns A promise containing the [[Attestation]] or null.
- */
-export async function query(
-  input: IAttestation['claimHash'] | IAttestation
-): Promise<IAttestation | null> {
-  let claimHash
-  if (typeof input === 'string') {
-    claimHash = input
-  } else {
-    claimHash = input.claimHash
-  }
-  return chainQuery(claimHash)
-}
-
-/**
- * Prepares an extrinsic to revoke the attestation.
- *
- * @param input - The hash of the claim that corresponds to the attestation to revoke, or the full attestation object.
- * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getRevokeTx(
-  input: IAttestation['claimHash'] | IAttestation,
-  maxDepth: number
-): Promise<SubmittableExtrinsic> {
-  let claimHash
-  if (typeof input === 'string') {
-    claimHash = input
-  } else {
-    claimHash = input.claimHash
-  }
-  return chainRevoke(claimHash, maxDepth)
-}
-
-/**
- * Removes an attestation. Also available as an instance method.
- *
- * @param input - The hash of the claim that corresponds to the attestation or the full attestation object to remove.
- * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getRemoveTx(
-  input: IAttestation['claimHash'] | IAttestation,
-  maxDepth: number
-): Promise<SubmittableExtrinsic> {
-  let claimHash
-  if (typeof input === 'string') {
-    claimHash = input
-  } else {
-    claimHash = input.claimHash
-  }
-  return chainRemove(claimHash, maxDepth)
-}
-
-/**
- * Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
- *
- * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
- *
- * @param input - The hash of the claim that corresponds to the attestation or the full attestation object to remove and its deposit to be returned to the original payer.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getReclaimDepositTx(
-  input: IAttestation['claimHash'] | IAttestation
-): Promise<SubmittableExtrinsic> {
-  let claimHash
-  if (typeof input === 'string') {
-    claimHash = input
-  } else {
-    claimHash = input.claimHash
-  }
-  return chainReclaimDeposit(claimHash)
-}
 
 /**
  * Checks whether the input meets all the required criteria of an [[IAttestation]] object.
@@ -218,18 +131,6 @@ export function isIAttestation(input: unknown): input is IAttestation {
 }
 
 /**
- * Prepares an extrinsic to store the attestation on chain.
- *
- * @param attestation - The Attestation to store.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getStoreTx(
-  attestation: IAttestation
-): Promise<SubmittableExtrinsic> {
-  return chainStore(attestation)
-}
-
-/**
  * Queries an attestation from the chain and checks its validity.
  *
  * @param attestation - The Attestation to verify.
@@ -248,15 +149,6 @@ export async function checkValidity(
     chainAttestation.owner === attestation.owner &&
     !chainAttestation.revoked
   )
-}
-
-/**
- * Query and return the amount of KILTs (in femto notation) needed to deposit in order to create an attestation.
- *
- * @returns The amount of femtoKILTs required to deposit to create the attestation.
- */
-export function queryDepositAmount(): Promise<BN> {
-  return chainQueryDepositAmount()
 }
 
 /**
