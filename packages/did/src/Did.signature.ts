@@ -160,6 +160,12 @@ export async function verifyDidSignature({
   })
 }
 
+// Used solely for retro-compatibility with previously-generated DID signatures.
+// It is reasonable to think that it will be removed at some point in the future.
+type OldDidSignature = Pick<DidSignature, 'signature'> & {
+  keyId: DidSignature['keyUri']
+}
+
 /**
  * Type guard assuring that a the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
  * Does not cryptographically verify the signature itself!
@@ -168,12 +174,17 @@ export async function verifyDidSignature({
  * @returns True if validation of form has passed.
  * @throws [[SDKError]] if validation fails.
  */
-export function isDidSignature(input: unknown): input is DidSignature {
-  const signature = input as DidSignature
+export function isDidSignature(
+  input: unknown
+): input is DidSignature | OldDidSignature {
+  const signature = input as DidSignature | OldDidSignature
   try {
     if (
       !isHex(signature.signature) ||
-      !validateKiltDidUri(signature.keyUri, true)
+      !validateKiltDidUri(
+        (signature as any).keyUri || (signature as any).keyId,
+        true
+      )
     ) {
       throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
     }
