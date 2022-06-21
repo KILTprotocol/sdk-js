@@ -25,7 +25,6 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation'
-// import { Credential } from '../credential/Credential'
 import * as CType from '../ctype'
 
 import * as RequestForAttestation from './index.js'
@@ -229,24 +228,9 @@ describe('RequestForAttestation', () => {
       reqForAtt
     )
 
-    expect(RequestForAttestation.compress(reqForAtt)).toEqual(
-      compressedReqForAtt
-    )
-
-    expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
-      reqForAtt
-    )
     compressedReqForAtt.pop()
     // @ts-expect-error
     delete reqForAtt.claim.owner
-
-    expect(() => {
-      RequestForAttestation.compress(reqForAtt)
-    }).toThrow()
-
-    expect(() => {
-      RequestForAttestation.decompress(compressedReqForAtt)
-    }).toThrow()
 
     expect(() => {
       RequestForAttestation.compress(reqForAtt)

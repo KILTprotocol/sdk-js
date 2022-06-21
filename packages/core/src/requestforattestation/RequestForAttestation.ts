@@ -317,7 +317,6 @@ export function fromClaim(
     delegationId: delegationId || null,
   }
   verifyDataStructure(request)
-  verifyDataIntegrity(request)
   return request
 }
 

@@ -127,7 +127,7 @@ export function isICredential(input: unknown): input is ICredential {
 }
 
 /**
- * (ASYNC) Verifies whether the credential is valid. It is valid if:
+ * Verifies whether the credential is valid. It is valid if:
  * * the data is valid (see [[verifyDataIntegrity]]);
  * and
  * * the [[Attestation]] object for this credential is valid (see [[Attestation.checkValidity]], where the **chain** is queried).
