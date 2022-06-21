@@ -444,7 +444,7 @@ describe('Messaging Utilities', () => {
       quote: quoteAttesterSigned,
       cTypes: undefined,
     }
-    // Compressed Submit Terms Contentƒ
+    // Compressed Submit Terms Contents
     compressedSubmitTermsContent = [
       compressedRequestTermsContent,
       [compressedLegitimation],

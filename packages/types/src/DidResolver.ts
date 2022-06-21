@@ -20,7 +20,7 @@ export type DidResolutionDocumentMetadata = {
    */
   canonicalId?: IDidDetails['uri']
   /**
-   * A boolean flag indicating wheather the resolved DID has been deactivated.
+   * A boolean flag indicating whether the resolved DID has been deactivated.
    */
   deactivated: boolean
 }

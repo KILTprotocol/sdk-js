@@ -162,13 +162,13 @@ jobs:
           pinned: false
           close-previous: true
           linked-comments: true
-          title: SDK no longer compatible with latest dependecies
+          title: SDK no longer compatible with latest dependencies
           body: |-
             ## Incompatibilities detected
 
             A [scheduled test workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) using the latest available dependencies matching our semver ranges has failed.
             We may need to constrain dependency ranges in our `package.json` or introduce fixes to recover compatibility.
-            Below you can find a summary of depedency versions against which these tests were run.
+            Below you can find a summary of dependency versions against which these tests were run.
 
             _Note: This issue was **automatically created** as a result of scheduled CI tests on ${{env.TODAY}}._
 

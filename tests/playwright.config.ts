@@ -11,4 +11,5 @@ const config: PlaywrightTestConfig = {
   timeout: 10 * 60 * 1000, // Timeout for each test
 }
 
+// eslint-disable-next-line import/no-default-export
 export default config

@@ -59,13 +59,13 @@ export async function countNodeDepth(
       delegationTreeTraversalSteps += steps
       if (node === null) {
         throw new SDKErrors.ERROR_UNAUTHORIZED(
-          'Attester is not athorized to revoke this attestation. (attester not in delegation tree)'
+          'Attester is not authorized to revoke this attestation. (attester not in delegation tree)'
         )
       }
     }
   } else if (attestation.owner !== attester) {
     throw new SDKErrors.ERROR_UNAUTHORIZED(
-      'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
+      'Attester is not authorized to revoke this attestation. (not the owner, no delegations)'
     )
   }
 

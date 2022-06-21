@@ -39,6 +39,7 @@ import {
   DidResolver,
   DidDetails,
   DidKeySelectionCallback,
+  verifyDidSignature,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
@@ -134,7 +135,7 @@ export async function verifyAttesterSignedQuote(
   } = {}
 ): Promise<void> {
   const { attesterSignature, ...basicQuote } = quote
-  const result = await DidUtils.verifyDidSignature({
+  const result = await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: KeyRelationship.authentication,
@@ -187,7 +188,7 @@ export async function createQuoteAgreement(
       attesterSignedQuote.attesterDid
     )
 
-  await DidUtils.verifyDidSignature({
+  await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: KeyRelationship.authentication,

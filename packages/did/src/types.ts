@@ -16,6 +16,8 @@ import type {
   VerificationKeyType,
 } from '@kiltprotocol/types'
 
+export { SigningAlgorithms, EncryptionAlgorithms } from '@kiltprotocol/types'
+
 /**
  * Map from a key relationship (including the 'none' relationship) -> set of key IDs.
  */

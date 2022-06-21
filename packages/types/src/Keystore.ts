@@ -7,6 +7,16 @@
 
 import type { SignerPayloadJSON } from '@polkadot/types/types'
 
+export enum SigningAlgorithms {
+  Ed25519 = 'ed25519',
+  Sr25519 = 'sr25519',
+  EcdsaSecp256k1 = 'ecdsa-secp256k1',
+}
+
+export enum EncryptionAlgorithms {
+  NaclBox = 'x25519-xsalsa20-poly1305',
+}
+
 /**
  * Base interface for all {en/de}cryption & signing requests.
  */
@@ -16,7 +26,7 @@ export interface RequestData<A extends string> {
    */
   alg: A
   /**
-   * Public key as u8a idenifying the keypair to use (in combination with the alg).
+   * Public key as u8a identifying the keypair to use (in combination with the alg).
    */
   publicKey: Uint8Array
   /**

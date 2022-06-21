@@ -82,7 +82,7 @@ function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
   return {
     id: serviceId,
     types: [`type-${serviceId}`],
-    urls: [`url-${serviceId}`],
+    urls: [`x:url-${serviceId}`],
   }
 }
 
@@ -252,7 +252,7 @@ describe('When resolving a service endpoint', () => {
     ).resolves.toStrictEqual<ResolvedDidServiceEndpoint>({
       uri: serviceIdUri,
       type: [`type-service-1`],
-      serviceEndpoint: [`url-service-1`],
+      serviceEndpoint: [`x:url-service-1`],
     })
   })
 
@@ -377,12 +377,12 @@ describe('When resolving a full DID', () => {
       {
         id: 'id-1',
         types: ['type-id-1'],
-        urls: ['url-id-1'],
+        urls: ['x:url-id-1'],
       },
       {
         id: 'id-2',
         types: ['type-id-2'],
-        urls: ['url-id-2'],
+        urls: ['x:url-id-2'],
       },
     ])
   })
@@ -497,12 +497,12 @@ describe('When resolving a light DID', () => {
       {
         id: 'service-1',
         types: ['type-service-1'],
-        urls: ['url-service-1'],
+        urls: ['x:url-service-1'],
       },
       {
         id: 'service-2',
         types: ['type-service-2'],
-        urls: ['url-service-2'],
+        urls: ['x:url-service-2'],
       },
     ])
   })

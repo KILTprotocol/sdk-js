@@ -31,7 +31,12 @@ import type {
   CompressedRequestForAttestation,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { DidDetails, DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
+import {
+  DidDetails,
+  DidResolver,
+  verifyDidSignature,
+  isDidSignature,
+} from '@kiltprotocol/did'
 import { KeyRelationship } from '@kiltprotocol/types'
 import * as Claim from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
@@ -217,8 +222,7 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
-  if (input.claimerSignature)
-    DidUtils.validateDidSignature(input.claimerSignature)
+  if (input.claimerSignature) isDidSignature(input.claimerSignature)
 }
 
 /**
@@ -271,7 +275,7 @@ export async function verifySignature(
   if (!claimerSignature) return false
   if (challenge && challenge !== claimerSignature.challenge) return false
   const signingData = makeSigningData(input, claimerSignature.challenge)
-  const { verified } = await DidUtils.verifyDidSignature({
+  const { verified } = await verifyDidSignature({
     signature: claimerSignature,
     message: signingData,
     expectedVerificationMethod: KeyRelationship.authentication,
