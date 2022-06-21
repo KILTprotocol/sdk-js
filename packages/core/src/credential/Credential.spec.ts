@@ -354,7 +354,7 @@ describe('RequestForAttestation', () => {
       [],
       keystore
     )
-    expect(Credential.isICredential(testAttestation)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(testAttestation)).toBeTruthy()
     const { cTypeHash } = testAttestation.attestation
     // @ts-ignore
     testAttestation.attestation.cTypeHash = [
@@ -362,7 +362,7 @@ describe('RequestForAttestation', () => {
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
       cTypeHash.slice(16),
     ].join('')
-    expect(Credential.isICredential(testAttestation)).toBeFalsy()
+    expect(Credential.verifyDataIntegrity(testAttestation)).toBeFalsy()
   })
   it('returns Claim Hash of the attestation', async () => {
     const testAttestation = await buildCredential(
@@ -739,8 +739,6 @@ describe('create presentation', () => {
     expect(Credential.verifyAgainstCType(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
 
-    expect(() => Credential.verifyAgainstCType(cred, ctype)).toThrowError(
-      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
-    )
+    expect(() => Credential.verifyAgainstCType(cred, ctype)).toBeFalsy()
   })
 })

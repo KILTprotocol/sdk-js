@@ -129,7 +129,7 @@ export function isIAttestation(input: unknown): input is IAttestation {
 }
 
 /**
- * Queries an attestation from the chain and checks its validity.
+ * Queries an attestation from the chain and checks if it is existing, if the owner of the attestation matches and if it was not revoked.
  *
  * @param attestation - The Attestation to verify.
  * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.

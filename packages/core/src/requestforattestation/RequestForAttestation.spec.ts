@@ -374,7 +374,7 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.verifyDataStructure(builtRequestNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
     expect(() =>
-      RequestForAttestation.verifyDataStructure(builtRequestMalformedRootHash)
+      RequestForAttestation.verifyDataIntegrity(builtRequestMalformedRootHash)
     ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
       RequestForAttestation.verifyDataStructure(
