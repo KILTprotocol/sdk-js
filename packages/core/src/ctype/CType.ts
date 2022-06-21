@@ -33,8 +33,6 @@ import {
   MetadataModel,
 } from './CType.schemas.js'
 
-export { getOwner, isStored, getStoreTx } from './CType.chain.js'
-
 /**
  * Utility for (re)creating ctype hashes. For this, the $id property needs to be stripped from the CType schema.
  *
