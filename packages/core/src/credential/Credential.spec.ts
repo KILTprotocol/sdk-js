@@ -739,6 +739,6 @@ describe('create presentation', () => {
     expect(Credential.verifyAgainstCType(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
 
-    expect(() => Credential.verifyAgainstCType(cred, ctype)).toBeFalsy()
+    expect(Credential.verifyAgainstCType(cred, ctype)).toBeFalsy()
   })
 })
