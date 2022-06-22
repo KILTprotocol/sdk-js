@@ -228,22 +228,22 @@ async function runAll() {
     bob.uri
   )
   const request = RequestForAttestation.fromClaim(claim)
-  const signed = await RequestForAttestation.signWithDidKey(
+  await RequestForAttestation.signWithDidKey(
     request,
     keystore,
     bob,
     bob.authenticationKey.id
   )
-  if (!RequestForAttestation.isIRequestForAttestation(signed))
+  if (!RequestForAttestation.isIRequestForAttestation(request))
     throw new Error('Not a valid Request!')
   else {
-    if (RequestForAttestation.verifyDataIntegrity(signed))
+    if (RequestForAttestation.verifyDataIntegrity(request))
       console.info('Req4Att data verified')
     else throw new Error('Req4Att not verifiable')
-    if (await RequestForAttestation.verifySignature(signed))
+    if (await RequestForAttestation.verifySignature(request))
       console.info('Req4Att signature verified')
     else throw new Error('Req4Att Signature mismatch')
-    if (signed.claim.contents !== content)
+    if (request.claim.contents !== content)
       throw new Error('Claim content inside Req4Att mismatching')
   }
 
@@ -251,7 +251,7 @@ async function runAll() {
   const message = new Message(
     {
       content: {
-        requestForAttestation: signed,
+        requestForAttestation: request,
       },
       type: MessageBodyType.REQUEST_ATTESTATION,
     },
@@ -274,9 +274,9 @@ async function runAll() {
     throw new Error('original and decrypted message are not the same')
   }
 
-  const attestation = Attestation.fromRequestAndDid(signed, alice.uri)
+  const attestation = Attestation.fromRequestAndDid(request, alice.uri)
   const credential = KiltCredential.fromRequestAndAttestation(
-    signed,
+    request,
     attestation
   )
   if (KiltCredential.verifyDataIntegrity(credential))
