@@ -17,6 +17,7 @@ import {
   Web3Names,
 } from '@kiltprotocol/did'
 import {
+  IAttestation,
   IRequestForAttestation,
   KeyringPair,
   SubmittableExtrinsic,
@@ -36,15 +37,16 @@ import {
   submitExtrinsicWithResign,
 } from './utils'
 import { Balance } from '../balance'
-import { Attestation } from '../attestation/Attestation'
-import { Claim } from '../claim/Claim'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import * as Attestation from '../attestation'
+import * as Claim from '../claim'
+import * as RequestForAttestation from '../requestforattestation'
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
+import * as CType from '../ctype'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
-let attestation: Attestation
+let attestation: IAttestation
 let storedEndpointsCount: BN
 
 async function checkDeleteFullDid(
@@ -106,7 +108,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.uri
   )
 
-  tx = await attestation.getStoreTx()
+  tx = await Attestation.getStoreTx(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -134,7 +136,7 @@ async function checkRemoveFullDidAttestation(
     fullDid.uri
   )
 
-  tx = await attestation.getRemoveTx(0)
+  tx = await Attestation.getRemoveTx(attestation.claimHash, 0)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -165,7 +167,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.uri
   )
 
-  tx = await attestation.getStoreTx()
+  tx = await Attestation.getStoreTx(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -184,7 +186,7 @@ async function checkReclaimFullDidAttestation(
     fullDid.uri
   )
 
-  tx = await attestation.getReclaimDepositTx()
+  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
   const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
@@ -215,7 +217,7 @@ async function checkDeletedDidReclaimAttestation(
     fullDid.uri
   )
 
-  tx = await attestation.getStoreTx()
+  tx = await Attestation.getStoreTx(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(
     tx,
     keystore,
@@ -240,7 +242,7 @@ async function checkDeletedDidReclaimAttestation(
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 
-  tx = await attestation.getReclaimDepositTx()
+  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
   await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
 }
@@ -297,7 +299,7 @@ async function checkWeb3Deposit(
 const testIdentities: KeyringPair[] = []
 const testMnemonics: string[] = []
 const keystore = new DemoKeystore()
-let requestForAttestation: RequestForAttestation
+let requestForAttestation: IRequestForAttestation
 
 beforeAll(async () => {
   await initializeApi()
@@ -331,7 +333,7 @@ beforeAll(async () => {
   if (!ctypeExists) {
     await attester
       .authorizeExtrinsic(
-        await driversLicenseCType.getStoreTx(),
+        await CType.getStoreTx(driversLicenseCType),
         keystore,
         devFaucet.address
       )
@@ -352,7 +354,8 @@ beforeAll(async () => {
   )
 
   requestForAttestation = RequestForAttestation.fromClaim(claim)
-  await requestForAttestation.signWithDidKey(
+  await RequestForAttestation.signWithDidKey(
+    requestForAttestation,
     keystore,
     claimerLightDid,
     claimerLightDid.authenticationKey.id

@@ -98,8 +98,8 @@ async function buildCredential(
   claimerDid: IDidDetails['uri'],
   attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
-  legitimations: Credential[]
-): Promise<Credential> {
+  legitimations: ICredential[]
+): Promise<ICredential> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -112,7 +112,7 @@ async function buildCredential(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(rawCType)
+  const testCType: ICType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(testCType, contents, claimerDid)
   // build request for attestation with legitimations
@@ -140,16 +140,16 @@ describe('Messaging Utilities', () => {
   let date: string
   let rawCType: ICType['schema']
   let rawCTypeWithMultipleProperties: ICType['schema']
-  let testCType: CType
-  let testCTypeWithMultipleProperties: CType
-  let claim: Claim
+  let testCType: ICType
+  let testCTypeWithMultipleProperties: ICType
+  let claim: IClaim
   let claimContents: IClaim['contents']
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
   let compressedLegitimation: CompressedCredential
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
-  let legitimation: Credential
+  let legitimation: ICredential
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: PartialClaim
@@ -377,7 +377,7 @@ describe('Messaging Utilities', () => {
       timeframe: date,
     }
     // Quote signed by attester
-    quoteAttesterSigned = await Quote.createAttesterSignature(
+    quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
       identityAlice,
       keystore

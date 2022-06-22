@@ -19,16 +19,15 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { BN } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
-import { Attestation } from './Attestation.js'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 /**
- * Generate the extrinsic to store the provided [[IAttestation]].
+ * Prepares an extrinsic to store the provided [[IAttestation]] on chain.
  *
- * @param attestation The attestation to write on the blockchain.
- * @returns The SubmittableExtrinsic for the `add` call.
+ * @param attestation The Attestation to write on the blockchain.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getStoreTx(
   attestation: IAttestation
@@ -87,7 +86,7 @@ export type AttestationDetails = AttestationDetailsV2
 function decode(
   encoded: Option<AttestationDetailsV1 | AttestationDetailsV2>,
   claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
-): Attestation | null {
+): IAttestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<AttestationAttestationsAttestationDetails>',
   ])
@@ -116,7 +115,7 @@ function decode(
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-    return Attestation.fromAttestation(attestation)
+    return attestation
   }
   return null
 }
@@ -139,27 +138,28 @@ export async function queryRaw(
 }
 
 /**
- * Query an attestation from the blockchain given the claim hash it attests.
+ * Queries an attestation from the blockchain given the claim hash it attests.
  *
  * @param claimHash The hash of the claim attested in the attestation.
- * @returns Either the retrieved [[Attestation]] or null.
+ * @returns A promise containing the retrieved [[Attestation]] or null.
  */
 export async function query(
-  claimHash: IRequestForAttestation['rootHash']
-): Promise<Attestation | null> {
+  claimHash: IRequestForAttestation['rootHash'] | IAttestation['claimHash']
+): Promise<IAttestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }
 
 /**
- * Generate the extrinsic to revoke a given attestation. The submitter can be the owner of the attestation or an authorized delegator thereof.
+ * Prepares an extrinsic to revoke a given attestation.
+ * The submitter can be the owner of the attestation or an authorized delegator thereof.
  *
- * @param claimHash The attestation claim hash.
- * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
- * @returns The SubmittableExtrinsic for the `revoke` call.
+ * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
+ * @param maxParentChecks The number of levels to walk up the delegation hierarchy until the delegation node is found.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getRevokeTx(
-  claimHash: IRequestForAttestation['rootHash'],
+  claimHash: IRequestForAttestation['rootHash'] | IAttestation['claimHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -186,11 +186,12 @@ export async function getRevokeTx(
 }
 
 /**
- * Generate the extrinsic to remove a given attestation. The submitter can be the owner of the attestation or an authorized delegator thereof.
+ * Prepares an extrinsic to remove a given attestation.
+ * The submitter can be the owner of the attestation or an authorized delegator thereof.
  *
- * @param claimHash The attestation claim hash.
- * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the removal.
- * @returns The SubmittableExtrinsic for the `remove` call.
+ * @param claimHash The hash of the claim that corresponds to the attestation.
+ * @param maxParentChecks The number of levels to walk up the delegation hierarchy until the delegation node is found.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getRemoveTx(
   claimHash: IRequestForAttestation['rootHash'],
@@ -220,10 +221,11 @@ export async function getRemoveTx(
 }
 
 /**
- * Generate the extrinsic to delete a given attestation and reclaim back its deposit. The submitter **must** be the KILT account that initially paid for the deposit.
+ * Prepares an extrinsic to reclaim the deposit of an attestation, deleting the attestation in the process.
+ * The submitter **must** be the KILT account that initially paid for the deposit.
  *
- * @param claimHash The attestation claim hash.
- * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
+ * @param claimHash The hash of the claim that corresponds to the attestation.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getReclaimDepositTx(
   claimHash: IRequestForAttestation['rootHash']

@@ -20,6 +20,9 @@ import type {
   DidResolvedDetails,
   DidKey,
   DidUri,
+  IRequestForAttestation,
+  IAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
 import {
@@ -31,13 +34,12 @@ import {
   FullDidDetails,
   Utils as DidUtils,
 } from '@kiltprotocol/did'
-import { UUID, SDKErrors } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation/Attestation'
-import { Claim } from '../claim/Claim'
-import { CType } from '../ctype/CType'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { Credential } from './Credential'
-import * as CredentialUtils from './Credential.utils'
+import { UUID } from '@kiltprotocol/utils'
+import * as Attestation from '../attestation'
+import * as Claim from '../claim'
+import * as CType from '../ctype'
+import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from './Credential'
 import { query } from '../attestation/Attestation.chain'
 
 jest.mock('../attestation/Attestation.chain')
@@ -46,9 +48,9 @@ async function buildCredential(
   claimer: DidDetails,
   attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
-  legitimations: Credential[],
+  legitimations: ICredential[],
   signer: DemoKeystore
-): Promise<Credential> {
+): Promise<ICredential> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -61,7 +63,7 @@ async function buildCredential(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(rawCType)
+  const testCType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
@@ -72,7 +74,8 @@ async function buildCredential(
   const requestForAttestation = RequestForAttestation.fromClaim(claim, {
     legitimations,
   })
-  await requestForAttestation.signWithDidKey(
+  await RequestForAttestation.signWithDidKey(
+    requestForAttestation,
     signer,
     claimer,
     claimer.authenticationKey.id
@@ -116,7 +119,7 @@ describe('RequestForAttestation', () => {
   let identityAlice: DidDetails
   let identityBob: DidDetails
   let identityCharlie: DidDetails
-  let legitimation: Credential
+  let legitimation: ICredential
   let compressedLegitimation: CompressedCredential
   let identityDave: DidDetails
   let migratedAndDeletedLightDid: DidDetails
@@ -222,7 +225,7 @@ describe('RequestForAttestation', () => {
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
-    expect(Credential.verifyData(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     await expect(
       Credential.verify(credential, {
         resolver: mockResolver,
@@ -254,7 +257,7 @@ describe('RequestForAttestation', () => {
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
-    expect(Credential.verifyData(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     await expect(
       Credential.verify(credential, {
         resolver: mockResolver,
@@ -303,7 +306,7 @@ describe('RequestForAttestation', () => {
     ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
-    expect(Credential.verifyData(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     await expect(
       Credential.verify(credential, {
         resolver: mockResolver,
@@ -312,18 +315,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('compresses and decompresses the credentials object', () => {
-    expect(CredentialUtils.compress(legitimation)).toEqual(
-      compressedLegitimation
-    )
-
-    expect(CredentialUtils.decompress(compressedLegitimation)).toEqual(
-      legitimation
-    )
-
-    expect(legitimation.compress()).toEqual(
-      CredentialUtils.compress(legitimation)
-    )
-
+    expect(Credential.compress(legitimation)).toEqual(compressedLegitimation)
     expect(Credential.decompress(compressedLegitimation)).toEqual(legitimation)
   })
 
@@ -333,17 +325,11 @@ describe('RequestForAttestation', () => {
     delete legitimation.attestation
 
     expect(() => {
-      CredentialUtils.compress(legitimation)
+      Credential.compress(legitimation)
     }).toThrow()
 
     expect(() => {
-      CredentialUtils.decompress(compressedLegitimation)
-    }).toThrow()
-    expect(() => {
       Credential.decompress(compressedLegitimation)
-    }).toThrow()
-    expect(() => {
-      legitimation.compress()
     }).toThrow()
   })
   it('Typeguard should return true on complete Credentials', async () => {
@@ -368,7 +354,7 @@ describe('RequestForAttestation', () => {
       [],
       keystore
     )
-    expect(Credential.isICredential(testAttestation)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(testAttestation)).toBeTruthy()
     const { cTypeHash } = testAttestation.attestation
     // @ts-ignore
     testAttestation.attestation.cTypeHash = [
@@ -376,7 +362,7 @@ describe('RequestForAttestation', () => {
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
       cTypeHash.slice(16),
     ].join('')
-    expect(Credential.isICredential(testAttestation)).toBeFalsy()
+    expect(Credential.verifyDataIntegrity(testAttestation)).toBeFalsy()
   })
   it('returns Claim Hash of the attestation', async () => {
     const testAttestation = await buildCredential(
@@ -386,7 +372,7 @@ describe('RequestForAttestation', () => {
       [],
       keystore
     )
-    expect(testAttestation.getHash()).toEqual(
+    expect(Credential.getHash(testAttestation)).toEqual(
       testAttestation.attestation.claimHash
     )
   })
@@ -400,9 +386,9 @@ describe('create presentation', () => {
   let migratedThenDeletedClaimerLightDid: DidDetails
   let migratedThenDeletedClaimerFullDid: DidDetails
   let attester: DidDetails
-  let ctype: CType
-  let reqForAtt: RequestForAttestation
-  let attestation: Attestation
+  let ctype: ICType
+  let reqForAtt: IRequestForAttestation
+  let attestation: IAttestation
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
@@ -541,13 +527,14 @@ describe('create presentation', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
     const challenge = UUID.generate()
-    const att = await cred.createPresentation({
+    const att = await Credential.createPresentation({
+      credential: cred,
       selectedAttributes: ['name'],
       signer: keystore,
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    expect(att.getAttributes()).toEqual(new Set(['name']))
+    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
       Credential.verify(att, {
         resolver: mockResolver,
@@ -585,13 +572,14 @@ describe('create presentation', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
     const challenge = UUID.generate()
-    const att = await cred.createPresentation({
+    const att = await Credential.createPresentation({
+      credential: cred,
       selectedAttributes: ['name'],
       signer: keystore,
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
-    expect(att.getAttributes()).toEqual(new Set(['name']))
+    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
       Credential.verify(att, {
         resolver: mockResolver,
@@ -630,14 +618,15 @@ describe('create presentation', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
     const challenge = UUID.generate()
-    const att = await cred.createPresentation({
+    const att = await Credential.createPresentation({
+      credential: cred,
       selectedAttributes: ['name'],
       signer: keystore,
       // Use of full DID to sign the presentation.
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    expect(att.getAttributes()).toEqual(new Set(['name']))
+    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
       Credential.verify(att, {
         resolver: mockResolver,
@@ -677,14 +666,15 @@ describe('create presentation', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
     const challenge = UUID.generate()
-    const att = await cred.createPresentation({
+    const att = await Credential.createPresentation({
+      credential: cred,
       selectedAttributes: ['name'],
       signer: keystore,
       // Still using the light DID, which should fail since it has been migrated
       claimerDid: migratedClaimerLightDid,
       challenge,
     })
-    expect(att.getAttributes()).toEqual(new Set(['name']))
+    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
       Credential.verify(att, {
         resolver: mockResolver,
@@ -723,14 +713,15 @@ describe('create presentation', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
     const challenge = UUID.generate()
-    const att = await cred.createPresentation({
+    const att = await Credential.createPresentation({
+      credential: cred,
       selectedAttributes: ['name'],
       signer: keystore,
       // Still using the light DID, which should fail since it has been migrated and then deleted
       claimerDid: migratedThenDeletedClaimerLightDid,
       challenge,
     })
-    expect(att.getAttributes()).toEqual(new Set(['name']))
+    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
       Credential.verify(att, {
         resolver: mockResolver,
@@ -740,16 +731,14 @@ describe('create presentation', () => {
 
   it('should get attribute keys', async () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
+    expect(Credential.getAttributes(cred)).toEqual(new Set(['age', 'name']))
   })
 
   it('should verify the credential claims structure against the ctype', () => {
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(CredentialUtils.verifyStructure(cred, ctype)).toBeTruthy()
+    expect(Credential.verifyAgainstCType(cred, ctype)).toBeTruthy()
     cred.request.claim.contents.name = 123
 
-    expect(() => CredentialUtils.verifyStructure(cred, ctype)).toThrowError(
-      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
-    )
+    expect(Credential.verifyAgainstCType(cred, ctype)).toBeFalsy()
   })
 })

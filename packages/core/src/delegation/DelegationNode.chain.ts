@@ -40,7 +40,7 @@ export async function getStoreAsRootTx(
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
   if (!delegation.isRoot()) {
-    throw SDKErrors.ERROR_INVALID_ROOT_NODE
+    throw new SDKErrors.ERROR_INVALID_ROOT_NODE()
   }
   return blockchain.api.tx.delegation.createHierarchy(
     delegation.hierarchyId,
@@ -62,7 +62,7 @@ export async function getStoreAsDelegationTx(
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
   if (delegation.isRoot()) {
-    throw SDKErrors.ERROR_INVALID_DELEGATION_NODE
+    throw new SDKErrors.ERROR_INVALID_DELEGATION_NODE()
   }
 
   return blockchain.api.tx.delegation.addDelegation(
@@ -173,7 +173,7 @@ export async function getChildren(
     delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
       const childNode = await query(childId)
       if (!childNode) {
-        throw SDKErrors.ERROR_DELEGATION_ID_MISSING
+        throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
       }
       return childNode
     })

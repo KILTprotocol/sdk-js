@@ -16,7 +16,7 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { getSchemaPropertiesForHash } from './CType.utils.js'
+import { getSchemaPropertiesForHash } from './CType.js'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 

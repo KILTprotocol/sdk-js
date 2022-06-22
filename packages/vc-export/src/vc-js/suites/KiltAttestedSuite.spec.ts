@@ -12,6 +12,7 @@
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import jsigs, { purposes } from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
+import type { IAttestation } from '@kiltprotocol/types'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
 import { KiltAttestedSuite as AttestationSuite } from './KiltAttestedSuite'
@@ -20,7 +21,7 @@ import { documentLoader } from '../documentLoader'
 import type { AttestedProof } from '../../types'
 import { KILT_ATTESTED_PROOF_TYPE } from '../../constants'
 
-const attestation = Attestation.fromAttestation({
+const attestation: IAttestation = {
   claimHash:
     '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
   cTypeHash:
@@ -28,11 +29,11 @@ const attestation = Attestation.fromAttestation({
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   delegationId: null,
   revoked: false,
-})
+}
 
 const spy = jest
   .spyOn(Attestation, 'query')
-  .mockImplementation(async (): Promise<Attestation | null> => attestation)
+  .mockImplementation(async (): Promise<IAttestation | null> => attestation)
 
 let suite: AttestationSuite
 let purpose: purposes.ProofPurpose
@@ -83,7 +84,7 @@ describe('jsigs', () => {
 
   describe('attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation> => attestation)
+      spy.mockImplementation(async (): Promise<IAttestation> => attestation)
     })
 
     it('verifies Kilt Attestation Proof', async () => {
@@ -97,7 +98,7 @@ describe('jsigs', () => {
     beforeAll(() => {
       const revoked = { ...attestation, revoked: true }
       spy.mockImplementation(
-        async (): Promise<Attestation> => revoked as Attestation
+        async (): Promise<IAttestation> => revoked as IAttestation
       )
     })
 
@@ -110,7 +111,7 @@ describe('jsigs', () => {
 
   describe('not attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation | null> => null)
+      spy.mockImplementation(async (): Promise<IAttestation | null> => null)
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {
@@ -124,7 +125,7 @@ describe('jsigs', () => {
 describe('vc-js', () => {
   describe('attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation> => attestation)
+      spy.mockImplementation(async (): Promise<IAttestation> => attestation)
     })
 
     it('verifies Kilt Attestation Proof', async () => {
@@ -138,7 +139,7 @@ describe('vc-js', () => {
     beforeAll(() => {
       const revoked = { ...attestation, revoked: true }
       spy.mockImplementation(
-        async (): Promise<Attestation> => revoked as Attestation
+        async (): Promise<IAttestation> => revoked as IAttestation
       )
     })
 
@@ -151,7 +152,7 @@ describe('vc-js', () => {
 
   describe('not attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation | null> => null)
+      spy.mockImplementation(async (): Promise<IAttestation | null> => null)
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {

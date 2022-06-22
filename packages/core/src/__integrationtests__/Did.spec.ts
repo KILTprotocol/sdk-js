@@ -46,7 +46,7 @@ import {
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
-import { CType } from '../ctype'
+import * as CType from '../ctype'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -601,7 +601,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.getStoreTx()
+    const call = await CType.getStoreTx(ctype)
     const tx = await didDetails.authorizeExtrinsic(
       call,
       keystore,
@@ -611,7 +611,7 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx, paymentAccount)
     ).resolves.not.toThrow()
 
-    await expect(ctype.verifyStored()).resolves.toEqual(true)
+    await expect(CType.verifyStored(ctype)).resolves.toEqual(true)
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
@@ -636,7 +636,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await ctype.getStoreTx()
+    const call = await CType.getStoreTx(ctype)
     const tx2 = await didDetails.authorizeExtrinsic(
       call,
       keystore,
@@ -646,7 +646,7 @@ describe('DID authorization', () => {
       submitExtrinsicWithResign(tx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'did', name: 'DidNotPresent' })
 
-    await expect(ctype.verifyStored()).resolves.toEqual(false)
+    await expect(CType.verifyStored(ctype)).resolves.toEqual(false)
   }, 60_000)
 })
 
@@ -1120,7 +1120,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await ctype.getStoreTx()
+    const ctypeCreationTx = await CType.getStoreTx(ctype)
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
@@ -1143,7 +1143,7 @@ describe('DID extrinsics batching', () => {
     ).resolves.not.toThrow()
 
     // The ctype has been created, even though the delegation operations failed.
-    await expect(ctype.verifyStored()).resolves.toBeTruthy()
+    await expect(CType.verifyStored(ctype)).resolves.toBeTruthy()
   })
 
   it('atomic batch fails if any extrinsics fail', async () => {
@@ -1153,7 +1153,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await ctype.getStoreTx()
+    const ctypeCreationTx = await CType.getStoreTx(ctype)
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
@@ -1179,7 +1179,7 @@ describe('DID extrinsics batching', () => {
     })
 
     // The ctype has not been created, since atomicity ensures the whole batch is reverted in case of failure.
-    await expect(ctype.verifyStored()).resolves.toBeFalsy()
+    await expect(CType.verifyStored(ctype)).resolves.toBeFalsy()
   })
 
   it('can batch extrinsics for the same required key type', async () => {
@@ -1220,7 +1220,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype1Creation = await ctype1.getStoreTx()
+    const ctype1Creation = await CType.getStoreTx(ctype1)
     // Delegation key
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
@@ -1238,7 +1238,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype2Creation = await ctype2.getStoreTx()
+    const ctype2Creation = await CType.getStoreTx(ctype2)
     // Delegation key
     const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)
 
@@ -1266,8 +1266,8 @@ describe('DID extrinsics batching', () => {
     ).resolves.toStrictEqual(fullDid.identifier)
 
     // Test correct use of attestation keys
-    await expect(ctype1.verifyStored()).resolves.toBeTruthy()
-    await expect(ctype2.verifyStored()).resolves.toBeTruthy()
+    await expect(CType.verifyStored(ctype1)).resolves.toBeTruthy()
+    await expect(CType.verifyStored(ctype2)).resolves.toBeTruthy()
 
     // Test correct use of delegation keys
     await expect(

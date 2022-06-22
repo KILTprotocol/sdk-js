@@ -38,12 +38,12 @@ import {
 
 export class Message implements IMessage {
   /**
-   * [STATIC] Lists all possible body types of [[Message]].
+   * Lists all possible body types of [[Message]].
    */
   public static readonly BodyType = MessageBodyType
 
   /**
-   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
+   * Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
    *
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
@@ -93,7 +93,7 @@ export class Message implements IMessage {
   }
 
   /**
-   * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
+   * Symmetrically decrypts the result of [[Message.encrypt]].
    *
    * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
    *

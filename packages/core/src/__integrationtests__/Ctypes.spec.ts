@@ -12,7 +12,7 @@
 import { ICType, KeyringPair } from '@kiltprotocol/types'
 import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import { CType } from '../ctype/CType'
+import * as CType from '../ctype'
 import { getOwner } from '../ctype/CType.chain'
 import { disconnect } from '../kilt'
 import {
@@ -33,7 +33,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCounter = 0
   const keystore = new DemoKeystore()
 
-  function makeCType(): CType {
+  function makeCType(): ICType {
     ctypeCounter += 1
     return CType.fromSchema({
       $id: `kilt:ctype:0x${ctypeCounter}`,
@@ -55,43 +55,39 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const bobbyBroke = keypairFromRandom()
     await expect(
-      ctype
-        .getStoreTx()
+      CType.getStoreTx(ctype)
         .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
         )
         .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
     ).rejects.toThrowError()
-    await expect(ctype.verifyStored()).resolves.toBeFalsy()
+    await expect(CType.verifyStored(ctype)).resolves.toBeFalsy()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    await ctype
-      .getStoreTx()
+    await CType.getStoreTx(ctype)
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri),
-      expect(ctype.verifyStored()).resolves.toBeTruthy(),
+      expect(CType.verifyStored(ctype)).resolves.toBeTruthy(),
     ])
     ctype.owner = ctypeCreator.uri
-    await expect(ctype.verifyStored()).resolves.toBeTruthy()
+    await expect(CType.verifyStored(ctype)).resolves.toBeTruthy()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    await ctype
-      .getStoreTx()
+    await CType.getStoreTx(ctype)
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
     await expect(
-      ctype
-        .getStoreTx()
+      CType.getStoreTx(ctype)
         .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
         )
@@ -126,10 +122,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
 
     await Promise.all([
-      expect(iAmNotThere.verifyStored()).resolves.toBeFalsy(),
+      expect(CType.verifyStored(iAmNotThere)).resolves.toBeFalsy(),
       expect(getOwner(iAmNotThere.hash)).resolves.toBeNull(),
       expect(getOwner(Crypto.hashStr('abcdefg'))).resolves.toBeNull(),
-      expect(iAmNotThereWithOwner.verifyStored()).resolves.toBeFalsy(),
+      expect(CType.verifyStored(iAmNotThereWithOwner)).resolves.toBeFalsy(),
     ])
   })
 })

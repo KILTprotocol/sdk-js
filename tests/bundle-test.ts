@@ -8,13 +8,8 @@
 /// <reference lib="dom" />
 
 import type { ApiPromise } from '@polkadot/api'
-import type {
-  EncryptionKeyType,
-  KeyringPair,
-  SubmittableExtrinsic,
-  VerificationKeyType,
-} from '@kiltprotocol/types'
-import type { LightDidSupportedVerificationKeyType } from '@kiltprotocol/did/src'
+import type { KeyringPair, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type { LightDidSupportedVerificationKeyType } from '@kiltprotocol/did'
 
 const { kilt } = window
 
@@ -23,13 +18,14 @@ const {
   Attestation,
   Credential,
   CType,
-  CTypeUtils,
   RequestForAttestation,
   Did,
   BlockchainUtils,
   Utils: { Crypto, Keyring },
   Message,
   MessageBodyType,
+  EncryptionKeyType,
+  VerificationKeyType,
   BalanceUtils,
 } = kilt
 
@@ -116,11 +112,11 @@ async function runAll() {
   const didCreationDetails = {
     authenticationKey: {
       publicKey: authPublicKey,
-      type: 'ed25519' as LightDidSupportedVerificationKeyType,
+      type: VerificationKeyType.Ed25519 as LightDidSupportedVerificationKeyType,
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: 'x25519' as EncryptionKeyType,
+      type: EncryptionKeyType.X25519,
     },
   }
   const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
@@ -139,7 +135,7 @@ async function runAll() {
 
   const fullDid = await new Did.FullDidCreationBuilder(blockchain.api, {
     publicKey: keypair.publicKey,
-    type: 'ed25519' as VerificationKeyType,
+    type: VerificationKeyType.Ed25519,
   }).buildAndSubmit(keystore, devFaucet.address, async (tx) => {
     await BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -195,7 +191,7 @@ async function runAll() {
     type: 'object',
   })
 
-  const tx = await DriversLicense.getStoreTx()
+  const tx = await CType.getStoreTx(DriversLicense)
   const authorizedTx = await alice.authorizeExtrinsic(
     tx,
     keystore,
@@ -206,14 +202,14 @@ async function runAll() {
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
 
-  const stored = await DriversLicense.verifyStored()
+  const stored = await CType.verifyStored(DriversLicense)
   if (stored) {
     console.info('CType successfully stored onchain!')
   } else {
     throw new Error('ctype not stored!')
   }
 
-  const result = await CTypeUtils.verifyOwner({
+  const result = await CType.verifyOwner({
     ...DriversLicense,
     owner: alice.uri,
   })
@@ -232,20 +228,22 @@ async function runAll() {
     bob.uri
   )
   const request = RequestForAttestation.fromClaim(claim)
-  const signed = await request.signWithDidKey(
+  await RequestForAttestation.signWithDidKey(
+    request,
     keystore,
     bob,
     bob.authenticationKey.id
   )
-  if (!RequestForAttestation.isIRequestForAttestation(signed))
+  if (!RequestForAttestation.isIRequestForAttestation(request))
     throw new Error('Not a valid Request!')
   else {
-    if (signed.verifyData()) console.info('Req4Att data verified')
+    if (RequestForAttestation.verifyDataIntegrity(request))
+      console.info('Req4Att data verified')
     else throw new Error('Req4Att not verifiable')
-    if (await signed.verifySignature())
+    if (await RequestForAttestation.verifySignature(request))
       console.info('Req4Att signature verified')
     else throw new Error('Req4Att Signature mismatch')
-    if (signed.claim.contents !== content)
+    if (request.claim.contents !== content)
       throw new Error('Claim content inside Req4Att mismatching')
   }
 
@@ -253,7 +251,7 @@ async function runAll() {
   const message = new Message(
     {
       content: {
-        requestForAttestation: signed,
+        requestForAttestation: request,
       },
       type: MessageBodyType.REQUEST_ATTESTATION,
     },
@@ -276,12 +274,13 @@ async function runAll() {
     throw new Error('original and decrypted message are not the same')
   }
 
-  const attestation = Attestation.fromRequestAndDid(signed, alice.uri)
-  const credential = Credential.fromRequestAndAttestation(signed, attestation)
-  if (credential.verifyData()) console.info('Attested Claim Data verified!')
+  const attestation = Attestation.fromRequestAndDid(request, alice.uri)
+  const credential = Credential.fromRequestAndAttestation(request, attestation)
+  if (Credential.verifyDataIntegrity(credential))
+    console.info('Attested Claim Data verified!')
   else throw new Error('Attested Claim data not verifiable')
 
-  const txAtt = await attestation.getStoreTx()
+  const txAtt = await Attestation.getStoreTx(attestation)
   const authorizedAttTx = await alice.authorizeExtrinsic(
     txAtt,
     keystore,
@@ -290,7 +289,7 @@ async function runAll() {
   await BlockchainUtils.signAndSubmitTx(authorizedAttTx, devFaucet, {
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
-  if (await credential.verify()) {
+  if (await Credential.verify(credential)) {
     console.info('Attested Claim verified with chain.')
   } else {
     throw new Error('attested Claim not verifiable with chain')

@@ -10,7 +10,7 @@
  */
 
 import { BN } from '@polkadot/util'
-import type { KeyringPair } from '@kiltprotocol/types'
+import type { IAttestation, KeyringPair } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { Attestation } from '../index'
 import { getTransferTx } from '../balance/Balance.chain'
@@ -45,7 +45,7 @@ it('records an extrinsic error when transferring less than the existential amoun
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
-  const attestation = Attestation.fromAttestation({
+  const attestation: IAttestation = {
     claimHash:
       '0xfea1357cdba9982ebe7a8a3bb2db975cbb7424acd503d4dc3a7339778e8bb752',
     cTypeHash:
@@ -53,12 +53,10 @@ it('records an extrinsic error when ctype does not exist', async () => {
     delegationId: null,
     owner: someDid.uri,
     revoked: false,
-  })
-  const tx = await attestation
-    .getStoreTx()
-    .then((ex) =>
-      someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
-    )
+  }
+  const tx = await Attestation.getStoreTx(attestation).then((ex) =>
+    someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
+  )
   await expect(
     submitExtrinsicWithResign(tx, paymentAccount)
   ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })

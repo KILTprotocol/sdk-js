@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { CType } from './CType.js'
-export * as CTypeUtils from './CType.utils.js'
-export { CTypeMetadata } from './CTypeMetadata.js'
-export * as CTypeSchema from './CTypeSchema.js'
+export * from './CType.js'
+export * as Schemas from './CType.schemas.js'
+export * from './CType.chain.js'

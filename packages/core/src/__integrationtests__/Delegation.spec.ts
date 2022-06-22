@@ -13,10 +13,11 @@ import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { Attestation } from '../attestation/Attestation'
-import { Claim } from '../claim/Claim'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { Credential } from '../index.js'
+import * as Attestation from '../attestation'
+import * as Claim from '../claim'
+import * as CType from '../ctype'
+import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {
@@ -96,8 +97,7 @@ beforeAll(async () => {
   ])
 
   if (!(await isCtypeOnChain(driversLicenseCType))) {
-    await driversLicenseCType
-      .getStoreTx()
+    await CType.getStoreTx(driversLicenseCType)
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -156,13 +156,19 @@ describe('and attestation rights have been delegated', () => {
     const request = RequestForAttestation.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await request.signWithDidKey(signer, claimer, claimer.authenticationKey.id)
-    expect(request.verifyData()).toBeTruthy()
-    await expect(request.verifySignature()).resolves.toBeTruthy()
+    await RequestForAttestation.signWithDidKey(
+      request,
+      signer,
+      claimer,
+      claimer.authenticationKey.id
+    )
+    expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
+    await expect(
+      RequestForAttestation.verifySignature(request)
+    ).resolves.toBeTruthy()
 
     const attestation = Attestation.fromRequestAndDid(request, attester.uri)
-    await attestation
-      .getStoreTx()
+    await Attestation.getStoreTx(attestation)
       .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
@@ -172,15 +178,14 @@ describe('and attestation rights have been delegated', () => {
       request,
       attestation
     )
-    expect(credential.verifyData()).toBeTruthy()
-    await expect(credential.verify()).resolves.toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
+    await expect(Credential.verify(credential)).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await credential.attestation
-      .getRevokeTx(1)
+    await Attestation.getRevokeTx(credential.attestation.claimHash, 1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
-    await expect(credential.verify()).resolves.toBeFalsy()
+    await expect(Credential.verify(credential)).resolves.toBeFalsy()
   }, 75_000)
 })
 

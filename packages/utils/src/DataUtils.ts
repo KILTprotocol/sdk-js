@@ -11,7 +11,7 @@ import * as SDKErrors from './SDKErrors.js'
 import { verify } from './Crypto.js'
 
 /**
- *  Validates an given address string against the External Address Format (SS58) with our Prefix of 38.
+ * Validates an given address string against the External Address Format (SS58) with our Prefix of 38.
  *
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
@@ -34,7 +34,7 @@ export function validateAddress(
 }
 
 /**
- *  Validates the format of the given blake2b hash via regex.
+ * Validates the format of the given blake2b hash via regex.
  *
  * @param hash Hash string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
@@ -54,7 +54,7 @@ export function validateHash(hash: string, name: string): boolean {
 }
 
 /**
- *  Validates the signature of the given signer address against the signed data.
+ * Validates the signature of the given signer address against the signed data.
  *
  * @param data The signed string of data.
  * @param signature The signature of the data to be validated.

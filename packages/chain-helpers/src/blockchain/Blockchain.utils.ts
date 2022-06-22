@@ -64,7 +64,7 @@ export function parseSubscriptionOptions(
 }
 
 /**
- * [ASYNC] Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
+ * Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
  * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
  *
@@ -141,7 +141,7 @@ export function isRecoverableTxError(
 }
 
 /**
- * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
+ * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
  * @param signer The [[IIdentity]] or KeyringPair used to sign and potentially re-sign the tx.

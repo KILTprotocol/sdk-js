@@ -31,7 +31,7 @@ interface Web3NameOwner extends Struct {
 }
 
 /**
- *  Web3Name is the type of a nickname for a DID.
+ * Web3Name is the type of a nickname for a DID.
  */
 export type Web3Name = string
 

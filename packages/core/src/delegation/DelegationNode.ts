@@ -41,7 +41,6 @@ import {
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
-import { Attestation } from '../attestation/Attestation.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -172,7 +171,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Fetches the details of the hierarchy this delegation node belongs to.
+   * Fetches the details of the hierarchy this delegation node belongs to.
    *
    * @throws [[ERROR_HIERARCHY_QUERY]] when the hierarchy details could not be queried.
    * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
@@ -190,7 +189,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Fetches the parent node of this delegation node.
+   * Fetches the parent node of this delegation node.
    *
    * @returns Promise containing the parent as [[DelegationNode]] or [null].
    */
@@ -199,7 +198,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Fetches the children nodes of this delegation node.
+   * Fetches the children nodes of this delegation node.
    *
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
@@ -213,11 +212,11 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Fetches and resolves all attestations attested with this delegation node.
+   * Fetches and resolves all attestations attested with this delegation node.
    *
    * @returns Promise containing all resolved attestations attested with this node.
    */
-  public async getAttestations(): Promise<Attestation[]> {
+  public async getAttestations(): Promise<IAttestation[]> {
     const attestationHashes = await this.getAttestationHashes()
     const attestations = await Promise.all(
       attestationHashes.map((claimHash) => {
@@ -225,11 +224,11 @@ export class DelegationNode implements IDelegationNode {
       })
     )
 
-    return attestations.filter((value): value is Attestation => !!value)
+    return attestations.filter((value): value is IAttestation => !!value)
   }
 
   /**
-   * [ASYNC] Fetches all hashes of attestations attested with this delegation node.
+   * Fetches all hashes of attestations attested with this delegation node.
    *
    * @returns Promise containing all attestation hashes attested with this node.
    */
@@ -301,20 +300,20 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Synchronise the delegation node state with the latest state as stored on the blockchain.
+   * Synchronise the delegation node state with the latest state as stored on the blockchain.
    *
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
   public async getLatestState(): Promise<DelegationNode> {
     const newNodeState = await query(this.id)
     if (!newNodeState) {
-      throw SDKErrors.ERROR_DELEGATION_ID_MISSING
+      throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
     }
     return newNodeState
   }
 
   /**
-   * [ASYNC] Stores the delegation node on chain.
+   * Stores the delegation node on chain.
    *
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
@@ -326,7 +325,7 @@ export class DelegationNode implements IDelegationNode {
       return getStoreAsRootTx(this)
     }
     if (!signature) {
-      throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
+      throw new SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING()
     }
     return getStoreAsDelegationTx(this, signature)
   }
@@ -336,7 +335,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revocation status.
+   * Verifies the delegation node by querying it from chain and checking its revocation status.
    *
    * @returns Promise containing a boolean flag.
    */
@@ -346,7 +345,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Checks on chain whether a identity with the given DID is delegating to the current node.
+   * Checks on chain whether a identity with the given DID is delegating to the current node.
    *
    * @param did The DID to search for.
    *
@@ -374,7 +373,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Recursively counts all nodes that descend from the current node (excluding the current node). It is important to first refresh the state of the node from the chain.
+   * Recursively counts all nodes that descend from the current node (excluding the current node). It is important to first refresh the state of the node from the chain.
    *
    * @returns Promise resolving to the node count.
    */
@@ -393,7 +392,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Revokes the delegation node on chain.
+   * Revokes the delegation node on chain.
    *
    * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
@@ -415,7 +414,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Removes the delegation node from the chain.
+   * Removes the delegation node from the chain.
    *
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
@@ -426,7 +425,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Reclaims the deposit of a delegation and removes the delegation and all its children.
+   * Reclaims the deposit of a delegation and removes the delegation and all its children.
    *
    * This call can only be successfully executed if the submitter of the transaction is the original payer of the delegation deposit.
    *
@@ -441,7 +440,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [STATIC] [ASYNC] Queries the delegation node with its [delegationId].
+   * Queries the delegation node with its [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
    * @returns Promise containing the [[DelegationNode]] or [null].
@@ -456,7 +455,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [STATIC] Query and return the amount of KILTs (in femto notation) needed to deposit in order to create a delegation.
+   * Query and return the amount of KILTs (in femto notation) needed to deposit in order to create a delegation.
    *
    * @returns The amount of femtoKILTs required to deposit to create the delegation.
    */

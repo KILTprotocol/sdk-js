@@ -13,9 +13,11 @@ import {
   DidDocumentPublicKeyType,
   DidPublicKey,
   DidUri,
+  ICredential,
+  ICType,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Attestation, Credential, CType } from '@kiltprotocol/core'
+import { Attestation } from '@kiltprotocol/core'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -31,7 +33,7 @@ import {
   KILT_CREDENTIAL_CONTEXT_URL,
 } from './constants'
 
-const ctype = CType.fromCType({
+const ctype: ICType = {
   schema: {
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'membership',
@@ -52,9 +54,9 @@ const ctype = CType.fromCType({
   },
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-})
+}
 
-const credential = Credential.fromCredential({
+const credential: ICredential = {
   request: {
     claim: {
       contents: {
@@ -101,7 +103,7 @@ const credential = Credential.fromCredential({
     owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     revoked: false,
   },
-})
+}
 
 it('exports credential to VC', () => {
   expect(toVC.fromCredential(credential)).toMatchObject({
@@ -299,9 +301,7 @@ describe('proofs', () => {
   })
 
   it('verifies attestation proof on chain', async () => {
-    jest
-      .spyOn(Attestation, 'query')
-      .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
+    jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
 
     const result = await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
     expect(result.errors).toEqual([])
@@ -366,9 +366,7 @@ describe('proofs', () => {
     })
 
     it('it detects tampering with credential fields', async () => {
-      jest
-        .spyOn(Attestation, 'query')
-        .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
+      jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
 
       VC.delegationId = '0x123'
       await expect(
@@ -415,12 +413,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation on chain not identical', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(
-        Attestation.fromAttestation({
-          ...credential.attestation,
-          owner: credential.request.claim.owner,
-        })
-      )
+      jest.spyOn(Attestation, 'query').mockResolvedValue({
+        ...credential.attestation,
+        owner: credential.request.claim.owner,
+      })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,
@@ -433,12 +429,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation revoked', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(
-        Attestation.fromAttestation({
-          ...credential.attestation,
-          revoked: true,
-        })
-      )
+      jest.spyOn(Attestation, 'query').mockResolvedValue({
+        ...credential.attestation,
+        revoked: true,
+      })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,
