@@ -113,6 +113,15 @@ export function makeSigningData(
   ])
 }
 
+/**
+ * Add a claimer signature to a RequestForAttestation.
+ *
+ * @param req4Att - The RequestForAttestation object to add the signature to.
+ * @param sig - The signature to be added.
+ * @param keyUri - The DID key uri of the key, which was used to make the signature.
+ * @param options - Optional parameters.
+ * @param options.challenge - An optional challenge, which was included in the signing process.
+ */
 export async function addSignature(
   req4Att: IRequestForAttestation,
   sig: string | Uint8Array,
@@ -128,6 +137,16 @@ export async function addSignature(
   req4Att.claimerSignature = { signature, keyUri, challenge }
 }
 
+/**
+ * Adds a claimer signature to a RequestForAttestation using a DID key.
+ *
+ * @param req4Att - The RequestForAttestation object to add the signature to.
+ * @param signer - The Keystore used for the signing.
+ * @param didDetails - The DID details of the signer.
+ * @param keyId - The DID key id to be used for the signing.
+ * @param options - Optional parameters.
+ * @param options.challenge - An optional challenge, which will be included in the signing process.
+ */
 export async function signWithDidKey(
   req4Att: IRequestForAttestation,
   signer: KeystoreSigner,
@@ -144,7 +163,7 @@ export async function signWithDidKey(
     signer,
     keyId
   )
-  return addSignature(req4Att, signature, signatureKeyId, { challenge })
+  addSignature(req4Att, signature, signatureKeyId, { challenge })
 }
 
 export function verifyRootHash(input: IRequestForAttestation): boolean {
@@ -373,6 +392,7 @@ export function isIRequestForAttestation(
   try {
     verifyDataStructure(input as IRequestForAttestation)
   } catch (error) {
+    console.error(error)
     return false
   }
   return true
