@@ -16,12 +16,12 @@ const { kilt } = window
 const {
   Claim,
   Attestation,
-  Credential: KiltCredential,
+  Credential,
   CType,
   RequestForAttestation,
   Did,
   BlockchainUtils,
-  Utils: { Crypto: KiltCrypto, Keyring },
+  Utils: { Crypto, Keyring },
   Message,
   MessageBodyType,
   EncryptionKeyType,
@@ -102,13 +102,13 @@ async function runAll() {
   console.log('bob setup done')
 
   // Light Did Account creation workflow
-  const authPublicKey = KiltCrypto.coToUInt8(
+  const authPublicKey = Crypto.coToUInt8(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   )
-  const encPublicKey = KiltCrypto.coToUInt8(
+  const encPublicKey = Crypto.coToUInt8(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  const address = KiltCrypto.encodeAddress(authPublicKey, 38)
+  const address = Crypto.encodeAddress(authPublicKey, 38)
   const didCreationDetails = {
     authenticationKey: {
       publicKey: authPublicKey,
@@ -275,11 +275,8 @@ async function runAll() {
   }
 
   const attestation = Attestation.fromRequestAndDid(request, alice.uri)
-  const credential = KiltCredential.fromRequestAndAttestation(
-    request,
-    attestation
-  )
-  if (KiltCredential.verifyDataIntegrity(credential))
+  const credential = Credential.fromRequestAndAttestation(request, attestation)
+  if (Credential.verifyDataIntegrity(credential))
     console.info('Attested Claim Data verified!')
   else throw new Error('Attested Claim data not verifiable')
 
@@ -292,7 +289,7 @@ async function runAll() {
   await BlockchainUtils.signAndSubmitTx(authorizedAttTx, devFaucet, {
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
-  if (await KiltCredential.verify(credential)) {
+  if (await Credential.verify(credential)) {
     console.info('Attested Claim verified with chain.')
   } else {
     throw new Error('attested Claim not verifiable with chain')
