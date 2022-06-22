@@ -34,7 +34,7 @@ import {
   FullDidDetails,
   Utils as DidUtils,
 } from '@kiltprotocol/did'
-import { UUID, SDKErrors } from '@kiltprotocol/utils'
+import { UUID } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'

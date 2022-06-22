@@ -377,7 +377,7 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.verifyDataIntegrity(builtRequestMalformedRootHash)
     ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
-      RequestForAttestation.verifyDataStructure(
+      RequestForAttestation.verifyDataIntegrity(
         builtRequestIncompleteClaimHashTree
       )
     ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
@@ -385,13 +385,19 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.verifyDataStructure(builtRequestMalformedSignature)
     ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
     expect(() =>
-      RequestForAttestation.verifyDataStructure(builtRequestMalformedHashes)
+      RequestForAttestation.verifyDataIntegrity(builtRequestMalformedHashes)
     ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequest)
     ).not.toThrow()
     expect(() => {
       RequestForAttestation.verifyDataStructure(builtRequestWithLegitimation)
+    }).not.toThrow()
+    expect(() =>
+      RequestForAttestation.verifyDataIntegrity(builtRequest)
+    ).not.toThrow()
+    expect(() => {
+      RequestForAttestation.verifyDataIntegrity(builtRequestWithLegitimation)
     }).not.toThrow()
   })
   it('checks Object instantiation', async () => {
