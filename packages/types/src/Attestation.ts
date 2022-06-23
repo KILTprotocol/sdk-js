@@ -8,10 +8,10 @@
 import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
-import type { IRequestForAttestation } from './RequestForAttestation'
+import type { ICredential } from './RequestForAttestation'
 
 export interface IAttestation {
-  claimHash: IRequestForAttestation['rootHash']
+  claimHash: ICredential['rootHash']
   cTypeHash: ICType['hash']
   owner: IDidDetails['uri']
   delegationId: IDelegationNode['id'] | null

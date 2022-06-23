@@ -17,7 +17,7 @@ import type {
   DidUri,
   ICType,
   IClaim,
-  IRequestForAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -45,7 +45,7 @@ describe('Attestation', () => {
   let testCType: ICType
   let testcontents: any
   let testClaim: IClaim
-  let requestForAttestation: IRequestForAttestation
+  let requestForAttestation: ICredential
 
   beforeAll(async () => {
     rawCTypeSchema = {

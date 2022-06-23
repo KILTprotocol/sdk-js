@@ -15,7 +15,7 @@ import {
   DidUri,
   IAttestation,
   ICType,
-  IRequestForAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { Attestation } from '@kiltprotocol/core'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -56,7 +56,7 @@ const ctype: ICType = {
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
-const credential: IRequestForAttestation = {
+const credential: ICredential = {
   claim: {
     contents: {
       birthday: '1991-01-01',
@@ -269,9 +269,7 @@ describe('proofs', () => {
   })
 
   it('it verifies credential with selected properties revealed', async () => {
-    const reducedRequest: IRequestForAttestation = JSON.parse(
-      JSON.stringify(credential)
-    )
+    const reducedRequest: ICredential = JSON.parse(JSON.stringify(credential))
     delete reducedRequest.claim.contents.name
     delete reducedRequest.claim.contents.birthday
     const reducedCredential = { ...credential, request: reducedRequest }

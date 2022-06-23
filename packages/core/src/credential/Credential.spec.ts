@@ -12,7 +12,7 @@
 import { encodeAddress } from '@polkadot/util-crypto'
 
 import type {
-  CompressedRequestForAttestation,
+  CompressedCredential,
   DidKey,
   DidResolvedDetails,
   DidUri,
@@ -21,7 +21,7 @@ import type {
   ICType,
   IDidDetails,
   IDidResolver,
-  IRequestForAttestation,
+  ICredential,
   SignCallback,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
@@ -49,9 +49,9 @@ async function buildCredential(
   claimer: DidDetails,
   attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
-  legitimations: IRequestForAttestation[],
+  legitimations: ICredential[],
   sign: SignCallback
-): Promise<[IRequestForAttestation, IAttestation]> {
+): Promise<[ICredential, IAttestation]> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -116,8 +116,8 @@ describe('RequestForAttestation', () => {
   let identityAlice: DidDetails
   let identityBob: DidDetails
   let identityCharlie: DidDetails
-  let legitimation: IRequestForAttestation
-  let compressedLegitimation: CompressedRequestForAttestation
+  let legitimation: ICredential
+  let compressedLegitimation: CompressedCredential
   let identityDave: DidDetails
   let migratedAndDeletedLightDid: DidDetails
   let migratedAndDeletedFullDid: DidDetails
@@ -362,7 +362,7 @@ describe('create presentation', () => {
   let migratedThenDeletedClaimerFullDid: DidDetails
   let attester: DidDetails
   let ctype: ICType
-  let reqForAtt: IRequestForAttestation
+  let reqForAtt: ICredential
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (

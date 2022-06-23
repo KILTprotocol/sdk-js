@@ -17,7 +17,7 @@
  */
 
 import type {
-  CompressedRequestForAttestation,
+  CompressedCredential,
   DidPublicKey,
   DidVerificationKey,
   Hash,
@@ -26,7 +26,7 @@ import type {
   ICType,
   IDelegationNode,
   IDidResolver,
-  IRequestForAttestation,
+  ICredential,
   SignCallback,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -50,7 +50,7 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 function getHashLeaves(
   claimHashes: Hash[],
-  legitimations: IRequestForAttestation[],
+  legitimations: ICredential[],
   delegationId: IDelegationNode['id'] | null
 ): Uint8Array[] {
   const result: Uint8Array[] = []
@@ -69,9 +69,7 @@ function getHashLeaves(
   return result
 }
 
-export function calculateRootHash(
-  request: Partial<IRequestForAttestation>
-): Hash {
+export function calculateRootHash(request: Partial<ICredential>): Hash {
   const hashes: Uint8Array[] = getHashLeaves(
     request.claimHashes || [],
     request.legitimations || [],
@@ -89,7 +87,7 @@ export function calculateRootHash(
  * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
  */
 export function removeClaimProperties(
-  req4Att: IRequestForAttestation,
+  req4Att: ICredential,
   properties: string[]
 ): void {
   properties.forEach((key) => {
@@ -110,7 +108,7 @@ export function removeClaimProperties(
  * @returns The prepared signing data.
  */
 export function makeSigningData(
-  input: IRequestForAttestation,
+  input: ICredential,
   challenge?: string
 ): Uint8Array {
   return new Uint8Array([
@@ -129,7 +127,7 @@ export function makeSigningData(
  * @param options.challenge - An optional challenge, which was included in the signing process.
  */
 export async function addSignature(
-  req4Att: IRequestForAttestation,
+  req4Att: ICredential,
   sig: string | Uint8Array,
   keyUri: DidPublicKey['uri'],
   {
@@ -154,7 +152,7 @@ export async function addSignature(
  * @param options.challenge - An optional challenge, which will be included in the signing process.
  */
 export async function signWithDidKey(
-  req4Att: IRequestForAttestation,
+  req4Att: ICredential,
   sign: SignCallback,
   didDetails: DidDetails,
   keyId: DidVerificationKey['id'],
@@ -178,7 +176,7 @@ export async function signWithDidKey(
  * @param input - The credential to check.
  * @returns Wether they match or not.
  */
-export function verifyRootHash(input: IRequestForAttestation): boolean {
+export function verifyRootHash(input: ICredential): boolean {
   return input.rootHash === calculateRootHash(input)
 }
 
@@ -190,7 +188,7 @@ export function verifyRootHash(input: IRequestForAttestation): boolean {
  * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
  * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
  */
-export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
+export function verifyDataIntegrity(input: ICredential): boolean {
   // check claim hash
   if (!verifyRootHash(input)) {
     throw new SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
@@ -208,7 +206,7 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
     )
 
   // check legitimations
-  input.legitimations.forEach((legitimation: IRequestForAttestation) => {
+  input.legitimations.forEach((legitimation: ICredential) => {
     if (!verifyDataIntegrity(legitimation)) {
       throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
     }
@@ -226,7 +224,7 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
  * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
  *
  */
-export function verifyDataStructure(input: IRequestForAttestation): void {
+export function verifyDataStructure(input: ICredential): void {
   if (!input.claim) {
     throw new SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
@@ -269,7 +267,7 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
  * @returns A boolean if the [[Claim]] structure in the [[RequestForAttestation]] is valid.
  */
 export function verifyAgainstCType(
-  requestForAttestation: IRequestForAttestation,
+  requestForAttestation: ICredential,
   ctype: ICType
 ): boolean {
   try {
@@ -297,7 +295,7 @@ export function verifyAgainstCType(
  * @returns Whether the signature is correct.
  */
 export async function verifySignature(
-  input: IRequestForAttestation,
+  input: ICredential,
   {
     challenge,
     resolver = DidResolver,
@@ -320,7 +318,7 @@ export async function verifySignature(
 }
 
 export type Options = {
-  legitimations?: IRequestForAttestation[]
+  legitimations?: ICredential[]
   delegationId?: IDelegationNode['id']
 }
 
@@ -336,7 +334,7 @@ export type Options = {
 export function fromClaim(
   claim: IClaim,
   { legitimations, delegationId }: Options = {}
-): IRequestForAttestation {
+): ICredential {
   const { hashes: claimHashes, nonceMap: claimNonceMap } =
     Claim.hashClaimContents(claim)
 
@@ -380,7 +378,7 @@ type VerifyOptions = {
  * @throws - If a check fails.
  */
 export async function verify(
-  requestForAttestation: IRequestForAttestation,
+  requestForAttestation: ICredential,
   {
     ctype,
     challenge,
@@ -417,11 +415,9 @@ export async function verify(
  *
  * @returns  Boolean whether input is of type IRequestForAttestation.
  */
-export function isIRequestForAttestation(
-  input: unknown
-): input is IRequestForAttestation {
+export function isIRequestForAttestation(input: unknown): input is ICredential {
   try {
-    verifyDataStructure(input as IRequestForAttestation)
+    verifyDataStructure(input as ICredential)
   } catch (error) {
     console.error(error)
     return false
@@ -435,13 +431,11 @@ export function isIRequestForAttestation(
  * @param credential - The credential to get the hash from.
  * @returns The hash of the credential.
  */
-export function getHash(
-  credential: IRequestForAttestation
-): IAttestation['claimHash'] {
+export function getHash(credential: ICredential): IAttestation['claimHash'] {
   return credential.rootHash
 }
 
-function getAttributes(credential: IRequestForAttestation): Set<string> {
+function getAttributes(credential: ICredential): Set<string> {
   // TODO: move this to claim or contents
   return new Set(Object.keys(credential.claim.contents))
 }
@@ -468,13 +462,13 @@ export async function createPresentation({
   claimerDid,
   keySelection = DidUtils.defaultKeySelectionCallback,
 }: {
-  credential: IRequestForAttestation
+  credential: ICredential
   selectedAttributes?: string[]
   sign: SignCallback
   challenge?: string
   claimerDid: DidDetails
   keySelection?: DidKeySelectionCallback<DidVerificationKey>
-}): Promise<IRequestForAttestation> {
+}): Promise<ICredential> {
   const presentation =
     // clone the attestation and request for attestation because properties will be deleted later.
     // TODO: find a nice way to clone stuff
@@ -511,9 +505,7 @@ export async function createPresentation({
  *
  * @returns An ordered array of a [[RequestForAttestation]].
  */
-export function compress(
-  reqForAtt: IRequestForAttestation
-): CompressedRequestForAttestation {
+export function compress(reqForAtt: ICredential): CompressedCredential {
   verifyDataStructure(reqForAtt)
   return [
     Claim.compress(reqForAtt.claim),
@@ -534,9 +526,7 @@ export function compress(
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
-export function decompress(
-  reqForAtt: CompressedRequestForAttestation
-): IRequestForAttestation {
+export function decompress(reqForAtt: CompressedCredential): ICredential {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
     throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }

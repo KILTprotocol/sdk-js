@@ -13,14 +13,11 @@ import type {
 } from './Quote'
 import type { CompressedPartialClaim } from './Message'
 import type { PartialClaim } from './Claim'
-import type {
-  CompressedRequestForAttestation,
-  IRequestForAttestation,
-} from './RequestForAttestation'
+import type { CompressedCredential, ICredential } from './RequestForAttestation'
 
 export interface ITerms {
   claim: PartialClaim
-  legitimations: IRequestForAttestation[]
+  legitimations: ICredential[]
   delegationId?: IDelegationNode['id']
   quote?: IQuoteAttesterSigned
   cTypes?: ICType[]
@@ -28,7 +25,7 @@ export interface ITerms {
 
 export type CompressedTerms = [
   CompressedPartialClaim,
-  CompressedRequestForAttestation[],
+  CompressedCredential[],
   IDelegationNode['id'] | undefined,
   CompressedQuoteAttesterSigned | undefined,
   CompressedCType[] | undefined

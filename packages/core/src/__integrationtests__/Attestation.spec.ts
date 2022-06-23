@@ -12,7 +12,7 @@
 import type {
   IAttestation,
   IClaim,
-  IRequestForAttestation,
+  ICredential,
   KeyringPair,
 } from '@kiltprotocol/types'
 import {
@@ -247,7 +247,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
-    let request: IRequestForAttestation
+    let request: ICredential
     let attestation: IAttestation
 
     beforeAll(async () => {

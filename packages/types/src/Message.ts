@@ -13,8 +13,8 @@ import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
 import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote.js'
 import type {
-  CompressedRequestForAttestation,
-  IRequestForAttestation,
+  CompressedCredential,
+  ICredential,
 } from './RequestForAttestation.js'
 import type { CompressedTerms, ITerms } from './Terms.js'
 import type { DidPublicKey, IClaimContents } from './index.js'
@@ -89,14 +89,14 @@ export interface ISubmitTerms extends IMessageBodyBase {
 export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: PartialClaim
-    legitimations: IRequestForAttestation[]
+    legitimations: ICredential[]
     delegationId?: IDelegationNode['id']
   }
   type: MessageBodyType.REJECT_TERMS
 }
 
 export interface ISubmitCredential extends IMessageBodyBase {
-  content: IRequestForAttestation[]
+  content: ICredential[]
   type: MessageBodyType.SUBMIT_CREDENTIAL
 }
 
@@ -119,11 +119,11 @@ export type CompressedSubmitAttestation = [
 ]
 export type CompressedRejectAttestation = [
   MessageBodyType.REJECT_ATTESTATION,
-  IRequestForAttestation['rootHash']
+  ICredential['rootHash']
 ]
 export type CompressedSubmitCredentials = [
   MessageBodyType.SUBMIT_CREDENTIAL,
-  CompressedRequestForAttestation[]
+  CompressedCredential[]
 ]
 export type CompressedAcceptCredential = [
   MessageBodyType.ACCEPT_CREDENTIAL,
@@ -139,7 +139,7 @@ export type CompressedRejectAcceptDelegation = [
 ]
 
 export interface IRequestAttestationContent {
-  requestForAttestation: IRequestForAttestation
+  requestForAttestation: ICredential
   quote?: IQuoteAgreement
 }
 
@@ -158,7 +158,7 @@ export interface ISubmitAttestation extends IMessageBodyBase {
 }
 
 export interface IRejectAttestation extends IMessageBodyBase {
-  content: IRequestForAttestation['rootHash']
+  content: ICredential['rootHash']
   type: MessageBodyType.REJECT_ATTESTATION
 }
 
@@ -267,7 +267,7 @@ export type CompressedRequestTerms = [
 
 export type CompressedRejectedTerms = [
   CompressedPartialClaim,
-  CompressedRequestForAttestation[],
+  CompressedCredential[],
   IDelegationNode['id'] | undefined
 ]
 export type CompressedRejectTerms = [
@@ -292,7 +292,7 @@ export type CompressedRequestCredentials = [
 ]
 
 export type CompressedRequestAttestationContent = [
-  CompressedRequestForAttestation,
+  CompressedCredential,
   CompressedQuoteAgreed | undefined
 ]
 

@@ -27,7 +27,7 @@ import type {
   CompressedRequestCredentialContent,
   CompressedRequestCredentials,
   CompressedRequestDelegationApproval,
-  CompressedRequestForAttestation,
+  CompressedCredential,
   CompressedRequestTerms,
   CompressedSubmitAcceptDelegation,
   CompressedSubmitAttestation,
@@ -62,7 +62,7 @@ import type {
   IRequestCredential,
   IRequestCredentialContent,
   IRequestDelegationApproval,
-  IRequestForAttestation,
+  ICredential,
   IRequestTerms,
   ISubmitAcceptDelegation,
   ISubmitAttestation,
@@ -98,8 +98,8 @@ async function buildCredential(
   claimerDid: IDidDetails['uri'],
   attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
-  legitimations: IRequestForAttestation[]
-): Promise<[IRequestForAttestation, IAttestation]> {
+  legitimations: ICredential[]
+): Promise<[ICredential, IAttestation]> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -145,9 +145,9 @@ describe('Messaging Utilities', () => {
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
-  let compressedLegitimation: CompressedRequestForAttestation
+  let compressedLegitimation: CompressedCredential
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
-  let legitimation: IRequestForAttestation
+  let legitimation: ICredential
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: PartialClaim
@@ -178,10 +178,10 @@ describe('Messaging Utilities', () => {
   let compressedRequestCredentialBody: CompressedRequestCredentials
   let compressedRequestCredentialContent: CompressedRequestCredentialContent
   let submitCredentialBody: ISubmitCredential
-  let submitCredentialContent: IRequestForAttestation[]
+  let submitCredentialContent: ICredential[]
   let acceptCredentialBody: IAcceptCredential
   let compressedSubmitCredentialBody: CompressedSubmitCredentials
-  let compressedSubmitCredentialContent: CompressedRequestForAttestation[]
+  let compressedSubmitCredentialContent: CompressedCredential[]
   let rejectCredentialBody: IRejectCredential
   let requestAcceptDelegationBody: IRequestAcceptDelegation
   let requestAcceptDelegationContent: IRequestDelegationApproval

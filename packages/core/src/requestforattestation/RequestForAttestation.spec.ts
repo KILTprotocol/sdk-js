@@ -15,8 +15,8 @@ import type {
   IClaim,
   IClaimContents,
   ICType,
-  CompressedRequestForAttestation,
-  IRequestForAttestation,
+  CompressedCredential,
+  ICredential,
   DidSignature,
   DidUri,
 } from '@kiltprotocol/types'
@@ -38,8 +38,8 @@ const rawCType: ICType['schema'] = {
 function buildRequestForAttestation(
   claimerDid: DidUri,
   contents: IClaimContents,
-  legitimations: IRequestForAttestation[]
-): IRequestForAttestation {
+  legitimations: ICredential[]
+): ICredential {
   // create claim
 
   const testCType: ICType = CType.fromSchema(rawCType)
@@ -61,7 +61,7 @@ describe('RequestForAttestation', () => {
     'did:kilt:4nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS'
   const identityBob =
     'did:kilt:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
-  let legitimation: IRequestForAttestation
+  let legitimation: ICredential
 
   beforeEach(async () => {
     legitimation = buildRequestForAttestation(identityAlice, {}, [])
@@ -121,7 +121,7 @@ describe('RequestForAttestation', () => {
       [legitimation]
     )
 
-    const compressedLegitimation: CompressedRequestForAttestation = [
+    const compressedLegitimation: CompressedCredential = [
       [
         legitimation.claim.cTypeHash,
         legitimation.claim.owner,
@@ -135,7 +135,7 @@ describe('RequestForAttestation', () => {
       legitimation.delegationId,
     ]
 
-    const compressedReqForAtt: CompressedRequestForAttestation = [
+    const compressedReqForAtt: CompressedCredential = [
       [
         reqForAtt.claim.cTypeHash,
         reqForAtt.claim.owner,
@@ -205,7 +205,7 @@ describe('RequestForAttestation', () => {
         c: 'c',
       },
       [legitimation]
-    ) as IRequestForAttestation
+    ) as ICredential
     const builtRequestNoLegitimations = {
       ...buildRequestForAttestation(
         identityBob,
@@ -216,7 +216,7 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-    } as IRequestForAttestation
+    } as ICredential
     // @ts-expect-error
     delete builtRequestNoLegitimations.legitimations
 
@@ -230,7 +230,7 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-    } as IRequestForAttestation
+    } as ICredential
     // @ts-ignore
     builtRequestMalformedRootHash.rootHash = [
       builtRequestMalformedRootHash.rootHash.slice(0, 15),
@@ -250,7 +250,7 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-    } as IRequestForAttestation
+    } as ICredential
     const deletedKey = Object.keys(
       builtRequestIncompleteClaimHashTree.claimNonceMap
     )[0]
@@ -269,7 +269,7 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-    } as IRequestForAttestation
+    } as ICredential
     builtRequestMalformedSignature.claimerSignature = {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
@@ -285,7 +285,7 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-    } as IRequestForAttestation
+    } as ICredential
     Object.entries(builtRequestMalformedHashes.claimNonceMap).forEach(
       ([hash, nonce]) => {
         const scrambledHash = [

@@ -17,22 +17,22 @@ export type NonceHash = {
   nonce?: string
 }
 
-export interface IRequestForAttestation {
+export interface ICredential {
   claim: IClaim
   claimNonceMap: Record<Hash, string>
   claimHashes: Hash[]
   claimerSignature?: DidSignature & { challenge?: string }
   delegationId: IDelegationNode['id'] | null
-  legitimations: IRequestForAttestation[]
+  legitimations: ICredential[]
   rootHash: Hash
 }
 
-export type CompressedRequestForAttestation = [
+export type CompressedCredential = [
   CompressedClaim,
-  IRequestForAttestation['claimNonceMap'],
-  IRequestForAttestation['claimerSignature'],
-  IRequestForAttestation['claimHashes'],
-  IRequestForAttestation['rootHash'],
-  CompressedRequestForAttestation[],
-  IRequestForAttestation['delegationId']
+  ICredential['claimNonceMap'],
+  ICredential['claimerSignature'],
+  ICredential['claimHashes'],
+  ICredential['rootHash'],
+  CompressedCredential[],
+  ICredential['delegationId']
 ]

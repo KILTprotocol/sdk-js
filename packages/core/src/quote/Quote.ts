@@ -29,7 +29,7 @@ import type {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  IRequestForAttestation,
+  ICredential,
   SignCallback,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -168,7 +168,7 @@ export async function verifyAttesterSignedQuote(
  */
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
-  requestRootHash: IRequestForAttestation['rootHash'],
+  requestRootHash: ICredential['rootHash'],
   attesterIdentity: IDidDetails['uri'],
   claimerIdentity: DidDetails,
   sign: SignCallback,

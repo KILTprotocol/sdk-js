@@ -23,7 +23,7 @@ import type {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  IRequestForAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import {
@@ -52,7 +52,7 @@ describe('Quote', () => {
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let request: IRequestForAttestation
+  let request: ICredential
   let invalidCostQuoteData: IQuote
   let invalidPropertiesQuoteData: IQuote
   let validQuoteData: IQuote
@@ -224,7 +224,7 @@ describe('Quote compression', () => {
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let request: IRequestForAttestation
+  let request: ICredential
   let validQuoteData: IQuote
   let validAttesterSignedQuote: IQuoteAttesterSigned
   let quoteBothAgreed: IQuoteAgreement

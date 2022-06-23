@@ -8,7 +8,7 @@
 import type {
   IAttestation,
   IDelegationHierarchyDetails,
-  IRequestForAttestation,
+  ICredential,
   CompressedAttestation,
   IDidDetails,
 } from '@kiltprotocol/types'
@@ -68,7 +68,7 @@ export function verifyDataStructure(input: IAttestation): void {
  * @returns A new [[Attestation]] object.
  */
 export function fromRequestAndDid(
-  request: IRequestForAttestation,
+  request: ICredential,
   attesterDid: IDidDetails['uri']
 ): IAttestation {
   const attestation = {
@@ -136,7 +136,7 @@ export function isIAttestation(input: unknown): input is IAttestation {
  * @returns A promise containing whether the attestation is valid.
  */
 export async function checkValidity(
-  claimHash: IAttestation['claimHash'] | IRequestForAttestation['rootHash']
+  claimHash: IAttestation['claimHash'] | ICredential['rootHash']
 ): Promise<boolean> {
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
   const chainAttestation = await query(claimHash)
@@ -155,7 +155,7 @@ export async function checkValidity(
  */
 export function verifyAgainstRequest(
   attestation: IAttestation,
-  request: IRequestForAttestation
+  request: ICredential
 ): boolean {
   if (request.claim.cTypeHash !== attestation.cTypeHash) return false
   return (

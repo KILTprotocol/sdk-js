@@ -19,7 +19,7 @@ import {
 } from '@kiltprotocol/testing'
 import {
   IAttestation,
-  IRequestForAttestation,
+  ICredential,
   KeyringPair,
   SignCallback,
   SubmittableExtrinsic,
@@ -100,7 +100,7 @@ async function checkRemoveFullDidAttestation(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   sign: SignCallback,
-  requestForAttestation: IRequestForAttestation
+  requestForAttestation: ICredential
 ): Promise<boolean> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
@@ -143,7 +143,7 @@ async function checkReclaimFullDidAttestation(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   sign: SignCallback,
-  requestForAttestation: IRequestForAttestation
+  requestForAttestation: ICredential
 ): Promise<boolean> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
@@ -185,7 +185,7 @@ async function checkDeletedDidReclaimAttestation(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   sign: SignCallback,
-  requestForAttestation: IRequestForAttestation
+  requestForAttestation: ICredential
 ): Promise<void> {
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
@@ -256,7 +256,7 @@ async function checkWeb3Deposit(
 }
 
 let keys: KeyTool[]
-let requestForAttestation: IRequestForAttestation
+let requestForAttestation: ICredential
 
 beforeAll(async () => {
   await initializeApi()
