@@ -68,18 +68,6 @@ export class ERROR_OWNER_NOT_PROVIDED extends SDKError {
     super('Owner missing')
   }
 }
-export class ERROR_ATTESTATION_NOT_PROVIDED extends SDKError {
-  constructor() {
-    super('Attestation missing')
-  }
-}
-
-export class ERROR_RFA_NOT_PROVIDED extends SDKError {
-  constructor() {
-    super('RequestForAttestation missing')
-  }
-}
-
 export class ERROR_LEGITIMATIONS_NOT_PROVIDED extends SDKError {
   constructor() {
     super('Legitimations missing')
