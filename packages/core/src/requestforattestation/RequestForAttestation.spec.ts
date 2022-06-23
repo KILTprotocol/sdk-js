@@ -339,9 +339,7 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    expect(
-      RequestForAttestation.isIRequestForAttestation(builtRequest)
-    ).toEqual(true)
+    expect(RequestForAttestation.isICredential(builtRequest)).toEqual(true)
   })
 
   it('should verify the Request for attestation claims structure against the ctype', async () => {

@@ -82,7 +82,7 @@ async function buildCredential(
     claimer.authenticationKey.id
   )
   // build attestation
-  const testAttestation = Attestation.fromRequestAndDid(
+  const testAttestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     attesterDid
   )
@@ -311,11 +311,11 @@ describe('RequestForAttestation', () => {
       [],
       keyAlice.sign
     )
-    expect(Credential.isIRequestForAttestation(credential)).toBeTruthy()
+    expect(Credential.isICredential(credential)).toBeTruthy()
     // @ts-expect-error
     delete credential.claimHashes
 
-    expect(Credential.isIRequestForAttestation(credential)).toBeFalsy()
+    expect(Credential.isICredential(credential)).toBeFalsy()
   })
   it('Should throw error when attestation is from different request', async () => {
     const [credential, attestation] = await buildCredential(
@@ -326,7 +326,7 @@ describe('RequestForAttestation', () => {
       keyAlice.sign
     )
     expect(
-      Attestation.verifyAgainstRequest(attestation, credential)
+      Attestation.verifyAgainstCredential(attestation, credential)
     ).toBeTruthy()
     const { cTypeHash } = attestation
     // @ts-ignore
@@ -336,7 +336,7 @@ describe('RequestForAttestation', () => {
       cTypeHash.slice(16),
     ].join('')
     expect(
-      Attestation.verifyAgainstRequest(attestation, credential)
+      Attestation.verifyAgainstCredential(attestation, credential)
     ).toBeFalsy()
   })
   it('returns Claim Hash of the attestation', async () => {

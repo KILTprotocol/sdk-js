@@ -49,7 +49,7 @@ export class Message implements IMessage {
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.sender The sender's DID taken from the [[IMessage]].
-   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender is not the same subject as the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
+   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender is not the same subject as the owner of the content embedded in the message.
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
@@ -82,8 +82,8 @@ export class Message implements IMessage {
       case Message.BodyType.SUBMIT_CREDENTIAL:
         {
           const submitClaimsForCtype: ISubmitCredential = body
-          submitClaimsForCtype.content.forEach((request) => {
-            if (!DidUtils.isSameSubject(request.claim.owner, sender)) {
+          submitClaimsForCtype.content.forEach((credential) => {
+            if (!DidUtils.isSameSubject(credential.claim.owner, sender)) {
               throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })

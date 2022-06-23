@@ -154,7 +154,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     )
     await expect(Credential.verifySignature(request)).resolves.toBe(true)
     await expect(Credential.verify(request)).resolves.toBe(true)
-    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
+    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
     await Attestation.getStoreTx(attestation)
       .then((call) =>
         attester.authorizeExtrinsic(call, attesterKey.sign, tokenHolder.address)
@@ -190,7 +190,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.authenticationKey.id
     )
     await expect(Credential.verifySignature(request)).resolves.toBe(true)
-    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
+    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
 
     const { keypair, sign } = makeSigningKeyTool()
 
@@ -232,7 +232,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.uri
     )
     const request = Credential.fromClaim(claim)
-    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
+    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
     await expect(
       Attestation.getStoreTx(attestation)
         .then((call) =>
@@ -264,7 +264,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer,
         claimer.authenticationKey.id
       )
-      attestation = Attestation.fromRequestAndDid(request, attester.uri)
+      attestation = Attestation.fromCredentialAndDid(request, attester.uri)
       await Attestation.getStoreTx(attestation)
         .then((call) =>
           attester.authorizeExtrinsic(
@@ -313,7 +313,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
 
       expect(
-        Attestation.verifyAgainstRequest(attestation, fakecredential)
+        Attestation.verifyAgainstCredential(attestation, fakecredential)
       ).toBeFalsy()
     }, 15_000)
 
@@ -414,7 +414,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer,
         claimer.authenticationKey.id
       )
-      const licenseAuthorizationGranted = Attestation.fromRequestAndDid(
+      const licenseAuthorizationGranted = Attestation.fromCredentialAndDid(
         request1,
         anotherAttester.uri
       )
@@ -442,7 +442,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer,
         claimer.authenticationKey.id
       )
-      const licenseGranted = Attestation.fromRequestAndDid(
+      const licenseGranted = Attestation.fromCredentialAndDid(
         request2,
         attester.uri
       )
@@ -464,10 +464,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         ).resolves.toBe(true),
       ])
       expect(
-        Attestation.verifyAgainstRequest(licenseGranted, request2)
+        Attestation.verifyAgainstCredential(licenseGranted, request2)
       ).toBeTruthy()
       expect(
-        Attestation.verifyAgainstRequest(licenseAuthorizationGranted, request1)
+        Attestation.verifyAgainstCredential(
+          licenseAuthorizationGranted,
+          request1
+        )
       ).toBeTruthy()
     }, 70_000)
   })

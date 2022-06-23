@@ -62,18 +62,18 @@ export function verifyDataStructure(input: IAttestation): void {
 /**
  * Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
  *
- * @param request - The base request for attestation.
+ * @param credential - The base credential for attestation.
  * @param attesterDid - The attester's DID, used to attest to the underlying claim.
  * @returns A new [[Attestation]] object.
  */
-export function fromRequestAndDid(
-  request: ICredential,
+export function fromCredentialAndDid(
+  credential: ICredential,
   attesterDid: IDidDetails['uri']
 ): IAttestation {
   const attestation = {
-    claimHash: request.rootHash,
-    cTypeHash: request.claim.cTypeHash,
-    delegationId: request.delegationId,
+    claimHash: credential.rootHash,
+    cTypeHash: credential.claim.cTypeHash,
+    delegationId: credential.delegationId,
     owner: attesterDid,
     revoked: false,
   }
@@ -143,23 +143,23 @@ export async function checkValidity(
 }
 
 /**
- * Verifies whether the data of the given attestation matches the one from the corresponding request. It is valid if:
+ * Verifies whether the data of the given attestation matches the one from the corresponding credential. It is valid if:
  * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
  * and
  * * the hash of the [[Credential]] object, and the hash of the [[Attestation]].
  *
  * @param attestation - The attestation to verify.
- * @param request - The request to verify against.
+ * @param credential - The credential to verify against.
  * @returns Whether the data is valid.
  */
-export function verifyAgainstRequest(
+export function verifyAgainstCredential(
   attestation: IAttestation,
-  request: ICredential
+  credential: ICredential
 ): boolean {
-  if (request.claim.cTypeHash !== attestation.cTypeHash) return false
+  if (credential.claim.cTypeHash !== attestation.cTypeHash) return false
   return (
-    request.rootHash === attestation.claimHash &&
-    Credential.verifyDataIntegrity(request)
+    credential.rootHash === attestation.claimHash &&
+    Credential.verifyDataIntegrity(credential)
   )
 }
 

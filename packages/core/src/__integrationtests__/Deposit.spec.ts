@@ -102,7 +102,7 @@ async function checkRemoveFullDidAttestation(
   sign: SignCallback,
   requestForAttestation: ICredential
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     fullDid.uri
   )
@@ -122,7 +122,7 @@ async function checkRemoveFullDidAttestation(
     : new BN(0)
 
   const balanceBeforeRemoving = await Balance.getBalances(identity.address)
-  attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     fullDid.uri
   )
@@ -145,7 +145,7 @@ async function checkReclaimFullDidAttestation(
   sign: SignCallback,
   requestForAttestation: ICredential
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     fullDid.uri
   )
@@ -156,7 +156,7 @@ async function checkReclaimFullDidAttestation(
   await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
 
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
-  attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     fullDid.uri
   )
@@ -187,7 +187,7 @@ async function checkDeletedDidReclaimAttestation(
   sign: SignCallback,
   requestForAttestation: ICredential
 ): Promise<void> {
-  attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     fullDid.uri
   )
@@ -199,7 +199,7 @@ async function checkDeletedDidReclaimAttestation(
 
   storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
 
-  attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     fullDid.uri
   )

@@ -120,7 +120,7 @@ async function buildCredential(
     legitimations,
   })
   // build attestation
-  const testAttestation = Attestation.fromRequestAndDid(
+  const testAttestation = Attestation.fromCredentialAndDid(
     requestForAttestation,
     attesterDid
   )

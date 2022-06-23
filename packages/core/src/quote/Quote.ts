@@ -157,7 +157,7 @@ export async function verifyAttesterSignedQuote(
  * Creates a [[Quote]] signed by the Attester and the Claimer.
  *
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
- * @param requestRootHash A root hash of the entire object.
+ * @param credentialRootHash A root hash of the entire object.
  * @param attesterIdentity The uri of the Attester DID.
  * @param claimerIdentity The DID of the Claimer in order to sign.
  * @param sign The callback to sign with the private key.
@@ -168,7 +168,7 @@ export async function verifyAttesterSignedQuote(
  */
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
-  requestRootHash: ICredential['rootHash'],
+  credentialRootHash: ICredential['rootHash'],
   attesterIdentity: IDidDetails['uri'],
   claimerIdentity: DidDetails,
   sign: SignCallback,
@@ -212,7 +212,7 @@ export async function createQuoteAgreement(
 
   return {
     ...attesterSignedQuote,
-    rootHash: requestRootHash,
+    rootHash: credentialRootHash,
     claimerSignature: signature,
   }
 }

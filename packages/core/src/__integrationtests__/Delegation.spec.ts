@@ -197,7 +197,7 @@ describe('and attestation rights have been delegated', () => {
     await expect(Credential.verifySignature(request)).resolves.toBeTruthy()
     await expect(Credential.verify(request)).resolves.toBeTruthy()
 
-    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
+    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
     await Attestation.getStoreTx(attestation)
       .then((tx) =>
         attester.authorizeExtrinsic(

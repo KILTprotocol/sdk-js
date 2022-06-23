@@ -6,7 +6,7 @@
  */
 
 /**
- * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[RequestForAttestation]].
+ * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[Credential]].
  *
  * A claim object has:
  * * contents - among others, the pure content of a claim, for example `"isOver18": true`;

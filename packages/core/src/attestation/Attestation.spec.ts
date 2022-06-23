@@ -80,7 +80,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: IAttestation = Attestation.fromRequestAndDid(
+    const attestation: IAttestation = Attestation.fromCredentialAndDid(
       requestForAttestation,
       identityAlice
     )
@@ -113,7 +113,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: IAttestation = Attestation.fromRequestAndDid(
+    const attestation: IAttestation = Attestation.fromCredentialAndDid(
       requestForAttestation,
       identityAlice
     )
@@ -121,7 +121,7 @@ describe('Attestation', () => {
   })
 
   it('compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromRequestAndDid(
+    const attestation = Attestation.fromCredentialAndDid(
       requestForAttestation,
       identityAlice
     )
@@ -140,7 +140,7 @@ describe('Attestation', () => {
   })
 
   it('Negative test for compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromRequestAndDid(
+    const attestation = Attestation.fromCredentialAndDid(
       requestForAttestation,
       identityAlice
     )
@@ -269,7 +269,7 @@ describe('Attestation', () => {
     ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
   })
   it('Typeguard should return true on complete Attestations', () => {
-    const attestation = Attestation.fromRequestAndDid(
+    const attestation = Attestation.fromCredentialAndDid(
       requestForAttestation,
       identityAlice
     )
