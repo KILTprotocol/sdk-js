@@ -405,9 +405,7 @@ export function isIRequestForAttestation(
  *
  * @returns An ordered array of [[Credential]]s.
  */
-export function compressLegitimation(
-  leg: ICredential[]
-): CompressedCredential[] {
+function compressLegitimation(leg: ICredential[]): CompressedCredential[] {
   return leg.map(Credential.compress)
 }
 
