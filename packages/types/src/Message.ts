@@ -139,7 +139,7 @@ export type CompressedRejectAcceptDelegation = [
 ]
 
 export interface IRequestAttestationContent {
-  requestForAttestation: ICredential
+  credential: ICredential
   quote?: IQuoteAgreement
 }
 

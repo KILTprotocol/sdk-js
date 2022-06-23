@@ -453,7 +453,7 @@ describe('Messaging Utilities', () => {
 
     // Request Attestation Content
     requestAttestationContent = {
-      requestForAttestation: legitimation,
+      credential: legitimation,
       quote: bothSigned,
     }
 
@@ -479,7 +479,7 @@ describe('Messaging Utilities', () => {
     submitAttestationContent = {
       attestation: {
         delegationId: null,
-        claimHash: requestAttestationContent.requestForAttestation.rootHash,
+        claimHash: requestAttestationContent.credential.rootHash,
         cTypeHash: claim.cTypeHash,
         owner: identityBob.uri,
         revoked: false,
@@ -665,7 +665,7 @@ describe('Messaging Utilities', () => {
     ]
 
     rejectAttestationForClaimBody = {
-      content: requestAttestationContent.requestForAttestation.rootHash,
+      content: requestAttestationContent.credential.rootHash,
       type: Message.BodyType.REJECT_ATTESTATION,
     }
     requestCredentialBody = {
@@ -1072,7 +1072,7 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
     ).toThrowError(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED)
-    requestAttestationBody.content.requestForAttestation.claimerSignature = {
+    requestAttestationBody.content.credential.claimerSignature = {
       signature: 'this is not the claimers signature',
       // @ts-ignore
       keyUri: 'this is not a key id',

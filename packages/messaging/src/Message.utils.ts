@@ -113,7 +113,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
-      Credential.verifyDataStructure(body.content.requestForAttestation)
+      Credential.verifyDataStructure(body.content.credential)
       if (body.content.quote) {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
       }
@@ -295,7 +295,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
       compressedContents = [
-        Credential.compress(body.content.requestForAttestation),
+        Credential.compress(body.content.credential),
         body.content.quote
           ? Quote.compressQuoteAgreement(body.content.quote)
           : undefined,
@@ -421,7 +421,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
       decompressedContents = {
-        requestForAttestation: Credential.decompress(body[1][0]),
+        credential: Credential.decompress(body[1][0]),
         quote: body[1][1]
           ? Quote.decompressQuoteAgreement(body[1][1])
           : undefined,

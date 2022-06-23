@@ -265,7 +265,7 @@ describe('Messaging', () => {
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
-        requestForAttestation: content,
+        credential: content,
         quote: bothSigned,
       },
       type: Message.BodyType.REQUEST_ATTESTATION,
@@ -295,7 +295,7 @@ describe('Messaging', () => {
 
     const attestation = {
       delegationId: null,
-      claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
+      claimHash: requestAttestationBody.content.credential.rootHash,
       cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobFullDid.uri,
       revoked: false,
@@ -396,7 +396,7 @@ describe('Messaging', () => {
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
-        requestForAttestation: content,
+        credential: content,
         quote: bothSigned,
       },
       type: Message.BodyType.REQUEST_ATTESTATION,
@@ -439,7 +439,7 @@ describe('Messaging', () => {
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
       content: {
-        requestForAttestation: contentWithEncodedDetails,
+        credential: contentWithEncodedDetails,
         quote: bothSignedEncodedDetails,
       },
       type: Message.BodyType.REQUEST_ATTESTATION,
@@ -490,7 +490,7 @@ describe('Messaging', () => {
 
     const attestation = {
       delegationId: null,
-      claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
+      claimHash: requestAttestationBody.content.credential.rootHash,
       cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobLightDid.uri,
       revoked: false,
@@ -505,7 +505,7 @@ describe('Messaging', () => {
 
     const attestationWithEncodedDetails = {
       delegationId: null,
-      claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
+      claimHash: requestAttestationBody.content.credential.rootHash,
       cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobLightDidWithDetails.uri,
       revoked: false,

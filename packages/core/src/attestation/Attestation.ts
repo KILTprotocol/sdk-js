@@ -16,11 +16,10 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import { query } from './Attestation.chain.js'
-import * as RequestForAttestation from '../requestforattestation/index.js'
+import * as Credential from '../requestforattestation/index.js'
 
 /**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
- * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as a [[Credential]].
+ * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[Credential]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
@@ -145,9 +144,9 @@ export async function checkValidity(
 
 /**
  * Verifies whether the data of the given attestation matches the one from the corresponding request. It is valid if:
- * * the [[RequestForAttestation]] object has valid data (see [[RequestForAttestation.verifyDataIntegrity]]);
+ * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
  * and
- * * the hash of the [[RequestForAttestation]] object, and the hash of the [[Attestation]].
+ * * the hash of the [[Credential]] object, and the hash of the [[Attestation]].
  *
  * @param attestation - The attestation to verify.
  * @param request - The request to verify against.
@@ -160,7 +159,7 @@ export function verifyAgainstRequest(
   if (request.claim.cTypeHash !== attestation.cTypeHash) return false
   return (
     request.rootHash === attestation.claimHash &&
-    RequestForAttestation.verifyDataIntegrity(request)
+    Credential.verifyDataIntegrity(request)
   )
 }
 

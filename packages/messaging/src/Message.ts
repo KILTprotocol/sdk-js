@@ -58,7 +58,7 @@ export class Message implements IMessage {
           const requestAttestation = body
           if (
             !DidUtils.isSameSubject(
-              requestAttestation.content.requestForAttestation.claim.owner,
+              requestAttestation.content.credential.claim.owner,
               sender
             )
           ) {
