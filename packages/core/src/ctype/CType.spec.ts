@@ -183,18 +183,18 @@ describe('CType', () => {
   })
 
   it('verifies whether a ctype is registered on chain ', async () => {
-    ;(isStored as jest.Mock).mockResolvedValue(false)
+    jest.mocked(isStored).mockResolvedValue(false)
     await expect(CType.verifyStored(claimCtype)).resolves.toBe(false)
-    ;(isStored as jest.Mock).mockResolvedValue(true)
+    jest.mocked(isStored).mockResolvedValue(true)
     await expect(CType.verifyStored(claimCtype)).resolves.toBe(true)
   })
 
   it('verifies ctype owner on chain', async () => {
-    ;(getOwner as jest.Mock).mockResolvedValue(didBob)
+    jest.mocked(getOwner).mockResolvedValue(didBob)
     await expect(CType.verifyOwner(claimCtype)).resolves.toBe(false)
-    ;(getOwner as jest.Mock).mockResolvedValue(claimCtype.owner)
+    jest.mocked(getOwner).mockResolvedValue(claimCtype.owner)
     await expect(CType.verifyOwner(claimCtype)).resolves.toBe(true)
-    ;(getOwner as jest.Mock).mockResolvedValue(null)
+    jest.mocked(getOwner).mockResolvedValue(null)
     await expect(CType.verifyOwner(claimCtype)).resolves.toBe(false)
   })
 })
@@ -322,8 +322,8 @@ describe('CType registration verification', () => {
 
   describe('when CType is not registered', () => {
     beforeAll(() => {
-      ;(getOwner as jest.Mock).mockReturnValue(null)
-      ;(isStored as jest.Mock).mockReturnValue(false)
+      jest.mocked(getOwner).mockResolvedValue(null)
+      jest.mocked(isStored).mockResolvedValue(false)
     })
 
     it('does not verify registration when not registered', async () => {
@@ -339,8 +339,8 @@ describe('CType registration verification', () => {
 
   describe('when CType is registered', () => {
     beforeAll(() => {
-      ;(getOwner as jest.Mock).mockReturnValue(didAlice)
-      ;(isStored as jest.Mock).mockReturnValue(true)
+      jest.mocked(getOwner).mockResolvedValue(didAlice)
+      jest.mocked(isStored).mockResolvedValue(true)
     })
 
     it('verifies registration when owner not set', async () => {
