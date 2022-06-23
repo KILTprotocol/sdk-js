@@ -223,7 +223,7 @@ describe('RequestForAttestation', () => {
       keyCharlie.sign
     )
 
-    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
+    jest.mocked(query).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
@@ -252,7 +252,7 @@ describe('RequestForAttestation', () => {
       sign
     )
 
-    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
+    jest.mocked(query).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
@@ -298,7 +298,7 @@ describe('RequestForAttestation', () => {
       migratedAndDeleted.sign
     )
 
-    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
+    jest.mocked(query).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
@@ -502,7 +502,7 @@ describe('create presentation', () => {
   })
 
   it('should create presentation and exclude specific attributes using a full DID', async () => {
-    ;(query as jest.Mock).mockResolvedValue(attestation)
+    jest.mocked(query).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
@@ -547,7 +547,7 @@ describe('create presentation', () => {
     )
 
     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
+    jest.mocked(query).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
@@ -593,7 +593,7 @@ describe('create presentation', () => {
     )
 
     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
+    jest.mocked(query).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
@@ -641,7 +641,7 @@ describe('create presentation', () => {
     )
 
     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
+    jest.mocked(query).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
@@ -688,7 +688,7 @@ describe('create presentation', () => {
     )
 
     attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
+    jest.mocked(query).mockResolvedValue(attestation)
 
     const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
 
