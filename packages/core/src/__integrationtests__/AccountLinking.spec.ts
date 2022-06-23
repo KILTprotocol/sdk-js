@@ -15,6 +15,7 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
+import { ss58Format } from '@kiltprotocol/utils'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
 import { BN, u8aToHex } from '@polkadot/util'
@@ -39,7 +40,7 @@ beforeAll(async () => {
   await initializeApi()
   paymentAccount = await createEndowedTestAccount()
   linkDeposit = await AccountLinks.queryDepositAmount()
-  keyring = new Keyring({ ss58Format: 38 })
+  keyring = new Keyring({ ss58Format })
   signingCallback = AccountLinks.defaultSignerCallback(keyring)
 }, 40_000)
 
@@ -91,7 +92,7 @@ describe('When there is an on-chain DID', () => {
         AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
       ).resolves.toStrictEqual(did.identifier)
       await expect(
-        AccountLinks.queryConnectedAccountsForDid(did.identifier, 38)
+        AccountLinks.queryConnectedAccountsForDid(did.identifier, ss58Format)
       ).resolves.toStrictEqual([paymentAccount.address])
       await expect(
         AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
@@ -125,7 +126,7 @@ describe('When there is an on-chain DID', () => {
       ).resolves.toBeFalsy()
       // Check that new DID has the account linked
       await expect(
-        AccountLinks.queryConnectedAccountsForDid(newDid.identifier, 38)
+        AccountLinks.queryConnectedAccountsForDid(newDid.identifier, ss58Format)
       ).resolves.toStrictEqual([paymentAccount.address])
       await expect(
         AccountLinks.queryIsConnected(newDid.identifier, paymentAccount.address)
@@ -200,7 +201,7 @@ describe('When there is an on-chain DID', () => {
           AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
         ).resolves.toBeNull()
         await expect(
-          AccountLinks.queryConnectedAccountsForDid(did.identifier, 38)
+          AccountLinks.queryConnectedAccountsForDid(did.identifier, ss58Format)
         ).resolves.toStrictEqual([keypair.address])
         await expect(
           AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
@@ -246,7 +247,10 @@ describe('When there is an on-chain DID', () => {
         ).resolves.toBeFalsy()
         // Check that new DID has the account linked
         await expect(
-          AccountLinks.queryConnectedAccountsForDid(newDid.identifier, 38)
+          AccountLinks.queryConnectedAccountsForDid(
+            newDid.identifier,
+            ss58Format
+          )
         ).resolves.toStrictEqual([keypair.address])
         await expect(
           AccountLinks.queryIsConnected(

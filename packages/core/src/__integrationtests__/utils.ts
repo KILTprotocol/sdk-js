@@ -10,7 +10,7 @@
 
 import { BN } from '@polkadot/util'
 
-import { Keyring } from '@kiltprotocol/utils'
+import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { DidMigrationCallback, SigningAlgorithms } from '@kiltprotocol/did'
 import {
@@ -69,7 +69,7 @@ export async function initializeApi(): Promise<void> {
   })
 }
 
-const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
+const keyring: Keyring = new Keyring({ ss58Format, type: 'ed25519' })
 
 // Dev Faucet account seed phrase
 const faucetSeed =

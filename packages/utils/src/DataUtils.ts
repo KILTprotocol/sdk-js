@@ -9,6 +9,7 @@ import type { IIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import * as SDKErrors from './SDKErrors.js'
 import { verify } from './Crypto.js'
+import { ss58Format } from './ss58Format.js'
 
 /**
  * Validates an given address string against the External Address Format (SS58) with our Prefix of 38.
@@ -26,8 +27,7 @@ export function validateAddress(
   if (typeof address !== 'string') {
     throw new SDKErrors.ERROR_ADDRESS_TYPE()
   }
-  // KILT has registered ss58 prefix 38
-  if (!checkAddress(address, 38)[0]) {
+  if (!checkAddress(address, ss58Format)[0]) {
     throw new SDKErrors.ERROR_ADDRESS_INVALID(address, name)
   }
   return true

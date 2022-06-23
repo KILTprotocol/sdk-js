@@ -17,7 +17,7 @@ import {
   ICType,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { DelegationNode } from './DelegationNode'
 import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
 
@@ -84,7 +84,7 @@ describe('DelegationNode', () => {
       .fill('')
       .map<DidUri>(
         (_val, index) =>
-          `did:kilt:${encodeAddress(Crypto.hash(`${index}`, 256), 38)}`
+          `did:kilt:${encodeAddress(Crypto.hash(`${index}`, 256), ss58Format)}`
       )
   })
 
@@ -446,7 +446,7 @@ describe('DelegationNode', () => {
     it('returns null if looking for non-existent account', async () => {
       const noOnesAddress: DidUri = `did:kilt:${encodeAddress(
         Crypto.hash('-1', 256),
-        38
+        ss58Format
       )}`
       await Promise.all([
         expect(

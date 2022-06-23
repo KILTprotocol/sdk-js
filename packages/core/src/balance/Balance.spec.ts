@@ -19,7 +19,7 @@ import {
 } from '@kiltprotocol/chain-helpers'
 
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
-import { Keyring } from '@kiltprotocol/utils'
+import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
 import {
   getBalances,
@@ -35,7 +35,7 @@ const BALANCE = 42
 const FEE = 30
 
 describe('Balance', () => {
-  const keyring = new Keyring({ type: 'sr25519', ss58Format: 38 })
+  const keyring = new Keyring({ type: 'sr25519', ss58Format })
   let alice: KeyringPair
   let bob: KeyringPair
 

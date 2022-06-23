@@ -15,6 +15,7 @@ import {
   KeyRelationship,
   VerificationKeyType,
 } from '@kiltprotocol/types'
+import { ss58Format } from '@kiltprotocol/utils'
 
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import {
@@ -45,7 +46,7 @@ describe('When creating an instance from the details', () => {
   it('correctly assign the right ed25519 authentication key, x25519 encryption key, and service endpoints', () => {
     const authKey = new Keyring({
       type: 'sr25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
     const encKey = new Keyring().addFromMnemonic('enc')
     const endpoints: DidServiceEndpoint[] = [
@@ -170,7 +171,7 @@ describe('When creating an instance from the details', () => {
   it('correctly assign the right ed25519 authentication key and encryption key', () => {
     const authKey = new Keyring({
       type: 'ed25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
     const encKey = new Keyring().addFromMnemonic('enc')
     const validOptions: LightDidCreationDetails = {
@@ -256,7 +257,7 @@ describe('When creating an instance from the details', () => {
   it('throws for unsupported authentication key type', () => {
     const authKey = new Keyring({
       type: 'ed25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
     const invalidOptions: LightDidCreationDetails = {
       authenticationKey: {
@@ -271,7 +272,7 @@ describe('When creating an instance from the details', () => {
   it('throws for unsupported encryption key type', () => {
     const authKey = new Keyring({
       type: 'ed25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
     const encKey = new Keyring().addFromMnemonic('enc')
     const invalidOptions: LightDidCreationDetails = {
@@ -293,7 +294,7 @@ describe('When creating an instance from a URI', () => {
   it('correctly assign the right authentication key, encryption key, and service endpoints', () => {
     const authKey = new Keyring({
       type: 'sr25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
     const encKey = new Keyring().addFromMnemonic('enc')
     const endpoints: DidServiceEndpoint[] = [
@@ -346,7 +347,7 @@ describe('When creating an instance from a URI', () => {
   it('fail if a fragment is present according to the options', () => {
     const authKey = new Keyring({
       type: 'sr25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
     const encKey = new Keyring().addFromMnemonic('enc')
     const endpoints: DidServiceEndpoint[] = [
@@ -383,7 +384,7 @@ describe('When creating an instance from a URI', () => {
   })
 
   it('fail if the URI is not correct', () => {
-    const validKiltAddress = new Keyring({ ss58Format: 38 }).addFromMnemonic(
+    const validKiltAddress = new Keyring({ ss58Format }).addFromMnemonic(
       'random'
     )
     const incorrectURIs: DidUri[] = [
@@ -409,7 +410,7 @@ describe('When creating an instance from an identifier', () => {
   it('correctly assign the right sr25519 authentication key', () => {
     const authKey = new Keyring({
       type: 'sr25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
 
     const creationOptions: LightDidCreationDetails = {
@@ -447,7 +448,7 @@ describe('When creating an instance from an identifier', () => {
   it('correctly assign the right ed25519 authentication key', () => {
     const authKey = new Keyring({
       type: 'ed25519',
-      ss58Format: 38,
+      ss58Format,
     }).addFromMnemonic('auth')
 
     const creationOptions: LightDidCreationDetails = {

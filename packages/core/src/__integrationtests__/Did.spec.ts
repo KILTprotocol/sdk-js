@@ -46,7 +46,7 @@ import {
   Permission,
   VerificationKeyType,
 } from '@kiltprotocol/types'
-import { UUID } from '@kiltprotocol/utils'
+import { ss58Format, UUID } from '@kiltprotocol/utils'
 
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -718,7 +718,7 @@ describe('DID management batching', () => {
       }
       const encodedEcdsaAddress = encodeAddress(
         blake2AsU8a(keypair.publicKey),
-        38
+        ss58Format
       )
 
       const builder = new FullDidCreationBuilder(api, didAuthKey)

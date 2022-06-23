@@ -28,7 +28,7 @@ import {
   SigningAlgorithms,
   SigningData,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, ss58Format } from '@kiltprotocol/utils'
 import {
   DidConstructorDetails,
   FullDidCreationBuilder,
@@ -166,11 +166,7 @@ export function makeSigningKeyTool(
 ): KeyTool {
   const type = keypairTypeForAlg[alg]
   const seed = randomAsHex(32)
-  const keypair = new Keyring({ type, ss58Format: 38 }).addFromUri(
-    seed,
-    {},
-    type
-  )
+  const keypair = new Keyring({ type, ss58Format }).addFromUri(seed, {}, type)
   const sign = makeSignCallback(keypair)
 
   const authenticationKey = {
@@ -242,7 +238,10 @@ export async function createLocalDemoFullDidFromKeypair(
     endpoints?: ServiceEndpoints
   } = {}
 ): Promise<FullDidDetails> {
-  const identifier = encodeAddress(blake2AsU8a(keypair.address, 256), 38)
+  const identifier = encodeAddress(
+    blake2AsU8a(keypair.address, 256),
+    ss58Format
+  )
   const uri = DidUtils.getKiltDidFromIdentifier(identifier, 'full')
 
   const authKey = makeDidKeyFromKeypair(keypair)
