@@ -5,6 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { Blockchain } from './Blockchain.js'
-export * as BlockchainUtils from './Blockchain.utils.js'
+export * as Blockchain from './Blockchain.js'
 export * as SubscriptionPromise from './SubscriptionPromise.js'

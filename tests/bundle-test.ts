@@ -20,7 +20,7 @@ const {
   CType,
   RequestForAttestation,
   Did,
-  BlockchainUtils,
+  Blockchain,
   Utils: { Crypto, Keyring },
   Message,
   MessageBodyType,
@@ -31,8 +31,8 @@ const {
 
 function getDefaultMigrationHandler(submitter: KeyringPair) {
   return async (e: SubmittableExtrinsic) => {
-    await BlockchainUtils.signAndSubmitTx(e, submitter, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    await Blockchain.signAndSubmitTx(e, submitter, {
+      resolveOn: Blockchain.IS_IN_BLOCK,
     })
   }
 }
@@ -70,10 +70,9 @@ async function runAll() {
   // init sdk kilt config and connect to chain
   const keystore = new Did.DemoKeystore()
   await kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const blockchain = await kilt.connect()
+  const api = await kilt.connect()
 
-  if (!blockchain) console.error('No blockchain connection established')
-  else blockchain.getStats().then((t) => console.info(t))
+  if (!api) console.error('No blockchain connection established')
   const keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
   // Accounts
   console.log('Account setup started')
@@ -81,22 +80,12 @@ async function runAll() {
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const devFaucet = keyring.createFromUri(FaucetSeed)
 
-  const alice = await createFullDidFromSeed(
-    devFaucet,
-    keystore,
-    '//Alice',
-    blockchain.api
-  )
+  const alice = await createFullDidFromSeed(devFaucet, keystore, '//Alice', api)
   if (!alice.encryptionKey)
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const bob = await createFullDidFromSeed(
-    devFaucet,
-    keystore,
-    '//Bob',
-    blockchain.api
-  )
+  const bob = await createFullDidFromSeed(devFaucet, keystore, '//Bob', api)
   if (!bob.encryptionKey)
     throw new Error('Impossible: bob has no encryptionKey')
   console.log('bob setup done')
@@ -133,12 +122,12 @@ async function runAll() {
     alg: Did.SigningAlgorithms.Ed25519,
   })
 
-  const fullDid = await new Did.FullDidCreationBuilder(blockchain.api, {
+  const fullDid = await new Did.FullDidCreationBuilder(api, {
     publicKey: keypair.publicKey,
     type: VerificationKeyType.Ed25519,
   }).buildAndSubmit(keystore, devFaucet.address, async (tx) => {
-    await BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    await Blockchain.signAndSubmitTx(tx, devFaucet, {
+      resolveOn: Blockchain.IS_IN_BLOCK,
     })
   })
 
@@ -163,8 +152,8 @@ async function runAll() {
     devFaucet.address
   )
 
-  await BlockchainUtils.signAndSubmitTx(deleteTx, devFaucet, {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  await Blockchain.signAndSubmitTx(deleteTx, devFaucet, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
   })
 
   const resolvedAgain = await Did.resolveDoc(fullDid.uri)
@@ -198,8 +187,8 @@ async function runAll() {
     devFaucet.address
   )
 
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, devFaucet, {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  await Blockchain.signAndSubmitTx(authorizedTx, devFaucet, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
   })
 
   const stored = await CType.verifyStored(DriversLicense)
@@ -286,8 +275,8 @@ async function runAll() {
     keystore,
     devFaucet.address
   )
-  await BlockchainUtils.signAndSubmitTx(authorizedAttTx, devFaucet, {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  await Blockchain.signAndSubmitTx(authorizedAttTx, devFaucet, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
   })
   if (await Credential.verify(credential)) {
     console.info('Attested Claim verified with chain.')

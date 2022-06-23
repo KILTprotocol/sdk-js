@@ -20,7 +20,7 @@ import {
   createFullDidFromSeed,
   initializeApi,
   keypairFromRandom,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 
 beforeAll(async () => {
@@ -59,7 +59,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
+        .then((tx) => submitExtrinsic(tx, bobbyBroke))
     ).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).resolves.toBeFalsy()
   }, 20_000)
@@ -70,7 +70,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
-      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+      .then((tx) => submitExtrinsic(tx, paymentAccount))
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri),
       expect(CType.verifyStored(ctype)).resolves.toBeTruthy(),
@@ -85,13 +85,13 @@ describe('When there is an CtypeCreator and a verifier', () => {
       .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
-      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+      .then((tx) => submitExtrinsic(tx, paymentAccount))
     await expect(
       CType.getStoreTx(ctype)
         .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
         )
-        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+        .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri)

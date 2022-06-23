@@ -110,13 +110,13 @@ interface IServiceEndpointChainRecordCodec extends Struct {
 async function queryDidEncoded(
   didIdentifier: DidIdentifier
 ): Promise<Option<IDidChainRecordCodec>> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
 }
 
 // Query ALL deleted DIDs, which can be very time consuming if the number of deleted DIDs gets large.
 async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
   return api.query.did.didBlacklist
     .keys<GenericAccountId[]>()
@@ -131,7 +131,7 @@ async function queryServiceEncoded(
   didIdentifier: DidIdentifier,
   serviceId: string
 ): Promise<Option<IServiceEndpointChainRecordCodec>> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.serviceEndpoints<
     Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier, serviceId)
@@ -142,7 +142,7 @@ async function queryServiceEncoded(
 async function queryAllServicesEncoded(
   didIdentifier: DidIdentifier
 ): Promise<IServiceEndpointChainRecordCodec[]> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedEndpoints = await api.query.did.serviceEndpoints.entries<
     Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier)
@@ -154,12 +154,12 @@ async function queryAllServicesEncoded(
 async function queryEndpointsCountsEncoded(
   didIdentifier: DidIdentifier
 ): Promise<u32> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.didEndpointsCount<u32>(didIdentifier)
 }
 
 async function queryDepositAmountEncoded(): Promise<u128> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.consts.did.deposit as u128
 }
 
@@ -355,7 +355,7 @@ export async function queryNonce(didIdentifier: DidIdentifier): Promise<BN> {
 export async function queryDidDeletionStatus(
   didIdentifier: DidIdentifier
 ): Promise<boolean> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
   const encodedStorageHash = await api.query.did.didBlacklist.hash(
     didIdentifier
@@ -456,7 +456,7 @@ export async function generateCreateTxFromCreationDetails(
   submitterAddress: IIdentity['address'],
   signer: KeystoreSigner
 ): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   const {
     authenticationKey,
@@ -606,7 +606,7 @@ export async function getSetKeyExtrinsic(
   keyRelationship: KeyRelationship,
   key: NewDidKey
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const keyAsEnum = formatPublicKey(key)
   switch (keyRelationship) {
     case KeyRelationship.authentication:
@@ -637,7 +637,7 @@ export async function getRemoveKeyExtrinsic(
   keyRelationship: KeyRelationship,
   keyId?: DidKey['id']
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   switch (keyRelationship) {
     case KeyRelationship.capabilityDelegation:
       return api.tx.did.removeDelegationKey()
@@ -672,7 +672,7 @@ export async function getAddKeyExtrinsic(
   keyRelationship: KeyRelationship,
   key: NewDidKey
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const keyAsEnum = formatPublicKey(key)
   if (keyRelationship === KeyRelationship.keyAgreement) {
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
@@ -697,7 +697,7 @@ export async function getAddKeyExtrinsic(
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   checkServiceEndpointInput(api, endpoint)
 
   return api.tx.did.addServiceEndpoint({
@@ -716,7 +716,7 @@ export async function getAddEndpointExtrinsic(
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const maxServiceIdLength = (
     api.consts.did.maxServiceIdLength as u32
   ).toNumber()
@@ -738,7 +738,7 @@ export async function getRemoveEndpointExtrinsic(
 export async function getDeleteDidExtrinsic(
   endpointsCount: BN
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.did.delete(endpointsCount)
 }
 
@@ -753,7 +753,7 @@ export async function getReclaimDepositExtrinsic(
   didIdentifier: DidIdentifier,
   endpointsCount: BN
 ): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)
 }
 
@@ -782,7 +782,7 @@ export async function generateDidAuthenticatedTx({
   submitter,
   blockNumber,
 }: AuthorizeCallInput & KeystoreSigningOptions): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const signableCall = api.registry.createType<IDidAuthorizedCallOperation>(
     api.tx.did.submitDidCall.meta.args[0].type.toString(),
     {

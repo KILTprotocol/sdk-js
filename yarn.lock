@@ -1361,8 +1361,10 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/api": ^8.0.0
     "@polkadot/api-augment": ^8.0.0
     "@polkadot/keyring": ^9.0.0
     "@polkadot/types": ^8.0.0

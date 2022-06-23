@@ -20,7 +20,7 @@ import {
   createEndowedTestAccount,
   createFullDidFromSeed,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 
 let paymentAccount: KeyringPair
@@ -39,7 +39,7 @@ beforeAll(async () => {
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
     getTransferTx(addressFromRandom(), new BN(1)).then((tx) =>
-      submitExtrinsicWithResign(tx, paymentAccount)
+      submitExtrinsic(tx, paymentAccount)
     )
   ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
 }, 30_000)
@@ -57,9 +57,10 @@ it('records an extrinsic error when ctype does not exist', async () => {
   const tx = await Attestation.getStoreTx(attestation).then((ex) =>
     someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
   )
-  await expect(
-    submitExtrinsicWithResign(tx, paymentAccount)
-  ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
+  await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
+    section: 'ctype',
+    name: 'CTypeNotFound',
+  })
 }, 30_000)
 
 afterAll(() => {

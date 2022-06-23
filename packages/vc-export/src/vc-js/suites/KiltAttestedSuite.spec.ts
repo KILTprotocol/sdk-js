@@ -9,7 +9,7 @@
  * @group unit/vc-js
  */
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ApiMocks } from '@kiltprotocol/testing'
 import jsigs, { purposes } from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
 import type { IAttestation } from '@kiltprotocol/types'
@@ -40,7 +40,7 @@ let purpose: purposes.ProofPurpose
 let proof: AttestedProof
 
 beforeAll(async () => {
-  const KiltConnection = new Blockchain({} as any)
+  const KiltConnection = ApiMocks.createAugmentedApi()
   suite = new AttestationSuite({ KiltConnection })
   purpose = new purposes.AssertionProofPurpose()
   credential.proof.some((p) => {

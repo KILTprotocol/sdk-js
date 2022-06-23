@@ -7,10 +7,10 @@
 
 import type { Enum, Option, Struct, U128 } from '@polkadot/types'
 import type {
-  IAttestation,
   Deposit,
-  SubmittableExtrinsic,
+  IAttestation,
   IRequestForAttestation,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
@@ -35,21 +35,17 @@ export async function getStoreTx(
   const { claimHash, cTypeHash, delegationId } = attestation
   log.debug(() => `Create tx for 'attestation.add'`)
 
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   const authorizationArgName =
-    blockchain.api.tx.attestation.add.meta.args[2].name.toString()
+    api.tx.attestation.add.meta.args[2].name.toString()
   switch (authorizationArgName) {
     case 'delegationId':
       // uses old attestation authorization
-      return blockchain.api.tx.attestation.add(
-        claimHash,
-        cTypeHash,
-        delegationId
-      )
+      return api.tx.attestation.add(claimHash, cTypeHash, delegationId)
     case 'authorization':
       // uses generalized attestation authorization
-      return blockchain.api.tx.attestation.add(
+      return api.tx.attestation.add(
         claimHash,
         cTypeHash,
         delegationId
@@ -130,11 +126,10 @@ export async function queryRaw(
   claimHash: IRequestForAttestation['rootHash']
 ): Promise<Option<AttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const result = await blockchain.api.query.attestation.attestations<
-    Option<AttestationDetails>
-  >(claimHash)
-  return result
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.query.attestation.attestations<Option<AttestationDetails>>(
+    claimHash
+  )
 }
 
 /**
@@ -162,17 +157,17 @@ export async function getRevokeTx(
   claimHash: IRequestForAttestation['rootHash'] | IAttestation['claimHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const authorizationArgName =
-    blockchain.api.tx.attestation.revoke.meta.args[1].name.toString()
+    api.tx.attestation.revoke.meta.args[1].name.toString()
   switch (authorizationArgName) {
     case 'maxParentChecks':
       // uses old attestation authorization
-      return blockchain.api.tx.attestation.revoke(claimHash, maxParentChecks)
+      return api.tx.attestation.revoke(claimHash, maxParentChecks)
     case 'authorization':
       // uses generalized attestation authorization
-      return blockchain.api.tx.attestation.revoke(
+      return api.tx.attestation.revoke(
         claimHash,
         maxParentChecks
           ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
@@ -197,17 +192,17 @@ export async function getRemoveTx(
   claimHash: IRequestForAttestation['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   const authorizationArgName =
-    blockchain.api.tx.attestation.remove.meta.args[1].name.toString()
+    api.tx.attestation.remove.meta.args[1].name.toString()
   switch (authorizationArgName) {
     case 'maxParentChecks':
       // uses old attestation authorization
-      return blockchain.api.tx.attestation.remove(claimHash, maxParentChecks)
+      return api.tx.attestation.remove(claimHash, maxParentChecks)
     case 'authorization':
       // uses generalized attestation authorization
-      return blockchain.api.tx.attestation.remove(
+      return api.tx.attestation.remove(
         claimHash,
         maxParentChecks
           ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
@@ -230,17 +225,15 @@ export async function getRemoveTx(
 export async function getReclaimDepositTx(
   claimHash: IRequestForAttestation['rootHash']
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(
     () => `Claiming deposit for the attestation with claim hash ${claimHash}`
   )
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.attestation.reclaimDeposit(claimHash)
-  return tx
+  return api.tx.attestation.reclaimDeposit(claimHash)
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.consts.attestation.deposit as U128
 }
 

@@ -27,7 +27,7 @@ import {
   createFullDidFromSeed,
   fundAccount,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 import { disconnect } from '../kilt'
 
@@ -52,10 +52,16 @@ describe('When there is an on-chain DID', () => {
 
   describe('and a tx sender willing to link its account', () => {
     beforeAll(async () => {
-      ;[did, newDid] = await Promise.all([
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      ])
+      did = await createFullDidFromSeed(
+        paymentAccount,
+        keystore,
+        randomAsHex(32)
+      )
+      newDid = await createFullDidFromSeed(
+        paymentAccount,
+        keystore,
+        randomAsHex(32)
+      )
     }, 40_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
@@ -76,10 +82,7 @@ describe('When there is an on-chain DID', () => {
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
+      const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
       await expect(submissionPromise).resolves.not.toThrow()
       // Check that the deposit has been taken from the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
@@ -109,10 +112,7 @@ describe('When there is an on-chain DID', () => {
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
+      const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
       await expect(submissionPromise).resolves.not.toThrow()
       // Reserve should not change when replacing the link
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
@@ -141,10 +141,7 @@ describe('When there is an on-chain DID', () => {
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = await AccountLinks.getLinkRemovalByAccountTx()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        removeSenderTx,
-        paymentAccount
-      )
+      const submissionPromise = submitExtrinsic(removeSenderTx, paymentAccount)
       await expect(submissionPromise).resolves.not.toThrow()
       // Check that the deposit has been returned to the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
@@ -173,10 +170,16 @@ describe('When there is an on-chain DID', () => {
           undefined,
           keytype as KeypairType
         )
-        ;[did, newDid] = await Promise.all([
-          createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-          createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-        ])
+        did = await createFullDidFromSeed(
+          paymentAccount,
+          keystore,
+          randomAsHex(32)
+        )
+        newDid = await createFullDidFromSeed(
+          paymentAccount,
+          keystore,
+          randomAsHex(32)
+        )
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
@@ -192,10 +195,7 @@ describe('When there is an on-chain DID', () => {
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
-        const submissionPromise = submitExtrinsicWithResign(
-          signedTx,
-          paymentAccount
-        )
+        const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
         await expect(submissionPromise).resolves.not.toThrow()
         // Check that the deposit has been taken from the sender's balance.
         const balanceAfter = await Balance.getBalances(paymentAccount.address)
@@ -235,10 +235,7 @@ describe('When there is an on-chain DID', () => {
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
-        const submissionPromise = submitExtrinsicWithResign(
-          signedTx,
-          paymentAccount
-        )
+        const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
         await expect(submissionPromise).resolves.not.toThrow()
         // Reserve should not change when replacing the link
         const balanceAfter = await Balance.getBalances(paymentAccount.address)
@@ -284,10 +281,7 @@ describe('When there is an on-chain DID', () => {
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
-        const submissionPromise = submitExtrinsicWithResign(
-          signedTx,
-          paymentAccount
-        )
+        const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
         await expect(submissionPromise).resolves.not.toThrow()
         // Check that the deposit has been returned to the sender's balance.
         const balanceAfter = await Balance.getBalances(paymentAccount.address)
@@ -329,10 +323,16 @@ describe('When there is an on-chain DID', () => {
         'ecdsa'
       )
       await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
-      ;[did, newDid] = await Promise.all([
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      ])
+      did = await createFullDidFromSeed(
+        paymentAccount,
+        keystore,
+        randomAsHex(32)
+      )
+      newDid = await createFullDidFromSeed(
+        paymentAccount,
+        keystore,
+        randomAsHex(32)
+      )
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
@@ -348,10 +348,7 @@ describe('When there is an on-chain DID', () => {
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
+      const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
       await expect(submissionPromise).resolves.not.toThrow()
       // Check that the deposit has been taken from the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
@@ -387,10 +384,7 @@ describe('When there is an on-chain DID', () => {
         keystore,
         paymentAccount.address
       )
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
+      const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
       await expect(submissionPromise).resolves.not.toThrow()
       // Check that the Web3 name has been linked to the DID
       await expect(
@@ -406,7 +400,7 @@ describe('When there is an on-chain DID', () => {
       // No need for DID-authorizing this.
       const reclaimDepositTx = await AccountLinks.getLinkRemovalByAccountTx()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
+      const submissionPromise = submitExtrinsic(
         reclaimDepositTx,
         genericAccount
       )

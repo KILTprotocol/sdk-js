@@ -14,9 +14,8 @@ import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/Acc
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 import {
-  Blockchain,
   BlockchainApiConnection,
-  BlockchainUtils,
+  Blockchain,
 } from '@kiltprotocol/chain-helpers'
 
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
@@ -30,8 +29,7 @@ import {
 import * as BalanceUtils from './Balance.utils'
 
 const mockedApi: any = ApiMocks.getMockedApi()
-const blockchain = new Blockchain(mockedApi)
-BlockchainApiConnection.setConnection(Promise.resolve(blockchain))
+BlockchainApiConnection.setConnection(mockedApi)
 
 const BALANCE = 42
 const FEE = 30
@@ -90,7 +88,7 @@ describe('Balance', () => {
 
   it('should make transfer', async () => {
     const status = await getTransferTx(bob.address, new BN(100)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+      Blockchain.signAndSubmitTx(tx, alice)
     )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
@@ -103,7 +101,7 @@ describe('Balance', () => {
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
     const status = await getTransferTx(bob.address, amount, exponent).then(
-      (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+      (tx) => Blockchain.signAndSubmitTx(tx, alice)
     )
     expect(mockedApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,

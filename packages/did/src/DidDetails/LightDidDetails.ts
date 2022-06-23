@@ -238,7 +238,7 @@ export class LightDidDetails extends DidDetails {
     migrationCallback: DidMigrationCallback,
     { withEncryptionKey = true, withServiceEndpoints = false } = {}
   ): Promise<FullDidDetails> {
-    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+    const api = await BlockchainApiConnection.getConnectionOrConnect()
     const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
       api,
       this,

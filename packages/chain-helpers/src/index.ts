@@ -13,8 +13,4 @@ import '@polkadot/api-augment'
 
 export { ErrorHandler } from './errorhandling/index.js'
 export { BlockchainApiConnection } from './blockchainApiConnection/index.js'
-export {
-  Blockchain,
-  BlockchainUtils,
-  SubscriptionPromise,
-} from './blockchain/index.js'
+export { Blockchain, SubscriptionPromise } from './blockchain/index.js'
