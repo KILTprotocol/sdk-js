@@ -17,13 +17,12 @@
  */
 
 import type {
-  CompressedCredential,
   CompressedRequestForAttestation,
   DidPublicKey,
   DidVerificationKey,
   Hash,
+  IAttestation,
   IClaim,
-  ICredential,
   ICType,
   IDelegationNode,
   IDidResolver,
@@ -37,11 +36,12 @@ import {
   DidResolver,
   isDidSignature,
   verifyDidSignature,
+  Utils as DidUtils,
+  DidKeySelectionCallback,
 } from '@kiltprotocol/did'
 import * as Claim from '../claim/index.js'
 import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
-import * as Credential from '../credential/index.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)
@@ -50,7 +50,7 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 function getHashLeaves(
   claimHashes: Hash[],
-  legitimations: ICredential[],
+  legitimations: IRequestForAttestation[],
   delegationId: IDelegationNode['id'] | null
 ): Uint8Array[] {
   const result: Uint8Array[] = []
@@ -59,7 +59,7 @@ function getHashLeaves(
   })
   if (legitimations) {
     legitimations.forEach((legitimation) => {
-      result.push(Crypto.coToUInt8(legitimation.attestation.claimHash))
+      result.push(Crypto.coToUInt8(legitimation.rootHash))
     })
   }
   if (delegationId) {
@@ -102,6 +102,13 @@ export function removeClaimProperties(
   }).nonceMap
 }
 
+/**
+ * Prepares credential data for signing.
+ *
+ * @param input - The Credential to prepare the data for.
+ * @param challenge - An optional challenge to be included in the signing process.
+ * @returns The prepared signing data.
+ */
 export function makeSigningData(
   input: IRequestForAttestation,
   challenge?: string
@@ -165,6 +172,12 @@ export async function signWithDidKey(
   addSignature(req4Att, signature, signatureKeyId, { challenge })
 }
 
+/**
+ * Verifies if the credential hash matches the contents of it.
+ *
+ * @param input - The credential to check.
+ * @returns Wether they match or not.
+ */
 export function verifyRootHash(input: IRequestForAttestation): boolean {
   return input.rootHash === calculateRootHash(input)
 }
@@ -195,7 +208,11 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
     )
 
   // check legitimations
-  Credential.validateLegitimations(input.legitimations)
+  input.legitimations.forEach((legitimation: IRequestForAttestation) => {
+    if (!verifyDataIntegrity(legitimation)) {
+      throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
+    }
+  })
 
   return true
 }
@@ -303,7 +320,7 @@ export async function verifySignature(
 }
 
 export type Options = {
-  legitimations?: ICredential[]
+  legitimations?: IRequestForAttestation[]
   delegationId?: IDelegationNode['id']
 }
 
@@ -346,21 +363,30 @@ type VerifyOptions = {
   ctype?: ICType
   challenge?: string
   resolver?: IDidResolver
+  checkSignatureWithoutChallenge?: boolean
 }
 
 /**
- * Verifies data structure and integrity.
+ * Verifies data structure, data integrity and claimers signature.
+ *
+ * Upon presentation of a credential, a verifier would call this [[verify]] function.
  *
  * @param requestForAttestation - The object to check.
- * @param options - Additional parameter for more verification step.
- * @param options.ctype - Ctype which the included claim should be checked against.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
+ * @param options.checkSignatureWithoutChallenge - Wether to check the signature without a challenge being present.
  * @param options.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
  * @throws - If a check fails.
  */
 export async function verify(
   requestForAttestation: IRequestForAttestation,
-  { ctype, challenge, resolver = DidResolver }: VerifyOptions = {}
+  {
+    ctype,
+    challenge,
+    resolver = DidResolver,
+    checkSignatureWithoutChallenge = true,
+  }: VerifyOptions = {}
 ): Promise<void> {
   verifyDataStructure(requestForAttestation)
   verifyDataIntegrity(requestForAttestation)
@@ -373,6 +399,11 @@ export async function verify(
   if (challenge) {
     const isSignatureCorrect = verifySignature(requestForAttestation, {
       challenge,
+      resolver,
+    })
+    if (!isSignatureCorrect) throw new SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
+  } else if (checkSignatureWithoutChallenge) {
+    const isSignatureCorrect = verifySignature(requestForAttestation, {
       resolver,
     })
     if (!isSignatureCorrect) throw new SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
@@ -399,25 +430,78 @@ export function isIRequestForAttestation(
 }
 
 /**
- * Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
+ * Gets the hash of the credential.
  *
- * @param leg An array of [[Attestation]] and [[RequestForAttestation]] objects.
- *
- * @returns An ordered array of [[Credential]]s.
+ * @param credential - The credential to get the hash from.
+ * @returns The hash of the credential.
  */
-function compressLegitimation(leg: ICredential[]): CompressedCredential[] {
-  return leg.map(Credential.compress)
+export function getHash(
+  credential: IRequestForAttestation
+): IAttestation['claimHash'] {
+  return credential.rootHash
+}
+
+function getAttributes(credential: IRequestForAttestation): Set<string> {
+  // TODO: move this to claim or contents
+  return new Set(Object.keys(credential.claim.contents))
 }
 
 /**
- * Decompresses [[Credential]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
+ * Creates a public presentation which can be sent to a verifier.
+ * This presentation is signed.
  *
- * @param leg A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as a [[Credential]].
+ * @param presentationOptions The additional options to use upon presentation generation.
+ * @param presentationOptions.credential The credential to create the presentation for.
+ * @param presentationOptions.sign The callback to sign the presentation.
+ * @param presentationOptions.claimerDid The DID details of the presenter.
+ * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
+ * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+ * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
+ * @param presentationOptions.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
+ * @returns A deep copy of the Credential with all but `publicAttributes` removed.
  */
-function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
-  return leg.map(Credential.decompress)
+export async function createPresentation({
+  credential,
+  selectedAttributes,
+  sign,
+  challenge,
+  claimerDid,
+  keySelection = DidUtils.defaultKeySelectionCallback,
+}: {
+  credential: IRequestForAttestation
+  selectedAttributes?: string[]
+  sign: SignCallback
+  challenge?: string
+  claimerDid: DidDetails
+  keySelection?: DidKeySelectionCallback<DidVerificationKey>
+}): Promise<IRequestForAttestation> {
+  const presentation =
+    // clone the attestation and request for attestation because properties will be deleted later.
+    // TODO: find a nice way to clone stuff
+    JSON.parse(JSON.stringify(credential))
+
+  // filter attributes that are not in public attributes
+  const excludedClaimProperties = selectedAttributes
+    ? Array.from(getAttributes(credential)).filter(
+        (property) => !selectedAttributes.includes(property)
+      )
+    : []
+
+  // remove these attributes
+  removeClaimProperties(presentation.request, excludedClaimProperties)
+
+  const keys = claimerDid.getVerificationKeys(KeyRelationship.authentication)
+  const selectedKeyId = (await keySelection(keys))?.id
+
+  if (!selectedKeyId) {
+    throw new SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
+  }
+
+  await signWithDidKey(presentation.request, sign, claimerDid, selectedKeyId, {
+    challenge,
+  })
+
+  return presentation
 }
 
 /**
@@ -437,7 +521,7 @@ export function compress(
     reqForAtt.claimerSignature,
     reqForAtt.claimHashes,
     reqForAtt.rootHash,
-    compressLegitimation(reqForAtt.legitimations),
+    reqForAtt.legitimations.map(compress),
     reqForAtt.delegationId,
   ]
 }
@@ -462,7 +546,7 @@ export function decompress(
     claimerSignature: reqForAtt[2],
     claimHashes: reqForAtt[3],
     rootHash: reqForAtt[4],
-    legitimations: decompressLegitimation(reqForAtt[5]),
+    legitimations: reqForAtt[5].map(decompress),
     delegationId: reqForAtt[6],
   }
   verifyDataStructure(decompressedRequestForAttestation)
