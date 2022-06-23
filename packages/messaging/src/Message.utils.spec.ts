@@ -11,7 +11,6 @@
 
 import type {
   CompressedAttestation,
-  CompressedCredential,
   CompressedDelegationData,
   CompressedInformCreateDelegation,
   CompressedInformDelegationCreation,
@@ -28,6 +27,7 @@ import type {
   CompressedRequestCredentialContent,
   CompressedRequestCredentials,
   CompressedRequestDelegationApproval,
+  CompressedRequestForAttestation,
   CompressedRequestTerms,
   CompressedSubmitAcceptDelegation,
   CompressedSubmitAttestation,
@@ -40,8 +40,8 @@ import type {
   DidResourceUri,
   DidUri,
   IAcceptCredential,
+  IAttestation,
   IClaim,
-  ICredential,
   ICType,
   IDelegationData,
   IDidDetails,
@@ -62,6 +62,7 @@ import type {
   IRequestCredential,
   IRequestCredentialContent,
   IRequestDelegationApproval,
+  IRequestForAttestation,
   IRequestTerms,
   ISubmitAcceptDelegation,
   ISubmitAttestation,
@@ -81,7 +82,6 @@ import {
   Credential,
   CType,
   Quote,
-  RequestForAttestation,
 } from '@kiltprotocol/core'
 import { DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
 import {
@@ -98,8 +98,8 @@ async function buildCredential(
   claimerDid: IDidDetails['uri'],
   attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
-  legitimations: ICredential[]
-): Promise<ICredential> {
+  legitimations: IRequestForAttestation[]
+): Promise<[IRequestForAttestation, IAttestation]> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -116,7 +116,7 @@ async function buildCredential(
 
   const claim = Claim.fromCTypeAndClaimContents(testCType, contents, claimerDid)
   // build request for attestation with legitimations
-  const requestForAttestation = RequestForAttestation.fromClaim(claim, {
+  const requestForAttestation = Credential.fromClaim(claim, {
     legitimations,
   })
   // build attestation
@@ -124,12 +124,7 @@ async function buildCredential(
     requestForAttestation,
     attesterDid
   )
-  // combine to credential
-  const credential = Credential.fromRequestAndAttestation(
-    requestForAttestation,
-    testAttestation
-  )
-  return credential
+  return [requestForAttestation, testAttestation]
 }
 
 describe('Messaging Utilities', () => {
@@ -150,9 +145,9 @@ describe('Messaging Utilities', () => {
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
-  let compressedLegitimation: CompressedCredential
+  let compressedLegitimation: CompressedRequestForAttestation
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
-  let legitimation: ICredential
+  let legitimation: IRequestForAttestation
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: PartialClaim
@@ -183,10 +178,10 @@ describe('Messaging Utilities', () => {
   let compressedRequestCredentialBody: CompressedRequestCredentials
   let compressedRequestCredentialContent: CompressedRequestCredentialContent
   let submitCredentialBody: ISubmitCredential
-  let submitCredentialContent: ICredential[]
+  let submitCredentialContent: IRequestForAttestation[]
   let acceptCredentialBody: IAcceptCredential
   let compressedSubmitCredentialBody: CompressedSubmitCredentials
-  let compressedSubmitCredentialContent: CompressedCredential[]
+  let compressedSubmitCredentialContent: CompressedRequestForAttestation[]
   let rejectCredentialBody: IRejectCredential
   let requestAcceptDelegationBody: IRequestAcceptDelegation
   let requestAcceptDelegationContent: IRequestDelegationApproval
@@ -333,7 +328,7 @@ describe('Messaging Utilities', () => {
       identityAlice.uri
     )
     // Legitimation
-    legitimation = await buildCredential(
+    ;[legitimation] = await buildCredential(
       identityAlice.uri,
       identityBob.uri,
       {},
@@ -342,25 +337,16 @@ describe('Messaging Utilities', () => {
     // Compressed Legitimation
     compressedLegitimation = [
       [
-        [
-          legitimation.request.claim.cTypeHash,
-          legitimation.request.claim.owner,
-          legitimation.request.claim.contents,
-        ],
-        legitimation.request.claimNonceMap,
-        legitimation.request.claimerSignature,
-        legitimation.request.claimHashes,
-        legitimation.request.rootHash,
-        [],
-        legitimation.request.delegationId,
+        legitimation.claim.cTypeHash,
+        legitimation.claim.owner,
+        legitimation.claim.contents,
       ],
-      [
-        legitimation.attestation.claimHash,
-        legitimation.attestation.cTypeHash,
-        legitimation.attestation.owner,
-        legitimation.attestation.revoked,
-        legitimation.attestation.delegationId,
-      ],
+      legitimation.claimNonceMap,
+      legitimation.claimerSignature,
+      legitimation.claimHashes,
+      legitimation.rootHash,
+      [],
+      legitimation.delegationId,
     ]
     // Quote Data
     quoteData = {
@@ -401,7 +387,7 @@ describe('Messaging Utilities', () => {
     // Quote agreement
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
-      legitimation.request.rootHash,
+      legitimation.rootHash,
       identityAlice.uri,
       identityBob,
       keyBob.sign,
@@ -467,7 +453,7 @@ describe('Messaging Utilities', () => {
 
     // Request Attestation Content
     requestAttestationContent = {
-      requestForAttestation: legitimation.request,
+      requestForAttestation: legitimation,
       quote: bothSigned,
     }
 
@@ -475,16 +461,16 @@ describe('Messaging Utilities', () => {
     compressedRequestAttestationContent = [
       [
         [
-          legitimation.request.claim.cTypeHash,
-          legitimation.request.claim.owner,
-          legitimation.request.claim.contents,
+          legitimation.claim.cTypeHash,
+          legitimation.claim.owner,
+          legitimation.claim.contents,
         ],
-        legitimation.request.claimNonceMap,
-        legitimation.request.claimerSignature,
-        legitimation.request.claimHashes,
-        legitimation.request.rootHash,
+        legitimation.claimNonceMap,
+        legitimation.claimerSignature,
+        legitimation.claimHashes,
+        legitimation.rootHash,
         [],
-        legitimation.request.delegationId,
+        legitimation.delegationId,
       ],
       compressedQuoteAgreement,
     ]

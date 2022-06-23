@@ -16,6 +16,7 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import { query } from './Attestation.chain.js'
+import * as RequestForAttestation from '../requestforattestation/index.js'
 
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
@@ -131,21 +132,35 @@ export function isIAttestation(input: unknown): input is IAttestation {
 /**
  * Queries an attestation from the chain and checks if it is existing, if the owner of the attestation matches and if it was not revoked.
  *
- * @param attestation - The Attestation to verify.
  * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
  * @returns A promise containing whether the attestation is valid.
  */
 export async function checkValidity(
-  attestation: IAttestation,
-  claimHash: IAttestation['claimHash'] = attestation.claimHash
+  claimHash: IAttestation['claimHash'] | IRequestForAttestation['rootHash']
 ): Promise<boolean> {
-  verifyDataStructure(attestation)
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
   const chainAttestation = await query(claimHash)
-  return !!(
-    chainAttestation !== null &&
-    chainAttestation.owner === attestation.owner &&
-    !chainAttestation.revoked
+  return !!(chainAttestation !== null && !chainAttestation.revoked)
+}
+
+/**
+ * Verifies whether the data of the given attestation matches the one from the corresponding request. It is valid if:
+ * * the [[RequestForAttestation]] object has valid data (see [[RequestForAttestation.verifyDataIntegrity]]);
+ * and
+ * * the hash of the [[RequestForAttestation]] object, and the hash of the [[Attestation]].
+ *
+ * @param attestation - The attestation to verify.
+ * @param request - The request to verify against.
+ * @returns Whether the data is valid.
+ */
+export function verifyAgainstRequest(
+  attestation: IAttestation,
+  request: IRequestForAttestation
+): boolean {
+  if (request.claim.cTypeHash !== attestation.cTypeHash) return false
+  return (
+    request.rootHash === attestation.claimHash &&
+    RequestForAttestation.verifyDataIntegrity(request)
   )
 }
 

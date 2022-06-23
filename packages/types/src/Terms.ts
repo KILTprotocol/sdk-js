@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ICredential, CompressedCredential } from './Credential'
 import type { CompressedCType, ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type {
@@ -14,10 +13,14 @@ import type {
 } from './Quote'
 import type { CompressedPartialClaim } from './Message'
 import type { PartialClaim } from './Claim'
+import type {
+  CompressedRequestForAttestation,
+  IRequestForAttestation,
+} from './RequestForAttestation'
 
 export interface ITerms {
   claim: PartialClaim
-  legitimations: ICredential[]
+  legitimations: IRequestForAttestation[]
   delegationId?: IDelegationNode['id']
   quote?: IQuoteAttesterSigned
   cTypes?: ICType[]
@@ -25,7 +28,7 @@ export interface ITerms {
 
 export type CompressedTerms = [
   CompressedPartialClaim,
-  CompressedCredential[],
+  CompressedRequestForAttestation[],
   IDelegationNode['id'] | undefined,
   CompressedQuoteAttesterSigned | undefined,
   CompressedCType[] | undefined

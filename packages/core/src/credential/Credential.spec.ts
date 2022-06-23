@@ -12,13 +12,12 @@
 import { encodeAddress } from '@polkadot/util-crypto'
 
 import type {
-  CompressedCredential,
+  CompressedRequestForAttestation,
   DidKey,
   DidResolvedDetails,
   DidUri,
   IAttestation,
   IClaim,
-  ICredential,
   ICType,
   IDidDetails,
   IDidResolver,
@@ -42,9 +41,7 @@ import { UUID } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
-import * as Credential from './Credential'
-import { query } from '../attestation/Attestation.chain'
+import * as Credential from '../requestforattestation'
 
 jest.mock('../attestation/Attestation.chain')
 
@@ -52,9 +49,9 @@ async function buildCredential(
   claimer: DidDetails,
   attesterDid: IDidDetails['uri'],
   contents: IClaim['contents'],
-  legitimations: ICredential[],
+  legitimations: IRequestForAttestation[],
   sign: SignCallback
-): Promise<ICredential> {
+): Promise<[IRequestForAttestation, IAttestation]> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -75,10 +72,10 @@ async function buildCredential(
     claimer.uri
   )
   // build request for attestation with legitimations
-  const requestForAttestation = RequestForAttestation.fromClaim(claim, {
+  const requestForAttestation = Credential.fromClaim(claim, {
     legitimations,
   })
-  await RequestForAttestation.signWithDidKey(
+  await Credential.signWithDidKey(
     requestForAttestation,
     sign,
     claimer,
@@ -89,12 +86,7 @@ async function buildCredential(
     requestForAttestation,
     attesterDid
   )
-  // combine to credential
-  const credential = Credential.fromRequestAndAttestation(
-    requestForAttestation,
-    testAttestation
-  )
-  return credential
+  return [requestForAttestation, testAttestation]
 }
 
 // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
@@ -124,8 +116,8 @@ describe('RequestForAttestation', () => {
   let identityAlice: DidDetails
   let identityBob: DidDetails
   let identityCharlie: DidDetails
-  let legitimation: ICredential
-  let compressedLegitimation: CompressedCredential
+  let legitimation: IRequestForAttestation
+  let compressedLegitimation: CompressedRequestForAttestation
   let identityDave: DidDetails
   let migratedAndDeletedLightDid: DidDetails
   let migratedAndDeletedFullDid: DidDetails
@@ -178,8 +170,7 @@ describe('RequestForAttestation', () => {
     identityCharlie = await createLocalDemoFullDidFromKeypair(
       keyCharlie.keypair
     )
-
-    legitimation = await buildCredential(
+    ;[legitimation] = await buildCredential(
       identityAlice,
       identityBob.uri,
       {},
@@ -188,30 +179,21 @@ describe('RequestForAttestation', () => {
     )
     compressedLegitimation = [
       [
-        [
-          legitimation.request.claim.cTypeHash,
-          legitimation.request.claim.owner,
-          legitimation.request.claim.contents,
-        ],
-        legitimation.request.claimNonceMap,
-        legitimation.request.claimerSignature,
-        legitimation.request.claimHashes,
-        legitimation.request.rootHash,
-        [],
-        legitimation.request.delegationId,
+        legitimation.claim.cTypeHash,
+        legitimation.claim.owner,
+        legitimation.claim.contents,
       ],
-      [
-        legitimation.attestation.claimHash,
-        legitimation.attestation.cTypeHash,
-        legitimation.attestation.owner,
-        legitimation.attestation.revoked,
-        legitimation.attestation.delegationId,
-      ],
+      legitimation.claimNonceMap,
+      legitimation.claimerSignature,
+      legitimation.claimHashes,
+      legitimation.rootHash,
+      [],
+      legitimation.delegationId,
     ]
   })
 
   it('verify credentials signed by a full DID', async () => {
-    const credential = await buildCredential(
+    const [credential] = await buildCredential(
       identityCharlie,
       identityAlice.uri,
       {
@@ -222,8 +204,6 @@ describe('RequestForAttestation', () => {
       [legitimation],
       keyCharlie.sign
     )
-
-    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
@@ -240,7 +220,7 @@ describe('RequestForAttestation', () => {
       VerificationKeyType.Ed25519
     )
 
-    const credential = await buildCredential(
+    const [credential] = await buildCredential(
       identityDave,
       identityAlice.uri,
       {
@@ -251,8 +231,6 @@ describe('RequestForAttestation', () => {
       [legitimation],
       sign
     )
-
-    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
@@ -286,7 +264,7 @@ describe('RequestForAttestation', () => {
       },
     })
 
-    const credential = await buildCredential(
+    const [credential] = await buildCredential(
       migratedAndDeletedLightDid,
       identityAlice.uri,
       {
@@ -297,8 +275,6 @@ describe('RequestForAttestation', () => {
       [legitimation],
       migratedAndDeleted.sign
     )
-
-    ;(query as jest.Mock).mockResolvedValue(credential.attestation)
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
@@ -328,48 +304,50 @@ describe('RequestForAttestation', () => {
     }).toThrow()
   })
   it('Typeguard should return true on complete Credentials', async () => {
-    const testAttestation = await buildCredential(
+    const [credential] = await buildCredential(
       identityAlice,
       identityBob.uri,
       {},
       [],
       keyAlice.sign
     )
-    expect(Credential.isICredential(testAttestation)).toBeTruthy()
+    expect(Credential.isIRequestForAttestation(credential)).toBeTruthy()
     // @ts-expect-error
-    delete testAttestation.attestation.claimHash
+    delete credential.claimHashes
 
-    expect(Credential.isICredential(testAttestation)).toBeFalsy()
+    expect(Credential.isIRequestForAttestation(credential)).toBeFalsy()
   })
   it('Should throw error when attestation is from different request', async () => {
-    const testAttestation = await buildCredential(
+    const [credential, attestation] = await buildCredential(
       identityAlice,
       identityBob.uri,
       {},
       [],
       keyAlice.sign
     )
-    expect(Credential.verifyDataIntegrity(testAttestation)).toBeTruthy()
-    const { cTypeHash } = testAttestation.attestation
+    expect(
+      Attestation.verifyAgainstRequest(attestation, credential)
+    ).toBeTruthy()
+    const { cTypeHash } = attestation
     // @ts-ignore
-    testAttestation.attestation.cTypeHash = [
+    attestation.cTypeHash = [
       cTypeHash.slice(0, 15),
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
       cTypeHash.slice(16),
     ].join('')
-    expect(Credential.verifyDataIntegrity(testAttestation)).toBeFalsy()
+    expect(
+      Attestation.verifyAgainstRequest(attestation, credential)
+    ).toBeFalsy()
   })
   it('returns Claim Hash of the attestation', async () => {
-    const testAttestation = await buildCredential(
+    const [credential, attestation] = await buildCredential(
       identityAlice,
       identityBob.uri,
       {},
       [],
       keyAlice.sign
     )
-    expect(Credential.getHash(testAttestation)).toEqual(
-      testAttestation.attestation.claimHash
-    )
+    expect(Credential.getHash(credential)).toEqual(attestation.claimHash)
   })
 })
 
@@ -385,7 +363,6 @@ describe('create presentation', () => {
   let attester: DidDetails
   let ctype: ICType
   let reqForAtt: IRequestForAttestation
-  let attestation: IAttestation
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (
@@ -482,7 +459,7 @@ describe('create presentation', () => {
     ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    reqForAtt = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -492,35 +469,23 @@ describe('create presentation', () => {
         migratedClaimerFullDid.uri
       )
     )
-
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-  })
-
-  it('should build from reqForAtt and Attestation', async () => {
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(cred).toBeDefined()
   })
 
   it('should create presentation and exclude specific attributes using a full DID', async () => {
-    ;(query as jest.Mock).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
       selectedAttributes: ['name'],
       sign: newKeyForMigratedClaimerDid.sign,
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
-      Credential.verify(att, {
+      Credential.verify(presentation, {
         resolver: mockResolver,
       })
     ).resolves.toBe(true)
-    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
     const rawCType: ICType['schema'] = {
@@ -535,7 +500,7 @@ describe('create presentation', () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    reqForAtt = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -546,26 +511,20 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
       selectedAttributes: ['name'],
       sign: unmigratedClaimerKey.sign,
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
-      Credential.verify(att, {
+      Credential.verify(presentation, {
         resolver: mockResolver,
       })
     ).resolves.toBe(true)
-    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
     const rawCType: ICType['schema'] = {
@@ -580,7 +539,7 @@ describe('create presentation', () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    reqForAtt = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -592,27 +551,21 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
       selectedAttributes: ['name'],
       sign: newKeyForMigratedClaimerDid.sign,
       // Use of full DID to sign the presentation.
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
-      Credential.verify(att, {
+      Credential.verify(presentation, {
         resolver: mockResolver,
       })
     ).resolves.toBe(true)
-    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
 
   it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
@@ -628,7 +581,7 @@ describe('create presentation', () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    reqForAtt = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -640,21 +593,15 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
     const att = await Credential.createPresentation({
-      credential: cred,
+      credential: reqForAtt,
       selectedAttributes: ['name'],
       sign: newKeyForMigratedClaimerDid.sign,
       // Still using the light DID, which should fail since it has been migrated
       claimerDid: migratedClaimerLightDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
       Credential.verify(att, {
         resolver: mockResolver,
@@ -675,7 +622,7 @@ describe('create presentation', () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    reqForAtt = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -687,38 +634,26 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    ;(query as jest.Mock).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
       selectedAttributes: ['name'],
       sign: migratedThenDeletedKey.sign,
       // Still using the light DID, which should fail since it has been migrated and then deleted
       claimerDid: migratedThenDeletedClaimerLightDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
     await expect(
-      Credential.verify(att, {
+      Credential.verify(presentation, {
         resolver: mockResolver,
       })
     ).resolves.toBeFalsy()
   })
 
-  it('should get attribute keys', async () => {
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(Credential.getAttributes(cred)).toEqual(new Set(['age', 'name']))
-  })
-
   it('should verify the credential claims structure against the ctype', () => {
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(Credential.verifyAgainstCType(cred, ctype)).toBeTruthy()
-    cred.request.claim.contents.name = 123
+    expect(Credential.verifyAgainstCType(reqForAtt, ctype)).toBeTruthy()
+    reqForAtt.claim.contents.name = 123
 
-    expect(Credential.verifyAgainstCType(cred, ctype)).toBeFalsy()
+    expect(Credential.verifyAgainstCType(reqForAtt, ctype)).toBeFalsy()
   })
 })

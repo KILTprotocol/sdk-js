@@ -7,7 +7,6 @@
 
 import type { HexString } from '@polkadot/util/types'
 import type { DidSignature } from './DidDetails'
-import type { ICredential, CompressedCredential } from './Credential'
 import type { IClaim, CompressedClaim } from './Claim'
 import type { IDelegationNode } from './Delegation'
 
@@ -24,7 +23,7 @@ export interface IRequestForAttestation {
   claimHashes: Hash[]
   claimerSignature?: DidSignature & { challenge?: string }
   delegationId: IDelegationNode['id'] | null
-  legitimations: ICredential[]
+  legitimations: IRequestForAttestation[]
   rootHash: Hash
 }
 
@@ -34,6 +33,6 @@ export type CompressedRequestForAttestation = [
   IRequestForAttestation['claimerSignature'],
   IRequestForAttestation['claimHashes'],
   IRequestForAttestation['rootHash'],
-  CompressedCredential[],
+  CompressedRequestForAttestation[],
   IRequestForAttestation['delegationId']
 ]

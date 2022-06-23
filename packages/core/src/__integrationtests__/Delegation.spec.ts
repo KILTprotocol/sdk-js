@@ -26,8 +26,7 @@ import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
-import * as Credential from '../credential'
+import * as Credential from '../requestforattestation'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {
@@ -185,19 +184,18 @@ describe('and attestation rights have been delegated', () => {
       content,
       claimer.uri
     )
-    const request = RequestForAttestation.fromClaim(claim, {
+    const request = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await RequestForAttestation.signWithDidKey(
+    await Credential.signWithDidKey(
       request,
       claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
-    expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
-    await expect(
-      RequestForAttestation.verifySignature(request)
-    ).resolves.toBeTruthy()
+    expect(Credential.verifyDataIntegrity(request)).toBeTruthy()
+    await expect(Credential.verifySignature(request)).resolves.toBeTruthy()
+    await expect(Credential.verify(request)).resolves.toBeTruthy()
 
     const attestation = Attestation.fromRequestAndDid(request, attester.uri)
     await Attestation.getStoreTx(attestation)
@@ -210,20 +208,19 @@ describe('and attestation rights have been delegated', () => {
       )
       .then((tx) => submitExtrinsic(tx, paymentAccount))
 
-    const credential = Credential.fromRequestAndAttestation(
-      request,
-      attestation
-    )
-    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(Credential.verify(credential)).resolves.toBeTruthy()
+    await expect(
+      Attestation.checkValidity(attestation.claimHash)
+    ).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await Attestation.getRevokeTx(credential.attestation.claimHash, 1)
+    await Attestation.getRevokeTx(attestation.claimHash, 1)
       .then((tx) =>
         root.authorizeExtrinsic(tx, rootKey.sign, paymentAccount.address)
       )
       .then((tx) => submitExtrinsic(tx, paymentAccount))
-    await expect(Credential.verify(credential)).resolves.toBeFalsy()
+    await expect(
+      Attestation.checkValidity(attestation.claimHash)
+    ).resolves.toBeFalsy()
   }, 75_000)
 })
 

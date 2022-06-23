@@ -11,11 +11,8 @@ import {
   Claim,
   CType,
   Quote,
-  RequestForAttestation,
 } from '@kiltprotocol/core'
 import type {
-  ICredential,
-  CompressedCredential,
   CompressedMessageBody,
   MessageBody,
   CompressedRequestCredentialContent,
@@ -85,7 +82,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
     case Message.BodyType.SUBMIT_TERMS: {
       Claim.verifyDataStructure(body.content.claim)
-      body.content.legitimations.map((credential: ICredential) =>
+      body.content.legitimations.map((credential) =>
         Credential.verifyDataStructure(credential)
       )
       if (body.content.delegationId) {
@@ -116,9 +113,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
-      RequestForAttestation.verifyDataStructure(
-        body.content.requestForAttestation
-      )
+      Credential.verifyDataStructure(body.content.requestForAttestation)
       if (body.content.quote) {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
       }
@@ -279,11 +274,8 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     case Message.BodyType.SUBMIT_TERMS: {
       compressedContents = [
         Claim.compress(body.content.claim),
-        body.content.legitimations.map(
-          (credential: ICredential | CompressedCredential) =>
-            Array.isArray(credential)
-              ? credential
-              : Credential.compress(credential)
+        body.content.legitimations.map((credential) =>
+          Credential.compress(credential)
         ),
         body.content.delegationId,
         body.content.quote
@@ -303,7 +295,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
       compressedContents = [
-        RequestForAttestation.compress(body.content.requestForAttestation),
+        Credential.compress(body.content.requestForAttestation),
         body.content.quote
           ? Quote.compressQuoteAgreement(body.content.quote)
           : undefined,
@@ -325,11 +317,8 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.SUBMIT_CREDENTIAL: {
-      compressedContents = body.content.map(
-        (credential: ICredential | CompressedCredential) =>
-          Array.isArray(credential)
-            ? credential
-            : Credential.compress(credential)
+      compressedContents = body.content.map((credential) =>
+        Credential.compress(credential)
       )
       break
     }
@@ -410,11 +399,8 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     case Message.BodyType.SUBMIT_TERMS: {
       decompressedContents = {
         claim: Claim.decompress(body[1][0]),
-        legitimations: body[1][1].map(
-          (credential: ICredential | CompressedCredential) =>
-            !Array.isArray(credential)
-              ? credential
-              : Credential.decompress(credential)
+        legitimations: body[1][1].map((credential) =>
+          Credential.decompress(credential)
         ),
         delegationId: body[1][2],
         quote: body[1][3]
@@ -435,7 +421,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     }
     case Message.BodyType.REQUEST_ATTESTATION: {
       decompressedContents = {
-        requestForAttestation: RequestForAttestation.decompress(body[1][0]),
+        requestForAttestation: Credential.decompress(body[1][0]),
         quote: body[1][1]
           ? Quote.decompressQuoteAgreement(body[1][1])
           : undefined,
@@ -461,11 +447,8 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     case Message.BodyType.SUBMIT_CREDENTIAL: {
-      decompressedContents = body[1].map(
-        (credential: ICredential | CompressedCredential) =>
-          !Array.isArray(credential)
-            ? credential
-            : Credential.decompress(credential)
+      decompressedContents = body[1].map((credential) =>
+        Credential.decompress(credential)
       )
 
       break

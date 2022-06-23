@@ -8,7 +8,6 @@
 import type { AnyJson } from '@polkadot/types/types'
 import type { DidSignature, IDidDetails } from './DidDetails.js'
 import type { CompressedAttestation, IAttestation } from './Attestation.js'
-import type { CompressedCredential, ICredential } from './Credential.js'
 import type { IClaim, PartialClaim } from './Claim.js'
 import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
@@ -90,14 +89,14 @@ export interface ISubmitTerms extends IMessageBodyBase {
 export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: PartialClaim
-    legitimations: ICredential[]
+    legitimations: IRequestForAttestation[]
     delegationId?: IDelegationNode['id']
   }
   type: MessageBodyType.REJECT_TERMS
 }
 
 export interface ISubmitCredential extends IMessageBodyBase {
-  content: ICredential[]
+  content: IRequestForAttestation[]
   type: MessageBodyType.SUBMIT_CREDENTIAL
 }
 
@@ -124,7 +123,7 @@ export type CompressedRejectAttestation = [
 ]
 export type CompressedSubmitCredentials = [
   MessageBodyType.SUBMIT_CREDENTIAL,
-  CompressedCredential[]
+  CompressedRequestForAttestation[]
 ]
 export type CompressedAcceptCredential = [
   MessageBodyType.ACCEPT_CREDENTIAL,
@@ -268,7 +267,7 @@ export type CompressedRequestTerms = [
 
 export type CompressedRejectedTerms = [
   CompressedPartialClaim,
-  CompressedCredential[],
+  CompressedRequestForAttestation[],
   IDelegationNode['id'] | undefined
 ]
 export type CompressedRejectTerms = [

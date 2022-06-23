@@ -14,20 +14,16 @@
 import type {
   IClaim,
   IClaimContents,
-  CompressedCredential,
   ICType,
   CompressedRequestForAttestation,
   IRequestForAttestation,
   DidSignature,
   DidUri,
-  IAttestation,
-  ICredential,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import * as Attestation from '../attestation'
 import * as CType from '../ctype'
 
-import * as RequestForAttestation from './index.js'
+import * as RequestForAttestation from '../requestforattestation/index.js'
 
 const rawCType: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',
@@ -42,7 +38,7 @@ const rawCType: ICType['schema'] = {
 function buildRequestForAttestation(
   claimerDid: DidUri,
   contents: IClaimContents,
-  legitimations: ICredential[]
+  legitimations: IRequestForAttestation[]
 ): IRequestForAttestation {
   // create claim
 
@@ -65,37 +61,10 @@ describe('RequestForAttestation', () => {
     'did:kilt:4nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS'
   const identityBob =
     'did:kilt:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
-  const identityCharlie =
-    'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
-  let legitimationRequest: IRequestForAttestation
-  let legitimationAttestation: IAttestation
-  let legitimation: ICredential
-  let legitimationAttestationCharlie: IAttestation
-  let legitimationCharlie: ICredential
+  let legitimation: IRequestForAttestation
 
   beforeEach(async () => {
-    legitimationRequest = buildRequestForAttestation(identityAlice, {}, [])
-    // build attestation
-    legitimationAttestation = Attestation.fromRequestAndDid(
-      legitimationRequest,
-      identityCharlie
-    )
-    // combine to credential
-    legitimation = {
-      request: legitimationRequest,
-      attestation: legitimationAttestation,
-    }
-
-    // build attestation
-    legitimationAttestationCharlie = Attestation.fromRequestAndDid(
-      legitimationRequest,
-      identityCharlie
-    )
-    // combine to credential
-    legitimationCharlie = {
-      request: legitimationRequest,
-      attestation: legitimationAttestationCharlie,
-    }
+    legitimation = buildRequestForAttestation(identityAlice, {}, [])
   })
 
   it.todo('signing and verification')
@@ -142,14 +111,6 @@ describe('RequestForAttestation', () => {
   })
 
   it('compresses and decompresses the request for attestation object', async () => {
-    const legitimationAttestationBob = Attestation.fromRequestAndDid(
-      legitimationRequest,
-      identityBob
-    )
-    const legitimationBob = {
-      request: legitimationRequest,
-      attestation: legitimationAttestationBob,
-    }
     const reqForAtt = buildRequestForAttestation(
       identityBob,
       {
@@ -157,53 +118,21 @@ describe('RequestForAttestation', () => {
         b: 'b',
         c: 'c',
       },
-      [legitimationCharlie, legitimationBob]
+      [legitimation]
     )
 
-    const compressedLegitimationCharlie: CompressedCredential = [
+    const compressedLegitimation: CompressedRequestForAttestation = [
       [
-        [
-          legitimationCharlie.request.claim.cTypeHash,
-          legitimationCharlie.request.claim.owner,
-          legitimationCharlie.request.claim.contents,
-        ],
-        legitimationCharlie.request.claimNonceMap,
-        legitimationCharlie.request.claimerSignature,
-        legitimationCharlie.request.claimHashes,
-        legitimationCharlie.request.rootHash,
-        [],
-        legitimationCharlie.request.delegationId,
+        legitimation.claim.cTypeHash,
+        legitimation.claim.owner,
+        legitimation.claim.contents,
       ],
-      [
-        legitimationCharlie.attestation.claimHash,
-        legitimationCharlie.attestation.cTypeHash,
-        legitimationCharlie.attestation.owner,
-        legitimationCharlie.attestation.revoked,
-        legitimationCharlie.attestation.delegationId,
-      ],
-    ]
-
-    const compressedLegitimationBob: CompressedCredential = [
-      [
-        [
-          legitimationBob.request.claim.cTypeHash,
-          legitimationBob.request.claim.owner,
-          legitimationBob.request.claim.contents,
-        ],
-        legitimationBob.request.claimNonceMap,
-        legitimationBob.request.claimerSignature,
-        legitimationBob.request.claimHashes,
-        legitimationBob.request.rootHash,
-        [],
-        legitimationBob.request.delegationId,
-      ],
-      [
-        legitimationBob.attestation.claimHash,
-        legitimationBob.attestation.cTypeHash,
-        legitimationBob.attestation.owner,
-        legitimationBob.attestation.revoked,
-        legitimationBob.attestation.delegationId,
-      ],
+      legitimation.claimNonceMap,
+      legitimation.claimerSignature,
+      legitimation.claimHashes,
+      legitimation.rootHash,
+      [],
+      legitimation.delegationId,
     ]
 
     const compressedReqForAtt: CompressedRequestForAttestation = [
@@ -216,7 +145,7 @@ describe('RequestForAttestation', () => {
       reqForAtt.claimerSignature,
       reqForAtt.claimHashes,
       reqForAtt.rootHash,
-      [compressedLegitimationCharlie, compressedLegitimationBob],
+      [compressedLegitimation],
       reqForAtt.delegationId,
     ]
 
@@ -275,7 +204,7 @@ describe('RequestForAttestation', () => {
         b: 'b',
         c: 'c',
       },
-      [legitimationCharlie]
+      [legitimation]
     ) as IRequestForAttestation
     const builtRequestNoLegitimations = {
       ...buildRequestForAttestation(

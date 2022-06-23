@@ -8,7 +8,11 @@
 import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
 import { Claim } from '@kiltprotocol/core'
-import type { ICredential, ICType } from '@kiltprotocol/types'
+import type {
+  IRequestForAttestation,
+  ICType,
+  IAttestation,
+} from '@kiltprotocol/types'
 import type { HexString } from '@polkadot/util/types'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
@@ -66,11 +70,13 @@ export function toCredentialIRI(rootHash: string): string {
  * Transforms a regular KILT credential to its VC representation.
  *
  * @param input The credential to transform.
+ * @param attestation The corresponding attestation to the credential.
  * @param ctype (optional) The full specification of the credential's CType. If specified, the CType will be included with the VC on its `credentialSchema` property.
  * @returns The VC representation of the KILT credential and optionally its CType.
  */
-export function fromCredential(
-  input: ICredential,
+export function fromCredentialAndAttestation(
+  input: IRequestForAttestation,
+  attestation: IAttestation,
   ctype?: ICType
 ): VerifiableCredential {
   const {
@@ -80,7 +86,7 @@ export function fromCredential(
     rootHash,
     claimerSignature,
     claim,
-  } = input.request
+  } = input
 
   // write root hash to id
   const id = toCredentialIRI(rootHash)
@@ -91,7 +97,7 @@ export function fromCredential(
     Record<string, AnyJson>
   >
 
-  const issuer = input.attestation.owner
+  const issuer = attestation.owner
 
   // add current date bc we have no issuance date on credential
   // TODO: could we get this from block time or something?
@@ -110,7 +116,7 @@ export function fromCredential(
     }
   }
 
-  const legitimationIds = legitimations.map((leg) => leg.request.rootHash)
+  const legitimationIds = legitimations.map((leg) => leg.rootHash)
 
   const proof: Proof[] = []
 
@@ -147,7 +153,7 @@ export function fromCredential(
   const attProof: AttestedProof = {
     type: KILT_ATTESTED_PROOF_TYPE,
     proofPurpose: 'assertionMethod',
-    attester: input.attestation.owner,
+    attester: attestation.owner,
   }
   VC.proof.push(attProof)
 
@@ -155,7 +161,7 @@ export function fromCredential(
   const cDProof: CredentialDigestProof = {
     type: KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
     proofPurpose: 'assertionMethod',
-    nonces: input.request.claimNonceMap,
+    nonces: input.claimNonceMap,
     claimHashes,
   }
   VC.proof.push(cDProof)

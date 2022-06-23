@@ -26,7 +26,7 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { HexString } from '@polkadot/util/types'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from '../requestforattestation'
 import * as Attestation from './Attestation'
 
 let mockedApi: any
@@ -66,7 +66,7 @@ describe('Attestation', () => {
       testcontents,
       identityBob
     )
-    requestForAttestation = RequestForAttestation.fromClaim(testClaim)
+    requestForAttestation = Credential.fromClaim(testClaim)
   })
 
   it('stores attestation', async () => {
@@ -84,7 +84,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice
     )
-    expect(await Attestation.checkValidity(attestation)).toBeTruthy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBeTruthy()
   })
 
   it('verify attestations not on chain', async () => {
@@ -99,7 +99,7 @@ describe('Attestation', () => {
       owner: identityAlice,
       revoked: false,
     }
-    expect(await Attestation.checkValidity(attestation)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
   })
 
   it('verify attestation revoked', async () => {
@@ -117,7 +117,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice
     )
-    expect(await Attestation.checkValidity(attestation)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {

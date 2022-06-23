@@ -82,8 +82,8 @@ export class Message implements IMessage {
       case Message.BodyType.SUBMIT_CREDENTIAL:
         {
           const submitClaimsForCtype: ISubmitCredential = body
-          submitClaimsForCtype.content.forEach((claim) => {
-            if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
+          submitClaimsForCtype.content.forEach((request) => {
+            if (!DidUtils.isSameSubject(request.claim.owner, sender)) {
               throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
