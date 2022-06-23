@@ -16,7 +16,7 @@ import {
   DidVerificationKey,
   IDidDetails,
   DidIdentifier,
-  KeystoreSigner,
+  SignCallback,
   VerificationKeyType,
   KeyRelationship,
   VerificationKeyRelationship,
@@ -221,14 +221,14 @@ export abstract class DidDetails implements IDidDetails {
    * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
    *
    * @param payload The byte array or HEX-encoded payload to sign.
-   * @param signer The keystore signer to use for the signing operation.
+   * @param sign The sign callback to use for the signing operation.
    * @param keyId The key ID to use to generate the signature.
    *
    * @returns The resulting [[DidSignature]].
    */
   public async signPayload(
     payload: Uint8Array | string,
-    signer: KeystoreSigner,
+    sign: SignCallback,
     keyId: DidVerificationKey['id']
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
@@ -245,7 +245,7 @@ export abstract class DidDetails implements IDidDetails {
         `No algorithm found for key type ${key.type}`
       )
     }
-    const { data: signature } = await signer.sign({
+    const { data: signature } = await sign({
       publicKey: key.publicKey,
       alg,
       data: Crypto.coToUInt8(payload),

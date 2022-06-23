@@ -13,7 +13,7 @@ import {
   DidSignature,
   KeyRelationship,
   KeyringPair,
-  KeystoreSigner,
+  SignCallback,
   VerificationKeyType,
 } from '@kiltprotocol/types'
 import Keyring from '@polkadot/keyring'
@@ -36,7 +36,7 @@ jest.mock('./DidResolver')
 describe('light DID', () => {
   let keypair: KeyringPair
   let details: LightDidDetails
-  let signer: KeystoreSigner
+  let sign: SignCallback
   beforeAll(() => {
     keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
       mnemonicGenerate()
@@ -45,9 +45,7 @@ describe('light DID', () => {
       keypair.address,
       VerificationKeyType.Sr25519
     )
-    signer = {
-      sign: async ({ data, alg }) => ({ data: keypair.sign(data), alg }),
-    }
+    sign = async ({ data, alg }) => ({ data: keypair.sign(data), alg })
   })
 
   beforeEach(() => {
@@ -70,7 +68,7 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -90,7 +88,7 @@ describe('light DID', () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const signature = await details.signPayload(
       SIGNED_BYTES,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -110,7 +108,7 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -129,7 +127,7 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     signature.keyUri += '1a'
@@ -149,7 +147,7 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -168,7 +166,7 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     // @ts-expect-error
@@ -196,7 +194,7 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -223,7 +221,7 @@ describe('light DID', () => {
 describe('full DID', () => {
   let keypair: KeyringPair
   let details: FullDidDetails
-  let signer: KeystoreSigner
+  let sign: SignCallback
   beforeAll(() => {
     keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
       mnemonicGenerate()
@@ -239,9 +237,7 @@ describe('full DID', () => {
       },
       keyRelationships: { authentication: new Set(['0x12345']) },
     })
-    signer = {
-      sign: async ({ data, alg }) => ({ data: keypair.sign(data), alg }),
-    }
+    sign = async ({ data, alg }) => ({ data: keypair.sign(data), alg })
   })
 
   beforeEach(() => {
@@ -264,7 +260,7 @@ describe('full DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -284,7 +280,7 @@ describe('full DID', () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const signature = await details.signPayload(
       SIGNED_BYTES,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -310,7 +306,7 @@ describe('full DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(
@@ -330,7 +326,7 @@ describe('full DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     await expect(

@@ -17,18 +17,18 @@
 
 import {
   DidDetails,
-  Utils as DidUtils,
   DidKeySelectionCallback,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
 import type {
-  ICredential,
   CompressedCredential,
-  IAttestation,
-  IRequestForAttestation,
-  IDidResolver,
-  KeystoreSigner,
   DidVerificationKey,
+  IAttestation,
+  ICredential,
   ICType,
+  IDidResolver,
+  IRequestForAttestation,
+  SignCallback,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -196,7 +196,7 @@ export function getAttributes(credential: ICredential): Set<string> {
  *
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
- * @param presentationOptions.signer Keystore signer to sign the presentation.
+ * @param presentationOptions.sign The callback to sign the presentation.
  * @param presentationOptions.claimerDid The DID details of the presenter.
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
@@ -207,14 +207,14 @@ export function getAttributes(credential: ICredential): Set<string> {
 export async function createPresentation({
   credential,
   selectedAttributes,
-  signer,
+  sign,
   challenge,
   claimerDid,
   keySelection = DidUtils.defaultKeySelectionCallback,
 }: {
   credential: ICredential
   selectedAttributes?: string[]
-  signer: KeystoreSigner
+  sign: SignCallback
   challenge?: string
   claimerDid: DidDetails
   keySelection?: DidKeySelectionCallback<DidVerificationKey>
@@ -246,7 +246,7 @@ export async function createPresentation({
 
   await RequestForAttestation.signWithDidKey(
     presentation.request,
-    signer,
+    sign,
     claimerDid,
     selectedKeyId,
     {

@@ -10,85 +10,85 @@
  */
 
 import type {
-  CompressedQuoteAttesterSigned,
-  CompressedQuoteAgreed,
-  ICType,
-  IClaim,
-  IDidResolver,
-  IQuote,
-  IQuoteAttesterSigned,
-  IQuoteAgreement,
-  IRequestTerms,
-  ISubmitTerms,
-  ITerms,
-  IRejectTerms,
-  IRequestAttestation,
-  ISubmitAttestation,
-  IRequestCredential,
-  ICredential,
-  IRequestAcceptDelegation,
-  ISubmitAcceptDelegation,
-  IRejectAcceptDelegation,
-  IInformCreateDelegation,
-  MessageBody,
-  CompressedRequestTerms,
-  CompressedPartialClaim,
-  CompressedSubmitTerms,
-  CompressedTerms,
-  CompressedRejectTerms,
-  CompressedRejectedTerms,
-  IRequestAttestationContent,
-  CompressedRequestAttestation,
-  CompressedRequestAttestationContent,
-  ISubmitAttestationContent,
-  CompressedSubmitAttestation,
-  IRequestCredentialContent,
-  CompressedRequestCredentials,
-  IRequestDelegationApproval,
-  CompressedRequestAcceptDelegation,
-  CompressedRequestDelegationApproval,
-  ISubmitDelegationApproval,
-  CompressedSubmitAcceptDelegation,
-  CompressedSubmitDelegationApproval,
-  IDelegationData,
-  CompressedRejectAcceptDelegation,
+  CompressedAttestation,
+  CompressedCredential,
   CompressedDelegationData,
-  IInformDelegationCreation,
   CompressedInformCreateDelegation,
   CompressedInformDelegationCreation,
   CompressedMessageBody,
-  CompressedCredential,
-  CompressedSubmitCredentials,
-  ISubmitCredential,
-  CompressedAttestation,
-  PartialClaim,
+  CompressedPartialClaim,
+  CompressedQuoteAgreed,
+  CompressedQuoteAttesterSigned,
+  CompressedRejectAcceptDelegation,
+  CompressedRejectedTerms,
+  CompressedRejectTerms,
+  CompressedRequestAcceptDelegation,
+  CompressedRequestAttestation,
+  CompressedRequestAttestationContent,
   CompressedRequestCredentialContent,
-  IMessage,
-  IRejectAttestation,
-  IAcceptCredential,
-  IRejectCredential,
-  IDidDetails,
-  DidResolvedDetails,
+  CompressedRequestCredentials,
+  CompressedRequestDelegationApproval,
+  CompressedRequestTerms,
+  CompressedSubmitAcceptDelegation,
+  CompressedSubmitAttestation,
+  CompressedSubmitCredentials,
+  CompressedSubmitDelegationApproval,
+  CompressedSubmitTerms,
+  CompressedTerms,
   DidPublicKey,
-  ResolvedDidKey,
-  DidUri,
+  DidResolvedDetails,
   DidResourceUri,
+  DidUri,
+  IAcceptCredential,
+  IClaim,
+  ICredential,
+  ICType,
+  IDelegationData,
+  IDidDetails,
+  IDidResolver,
+  IInformCreateDelegation,
+  IInformDelegationCreation,
+  IMessage,
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
+  IRejectAcceptDelegation,
+  IRejectAttestation,
+  IRejectCredential,
+  IRejectTerms,
+  IRequestAcceptDelegation,
+  IRequestAttestation,
+  IRequestAttestationContent,
+  IRequestCredential,
+  IRequestCredentialContent,
+  IRequestDelegationApproval,
+  IRequestTerms,
+  ISubmitAcceptDelegation,
+  ISubmitAttestation,
+  ISubmitAttestationContent,
+  ISubmitCredential,
+  ISubmitDelegationApproval,
+  ISubmitTerms,
+  ITerms,
+  MessageBody,
+  PartialClaim,
+  ResolvedDidKey,
 } from '@kiltprotocol/types'
-import { SDKErrors, Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import {
   Attestation,
-  Credential,
   Claim,
+  Credential,
   CType,
   Quote,
   RequestForAttestation,
 } from '@kiltprotocol/core'
+import { DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
 import {
-  DemoKeystore,
-  DemoKeystoreUtils,
-  DidDetails,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+  createLocalDemoFullDidFromKeypair,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 
 import * as MessageUtils from './Message.utils'
 import { Message } from './Message'
@@ -133,9 +133,12 @@ async function buildCredential(
 }
 
 describe('Messaging Utilities', () => {
-  let keystore: DemoKeystore
   let identityAlice: DidDetails
+  let keyAlice: KeyTool
+
   let identityBob: DidDetails
+  let keyBob: KeyTool
+
   let mockResolver: IDidResolver
   let date: string
   let rawCType: ICType['schema']
@@ -217,15 +220,11 @@ describe('Messaging Utilities', () => {
   let messageInformCreateDelegation: IMessage
 
   beforeAll(async () => {
-    keystore = new DemoKeystore()
-    identityAlice = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      'Alice'
-    )
-    identityBob = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      'Bob'
-    )
+    keyAlice = makeSigningKeyTool()
+    identityAlice = await createLocalDemoFullDidFromKeypair(keyAlice.keypair)
+    keyBob = makeSigningKeyTool()
+    identityBob = await createLocalDemoFullDidFromKeypair(keyBob.keypair)
+
     date = new Date(2019, 11, 10).toISOString()
     claimContents = {
       name: 'Bob',
@@ -380,7 +379,7 @@ describe('Messaging Utilities', () => {
     quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
       identityAlice,
-      keystore
+      keyAlice.sign
     )
     // Compressed Quote Attester Signed quote
     compressedResultAttesterSignedQuote = [
@@ -405,7 +404,7 @@ describe('Messaging Utilities', () => {
       legitimation.request.rootHash,
       identityAlice.uri,
       identityBob,
-      keystore,
+      keyBob.sign,
       {
         resolver: mockResolver,
       }
@@ -542,7 +541,7 @@ describe('Messaging Utilities', () => {
       signatures: {
         inviter: await identityAlice.signPayload(
           'signature',
-          keystore,
+          keyAlice.sign,
           identityAlice.authenticationKey.id
         ),
       },
@@ -574,12 +573,12 @@ describe('Messaging Utilities', () => {
       signatures: {
         inviter: await identityAlice.signPayload(
           'signature',
-          keystore,
+          keyAlice.sign,
           identityAlice.authenticationKey.id
         ),
         invitee: await identityBob.signPayload(
           'signature',
-          keystore,
+          keyBob.sign,
           identityBob.authenticationKey.id
         ),
       },

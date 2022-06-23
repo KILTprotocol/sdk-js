@@ -11,21 +11,25 @@
 
 import { BN } from '@polkadot/util'
 import type { IAttestation, KeyringPair } from '@kiltprotocol/types'
-import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { FullDidDetails } from '@kiltprotocol/did'
 import { Attestation } from '../index'
 import { getTransferTx } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
   createEndowedTestAccount,
-  createFullDidFromSeed,
   initializeApi,
   submitExtrinsic,
 } from './utils'
 
 let paymentAccount: KeyringPair
 let someDid: FullDidDetails
-const keystore = new DemoKeystore()
+let key: KeyTool
 
 beforeAll(async () => {
   await initializeApi()
@@ -33,7 +37,8 @@ beforeAll(async () => {
 
 beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
-  someDid = await createFullDidFromSeed(paymentAccount, keystore)
+  key = makeSigningKeyTool()
+  someDid = await createFullDidFromSeed(paymentAccount, key.keypair)
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
@@ -55,7 +60,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     revoked: false,
   }
   const tx = await Attestation.getStoreTx(attestation).then((ex) =>
-    someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
+    someDid.authorizeExtrinsic(ex, key.sign, paymentAccount.address)
   )
   await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
     section: 'ctype',

@@ -11,18 +11,11 @@
 import { BN } from '@polkadot/util'
 
 import { Keyring } from '@kiltprotocol/utils'
-import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
+import { DidMigrationCallback, SigningAlgorithms } from '@kiltprotocol/did'
 import {
-  DemoKeystore,
-  DemoKeystoreUtils,
-  DidMigrationCallback,
-  FullDidCreationBuilder,
-  FullDidDetails,
-  LightDidDetails,
-} from '@kiltprotocol/did'
-import {
-  BlockchainApiConnection,
   Blockchain,
+  BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
 import type {
   ICType,
@@ -88,12 +81,8 @@ export const devAlice = keyring.createFromUri('//Alice')
 export const devBob = keyring.createFromUri('//Bob')
 export const devCharlie = keyring.createFromUri('//Charlie')
 
-export function keypairFromRandom(): KeyringPair {
-  return keyring.addFromSeed(randomAsU8a(32))
-}
-
 export function addressFromRandom(): IIdentity['address'] {
-  return keypairFromRandom().address
+  return makeSigningKeyTool(SigningAlgorithms.Ed25519).keypair.address
 }
 
 export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
@@ -170,7 +159,7 @@ export async function fundAccount(
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
 ): Promise<KeyringPair> {
-  const keypair = keypairFromRandom()
+  const { keypair } = makeSigningKeyTool()
   await fundAccount(keypair.address, amount)
   return keypair
 }
@@ -193,31 +182,4 @@ export function getDefaultSubmitCallback(
       resolveOn: Blockchain.IS_IN_BLOCK,
     })
   }
-}
-
-// It takes the auth key from the light DID and use it as attestation and delegation key as well.
-export async function createFullDidFromLightDid(
-  identity: KeyringPair,
-  lightDidForId: LightDidDetails,
-  keystore: DemoKeystore
-): Promise<FullDidDetails> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return FullDidCreationBuilder.fromLightDidDetails(api, lightDidForId)
-    .setAttestationKey(lightDidForId.authenticationKey)
-    .setDelegationKey(lightDidForId.authenticationKey)
-    .buildAndSubmit(keystore, identity.address, async (tx) => {
-      await submitExtrinsic(tx, identity)
-    })
-}
-
-export async function createFullDidFromSeed(
-  identity: KeyringPair,
-  keystore: DemoKeystore,
-  seed: string = randomAsHex()
-): Promise<FullDidDetails> {
-  const lightDid = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
-    keystore,
-    seed
-  )
-  return createFullDidFromLightDid(identity, lightDid, keystore)
 }

@@ -12,27 +12,29 @@
 import { u8aToHex } from '@polkadot/util'
 
 import type {
-  IClaim,
-  ICType,
-  IDidResolver,
-  ICostBreakdown,
-  IQuote,
-  IQuoteAgreement,
-  IQuoteAttesterSigned,
-  DidResolvedDetails,
-  IRequestForAttestation,
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  DidResolvedDetails,
+  IClaim,
+  ICostBreakdown,
+  ICType,
+  IDidResolver,
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import {
-  DemoKeystore,
-  DemoKeystoreUtils,
   DidDetails,
-  Utils as DidUtils,
   SigningAlgorithms,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
+import {
+  createLocalDemoFullDidFromKeypair,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import * as CType from '../ctype'
 import * as RequestForAttestation from '../requestforattestation'
 import * as Quote from './Quote'
@@ -40,8 +42,11 @@ import { QuoteSchema } from './QuoteSchema'
 
 describe('Quote', () => {
   let claimerIdentity: DidDetails
+  const claimer = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+
   let attesterIdentity: DidDetails
-  let keystore: DemoKeystore
+  const attester = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+
   let invalidCost: ICostBreakdown
   let date: string
   let cTypeSchema: ICType['schema']
@@ -78,22 +83,9 @@ describe('Quote', () => {
   })()
 
   beforeAll(async () => {
-    keystore = new DemoKeystore()
+    claimerIdentity = await createLocalDemoFullDidFromKeypair(claimer.keypair)
 
-    claimerIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Alice',
-      {
-        signingKeyType: SigningAlgorithms.Ed25519,
-      }
-    )
-    attesterIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Bob',
-      {
-        signingKeyType: SigningAlgorithms.Ed25519,
-      }
-    )
+    attesterIdentity = await createLocalDemoFullDidFromKeypair(attester.keypair)
 
     invalidCost = {
       gross: 233,
@@ -158,14 +150,14 @@ describe('Quote', () => {
     validAttesterSignedQuote = await Quote.createAttesterSignedQuote(
       validQuoteData,
       attesterIdentity,
-      keystore
+      attester.sign
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       request.rootHash,
       attesterIdentity.uri,
       claimerIdentity,
-      keystore,
+      claimer.sign,
       {
         resolver: mockResolver,
       }
@@ -179,7 +171,7 @@ describe('Quote', () => {
     await expect(
       claimerIdentity.signPayload(
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        keystore,
+        claimer.sign,
         claimerIdentity.authenticationKey.id
       )
     ).resolves.toEqual(quoteBothAgreed.claimerSignature)
@@ -213,7 +205,7 @@ describe('Quote', () => {
       await Quote.createAttesterSignedQuote(
         validQuoteData,
         attesterIdentity,
-        keystore
+        attester.sign
       )
     ).toEqual(validAttesterSignedQuote)
   })
@@ -229,7 +221,6 @@ describe('Quote', () => {
 describe('Quote compression', () => {
   let claimerIdentity: DidDetails
   let attesterIdentity: DidDetails
-  let keystore: DemoKeystore
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
@@ -263,18 +254,11 @@ describe('Quote compression', () => {
   })()
 
   beforeAll(async () => {
-    keystore = new DemoKeystore()
+    const claimer = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    const attester = makeSigningKeyTool(SigningAlgorithms.Ed25519)
 
-    claimerIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Alice',
-      { signingKeyType: SigningAlgorithms.Ed25519 }
-    )
-    attesterIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Bob',
-      { signingKeyType: SigningAlgorithms.Ed25519 }
-    )
+    claimerIdentity = await createLocalDemoFullDidFromKeypair(claimer.keypair)
+    attesterIdentity = await createLocalDemoFullDidFromKeypair(attester.keypair)
 
     cTypeSchema = {
       $id: 'kilt:ctype:0x1',
@@ -312,14 +296,14 @@ describe('Quote compression', () => {
     validAttesterSignedQuote = await Quote.createAttesterSignedQuote(
       validQuoteData,
       attesterIdentity,
-      keystore
+      attester.sign
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       request.rootHash,
       attesterIdentity.uri,
       claimerIdentity,
-      keystore,
+      claimer.sign,
       {
         resolver: mockResolver,
       }

@@ -12,7 +12,7 @@ import { BN } from '@polkadot/util'
 import type {
   DidVerificationKey,
   IIdentity,
-  KeystoreSigner,
+  SignCallback,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -130,7 +130,7 @@ export class DidBatchBuilder {
   /**
    * Generate the SubmittableExtrinsic containing the batch of extrinsics to execute, in the order they were added to the builder.
    *
-   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the required keys to sign each batch.
+   * @param sign The [[SignCallback]] to sign the DID operation. It must support the keys required to sign each batch.
    * @param submitter The KILT address of the user authorised to submit each extrinsic in the batch.
    * @param submissionOptions The additional options to customise the signing operation.
    * @param submissionOptions.atomic A flag indicating whether the whole batch must be reverted (true) or not (false) in case any extrinsic in the batch fails. It defaults to true.
@@ -142,7 +142,7 @@ export class DidBatchBuilder {
   // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
   public async build(
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitter: IIdentity['address'],
     {
       atomic = true,
@@ -184,7 +184,7 @@ export class DidBatchBuilder {
           didIdentifier: this.did.identifier,
           signingPublicKey: signingKey.publicKey,
           alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
-          signer,
+          sign,
           call: processedBatch,
           txCounter: batchNonce,
           submitter,

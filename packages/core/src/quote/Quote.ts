@@ -16,29 +16,29 @@
  */
 
 import type {
-  IDidDetails,
-  IQuote,
-  IDidResolver,
-  IQuoteAgreement,
-  IQuoteAttesterSigned,
-  KeystoreSigner,
-  DidVerificationKey,
-  IRequestForAttestation,
   CompressedCostBreakdown,
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
   DidPublicKey,
   DidSignature,
+  DidVerificationKey,
   ICostBreakdown,
+  IDidDetails,
+  IDidResolver,
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
+  IRequestForAttestation,
+  SignCallback,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
+import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import {
-  Utils as DidUtils,
-  DidResolver,
   DidDetails,
   DidKeySelectionCallback,
+  DidResolver,
+  Utils as DidUtils,
   verifyDidSignature,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
@@ -77,7 +77,7 @@ export function validateQuoteSchema(
  *
  * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity The DID used to sign the object.
- * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param sign The callback to sign with the private key.
  * @param options Optional settings.
  * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @returns A signed [[Quote]] object.
@@ -85,7 +85,7 @@ export function validateQuoteSchema(
 export async function createAttesterSignedQuote(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
-  signer: KeystoreSigner,
+  sign: SignCallback,
   {
     keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
@@ -106,7 +106,7 @@ export async function createAttesterSignedQuote(
   }
   const signature = await attesterIdentity.signPayload(
     Crypto.hashObjectAsStr(quoteInput),
-    signer,
+    sign,
     authenticationKey.id
   )
   return {
@@ -160,7 +160,7 @@ export async function verifyAttesterSignedQuote(
  * @param requestRootHash A root hash of the entire object.
  * @param attesterIdentity The uri of the Attester DID.
  * @param claimerIdentity The DID of the Claimer in order to sign.
- * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param sign The callback to sign with the private key.
  * @param options Optional settings.
  * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @param options.resolver DidResolver used in the process of verifying the attester signature.
@@ -171,7 +171,7 @@ export async function createQuoteAgreement(
   requestRootHash: IRequestForAttestation['rootHash'],
   attesterIdentity: IDidDetails['uri'],
   claimerIdentity: DidDetails,
-  signer: KeystoreSigner,
+  sign: SignCallback,
   {
     keySelection = DidUtils.defaultKeySelectionCallback,
     resolver = DidResolver,
@@ -206,7 +206,7 @@ export async function createQuoteAgreement(
 
   const signature = await claimerIdentity.signPayload(
     Crypto.hashObjectAsStr(attesterSignedQuote),
-    signer,
+    sign,
     claimerAuthenticationKey.id
   )
 

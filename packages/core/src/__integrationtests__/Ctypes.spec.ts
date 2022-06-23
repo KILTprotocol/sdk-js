@@ -10,16 +10,19 @@
  */
 
 import { ICType, KeyringPair } from '@kiltprotocol/types'
-import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
+import { FullDidDetails } from '@kiltprotocol/did'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import { Crypto } from '@kiltprotocol/utils'
 import * as CType from '../ctype'
 import { getOwner } from '../ctype/CType.chain'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
-  createFullDidFromSeed,
   initializeApi,
-  keypairFromRandom,
   submitExtrinsic,
 } from './utils'
 
@@ -31,7 +34,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCreator: FullDidDetails
   let paymentAccount: KeyringPair
   let ctypeCounter = 0
-  const keystore = new DemoKeystore()
+  let key: KeyTool
 
   function makeCType(): ICType {
     ctypeCounter += 1
@@ -48,18 +51,19 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   beforeAll(async () => {
     paymentAccount = await createEndowedTestAccount()
-    ctypeCreator = await createFullDidFromSeed(paymentAccount, keystore)
+    key = makeSigningKeyTool()
+    ctypeCreator = await createFullDidFromSeed(paymentAccount, key.keypair)
   }, 60_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
-    const bobbyBroke = keypairFromRandom()
+    const { keypair, sign } = makeSigningKeyTool()
     await expect(
       CType.getStoreTx(ctype)
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
+          ctypeCreator.authorizeExtrinsic(tx, sign, keypair.address)
         )
-        .then((tx) => submitExtrinsic(tx, bobbyBroke))
+        .then((tx) => submitExtrinsic(tx, keypair))
     ).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).resolves.toBeFalsy()
   }, 20_000)
@@ -68,7 +72,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await CType.getStoreTx(ctype)
       .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+        ctypeCreator.authorizeExtrinsic(tx, key.sign, paymentAccount.address)
       )
       .then((tx) => submitExtrinsic(tx, paymentAccount))
     await Promise.all([
@@ -83,13 +87,13 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await CType.getStoreTx(ctype)
       .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+        ctypeCreator.authorizeExtrinsic(tx, key.sign, paymentAccount.address)
       )
       .then((tx) => submitExtrinsic(tx, paymentAccount))
     await expect(
       CType.getStoreTx(ctype)
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+          ctypeCreator.authorizeExtrinsic(tx, key.sign, paymentAccount.address)
         )
         .then((tx) => submitExtrinsic(tx, paymentAccount))
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })

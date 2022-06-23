@@ -8,8 +8,19 @@
 /// <reference lib="dom" />
 
 import type { ApiPromise } from '@polkadot/api'
-import type { KeyringPair, SubmittableExtrinsic } from '@kiltprotocol/types'
-import type { LightDidSupportedVerificationKeyType } from '@kiltprotocol/did'
+import type {
+  DecryptCallback,
+  EncryptCallback,
+  KeyringPair,
+  LightDidSupportedVerificationKeyType,
+  NewDidEncryptionKey,
+  ResponseData,
+  SignCallback,
+  SigningAlgorithms,
+  SigningData,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import type { KeypairType } from '@polkadot/util-crypto/types'
 
 const { kilt } = window
 
@@ -37,38 +48,118 @@ function getDefaultMigrationHandler(submitter: KeyringPair) {
   }
 }
 
-async function createFullDidFromSeed(
-  identity: KeyringPair,
-  keystore: InstanceType<typeof Did.DemoKeystore>,
+function makeSignCallback(keypair: KeyringPair): SignCallback {
+  return async function sign<A extends SigningAlgorithms>({
+    alg,
+    data,
+  }: SigningData<A>): Promise<ResponseData<A>> {
+    const signature = keypair.sign(data, { withType: false })
+    return { alg, data: signature }
+  }
+}
+
+function makeSigningKeypair(
   seed: string,
+  alg: SigningAlgorithms = Did.SigningAlgorithms.Sr25519
+): {
+  keypair: KeyringPair
+  sign: SignCallback
+} {
+  const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
+    ed25519: 'ed25519',
+    sr25519: 'sr25519',
+    'ecdsa-secp256k1': 'ecdsa',
+  }
+  const type = keypairTypeForAlg[alg]
+  const keypair = new Keyring({ type }).addFromUri(seed, {}, type)
+  const sign = makeSignCallback(keypair)
+
+  return {
+    keypair,
+    sign,
+  }
+}
+
+function makeEncryptionKeypair(seed: string): {
+  secretKey: Uint8Array
+  publicKey: Uint8Array
+  type: typeof EncryptionKeyType.X25519
+} {
+  const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
+    Crypto.hash(seed, 256)
+  )
+  return {
+    secretKey,
+    publicKey,
+    type: EncryptionKeyType.X25519,
+  }
+}
+
+function makeEncryptCallback({
+  secretKey,
+}: {
+  secretKey: Uint8Array
+  type: typeof EncryptionKeyType.X25519
+}): EncryptCallback {
+  return async function encryptCallback({ data, peerPublicKey, alg }) {
+    const { box, nonce } = Crypto.encryptAsymmetric(
+      data,
+      peerPublicKey,
+      secretKey
+    )
+    return { alg, nonce, data: box }
+  }
+}
+
+function makeDecryptCallback({
+  secretKey,
+}: {
+  secretKey: Uint8Array
+  type: typeof EncryptionKeyType.X25519
+}): DecryptCallback {
+  return async function decryptCallback({ data, nonce, peerPublicKey, alg }) {
+    const decrypted = Crypto.decryptAsymmetric(
+      { box: data, nonce },
+      peerPublicKey,
+      secretKey
+    )
+    if (!decrypted) throw new Error('Decryption failed')
+    return { data: decrypted, alg }
+  }
+}
+
+async function createFullDidFromKeypair(
+  payer: KeyringPair,
+  keypair: KeyringPair,
+  encryptionKey: NewDidEncryptionKey,
   api: ApiPromise
 ) {
-  const lightDid = await Did.DemoKeystoreUtils.createMinimalLightDidFromSeed(
-    keystore,
-    seed
-  )
+  const lightDid = Did.LightDidDetails.fromDetails({
+    authenticationKey: {
+      publicKey: keypair.publicKey,
+      type: keypair.type as LightDidSupportedVerificationKeyType,
+    },
+    encryptionKey,
+  })
+
+  const sign = makeSignCallback(keypair)
 
   const fullDid = await lightDid.migrate(
-    identity.address,
-    keystore,
-    getDefaultMigrationHandler(identity)
+    payer.address,
+    sign,
+    getDefaultMigrationHandler(payer)
   )
 
   const updatedFullDid = await new Did.FullDidUpdateBuilder(api, fullDid)
     .setAttestationKey(fullDid.authenticationKey)
     .setDelegationKey(fullDid.authenticationKey)
-    .buildAndSubmit(
-      keystore,
-      identity.address,
-      getDefaultMigrationHandler(identity)
-    )
+    .buildAndSubmit(sign, payer.address, getDefaultMigrationHandler(payer))
 
   return updatedFullDid
 }
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  const keystore = new Did.DemoKeystore()
   await kilt.init({ address: 'ws://127.0.0.1:9944' })
   const api = await kilt.connect()
 
@@ -80,12 +171,29 @@ async function runAll() {
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const devFaucet = keyring.createFromUri(FaucetSeed)
 
-  const alice = await createFullDidFromSeed(devFaucet, keystore, '//Alice', api)
+  const { keypair: aliceKeypair, sign: aliceSign } =
+    makeSigningKeypair('//Alice')
+  const aliceEncryptionKey = makeEncryptionKeypair('//Alice//enc')
+  const aliceDecryptCallback = makeDecryptCallback(aliceEncryptionKey)
+  const alice = await createFullDidFromKeypair(
+    devFaucet,
+    aliceKeypair,
+    aliceEncryptionKey,
+    api
+  )
   if (!alice.encryptionKey)
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const bob = await createFullDidFromSeed(devFaucet, keystore, '//Bob', api)
+  const { keypair: bobKeypair, sign: bobSign } = makeSigningKeypair('//Bob')
+  const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
+  const bobEncryptCallback = makeEncryptCallback(bobEncryptionKey)
+  const bob = await createFullDidFromKeypair(
+    devFaucet,
+    bobKeypair,
+    bobEncryptionKey,
+    api
+  )
   if (!bob.encryptionKey)
     throw new Error('Impossible: bob has no encryptionKey')
   console.log('bob setup done')
@@ -118,14 +226,15 @@ async function runAll() {
 
   // Chain Did workflow -> creation & deletion
   console.log('DID workflow started')
-  const keypair = await keystore.generateKeypair({
-    alg: Did.SigningAlgorithms.Ed25519,
-  })
+  const { keypair, sign } = makeSigningKeypair(
+    '//Foo',
+    Did.SigningAlgorithms.Ed25519
+  )
 
   const fullDid = await new Did.FullDidCreationBuilder(api, {
     publicKey: keypair.publicKey,
     type: VerificationKeyType.Ed25519,
-  }).buildAndSubmit(keystore, devFaucet.address, async (tx) => {
+  }).buildAndSubmit(sign, devFaucet.address, async (tx) => {
     await Blockchain.signAndSubmitTx(tx, devFaucet, {
       resolveOn: Blockchain.IS_IN_BLOCK,
     })
@@ -148,7 +257,7 @@ async function runAll() {
   )
   const deleteTx = await fullDid.authorizeExtrinsic(
     extrinsic,
-    keystore,
+    sign,
     devFaucet.address
   )
 
@@ -183,7 +292,7 @@ async function runAll() {
   const tx = await CType.getStoreTx(DriversLicense)
   const authorizedTx = await alice.authorizeExtrinsic(
     tx,
-    keystore,
+    aliceSign,
     devFaucet.address
   )
 
@@ -219,7 +328,7 @@ async function runAll() {
   const request = RequestForAttestation.fromClaim(claim)
   await RequestForAttestation.signWithDidKey(
     request,
-    keystore,
+    bobSign,
     bob,
     bob.authenticationKey.id
   )
@@ -250,13 +359,13 @@ async function runAll() {
   const encryptedMessage = await message.encrypt(
     bob.encryptionKey.id,
     bob,
-    keystore,
+    bobEncryptCallback,
     `${alice.uri}#${alice.encryptionKey.id}`
   )
 
   const decryptedMessage = await Message.decrypt(
     encryptedMessage,
-    keystore,
+    aliceDecryptCallback,
     alice
   )
   if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
@@ -272,7 +381,7 @@ async function runAll() {
   const txAtt = await Attestation.getStoreTx(attestation)
   const authorizedAttTx = await alice.authorizeExtrinsic(
     txAtt,
-    keystore,
+    aliceSign,
     devFaucet.address
   )
   await Blockchain.signAndSubmitTx(authorizedAttTx, devFaucet, {

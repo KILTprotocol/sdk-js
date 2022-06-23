@@ -13,14 +13,17 @@ import { randomAsHex } from '@polkadot/util-crypto'
 
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
-import { FullDidDetails, DemoKeystore, Web3Names } from '@kiltprotocol/did'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { FullDidDetails, Web3Names } from '@kiltprotocol/did'
 import { disconnect } from '../kilt'
 import {
-  keypairFromRandom,
-  initializeApi,
-  createFullDidFromSeed,
-  submitExtrinsic,
   createEndowedTestAccount,
+  initializeApi,
+  submitExtrinsic,
 } from './utils'
 
 beforeAll(async () => {
@@ -28,6 +31,9 @@ beforeAll(async () => {
 }, 30_000)
 
 describe('When there is an Web3NameCreator and a payer', () => {
+  let w3nCreatorKey: KeyTool
+  let otherW3NCreatorKey: KeyTool
+
   let w3nCreator: FullDidDetails
   let otherWeb3NameCreator: FullDidDetails
   let paymentAccount: KeyringPair
@@ -35,22 +41,20 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let nick: Web3Names.Web3Name
   let differentNick: Web3Names.Web3Name
 
-  const keystore = new DemoKeystore()
-
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
     differentNick = `different_${randomAsHex(2)}`
+    w3nCreatorKey = makeSigningKeyTool()
+    otherW3NCreatorKey = makeSigningKeyTool()
     paymentAccount = await createEndowedTestAccount()
     otherPaymentAccount = await createEndowedTestAccount()
     w3nCreator = await createFullDidFromSeed(
       paymentAccount,
-      keystore,
-      randomAsHex(32)
+      w3nCreatorKey.keypair
     )
     otherWeb3NameCreator = await createFullDidFromSeed(
       paymentAccount,
-      keystore,
-      randomAsHex(32)
+      otherW3NCreatorKey.keypair
     )
 
     if (paymentAccount === otherPaymentAccount) {
@@ -63,10 +67,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to create a w3n name w/o tokens', async () => {
     const tx = await Web3Names.getClaimTx(nick)
-    const bobbyBroke = keypairFromRandom()
+    const bobbyBroke = makeSigningKeyTool().keypair
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       bobbyBroke.address
     )
 
@@ -79,7 +83,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
 
@@ -118,7 +122,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await otherWeb3NameCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      otherW3NCreatorKey.sign,
       paymentAccount.address
     )
 
@@ -138,7 +142,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getClaimTx('nick2')
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
 
@@ -175,7 +179,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const prepareTx = await Web3Names.getClaimTx(differentNick)
     const prepareAuthorizedTx = await w3nCreator.authorizeExtrinsic(
       prepareTx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
     await submitExtrinsic(
@@ -187,7 +191,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getReleaseByOwnerTx()
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
     const p = submitExtrinsic(

@@ -14,14 +14,9 @@ import { BN } from '@polkadot/util'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { ApiPromise } from '@polkadot/api'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { getTransferTx } from '../balance/Balance.chain'
-import {
-  devFaucet,
-  devCharlie,
-  keypairFromRandom,
-  submitExtrinsic,
-  initializeApi,
-} from './utils'
+import { devCharlie, devFaucet, initializeApi, submitExtrinsic } from './utils'
 import { connect, disconnect } from '../kilt'
 
 let api: ApiPromise
@@ -36,7 +31,7 @@ describe('Chain returns specific errors, that we check for', () => {
   let charlie: KeyringPair
   beforeAll(async () => {
     faucet = devFaucet
-    testIdentity = keypairFromRandom()
+    testIdentity = makeSigningKeyTool().keypair
     charlie = devCharlie
     await getTransferTx(testIdentity.address, new BN(10000), 0).then((tx) =>
       submitExtrinsic(tx, faucet)

@@ -254,7 +254,7 @@ function getMultiSignatureTypeFromKeypairType(
 }
 
 /**
- * Return the default signer callback, which uses the address argument to crete a signing closure for the given payload.
+ * Return the default sign callback, which uses the address argument to crete a signing closure for the given payload.
  *
  * @param keyring The keyring to retrieve the signing key.
  * @returns The signature generating callback that uses the keyring to sign the input payload using the input address.

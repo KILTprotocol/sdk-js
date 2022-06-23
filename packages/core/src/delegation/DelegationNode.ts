@@ -13,7 +13,7 @@ import {
   IDelegationNode,
   IDidDetails,
   KeyRelationship,
-  KeystoreSigner,
+  SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
@@ -269,14 +269,14 @@ export class DelegationNode implements IDelegationNode {
    * This is required to anchor the delegation node on chain in order to enforce the delegee's consent.
    *
    * @param delegeeDid The DID of the delegee.
-   * @param signer The keystore responsible for signing the delegation creation details for the delegee.
+   * @param sign The callback to sign the delegation creation details for the delegee.
    * @param options The additional signing options.
    * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegeeSign(
     delegeeDid: DidDetails,
-    signer: KeystoreSigner,
+    sign: SignCallback,
     {
       keySelection = DidUtils.defaultKeySelectionCallback,
     }: {
@@ -293,7 +293,7 @@ export class DelegationNode implements IDelegationNode {
     }
     const delegeeSignature = await delegeeDid.signPayload(
       this.generateHash(),
-      signer,
+      sign,
       authenticationKey.id
     )
     return DidChain.encodeDidSignature(authenticationKey, delegeeSignature)

@@ -9,22 +9,21 @@
  * @group integration/accountLinking
  */
 
+import { AccountLinks, FullDidDetails, Web3Names } from '@kiltprotocol/did'
 import {
-  AccountLinks,
-  DemoKeystore,
-  FullDidDetails,
-  Web3Names,
-} from '@kiltprotocol/did'
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
 import { BN, u8aToHex } from '@polkadot/util'
-import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import { Balance } from '../balance'
 import { convertToTxUnit } from '../balance/Balance.utils'
 import {
   createEndowedTestAccount,
-  createFullDidFromSeed,
   fundAccount,
   initializeApi,
   submitExtrinsic,
@@ -32,7 +31,6 @@ import {
 import { disconnect } from '../kilt'
 
 let paymentAccount: KeyringPair
-let keystore: DemoKeystore
 let linkDeposit: BN
 let keyring: Keyring
 let signingCallback: AccountLinks.LinkingSignerCallback
@@ -40,7 +38,6 @@ let signingCallback: AccountLinks.LinkingSignerCallback
 beforeAll(async () => {
   await initializeApi()
   paymentAccount = await createEndowedTestAccount()
-  keystore = new DemoKeystore()
   linkDeposit = await AccountLinks.queryDepositAmount()
   keyring = new Keyring({ ss58Format: 38 })
   signingCallback = AccountLinks.defaultSignerCallback(keyring)
@@ -48,20 +45,16 @@ beforeAll(async () => {
 
 describe('When there is an on-chain DID', () => {
   let did: FullDidDetails
+  let didKey: KeyTool
   let newDid: FullDidDetails
+  let newDidKey: KeyTool
 
   describe('and a tx sender willing to link its account', () => {
     beforeAll(async () => {
-      did = await createFullDidFromSeed(
-        paymentAccount,
-        keystore,
-        randomAsHex(32)
-      )
-      newDid = await createFullDidFromSeed(
-        paymentAccount,
-        keystore,
-        randomAsHex(32)
-      )
+      didKey = makeSigningKeyTool()
+      newDidKey = makeSigningKeyTool()
+      did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+      newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
     }, 40_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
@@ -78,7 +71,7 @@ describe('When there is an on-chain DID', () => {
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
       const signedTx = await did.authorizeExtrinsic(
         associateSenderTx,
-        keystore,
+        didKey.sign,
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
@@ -108,7 +101,7 @@ describe('When there is an on-chain DID', () => {
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
       const signedTx = await newDid.authorizeExtrinsic(
         associateSenderTx,
-        keystore,
+        newDidKey.sign,
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
@@ -170,16 +163,10 @@ describe('When there is an on-chain DID', () => {
           undefined,
           keytype as KeypairType
         )
-        did = await createFullDidFromSeed(
-          paymentAccount,
-          keystore,
-          randomAsHex(32)
-        )
-        newDid = await createFullDidFromSeed(
-          paymentAccount,
-          keystore,
-          randomAsHex(32)
-        )
+        didKey = makeSigningKeyTool()
+        newDidKey = makeSigningKeyTool()
+        did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+        newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
@@ -191,7 +178,7 @@ describe('When there is an on-chain DID', () => {
           )
         const signedTx = await did.authorizeExtrinsic(
           linkAuthorisation,
-          keystore,
+          didKey.sign,
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
@@ -231,7 +218,7 @@ describe('When there is an on-chain DID', () => {
           )
         const signedTx = await newDid.authorizeExtrinsic(
           linkAuthorisation,
-          keystore,
+          newDidKey.sign,
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
@@ -277,7 +264,7 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await newDid.authorizeExtrinsic(
           removeLinkTx,
-          keystore,
+          newDidKey.sign,
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
@@ -323,16 +310,10 @@ describe('When there is an on-chain DID', () => {
         'ecdsa'
       )
       await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
-      did = await createFullDidFromSeed(
-        paymentAccount,
-        keystore,
-        randomAsHex(32)
-      )
-      newDid = await createFullDidFromSeed(
-        paymentAccount,
-        keystore,
-        randomAsHex(32)
-      )
+      didKey = makeSigningKeyTool()
+      newDidKey = makeSigningKeyTool()
+      did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+      newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
@@ -344,7 +325,7 @@ describe('When there is an on-chain DID', () => {
         )
       const signedTx = await did.authorizeExtrinsic(
         linkAuthorisation,
-        keystore,
+        didKey.sign,
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
@@ -381,7 +362,7 @@ describe('When there is an on-chain DID', () => {
       const web3NameClaimTx = await Web3Names.getClaimTx('test-name')
       const signedTx = await did.authorizeExtrinsic(
         web3NameClaimTx,
-        keystore,
+        didKey.sign,
         paymentAccount.address
       )
       const submissionPromise = submitExtrinsic(signedTx, paymentAccount)
