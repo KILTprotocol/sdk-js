@@ -18,7 +18,6 @@ import { encodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import type { Option, Struct, u128 } from '@polkadot/types'
 import type {
   AccountId,
-  BlockNumber,
   Extrinsic,
   MultiSignature,
 } from '@polkadot/types/interfaces'
@@ -285,7 +284,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   nBlocksValid = 10
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const blockNo: BlockNumber = await api.query.system.number()
+  const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
   // Gets the current definition of BlockNumber (second tx argument) from the metadata.
   const blockNumberType =

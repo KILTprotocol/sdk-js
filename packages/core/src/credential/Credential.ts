@@ -167,7 +167,7 @@ export async function verify(
  * @returns Boolean whether each element of the given Array of ICredentials is verifiable.
  */
 export function validateLegitimations(legitimations: ICredential[]): boolean {
-  legitimations.forEach((legitimation: ICredential) => {
+  legitimations.forEach((legitimation) => {
     if (!verifyDataIntegrity(legitimation)) {
       throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
     }

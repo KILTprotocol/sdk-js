@@ -11,7 +11,7 @@
  * @packageDocumentation
  */
 
-import type { DispatchError, EventRecord } from '@polkadot/types/interfaces'
+import type { DispatchError } from '@polkadot/types/interfaces'
 import type { ISubmittableResult } from '@kiltprotocol/types'
 import type { RegistryError } from '@polkadot/types/types'
 
@@ -23,8 +23,8 @@ import type { RegistryError } from '@polkadot/types/types'
  * @returns Whether the extrinsic submission failed.
  */
 export function extrinsicFailed(extrinsicResult: ISubmittableResult): boolean {
-  const events: EventRecord[] = extrinsicResult.events || []
-  return events.some((eventRecord: EventRecord) => {
+  const events = extrinsicResult.events || []
+  return events.some((eventRecord) => {
     const { section, method } = eventRecord.event
     return section === 'system' && method === 'ExtrinsicFailed' // as done in https://github.com/polkadot-js/apps/blob/51835328db5f0eb90a9efcc7bf5510704a7ab279/packages/react-components/src/Status/Queue.tsx
   })
@@ -40,8 +40,8 @@ export function extrinsicFailed(extrinsicResult: ISubmittableResult): boolean {
 export function extrinsicSuccessful(
   extrinsicResult: ISubmittableResult
 ): boolean {
-  const events: EventRecord[] = extrinsicResult.events || []
-  return events.some((eventRecord: EventRecord) => {
+  const events = extrinsicResult.events || []
+  return events.some((eventRecord) => {
     const { section, method } = eventRecord.event
     return section === 'system' && method === 'ExtrinsicSuccess'
   })

@@ -272,8 +272,8 @@ describe('When exporting a DID Document from a full DID', () => {
 
 describe('When exporting a DID Document from a light DID', () => {
   const authKey = generateAuthenticationKeyDetails() as NewDidVerificationKey
-  const encKey: DidKey = generateEncryptionKeyDetails()
-  const serviceEndpoints: DidServiceEndpoint[] = [
+  const encKey = generateEncryptionKeyDetails()
+  const serviceEndpoints = [
     generateServiceEndpointDetails('id-1'),
     generateServiceEndpointDetails('id-2'),
   ]

@@ -27,10 +27,10 @@ import { DelegationNode } from './DelegationNode.js'
  * @returns The bitset as single value uint8 array.
  */
 export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
-  const permissionsBitsetData: number = delegation.permissions.reduce(
+  const permissionsBitsetData = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )
-  const uint8: Uint8Array = new Uint8Array(4)
+  const uint8 = new Uint8Array(4)
   uint8[0] = permissionsBitsetData
   return uint8
 }

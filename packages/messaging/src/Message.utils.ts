@@ -85,7 +85,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
     case Message.BodyType.SUBMIT_TERMS: {
       Claim.verifyDataStructure(body.content.claim)
-      body.content.legitimations.map((credential: ICredential) =>
+      body.content.legitimations.map((credential) =>
         Credential.verifyDataStructure(credential)
       )
       if (body.content.delegationId) {

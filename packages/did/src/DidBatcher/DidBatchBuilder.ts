@@ -73,8 +73,7 @@ export class DidBatchBuilder {
     ext: Extrinsic,
     keyRelationship: VerificationKeyRelationship
   ): void {
-    const lastBatch: BatchInfo | undefined =
-      this.batches[this.batches.length - 1]
+    const lastBatch = this.batches[this.batches.length - 1]
 
     // If there was not previous batch, or the new extrinsic requires a different key, create and add a new batch.
     if (!lastBatch || lastBatch.keyRelationship !== keyRelationship) {
@@ -118,6 +117,7 @@ export class DidBatchBuilder {
    * @param extrinsics The list of Extrinsic to add to the batch.
    * @returns The builder containing the new extrinsics.
    */
+
   /* istanbul ignore next */
   public addMultipleExtrinsics(extrinsics: Extrinsic[]): this {
     extrinsics.forEach((ext) => {
@@ -167,7 +167,7 @@ export class DidBatchBuilder {
       )
     }
 
-    const signedBatches: SubmittableExtrinsic[] = await Promise.all(
+    const signedBatches = await Promise.all(
       this.batches.map(async (batch, index) => {
         // Don't create a new batch if the batch contains only one extrinsic
         const processedBatch =

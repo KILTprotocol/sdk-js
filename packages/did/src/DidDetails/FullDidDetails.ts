@@ -9,9 +9,9 @@ import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 
 import type {
+  DidIdentifier,
   DidVerificationKey,
   IDidDetails,
-  DidIdentifier,
   IIdentity,
   SignCallback,
   SubmittableExtrinsic,
@@ -23,8 +23,6 @@ import type {
   DidConstructorDetails,
   DidKeySelectionCallback,
   MapKeysToRelationship,
-  PublicKeys,
-  ServiceEndpoints,
 } from '../types.js'
 import {
   generateDidAuthenticatedTx,
@@ -104,7 +102,7 @@ export class FullDidDetails extends DidDetails {
       keyAgreementKeys,
     } = didRec
 
-    const keys: PublicKeys = publicKeys.reduce((res, key) => {
+    const keys = publicKeys.reduce((res, key) => {
       res[key.id] = key
       return res
     }, {})
@@ -120,12 +118,13 @@ export class FullDidDetails extends DidDetails {
       keyRelationships.capabilityDelegation = new Set([capabilityDelegationKey])
     }
 
-    const serviceEndpoints: ServiceEndpoints = (
-      await queryServiceEndpoints(identifier)
-    ).reduce((res, service) => {
-      res[service.id] = service
-      return res
-    }, {})
+    const serviceEndpoints = (await queryServiceEndpoints(identifier)).reduce(
+      (res, service) => {
+        res[service.id] = service
+        return res
+      },
+      {}
+    )
 
     return new FullDidDetails({
       identifier,

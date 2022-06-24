@@ -61,7 +61,7 @@ describe('Quote', () => {
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
 
-  const mockResolver: IDidResolver = (() => {
+  const mockResolver = (() => {
     const resolve = async (
       didUri: string
     ): Promise<DidResolvedDetails | null> => {
@@ -232,7 +232,7 @@ describe('Quote compression', () => {
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
-  const mockResolver: IDidResolver = (() => {
+  const mockResolver = (() => {
     const resolve = async (
       didUri: string
     ): Promise<DidResolvedDetails | null> => {

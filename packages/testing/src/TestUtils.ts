@@ -310,7 +310,7 @@ export async function createLocalDemoFullDidFromLightDid(
     keys[encKey.id] = encKey
   }
 
-  const fullDidCreationDetails: DidConstructorDetails = {
+  return new FullDidDetails({
     uri: DidUtils.getKiltDidFromIdentifier(identifier, 'full'),
     keyRelationships: {
       authentication: new Set([authKey.id]),
@@ -320,10 +320,6 @@ export async function createLocalDemoFullDidFromLightDid(
     },
     keys,
     serviceEndpoints: {},
-  }
-
-  return new FullDidDetails({
-    ...fullDidCreationDetails,
     identifier,
   })
 }

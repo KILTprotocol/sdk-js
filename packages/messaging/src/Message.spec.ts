@@ -180,7 +180,7 @@ describe('Messaging', () => {
       JSON.stringify(decryptedMessage.body)
     )
 
-    const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
+    const encryptedMessageWrongContent = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage
     const messedUpContent = Crypto.coToUInt8(
@@ -232,7 +232,7 @@ describe('Messaging', () => {
       owner: aliceFullDid.uri,
       contents: {},
     })
-    const date: string = new Date(2019, 11, 10).toISOString()
+    const date = new Date(2019, 11, 10).toISOString()
 
     const quoteData: IQuote = {
       attesterDid: bobFullDid.uri,
@@ -369,7 +369,7 @@ describe('Messaging', () => {
       contents: {},
     })
 
-    const date: string = new Date(2019, 11, 10).toISOString()
+    const date = new Date(2019, 11, 10).toISOString()
     const quoteData: IQuote = {
       attesterDid: bobLightDid.uri,
       cTypeHash: `${Crypto.hashStr('0x12345678')}`,

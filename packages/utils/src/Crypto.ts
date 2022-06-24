@@ -216,8 +216,8 @@ export function encryptAsymmetricAsStr(
   secretKeyB: CryptoInput
 ): EncryptedAsymmetricString {
   const encrypted = encryptAsymmetric(message, publicKeyA, secretKeyB)
-  const box: string = u8aToHex(encrypted.box)
-  const nonce: string = u8aToHex(encrypted.nonce)
+  const box = u8aToHex(encrypted.box)
+  const nonce = u8aToHex(encrypted.nonce)
   return { box, nonce }
 }
 

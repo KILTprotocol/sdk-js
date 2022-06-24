@@ -9,7 +9,7 @@
  * @group integration/attestation
  */
 
-import type { IClaim, ICredential, KeyringPair } from '@kiltprotocol/types'
+import type { ICredential, KeyringPair } from '@kiltprotocol/types'
 import {
   createFullDidFromSeed,
   KeyTool,
@@ -116,7 +116,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should be possible to make a claim', async () => {
-    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
+    const content = { name: 'Ralph', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
@@ -137,7 +137,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   })
 
   it('should be possible to attest a claim and then claim the attestation deposit back', async () => {
-    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
+    const content = { name: 'Ralph', age: 12 }
 
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
@@ -183,7 +183,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim without enough tokens', async () => {
-    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
+    const content = { name: 'Ralph', age: 12 }
 
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
@@ -239,7 +239,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       type: 'object',
     })
 
-    const content: IClaim['contents'] = { name: 'Ralph', weight: 120 }
+    const content = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
@@ -263,7 +263,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     let credential: ICredential
 
     beforeAll(async () => {
-      const content: IClaim['contents'] = { name: 'Rolfi', age: 18 }
+      const content = { name: 'Rolfi', age: 18 }
       const claim = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
         content,
@@ -319,12 +319,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer,
         claimer.authenticationKey.id
       )
-      const fakecredential: ICredential = {
+      const fakeCredential: ICredential = {
         request,
         attestation: credential.attestation,
       }
 
-      expect(await Credential.verify(fakecredential)).toBeFalsy()
+      expect(await Credential.verify(fakeCredential)).toBeFalsy()
     }, 15_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {

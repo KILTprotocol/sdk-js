@@ -80,7 +80,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: IAttestation = Attestation.fromRequestAndDid(
+    const attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
       identityAlice
     )
@@ -113,7 +113,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: IAttestation = Attestation.fromRequestAndDid(
+    const attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
       identityAlice
     )

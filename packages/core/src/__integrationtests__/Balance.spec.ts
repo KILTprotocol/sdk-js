@@ -68,7 +68,7 @@ describe('when there is a dev chain with a faucet', () => {
   // Skipped because it is run in parallel with other tests and it fails because of the deposit taken
   // in the other test cases.
   it('should be able to faucet coins to a new address', async () => {
-    const address: string = addressFromRandom()
+    const address = addressFromRandom()
     const spy = jest.fn()
     listenToBalanceChanges(address, spy)
     const balanceBefore = await getBalances(faucet.address)

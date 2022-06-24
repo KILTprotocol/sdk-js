@@ -130,16 +130,14 @@ export async function resolveKey(
       if (!key) {
         return null
       }
-      const result: ResolvedDidKey = {
+      const { includedAt } = key
+      return {
         controller: did,
         uri: didUri,
         publicKey: key.publicKey,
         type: key.type,
+        ...(includedAt && { includedAt }),
       }
-      if (key.includedAt) {
-        result.includedAt = key.includedAt
-      }
-      return result
     }
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)

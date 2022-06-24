@@ -9,7 +9,6 @@
  * @group integration/blockchain
  */
 
-import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import { BN } from '@polkadot/util'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { ApiPromise } from '@polkadot/api'
@@ -54,7 +53,7 @@ describe('Chain returns specific errors, that we check for', () => {
 
     const nonce = await api.rpc.system.accountNextIndex(testIdentity.address)
 
-    const signer: SignerPayload = api.createType('SignerPayload', {
+    const signer = api.createType('SignerPayload', {
       method: tx.method.toHex(),
       nonce,
       genesisHash: api.genesisHash,
@@ -69,7 +68,7 @@ describe('Chain returns specific errors, that we check for', () => {
       .sign(testIdentity)
     tx.addSignature(testIdentity.address, signature, signer.toPayload())
 
-    const errorSigner: SignerPayload = api.createType('SignerPayload', {
+    const errorSigner = api.createType('SignerPayload', {
       method: errorTx.method.toHex(),
       nonce,
       genesisHash: api.genesisHash,
@@ -117,7 +116,7 @@ describe('Chain returns specific errors, that we check for', () => {
 
     const nonce = await api.rpc.system.accountNextIndex(testIdentity.address)
 
-    const signer: SignerPayload = api.createType('SignerPayload', {
+    const signer = api.createType('SignerPayload', {
       method: tx.method.toHex(),
       nonce,
       genesisHash: api.genesisHash,
@@ -132,7 +131,7 @@ describe('Chain returns specific errors, that we check for', () => {
       .sign(testIdentity)
     tx.addSignature(testIdentity.address, signature, signer.toPayload())
 
-    const errorSigner: SignerPayload = api.createType('SignerPayload', {
+    const errorSigner = api.createType('SignerPayload', {
       method: errorTx.method.toHex(),
       nonce,
       genesisHash: api.genesisHash,

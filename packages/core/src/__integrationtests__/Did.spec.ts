@@ -1236,13 +1236,11 @@ describe('Runtime constraints', () => {
     it('should not be possible to create a DID with too many service endpoints', async () => {
       // Maximum is 25
       const newServiceEndpoints = Array(25).map(
-        (_, index): DidServiceEndpoint => {
-          return {
-            id: `service-${index}`,
-            types: [`type-${index}`],
-            urls: [`x:url-${index}`],
-          }
-        }
+        (_, index): DidServiceEndpoint => ({
+          id: `service-${index}`,
+          types: [`type-${index}`],
+          urls: [`x:url-${index}`],
+        })
       )
       await expect(
         DidChain.generateCreateTxFromCreationDetails(

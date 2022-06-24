@@ -97,7 +97,7 @@ describe('DelegationNode', () => {
         permissions: [Permission.DELEGATE],
         revoked: false,
       })
-      const hash: string = node.generateHash()
+      const hash = node.generateHash()
       expect(hash).toBe(
         '0x3f3dc0df7527013f2373f18f55cf87847df3249526e9b1d5aa75df8eeb5b7d6e'
       )
@@ -113,8 +113,8 @@ describe('DelegationNode', () => {
         permissions: [Permission.DELEGATE],
         revoked: false,
       })
-      const permissions: Uint8Array = permissionsAsBitset(node)
-      const expected: Uint8Array = new Uint8Array(4)
+      const permissions = permissionsAsBitset(node)
+      const expected = new Uint8Array(4)
       expected[0] = 2
       expect(permissions.toString()).toBe(expected.toString())
     })
@@ -182,7 +182,7 @@ describe('DelegationNode', () => {
         }),
       }
 
-      const node: DelegationNode = new DelegationNode({
+      const node = new DelegationNode({
         id,
         hierarchyId,
         account: didAlice,
@@ -201,12 +201,12 @@ describe('DelegationNode', () => {
 
   describe('count subtree', () => {
     let topNode: DelegationNode
-    const a1: string = Crypto.hashStr('a1')
-    const b1: string = Crypto.hashStr('b1')
-    const b2: string = Crypto.hashStr('b2')
-    const c1: string = Crypto.hashStr('c1')
-    const c2: string = Crypto.hashStr('c2')
-    const d1: string = Crypto.hashStr('d1')
+    const a1 = Crypto.hashStr('a1')
+    const b1 = Crypto.hashStr('b1')
+    const b2 = Crypto.hashStr('b2')
+    const c1 = Crypto.hashStr('c1')
+    const c2 = Crypto.hashStr('c2')
+    const d1 = Crypto.hashStr('d1')
     beforeAll(() => {
       topNode = new DelegationNode({
         id: a1,

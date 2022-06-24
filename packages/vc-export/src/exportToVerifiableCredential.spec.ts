@@ -11,7 +11,6 @@
 
 import {
   DidDocumentPublicKeyType,
-  DidPublicKey,
   DidUri,
   ICredential,
   ICType,
@@ -27,10 +26,10 @@ import * as verificationUtils from './verificationUtils'
 import * as presentationUtils from './presentationUtils'
 import type { IPublicKeyRecord, VerifiableCredential } from './types'
 import {
-  KILT_VERIFIABLECREDENTIAL_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
+  KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
 
 const ctype: ICType = {
@@ -208,7 +207,7 @@ describe('proofs', () => {
   let documentLoader: DocumentLoader
   beforeAll(() => {
     VC = toVC.fromCredential(credential)
-    const keyId: DidPublicKey['uri'] = VC.proof[0].verificationMethod
+    const keyId = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
       uri: keyId,
       type: DidDocumentPublicKeyType.Ed25519VerificationKey,
