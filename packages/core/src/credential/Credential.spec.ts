@@ -71,22 +71,22 @@ async function buildCredential(
     contents,
     claimer.uri
   )
-  // build request for attestation with legitimations
-  const requestForAttestation = Credential.fromClaim(claim, {
+  // build credential with legitimations
+  const credential = Credential.fromClaim(claim, {
     legitimations,
   })
   await Credential.signWithDidKey(
-    requestForAttestation,
+    credential,
     sign,
     claimer,
     claimer.authenticationKey.id
   )
   // build attestation
   const testAttestation = Attestation.fromCredentialAndDid(
-    requestForAttestation,
+    credential,
     attesterDid
   )
-  return [requestForAttestation, testAttestation]
+  return [credential, testAttestation]
 }
 
 // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
@@ -110,7 +110,7 @@ function createMinimalFullDidFromLightDid(
   })
 }
 
-describe('RequestForAttestation', () => {
+describe('Credential', () => {
   let keyAlice: KeyTool
   let keyCharlie: KeyTool
   let identityAlice: DidDetails
@@ -317,7 +317,7 @@ describe('RequestForAttestation', () => {
 
     expect(Credential.isICredential(credential)).toBeFalsy()
   })
-  it('Should throw error when attestation is from different request', async () => {
+  it('Should throw error when attestation is from different credential', async () => {
     const [credential, attestation] = await buildCredential(
       identityAlice,
       identityBob.uri,

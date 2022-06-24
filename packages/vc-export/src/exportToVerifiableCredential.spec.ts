@@ -269,10 +269,11 @@ describe('proofs', () => {
   })
 
   it('it verifies credential with selected properties revealed', async () => {
-    const reducedRequest: ICredential = JSON.parse(JSON.stringify(credential))
-    delete reducedRequest.claim.contents.name
-    delete reducedRequest.claim.contents.birthday
-    const reducedCredential = { ...credential, request: reducedRequest }
+    const reducedCredential: ICredential = JSON.parse(
+      JSON.stringify(credential)
+    )
+    delete reducedCredential.claim.contents.name
+    delete reducedCredential.claim.contents.birthday
     const reducedVC = toVC.fromCredentialAndAttestation(
       reducedCredential,
       attestation

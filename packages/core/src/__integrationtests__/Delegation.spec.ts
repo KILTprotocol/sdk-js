@@ -184,20 +184,23 @@ describe('and attestation rights have been delegated', () => {
       content,
       claimer.uri
     )
-    const request = Credential.fromClaim(claim, {
+    const credential = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
     await Credential.signWithDidKey(
-      request,
+      credential,
       claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
-    expect(Credential.verifyDataIntegrity(request)).toBeTruthy()
-    await expect(Credential.verifySignature(request)).resolves.toBeTruthy()
-    await expect(Credential.verify(request)).resolves.toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
+    await expect(Credential.verifySignature(credential)).resolves.toBeTruthy()
+    await expect(Credential.verify(credential)).resolves.toBeTruthy()
 
-    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
+    const attestation = Attestation.fromCredentialAndDid(
+      credential,
+      attester.uri
+    )
     await Attestation.getStoreTx(attestation)
       .then((tx) =>
         attester.authorizeExtrinsic(

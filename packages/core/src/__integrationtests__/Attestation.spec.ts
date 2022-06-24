@@ -124,16 +124,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.uri
     )
-    const request = Credential.fromClaim(claim)
+    const credential = Credential.fromClaim(claim)
     await Credential.signWithDidKey(
-      request,
+      credential,
       claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
-    expect(Credential.verifyDataIntegrity(request)).toBe(true)
-    await expect(Credential.verifySignature(request)).resolves.toBe(true)
-    expect(request.claim.contents).toMatchObject(content)
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    await expect(Credential.verifySignature(credential)).resolves.toBe(true)
+    expect(credential.claim.contents).toMatchObject(content)
   })
 
   it('should be possible to attest a claim and then claim the attestation deposit back', async () => {
@@ -144,17 +144,20 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.uri
     )
-    const request = Credential.fromClaim(claim)
-    expect(Credential.verifyDataIntegrity(request)).toBe(true)
+    const credential = Credential.fromClaim(claim)
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await Credential.signWithDidKey(
-      request,
+      credential,
       claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
-    await expect(Credential.verifySignature(request)).resolves.toBe(true)
-    await expect(Credential.verify(request)).resolves.not.toThrow()
-    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
+    await expect(Credential.verifySignature(credential)).resolves.toBe(true)
+    await expect(Credential.verify(credential)).resolves.not.toThrow()
+    const attestation = Attestation.fromCredentialAndDid(
+      credential,
+      attester.uri
+    )
     await Attestation.getStoreTx(attestation)
       .then((call) =>
         attester.authorizeExtrinsic(call, attesterKey.sign, tokenHolder.address)
@@ -181,16 +184,19 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.uri
     )
-    const request = Credential.fromClaim(claim)
-    expect(Credential.verifyDataIntegrity(request)).toBe(true)
+    const credential = Credential.fromClaim(claim)
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await Credential.signWithDidKey(
-      request,
+      credential,
       claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
-    await expect(Credential.verifySignature(request)).resolves.toBe(true)
-    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
+    await expect(Credential.verifySignature(credential)).resolves.toBe(true)
+    const attestation = Attestation.fromCredentialAndDid(
+      credential,
+      attester.uri
+    )
 
     const { keypair, sign } = makeSigningKeyTool()
 
@@ -231,8 +237,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.uri
     )
-    const request = Credential.fromClaim(claim)
-    const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
+    const credential = Credential.fromClaim(claim)
+    const attestation = Attestation.fromCredentialAndDid(
+      credential,
+      attester.uri
+    )
     await expect(
       Attestation.getStoreTx(attestation)
         .then((call) =>
@@ -247,7 +256,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
-    let request: ICredential
+    let credential: ICredential
     let attestation: IAttestation
 
     beforeAll(async () => {
@@ -257,14 +266,14 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.uri
       )
-      request = Credential.fromClaim(claim)
+      credential = Credential.fromClaim(claim)
       await Credential.signWithDidKey(
-        request,
+        credential,
         claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
       )
-      attestation = Attestation.fromCredentialAndDid(request, attester.uri)
+      attestation = Attestation.fromCredentialAndDid(credential, attester.uri)
       await Attestation.getStoreTx(attestation)
         .then((call) =>
           attester.authorizeExtrinsic(
@@ -274,7 +283,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
-      await expect(Credential.verify(request)).resolves.not.toThrow()
+      await expect(Credential.verify(credential)).resolves.not.toThrow()
       await expect(
         Attestation.checkValidity(attestation.claimHash)
       ).resolves.toBeTruthy()
@@ -306,7 +315,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       const fakecredential = Credential.fromClaim(claim)
       await Credential.signWithDidKey(
-        request,
+        credential,
         claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
@@ -338,7 +347,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await expect(
         Attestation.checkValidity(attestation.claimHash)
       ).resolves.toBe(true)
-      await getRevokeTx(Credential.getHash(request), 0)
+      await getRevokeTx(Credential.getHash(credential), 0)
         .then((call) =>
           attester.authorizeExtrinsic(
             call,
@@ -407,15 +416,15 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         },
         attester.uri
       )
-      const request1 = Credential.fromClaim(licenseAuthorization)
+      const credential1 = Credential.fromClaim(licenseAuthorization)
       await Credential.signWithDidKey(
-        request1,
+        credential1,
         claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
       )
       const licenseAuthorizationGranted = Attestation.fromCredentialAndDid(
-        request1,
+        credential1,
         anotherAttester.uri
       )
       await Attestation.getStoreTx(licenseAuthorizationGranted)
@@ -427,23 +436,23 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
-      // make request including legitimation
+      // make credential including legitimation
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
         { name: 'Dominic Toretto', age: 52 },
         claimer.uri
       )
-      const request2 = Credential.fromClaim(iBelieveICanDrive, {
-        legitimations: [request1],
+      const credential2 = Credential.fromClaim(iBelieveICanDrive, {
+        legitimations: [credential1],
       })
       await Credential.signWithDidKey(
-        request2,
+        credential2,
         claimerKey.sign,
         claimer,
         claimer.authenticationKey.id
       )
       const licenseGranted = Attestation.fromCredentialAndDid(
-        request2,
+        credential2,
         attester.uri
       )
       await Attestation.getStoreTx(licenseGranted)
@@ -464,12 +473,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         ).resolves.toBe(true),
       ])
       expect(
-        Attestation.verifyAgainstCredential(licenseGranted, request2)
+        Attestation.verifyAgainstCredential(licenseGranted, credential2)
       ).toBeTruthy()
       expect(
         Attestation.verifyAgainstCredential(
           licenseAuthorizationGranted,
-          request1
+          credential1
         )
       ).toBeTruthy()
     }, 70_000)

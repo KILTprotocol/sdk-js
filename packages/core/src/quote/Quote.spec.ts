@@ -36,7 +36,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from '../requestforattestation'
 import * as Quote from './Quote'
 import { QuoteSchema } from './QuoteSchema'
 
@@ -52,7 +52,7 @@ describe('Quote', () => {
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let request: ICredential
+  let credential: ICredential
   let invalidCostQuoteData: IQuote
   let invalidPropertiesQuoteData: IQuote
   let validQuoteData: IQuote
@@ -111,8 +111,8 @@ describe('Quote', () => {
       owner: claimerIdentity.uri,
     }
 
-    // build request for attestation with legitimations
-    request = RequestForAttestation.fromClaim(claim)
+    // build credential with legitimations
+    credential = Credential.fromClaim(claim)
 
     // @ts-ignore
     invalidCostQuoteData = {
@@ -154,7 +154,7 @@ describe('Quote', () => {
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
-      request.rootHash,
+      credential.rootHash,
       attesterIdentity.uri,
       claimerIdentity,
       claimer.sign,
@@ -224,7 +224,7 @@ describe('Quote compression', () => {
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let request: ICredential
+  let credential: ICredential
   let validQuoteData: IQuote
   let validAttesterSignedQuote: IQuoteAttesterSigned
   let quoteBothAgreed: IQuoteAgreement
@@ -278,8 +278,8 @@ describe('Quote compression', () => {
       owner: claimerIdentity.uri,
     }
 
-    // build request for attestation with legitimations
-    request = RequestForAttestation.fromClaim(claim)
+    // build credential with legitimations
+    credential = Credential.fromClaim(claim)
 
     validQuoteData = {
       attesterDid: attesterIdentity.uri,
@@ -300,7 +300,7 @@ describe('Quote compression', () => {
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
-      request.rootHash,
+      credential.rootHash,
       attesterIdentity.uri,
       claimerIdentity,
       claimer.sign,

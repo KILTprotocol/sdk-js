@@ -45,7 +45,7 @@ describe('Attestation', () => {
   let testCType: ICType
   let testcontents: any
   let testClaim: IClaim
-  let requestForAttestation: ICredential
+  let credential: ICredential
 
   beforeAll(async () => {
     rawCTypeSchema = {
@@ -66,7 +66,7 @@ describe('Attestation', () => {
       testcontents,
       identityBob
     )
-    requestForAttestation = Credential.fromClaim(testClaim)
+    credential = Credential.fromClaim(testClaim)
   })
 
   it('stores attestation', async () => {
@@ -81,7 +81,7 @@ describe('Attestation', () => {
     )
 
     const attestation: IAttestation = Attestation.fromCredentialAndDid(
-      requestForAttestation,
+      credential,
       identityAlice
     )
     expect(await Attestation.checkValidity(attestation.claimHash)).toBeTruthy()
@@ -93,7 +93,7 @@ describe('Attestation', () => {
     )
 
     const attestation: IAttestation = {
-      claimHash: requestForAttestation.rootHash,
+      claimHash: credential.rootHash,
       cTypeHash: testCType.hash,
       delegationId: null,
       owner: identityAlice,
@@ -114,7 +114,7 @@ describe('Attestation', () => {
     )
 
     const attestation: IAttestation = Attestation.fromCredentialAndDid(
-      requestForAttestation,
+      credential,
       identityAlice
     )
     expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
@@ -122,7 +122,7 @@ describe('Attestation', () => {
 
   it('compresses and decompresses the attestation object', () => {
     const attestation = Attestation.fromCredentialAndDid(
-      requestForAttestation,
+      credential,
       identityAlice
     )
 
@@ -141,7 +141,7 @@ describe('Attestation', () => {
 
   it('Negative test for compresses and decompresses the attestation object', () => {
     const attestation = Attestation.fromCredentialAndDid(
-      requestForAttestation,
+      credential,
       identityAlice
     )
 
@@ -270,7 +270,7 @@ describe('Attestation', () => {
   })
   it('Typeguard should return true on complete Attestations', () => {
     const attestation = Attestation.fromCredentialAndDid(
-      requestForAttestation,
+      credential,
       identityAlice
     )
     expect(Attestation.isIAttestation(attestation)).toBeTruthy()

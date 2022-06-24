@@ -19,7 +19,7 @@ import type {
   IClaim,
 } from '@kiltprotocol/types'
 import * as Claim from '../claim'
-import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from '../requestforattestation'
 import { getOwner, isStored } from './CType.chain'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CType.schemas'
@@ -236,8 +236,8 @@ describe('blank ctypes', () => {
     const claimA1 = Claim.fromCTypeAndClaimContents(ctype1, {}, didAlice)
     const claimA2 = Claim.fromCTypeAndClaimContents(ctype2, {}, didAlice)
 
-    expect(RequestForAttestation.fromClaim(claimA1).rootHash).not.toEqual(
-      RequestForAttestation.fromClaim(claimA2).rootHash
+    expect(Credential.fromClaim(claimA1).rootHash).not.toEqual(
+      Credential.fromClaim(claimA2).rootHash
     )
   })
   it('typeguard returns true or false for complete or incomplete CTypes', () => {

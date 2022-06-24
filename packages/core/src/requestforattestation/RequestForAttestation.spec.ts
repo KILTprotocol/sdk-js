@@ -6,7 +6,7 @@
  */
 
 /**
- * @group unit/requestforattestation
+ * @group unit/credential
  */
 
 /* eslint-disable dot-notation */
@@ -23,7 +23,7 @@ import type {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import * as CType from '../ctype'
 
-import * as RequestForAttestation from '../requestforattestation/index.js'
+import * as Credential from '../requestforattestation/index.js'
 
 const rawCType: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',
@@ -35,7 +35,7 @@ const rawCType: ICType['schema'] = {
   type: 'object',
 }
 
-function buildRequestForAttestation(
+function buildCredential(
   claimerDid: DidUri,
   contents: IClaimContents,
   legitimations: ICredential[]
@@ -49,14 +49,14 @@ function buildRequestForAttestation(
     contents,
     owner: claimerDid,
   }
-  // build request for attestation with legitimations
-  const request = RequestForAttestation.fromClaim(claim, {
+  // build credential with legitimations
+  const credential = Credential.fromClaim(claim, {
     legitimations,
   })
-  return request
+  return credential
 }
 
-describe('RequestForAttestation', () => {
+describe('Credential', () => {
   const identityAlice =
     'did:kilt:4nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS'
   const identityBob =
@@ -64,13 +64,13 @@ describe('RequestForAttestation', () => {
   let legitimation: ICredential
 
   beforeEach(async () => {
-    legitimation = buildRequestForAttestation(identityAlice, {}, [])
+    legitimation = buildCredential(identityAlice, {}, [])
   })
 
   it.todo('signing and verification')
 
-  it('verify request for attestation', async () => {
-    const request = buildRequestForAttestation(
+  it('verify credential', async () => {
+    const credential = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -80,21 +80,19 @@ describe('RequestForAttestation', () => {
       [legitimation]
     )
     // check proof on complete data
-    expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     const testCType = CType.fromSchema(rawCType)
-    expect(
-      RequestForAttestation.verify(request, { ctype: testCType })
-    ).toBeTruthy()
+    expect(Credential.verify(credential, { ctype: testCType })).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
-    delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
-    expect(() =>
-      RequestForAttestation.verifyDataIntegrity(request)
-    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
+    delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
+    expect(() => Credential.verifyDataIntegrity(credential)).toThrowError(
+      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
+    )
   })
 
   it('throws on wrong hash in claim hash tree', async () => {
-    const request = buildRequestForAttestation(
+    const credential = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -104,14 +102,14 @@ describe('RequestForAttestation', () => {
       []
     )
 
-    request.claimNonceMap[Object.keys(request.claimNonceMap)[0]] = '1234'
+    credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]] = '1234'
     expect(() => {
-      RequestForAttestation.verifyDataIntegrity(request)
+      Credential.verifyDataIntegrity(credential)
     }).toThrow()
   })
 
-  it('compresses and decompresses the request for attestation object', async () => {
-    const reqForAtt = buildRequestForAttestation(
+  it('compresses and decompresses the credential object', async () => {
+    const reqForAtt = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -149,46 +147,38 @@ describe('RequestForAttestation', () => {
       reqForAtt.delegationId,
     ]
 
-    expect(RequestForAttestation.compress(reqForAtt)).toEqual(
-      compressedReqForAtt
-    )
+    expect(Credential.compress(reqForAtt)).toEqual(compressedReqForAtt)
 
-    expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
-      reqForAtt
-    )
+    expect(Credential.decompress(compressedReqForAtt)).toEqual(reqForAtt)
 
     compressedReqForAtt.pop()
     // @ts-expect-error
     delete reqForAtt.claim.owner
 
     expect(() => {
-      RequestForAttestation.compress(reqForAtt)
+      Credential.compress(reqForAtt)
     }).toThrow()
 
     expect(() => {
-      RequestForAttestation.decompress(compressedReqForAtt)
+      Credential.decompress(compressedReqForAtt)
     }).toThrow()
   })
 
   it('hides claim properties', async () => {
-    const request = buildRequestForAttestation(
-      identityBob,
-      { a: 'a', b: 'b' },
-      []
-    )
-    RequestForAttestation.removeClaimProperties(request, ['a'])
+    const credential = buildCredential(identityBob, { a: 'a', b: 'b' }, [])
+    Credential.removeClaimProperties(credential, ['a'])
 
-    expect((request.claim.contents as any).a).toBeUndefined()
-    expect(Object.keys(request.claimNonceMap)).toHaveLength(
-      request.claimHashes.length - 1
+    expect((credential.claim.contents as any).a).toBeUndefined()
+    expect(Object.keys(credential.claimNonceMap)).toHaveLength(
+      credential.claimHashes.length - 1
     )
-    expect((request.claim.contents as any).b).toBe('b')
-    expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
-    expect(RequestForAttestation.verifyRootHash(request)).toBe(true)
+    expect((credential.claim.contents as any).b).toBe('b')
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(Credential.verifyRootHash(credential)).toBe(true)
   })
 
   it('should throw error on faulty constructor input', async () => {
-    const builtRequest = buildRequestForAttestation(
+    const builtCredential = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -197,7 +187,7 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    const builtRequestWithLegitimation = buildRequestForAttestation(
+    const builtCredentialWithLegitimation = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -206,8 +196,8 @@ describe('RequestForAttestation', () => {
       },
       [legitimation]
     ) as ICredential
-    const builtRequestNoLegitimations = {
-      ...buildRequestForAttestation(
+    const builtCredentialNoLegitimations = {
+      ...buildCredential(
         identityBob,
         {
           a: 'a',
@@ -218,10 +208,10 @@ describe('RequestForAttestation', () => {
       ),
     } as ICredential
     // @ts-expect-error
-    delete builtRequestNoLegitimations.legitimations
+    delete builtCredentialNoLegitimations.legitimations
 
-    const builtRequestMalformedRootHash = {
-      ...buildRequestForAttestation(
+    const builtCredentialMalformedRootHash = {
+      ...buildCredential(
         identityBob,
         {
           a: 'a',
@@ -232,16 +222,17 @@ describe('RequestForAttestation', () => {
       ),
     } as ICredential
     // @ts-ignore
-    builtRequestMalformedRootHash.rootHash = [
-      builtRequestMalformedRootHash.rootHash.slice(0, 15),
+    builtCredentialMalformedRootHash.rootHash = [
+      builtCredentialMalformedRootHash.rootHash.slice(0, 15),
       (
-        (parseInt(builtRequestMalformedRootHash.rootHash.charAt(15), 16) + 1) %
+        (parseInt(builtCredentialMalformedRootHash.rootHash.charAt(15), 16) +
+          1) %
         16
       ).toString(16),
-      builtRequestMalformedRootHash.rootHash.slice(16),
+      builtCredentialMalformedRootHash.rootHash.slice(16),
     ].join('')
-    const builtRequestIncompleteClaimHashTree = {
-      ...buildRequestForAttestation(
+    const builtCredentialIncompleteClaimHashTree = {
+      ...buildCredential(
         identityBob,
         {
           a: 'a',
@@ -252,15 +243,13 @@ describe('RequestForAttestation', () => {
       ),
     } as ICredential
     const deletedKey = Object.keys(
-      builtRequestIncompleteClaimHashTree.claimNonceMap
+      builtCredentialIncompleteClaimHashTree.claimNonceMap
     )[0]
-    delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
-    builtRequestIncompleteClaimHashTree.rootHash =
-      RequestForAttestation.calculateRootHash(
-        builtRequestIncompleteClaimHashTree
-      )
-    const builtRequestMalformedSignature = {
-      ...buildRequestForAttestation(
+    delete builtCredentialIncompleteClaimHashTree.claimNonceMap[deletedKey]
+    builtCredentialIncompleteClaimHashTree.rootHash =
+      Credential.calculateRootHash(builtCredentialIncompleteClaimHashTree)
+    const builtCredentialMalformedSignature = {
+      ...buildCredential(
         identityBob,
         {
           a: 'a',
@@ -270,13 +259,14 @@ describe('RequestForAttestation', () => {
         []
       ),
     } as ICredential
-    builtRequestMalformedSignature.claimerSignature = {
+    builtCredentialMalformedSignature.claimerSignature = {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
-    builtRequestMalformedSignature.rootHash =
-      RequestForAttestation.calculateRootHash(builtRequestMalformedSignature)
-    const builtRequestMalformedHashes = {
-      ...buildRequestForAttestation(
+    builtCredentialMalformedSignature.rootHash = Credential.calculateRootHash(
+      builtCredentialMalformedSignature
+    )
+    const builtCredentialMalformedHashes = {
+      ...buildCredential(
         identityBob,
         {
           a: 'a',
@@ -286,51 +276,46 @@ describe('RequestForAttestation', () => {
         []
       ),
     } as ICredential
-    Object.entries(builtRequestMalformedHashes.claimNonceMap).forEach(
+    Object.entries(builtCredentialMalformedHashes.claimNonceMap).forEach(
       ([hash, nonce]) => {
         const scrambledHash = [
           hash.slice(0, 15),
           ((parseInt(hash.charAt(15), 16) + 1) % 16).toString(16),
           hash.slice(16),
         ].join('')
-        builtRequestMalformedHashes.claimNonceMap[scrambledHash] = nonce
-        delete builtRequestMalformedHashes.claimNonceMap[hash]
+        builtCredentialMalformedHashes.claimNonceMap[scrambledHash] = nonce
+        delete builtCredentialMalformedHashes.claimNonceMap[hash]
       }
     )
-    builtRequestMalformedHashes.rootHash =
-      RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
+    builtCredentialMalformedHashes.rootHash = Credential.calculateRootHash(
+      builtCredentialMalformedHashes
+    )
     expect(() =>
-      RequestForAttestation.verifyDataStructure(builtRequestNoLegitimations)
+      Credential.verifyDataStructure(builtCredentialNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
     expect(() =>
-      RequestForAttestation.verifyDataIntegrity(builtRequestMalformedRootHash)
+      Credential.verifyDataIntegrity(builtCredentialMalformedRootHash)
     ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
-      RequestForAttestation.verifyDataIntegrity(
-        builtRequestIncompleteClaimHashTree
-      )
+      Credential.verifyDataIntegrity(builtCredentialIncompleteClaimHashTree)
     ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
-      RequestForAttestation.verifyDataStructure(builtRequestMalformedSignature)
+      Credential.verifyDataStructure(builtCredentialMalformedSignature)
     ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
     expect(() =>
-      RequestForAttestation.verifyDataIntegrity(builtRequestMalformedHashes)
+      Credential.verifyDataIntegrity(builtCredentialMalformedHashes)
     ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
-    expect(() =>
-      RequestForAttestation.verifyDataStructure(builtRequest)
-    ).not.toThrow()
+    expect(() => Credential.verifyDataStructure(builtCredential)).not.toThrow()
     expect(() => {
-      RequestForAttestation.verifyDataStructure(builtRequestWithLegitimation)
+      Credential.verifyDataStructure(builtCredentialWithLegitimation)
     }).not.toThrow()
-    expect(() =>
-      RequestForAttestation.verifyDataIntegrity(builtRequest)
-    ).not.toThrow()
+    expect(() => Credential.verifyDataIntegrity(builtCredential)).not.toThrow()
     expect(() => {
-      RequestForAttestation.verifyDataIntegrity(builtRequestWithLegitimation)
+      Credential.verifyDataIntegrity(builtCredentialWithLegitimation)
     }).not.toThrow()
   })
   it('checks Object instantiation', async () => {
-    const builtRequest = buildRequestForAttestation(
+    const builtCredential = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -339,12 +324,12 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    expect(RequestForAttestation.isICredential(builtRequest)).toEqual(true)
+    expect(Credential.isICredential(builtCredential)).toEqual(true)
   })
 
-  it('should verify the Request for attestation claims structure against the ctype', async () => {
+  it('should verify the credential claims structure against the ctype', async () => {
     const testCType = CType.fromSchema(rawCType)
-    const builtRequest = buildRequestForAttestation(
+    const builtCredential = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -354,11 +339,11 @@ describe('RequestForAttestation', () => {
       []
     )
     expect(
-      RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
+      Credential.verifyAgainstCType(builtCredential, testCType)
     ).toBeTruthy()
-    builtRequest.claim.contents.name = 123
+    builtCredential.claim.contents.name = 123
     expect(
-      RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
+      Credential.verifyAgainstCType(builtCredential, testCType)
     ).toBeFalsy()
   })
 })
