@@ -11,6 +11,7 @@
 
 /* eslint-disable dot-notation */
 
+import { encodeAddress } from '@polkadot/util-crypto'
 import type {
   IClaim,
   IClaimContents,
@@ -19,11 +20,27 @@ import type {
   ICredential,
   DidSignature,
   DidUri,
+  IDidResolver,
+  DidResolvedDetails,
+  DidKey,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { VerificationKeyType } from '@kiltprotocol/types'
+import { Crypto, UUID, SDKErrors } from '@kiltprotocol/utils'
+import {
+  DidDetails,
+  FullDidDetails,
+  LightDidDetails,
+  SigningAlgorithms,
+  Utils as DidUtils,
+} from '@kiltprotocol/did'
+import {
+  createLocalDemoFullDidFromKeypair,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import * as CType from '../ctype'
-
 import * as Credential from '../requestforattestation/index.js'
+import * as Claim from '../claim'
 
 const rawCType: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',
@@ -345,5 +362,287 @@ describe('Credential', () => {
     expect(
       Credential.verifyAgainstCType(builtCredential, testCType)
     ).toBeFalsy()
+  })
+})
+
+describe('create presentation', () => {
+  let migratedClaimerLightDid: DidDetails
+  let migratedClaimerFullDid: DidDetails
+  let newKeyForMigratedClaimerDid: KeyTool
+  let unmigratedClaimerLightDid: DidDetails
+  let unmigratedClaimerKey: KeyTool
+  let migratedThenDeletedClaimerLightDid: DidDetails
+  let migratedThenDeletedKey: KeyTool
+  let migratedThenDeletedClaimerFullDid: DidDetails
+  let attester: DidDetails
+  let ctype: ICType
+  let reqForAtt: ICredential
+
+  // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
+  function createMinimalFullDidFromLightDid(
+    lightDidForId: LightDidDetails,
+    newAuthenticationKey?: DidKey
+  ): FullDidDetails {
+    const uri = DidUtils.getKiltDidFromIdentifier(
+      lightDidForId.identifier,
+      'full'
+    )
+    const authKey = newAuthenticationKey || lightDidForId.authenticationKey
+
+    return new FullDidDetails({
+      identifier: lightDidForId.identifier,
+      uri,
+      keyRelationships: {
+        authentication: new Set([authKey.id]),
+      },
+      keys: { [authKey.id]: authKey },
+    })
+  }
+
+  const mockResolver: IDidResolver = (() => {
+    const resolve = async (
+      didUri: DidUri
+    ): Promise<DidResolvedDetails | null> => {
+      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+      const { did } = DidUtils.parseDidUri(didUri)
+      switch (did) {
+        case migratedClaimerLightDid?.uri:
+          return {
+            details: migratedClaimerLightDid,
+            metadata: {
+              canonicalId: migratedClaimerFullDid.uri,
+              deactivated: false,
+            },
+          }
+        case migratedThenDeletedClaimerLightDid?.uri:
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
+        case migratedThenDeletedClaimerFullDid?.uri:
+          return {
+            metadata: {
+              deactivated: true,
+            },
+          }
+        case unmigratedClaimerLightDid?.uri:
+          return {
+            details: unmigratedClaimerLightDid,
+            metadata: { deactivated: false },
+          }
+        case migratedClaimerFullDid?.uri:
+          return {
+            details: migratedClaimerFullDid,
+            metadata: { deactivated: false },
+          }
+        case attester?.uri:
+          return { details: attester, metadata: { deactivated: false } }
+        default:
+          return null
+      }
+    }
+    return {
+      resolve,
+      resolveDoc: resolve,
+    } as IDidResolver
+  })()
+
+  beforeAll(async () => {
+    const { keypair } = makeSigningKeyTool()
+    attester = await createLocalDemoFullDidFromKeypair(keypair)
+
+    unmigratedClaimerKey = makeSigningKeyTool()
+    unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(unmigratedClaimerKey.keypair.publicKey, 38),
+      VerificationKeyType.Sr25519
+    )
+    const migratedClaimerKey = makeSigningKeyTool()
+    migratedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(migratedClaimerKey.keypair.publicKey, 38),
+      VerificationKeyType.Sr25519
+    )
+    // Change also the authentication key of the full DID to properly verify signature verification,
+    // so that it uses a completely different key and the credential is still correctly verified.
+    newKeyForMigratedClaimerDid = makeSigningKeyTool()
+    migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
+      migratedClaimerLightDid as LightDidDetails,
+      {
+        ...newKeyForMigratedClaimerDid.authenticationKey,
+        id: 'new-auth',
+      }
+    )
+    migratedThenDeletedKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
+      encodeAddress(migratedThenDeletedKey.keypair.publicKey, 38),
+      VerificationKeyType.Ed25519
+    )
+    migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
+      migratedThenDeletedClaimerLightDid as LightDidDetails
+    )
+
+    ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = Credential.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        migratedClaimerFullDid.uri
+      )
+    )
+  })
+
+  it('should create presentation and exclude specific attributes using a full DID', async () => {
+    const challenge = UUID.generate()
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
+      selectedAttributes: ['name'],
+      sign: newKeyForMigratedClaimerDid.sign,
+      claimerDid: migratedClaimerFullDid,
+      challenge,
+    })
+    await expect(
+      Credential.verify(presentation, {
+        resolver: mockResolver,
+      })
+    ).resolves.not.toThrow()
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
+  })
+  it('should create presentation and exclude specific attributes using a light DID', async () => {
+    ctype = CType.fromSchema(rawCType, attester.uri)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = Credential.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        unmigratedClaimerLightDid.uri
+      )
+    )
+
+    const challenge = UUID.generate()
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
+      selectedAttributes: ['name'],
+      sign: unmigratedClaimerKey.sign,
+      claimerDid: unmigratedClaimerLightDid,
+      challenge,
+    })
+    await expect(
+      Credential.verify(presentation, {
+        resolver: mockResolver,
+      })
+    ).resolves.not.toThrow()
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
+  })
+  it('should create presentation and exclude specific attributes using a migrated DID', async () => {
+    ctype = CType.fromSchema(rawCType, attester.uri)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = Credential.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedClaimerLightDid.uri
+      )
+    )
+
+    const challenge = UUID.generate()
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
+      selectedAttributes: ['name'],
+      sign: newKeyForMigratedClaimerDid.sign,
+      // Use of full DID to sign the presentation.
+      claimerDid: migratedClaimerFullDid,
+      challenge,
+    })
+    await expect(
+      Credential.verify(presentation, {
+        resolver: mockResolver,
+      })
+    ).resolves.not.toThrow()
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
+  })
+
+  it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
+    ctype = CType.fromSchema(rawCType, attester.uri)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = Credential.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedClaimerLightDid.uri
+      )
+    )
+
+    const challenge = UUID.generate()
+    const att = await Credential.createPresentation({
+      credential: reqForAtt,
+      selectedAttributes: ['name'],
+      sign: newKeyForMigratedClaimerDid.sign,
+      // Still using the light DID, which should fail since it has been migrated
+      claimerDid: migratedClaimerLightDid,
+      challenge,
+    })
+    await expect(
+      Credential.verify(att, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBeFalsy()
+  })
+
+  it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
+    ctype = CType.fromSchema(rawCType, attester.uri)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = Credential.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedThenDeletedClaimerLightDid.uri
+      )
+    )
+
+    const challenge = UUID.generate()
+    const presentation = await Credential.createPresentation({
+      credential: reqForAtt,
+      selectedAttributes: ['name'],
+      sign: migratedThenDeletedKey.sign,
+      // Still using the light DID, which should fail since it has been migrated and then deleted
+      claimerDid: migratedThenDeletedClaimerLightDid,
+      challenge,
+    })
+    await expect(
+      Credential.verify(presentation, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBeFalsy()
+  })
+
+  it('should verify the credential claims structure against the ctype', () => {
+    expect(Credential.verifyAgainstCType(reqForAtt, ctype)).toBeTruthy()
+    reqForAtt.claim.contents.name = 123
+
+    expect(Credential.verifyAgainstCType(reqForAtt, ctype)).toBeFalsy()
   })
 })
