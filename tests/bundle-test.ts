@@ -31,7 +31,7 @@ const {
   CType,
   Did,
   Blockchain,
-  Utils: { Crypto, Keyring },
+  Utils: { Crypto, Keyring, ss58Format },
   Message,
   MessageBodyType,
   EncryptionKeyType,
@@ -163,7 +163,7 @@ async function runAll() {
   const api = await kilt.connect()
 
   if (!api) console.error('No blockchain connection established')
-  const keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
+  const keyring = new Keyring({ ss58Format, type: 'ed25519' })
   // Accounts
   console.log('Account setup started')
   const FaucetSeed =
@@ -204,7 +204,7 @@ async function runAll() {
   const encPublicKey = Crypto.coToUInt8(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  const address = Crypto.encodeAddress(authPublicKey, 38)
+  const address = Crypto.encodeAddress(authPublicKey, ss58Format)
   const didCreationDetails = {
     authenticationKey: {
       publicKey: authPublicKey,

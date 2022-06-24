@@ -288,9 +288,8 @@ describe('Messaging Utilities', () => {
     mockResolver = {
       resolveDoc,
       resolveKey,
-      resolve: async (did: string) => {
-        return resolveKey(did as DidResourceUri) || resolveDoc(did as DidUri)
-      },
+      resolve: async (did: string) =>
+        (await resolveKey(did as DidResourceUri)) || resolveDoc(did as DidUri),
     } as IDidResolver
 
     rawCTypeWithMultipleProperties = {

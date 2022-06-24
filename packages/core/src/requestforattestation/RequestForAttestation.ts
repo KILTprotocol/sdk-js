@@ -69,6 +69,12 @@ function getHashLeaves(
   return result
 }
 
+/**
+ * Calculates the root hash of the credential.
+ *
+ * @param credential The credential object.
+ * @returns The hash.
+ */
 export function calculateRootHash(credential: Partial<ICredential>): Hash {
   const hashes: Uint8Array[] = getHashLeaves(
     credential.claimHashes || [],
@@ -105,7 +111,7 @@ export function removeClaimProperties(
  *
  * @param input - The Credential to prepare the data for.
  * @param challenge - An optional challenge to be included in the signing process.
- * @returns The prepared signing data.
+ * @returns The prepared signing data as Uint8Array.
  */
 export function makeSigningData(
   input: ICredential,
@@ -421,7 +427,6 @@ export function isICredential(input: unknown): input is ICredential {
   try {
     verifyDataStructure(input as ICredential)
   } catch (error) {
-    console.error(error)
     return false
   }
   return true
@@ -437,6 +442,12 @@ export function getHash(credential: ICredential): IAttestation['claimHash'] {
   return credential.rootHash
 }
 
+/**
+ * Gets names of the credential’s attributes.
+ *
+ * @param credential The credential.
+ * @returns The set of names.
+ */
 function getAttributes(credential: ICredential): Set<string> {
   // TODO: move this to claim or contents
   return new Set(Object.keys(credential.claim.contents))

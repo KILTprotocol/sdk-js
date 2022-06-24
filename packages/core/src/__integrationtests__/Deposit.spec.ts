@@ -261,13 +261,12 @@ beforeAll(async () => {
 
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
-    await attester
-      .authorizeExtrinsic(
-        await CType.getStoreTx(driversLicenseCType),
-        attesterKey.sign,
-        devFaucet.address
-      )
-      .then((val) => submitExtrinsic(val, devFaucet, Blockchain.IS_IN_BLOCK))
+    const extrinsic = await attester.authorizeExtrinsic(
+      await CType.getStoreTx(driversLicenseCType),
+      attesterKey.sign,
+      devFaucet.address
+    )
+    await submitExtrinsic(extrinsic, devFaucet, Blockchain.IS_IN_BLOCK)
   }
 
   const rawClaim = {

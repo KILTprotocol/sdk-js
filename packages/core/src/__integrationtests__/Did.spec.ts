@@ -46,7 +46,7 @@ import {
   Permission,
   VerificationKeyType,
 } from '@kiltprotocol/types'
-import { UUID } from '@kiltprotocol/utils'
+import { ss58Format, UUID } from '@kiltprotocol/utils'
 
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -640,11 +640,8 @@ describe('DID management batching', () => {
           urls: ['x:url-3'],
         })
 
-      await expect(
-        builder
-          .build(sign, paymentAccount.address)
-          .then((ext) => submitExtrinsic(ext, paymentAccount))
-      ).resolves.not.toThrow()
+      const extrinsic = await builder.build(sign, paymentAccount.address)
+      await submitExtrinsic(extrinsic, paymentAccount)
 
       const fullDid = await FullDidDetails.fromChainInfo(
         DidUtils.getKiltDidFromIdentifier(lightDidDetails.identifier, 'full')
@@ -718,16 +715,13 @@ describe('DID management batching', () => {
       }
       const encodedEcdsaAddress = encodeAddress(
         blake2AsU8a(keypair.publicKey),
-        38
+        ss58Format
       )
 
       const builder = new FullDidCreationBuilder(api, didAuthKey)
 
-      await expect(
-        builder
-          .build(sign, paymentAccount.address)
-          .then((ext) => submitExtrinsic(ext, paymentAccount))
-      ).resolves.not.toThrow()
+      const extrinsic = await builder.build(sign, paymentAccount.address)
+      await submitExtrinsic(extrinsic, paymentAccount)
 
       const fullDid = await FullDidDetails.fromChainInfo(
         DidUtils.getKiltDidFromIdentifier(encodedEcdsaAddress, 'full')
@@ -796,15 +790,12 @@ describe('DID management batching', () => {
         .removeDelegationKey()
         .removeAllServiceEndpoints()
 
-      await expect(
-        updateBuilder
-          .build(sign, paymentAccount.address)
-          .then((ext) => submitExtrinsic(ext, paymentAccount))
-      ).resolves.not.toThrow()
+      const extrinsic = await updateBuilder.build(sign, paymentAccount.address)
+      await submitExtrinsic(extrinsic, paymentAccount)
 
-      const finalFullDid = await FullDidDetails.fromChainInfo(
+      const finalFullDid = (await FullDidDetails.fromChainInfo(
         initialFullDid.uri
-      ).then((did) => did as FullDidDetails)
+      )) as FullDidDetails
 
       expect(finalFullDid).not.toBeNull()
 
@@ -862,15 +853,12 @@ describe('DID management batching', () => {
         })
       ).toThrow()
 
-      await expect(
-        updateBuilder
-          .build(sign, paymentAccount.address)
-          .then((ext) => submitExtrinsic(ext, paymentAccount))
-      ).resolves.not.toThrow()
+      const extrinsic = await updateBuilder.build(sign, paymentAccount.address)
+      await submitExtrinsic(extrinsic, paymentAccount)
 
-      const finalFullDid = await FullDidDetails.fromChainInfo(
+      const finalFullDid = (await FullDidDetails.fromChainInfo(
         initialFullDid.uri
-      ).then((did) => did as FullDidDetails)
+      )) as FullDidDetails
 
       expect(finalFullDid).not.toBeNull()
 
@@ -1190,9 +1178,8 @@ describe('DID extrinsics batching', () => {
     await expect(CType.verifyStored(ctype2)).resolves.toBeTruthy()
 
     // Test correct use of delegation keys
-    await expect(
-      DelegationNode.query(rootNode.id).then((node) => node?.revoked)
-    ).resolves.toBeTruthy()
+    const node = await DelegationNode.query(rootNode.id)
+    expect(node?.revoked).toBeTruthy()
   })
 })
 
@@ -1210,12 +1197,10 @@ describe('Runtime constraints', () => {
     it('should not be possible to create a DID with too many encryption keys', async () => {
       // Maximum is 10
       const newKeyAgreementKeys = Array(10).map(
-        (_, index): NewDidEncryptionKey => {
-          return {
-            publicKey: Uint8Array.from(new Array(32).fill(index)),
-            type: EncryptionKeyType.X25519,
-          }
-        }
+        (_, index): NewDidEncryptionKey => ({
+          publicKey: Uint8Array.from(new Array(32).fill(index)),
+          type: EncryptionKeyType.X25519,
+        })
       )
       await expect(
         DidChain.generateCreateTxFromCreationDetails(

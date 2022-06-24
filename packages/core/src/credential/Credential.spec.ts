@@ -36,6 +36,7 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
+import { ss58Format } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
@@ -193,7 +194,7 @@ describe('Credential', () => {
   it('verify credentials signed by a light DID', async () => {
     const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
     identityDave = await LightDidDetails.fromIdentifier(
-      encodeAddress(keypair.publicKey, 38),
+      encodeAddress(keypair.publicKey, ss58Format),
       VerificationKeyType.Ed25519
     )
 
@@ -221,7 +222,7 @@ describe('Credential', () => {
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
     const migratedAndDeleted = makeSigningKeyTool(SigningAlgorithms.Ed25519)
     migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedAndDeleted.keypair.publicKey, 38),
+      encodeAddress(migratedAndDeleted.keypair.publicKey, ss58Format),
       VerificationKeyType.Ed25519
     )
     migratedAndDeletedFullDid = new FullDidDetails({

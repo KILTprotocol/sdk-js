@@ -17,7 +17,7 @@ import {
   VerificationKeyType,
 } from '@kiltprotocol/types'
 
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import { LightDidDetails } from '../DidDetails/LightDidDetails.js'
 import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
@@ -33,11 +33,11 @@ function encodeVerificationKeyToAddress({
   switch (type) {
     case VerificationKeyType.Ed25519:
     case VerificationKeyType.Sr25519:
-      return encodeAddress(publicKey, 38)
+      return encodeAddress(publicKey, ss58Format)
     case VerificationKeyType.Ecdsa: {
       // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
       const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
-      return encodeAddress(pk, 38)
+      return encodeAddress(pk, ss58Format)
     }
     default:
       throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
@@ -170,9 +170,10 @@ export class FullDidCreationBuilder extends FullDidBuilder {
             ? this.newDelegationKey.newKey
             : undefined,
         serviceEndpoints: this.newServiceEndpoints.size
-          ? [...this.newServiceEndpoints.entries()].map(([id, service]) => {
-              return { id, ...service }
-            })
+          ? [...this.newServiceEndpoints.entries()].map(([id, service]) => ({
+              id,
+              ...service,
+            }))
           : undefined,
       },
       submitter,

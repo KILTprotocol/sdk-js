@@ -86,9 +86,12 @@ describe('jsonld', () => {
       '81687a00-f759-4fee-a68c-d9085f9d32f5',
     ]
     const digests = Object.keys(Claim.hashClaimContents(claim).nonceMap)
-    const nonceMap = digests.sort().reduce((previous, current, i) => {
-      return { ...previous, [current]: nonces[i] }
-    }, {})
+    const nonceMap = digests
+      .sort()
+      .reduce(
+        (previous, current, i) => ({ ...previous, [current]: nonces[i] }),
+        {}
+      )
     // we expect the resulting hashes to be the same every time
     const hashed = Claim.hashClaimContents(claim, {
       nonces: nonceMap,

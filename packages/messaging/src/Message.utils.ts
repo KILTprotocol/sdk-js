@@ -309,9 +309,11 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     case Message.BodyType.REQUEST_CREDENTIAL: {
       const compressedCtypes: CompressedRequestCredentialContent[0] =
         body.content.cTypes.map(
-          ({ cTypeHash, trustedAttesters, requiredProperties }) => {
-            return [cTypeHash, trustedAttesters, requiredProperties]
-          }
+          ({ cTypeHash, trustedAttesters, requiredProperties }) => [
+            cTypeHash,
+            trustedAttesters,
+            requiredProperties,
+          ]
         )
       compressedContents = [compressedCtypes, body.content.challenge]
       break

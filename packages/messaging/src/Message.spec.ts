@@ -112,12 +112,9 @@ const mockResolver = {
     didUri: string
   ): Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
-  > => {
-    return (
-      (await resolveKey(didUri as DidResourceUri)) ||
-      resolveDoc(didUri as DidUri)
-    )
-  },
+  > =>
+    (await resolveKey(didUri as DidResourceUri)) ||
+    resolveDoc(didUri as DidUri),
 } as IDidResolver
 
 beforeAll(async () => {

@@ -19,7 +19,7 @@ import {
 } from '@kiltprotocol/chain-helpers'
 
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
-import { Keyring } from '@kiltprotocol/utils'
+import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
 import {
   getBalances,
@@ -35,11 +35,11 @@ const BALANCE = 42
 const FEE = 30
 
 describe('Balance', () => {
-  const keyring = new Keyring({ type: 'sr25519', ss58Format: 38 })
+  const keyring = new Keyring({ type: 'sr25519', ss58Format })
   let alice: KeyringPair
   let bob: KeyringPair
 
-  const accountInfo = (balance: number): AccountInfo => {
+  function accountInfo(balance: number): AccountInfo {
     return {
       data: {
         free: new BN(balance),
@@ -87,9 +87,8 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const status = await getTransferTx(bob.address, new BN(100)).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, alice)
-    )
+    const transferTx = await getTransferTx(bob.address, new BN(100))
+    const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -100,9 +99,8 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await getTransferTx(bob.address, amount, exponent).then(
-      (tx) => Blockchain.signAndSubmitTx(tx, alice)
-    )
+    const transferTx = await getTransferTx(bob.address, amount, exponent)
+    const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(mockedApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

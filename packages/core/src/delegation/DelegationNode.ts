@@ -167,7 +167,8 @@ export class DelegationNode implements IDelegationNode {
    * @returns The CType hash associated with the delegation hierarchy.
    */
   public async getCTypeHash(): Promise<ICType['hash']> {
-    return this.getHierarchyDetails().then((details) => details.cTypeHash)
+    const { cTypeHash } = await this.getHierarchyDetails()
+    return cTypeHash
   }
 
   /**
@@ -219,9 +220,7 @@ export class DelegationNode implements IDelegationNode {
   public async getAttestations(): Promise<IAttestation[]> {
     const attestationHashes = await this.getAttestationHashes()
     const attestations = await Promise.all(
-      attestationHashes.map((claimHash) => {
-        return queryAttestation(claimHash)
-      })
+      attestationHashes.map((claimHash) => queryAttestation(claimHash))
     )
 
     return attestations.filter((value): value is IAttestation => !!value)

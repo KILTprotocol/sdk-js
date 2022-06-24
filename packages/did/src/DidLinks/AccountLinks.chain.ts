@@ -6,6 +6,7 @@
  */
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ss58Format } from '@kiltprotocol/utils'
 import {
   Deposit,
   DidIdentifier,
@@ -98,7 +99,7 @@ export async function queryConnectedDidForAccount(
  */
 export async function queryConnectedAccountsForDid(
   linkedDid: DidIdentifier,
-  networkPrefix = 38
+  networkPrefix = ss58Format
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =

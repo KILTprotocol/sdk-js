@@ -25,7 +25,7 @@ import type {
   DidKey,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
-import { Crypto, UUID, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, UUID, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import {
   DidDetails,
   FullDidDetails,
@@ -454,12 +454,12 @@ describe('create presentation', () => {
 
     unmigratedClaimerKey = makeSigningKeyTool()
     unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(unmigratedClaimerKey.keypair.publicKey, 38),
+      encodeAddress(unmigratedClaimerKey.keypair.publicKey, ss58Format),
       VerificationKeyType.Sr25519
     )
     const migratedClaimerKey = makeSigningKeyTool()
     migratedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedClaimerKey.keypair.publicKey, 38),
+      encodeAddress(migratedClaimerKey.keypair.publicKey, ss58Format),
       VerificationKeyType.Sr25519
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
@@ -474,7 +474,7 @@ describe('create presentation', () => {
     )
     migratedThenDeletedKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
     migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedThenDeletedKey.keypair.publicKey, 38),
+      encodeAddress(migratedThenDeletedKey.keypair.publicKey, ss58Format),
       VerificationKeyType.Ed25519
     )
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(

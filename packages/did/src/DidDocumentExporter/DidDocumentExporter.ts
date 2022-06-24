@@ -89,13 +89,11 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
 
   const serviceEndpoints = details.getEndpoints()
   if (serviceEndpoints.length) {
-    result.service = serviceEndpoints.map((service) => {
-      return {
-        id: `${details.uri}#${service.id}`,
-        type: service.types,
-        serviceEndpoint: service.urls,
-      }
-    })
+    result.service = serviceEndpoints.map((service) => ({
+      id: `${details.uri}#${service.id}`,
+      type: service.types,
+      serviceEndpoint: service.urls,
+    }))
   }
 
   return result as DidDocument

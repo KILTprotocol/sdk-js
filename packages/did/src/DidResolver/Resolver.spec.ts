@@ -25,6 +25,7 @@ import {
   DidPublicKey,
   DidResourceUri,
 } from '@kiltprotocol/types'
+import { ss58Format } from '@kiltprotocol/utils'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
@@ -179,9 +180,8 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryDidDeletionStatus = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<boolean> => {
-      return didIdentifier === deletedIdentifier
-    }
+    async (didIdentifier: DidIdentifier): Promise<boolean> =>
+      didIdentifier === deletedIdentifier
   )
   return {
     queryDetails,
@@ -388,7 +388,7 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves a non-existing DID', async () => {
-    const randomIdentifier = new Keyring({ ss58Format: 38 }).addFromSeed(
+    const randomIdentifier = new Keyring({ ss58Format }).addFromSeed(
       new Uint8Array(32).fill(32)
     ).address
     const randomDid = getKiltDidFromIdentifier(randomIdentifier, 'full')
@@ -428,7 +428,7 @@ describe('When resolving a full DID', () => {
 })
 
 describe('When resolving a light DID', () => {
-  const keyring: Keyring = new Keyring({ ss58Format: 38 })
+  const keyring: Keyring = new Keyring({ ss58Format })
   const authKey: KeyringPair = keyring.addFromMnemonic('auth')
   const encryptionKey: KeyringPair = keyring.addFromMnemonic('enc')
 
@@ -528,7 +528,11 @@ describe('When resolving a light DID', () => {
       {
         id: 'authentication',
         type: VerificationKeyType.Sr25519,
-        publicKey: decodeAddress(identifierWithAuthenticationKey, false, 38),
+        publicKey: decodeAddress(
+          identifierWithAuthenticationKey,
+          false,
+          ss58Format
+        ),
       },
     ])
   })

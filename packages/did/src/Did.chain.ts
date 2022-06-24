@@ -118,11 +118,8 @@ async function queryDidEncoded(
 async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
-  return api.query.did.didBlacklist
-    .keys<GenericAccountId[]>()
-    .then((entries) =>
-      entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
-    )
+  const entries = await api.query.did.didBlacklist.keys<GenericAccountId[]>()
+  return entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
 }
 
 // Query a DID service given the DID identifier and the service ID.
@@ -195,6 +192,7 @@ const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
   Ecdsa: VerificationKeyType.Ecdsa,
   X25519: EncryptionKeyType.X25519,
 }
+
 function decodeDidPublicKeyDetails(
   keyId: Hash,
   keyDetails: ChainDidPublicKeyDetails
@@ -218,15 +216,11 @@ function decodeDidChainRecord(
   didDetail: IDidChainRecordCodec
 ): IDidChainRecordJSON {
   const publicKeys: DidKey[] = [...didDetail.publicKeys.entries()].map(
-    ([keyId, keyDetails]) => {
-      return decodeDidPublicKeyDetails(keyId, keyDetails)
-    }
+    ([keyId, keyDetails]) => decodeDidPublicKeyDetails(keyId, keyDetails)
   )
   const authenticationKeyId = didDetail.authenticationKey.toHex()
   const keyAgreementKeyIds = [...didDetail.keyAgreementKeys.values()].map(
-    (keyId) => {
-      return keyId.toHex()
-    }
+    (keyId) => keyId.toHex()
   )
 
   const didRecord: IDidChainRecordJSON = {

@@ -22,7 +22,7 @@ import {
   EncryptionAlgorithms,
   SigningAlgorithms,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 /// The latest version for KILT light DIDs.
 export const LIGHT_DID_LATEST_VERSION = 1
@@ -176,9 +176,7 @@ const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
   [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
 }
 const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
-  (obj, [key, value]) => {
-    return { ...obj, [value]: key }
-  },
+  (obj, [key, value]) => ({ ...obj, [value]: key }),
   {}
 ) as Record<SigningAlgorithms, VerificationKeyType>
 
@@ -284,13 +282,13 @@ export function validateKiltDidUri(
 
   switch (type) {
     case 'full':
-      if (!checkAddress(identifier, 38)[0]) {
+      if (!checkAddress(identifier, ss58Format)[0]) {
         throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
       }
       break
     case 'light':
       // Identifier includes the first two characters for the key type encoding
-      if (!checkAddress(identifier.substring(2), 38)[0]) {
+      if (!checkAddress(identifier.substring(2), ss58Format)[0]) {
         throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
       }
       break
