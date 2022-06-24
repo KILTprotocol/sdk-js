@@ -130,9 +130,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.authenticationKey.id
     )
     expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
-    await expect(RequestForAttestation.verifySignature(request)).resolves.toBe(
-      true
-    )
+    expect(await RequestForAttestation.verifySignature(request)).toBe(true)
     expect(request.claim.contents).toMatchObject(content)
   })
 

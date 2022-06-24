@@ -54,7 +54,7 @@ const api = new ApiPromise({ provider })
 let exitCode
 
 async function fetch() {
-  api.connect()
+  await api.connect()
   await api.isReady
   let metadata
   switch (argv.format) {

@@ -144,10 +144,8 @@ it('should be possible to delegate attestation rights', async () => {
     rootKey.sign,
     attesterKey.sign
   )
-  await Promise.all([
-    expect(rootNode.verify()).resolves.toBeTruthy(),
-    expect(delegatedNode.verify()).resolves.toBeTruthy(),
-  ])
+  expect(await rootNode.verify()).toBeTruthy()
+  expect(await delegatedNode.verify()).toBeTruthy()
 }, 60_000)
 
 describe('and attestation rights have been delegated', () => {
@@ -169,10 +167,8 @@ describe('and attestation rights have been delegated', () => {
       attesterKey.sign
     )
 
-    await Promise.all([
-      expect(rootNode.verify()).resolves.toBeTruthy(),
-      expect(delegatedNode.verify()).resolves.toBeTruthy(),
-    ])
+    expect(await rootNode.verify()).toBeTruthy()
+    expect(await delegatedNode.verify()).toBeTruthy()
   }, 75_000)
 
   it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
@@ -195,9 +191,7 @@ describe('and attestation rights have been delegated', () => {
       claimer.authenticationKey.id
     )
     expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
-    await expect(
-      RequestForAttestation.verifySignature(request)
-    ).resolves.toBeTruthy()
+    expect(await RequestForAttestation.verifySignature(request)).toBeTruthy()
 
     const attestation = Attestation.fromRequestAndDid(request, attester.uri)
     const storeTx = await Attestation.getStoreTx(attestation)
@@ -213,7 +207,7 @@ describe('and attestation rights have been delegated', () => {
       attestation
     )
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(Credential.verify(credential)).resolves.toBeTruthy()
+    expect(await Credential.verify(credential)).toBeTruthy()
 
     // revoke attestation through root
     const revokeTx = await Attestation.getRevokeTx(
@@ -289,8 +283,8 @@ describe('revocation', () => {
     })
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
-    await expect(delegationA.verify()).resolves.toBeFalsy()
-    await expect(DelegationNode.query(delegationA.id)).resolves.not.toBeNull()
+    expect(await delegationA.verify()).toBeFalsy()
+    expect(await DelegationNode.query(delegationA.id)).not.toBeNull()
   }, 60_000)
 
   it('delegee cannot revoke root but can revoke own delegation', async () => {
@@ -393,10 +387,8 @@ describe('Deposit claiming', () => {
       rootKey.sign
     )
 
-    await expect(DelegationNode.query(delegatedNode.id)).resolves.not.toBeNull()
-    await expect(
-      DelegationNode.query(subDelegatedNode.id)
-    ).resolves.not.toBeNull()
+    expect(await DelegationNode.query(delegatedNode.id)).not.toBeNull()
+    expect(await DelegationNode.query(subDelegatedNode.id)).not.toBeNull()
 
     const depositClaimTx = await delegatedNode.getReclaimDepositTx()
 
@@ -417,11 +409,13 @@ describe('Deposit claiming', () => {
 })
 
 describe('handling queries to data not on chain', () => {
-  it('DelegationNode query on empty', async () =>
-    expect(DelegationNode.query(randomAsHex(32))).resolves.toBeNull())
+  it('DelegationNode query on empty', async () => {
+    expect(await DelegationNode.query(randomAsHex(32))).toBeNull()
+  })
 
-  it('getAttestationHashes on empty', async () =>
-    expect(getAttestationHashes(randomAsHex(32))).resolves.toEqual([]))
+  it('getAttestationHashes on empty', async () => {
+    expect(await getAttestationHashes(randomAsHex(32))).toEqual([])
+  })
 })
 
 describe('hierarchyDetails', () => {

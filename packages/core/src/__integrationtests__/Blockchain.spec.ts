@@ -140,7 +140,7 @@ describe('Chain returns specific errors, that we check for', () => {
       version: api.extrinsicVersion,
       tip: '0x00000000000000000000000000005678',
     })
-    expect(
+    await expect(
       Blockchain.dispatchTx(
         tx,
         Blockchain.parseSubscriptionOptions({

@@ -137,8 +137,8 @@ describe('DelegationNode', () => {
         } as DelegationNode,
       }
 
-      await expect(
-        new DelegationNode({
+      expect(
+        await new DelegationNode({
           id: successId,
           hierarchyId,
           account: didAlice,
@@ -147,10 +147,10 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).resolves.toBe(true)
+      ).toBe(true)
 
-      await expect(
-        new DelegationNode({
+      expect(
+        await new DelegationNode({
           id: failureId,
           hierarchyId,
           account: didAlice,
@@ -159,7 +159,7 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).resolves.toBe(false)
+      ).toBe(false)
     })
 
     it('get delegation root', async () => {
@@ -277,15 +277,15 @@ describe('DelegationNode', () => {
     })
 
     it('counts all subnodes', async () => {
-      await expect(topNode.subtreeNodeCount()).resolves.toStrictEqual(5)
+      expect(await topNode.subtreeNodeCount()).toStrictEqual(5)
     })
 
     it('counts smaller subtrees', async () => {
-      await expect(nodes[b2].subtreeNodeCount()).resolves.toStrictEqual(0)
-      await expect(nodes[b1].subtreeNodeCount()).resolves.toStrictEqual(3)
-      await expect(nodes[c1].subtreeNodeCount()).resolves.toStrictEqual(1)
-      await expect(nodes[c2].subtreeNodeCount()).resolves.toStrictEqual(0)
-      await expect(nodes[d1].subtreeNodeCount()).resolves.toStrictEqual(0)
+      expect(await nodes[b2].subtreeNodeCount()).toStrictEqual(0)
+      expect(await nodes[b1].subtreeNodeCount()).toStrictEqual(3)
+      expect(await nodes[c1].subtreeNodeCount()).toStrictEqual(1)
+      expect(await nodes[c2].subtreeNodeCount()).toStrictEqual(0)
+      expect(await nodes[d1].subtreeNodeCount()).toStrictEqual(0)
     })
 
     it('counts all subnodes in deeply nested structure (100)', async () => {
@@ -305,9 +305,7 @@ describe('DelegationNode', () => {
         }),
         {}
       )
-      await expect(
-        nodes[hashList[0]].subtreeNodeCount()
-      ).resolves.toStrictEqual(100)
+      expect(await nodes[hashList[0]].subtreeNodeCount()).toStrictEqual(100)
     })
 
     it('counts all subnodes in deeply nested structure (1000)', async () => {
@@ -327,9 +325,7 @@ describe('DelegationNode', () => {
         }),
         {}
       )
-      await expect(
-        nodes[hashList[0]].subtreeNodeCount()
-      ).resolves.toStrictEqual(1000)
+      expect(await nodes[hashList[0]].subtreeNodeCount()).toStrictEqual(1000)
     })
 
     it('counts all subnodes in deeply nested structure (10000)', async () => {
@@ -349,9 +345,7 @@ describe('DelegationNode', () => {
         }),
         {}
       )
-      await expect(
-        nodes[hashList[0]].subtreeNodeCount()
-      ).resolves.toStrictEqual(10000)
+      expect(await nodes[hashList[0]].subtreeNodeCount()).toStrictEqual(10000)
     })
   })
 
@@ -384,10 +378,12 @@ describe('DelegationNode', () => {
 
     it('counts steps from last child till select parent', async () => {
       await Promise.all(
-        [0, 1, 5, 10, 75, 100, 300, 500, 999].map((i) =>
+        [0, 1, 5, 10, 75, 100, 300, 500, 999].map(async (i) =>
           expect(
-            nodes[hashList[0]].findAncestorOwnedBy(nodes[hashList[i]].account)
-          ).resolves.toMatchObject({
+            await nodes[hashList[0]].findAncestorOwnedBy(
+              nodes[hashList[i]].account
+            )
+          ).toMatchObject({
             steps: i,
             node: nodes[hashList[i]],
           })
@@ -396,46 +392,54 @@ describe('DelegationNode', () => {
     })
 
     it('counts various distances within the hierarchy', async () => {
-      await Promise.all([
-        expect(
-          nodes[hashList[1]].findAncestorOwnedBy(nodes[hashList[2]].account)
-        ).resolves.toMatchObject({
-          steps: 1,
-          node: nodes[hashList[2]],
-        }),
-        expect(
-          nodes[hashList[250]].findAncestorOwnedBy(nodes[hashList[450]].account)
-        ).resolves.toMatchObject({ steps: 200, node: nodes[hashList[450]] }),
-        expect(
-          nodes[hashList[800]].findAncestorOwnedBy(nodes[hashList[850]].account)
-        ).resolves.toMatchObject({
-          steps: 50,
-          node: nodes[hashList[850]],
-        }),
-        expect(
-          nodes[hashList[5]].findAncestorOwnedBy(nodes[hashList[955]].account)
-        ).resolves.toMatchObject({
-          steps: 950,
-          node: nodes[hashList[955]],
-        }),
-      ])
+      expect(
+        await nodes[hashList[1]].findAncestorOwnedBy(nodes[hashList[2]].account)
+      ).toMatchObject({
+        steps: 1,
+        node: nodes[hashList[2]],
+      })
+      expect(
+        await nodes[hashList[250]].findAncestorOwnedBy(
+          nodes[hashList[450]].account
+        )
+      ).toMatchObject({ steps: 200, node: nodes[hashList[450]] })
+      expect(
+        await nodes[hashList[800]].findAncestorOwnedBy(
+          nodes[hashList[850]].account
+        )
+      ).toMatchObject({
+        steps: 50,
+        node: nodes[hashList[850]],
+      })
+      expect(
+        await nodes[hashList[5]].findAncestorOwnedBy(
+          nodes[hashList[955]].account
+        )
+      ).toMatchObject({
+        steps: 950,
+        node: nodes[hashList[955]],
+      })
     })
 
     it('returns null if trying to count backwards', async () => {
-      await Promise.all([
-        expect(
-          nodes[hashList[10]].findAncestorOwnedBy(nodes[hashList[5]].account)
-        ).resolves.toMatchObject({
-          steps: 989,
-          node: null,
-        }),
-        expect(
-          nodes[hashList[99]].findAncestorOwnedBy(nodes[hashList[95]].account)
-        ).resolves.toMatchObject({ steps: 900, node: null }),
-        expect(
-          nodes[hashList[900]].findAncestorOwnedBy(nodes[hashList[500]].account)
-        ).resolves.toMatchObject({ steps: 99, node: null }),
-      ])
+      expect(
+        await nodes[hashList[10]].findAncestorOwnedBy(
+          nodes[hashList[5]].account
+        )
+      ).toMatchObject({
+        steps: 989,
+        node: null,
+      })
+      expect(
+        await nodes[hashList[99]].findAncestorOwnedBy(
+          nodes[hashList[95]].account
+        )
+      ).toMatchObject({ steps: 900, node: null })
+      expect(
+        await nodes[hashList[900]].findAncestorOwnedBy(
+          nodes[hashList[500]].account
+        )
+      ).toMatchObject({ steps: 99, node: null })
     })
 
     it('returns null if looking for non-existent account', async () => {
@@ -443,26 +447,24 @@ describe('DelegationNode', () => {
         Crypto.hash('-1', 256),
         ss58Format
       )}`
-      await Promise.all([
-        expect(
-          nodes[hashList[10]].findAncestorOwnedBy(noOnesAddress)
-        ).resolves.toMatchObject({
-          steps: 989,
-          node: null,
-        }),
-        expect(
-          nodes[hashList[99]].findAncestorOwnedBy(noOnesAddress)
-        ).resolves.toMatchObject({
-          steps: 900,
-          node: null,
-        }),
-        expect(
-          nodes[hashList[900]].findAncestorOwnedBy(noOnesAddress)
-        ).resolves.toMatchObject({
-          steps: 99,
-          node: null,
-        }),
-      ])
+      expect(
+        await nodes[hashList[10]].findAncestorOwnedBy(noOnesAddress)
+      ).toMatchObject({
+        steps: 989,
+        node: null,
+      })
+      expect(
+        await nodes[hashList[99]].findAncestorOwnedBy(noOnesAddress)
+      ).toMatchObject({
+        steps: 900,
+        node: null,
+      })
+      expect(
+        await nodes[hashList[900]].findAncestorOwnedBy(noOnesAddress)
+      ).toMatchObject({
+        steps: 99,
+        node: null,
+      })
     })
 
     it('error check should throw errors on faulty delegation nodes', async () => {
@@ -588,7 +590,7 @@ describe('DelegationHierarchy', () => {
     expect(queriedDelegation).not.toBe(undefined)
     if (queriedDelegation) {
       expect(queriedDelegation.account).toBe(didAlice)
-      await expect(queriedDelegation.getCTypeHash()).resolves.toBe(ctypeHash)
+      expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)
       expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
     }
   })

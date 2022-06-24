@@ -87,13 +87,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       paymentAccount.address
     )
 
-    const p = submitExtrinsic(
-      authorizedTx,
-      paymentAccount,
-      Blockchain.IS_IN_BLOCK
-    )
-
-    await expect(p).resolves.not.toThrow()
+    await submitExtrinsic(authorizedTx, paymentAccount, Blockchain.IS_IN_BLOCK)
   }, 30_000)
 
   it('should be possible to lookup the DID identifier with the given nick', async () => {
@@ -169,9 +163,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to remove a w3n by the payment account', async () => {
     const tx = await Web3Names.getReclaimDepositTx(nick)
-    const p = submitExtrinsic(tx, paymentAccount, Blockchain.IS_IN_BLOCK)
-
-    await expect(p).resolves.not.toThrow()
+    await submitExtrinsic(tx, paymentAccount, Blockchain.IS_IN_BLOCK)
   }, 30_000)
 
   it('should be possible to remove a w3n by the owner did', async () => {
@@ -194,20 +186,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
       w3nCreatorKey.sign,
       paymentAccount.address
     )
-    const p = submitExtrinsic(
-      authorizedTx,
-      paymentAccount,
-      Blockchain.IS_IN_BLOCK
-    )
-
-    await expect(p).resolves.not.toThrow()
+    await submitExtrinsic(authorizedTx, paymentAccount, Blockchain.IS_IN_BLOCK)
   }, 40_000)
 })
 
 describe('Runtime constraints', () => {
   it('should not be possible to create a web3 name that is too short', async () => {
     // Minimum is 3
-    await expect(Web3Names.getClaimTx('aaa')).resolves.not.toThrow()
+    await Web3Names.getClaimTx('aaa')
     // One less than the minimum
     await expect(
       Web3Names.getClaimTx('aa')
@@ -218,11 +204,9 @@ describe('Runtime constraints', () => {
 
   it('should not be possible to create a web3 name that is too long', async () => {
     // Maximum is 32
-    await expect(
-      Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    ).resolves.not.toThrow()
+    await Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     // One more than the maximum
-    await expect(async () =>
+    await expect(
       Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'
@@ -231,7 +215,7 @@ describe('Runtime constraints', () => {
 
   it('should not be possible to claim deposit for a web3 name that is too short', async () => {
     // Minimum is 3
-    await expect(Web3Names.getReclaimDepositTx('aaa')).resolves.not.toThrow()
+    await Web3Names.getReclaimDepositTx('aaa')
     // One less than the minimum
     await expect(
       Web3Names.getReclaimDepositTx('aa')
@@ -242,11 +226,9 @@ describe('Runtime constraints', () => {
 
   it('should not be possible to claim deposit for a web3 name that is too long', async () => {
     // Maximum is 32
-    await expect(
-      Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    ).resolves.not.toThrow()
+    await Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     // One more than the maximum
-    await expect(async () =>
+    await expect(
       Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'

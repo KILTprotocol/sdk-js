@@ -168,13 +168,13 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    await expect(
-      claimerIdentity.signPayload(
+    expect(
+      await claimerIdentity.signPayload(
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
         claimer.sign,
         claimerIdentity.authenticationKey.id
       )
-    ).resolves.toEqual(quoteBothAgreed.claimerSignature)
+    ).toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = DidUtils.parseDidUri(
       validAttesterSignedQuote.attesterSignature.keyUri
@@ -196,11 +196,9 @@ describe('Quote', () => {
         )
       )
     ).toBeTruthy()
-    await expect(() =>
-      Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-        resolver: mockResolver,
-      })
-    ).not.toThrow()
+    await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
+      resolver: mockResolver,
+    })
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,
