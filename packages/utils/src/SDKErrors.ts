@@ -94,6 +94,8 @@ export class ERROR_HASH_TYPE extends SDKError {
   }
 }
 
+export class ERROR_DATA_STRUCTURE extends SDKError {}
+
 export class ERROR_HASH_MALFORMED extends SDKError {
   constructor(hash?: string, type?: string) {
     let message = ''

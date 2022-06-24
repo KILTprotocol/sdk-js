@@ -1097,11 +1097,6 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestCredentialBody)
     ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
-    // @ts-expect-error
-    delete submitCredentialBody.content[0].attestation.revoked
-    expect(() =>
-      MessageUtils.errorCheckMessageBody(submitCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_REVOCATION_BIT_MISSING)
     // @ts-ignore
     acceptCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>

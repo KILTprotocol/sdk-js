@@ -252,6 +252,11 @@ export function verifyDataStructure(input: ICredential): void {
   ) {
     throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
   }
+
+  if (!input.claimHashes) {
+    throw new SDKErrors.ERROR_DATA_STRUCTURE('claim hashes not provided')
+  }
+
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }

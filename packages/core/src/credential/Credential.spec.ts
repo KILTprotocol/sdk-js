@@ -211,7 +211,7 @@ describe('RequestForAttestation', () => {
       Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).resolves.not.toThrow()
   })
   it('verify credentials signed by a light DID', async () => {
     const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
@@ -238,7 +238,7 @@ describe('RequestForAttestation', () => {
       Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).resolves.not.toThrow()
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
@@ -293,7 +293,7 @@ describe('RequestForAttestation', () => {
   it('Negative test for compresses and decompresses the credentials object', () => {
     compressedLegitimation.pop()
     // @ts-expect-error
-    delete legitimation.attestation
+    delete legitimation.claimHashes
 
     expect(() => {
       Credential.compress(legitimation)
@@ -484,7 +484,7 @@ describe('create presentation', () => {
       Credential.verify(presentation, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).resolves.not.toThrow()
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
@@ -523,7 +523,7 @@ describe('create presentation', () => {
       Credential.verify(presentation, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).resolves.not.toThrow()
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
@@ -564,7 +564,7 @@ describe('create presentation', () => {
       Credential.verify(presentation, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).resolves.not.toThrow()
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
 
