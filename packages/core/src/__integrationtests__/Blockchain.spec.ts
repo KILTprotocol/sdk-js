@@ -33,9 +33,13 @@ describe('Chain returns specific errors, that we check for', () => {
     faucet = devFaucet
     testIdentity = makeSigningKeyTool().keypair
     charlie = devCharlie
-    await getTransferTx(testIdentity.address, new BN(10000), 0).then((tx) =>
-      submitExtrinsic(tx, faucet)
+
+    const transferTx = await getTransferTx(
+      testIdentity.address,
+      new BN(10000),
+      0
     )
+    await submitExtrinsic(transferTx, faucet)
   }, 40000)
 
   it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {

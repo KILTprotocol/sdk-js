@@ -87,7 +87,7 @@ describe('services validation', () => {
           id,
           types: [],
           urls: [],
-        }).then((r) => r.toHuman())
+        })
       ).rejects.toThrow('ID')
     }
   )
@@ -100,7 +100,7 @@ describe('services validation', () => {
           id: 'service_1',
           types: [],
           urls: [uri],
-        }).then((r) => r.toHuman())
+        })
       ).rejects.toThrow('URI')
     }
   )

@@ -149,15 +149,20 @@ export class Message implements IMessage {
       )
     }
 
-    const { data } = await decryptCallback({
-      publicKey: receiverKeyDetails.publicKey,
-      alg: receiverKeyAlgType,
-      peerPublicKey: senderKeyDetails.publicKey,
-      data: hexToU8a(ciphertext),
-      nonce: hexToU8a(nonce),
-    }).catch(() => {
+    let data: Uint8Array
+    try {
+      data = (
+        await decryptCallback({
+          publicKey: receiverKeyDetails.publicKey,
+          alg: receiverKeyAlgType,
+          peerPublicKey: senderKeyDetails.publicKey,
+          data: hexToU8a(ciphertext),
+          nonce: hexToU8a(nonce),
+        })
+      ).data
+    } catch {
       throw new SDKErrors.ERROR_DECODING_MESSAGE()
-    })
+    }
 
     const decoded = u8aToString(data)
 

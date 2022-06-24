@@ -103,12 +103,14 @@ export async function submitSignedTx(
   }
   api.once('disconnected', handleDisconnect)
 
-  return promise
-    .catch((e) => Promise.reject(ErrorHandler.getExtrinsicError(e) || e))
-    .finally(() => {
-      unsubscribe()
-      api.off('disconnected', handleDisconnect)
-    })
+  try {
+    return await promise
+  } catch (e) {
+    throw ErrorHandler.getExtrinsicError(e as ISubmittableResult) || e
+  } finally {
+    unsubscribe()
+    api.off('disconnected', handleDisconnect)
+  }
 }
 
 export const dispatchTx = submitSignedTx

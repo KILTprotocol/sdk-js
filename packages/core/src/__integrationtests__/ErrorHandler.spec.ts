@@ -42,10 +42,9 @@ beforeAll(async () => {
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
+  const transferTx = await getTransferTx(addressFromRandom(), new BN(1))
   await expect(
-    getTransferTx(addressFromRandom(), new BN(1)).then((tx) =>
-      submitExtrinsic(tx, paymentAccount)
-    )
+    submitExtrinsic(transferTx, paymentAccount)
   ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
 }, 30_000)
 
@@ -59,8 +58,11 @@ it('records an extrinsic error when ctype does not exist', async () => {
     owner: someDid.uri,
     revoked: false,
   }
-  const tx = await Attestation.getStoreTx(attestation).then((ex) =>
-    someDid.authorizeExtrinsic(ex, key.sign, paymentAccount.address)
+  const storeTx = await Attestation.getStoreTx(attestation)
+  const tx = await someDid.authorizeExtrinsic(
+    storeTx,
+    key.sign,
+    paymentAccount.address
   )
   await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
     section: 'ctype',

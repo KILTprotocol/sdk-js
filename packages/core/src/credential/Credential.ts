@@ -185,6 +185,12 @@ export function getHash(credential: ICredential): IAttestation['claimHash'] {
   return credential.attestation.claimHash
 }
 
+/**
+ * Gets names of the credential’s attributes.
+ *
+ * @param credential The credential.
+ * @returns The set of names.
+ */
 export function getAttributes(credential: ICredential): Set<string> {
   // TODO: move this to claim or contents
   return new Set(Object.keys(credential.request.claim.contents))

@@ -87,9 +87,8 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const status = await getTransferTx(bob.address, new BN(100)).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, alice)
-    )
+    const transferTx = await getTransferTx(bob.address, new BN(100))
+    const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -100,9 +99,8 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await getTransferTx(bob.address, amount, exponent).then(
-      (tx) => Blockchain.signAndSubmitTx(tx, alice)
-    )
+    const transferTx = await getTransferTx(bob.address, amount, exponent)
+    const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(mockedApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount
