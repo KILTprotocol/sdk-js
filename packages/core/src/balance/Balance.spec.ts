@@ -39,7 +39,7 @@ describe('Balance', () => {
   let alice: KeyringPair
   let bob: KeyringPair
 
-  const accountInfo = (balance: number): AccountInfo => {
+  function accountInfo(balance: number): AccountInfo {
     return {
       data: {
         free: new BN(balance),

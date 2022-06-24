@@ -69,11 +69,11 @@ it('fetches the correct deposit amount', async () => {
 describe('handling attestations that do not exist', () => {
   const claimHash = Crypto.hashStr('abcde')
   it('Attestation.query', async () => {
-    return expect(Attestation.query(claimHash)).resolves.toBeNull()
+    await expect(Attestation.query(claimHash)).resolves.toBeNull()
   }, 30_000)
 
   it('Attestation.revoke', async () => {
-    return expect(
+    await expect(
       Attestation.getRemoveTx(claimHash, 0)
         .then((tx) =>
           attester.authorizeExtrinsic(tx, attesterKey.sign, tokenHolder.address)
@@ -86,7 +86,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 
   it('Attestation.remove', async () => {
-    return expect(
+    await expect(
       Attestation.getRemoveTx(claimHash, 0)
         .then((tx) =>
           attester.authorizeExtrinsic(tx, attesterKey.sign, tokenHolder.address)

@@ -1210,12 +1210,10 @@ describe('Runtime constraints', () => {
     it('should not be possible to create a DID with too many encryption keys', async () => {
       // Maximum is 10
       const newKeyAgreementKeys = Array(10).map(
-        (_, index): NewDidEncryptionKey => {
-          return {
-            publicKey: Uint8Array.from(new Array(32).fill(index)),
-            type: EncryptionKeyType.X25519,
-          }
-        }
+        (_, index): NewDidEncryptionKey => ({
+          publicKey: Uint8Array.from(new Array(32).fill(index)),
+          type: EncryptionKeyType.X25519,
+        })
       )
       await expect(
         DidChain.generateCreateTxFromCreationDetails(

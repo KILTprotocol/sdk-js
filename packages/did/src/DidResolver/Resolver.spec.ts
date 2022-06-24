@@ -179,9 +179,8 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryDidDeletionStatus = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<boolean> => {
-      return didIdentifier === deletedIdentifier
-    }
+    async (didIdentifier: DidIdentifier): Promise<boolean> =>
+      didIdentifier === deletedIdentifier
   )
   return {
     queryDetails,
