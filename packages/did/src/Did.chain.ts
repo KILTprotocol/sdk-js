@@ -215,7 +215,7 @@ function decodeDidPublicKeyDetails(
 function decodeDidChainRecord(
   didDetail: IDidChainRecordCodec
 ): IDidChainRecordJSON {
-  const publicKeys: DidKey[] = [...didDetail.publicKeys.entries()].map(
+  const publicKeys = [...didDetail.publicKeys.entries()].map(
     ([keyId, keyDetails]) => decodeDidPublicKeyDetails(keyId, keyDetails)
   )
   const authenticationKeyId = didDetail.authenticationKey.toHex()
@@ -470,9 +470,8 @@ export async function generateCreateTxFromCreationDetails(
     )
   }
 
-  const newKeyAgreementKeys: PublicKeyEnum[] = keyAgreementKeys.map(
-    ({ publicKey }) =>
-      formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
+  const newKeyAgreementKeys = keyAgreementKeys.map(({ publicKey }) =>
+    formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
   )
 
   const newAssertionKey = assertionKey

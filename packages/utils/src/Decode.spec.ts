@@ -18,13 +18,13 @@ const cases = ['Option<Text>', 'Option<AccountId>', 'Vec<Option<Text>>']
 
 describe('positive tests', () => {
   it('checks codec types', () => {
-    cases.forEach((T: any) => {
+    cases.forEach((T) => {
       expect(codecIsType(registry.createType(T), [T])).toBe(true)
     })
   })
 
   it('asserts codec types', () => {
-    cases.forEach((T: any) => {
+    cases.forEach((T) => {
       expect(() => assertCodecIsType(registry.createType(T), [T])).not.toThrow()
     })
   })

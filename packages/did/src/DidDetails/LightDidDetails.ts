@@ -8,11 +8,11 @@
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
 import type {
-  IDidDetails,
   DidIdentifier,
+  DidUri,
+  IDidDetails,
   IIdentity,
   SignCallback,
-  DidUri,
 } from '@kiltprotocol/types'
 import { VerificationKeyType } from '@kiltprotocol/types'
 
@@ -23,11 +23,10 @@ import { FullDidCreationBuilder } from '../DidBatcher/FullDidCreationBuilder.js'
 
 import type {
   DidConstructorDetails,
-  MapKeysToRelationship,
-  PublicKeys,
-  ServiceEndpoints,
   LightDidSupportedVerificationKeyType,
+  MapKeysToRelationship,
   NewLightDidAuthenticationKey,
+  PublicKeys,
 } from '../types.js'
 import {
   getKiltDidFromIdentifier,
@@ -132,13 +131,10 @@ export class LightDidDetails extends DidDetails {
       keyRelationships.keyAgreement = new Set([encryptionKeyId])
     }
 
-    const endpoints: ServiceEndpoints = serviceEndpoints.reduce(
-      (res, service) => {
-        res[service.id] = service
-        return res
-      },
-      {}
-    )
+    const endpoints = serviceEndpoints.reduce((res, service) => {
+      res[service.id] = service
+      return res
+    }, {})
 
     return new LightDidDetails(id.substring(2), {
       uri,

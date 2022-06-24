@@ -240,7 +240,7 @@ export async function verifyCredentialDigestProof(
 
     // 1: check credential digest against credential contents & claim property hashes in proof
     // collect hashes from hash array, legitimations & delegationId
-    const hashes: string[] = proof.claimHashes.concat(
+    const hashes = proof.claimHashes.concat(
       credential.legitimationIds,
       credential.delegationId || []
     )

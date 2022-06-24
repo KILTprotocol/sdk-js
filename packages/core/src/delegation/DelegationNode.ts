@@ -247,13 +247,11 @@ export class DelegationNode implements IDelegationNode {
    * @returns The hash representation of this delegation **as a hex string**.
    */
   public generateHash(): HexString {
-    const propsToHash: Array<Uint8Array | string> = [this.id, this.hierarchyId]
+    const propsToHash = [this.id, this.hierarchyId]
     if (this.parentId) {
       propsToHash.push(this.parentId)
     }
-    const uint8Props: Uint8Array[] = propsToHash.map((value) => {
-      return Crypto.coToUInt8(value)
-    })
+    const uint8Props = propsToHash.map((value) => Crypto.coToUInt8(value))
     uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
     const generated = Crypto.u8aToHex(
       Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)

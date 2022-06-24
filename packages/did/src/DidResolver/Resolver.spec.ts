@@ -10,20 +10,19 @@ import { decodeAddress } from '@polkadot/util-crypto'
 import Keyring from '@polkadot/keyring'
 
 import {
+  DidIdentifier,
   DidKey,
+  DidPublicKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
+  DidResourceUri,
   DidServiceEndpoint,
+  DidUri,
+  EncryptionKeyType,
   IDidDetails,
-  DidIdentifier,
-  KeyringPair,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
   VerificationKeyType,
-  EncryptionKeyType,
-  DidUri,
-  DidPublicKey,
-  DidResourceUri,
 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 
@@ -198,7 +197,7 @@ describe('When resolving a key', () => {
       identifierWithAuthenticationKey,
       'full'
     )
-    const keyIdUri: DidPublicKey['uri'] = `${fullDid}#auth`
+    const keyIdUri: DidResourceUri = `${fullDid}#auth`
 
     await expect(
       DidResolver.resolveKey(keyIdUri)
@@ -276,7 +275,7 @@ describe('When resolving a service endpoint', () => {
   })
 
   it('throws for invalid URIs', async () => {
-    const uriWithoutFragment: DidUri = getKiltDidFromIdentifier(
+    const uriWithoutFragment = getKiltDidFromIdentifier(
       deletedIdentifier,
       'full'
     )
@@ -428,9 +427,9 @@ describe('When resolving a full DID', () => {
 })
 
 describe('When resolving a light DID', () => {
-  const keyring: Keyring = new Keyring({ ss58Format })
-  const authKey: KeyringPair = keyring.addFromMnemonic('auth')
-  const encryptionKey: KeyringPair = keyring.addFromMnemonic('enc')
+  const keyring = new Keyring({ ss58Format })
+  const authKey = keyring.addFromMnemonic('auth')
+  const encryptionKey = keyring.addFromMnemonic('enc')
 
   it('correctly resolves the details with an authentication key', async () => {
     const lightDidWithAuthenticationKey = LightDidDetails.fromDetails({

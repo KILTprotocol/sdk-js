@@ -53,10 +53,7 @@ function getHashLeaves(
   legitimations: ICredential[],
   delegationId: IDelegationNode['id'] | null
 ): Uint8Array[] {
-  const result: Uint8Array[] = []
-  claimHashes.forEach((item) => {
-    result.push(Crypto.coToUInt8(item))
-  })
+  const result = claimHashes.map((item) => Crypto.coToUInt8(item))
   if (legitimations) {
     legitimations.forEach((legitimation) => {
       result.push(Crypto.coToUInt8(legitimation.attestation.claimHash))
@@ -78,12 +75,12 @@ function getHashLeaves(
 export function calculateRootHash(
   request: Partial<IRequestForAttestation>
 ): Hash {
-  const hashes: Uint8Array[] = getHashLeaves(
+  const hashes = getHashLeaves(
     request.claimHashes || [],
     request.legitimations || [],
     request.delegationId || null
   )
-  const root: Uint8Array = getHashRoot(hashes)
+  const root = getHashRoot(hashes)
   return Crypto.u8aToHex(root)
 }
 

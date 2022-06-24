@@ -130,7 +130,7 @@ describe('RequestForAttestation', () => {
   let migratedAndDeletedLightDid: DidDetails
   let migratedAndDeletedFullDid: DidDetails
 
-  const mockResolver: IDidResolver = (() => {
+  const mockResolver = (() => {
     const resolve = async (
       didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
@@ -387,7 +387,7 @@ describe('create presentation', () => {
   let reqForAtt: IRequestForAttestation
   let attestation: IAttestation
 
-  const mockResolver: IDidResolver = (() => {
+  const mockResolver = (() => {
     const resolve = async (
       didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {

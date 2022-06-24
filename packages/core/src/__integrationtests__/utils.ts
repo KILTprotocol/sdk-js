@@ -69,7 +69,7 @@ export async function initializeApi(): Promise<void> {
   })
 }
 
-const keyring: Keyring = new Keyring({ ss58Format, type: 'ed25519' })
+const keyring = new Keyring({ ss58Format, type: 'ed25519' })
 
 // Dev Faucet account seed phrase
 const faucetSeed =

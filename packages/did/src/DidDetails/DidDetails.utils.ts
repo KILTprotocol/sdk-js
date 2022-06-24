@@ -25,7 +25,7 @@ export function checkDidCreationDetails({
       `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`
     )
   }
-  const allowedKeyRelationships: Set<string> = new Set([
+  const allowedKeyRelationships = new Set([
     ...Object.values(KeyRelationship),
     'none',
   ])

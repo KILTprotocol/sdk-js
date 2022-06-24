@@ -11,7 +11,7 @@
 
 /* eslint-disable dot-notation */
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
-import type { IIdentity, SubscriptionPromise } from '@kiltprotocol/types'
+import type { IIdentity } from '@kiltprotocol/types'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { setConnection } from '../blockchainApiConnection/BlockchainApiConnection'
 import {
@@ -102,7 +102,7 @@ describe('Blockchain', () => {
 
   describe('parseSubscriptionOptions', () => {
     it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
-      const testFunction: SubscriptionPromise.ResultEvaluator = () => true
+      const testFunction = () => true
 
       expect(parseSubscriptionOptions()).toEqual({
         resolveOn: IS_FINALIZED,
