@@ -195,6 +195,7 @@ const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
   Ecdsa: VerificationKeyType.Ecdsa,
   X25519: EncryptionKeyType.X25519,
 }
+
 function decodeDidPublicKeyDetails(
   keyId: Hash,
   keyDetails: ChainDidPublicKeyDetails
@@ -218,15 +219,11 @@ function decodeDidChainRecord(
   didDetail: IDidChainRecordCodec
 ): IDidChainRecordJSON {
   const publicKeys: DidKey[] = [...didDetail.publicKeys.entries()].map(
-    ([keyId, keyDetails]) => {
-      return decodeDidPublicKeyDetails(keyId, keyDetails)
-    }
+    ([keyId, keyDetails]) => decodeDidPublicKeyDetails(keyId, keyDetails)
   )
   const authenticationKeyId = didDetail.authenticationKey.toHex()
   const keyAgreementKeyIds = [...didDetail.keyAgreementKeys.values()].map(
-    (keyId) => {
-      return keyId.toHex()
-    }
+    (keyId) => keyId.toHex()
   )
 
   const didRecord: IDidChainRecordJSON = {

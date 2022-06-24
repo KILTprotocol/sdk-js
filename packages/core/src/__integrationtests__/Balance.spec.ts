@@ -61,7 +61,7 @@ describe('when there is a dev chain with a faucet', () => {
   })
 
   it('getBalances should return 0 for new address', async () => {
-    return expect(
+    await expect(
       getBalances(addressFromRandom()).then((n) => n.free.toNumber())
     ).resolves.toEqual(0)
   })

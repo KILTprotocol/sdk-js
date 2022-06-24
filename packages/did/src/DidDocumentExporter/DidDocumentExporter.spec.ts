@@ -112,18 +112,10 @@ jest.mock('../Did.chain', () => {
       generateServiceEndpointDetails(serviceId)
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-      return [
-        (await queryServiceEndpoint(
-          didIdentifier,
-          'id-1'
-        )) as DidServiceEndpoint,
-        (await queryServiceEndpoint(
-          didIdentifier,
-          'id-2'
-        )) as DidServiceEndpoint,
-      ]
-    }
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => [
+      (await queryServiceEndpoint(didIdentifier, 'id-1')) as DidServiceEndpoint,
+      (await queryServiceEndpoint(didIdentifier, 'id-2')) as DidServiceEndpoint,
+    ]
   )
   return {
     queryDetails,

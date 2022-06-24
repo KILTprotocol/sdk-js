@@ -170,9 +170,10 @@ export class FullDidCreationBuilder extends FullDidBuilder {
             ? this.newDelegationKey.newKey
             : undefined,
         serviceEndpoints: this.newServiceEndpoints.size
-          ? [...this.newServiceEndpoints.entries()].map(([id, service]) => {
-              return { id, ...service }
-            })
+          ? [...this.newServiceEndpoints.entries()].map(([id, service]) => ({
+              id,
+              ...service,
+            }))
           : undefined,
       },
       submitter,

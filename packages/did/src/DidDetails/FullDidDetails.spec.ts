@@ -87,28 +87,26 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
   },
 ]
 
-jest.mock('../Did.chain.ts', () => {
-  return {
-    queryDetails: jest.fn(
-      async (
-        didIdentifier: DidIdentifier
-      ): Promise<IDidChainRecordJSON | null> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingDidDetails
-        }
-        return null
+jest.mock('../Did.chain.ts', () => ({
+  queryDetails: jest.fn(
+    async (
+      didIdentifier: DidIdentifier
+    ): Promise<IDidChainRecordJSON | null> => {
+      if (didIdentifier === existingIdentifier) {
+        return existingDidDetails
       }
-    ),
-    queryServiceEndpoints: jest.fn(
-      async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingServiceEndpoints
-        }
-        return []
+      return null
+    }
+  ),
+  queryServiceEndpoints: jest.fn(
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
+      if (didIdentifier === existingIdentifier) {
+        return existingServiceEndpoints
       }
-    ),
-  }
-})
+      return []
+    }
+  ),
+}))
 
 /*
  * Functions tested:

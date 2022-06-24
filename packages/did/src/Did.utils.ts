@@ -176,9 +176,7 @@ const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
   [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
 }
 const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
-  (obj, [key, value]) => {
-    return { ...obj, [value]: key }
-  },
+  (obj, [key, value]) => ({ ...obj, [value]: key }),
   {}
 ) as Record<SigningAlgorithms, VerificationKeyType>
 

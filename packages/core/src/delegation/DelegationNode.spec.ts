@@ -24,36 +24,34 @@ import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
 let hierarchiesDetails: Record<string, IDelegationHierarchyDetails> = {}
 let nodes: Record<string, DelegationNode> = {}
 
-jest.mock('./DelegationNode.chain', () => {
-  return {
-    getChildren: jest.fn(async (node: DelegationNode) =>
-      node.childrenIds.map((id) => nodes[id] || null)
-    ),
-    query: jest.fn(async (id: string) => nodes[id] || null),
-    getStoreAsRootTx: jest.fn(async (node: DelegationNode) => {
-      nodes[node.id] = node
-      hierarchiesDetails[node.id] = {
-        id: node.id,
-        cTypeHash: await node.getCTypeHash(),
-      }
-    }),
-    getRevokeTx: jest.fn(
-      async (
-        nodeId: IDelegationNode['id'],
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        maxDepth: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        maxRevocations: number
-      ) => {
-        nodes[nodeId] = new DelegationNode({
-          ...nodes[nodeId],
-          childrenIds: nodes[nodeId].childrenIds,
-          revoked: true,
-        })
-      }
-    ),
-  }
-})
+jest.mock('./DelegationNode.chain', () => ({
+  getChildren: jest.fn(async (node: DelegationNode) =>
+    node.childrenIds.map((id) => nodes[id] || null)
+  ),
+  query: jest.fn(async (id: string) => nodes[id] || null),
+  getStoreAsRootTx: jest.fn(async (node: DelegationNode) => {
+    nodes[node.id] = node
+    hierarchiesDetails[node.id] = {
+      id: node.id,
+      cTypeHash: await node.getCTypeHash(),
+    }
+  }),
+  getRevokeTx: jest.fn(
+    async (
+      nodeId: IDelegationNode['id'],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      maxDepth: number,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      maxRevocations: number
+    ) => {
+      nodes[nodeId] = new DelegationNode({
+        ...nodes[nodeId],
+        childrenIds: nodes[nodeId].childrenIds,
+        revoked: true,
+      })
+    }
+  ),
+}))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
   query: jest.fn(async (id: string) => hierarchiesDetails[id] || null),
@@ -272,9 +270,11 @@ describe('DelegationNode', () => {
     it('mocks work', async () => {
       expect(topNode.id).toEqual(a1)
       await expect(
-        topNode.getChildren().then((children: DelegationNode[]) => {
-          return children.map((childNode: DelegationNode) => childNode.id)
-        })
+        topNode
+          .getChildren()
+          .then((children: DelegationNode[]) =>
+            children.map((childNode: DelegationNode) => childNode.id)
+          )
       ).resolves.toStrictEqual(topNode.childrenIds)
       await expect(nodes[d1].getChildren()).resolves.toStrictEqual([])
     })
@@ -293,22 +293,21 @@ describe('DelegationNode', () => {
 
     it('counts all subnodes in deeply nested structure (100)', async () => {
       const lastIndex = 100
-      nodes = hashList
-        .slice(0, lastIndex + 1)
-        .reduce((previous, current, index) => {
-          return {
-            ...previous,
-            [current]: new DelegationNode({
-              id: current,
-              hierarchyId,
-              account: didAlice,
-              permissions: [Permission.DELEGATE],
-              childrenIds: index < lastIndex ? [hashList[index + 1]] : [],
-              parentId: hashList[index - 1],
-              revoked: false,
-            }),
-          }
-        }, {})
+      nodes = hashList.slice(0, lastIndex + 1).reduce(
+        (previous, current, index) => ({
+          ...previous,
+          [current]: new DelegationNode({
+            id: current,
+            hierarchyId,
+            account: didAlice,
+            permissions: [Permission.DELEGATE],
+            childrenIds: index < lastIndex ? [hashList[index + 1]] : [],
+            parentId: hashList[index - 1],
+            revoked: false,
+          }),
+        }),
+        {}
+      )
       await expect(
         nodes[hashList[0]].subtreeNodeCount()
       ).resolves.toStrictEqual(100)
@@ -316,22 +315,21 @@ describe('DelegationNode', () => {
 
     it('counts all subnodes in deeply nested structure (1000)', async () => {
       const lastIndex = 1000
-      nodes = hashList
-        .slice(0, lastIndex + 1)
-        .reduce((previous, current, index) => {
-          return {
-            ...previous,
-            [current]: new DelegationNode({
-              id: current,
-              hierarchyId,
-              account: didAlice,
-              permissions: [Permission.DELEGATE],
-              childrenIds: index < lastIndex ? [hashList[index + 1]] : [],
-              parentId: hashList[index - 1],
-              revoked: false,
-            }),
-          }
-        }, {})
+      nodes = hashList.slice(0, lastIndex + 1).reduce(
+        (previous, current, index) => ({
+          ...previous,
+          [current]: new DelegationNode({
+            id: current,
+            hierarchyId,
+            account: didAlice,
+            permissions: [Permission.DELEGATE],
+            childrenIds: index < lastIndex ? [hashList[index + 1]] : [],
+            parentId: hashList[index - 1],
+            revoked: false,
+          }),
+        }),
+        {}
+      )
       await expect(
         nodes[hashList[0]].subtreeNodeCount()
       ).resolves.toStrictEqual(1000)
@@ -339,22 +337,21 @@ describe('DelegationNode', () => {
 
     it('counts all subnodes in deeply nested structure (10000)', async () => {
       const lastIndex = 10000
-      nodes = hashList
-        .slice(0, lastIndex + 1)
-        .reduce((previous, current, index) => {
-          return {
-            ...previous,
-            [current]: new DelegationNode({
-              id: current,
-              hierarchyId,
-              account: didAlice,
-              permissions: [Permission.DELEGATE],
-              childrenIds: index < lastIndex ? [hashList[index + 1]] : [],
-              parentId: hashList[index - 1],
-              revoked: false,
-            }),
-          }
-        }, {})
+      nodes = hashList.slice(0, lastIndex + 1).reduce(
+        (previous, current, index) => ({
+          ...previous,
+          [current]: new DelegationNode({
+            id: current,
+            hierarchyId,
+            account: didAlice,
+            permissions: [Permission.DELEGATE],
+            childrenIds: index < lastIndex ? [hashList[index + 1]] : [],
+            parentId: hashList[index - 1],
+            revoked: false,
+          }),
+        }),
+        {}
+      )
       await expect(
         nodes[hashList[0]].subtreeNodeCount()
       ).resolves.toStrictEqual(10000)
@@ -377,12 +374,13 @@ describe('DelegationNode', () => {
               revoked: false,
             })
         )
-        .reduce((result, node) => {
-          return {
+        .reduce(
+          (result, node) => ({
             ...result,
             [node.id]: node,
-          }
-        }, {})
+          }),
+          {}
+        )
 
       expect(Object.keys(nodes)).toHaveLength(1000)
     })
