@@ -153,7 +153,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.authenticationKey.id
     )
     await expect(Credential.verifySignature(request)).resolves.toBe(true)
-    await expect(Credential.verify(request)).resolves.toBe(true)
+    await expect(Credential.verify(request)).resolves.not.toThrow()
     const attestation = Attestation.fromCredentialAndDid(request, attester.uri)
     await Attestation.getStoreTx(attestation)
       .then((call) =>
@@ -274,7 +274,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           )
         )
         .then((tx) => submitExtrinsic(tx, tokenHolder))
-      await expect(Credential.verify(request)).resolves.toBe(true)
+      await expect(Credential.verify(request)).resolves.not.toThrow()
       await expect(
         Attestation.checkValidity(attestation.claimHash)
       ).resolves.toBeTruthy()
