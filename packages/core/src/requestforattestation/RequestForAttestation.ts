@@ -69,6 +69,12 @@ function getHashLeaves(
   return result
 }
 
+/**
+ * Calculates the root hash of the request for attestation.
+ *
+ * @param request The request for attestation object.
+ * @returns The hash.
+ */
 export function calculateRootHash(
   request: Partial<IRequestForAttestation>
 ): Hash {
@@ -102,6 +108,13 @@ export function removeClaimProperties(
   }).nonceMap
 }
 
+/**
+ * Prepares the signing data of the request for attestation.
+ *
+ * @param input The request for attestation.
+ * @param challenge Optional challenge string.
+ * @returns The Uint8Array of data.
+ */
 export function makeSigningData(
   input: IRequestForAttestation,
   challenge?: string
@@ -165,6 +178,12 @@ export async function signWithDidKey(
   addSignature(req4Att, signature, signatureKeyId, { challenge })
 }
 
+/**
+ * Verifies the root hash of the request for attestation.
+ *
+ * @param input The request for attestation.
+ * @returns Whether the root hash is correct.
+ */
 export function verifyRootHash(input: IRequestForAttestation): boolean {
   return input.rootHash === calculateRootHash(input)
 }
@@ -392,7 +411,6 @@ export function isIRequestForAttestation(
   try {
     verifyDataStructure(input as IRequestForAttestation)
   } catch (error) {
-    console.error(error)
     return false
   }
   return true

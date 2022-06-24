@@ -6,6 +6,6 @@
  */
 
 /**
- * The network SS58 prefix registered for KILT blockchain
+ * The network SS58 prefix registered for KILT blockchain.
  */
 export const ss58Format = 38

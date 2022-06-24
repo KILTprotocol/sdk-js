@@ -269,14 +269,11 @@ describe('DelegationNode', () => {
 
     it('mocks work', async () => {
       expect(topNode.id).toEqual(a1)
-      await expect(
-        topNode
-          .getChildren()
-          .then((children: DelegationNode[]) =>
-            children.map((childNode: DelegationNode) => childNode.id)
-          )
-      ).resolves.toStrictEqual(topNode.childrenIds)
-      await expect(nodes[d1].getChildren()).resolves.toStrictEqual([])
+      const children = await topNode.getChildren()
+      const ids = children.map((childNode) => childNode.id)
+
+      expect(ids).toStrictEqual(topNode.childrenIds)
+      expect(await nodes[d1].getChildren()).toStrictEqual([])
     })
 
     it('counts all subnodes', async () => {
@@ -606,11 +603,9 @@ describe('DelegationHierarchy', () => {
       revoked: false,
     })
     await aDelegationRootNode.getRevokeTx(didAlice)
-    const fetchedNodeRevocationStatus = DelegationNode.query(
-      ROOT_IDENTIFIER
-    ).then((node: DelegationNode | null) => node?.revoked)
-    await expect(fetchedNodeRevocationStatus).resolves.not.toBeNull()
-    await expect(fetchedNodeRevocationStatus).resolves.toEqual(true)
+    const node = await DelegationNode.query(ROOT_IDENTIFIER)
+    const fetchedNodeRevocationStatus = node?.revoked
+    expect(fetchedNodeRevocationStatus).toEqual(true)
   })
 
   // This test is matched with a unit test on the node side to assure uniform hash generation.

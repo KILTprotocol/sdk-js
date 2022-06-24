@@ -58,47 +58,56 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
     const { keypair, sign } = makeSigningKeyTool()
+    const storeTx = await CType.getStoreTx(ctype)
+    const authorizedStoreTx = await ctypeCreator.authorizeExtrinsic(
+      storeTx,
+      sign,
+      keypair.address
+    )
     await expect(
-      CType.getStoreTx(ctype)
-        .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, sign, keypair.address)
-        )
-        .then((tx) => submitExtrinsic(tx, keypair))
+      submitExtrinsic(authorizedStoreTx, keypair)
     ).rejects.toThrowError()
-    await expect(CType.verifyStored(ctype)).resolves.toBeFalsy()
+    expect(await CType.verifyStored(ctype)).toBeFalsy()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    await CType.getStoreTx(ctype)
-      .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, key.sign, paymentAccount.address)
-      )
-      .then((tx) => submitExtrinsic(tx, paymentAccount))
-    await Promise.all([
-      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri),
-      expect(CType.verifyStored(ctype)).resolves.toBeTruthy(),
-    ])
+    const storeTx = await CType.getStoreTx(ctype)
+    const authorizedStoreTx = await ctypeCreator.authorizeExtrinsic(
+      storeTx,
+      key.sign,
+      paymentAccount.address
+    )
+    await submitExtrinsic(authorizedStoreTx, paymentAccount)
+
+    expect(await getOwner(ctype.hash)).toBe(ctypeCreator.uri)
+    expect(await CType.verifyStored(ctype)).toBeTruthy()
+
     ctype.owner = ctypeCreator.uri
-    await expect(CType.verifyStored(ctype)).resolves.toBeTruthy()
+    expect(await CType.verifyStored(ctype)).toBeTruthy()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    await CType.getStoreTx(ctype)
-      .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, key.sign, paymentAccount.address)
-      )
-      .then((tx) => submitExtrinsic(tx, paymentAccount))
+    const storeTx = await CType.getStoreTx(ctype)
+    const authorizedStoreTx = await ctypeCreator.authorizeExtrinsic(
+      storeTx,
+      key.sign,
+      paymentAccount.address
+    )
+    await submitExtrinsic(authorizedStoreTx, paymentAccount)
+
+    const storeTx2 = await CType.getStoreTx(ctype)
+    const authorizedStoreTx2 = await ctypeCreator.authorizeExtrinsic(
+      storeTx2,
+      key.sign,
+      paymentAccount.address
+    )
     await expect(
-      CType.getStoreTx(ctype)
-        .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, key.sign, paymentAccount.address)
-        )
-        .then((tx) => submitExtrinsic(tx, paymentAccount))
+      submitExtrinsic(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
-    // console.log('Triggered error on re-submit')
-    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.uri)
+
+    expect(await getOwner(ctype.hash)).toBe(ctypeCreator.uri)
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -125,12 +134,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctypeCreator.uri
     )
 
-    await Promise.all([
-      expect(CType.verifyStored(iAmNotThere)).resolves.toBeFalsy(),
-      expect(getOwner(iAmNotThere.hash)).resolves.toBeNull(),
-      expect(getOwner(Crypto.hashStr('abcdefg'))).resolves.toBeNull(),
-      expect(CType.verifyStored(iAmNotThereWithOwner)).resolves.toBeFalsy(),
-    ])
+    expect(await CType.verifyStored(iAmNotThere)).toBeFalsy()
+    expect(await getOwner(iAmNotThere.hash)).toBeNull()
+    expect(await getOwner(Crypto.hashStr('abcdefg'))).toBeNull()
+    expect(await CType.verifyStored(iAmNotThereWithOwner)).toBeFalsy()
   })
 })
 

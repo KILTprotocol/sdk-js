@@ -167,7 +167,8 @@ export class DelegationNode implements IDelegationNode {
    * @returns The CType hash associated with the delegation hierarchy.
    */
   public async getCTypeHash(): Promise<ICType['hash']> {
-    return this.getHierarchyDetails().then((details) => details.cTypeHash)
+    const { cTypeHash } = await this.getHierarchyDetails()
+    return cTypeHash
   }
 
   /**

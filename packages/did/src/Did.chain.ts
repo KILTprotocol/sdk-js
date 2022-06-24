@@ -118,11 +118,8 @@ async function queryDidEncoded(
 async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
-  return api.query.did.didBlacklist
-    .keys<GenericAccountId[]>()
-    .then((entries) =>
-      entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
-    )
+  const entries = await api.query.did.didBlacklist.keys<GenericAccountId[]>()
+  return entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
 }
 
 // Query a DID service given the DID identifier and the service ID.

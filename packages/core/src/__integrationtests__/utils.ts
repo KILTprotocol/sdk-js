@@ -25,7 +25,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { GenericContainer, Wait } from 'testcontainers'
+import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 import * as CType from '../ctype'
 import { Balance } from '../balance'
 import { connect, init } from '../kilt'
@@ -41,7 +41,7 @@ const containerPromise = new GenericContainer(
   .withWaitStrategy(Wait.forLogMessage('Idle'))
   .start()
 
-async function getStartedTestContainer() {
+async function getStartedTestContainer(): Promise<StartedTestContainer> {
   try {
     return await containerPromise
   } catch (error) {
@@ -153,7 +153,11 @@ export async function fundAccount(
   amount: BN
 ): Promise<void> {
   const transferTx = await Balance.getTransferTx(address, amount)
-  return submitExtrinsic(transferTx, devFaucet).catch((e) => console.log(e))
+  try {
+    await submitExtrinsic(transferTx, devFaucet)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 export async function createEndowedTestAccount(
