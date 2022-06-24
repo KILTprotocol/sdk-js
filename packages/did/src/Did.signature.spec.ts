@@ -22,7 +22,7 @@ import {
   randomAsHex,
   randomAsU8a,
 } from '@polkadot/util-crypto'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { FullDidDetails, LightDidDetails } from './DidDetails'
 import {
   VerificationResult,
@@ -38,7 +38,7 @@ describe('light DID', () => {
   let details: LightDidDetails
   let sign: SignCallback
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
+    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
       mnemonicGenerate()
     )
     details = LightDidDetails.fromIdentifier(
@@ -223,7 +223,7 @@ describe('full DID', () => {
   let details: FullDidDetails
   let sign: SignCallback
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
+    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
       mnemonicGenerate()
     )
     details = new FullDidDetails({
@@ -353,7 +353,7 @@ describe('full DID', () => {
 describe('type guard', () => {
   let keypair: KeyringPair
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
+    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
       mnemonicGenerate()
     )
   })

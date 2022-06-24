@@ -10,7 +10,7 @@
  */
 
 /* eslint-disable dot-notation */
-import { Keyring } from '@kiltprotocol/utils'
+import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import type { IIdentity, SubscriptionPromise } from '@kiltprotocol/types'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { setConnection } from '../blockchainApiConnection/BlockchainApiConnection'
@@ -36,8 +36,7 @@ describe('Blockchain', () => {
     beforeAll(async () => {
       const keyring = new Keyring({
         type: 'ed25519',
-        // KILT has registered the ss58 prefix 38
-        ss58Format: 38,
+        ss58Format,
       })
       const alicePair = keyring.createFromUri('//Alice')
       alice = {

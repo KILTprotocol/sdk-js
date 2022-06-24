@@ -17,7 +17,7 @@ import type {
 import { VerificationKeyType } from '@kiltprotocol/types'
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import { FullDidCreationBuilder } from '../DidBatcher/FullDidCreationBuilder.js'
 
@@ -110,7 +110,7 @@ export class LightDidDetails extends DidDetails {
 
     // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
     const id = authenticationKeyTypeEncoding.concat(
-      encodeAddress(authenticationKey.publicKey, 38)
+      encodeAddress(authenticationKey.publicKey, ss58Format)
     )
 
     let uri = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
@@ -184,7 +184,7 @@ export class LightDidDetails extends DidDetails {
       )
     }
     const authenticationKey: NewLightDidAuthenticationKey = {
-      publicKey: decodeAddress(identifier.substring(2), false, 38),
+      publicKey: decodeAddress(identifier.substring(2), false, ss58Format),
       type: decodedAuthKeyType,
     }
     if (!encodedDetails) {
@@ -213,7 +213,7 @@ export class LightDidDetails extends DidDetails {
     keyType: LightDidSupportedVerificationKeyType = VerificationKeyType.Sr25519
   ): LightDidDetails {
     const authenticationKey: NewLightDidAuthenticationKey = {
-      publicKey: decodeAddress(identifier, false, 38),
+      publicKey: decodeAddress(identifier, false, ss58Format),
       type: keyType,
     }
     return LightDidDetails.fromDetails({

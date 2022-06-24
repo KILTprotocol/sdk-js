@@ -10,15 +10,17 @@
  */
 
 import { encodeAddress } from '@polkadot/keyring'
-import { Keyring, SDKErrors } from './index'
+import { Keyring, SDKErrors, ss58Format } from './index'
 import { validateAddress, validateHash, validateSignature } from './DataUtils'
 import * as Crypto from './Crypto'
 
 const key = Buffer.from([0, 0, 7, 0])
 
 it('validates address with prefix 38', () => {
-  expect(() => validateAddress(encodeAddress(key, 38), 'test')).not.toThrow()
-  expect(validateAddress(encodeAddress(key, 38), 'test')).toBe(true)
+  expect(() =>
+    validateAddress(encodeAddress(key, ss58Format), 'test')
+  ).not.toThrow()
+  expect(validateAddress(encodeAddress(key, ss58Format), 'test')).toBe(true)
 })
 
 it('throws on address with other prefix', () => {
@@ -82,8 +84,7 @@ describe('validate signature util', () => {
   const data = 'data'
   const keyring = new Keyring({
     type: 'ed25519',
-    // KILT has registered the ss58 prefix 38
-    ss58Format: 38,
+    ss58Format,
   })
   const signer = keyring.addFromUri('//Alice')
   const signature = Crypto.signStr('data', signer)
