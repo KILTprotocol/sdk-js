@@ -25,6 +25,7 @@ beforeAll(async () => {
 }, 30_000)
 
 describe('Chain returns specific errors, that we check for', () => {
+  const resolveOn = Blockchain.IS_IN_BLOCK
   let faucet: KeyringPair
   let testIdentity: KeyringPair
   let charlie: KeyringPair
@@ -78,9 +79,7 @@ describe('Chain returns specific errors, that we check for', () => {
     })
     await Blockchain.dispatchTx(
       tx,
-      Blockchain.parseSubscriptionOptions({
-        resolveOn: Blockchain.IS_IN_BLOCK,
-      })
+      Blockchain.parseSubscriptionOptions({ resolveOn })
     )
 
     const { signature: errorSignature } = api
@@ -97,9 +96,7 @@ describe('Chain returns specific errors, that we check for', () => {
     await expect(
       Blockchain.dispatchTx(
         errorTx,
-        Blockchain.parseSubscriptionOptions({
-          resolveOn: Blockchain.IS_IN_BLOCK,
-        })
+        Blockchain.parseSubscriptionOptions({ resolveOn })
       )
     ).rejects.toThrow(Blockchain.TxOutdated)
   }, 40000)
@@ -140,14 +137,6 @@ describe('Chain returns specific errors, that we check for', () => {
       version: api.extrinsicVersion,
       tip: '0x00000000000000000000000000005678',
     })
-    await expect(
-      Blockchain.dispatchTx(
-        tx,
-        Blockchain.parseSubscriptionOptions({
-          resolveOn: Blockchain.IS_IN_BLOCK,
-        })
-      )
-    ).rejects.toHaveProperty('status.isUsurped', true)
 
     const { signature: errorSignature } = api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
@@ -160,12 +149,18 @@ describe('Chain returns specific errors, that we check for', () => {
       errorSigner.toPayload()
     )
 
-    await Blockchain.dispatchTx(
-      errorTx,
-      Blockchain.parseSubscriptionOptions({
-        resolveOn: Blockchain.IS_IN_BLOCK,
-      })
+    const promiseToFail = Blockchain.dispatchTx(
+      tx,
+      Blockchain.parseSubscriptionOptions({ resolveOn })
     )
+    const promiseToUsurp = Blockchain.dispatchTx(
+      errorTx,
+      Blockchain.parseSubscriptionOptions({ resolveOn })
+    )
+    await Promise.all([
+      expect(promiseToFail).rejects.toHaveProperty('status.isUsurped', true),
+      promiseToUsurp,
+    ])
   }, 40000)
 })
 
