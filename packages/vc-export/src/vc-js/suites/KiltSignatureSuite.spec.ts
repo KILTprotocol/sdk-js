@@ -80,25 +80,26 @@ describe('jsigs', () => {
         'https://w3id.org/security/v2',
         { documentLoader, compactToRelative: false }
       )
-      await expect(purpose.match(compactedProof, {})).resolves.toBe(true)
-      await expect(
-        purpose.match(compactedProof, { document: credential, documentLoader })
-      ).resolves.toBe(true)
+      expect(await purpose.match(compactedProof, {})).toBe(true)
+      expect(
+        await purpose.match(compactedProof, {
+          document: credential,
+          documentLoader,
+        })
+      ).toBe(true)
     })
 
     it('suite matches proof', async () => {
       const proofWithContext = { ...proof, '@context': credential['@context'] }
-      await expect(suite.matchProof({ proof: proofWithContext })).resolves.toBe(
-        true
-      )
-      await expect(
-        suite.matchProof({
+      expect(await suite.matchProof({ proof: proofWithContext })).toBe(true)
+      expect(
+        await suite.matchProof({
           proof: proofWithContext,
           document: credential,
           purpose,
           documentLoader,
         })
-      ).resolves.toBe(true)
+      ).toBe(true)
     })
   })
 
@@ -108,9 +109,9 @@ describe('jsigs', () => {
     })
 
     it('verifies Kilt Self Signed Proof', async () => {
-      await expect(
-        jsigs.verify(credential, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        await jsigs.verify(credential, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -126,9 +127,9 @@ describe('jsigs', () => {
 
     it('detects tampering', async () => {
       tamperCred.id = tamperCred.id.replace('1', '2')
-      await expect(
-        jsigs.verify(tamperCred, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
 
     it('detects signer mismatch', async () => {
@@ -137,9 +138,9 @@ describe('jsigs', () => {
         publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
-      await expect(
-        jsigs.verify(tamperCred, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
   })
 })
@@ -151,9 +152,14 @@ describe('vc-js', () => {
     })
 
     it('verifies Kilt Self Signed Proof', async () => {
-      await expect(
-        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        await vcjs.verifyCredential({
+          credential,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -169,14 +175,14 @@ describe('vc-js', () => {
 
     it('detects tampering', async () => {
       tamperCred.id = tamperCred.id.replace('1', '2')
-      await expect(
-        vcjs.verifyCredential({
+      expect(
+        await vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: false })
+      ).toMatchObject({ verified: false })
     })
 
     it('detects signer mismatch', async () => {
@@ -185,14 +191,14 @@ describe('vc-js', () => {
         publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
-      await expect(
-        vcjs.verifyCredential({
+      expect(
+        await vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: false })
+      ).toMatchObject({ verified: false })
     })
   })
 })

@@ -374,82 +374,80 @@ describe('Different deposits scenarios', () => {
   }, 240_000)
 
   it('Check if deleting full DID returns deposit', async () => {
-    await expect(
-      checkDeleteFullDid(keys[0].keypair, testFullDidOne, keys[0].sign)
-    ).resolves.toBe(true)
+    expect(
+      await checkDeleteFullDid(keys[0].keypair, testFullDidOne, keys[0].sign)
+    ).toBe(true)
   }, 45_000)
   it('Check if reclaiming full DID returns deposit', async () => {
-    await expect(
-      checkReclaimFullDid(keys[1].keypair, testFullDidTwo)
-    ).resolves.toBe(true)
+    expect(await checkReclaimFullDid(keys[1].keypair, testFullDidTwo)).toBe(
+      true
+    )
   }, 45_000)
   it('Check if removing an attestation from a full DID returns deposit', async () => {
-    await expect(
-      checkRemoveFullDidAttestation(
+    expect(
+      await checkRemoveFullDidAttestation(
         keys[2].keypair,
         testFullDidThree,
         keys[2].sign,
         requestForAttestation
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if reclaiming an attestation from a full DID returns the deposit', async () => {
-    await expect(
-      checkReclaimFullDidAttestation(
+    expect(
+      await checkReclaimFullDidAttestation(
         keys[3].keypair,
         testFullDidFour,
         keys[3].sign,
         requestForAttestation
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if deleting from a migrated light DID to a full DID returns deposit', async () => {
-    await expect(
-      checkDeleteFullDid(keys[4].keypair, testFullDidFive, keys[4].sign)
-    ).resolves.toBe(true)
+    expect(
+      await checkDeleteFullDid(keys[4].keypair, testFullDidFive, keys[4].sign)
+    ).toBe(true)
   }, 90_000)
   it('Check if reclaiming from a migrated light DID to a full DID returns deposit', async () => {
-    await expect(
-      checkReclaimFullDid(keys[5].keypair, testFullDidSix)
-    ).resolves.toBe(true)
+    expect(await checkReclaimFullDid(keys[5].keypair, testFullDidSix)).toBe(
+      true
+    )
   }, 90_000)
   it('Check if removing an attestation from a migrated light DID to a full DID returns the deposit', async () => {
-    await expect(
-      checkRemoveFullDidAttestation(
+    expect(
+      await checkRemoveFullDidAttestation(
         keys[6].keypair,
         testFullDidSeven,
         keys[6].sign,
         requestForAttestation
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if reclaiming an attestation from a migrated light DID to a full DID returns the deposit', async () => {
-    await expect(
-      checkReclaimFullDidAttestation(
+    expect(
+      await checkReclaimFullDidAttestation(
         keys[7].keypair,
         testFullDidEight,
         keys[7].sign,
         requestForAttestation
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if deleting a full DID and reclaiming an attestation returns the deposit', async () => {
-    await expect(
-      checkDeletedDidReclaimAttestation(
-        keys[8].keypair,
-        testFullDidNine,
-        keys[8].sign,
-        requestForAttestation
-      )
-    ).resolves.not.toThrow()
+    await checkDeletedDidReclaimAttestation(
+      keys[8].keypair,
+      testFullDidNine,
+      keys[8].sign,
+      requestForAttestation
+    )
   }, 120_000)
   it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
-    await expect(
-      checkWeb3Deposit(keys[9].keypair, testFullDidTen, keys[9].sign)
-    ).resolves.toBeTruthy()
+    expect(
+      await checkWeb3Deposit(keys[9].keypair, testFullDidTen, keys[9].sign)
+    ).toBeTruthy()
   }, 120_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

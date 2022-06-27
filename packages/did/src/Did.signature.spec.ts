@@ -71,13 +71,13 @@ describe('light DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -91,13 +91,13 @@ describe('light DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -111,13 +111,13 @@ describe('light DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.assertionMethod,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/verification method/i),
     })
@@ -131,13 +131,13 @@ describe('light DID', () => {
       details.authenticationKey.id
     )
     signature.keyUri += '1a'
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/no key with id/i),
     })
@@ -150,13 +150,13 @@ describe('light DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/invalid signature/i),
     })
@@ -171,13 +171,13 @@ describe('light DID', () => {
     )
     // @ts-expect-error
     signature.keyUri = signature.keyUri.replace('#', '?')
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/signature key id .+ invalid/i),
     })
@@ -197,13 +197,13 @@ describe('light DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/migrated/i),
     })
@@ -263,13 +263,13 @@ describe('full DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -283,13 +283,13 @@ describe('full DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -309,13 +309,13 @@ describe('full DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/deactivated/i),
     })
@@ -329,13 +329,13 @@ describe('full DID', () => {
       sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/no result/i),
     })

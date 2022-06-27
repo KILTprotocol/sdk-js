@@ -172,7 +172,7 @@ export async function signWithDidKey(
     sign,
     keyId
   )
-  addSignature(req4Att, signature, signatureKeyId, { challenge })
+  await addSignature(req4Att, signature, signatureKeyId, { challenge })
 }
 
 /**

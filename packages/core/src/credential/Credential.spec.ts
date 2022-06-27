@@ -227,11 +227,11 @@ describe('RequestForAttestation', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(
-      Credential.verify(credential, {
+    expect(
+      await Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).toBe(true)
   })
   it('verify credentials signed by a light DID', async () => {
     const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
@@ -256,11 +256,11 @@ describe('RequestForAttestation', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(
-      Credential.verify(credential, {
+    expect(
+      await Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).toBe(true)
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
@@ -302,11 +302,11 @@ describe('RequestForAttestation', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(
-      Credential.verify(credential, {
+    expect(
+      await Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).resolves.toBeFalsy()
+    ).toBeFalsy()
   })
 
   it('compresses and decompresses the credentials object', () => {
@@ -515,11 +515,11 @@ describe('create presentation', () => {
       challenge,
     })
     expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    await expect(
-      Credential.verify(att, {
+    expect(
+      await Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).toBe(true)
     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
@@ -560,11 +560,11 @@ describe('create presentation', () => {
       challenge,
     })
     expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    await expect(
-      Credential.verify(att, {
+    expect(
+      await Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).toBe(true)
     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
@@ -607,11 +607,11 @@ describe('create presentation', () => {
       challenge,
     })
     expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    await expect(
-      Credential.verify(att, {
+    expect(
+      await Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).resolves.toBe(true)
+    ).toBe(true)
     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
 
@@ -655,11 +655,11 @@ describe('create presentation', () => {
       challenge,
     })
     expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    await expect(
-      Credential.verify(att, {
+    expect(
+      await Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).resolves.toBeFalsy()
+    ).toBeFalsy()
   })
 
   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
@@ -702,11 +702,11 @@ describe('create presentation', () => {
       challenge,
     })
     expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    await expect(
-      Credential.verify(att, {
+    expect(
+      await Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).resolves.toBeFalsy()
+    ).toBeFalsy()
   })
 
   it('should get attribute keys', async () => {

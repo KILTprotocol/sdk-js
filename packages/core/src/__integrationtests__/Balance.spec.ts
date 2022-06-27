@@ -174,6 +174,6 @@ describe('When there are haves and have-nots', () => {
   }, 50_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

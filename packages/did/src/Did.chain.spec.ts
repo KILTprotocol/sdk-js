@@ -56,26 +56,26 @@ describe('services validation', () => {
   it.each([...validTestURIs, ...unencodedTestUris.map(encodeURI)])(
     'allows adding services with valid URI "%s"',
     async (uri) => {
-      await expect(
-        getAddEndpointExtrinsic({
+      expect(
+        await getAddEndpointExtrinsic({
           id: 'service_1',
           types: [],
           urls: [uri],
         })
-      ).resolves.toBeDefined()
+      ).toBeDefined()
     }
   )
 
   it.each([...validTestIds, ...invalidTestIds.map(encodeURIComponent)])(
     'allows adding services with valid id "%s"',
     async (id) => {
-      await expect(
-        getAddEndpointExtrinsic({
+      expect(
+        await getAddEndpointExtrinsic({
           id,
           types: [],
           urls: [],
         })
-      ).resolves.toBeDefined()
+      ).toBeDefined()
     }
   )
 

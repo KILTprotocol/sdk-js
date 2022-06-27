@@ -229,9 +229,13 @@ describe('proofs', () => {
 
   it('it verifies self-signed proof', async () => {
     // verify
-    await expect(
-      verificationUtils.verifySelfSignedProof(VC, VC.proof[0], documentLoader)
-    ).resolves.toMatchObject({
+    expect(
+      await verificationUtils.verifySelfSignedProof(
+        VC,
+        VC.proof[0],
+        documentLoader
+      )
+    ).toMatchObject({
       verified: true,
     })
   })
@@ -316,19 +320,23 @@ describe('proofs', () => {
     })
 
     it('errors on proof mismatch', async () => {
-      await expect(
-        verificationUtils.verifySelfSignedProof(VC, VC.proof[1], documentLoader)
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifySelfSignedProof(
+          VC,
+          VC.proof[1],
+          documentLoader
+        )
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[0])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[0])
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyAttestedProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
     })
@@ -352,14 +360,18 @@ describe('proofs', () => {
 
     it('it detects tampering with credential digest', async () => {
       VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
-      await expect(
-        verificationUtils.verifySelfSignedProof(VC, VC.proof[0], documentLoader)
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifySelfSignedProof(
+          VC,
+          VC.proof[0],
+          documentLoader
+        )
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
     })
@@ -368,24 +380,24 @@ describe('proofs', () => {
       jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
 
       VC.delegationId = '0x123'
-      await expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyAttestedProof(VC, VC.proof[1])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+      ).toMatchObject({
         verified: false,
         status: verificationUtils.AttestationStatus.invalid,
       })
     })
 
-    it('it detects tampering on claimed properties', () => {
+    it('it detects tampering on claimed properties', async () => {
       VC.credentialSubject.name = 'Kort'
-      return expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
     })

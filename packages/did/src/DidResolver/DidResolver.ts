@@ -223,8 +223,8 @@ export async function resolve(
 
   if (fragment) {
     return (
-      resolveKey(didUri as DidResourceUri) ||
-      resolveServiceEndpoint(didUri as DidResourceUri) ||
+      (await resolveKey(didUri as DidResourceUri)) ||
+      (await resolveServiceEndpoint(didUri as DidResourceUri)) ||
       null
     )
   }

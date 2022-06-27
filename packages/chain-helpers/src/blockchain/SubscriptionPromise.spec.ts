@@ -38,7 +38,7 @@ it('resolves the promise', async () => {
     rejectOn: REJECT_ON,
   })
   subscription(RESOLVE)
-  await expect(promise).resolves.toEqual(RESOLVE)
+  expect(await promise).toEqual(RESOLVE)
 })
 
 it('rejects the promise', async () => {
