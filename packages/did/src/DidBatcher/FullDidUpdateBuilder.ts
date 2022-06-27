@@ -10,7 +10,7 @@ import { ApiPromise } from '@polkadot/api'
 
 import type {
   DidEncryptionKey,
-  KeystoreSigner,
+  SignCallback,
   IIdentity,
   DidIdentifier,
   DidVerificationKey,
@@ -454,7 +454,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   /**
    * Consume the builder and delegates to the callback the SubmittableExtrinsic containing the details of a DID update with the provided details.
    *
-   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
+   * @param sign The [[SignCallback]] to sign the DID operation. It must support the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
    * @param callback A callback to submit the extrinsic and return the update [[FullDidDetails]] instance.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
@@ -463,12 +463,12 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    */
   /* istanbul ignore next */
   public async buildAndSubmit(
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitter: IIdentity['address'],
     callback: FullDidUpdateCallback,
     atomic = true
   ): Promise<FullDidDetails> {
-    const extrinsic = await this.build(signer, submitter, atomic)
+    const extrinsic = await this.build(sign, submitter, atomic)
     await callback(extrinsic)
     const fetchedDidDetails = await FullDidDetails.fromChainInfo(this.uri)
     if (!fetchedDidDetails) {
@@ -482,7 +482,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   /**
    * Consume the builder and generate the SubmittableExtrinsic containing the details of the DID update with the provided details.
    *
-   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the expected DID authentication key, and optionally the new one if a new one is set in the update.
+   * @param sign The [[SignCallback]] to sign the DID operation. It must support the expected DID authentication key, and optionally the new one if a new one is set in the update.
    * @param submitter The KILT address of the user authorised to submit the update operation.
    * @param atomic A boolean flag indicating whether the whole state must be reverted in case any operation in the batch fails.
    *
@@ -491,7 +491,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
   public async build(
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitter: IIdentity['address'],
     atomic = true
   ): Promise<SubmittableExtrinsic> {
@@ -518,7 +518,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       alg: getSigningAlgorithmForVerificationKeyType(
         this.oldAuthenticationKey.type
       ),
-      signer,
+      sign,
       call: batch,
       txCounter: increaseNonce(lastDidNonce),
       submitter,

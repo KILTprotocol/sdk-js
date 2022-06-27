@@ -9,10 +9,7 @@
  * @group unit/did
  */
 
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { getAddEndpointExtrinsic } from './Did.chain'
 
@@ -20,7 +17,7 @@ let api: any
 
 beforeAll(() => {
   api = ApiMocks.createAugmentedApi()
-  BlockchainApiConnection.setConnection(Promise.resolve(new Blockchain(api)))
+  BlockchainApiConnection.setConnection(Promise.resolve(api))
 })
 
 describe('services validation', () => {
@@ -59,26 +56,26 @@ describe('services validation', () => {
   it.each([...validTestURIs, ...unencodedTestUris.map(encodeURI)])(
     'allows adding services with valid URI "%s"',
     async (uri) => {
-      await expect(
-        getAddEndpointExtrinsic({
+      expect(
+        await getAddEndpointExtrinsic({
           id: 'service_1',
           types: [],
           urls: [uri],
         })
-      ).resolves.toBeDefined()
+      ).toBeDefined()
     }
   )
 
   it.each([...validTestIds, ...invalidTestIds.map(encodeURIComponent)])(
     'allows adding services with valid id "%s"',
     async (id) => {
-      await expect(
-        getAddEndpointExtrinsic({
+      expect(
+        await getAddEndpointExtrinsic({
           id,
           types: [],
           urls: [],
         })
-      ).resolves.toBeDefined()
+      ).toBeDefined()
     }
   )
 
@@ -90,7 +87,7 @@ describe('services validation', () => {
           id,
           types: [],
           urls: [],
-        }).then((r) => r.toHuman())
+        })
       ).rejects.toThrow('ID')
     }
   )
@@ -103,7 +100,7 @@ describe('services validation', () => {
           id: 'service_1',
           types: [],
           urls: [uri],
-        }).then((r) => r.toHuman())
+        })
       ).rejects.toThrow('URI')
     }
   )

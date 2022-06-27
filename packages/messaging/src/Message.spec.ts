@@ -15,7 +15,7 @@ import {
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
-  EncryptionKeyType,
+  EncryptionAlgorithms,
   ICredential,
   IDidDetails,
   IDidResolver,
@@ -26,32 +26,36 @@ import {
   ISubmitCredential,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
+  SignCallback,
 } from '@kiltprotocol/types'
 import { Quote, RequestForAttestation } from '@kiltprotocol/core'
 import {
-  DemoKeystore,
-  LightDidDetails,
-  Utils as DidUtils,
-  EncryptionAlgorithms,
-  SigningAlgorithms,
   FullDidDetails,
-  DemoKeystoreUtils,
-  LightDidSupportedVerificationKeyType,
+  LightDidDetails,
+  SigningAlgorithms,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
+import {
+  createLocalDemoFullDidFromLightDid,
+  makeEncryptionKeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { Message } from './Message'
 
-let keystore: DemoKeystore
-
 let aliceLightDid: LightDidDetails
 let aliceLightDidWithDetails: LightDidDetails
 let aliceFullDid: FullDidDetails
+let aliceSign: SignCallback
+const aliceEncKey = makeEncryptionKeyTool('Alice//enc')
 
 let bobLightDid: LightDidDetails
 let bobLightDidWithDetails: LightDidDetails
 let bobFullDid: FullDidDetails
+let bobSign: SignCallback
+const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
 const resolveDoc = async (
   did: IDidDetails['uri']
@@ -109,78 +113,37 @@ const mockResolver = {
     didUri: string
   ): Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
-  > => {
-    return (
-      (await resolveKey(didUri as DidResourceUri)) ||
-      resolveDoc(didUri as DidUri)
-    )
-  },
+  > =>
+    (await resolveKey(didUri as DidResourceUri)) ||
+    resolveDoc(didUri as DidUri),
 } as IDidResolver
 
 beforeAll(async () => {
-  keystore = new DemoKeystore()
-
-  const aliceAuthKey = await keystore.generateKeypair({
-    seed: 'Alice//auth',
-    alg: SigningAlgorithms.Ed25519,
-  })
-  const aliceEncKey = await keystore.generateKeypair({
-    seed: 'Alice//enc',
-    alg: EncryptionAlgorithms.NaclBox,
-  })
+  const aliceAuthKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  aliceSign = aliceAuthKey.sign
   aliceLightDid = LightDidDetails.fromDetails({
-    authenticationKey: {
-      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-        aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyType,
-      ...aliceAuthKey,
-    },
-    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
+    authenticationKey: aliceAuthKey.authenticationKey,
+    encryptionKey: aliceEncKey.keypair,
   })
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: {
-      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-        aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyType,
-      ...aliceAuthKey,
-    },
-    encryptionKey: { type: EncryptionKeyType.X25519, ...aliceEncKey },
+    authenticationKey: aliceAuthKey.authenticationKey,
+    encryptionKey: aliceEncKey.keypair,
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
   })
-  aliceFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
-    aliceLightDid
-  )
+  aliceFullDid = await createLocalDemoFullDidFromLightDid(aliceLightDid)
 
-  const bobAuthKey = await keystore.generateKeypair({
-    seed: 'Bob//auth',
-    alg: SigningAlgorithms.Ed25519,
-  })
-  const bobEncKey = await keystore.generateKeypair({
-    seed: 'Bob//enc',
-    alg: EncryptionAlgorithms.NaclBox,
-  })
+  const bobAuthKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  bobSign = bobAuthKey.sign
   bobLightDid = LightDidDetails.fromDetails({
-    authenticationKey: {
-      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-        aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyType,
-      ...bobAuthKey,
-    },
-    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
+    authenticationKey: bobAuthKey.authenticationKey,
+    encryptionKey: bobEncKey.keypair,
   })
   bobLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: {
-      type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
-        aliceAuthKey.alg
-      ) as LightDidSupportedVerificationKeyType,
-      ...bobAuthKey,
-    },
-    encryptionKey: { type: EncryptionKeyType.X25519, ...bobEncKey },
+    authenticationKey: bobAuthKey.authenticationKey,
+    encryptionKey: bobEncKey.keypair,
     serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
   })
-  bobFullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromLightDid(
-    bobLightDid
-  )
+  bobFullDid = await createLocalDemoFullDidFromLightDid(bobLightDid)
 })
 
 describe('Messaging', () => {
@@ -198,7 +161,7 @@ describe('Messaging', () => {
     const encryptedMessage = await message.encrypt(
       'encryption',
       aliceLightDid,
-      keystore,
+      aliceEncKey.encrypt,
       `${bobLightDid.uri}#encryption`,
       {
         resolver: mockResolver,
@@ -207,7 +170,7 @@ describe('Messaging', () => {
 
     const decryptedMessage = await Message.decrypt(
       encryptedMessage,
-      keystore,
+      bobEncKey.decrypt,
       bobLightDid,
       {
         resolver: mockResolver,
@@ -217,7 +180,7 @@ describe('Messaging', () => {
       JSON.stringify(decryptedMessage.body)
     )
 
-    const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
+    const encryptedMessageWrongContent = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage
     const messedUpContent = Crypto.coToUInt8(
@@ -227,13 +190,18 @@ describe('Messaging', () => {
     encryptedMessageWrongContent.ciphertext = u8aToHex(messedUpContent)
 
     await expect(() =>
-      Message.decrypt(encryptedMessageWrongContent, keystore, bobLightDid, {
-        resolver: mockResolver,
-      })
+      Message.decrypt(
+        encryptedMessageWrongContent,
+        bobEncKey.decrypt,
+        bobLightDid,
+        {
+          resolver: mockResolver,
+        }
+      )
     ).rejects.toThrowError(SDKErrors.ERROR_DECODING_MESSAGE)
 
-    const encryptedWrongBody = await keystore.encrypt({
-      alg: 'x25519-xsalsa20-poly1305',
+    const encryptedWrongBody = await aliceEncKey.encrypt({
+      alg: EncryptionAlgorithms.NaclBox,
       data: Crypto.coToUInt8('{ wrong JSON'),
       publicKey: aliceLightDid.encryptionKey!.publicKey,
       peerPublicKey: bobLightDid.encryptionKey!.publicKey,
@@ -247,9 +215,14 @@ describe('Messaging', () => {
       receiverKeyUri: bobLightDid.assembleKeyUri(bobLightDid.encryptionKey!.id),
     }
     await expect(() =>
-      Message.decrypt(encryptedMessageWrongBody, keystore, bobLightDid, {
-        resolver: mockResolver,
-      })
+      Message.decrypt(
+        encryptedMessageWrongBody,
+        bobEncKey.decrypt,
+        bobLightDid,
+        {
+          resolver: mockResolver,
+        }
+      )
     ).rejects.toThrowError(SDKErrors.ERROR_PARSING_MESSAGE)
   })
 
@@ -259,7 +232,7 @@ describe('Messaging', () => {
       owner: aliceFullDid.uri,
       contents: {},
     })
-    const date: string = new Date(2019, 11, 10).toISOString()
+    const date = new Date(2019, 11, 10).toISOString()
 
     const quoteData: IQuote = {
       attesterDid: bobFullDid.uri,
@@ -273,17 +246,17 @@ describe('Messaging', () => {
       termsAndConditions: 'https://coolcompany.io/terms.pdf',
       timeframe: date,
     }
-    const quoteAttesterSigned = await Quote.createAttesterSignature(
+    const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
       bobFullDid,
-      keystore
+      bobSign
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
       bobFullDid.uri,
       aliceFullDid,
-      keystore,
+      aliceSign,
       {
         resolver: mockResolver,
       }
@@ -396,7 +369,7 @@ describe('Messaging', () => {
       contents: {},
     })
 
-    const date: string = new Date(2019, 11, 10).toISOString()
+    const date = new Date(2019, 11, 10).toISOString()
     const quoteData: IQuote = {
       attesterDid: bobLightDid.uri,
       cTypeHash: `${Crypto.hashStr('0x12345678')}`,
@@ -409,17 +382,17 @@ describe('Messaging', () => {
       termsAndConditions: 'https://coolcompany.io/terms.pdf',
       timeframe: date,
     }
-    const quoteAttesterSigned = await Quote.createAttesterSignature(
+    const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
       bobLightDid,
-      keystore
+      bobSign
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
       bobLightDid.uri,
       aliceLightDid,
-      keystore,
+      aliceSign,
       {
         resolver: mockResolver,
       }
@@ -452,17 +425,17 @@ describe('Messaging', () => {
       timeframe: date,
     }
     const quoteAttesterSignedEncodedDetails =
-      await Quote.createAttesterSignature(
+      await Quote.createAttesterSignedQuote(
         quoteDataEncodedDetails,
         bobLightDidWithDetails,
-        keystore
+        bobSign
       )
     const bothSignedEncodedDetails = await Quote.createQuoteAgreement(
       quoteAttesterSignedEncodedDetails,
       content.rootHash,
       bobLightDidWithDetails.uri,
       aliceLightDidWithDetails,
-      keystore,
+      aliceSign,
       {
         resolver: mockResolver,
       }

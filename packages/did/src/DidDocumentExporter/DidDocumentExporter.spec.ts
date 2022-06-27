@@ -112,18 +112,10 @@ jest.mock('../Did.chain', () => {
       generateServiceEndpointDetails(serviceId)
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-      return [
-        (await queryServiceEndpoint(
-          didIdentifier,
-          'id-1'
-        )) as DidServiceEndpoint,
-        (await queryServiceEndpoint(
-          didIdentifier,
-          'id-2'
-        )) as DidServiceEndpoint,
-      ]
-    }
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => [
+      (await queryServiceEndpoint(didIdentifier, 'id-1')) as DidServiceEndpoint,
+      (await queryServiceEndpoint(didIdentifier, 'id-2')) as DidServiceEndpoint,
+    ]
   )
   return {
     queryDetails,
@@ -280,8 +272,8 @@ describe('When exporting a DID Document from a full DID', () => {
 
 describe('When exporting a DID Document from a light DID', () => {
   const authKey = generateAuthenticationKeyDetails() as NewDidVerificationKey
-  const encKey: DidKey = generateEncryptionKeyDetails()
-  const serviceEndpoints: DidServiceEndpoint[] = [
+  const encKey = generateEncryptionKeyDetails()
+  const serviceEndpoints = [
     generateServiceEndpointDetails('id-1'),
     generateServiceEndpointDetails('id-2'),
   ]

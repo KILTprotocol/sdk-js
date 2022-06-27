@@ -7,25 +7,25 @@
 
 import {
   CompressedMessageBody,
-  IMessage,
-  ISubmitCredential,
-  IEncryptedMessage,
-  MessageBody,
+  DecryptCallback,
+  DidEncryptionKey,
+  DidPublicKey,
+  EncryptCallback,
+  EncryptionKeyType,
   ICType,
   IDidResolver,
+  IEncryptedMessage,
   IEncryptedMessageContents,
-  NaclBoxCapable,
-  DidPublicKey,
+  IMessage,
+  MessageBody,
   MessageBodyType,
-  DidEncryptionKey,
-  EncryptionKeyType,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import {
   DidDetails,
   DidResolver,
-  Utils as DidUtils,
   EncryptionAlgorithms,
+  Utils as DidUtils,
 } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
@@ -38,12 +38,12 @@ import {
 
 export class Message implements IMessage {
   /**
-   * [STATIC] Lists all possible body types of [[Message]].
+   * Lists all possible body types of [[Message]].
    */
   public static readonly BodyType = MessageBodyType
 
   /**
-   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
+   * Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
    *
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
@@ -80,7 +80,7 @@ export class Message implements IMessage {
         break
       case Message.BodyType.SUBMIT_CREDENTIAL:
         {
-          const submitClaimsForCtype: ISubmitCredential = body
+          const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
               throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
@@ -93,12 +93,12 @@ export class Message implements IMessage {
   }
 
   /**
-   * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
+   * Symmetrically decrypts the result of [[Message.encrypt]].
    *
    * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
    *
    * @param encrypted The encrypted message.
-   * @param keystore The keystore used to perform the cryptographic operations.
+   * @param decryptCallback The callback to decrypt with the secret key.
    * @param receiverDetails The DID details of the receiver.
    * @param decryptionOptions Options to perform the decryption operation.
    * @param decryptionOptions.resolver The DID resolver to use.
@@ -109,7 +109,7 @@ export class Message implements IMessage {
    */
   public static async decrypt(
     encrypted: IEncryptedMessage,
-    keystore: Pick<NaclBoxCapable, 'decrypt'>,
+    decryptCallback: DecryptCallback,
     receiverDetails: DidDetails,
     {
       resolver = DidResolver,
@@ -143,22 +143,25 @@ export class Message implements IMessage {
         receiverKeyDetails.type as EncryptionKeyType
       )
     if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }
 
-    const { data } = await keystore
-      .decrypt({
-        publicKey: receiverKeyDetails.publicKey,
-        alg: receiverKeyAlgType,
-        peerPublicKey: senderKeyDetails.publicKey,
-        data: hexToU8a(ciphertext),
-        nonce: hexToU8a(nonce),
-      })
-      .catch(() => {
-        throw new SDKErrors.ERROR_DECODING_MESSAGE()
-      })
+    let data: Uint8Array
+    try {
+      data = (
+        await decryptCallback({
+          publicKey: receiverKeyDetails.publicKey,
+          alg: receiverKeyAlgType,
+          peerPublicKey: senderKeyDetails.publicKey,
+          data: hexToU8a(ciphertext),
+          nonce: hexToU8a(nonce),
+        })
+      ).data
+    } catch {
+      throw new SDKErrors.ERROR_DECODING_MESSAGE()
+    }
 
     const decoded = u8aToString(data)
 
@@ -238,7 +241,7 @@ export class Message implements IMessage {
    *
    * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
    * @param senderDetails The sender's DID to use to fetch the right encryption key.
-   * @param keystore The keystore used to perform the cryptographic operations.
+   * @param encryptCallback The callback to encrypt with the secret key.
    * @param receiverKeyUri The key URI of the receiver.
    * @param encryptionOptions Options to perform the encryption operation.
    * @param encryptionOptions.resolver The DID resolver to use.
@@ -248,7 +251,7 @@ export class Message implements IMessage {
   public async encrypt(
     senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
-    keystore: Pick<NaclBoxCapable, 'encrypt'>,
+    encryptCallback: EncryptCallback,
     receiverKeyUri: DidPublicKey['uri'],
     {
       resolver = DidResolver,
@@ -282,7 +285,7 @@ export class Message implements IMessage {
         senderKey.type as EncryptionKeyType
       )
     if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
+      throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
     }
@@ -299,7 +302,7 @@ export class Message implements IMessage {
 
     const serialized = stringToU8a(JSON.stringify(toEncrypt))
 
-    const encrypted = await keystore.encrypt({
+    const encrypted = await encryptCallback({
       alg: senderKeyAlgType,
       data: serialized,
       publicKey: senderKey.publicKey,

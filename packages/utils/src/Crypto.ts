@@ -23,12 +23,17 @@ import {
   u8aToString,
   u8aToU8a,
 } from '@polkadot/util'
-import { blake2AsHex, signatureVerify } from '@polkadot/util-crypto'
-import { blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
+import {
+  blake2AsHex,
+  blake2AsU8a,
+  signatureVerify,
+} from '@polkadot/util-crypto'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
 import jsonabc from './jsonabc.cjs'
+
+export { naclBoxPairFromSecret } from '@polkadot/util-crypto'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
@@ -211,8 +216,8 @@ export function encryptAsymmetricAsStr(
   secretKeyB: CryptoInput
 ): EncryptedAsymmetricString {
   const encrypted = encryptAsymmetric(message, publicKeyA, secretKeyB)
-  const box: string = u8aToHex(encrypted.box)
-  const nonce: string = u8aToHex(encrypted.nonce)
+  const box = u8aToHex(encrypted.box)
+  const nonce = u8aToHex(encrypted.nonce)
   return { box, nonce }
 }
 

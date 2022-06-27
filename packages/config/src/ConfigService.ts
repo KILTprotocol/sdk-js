@@ -35,7 +35,7 @@ export type configOpts = {
 } & { [key: string]: any }
 
 /**
- *  Changes all existing Loggers of our default Factory with id 0 to the intended Level.
+ * Changes all existing Loggers of our default Factory with id 0 to the intended Level.
  *
  * @param level The intended LogLevel. LogLevel has a range of 0 to 5.
  * @returns The new set level.

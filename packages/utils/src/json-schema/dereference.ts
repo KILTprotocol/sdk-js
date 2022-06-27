@@ -79,7 +79,7 @@ export function dereference(
   basePointer = ''
 ) {
   if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
-    const id: string = schema.$id || schema.id
+    const id = schema.$id || schema.id
     if (id) {
       const url = new URL(id, baseURI)
       if (url.hash.length > 1) {

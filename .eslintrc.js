@@ -143,10 +143,23 @@ module.exports = {
       },
     },
     {
-      files: ['**/__integrationtests__/*.ts'],
+      files: ['**/__integrationtests__/*.ts', '**/TestUtils.ts'],
       rules: {
         'import/extensions': 'off',
         'jsdoc/require-jsdoc': 'off',
+      },
+    },
+    {
+      files: ['tests/*'],
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        'import/no-extraneous-dependencies': [
+          'error',
+          {
+            devDependencies: ['tests/*', 'tests/bundle.spec.ts'],
+          },
+        ],
       },
     },
   ],

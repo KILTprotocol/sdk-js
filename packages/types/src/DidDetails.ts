@@ -52,6 +52,9 @@ export enum VerificationKeyType {
   Ed25519 = 'ed25519',
   Ecdsa = 'ecdsa',
 }
+export type LightDidSupportedVerificationKeyType =
+  | VerificationKeyType.Ed25519
+  | VerificationKeyType.Sr25519
 
 /**
  * Subset of key relationships which pertain to key agreement/encryption keys.
@@ -76,6 +79,17 @@ export type BaseNewDidKey = {
  */
 export type NewDidVerificationKey = BaseNewDidKey & {
   type: VerificationKeyType
+}
+/**
+ * A new public key specified when creating a new light DID.
+ *
+ * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
+ */
+export type NewLightDidAuthenticationKey = Omit<
+  NewDidVerificationKey,
+  'type'
+> & {
+  type: LightDidSupportedVerificationKeyType
 }
 /**
  * Type of a new encryption key to add under a DID.

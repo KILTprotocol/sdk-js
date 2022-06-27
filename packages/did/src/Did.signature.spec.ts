@@ -13,7 +13,7 @@ import {
   DidSignature,
   KeyRelationship,
   KeyringPair,
-  KeystoreSigner,
+  SignCallback,
   VerificationKeyType,
 } from '@kiltprotocol/types'
 import Keyring from '@polkadot/keyring'
@@ -22,7 +22,7 @@ import {
   randomAsHex,
   randomAsU8a,
 } from '@polkadot/util-crypto'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { FullDidDetails, LightDidDetails } from './DidDetails'
 import {
   VerificationResult,
@@ -36,18 +36,16 @@ jest.mock('./DidResolver')
 describe('light DID', () => {
   let keypair: KeyringPair
   let details: LightDidDetails
-  let signer: KeystoreSigner
+  let sign: SignCallback
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
+    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
       mnemonicGenerate()
     )
     details = LightDidDetails.fromIdentifier(
       keypair.address,
       VerificationKeyType.Sr25519
     )
-    signer = {
-      sign: async ({ data, alg }) => ({ data: keypair.sign(data), alg }),
-    }
+    sign = async ({ data, alg }) => ({ data: keypair.sign(data), alg })
   })
 
   beforeEach(() => {
@@ -70,16 +68,16 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -90,16 +88,16 @@ describe('light DID', () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const signature = await details.signPayload(
       SIGNED_BYTES,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -110,16 +108,16 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.assertionMethod,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/verification method/i),
     })
@@ -129,17 +127,17 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     signature.keyUri += '1a'
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/no key with id/i),
     })
@@ -149,16 +147,16 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/invalid signature/i),
     })
@@ -168,18 +166,18 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
     // @ts-expect-error
     signature.keyUri = signature.keyUri.replace('#', '?')
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/signature key id .+ invalid/i),
     })
@@ -196,16 +194,16 @@ describe('light DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/migrated/i),
     })
@@ -223,9 +221,9 @@ describe('light DID', () => {
 describe('full DID', () => {
   let keypair: KeyringPair
   let details: FullDidDetails
-  let signer: KeystoreSigner
+  let sign: SignCallback
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
+    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
       mnemonicGenerate()
     )
     details = new FullDidDetails({
@@ -239,9 +237,7 @@ describe('full DID', () => {
       },
       keyRelationships: { authentication: new Set(['0x12345']) },
     })
-    signer = {
-      sign: async ({ data, alg }) => ({ data: keypair.sign(data), alg }),
-    }
+    sign = async ({ data, alg }) => ({ data: keypair.sign(data), alg })
   })
 
   beforeEach(() => {
@@ -264,16 +260,16 @@ describe('full DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -284,16 +280,16 @@ describe('full DID', () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const signature = await details.signPayload(
       SIGNED_BYTES,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: true,
       didDetails: details,
       key: details.authenticationKey,
@@ -310,16 +306,16 @@ describe('full DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/deactivated/i),
     })
@@ -330,16 +326,16 @@ describe('full DID', () => {
     const SIGNED_STRING = 'signed string'
     const signature = await details.signPayload(
       SIGNED_STRING,
-      signer,
+      sign,
       details.authenticationKey.id
     )
-    await expect(
-      verifyDidSignature({
+    expect(
+      await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: KeyRelationship.authentication,
       })
-    ).resolves.toMatchObject<VerificationResult>({
+    ).toMatchObject<VerificationResult>({
       verified: false,
       reason: expect.stringMatching(/no result/i),
     })
@@ -357,7 +353,7 @@ describe('full DID', () => {
 describe('type guard', () => {
   let keypair: KeyringPair
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format: 38 }).addFromMnemonic(
+    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
       mnemonicGenerate()
     )
   })

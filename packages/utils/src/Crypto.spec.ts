@@ -119,9 +119,10 @@ describe('helper functions', () => {
     `)
     // with nonces
     hashed = Crypto.hashStatements(statements, {
-      nonces: digests.reduce<Record<string, string>>((p, n, i) => {
-        return { ...p, [n]: ['a', 'b', 'c'][i] }
-      }, {}),
+      nonces: digests.reduce<Record<string, string>>(
+        (p, n, i) => ({ ...p, [n]: ['a', 'b', 'c'][i] }),
+        {}
+      ),
     })
     expect(hashed.map((i) => i.digest)).toEqual(digests)
     expect(hashed.map((i) => i.saltedHash)).toMatchInlineSnapshot(`

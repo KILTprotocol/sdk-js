@@ -9,33 +9,31 @@
  * @group unit/attestation
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import type {
   IAttestation,
   CompressedAttestation,
-  ICType,
   DidUri,
+  ICType,
+  IClaim,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ApiMocks } from '@kiltprotocol/testing'
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { HexString } from '@polkadot/util/types'
-import { Claim } from '../claim/Claim'
-import { CType } from '../ctype/CType'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { Attestation } from './Attestation'
-import * as AttestationUtils from './Attestation.utils'
+import * as Claim from '../claim'
+import * as CType from '../ctype'
+import * as RequestForAttestation from '../requestforattestation'
+import * as Attestation from './Attestation'
 
 let mockedApi: any
-let blockchain: Blockchain
 
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  blockchain = new Blockchain(mockedApi)
-  BlockchainApiConnection.setConnection(Promise.resolve(blockchain))
+  BlockchainApiConnection.setConnection(mockedApi)
 })
 
 describe('Attestation', () => {
@@ -44,10 +42,10 @@ describe('Attestation', () => {
   const identityBob: DidUri =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
-  let testCType: CType
+  let testCType: ICType
   let testcontents: any
-  let testClaim: Claim
-  let requestForAttestation: RequestForAttestation
+  let testClaim: IClaim
+  let requestForAttestation: IRequestForAttestation
 
   beforeAll(async () => {
     rawCTypeSchema = {
@@ -82,7 +80,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: Attestation = Attestation.fromRequestAndDid(
+    const attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
       identityAlice
     )
@@ -94,13 +92,13 @@ describe('Attestation', () => {
       ApiMocks.mockChainQueryReturn('attestation', 'attestations')
     )
 
-    const attestation: Attestation = Attestation.fromAttestation({
+    const attestation: IAttestation = {
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       delegationId: null,
       owner: identityAlice,
       revoked: false,
-    })
+    }
     expect(await Attestation.checkValidity(attestation)).toBeFalsy()
   })
 
@@ -115,11 +113,11 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: Attestation = Attestation.fromRequestAndDid(
+    const attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
       identityAlice
     )
-    expect(await attestation.checkValidity()).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation)).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
@@ -136,17 +134,9 @@ describe('Attestation', () => {
       attestation.delegationId,
     ]
 
-    expect(AttestationUtils.compress(attestation)).toEqual(
-      compressedAttestation
-    )
-
-    expect(AttestationUtils.decompress(compressedAttestation)).toEqual(
-      attestation
-    )
+    expect(Attestation.compress(attestation)).toEqual(compressedAttestation)
 
     expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
-
-    expect(attestation.compress()).toEqual(compressedAttestation)
   })
 
   it('Negative test for compresses and decompresses the attestation object', () => {
@@ -167,17 +157,11 @@ describe('Attestation', () => {
     delete attestation.claimHash
 
     expect(() => {
-      AttestationUtils.decompress(compressedAttestation)
+      Attestation.decompress(compressedAttestation)
     }).toThrow()
 
     expect(() => {
-      Attestation.decompress(compressedAttestation)
-    }).toThrow()
-    expect(() => {
-      attestation.compress()
-    }).toThrow()
-    expect(() => {
-      AttestationUtils.compress(attestation)
+      Attestation.compress(attestation)
     }).toThrow()
   })
   it('error check should throw errors on faulty Attestations', () => {
@@ -254,35 +238,35 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(noClaimHash)).toThrowError(
       SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
     )
 
-    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(noCTypeHash)).toThrowError(
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
     )
 
-    expect(() => AttestationUtils.errorCheck(malformedOwner)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(malformedOwner)).toThrowError(
       SDKErrors.ERROR_OWNER_NOT_PROVIDED
     )
 
-    expect(() => AttestationUtils.errorCheck(noRevocationBit)).toThrowError(
+    expect(() => Attestation.verifyDataStructure(noRevocationBit)).toThrowError(
       SDKErrors.ERROR_REVOCATION_BIT_MISSING
     )
 
-    expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
+    expect(() => Attestation.verifyDataStructure(everything)).not.toThrow()
 
-    expect(() => AttestationUtils.errorCheck(malformedClaimHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED
-    )
+    expect(() =>
+      Attestation.verifyDataStructure(malformedClaimHash)
+    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
 
-    expect(() => AttestationUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED
-    )
+    expect(() =>
+      Attestation.verifyDataStructure(malformedCTypeHash)
+    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
 
-    expect(() => AttestationUtils.errorCheck(malformedAddress)).toThrowError(
-      SDKErrors.ERROR_INVALID_DID_FORMAT
-    )
+    expect(() =>
+      Attestation.verifyDataStructure(malformedAddress)
+    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
   })
   it('Typeguard should return true on complete Attestations', () => {
     const attestation = Attestation.fromRequestAndDid(

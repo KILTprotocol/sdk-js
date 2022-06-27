@@ -6,6 +6,7 @@
  */
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ss58Format } from '@kiltprotocol/utils'
 import {
   Deposit,
   DidIdentifier,
@@ -17,7 +18,6 @@ import { encodeAddress, signatureVerify } from '@polkadot/util-crypto'
 import type { Option, Struct, u128 } from '@polkadot/types'
 import type {
   AccountId,
-  BlockNumber,
   Extrinsic,
   MultiSignature,
 } from '@polkadot/types/interfaces'
@@ -66,7 +66,7 @@ export type LinkingSignerCallback = (
 export async function queryAccountLinkDepositInfo(
   linkedAccount: Address
 ): Promise<Deposit | null> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
   >(linkedAccount)
@@ -82,7 +82,7 @@ export async function queryAccountLinkDepositInfo(
 export async function queryConnectedDidForAccount(
   linkedAccount: Address
 ): Promise<DidIdentifier | null> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedDid = await api.query.didLookup.connectedDids<
     Option<ConnectionRecord>
   >(linkedAccount)
@@ -98,9 +98,9 @@ export async function queryConnectedDidForAccount(
  */
 export async function queryConnectedAccountsForDid(
   linkedDid: DidIdentifier,
-  networkPrefix = 38
+  networkPrefix = ss58Format
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
     await api.query.didLookup.connectedAccounts.keys<[AccountId, AccountId]>(
       linkedDid
@@ -138,7 +138,7 @@ export async function queryIsConnected(
   didIdentifier: DidIdentifier,
   account: Address
 ): Promise<boolean> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
   const connectedEntry = await api.query.didLookup.connectedAccounts.hash(
     didIdentifier,
@@ -154,7 +154,7 @@ export async function queryIsConnected(
  * @returns The deposit amount. The value is indicated in femto KILTs.
  */
 export async function queryDepositAmount(): Promise<BN> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return (api.consts.didLookup.deposit as u128).toBn()
 }
 
@@ -168,7 +168,7 @@ export async function queryDepositAmount(): Promise<BN> {
  * @returns An extrinsic that must be did-authorized.
  */
 export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.associateSender()
 }
 
@@ -191,7 +191,7 @@ export async function getAccountSignedAssociationExtrinsic(
   signature: Uint8Array | HexString,
   sigType: SignatureType
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.associateAccount(account, signatureValidUntilBlock, {
     [sigType]: signature,
   })
@@ -207,7 +207,7 @@ export async function getAccountSignedAssociationExtrinsic(
 export async function getReclaimDepositTx(
   linkedAccount: Address
 ): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.reclaimDeposit(linkedAccount)
 }
 
@@ -218,7 +218,7 @@ export async function getReclaimDepositTx(
  * @returns A SubmittableExtrinsic that must be signed by the linked account.
  */
 export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.removeSenderAssociation()
 }
 
@@ -232,7 +232,7 @@ export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic>
 export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.didLookup.removeAccountAssociation(linkedAccount)
 }
 
@@ -254,7 +254,7 @@ function getMultiSignatureTypeFromKeypairType(
 }
 
 /**
- * Return the default signer callback, which uses the address argument to crete a signing closure for the given payload.
+ * Return the default sign callback, which uses the address argument to crete a signing closure for the given payload.
  *
  * @param keyring The keyring to retrieve the signing key.
  * @returns The signature generating callback that uses the keyring to sign the input payload using the input address.
@@ -283,8 +283,8 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   signingCallback: LinkingSignerCallback,
   nBlocksValid = 10
 ): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const blockNo: BlockNumber = await api.query.system.number()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
   // Gets the current definition of BlockNumber (second tx argument) from the metadata.
   const blockNumberType =

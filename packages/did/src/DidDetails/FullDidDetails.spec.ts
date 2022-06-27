@@ -87,28 +87,26 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
   },
 ]
 
-jest.mock('../Did.chain.ts', () => {
-  return {
-    queryDetails: jest.fn(
-      async (
-        didIdentifier: DidIdentifier
-      ): Promise<IDidChainRecordJSON | null> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingDidDetails
-        }
-        return null
+jest.mock('../Did.chain.ts', () => ({
+  queryDetails: jest.fn(
+    async (
+      didIdentifier: DidIdentifier
+    ): Promise<IDidChainRecordJSON | null> => {
+      if (didIdentifier === existingIdentifier) {
+        return existingDidDetails
       }
-    ),
-    queryServiceEndpoints: jest.fn(
-      async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingServiceEndpoints
-        }
-        return []
+      return null
+    }
+  ),
+  queryServiceEndpoints: jest.fn(
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
+      if (didIdentifier === existingIdentifier) {
+        return existingServiceEndpoints
       }
-    ),
-  }
-})
+      return []
+    }
+  ),
+}))
 
 /*
  * Functions tested:
@@ -121,10 +119,9 @@ jest.mock('../Did.chain.ts', () => {
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(existingIdentifier, 'full')
-      )
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(existingIdentifier, 'full')
+    )
 
     expect(fullDidDetails).not.toBeNull()
 
@@ -253,10 +250,9 @@ describe('When creating an instance from the chain', () => {
   })
 
   it('returns null if the identifier does not exist', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
-      )
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
+    )
     expect(fullDidDetails).toBeNull()
   })
 })

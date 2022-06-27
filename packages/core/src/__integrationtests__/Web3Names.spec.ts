@@ -12,15 +12,18 @@
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import type { KeyringPair } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { FullDidDetails, DemoKeystore, Web3Names } from '@kiltprotocol/did'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { FullDidDetails, Web3Names } from '@kiltprotocol/did'
 import { disconnect } from '../kilt'
 import {
-  keypairFromRandom,
-  initializeApi,
-  createFullDidFromSeed,
-  submitExtrinsicWithResign,
   createEndowedTestAccount,
+  initializeApi,
+  submitExtrinsic,
 } from './utils'
 
 beforeAll(async () => {
@@ -28,6 +31,9 @@ beforeAll(async () => {
 }, 30_000)
 
 describe('When there is an Web3NameCreator and a payer', () => {
+  let w3nCreatorKey: KeyTool
+  let otherW3NCreatorKey: KeyTool
+
   let w3nCreator: FullDidDetails
   let otherWeb3NameCreator: FullDidDetails
   let paymentAccount: KeyringPair
@@ -35,19 +41,21 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let nick: Web3Names.Web3Name
   let differentNick: Web3Names.Web3Name
 
-  const keystore = new DemoKeystore()
-
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
     differentNick = `different_${randomAsHex(2)}`
-    ;[paymentAccount, otherPaymentAccount] = await Promise.all([
-      createEndowedTestAccount(),
-      createEndowedTestAccount(),
-    ])
-    ;[w3nCreator, otherWeb3NameCreator] = await Promise.all([
-      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-    ])
+    w3nCreatorKey = makeSigningKeyTool()
+    otherW3NCreatorKey = makeSigningKeyTool()
+    paymentAccount = await createEndowedTestAccount()
+    otherPaymentAccount = await createEndowedTestAccount()
+    w3nCreator = await createFullDidFromSeed(
+      paymentAccount,
+      w3nCreatorKey.keypair
+    )
+    otherWeb3NameCreator = await createFullDidFromSeed(
+      paymentAccount,
+      otherW3NCreatorKey.keypair
+    )
 
     if (paymentAccount === otherPaymentAccount) {
       throw new Error('The payment accounts are the same.')
@@ -59,18 +67,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to create a w3n name w/o tokens', async () => {
     const tx = await Web3Names.getClaimTx(nick)
-    const bobbyBroke = keypairFromRandom()
+    const bobbyBroke = makeSigningKeyTool().keypair
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       bobbyBroke.address
     )
 
-    const p = submitExtrinsicWithResign(
-      authorizedTx,
-      bobbyBroke,
-      BlockchainUtils.IS_IN_BLOCK
-    )
+    const p = submitExtrinsic(authorizedTx, bobbyBroke, Blockchain.IS_IN_BLOCK)
 
     await expect(p).rejects.toThrowError('Inability to pay some fees')
   }, 30_000)
@@ -79,17 +83,11 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
 
-    const p = submitExtrinsicWithResign(
-      authorizedTx,
-      paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
-    )
-
-    await expect(p).resolves.not.toThrow()
+    await submitExtrinsic(authorizedTx, paymentAccount, Blockchain.IS_IN_BLOCK)
   }, 30_000)
 
   it('should be possible to lookup the DID identifier with the given nick', async () => {
@@ -118,14 +116,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await otherWeb3NameCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      otherW3NCreatorKey.sign,
       paymentAccount.address
     )
 
-    const p = submitExtrinsicWithResign(
+    const p = submitExtrinsic(
       authorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     await expect(p).rejects.toMatchObject({
@@ -138,14 +136,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getClaimTx('nick2')
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
 
-    const p = submitExtrinsicWithResign(
+    const p = submitExtrinsic(
       authorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     await expect(p).rejects.toMatchObject({
@@ -156,11 +154,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to remove a w3n by another payment account', async () => {
     const tx = await Web3Names.getReclaimDepositTx(nick)
-    const p = submitExtrinsicWithResign(
-      tx,
-      otherPaymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
-    )
+    const p = submitExtrinsic(tx, otherPaymentAccount, Blockchain.IS_IN_BLOCK)
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
       name: 'NotAuthorized',
@@ -169,13 +163,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to remove a w3n by the payment account', async () => {
     const tx = await Web3Names.getReclaimDepositTx(nick)
-    const p = submitExtrinsicWithResign(
-      tx,
-      paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
-    )
-
-    await expect(p).resolves.not.toThrow()
+    await submitExtrinsic(tx, paymentAccount, Blockchain.IS_IN_BLOCK)
   }, 30_000)
 
   it('should be possible to remove a w3n by the owner did', async () => {
@@ -183,35 +171,29 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const prepareTx = await Web3Names.getClaimTx(differentNick)
     const prepareAuthorizedTx = await w3nCreator.authorizeExtrinsic(
       prepareTx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
-    await submitExtrinsicWithResign(
+    await submitExtrinsic(
       prepareAuthorizedTx,
       paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
+      Blockchain.IS_IN_BLOCK
     )
 
     const tx = await Web3Names.getReleaseByOwnerTx()
     const authorizedTx = await w3nCreator.authorizeExtrinsic(
       tx,
-      keystore,
+      w3nCreatorKey.sign,
       paymentAccount.address
     )
-    const p = submitExtrinsicWithResign(
-      authorizedTx,
-      paymentAccount,
-      BlockchainUtils.IS_IN_BLOCK
-    )
-
-    await expect(p).resolves.not.toThrow()
+    await submitExtrinsic(authorizedTx, paymentAccount, Blockchain.IS_IN_BLOCK)
   }, 40_000)
 })
 
 describe('Runtime constraints', () => {
   it('should not be possible to create a web3 name that is too short', async () => {
     // Minimum is 3
-    await expect(Web3Names.getClaimTx('aaa')).resolves.not.toThrow()
+    await Web3Names.getClaimTx('aaa')
     // One less than the minimum
     await expect(
       Web3Names.getClaimTx('aa')
@@ -222,11 +204,9 @@ describe('Runtime constraints', () => {
 
   it('should not be possible to create a web3 name that is too long', async () => {
     // Maximum is 32
-    await expect(
-      Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    ).resolves.not.toThrow()
+    await Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     // One more than the maximum
-    await expect(async () =>
+    await expect(
       Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'
@@ -235,7 +215,7 @@ describe('Runtime constraints', () => {
 
   it('should not be possible to claim deposit for a web3 name that is too short', async () => {
     // Minimum is 3
-    await expect(Web3Names.getReclaimDepositTx('aaa')).resolves.not.toThrow()
+    await Web3Names.getReclaimDepositTx('aaa')
     // One less than the minimum
     await expect(
       Web3Names.getReclaimDepositTx('aa')
@@ -246,11 +226,9 @@ describe('Runtime constraints', () => {
 
   it('should not be possible to claim deposit for a web3 name that is too long', async () => {
     // Maximum is 32
-    await expect(
-      Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    ).resolves.not.toThrow()
+    await Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     // One more than the maximum
-    await expect(async () =>
+    await expect(
       Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'
@@ -258,6 +236,6 @@ describe('Runtime constraints', () => {
   }, 30_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

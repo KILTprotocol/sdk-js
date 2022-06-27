@@ -13,19 +13,17 @@
  */
 
 import { ConfigService } from '@kiltprotocol/config'
-import {
-  BlockchainApiConnection,
-  Blockchain,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
+import { ApiPromise } from '@polkadot/api'
 
 /**
  * Connects to the KILT Blockchain and caches the connection.
  * When used again, the cached instance is returned.
  *
- * @returns An instance of [[Blockchain]].
+ * @returns An instance of ApiPromise.
  */
-export function connect(): Promise<Blockchain> {
+export function connect(): Promise<ApiPromise> {
   return BlockchainApiConnection.getConnectionOrConnect()
 }
 

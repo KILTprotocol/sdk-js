@@ -12,7 +12,7 @@ import { BN } from '@polkadot/util'
 import type {
   DidVerificationKey,
   IIdentity,
-  KeystoreSigner,
+  SignCallback,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -73,8 +73,7 @@ export class DidBatchBuilder {
     ext: Extrinsic,
     keyRelationship: VerificationKeyRelationship
   ): void {
-    const lastBatch: BatchInfo | undefined =
-      this.batches[this.batches.length - 1]
+    const lastBatch = this.batches[this.batches.length - 1]
 
     // If there was not previous batch, or the new extrinsic requires a different key, create and add a new batch.
     if (!lastBatch || lastBatch.keyRelationship !== keyRelationship) {
@@ -118,6 +117,7 @@ export class DidBatchBuilder {
    * @param extrinsics The list of Extrinsic to add to the batch.
    * @returns The builder containing the new extrinsics.
    */
+
   /* istanbul ignore next */
   public addMultipleExtrinsics(extrinsics: Extrinsic[]): this {
     extrinsics.forEach((ext) => {
@@ -130,7 +130,7 @@ export class DidBatchBuilder {
   /**
    * Generate the SubmittableExtrinsic containing the batch of extrinsics to execute, in the order they were added to the builder.
    *
-   * @param signer The [[KeystoreSigner]] to sign the DID operation. It must contain the required keys to sign each batch.
+   * @param sign The [[SignCallback]] to sign the DID operation. It must support the keys required to sign each batch.
    * @param submitter The KILT address of the user authorised to submit each extrinsic in the batch.
    * @param submissionOptions The additional options to customise the signing operation.
    * @param submissionOptions.atomic A flag indicating whether the whole batch must be reverted (true) or not (false) in case any extrinsic in the batch fails. It defaults to true.
@@ -142,7 +142,7 @@ export class DidBatchBuilder {
   // TODO: Remove ignore when we can test the build function
   /* istanbul ignore next */
   public async build(
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitter: IIdentity['address'],
     {
       atomic = true,
@@ -167,7 +167,7 @@ export class DidBatchBuilder {
       )
     }
 
-    const signedBatches: SubmittableExtrinsic[] = await Promise.all(
+    const signedBatches = await Promise.all(
       this.batches.map(async (batch, index) => {
         // Don't create a new batch if the batch contains only one extrinsic
         const processedBatch =
@@ -184,7 +184,7 @@ export class DidBatchBuilder {
           didIdentifier: this.did.identifier,
           signingPublicKey: signingKey.publicKey,
           alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
-          signer,
+          sign,
           call: processedBatch,
           txCounter: batchNonce,
           submitter,

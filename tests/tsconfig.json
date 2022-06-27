@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["bundle-test.ts", "types.d.ts"],
+  "compilerOptions": {
+    "module": "None",
+    "resolveJsonModule": false,
+    "sourceMap": false,
+    "outDir": "dist"
+  }
+}

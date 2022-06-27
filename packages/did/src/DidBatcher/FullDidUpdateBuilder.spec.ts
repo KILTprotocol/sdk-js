@@ -11,7 +11,12 @@
 
 import type { ApiPromise } from '@polkadot/api'
 
-import { ApiMocks } from '@kiltprotocol/testing'
+import {
+  computeKeyId,
+  createLocalDemoFullDidFromKeypair,
+  ApiMocks,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 import {
   DidEncryptionKey,
   DidKey,
@@ -19,14 +24,14 @@ import {
   DidVerificationKey,
   EncryptionKeyType,
   KeyRelationship,
+  KeyringPair,
   NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
+  SignCallback,
   VerificationKeyType,
 } from '@kiltprotocol/types'
 
-import { computeKeyId } from './TestUtils'
-import { DemoKeystore, DemoKeystoreUtils } from '../DemoKeystore'
 import { FullDidUpdateBuilder } from './FullDidUpdateBuilder'
 import { VerificationKeyAction } from './FullDidBuilder'
 import { FullDidDetails } from '../DidDetails'
@@ -37,17 +42,14 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
   ),
 }))
 
-const keystore = new DemoKeystore()
 const mockApi = ApiMocks.createAugmentedApi()
 
 describe('FullDidUpdateBuilder', () => {
   describe('Constructor', () => {
     let fullDid: FullDidDetails
     beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        '//test-constructor'
-      )
+      const { keypair } = makeSigningKeyTool()
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair)
     })
     it('sets the right keys when creating from a full DID', async () => {
       const builder = new FullDidUpdateBuilder(mockApi, fullDid)
@@ -90,11 +92,10 @@ describe('FullDidUpdateBuilder', () => {
   describe('.setAuthenticationKey()', () => {
     let fullDid: FullDidDetails
     beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        '//test-auth-key',
-        { keyRelationships: new Set([]) }
-      )
+      const { keypair } = makeSigningKeyTool()
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
+        keyRelationships: new Set([]),
+      })
     })
     const newAuthenticationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(33).fill(1)),
@@ -129,11 +130,10 @@ describe('FullDidUpdateBuilder', () => {
       type: EncryptionKeyType.X25519,
     }
     beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        '//test-enc-key',
-        { keyRelationships: new Set([KeyRelationship.keyAgreement]) }
-      )
+      const { keypair } = makeSigningKeyTool()
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
+        keyRelationships: new Set([KeyRelationship.keyAgreement]),
+      })
     })
 
     describe('.addEncryptionKey()', () => {
@@ -240,11 +240,10 @@ describe('FullDidUpdateBuilder', () => {
       type: VerificationKeyType.Ecdsa,
     }
     beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        '//test-att-key',
-        { keyRelationships: new Set([KeyRelationship.assertionMethod]) }
-      )
+      const { keypair } = makeSigningKeyTool()
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
+        keyRelationships: new Set([KeyRelationship.assertionMethod]),
+      })
     })
     describe('.setAttestationKey()', () => {
       it('fails if the key has already been marked for deletion', async () => {
@@ -255,14 +254,11 @@ describe('FullDidUpdateBuilder', () => {
       })
 
       it('fails if another key has already been marked for addition', async () => {
+        const { keypair } = makeSigningKeyTool()
         // Does not have any attestation key set
-        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-          keystore,
-          '//test-att-key-2',
-          {
-            keyRelationships: new Set([]),
-          }
-        )
+        const emptyDid = await createLocalDemoFullDidFromKeypair(keypair, {
+          keyRelationships: new Set([]),
+        })
         const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
         expect(() =>
@@ -287,14 +283,11 @@ describe('FullDidUpdateBuilder', () => {
 
     describe('.removeAttestationKey()', () => {
       it('fails if the DID does not have an attestation key', async () => {
+        const { keypair } = makeSigningKeyTool()
         // Does not have any attestation key set
-        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-          keystore,
-          '//test-att-key-3',
-          {
-            keyRelationships: new Set([]),
-          }
-        )
+        const emptyDid = await createLocalDemoFullDidFromKeypair(keypair, {
+          keyRelationships: new Set([]),
+        })
         const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
         expect(() => builder.removeAttestationKey()).toThrow()
@@ -335,11 +328,10 @@ describe('FullDidUpdateBuilder', () => {
       type: VerificationKeyType.Ecdsa,
     }
     beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        '//test-del-key',
-        { keyRelationships: new Set([KeyRelationship.capabilityDelegation]) }
-      )
+      const { keypair } = makeSigningKeyTool()
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
+        keyRelationships: new Set([KeyRelationship.capabilityDelegation]),
+      })
     })
     describe('.setDelegationKey()', () => {
       it('fails if the key has already been marked for deletion', async () => {
@@ -350,14 +342,11 @@ describe('FullDidUpdateBuilder', () => {
       })
 
       it('fails if another key has already been marked for addition', async () => {
+        const { keypair } = makeSigningKeyTool()
         // Does not have any delegation key set
-        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-          keystore,
-          '//test-del-key-2',
-          {
-            keyRelationships: new Set([]),
-          }
-        )
+        const emptyDid = await createLocalDemoFullDidFromKeypair(keypair, {
+          keyRelationships: new Set([]),
+        })
         const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
         expect(() =>
@@ -383,13 +372,10 @@ describe('FullDidUpdateBuilder', () => {
     describe('.removeDelegationKey()', () => {
       it('fails if the DID does not have a delegation key', async () => {
         // Does not have any delegation key set
-        const emptyDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-          keystore,
-          '//test-del-key-3',
-          {
-            keyRelationships: new Set([]),
-          }
-        )
+        const { keypair } = makeSigningKeyTool()
+        const emptyDid = await createLocalDemoFullDidFromKeypair(keypair, {
+          keyRelationships: new Set([]),
+        })
         const builder = new FullDidUpdateBuilder(mockApi, emptyDid)
 
         expect(() => builder.removeDelegationKey()).toThrow()
@@ -436,11 +422,10 @@ describe('FullDidUpdateBuilder', () => {
       urls: ['x:url-new', 'type-new'],
     }
     beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        '//test-endpoint',
-        { endpoints: { 'id-old': { types: ['type-old'], urls: ['url-old'] } } }
-      )
+      const { keypair } = makeSigningKeyTool()
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
+        endpoints: { 'id-old': { types: ['type-old'], urls: ['url-old'] } },
+      })
     })
 
     describe('.addServiceEndpoint()', () => {
@@ -551,16 +536,18 @@ describe('FullDidUpdateBuilder', () => {
   // TODO: complete these tests once SDK has been refactored to work with generic api object
   describe('Building', () => {
     let fullDid: FullDidDetails
+    let keypair: KeyringPair
+    let sign: SignCallback
+
     beforeAll(async () => {
-      fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-        keystore,
-        '//test-building'
-      )
+      ;({ keypair, sign } = makeSigningKeyTool())
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair)
     })
+
     describe('.build()', () => {
       it('throws if batch is empty', async () => {
         const builder = new FullDidUpdateBuilder(mockApi, fullDid)
-        await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
+        await expect(builder.build(sign, 'test-account')).rejects.toThrow()
       })
       it.todo('properly consumes the builder')
     })

@@ -16,17 +16,16 @@ import {
   DidKey,
   DidServiceEndpoint,
   EncryptionKeyType,
-  KeystoreSigner,
+  SignCallback,
   NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
   SubmittableExtrinsic,
   VerificationKeyType,
 } from '@kiltprotocol/types'
-import { ApiMocks } from '@kiltprotocol/testing'
+import { computeKeyId, ApiMocks } from '@kiltprotocol/testing'
 
 import { FullDidBuilder, VerificationKeyAction } from './FullDidBuilder'
-import { computeKeyId } from './TestUtils'
 
 jest.mock('./FullDidBuilder.utils.js', () => ({
   deriveChainKeyId: jest.fn((api: ApiPromise, key: NewDidKey): DidKey['id'] =>
@@ -37,7 +36,7 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
 class TestAbstractFullDidBuilder extends FullDidBuilder {
   public build(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    signer: KeystoreSigner<any>,
+    sign: SignCallback<any>,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     submitter: string
     // @ts-ignore

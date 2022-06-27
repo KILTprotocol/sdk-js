@@ -163,9 +163,7 @@ function makeSubmittableResult(
           section: 'system',
           data: eventData,
           index: {
-            toHex: jest.fn(() => {
-              return '0x0000'
-            }),
+            toHex: jest.fn(() => '0x0000'),
           },
           // portablegabi checks if a transaction was successful
           method: 'ExtrinsicSuccess',
@@ -188,7 +186,7 @@ export function getMockedApi(): MockApiPromise {
   )
 
   function getMockSubmittableExtrinsic(): SubmittableExtrinsic {
-    const result: ISubmittableResult = TxResultsQueue.shift() || defaultTxResult
+    const result = TxResultsQueue.shift() || defaultTxResult
     return new MockSubmittableExtrinsic(result) as any as SubmittableExtrinsic
   }
 
@@ -217,45 +215,27 @@ export function getMockedApi(): MockApiPromise {
     },
     tx: {
       attestation: {
-        add: jest.fn((claimHash, _cTypeHash) => {
-          return getMockSubmittableExtrinsic()
-        }),
-        revoke: jest.fn((claimHash: string) => {
-          return getMockSubmittableExtrinsic()
-        }),
-        remove: jest.fn((claimHash: string) => {
-          return getMockSubmittableExtrinsic()
-        }),
-        reclaimDeposit: jest.fn((claimHash: string) => {
-          return getMockSubmittableExtrinsic()
-        }),
+        add: jest.fn((claimHash, _cTypeHash) => getMockSubmittableExtrinsic()),
+        revoke: jest.fn((claimHash: string) => getMockSubmittableExtrinsic()),
+        remove: jest.fn((claimHash: string) => getMockSubmittableExtrinsic()),
+        reclaimDeposit: jest.fn((claimHash: string) =>
+          getMockSubmittableExtrinsic()
+        ),
       },
       balances: {
         transfer: jest.fn(() => getMockSubmittableExtrinsic()),
       },
       ctype: {
-        add: jest.fn((hash, signature) => {
-          return getMockSubmittableExtrinsic()
-        }),
+        add: jest.fn((hash, signature) => getMockSubmittableExtrinsic()),
       },
       delegation: {
-        createHierarchy: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
-        addDelegation: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
-        revokeDelegation: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
+        createHierarchy: jest.fn(() => getMockSubmittableExtrinsic()),
+        addDelegation: jest.fn(() => getMockSubmittableExtrinsic()),
+        revokeDelegation: jest.fn(() => getMockSubmittableExtrinsic()),
       },
       did: {
-        add: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
-        remove: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
+        add: jest.fn(() => getMockSubmittableExtrinsic()),
+        remove: jest.fn(() => getMockSubmittableExtrinsic()),
       },
       portablegabi: {
         updateAccumulator: jest.fn((_acc) => {
