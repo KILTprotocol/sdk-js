@@ -236,6 +236,6 @@ describe('Runtime constraints', () => {
   }, 30_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

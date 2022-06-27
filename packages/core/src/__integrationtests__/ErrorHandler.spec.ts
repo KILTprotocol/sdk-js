@@ -70,6 +70,6 @@ it('records an extrinsic error when ctype does not exist', async () => {
   })
 }, 30_000)
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

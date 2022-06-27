@@ -448,6 +448,6 @@ describe('Different deposits scenarios', () => {
   }, 120_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

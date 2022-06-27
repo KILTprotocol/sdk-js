@@ -441,6 +441,6 @@ describe('hierarchyDetails', () => {
   }, 60_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

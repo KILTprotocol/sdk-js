@@ -164,6 +164,6 @@ describe('Chain returns specific errors, that we check for', () => {
   }, 40000)
 })
 
-afterAll(() => {
-  if (typeof api !== 'undefined') disconnect()
+afterAll(async () => {
+  if (typeof api !== 'undefined') await disconnect()
 })

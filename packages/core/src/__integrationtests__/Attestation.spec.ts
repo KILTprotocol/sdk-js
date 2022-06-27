@@ -466,6 +466,6 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   })
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

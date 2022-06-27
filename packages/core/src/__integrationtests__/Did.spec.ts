@@ -1538,4 +1538,6 @@ describe('Runtime constraints', () => {
   })
 })
 
-afterAll(async () => disconnect())
+afterAll(async () => {
+  await disconnect()
+})
