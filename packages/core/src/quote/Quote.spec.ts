@@ -62,9 +62,7 @@ describe('Quote', () => {
   let invalidCostQuote: IQuote
 
   const mockResolver = (() => {
-    const resolve = async (
-      didUri: string
-    ): Promise<DidResolvedDetails | null> => {
+    async function resolve(didUri: string): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
@@ -76,6 +74,7 @@ describe('Quote', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,
@@ -233,9 +232,7 @@ describe('Quote compression', () => {
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
   const mockResolver = (() => {
-    const resolve = async (
-      didUri: string
-    ): Promise<DidResolvedDetails | null> => {
+    async function resolve(didUri: string): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
@@ -247,6 +244,7 @@ describe('Quote compression', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,

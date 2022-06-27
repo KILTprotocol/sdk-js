@@ -69,13 +69,15 @@ export function makeSubscriptionPromiseMulti<SubscriptionType>(
   const subscriptions: Array<(value: SubscriptionType) => void> = []
   args.forEach(
     (options: SubscriptionPromise.TerminationOptions<SubscriptionType>) => {
-      const { promise, subscription } = makeSubscriptionPromise(options)
+      const { promise, subscription: sub } = makeSubscriptionPromise(options)
       promises.push(promise)
-      subscriptions.push(subscription)
+      subscriptions.push(sub)
     }
   )
-  const subscription = (value: SubscriptionType): void => {
+
+  function subscription(value: SubscriptionType): void {
     subscriptions.forEach((s) => s(value))
   }
+
   return { promises, subscription }
 }

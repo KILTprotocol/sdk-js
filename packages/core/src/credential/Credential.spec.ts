@@ -131,9 +131,7 @@ describe('RequestForAttestation', () => {
   let migratedAndDeletedFullDid: DidDetails
 
   const mockResolver = (() => {
-    const resolve = async (
-      didUri: DidUri
-    ): Promise<DidResolvedDetails | null> => {
+    async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
       switch (did) {
@@ -161,6 +159,7 @@ describe('RequestForAttestation', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,
@@ -388,9 +387,7 @@ describe('create presentation', () => {
   let attestation: IAttestation
 
   const mockResolver = (() => {
-    const resolve = async (
-      didUri: DidUri
-    ): Promise<DidResolvedDetails | null> => {
+    async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
       switch (did) {
@@ -430,6 +427,7 @@ describe('create presentation', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,

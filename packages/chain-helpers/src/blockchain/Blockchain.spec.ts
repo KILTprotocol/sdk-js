@@ -102,7 +102,9 @@ describe('Blockchain', () => {
 
   describe('parseSubscriptionOptions', () => {
     it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
-      const testFunction = () => true
+      function testFunction() {
+        return true
+      }
 
       expect(parseSubscriptionOptions()).toEqual({
         resolveOn: IS_FINALIZED,

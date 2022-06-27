@@ -25,20 +25,67 @@ export const TxOutdated = 'Transaction is outdated'
 export const TxPriority = 'Priority is too low:'
 export const TxDuplicate = 'Transaction Already Imported'
 
-export const IS_READY: SubscriptionPromise.ResultEvaluator = (result) =>
-  result.status.isReady
-export const IS_IN_BLOCK: SubscriptionPromise.ResultEvaluator = (result) =>
-  result.isInBlock
-export const EXTRINSIC_EXECUTED: SubscriptionPromise.ResultEvaluator = (
-  result
-) => ErrorHandler.extrinsicSuccessful(result)
-export const IS_FINALIZED: SubscriptionPromise.ResultEvaluator = (result) =>
-  result.isFinalized
+/**
+ * Evaluator resolves on extrinsic reaching status "is ready".
+ *
+ * @param result Submission result.
+ * @returns Whether the extrinsic reached status "is ready".
+ */
+export function IS_READY(result: ISubmittableResult): boolean {
+  return result.status.isReady
+}
 
-export const IS_ERROR: SubscriptionPromise.ResultEvaluator = (result) =>
-  result.isError || result.internalError
-export const EXTRINSIC_FAILED: SubscriptionPromise.ResultEvaluator = (result) =>
-  ErrorHandler.extrinsicFailed(result)
+/**
+ * Evaluator resolves on extrinsic reaching status "in block".
+ *
+ * @param result Submission result.
+ * @returns Whether the extrinsic reached status "in block".
+ */
+export function IS_IN_BLOCK(result: ISubmittableResult): boolean {
+  return result.isInBlock
+}
+
+/**
+ * Evaluator resolves on extrinsic reaching status "success".
+ *
+ * @param result Submission result.
+ * @returns Whether the extrinsic reached status "success".
+ */
+export function EXTRINSIC_EXECUTED(result: ISubmittableResult): boolean {
+  return ErrorHandler.extrinsicSuccessful(result)
+}
+
+/**
+ * Evaluator resolves on extrinsic reaching status "finalized".
+ *
+ * @param result Submission result.
+ * @returns Whether the extrinsic reached status "finalized".
+ */
+export function IS_FINALIZED(result: ISubmittableResult): boolean {
+  return result.isFinalized
+}
+
+/**
+ * Evaluator resolves on extrinsic reaching status "is error".
+ *
+ * @param result Submission result.
+ * @returns Whether the extrinsic reached status "is error" and the error itself.
+ */
+export function IS_ERROR(
+  result: ISubmittableResult
+): boolean | Error | undefined {
+  return result.isError || result.internalError
+}
+
+/**
+ * Evaluator resolves on extrinsic reaching status "is ready".
+ *
+ * @param result Submission result.
+ * @returns Whether the extrinsic reached status "is ready".
+ */
+export function EXTRINSIC_FAILED(result: ISubmittableResult): boolean {
+  return ErrorHandler.extrinsicFailed(result)
+}
 
 /**
  * Parses potentially incomplete or undefined options and returns complete [[Options]].
@@ -90,7 +137,8 @@ export async function submitSignedTx(
   })
 
   const api = await getConnectionOrConnect()
-  const handleDisconnect = (): void => {
+
+  function handleDisconnect(): void {
     const result = new SubmittableResult({
       events: latestResult.events || [],
       internalError: new Error('connection error'),
@@ -101,6 +149,7 @@ export async function submitSignedTx(
     })
     subscription(result)
   }
+
   api.once('disconnected', handleDisconnect)
 
   try {

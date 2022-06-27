@@ -291,8 +291,9 @@ export interface HashingOptions {
  * @param nonce Optional nonce (as string) used to obscure hashed contents.
  * @returns 256 bit blake2 hash as hex string.
  */
-export const saltedBlake2b256: Hasher = (value, nonce) =>
-  blake2AsHex((nonce || '') + value, 256)
+export function saltedBlake2b256(value: string, nonce = ''): HexString {
+  return blake2AsHex(nonce + value, 256)
+}
 
 /**
  * Configurable computation of salted over an array of statements. Can be used to validate/reproduce salted hashes
