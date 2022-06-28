@@ -91,7 +91,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     result.service = serviceEndpoints.map((service) => ({
       id: `${details.uri}#${service.id}`,
       type: service.types,
-      serviceEndpoint: service.urls,
+      serviceEndpoint: service.uris,
     }))
   }
 

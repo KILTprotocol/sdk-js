@@ -411,17 +411,17 @@ describe('FullDidUpdateBuilder', () => {
     const newServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
       types: ['type-new'],
-      urls: ['x:url-new'],
+      uris: ['x:url-new'],
     }
     const newInvalidServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
       types: ['type-new', 'Ξέρω-ότι-η-θάλασσα-είναι-μπλε'],
-      urls: ['x:url-new', 'type-new'],
+      uris: ['x:url-new', 'type-new'],
     }
     beforeAll(async () => {
       const { keypair } = makeSigningKeyTool()
       fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
-        endpoints: { 'id-old': { types: ['type-old'], urls: ['url-old'] } },
+        endpoints: { 'id-old': { types: ['type-old'], uris: ['url-old'] } },
       })
     })
 
@@ -474,7 +474,7 @@ describe('FullDidUpdateBuilder', () => {
               newServiceEndpoint.id,
               {
                 types: newServiceEndpoint.types,
-                urls: newServiceEndpoint.urls,
+                uris: newServiceEndpoint.uris,
               },
             ],
           ])

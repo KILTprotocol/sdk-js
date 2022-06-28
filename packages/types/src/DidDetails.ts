@@ -147,7 +147,7 @@ export type DidServiceEndpoint = {
   /**
    * A list of URIs the endpoint exposes its services at.
    */
-  urls: string[]
+  uris: string[]
 }
 
 /**

@@ -64,7 +64,7 @@ function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
   return {
     id: serviceId,
     types: [`type-${serviceId}`],
-    urls: [`x:url-${serviceId}`],
+    uris: [`x:url-${serviceId}`],
   }
 }
 

@@ -71,12 +71,12 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
   {
     id: 'service#1',
     types: ['type-1'],
-    urls: ['url-1'],
+    uris: ['url-1'],
   },
   {
     id: 'service#2',
     types: ['type-2'],
-    urls: ['url-2'],
+    uris: ['url-2'],
   },
 ]
 
@@ -212,7 +212,7 @@ describe('When creating an instance from the chain', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service#1',
       types: ['type-1'],
-      urls: ['url-1'],
+      uris: ['url-1'],
     })
     expect(fullDidDetails?.getEndpoints('type-1')).toStrictEqual<
       DidServiceEndpoint[]
@@ -220,7 +220,7 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'service#1',
         types: ['type-1'],
-        urls: ['url-1'],
+        uris: ['url-1'],
       },
     ])
 
@@ -229,7 +229,7 @@ describe('When creating an instance from the chain', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service#2',
       types: ['type-2'],
-      urls: ['url-2'],
+      uris: ['url-2'],
     })
     expect(fullDidDetails?.getEndpoints('type-2')).toStrictEqual<
       DidServiceEndpoint[]
@@ -237,7 +237,7 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'service#2',
         types: ['type-2'],
-        urls: ['url-2'],
+        uris: ['url-2'],
       },
     ])
   })

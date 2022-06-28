@@ -282,7 +282,7 @@ function decodeServiceChainRecord(
     types: serviceDetails.serviceTypes.map((type) =>
       hexToString(type.toString())
     ),
-    urls: serviceDetails.urls.map((url) => hexToString(url.toString())),
+    uris: serviceDetails.urls.map((url) => hexToString(url.toString())),
   }
 }
 
@@ -495,9 +495,12 @@ export async function generateCreateTxFromCreationDetails(
     checkServiceEndpointInput(api, service)
   })
 
-  const newServiceDetails = serviceEndpoints.map((service) => {
-    const { id, urls } = service
-    return { id, urls, serviceTypes: service.types }
+  const newServiceDetails = serviceEndpoints.map(({ id, types, uris }) => {
+    return {
+      id,
+      urls: uris,
+      serviceTypes: types,
+    }
   })
 
   const rawCreationDetails = {
@@ -692,8 +695,9 @@ export async function getAddEndpointExtrinsic(
   checkServiceEndpointInput(api, endpoint)
 
   return api.tx.did.addServiceEndpoint({
+    id: endpoint.id,
     serviceTypes: endpoint.types,
-    ...endpoint,
+    urls: endpoint.uris,
   })
 }
 

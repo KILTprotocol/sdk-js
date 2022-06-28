@@ -46,12 +46,12 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const validOptions: LightDidCreationDetails = {
@@ -130,7 +130,7 @@ describe('When creating an instance from the details', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service-1',
       types: ['type-1'],
-      urls: ['x:url-1'],
+      uris: ['x:url-1'],
     })
     expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
       DidServiceEndpoint[]
@@ -138,7 +138,7 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
     ])
 
@@ -147,7 +147,7 @@ describe('When creating an instance from the details', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service-2',
       types: ['type-21', 'type-22'],
-      urls: ['x:url-21', 'x:url-22'],
+      uris: ['x:url-21', 'x:url-22'],
     })
     expect(lightDidDetails?.getEndpoints('type-21')).toStrictEqual<
       DidServiceEndpoint[]
@@ -155,7 +155,7 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ])
   })
@@ -292,12 +292,12 @@ describe('When creating an instance from a URI', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {
@@ -344,12 +344,12 @@ describe('When creating an instance from a URI', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {
