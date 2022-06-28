@@ -1301,7 +1301,7 @@ describe('Runtime constraints', () => {
       )
     }, 30_000)
 
-    it('should not be possible to create a DID with a service endpoint that has too many URLs', async () => {
+    it('should not be possible to create a DID with a service endpoint that has too many URIs', async () => {
       const newEndpoint: DidServiceEndpoint = {
         id: 'id-1',
         // Maximum is 1
@@ -1331,7 +1331,7 @@ describe('Runtime constraints', () => {
           sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has too many URLs (2). Max number of URLs allowed per service is 1."`
+        `"The service with ID \\"id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1375,7 +1375,7 @@ describe('Runtime constraints', () => {
       )
     }, 30_000)
 
-    it('should not be possible to create a DID with a service endpoint that has a URL that is too long', async () => {
+    it('should not be possible to create a DID with a service endpoint that has a URI that is too long', async () => {
       await DidChain.generateCreateTxFromCreationDetails(
         {
           authenticationKey: testAuthKey,
@@ -1415,7 +1415,7 @@ describe('Runtime constraints', () => {
           sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the URL \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (202 bytes). Max number of bytes allowed for a service URL is 200."`
+        `"The service with ID \\"id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (202 bytes). Max number of bytes allowed for a service URI is 200."`
       )
     }, 30_000)
   })
@@ -1457,7 +1457,7 @@ describe('Runtime constraints', () => {
       )
     }, 30_000)
 
-    it('should not be possible to add a service endpoint that has too many URLs', async () => {
+    it('should not be possible to add a service endpoint that has too many URIs', async () => {
       const newEndpoint: DidServiceEndpoint = {
         id: 'id-1',
         // Maximum is 1
@@ -1470,7 +1470,7 @@ describe('Runtime constraints', () => {
       await expect(
         DidChain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has too many URLs (2). Max number of URLs allowed per service is 1."`
+        `"The service with ID \\"id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
       )
     }, 30_000)
 
@@ -1493,7 +1493,7 @@ describe('Runtime constraints', () => {
       )
     }, 30_000)
 
-    it('should not be possible to add a service endpoint that has a URL that is too long', async () => {
+    it('should not be possible to add a service endpoint that has a URI that is too long', async () => {
       await DidChain.getAddEndpointExtrinsic({
         id: 'id-1',
         types: ['type-1'],
@@ -1512,7 +1512,7 @@ describe('Runtime constraints', () => {
           ],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the URL \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (201 bytes). Max number of bytes allowed for a service URL is 200."`
+        `"The service with ID \\"id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (201 bytes). Max number of bytes allowed for a service URI is 200."`
       )
     }, 30_000)
   })

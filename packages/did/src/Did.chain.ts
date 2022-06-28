@@ -439,7 +439,7 @@ function checkServiceEndpointInput(
  * Additionally, each service endpoint must respect the following conditions:
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
+ *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param sign The sign callback.
  *
@@ -682,7 +682,7 @@ export async function getAddKeyExtrinsic(
  * The service endpoint must respect the following conditions:
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
+ *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @returns An extrinsic that must be authorised (signed) by the FullDid with which the service endpoint should be associated.
  */
 export async function getAddEndpointExtrinsic(
