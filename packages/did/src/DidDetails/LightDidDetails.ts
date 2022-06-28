@@ -14,7 +14,6 @@ import type {
   IIdentity,
   SignCallback,
 } from '@kiltprotocol/types'
-import { VerificationKeyType } from '@kiltprotocol/types'
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -206,7 +205,7 @@ export class LightDidDetails extends DidDetails {
    */
   public static fromIdentifier(
     identifier: DidIdentifier,
-    keyType: LightDidSupportedVerificationKeyType = VerificationKeyType.Sr25519
+    keyType: LightDidSupportedVerificationKeyType = 'sr25519'
   ): LightDidDetails {
     const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier, false, ss58Format),

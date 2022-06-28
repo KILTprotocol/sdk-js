@@ -18,7 +18,6 @@ import {
   DidIdentifier,
   SignCallback,
   VerificationKeyType,
-  KeyRelationship,
   VerificationKeyRelationship,
   EncryptionKeyRelationship,
 } from '@kiltprotocol/types'
@@ -78,9 +77,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first authentication key, in the order they are stored internally, of the given DID.
    */
   public get authenticationKey(): DidVerificationKey {
-    const firstAuthenticationKey = this.getVerificationKeys(
-      KeyRelationship.authentication
-    )[0]
+    const firstAuthenticationKey = this.getVerificationKeys('authentication')[0]
     if (!firstAuthenticationKey) {
       throw new SDKErrors.ERROR_DID_ERROR(
         'Unexpected error. Any DID should always have at least one authentication key.'
@@ -95,7 +92,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first encryption key, in the order they are stored internally, of the given DID.
    */
   public get encryptionKey(): DidEncryptionKey | undefined {
-    return this.getEncryptionKeys(KeyRelationship.keyAgreement)[0]
+    return this.getEncryptionKeys('keyAgreement')[0]
   }
 
   /**
@@ -104,7 +101,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first attestation key, in the order they are stored internally, of the given DID.
    */
   public get attestationKey(): DidVerificationKey | undefined {
-    return this.getVerificationKeys(KeyRelationship.assertionMethod)[0]
+    return this.getVerificationKeys('assertionMethod')[0]
   }
 
   /**
@@ -113,7 +110,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first delegation key, in the order they are stored internally, of the given DID.
    */
   public get delegationKey(): DidVerificationKey | undefined {
-    return this.getVerificationKeys(KeyRelationship.capabilityDelegation)[0]
+    return this.getVerificationKeys('capabilityDelegation')[0]
   }
 
   /**

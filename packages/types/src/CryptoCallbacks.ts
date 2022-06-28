@@ -7,15 +7,9 @@
 
 import type { SignerPayloadJSON } from '@polkadot/types/types'
 
-export enum SigningAlgorithms {
-  Ed25519 = 'ed25519',
-  Sr25519 = 'sr25519',
-  EcdsaSecp256k1 = 'ecdsa-secp256k1',
-}
+export type SigningAlgorithms = 'ed25519' | 'sr25519' | 'ecdsa-secp256k1'
 
-export enum EncryptionAlgorithms {
-  NaclBox = 'x25519-xsalsa20-poly1305',
-}
+export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
 
 /**
  * Base interface for all {en/de}cryption & signing requests.
@@ -89,7 +83,7 @@ export interface SigningOptions<A extends SigningAlgorithms = any> {
  * @returns [[ResponseData]] which additionally contains a `nonce` randomly generated in the encryption process (required for decryption).
  */
 export interface EncryptCallback<
-  A extends EncryptionAlgorithms.NaclBox = EncryptionAlgorithms.NaclBox
+  A extends 'x25519-xsalsa20-poly1305' = 'x25519-xsalsa20-poly1305'
 > {
   (
     requestData: RequestData<A> & {
@@ -107,7 +101,7 @@ export interface EncryptCallback<
  * @returns A Promise resolving to [[ResponseData]] containing the decrypted message or rejecting if key or algorithm is unknown or if they do not match.
  */
 export interface DecryptCallback<
-  A extends EncryptionAlgorithms.NaclBox = EncryptionAlgorithms.NaclBox
+  A extends 'x25519-xsalsa20-poly1305' = 'x25519-xsalsa20-poly1305'
 > {
   (
     requestData: RequestData<A> & {

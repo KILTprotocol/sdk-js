@@ -13,10 +13,9 @@ import type {
   KeyRelationship,
   NewDidEncryptionKey,
   NewDidVerificationKey,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
-export { SigningAlgorithms, EncryptionAlgorithms } from '@kiltprotocol/types'
+export { SigningAlgorithms } from '@kiltprotocol/types'
 
 /**
  * Map from a key relationship (including the 'none' relationship) -> set of key IDs.
@@ -59,9 +58,7 @@ export type FullDidCreationDetails = {
 }
 
 // Ecdsa not supported.
-export type LightDidSupportedVerificationKeyType =
-  | VerificationKeyType.Ed25519
-  | VerificationKeyType.Sr25519
+export type LightDidSupportedVerificationKeyType = 'ed25519' | 'sr25519'
 
 /**
  * A new public key specified when creating a new light DID.

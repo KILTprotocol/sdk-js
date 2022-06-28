@@ -23,7 +23,6 @@ import {
   LightDidDetails,
   NewLightDidAuthenticationKey,
   resolveDoc,
-  SigningAlgorithms,
   Utils as DidUtils,
   Web3Names,
 } from '@kiltprotocol/did'
@@ -38,13 +37,10 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   DidResolvedDetails,
   DidServiceEndpoint,
-  EncryptionKeyType,
-  KeyRelationship,
   KeyringPair,
   NewDidEncryptionKey,
   NewDidVerificationKey,
   Permission,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ss58Format, UUID } from '@kiltprotocol/utils'
 
@@ -267,7 +263,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const newKey = makeSigningKeyTool()
 
   const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.authentication,
+    'authentication',
     newKey.authenticationKey
   )
   const tx2 = await fullDetails.authorizeExtrinsic(
@@ -339,9 +335,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
 describe('DID migration', () => {
   it('migrates light DID with ed25519 auth key and encryption key', async () => {
-    const { sign, authenticationKey } = makeSigningKeyTool(
-      SigningAlgorithms.Ed25519
-    )
+    const { sign, authenticationKey } = makeSigningKeyTool('ed25519')
     const lightDidDetails = LightDidDetails.fromDetails({
       authenticationKey,
       encryptionKey: makeEncryptionKeyTool(
@@ -428,9 +422,7 @@ describe('DID migration', () => {
   })
 
   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
-    const { sign, authenticationKey } = makeSigningKeyTool(
-      SigningAlgorithms.Ed25519
-    )
+    const { sign, authenticationKey } = makeSigningKeyTool('ed25519')
     const serviceEndpoints: DidServiceEndpoint[] = [
       {
         id: 'id-1',
@@ -505,9 +497,7 @@ describe('DID migration', () => {
 describe('DID authorization', () => {
   // Light DIDs cannot authorise extrinsics
   let didDetails: FullDidDetails
-  const { sign, authenticationKey } = makeSigningKeyTool(
-    SigningAlgorithms.Ed25519
-  )
+  const { sign, authenticationKey } = makeSigningKeyTool('ed25519')
 
   beforeAll(async () => {
     const lightDidDetails = LightDidDetails.fromDetails({
@@ -585,7 +575,7 @@ describe('DID management batching', () => {
         authenticationKey,
         encryptionKey: {
           publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: EncryptionKeyType.X25519,
+          type: 'x25519',
         },
         serviceEndpoints: [
           {
@@ -602,19 +592,19 @@ describe('DID management batching', () => {
       )
         .addEncryptionKey({
           publicKey: Uint8Array.from(Array(32).fill(2)),
-          type: EncryptionKeyType.X25519,
+          type: 'x25519',
         })
         .addEncryptionKey({
           publicKey: Uint8Array.from(Array(32).fill(3)),
-          type: EncryptionKeyType.X25519,
+          type: 'x25519',
         })
         .setAttestationKey({
           publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
         })
         .setDelegationKey({
           publicKey: Uint8Array.from(Array(33).fill(1)),
-          type: VerificationKeyType.Ecdsa,
+          type: 'ecdsa',
         })
         .addServiceEndpoint({
           id: 'id-2',
@@ -636,38 +626,32 @@ describe('DID management batching', () => {
 
       expect(fullDid).not.toBeNull()
 
-      const authenticationKeys = fullDid!.getVerificationKeys(
-        KeyRelationship.authentication
-      )
+      const authenticationKeys = fullDid!.getVerificationKeys('authentication')
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: keypair.publicKey,
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
         },
       ])
 
-      const encryptionKeys = fullDid!.getEncryptionKeys(
-        KeyRelationship.keyAgreement
-      )
+      const encryptionKeys = fullDid!.getEncryptionKeys('keyAgreement')
       expect(encryptionKeys).toHaveLength(3)
 
-      const assertionKeys = fullDid!.getVerificationKeys(
-        KeyRelationship.assertionMethod
-      )
+      const assertionKeys = fullDid!.getVerificationKeys('assertionMethod')
       expect(assertionKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
         },
       ])
 
       const delegationKeys = fullDid!.getVerificationKeys(
-        KeyRelationship.capabilityDelegation
+        'capabilityDelegation'
       )
       expect(delegationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: Uint8Array.from(Array(33).fill(1)),
-          type: VerificationKeyType.Ecdsa,
+          type: 'ecdsa',
         },
       ])
 
@@ -693,12 +677,10 @@ describe('DID management batching', () => {
     })
 
     it('Build a minimal full DID with an Ecdsa key', async () => {
-      const { keypair, sign } = makeSigningKeyTool(
-        SigningAlgorithms.EcdsaSecp256k1
-      )
+      const { keypair, sign } = makeSigningKeyTool('ecdsa-secp256k1')
       const didAuthKey: NewDidVerificationKey = {
         publicKey: keypair.publicKey,
-        type: VerificationKeyType.Ecdsa,
+        type: 'ecdsa',
       }
       const encodedEcdsaAddress = encodeAddress(
         blake2AsU8a(keypair.publicKey),
@@ -716,13 +698,11 @@ describe('DID management batching', () => {
 
       expect(fullDid).not.toBeNull()
 
-      const authenticationKeys = fullDid!.getVerificationKeys(
-        KeyRelationship.authentication
-      )
+      const authenticationKeys = fullDid!.getVerificationKeys('authentication')
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: keypair.publicKey,
-          type: VerificationKeyType.Ecdsa,
+          type: 'ecdsa',
         },
       ])
     })
@@ -740,19 +720,19 @@ describe('DID management batching', () => {
       )
         .addEncryptionKey({
           publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: EncryptionKeyType.X25519,
+          type: 'x25519',
         })
         .addEncryptionKey({
           publicKey: Uint8Array.from(Array(32).fill(2)),
-          type: EncryptionKeyType.X25519,
+          type: 'x25519',
         })
         .setAttestationKey({
           publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
         })
         .setDelegationKey({
           publicKey: Uint8Array.from(Array(33).fill(1)),
-          type: VerificationKeyType.Ecdsa,
+          type: 'ecdsa',
         })
         .addServiceEndpoint({
           id: 'id-1',
@@ -790,7 +770,7 @@ describe('DID management batching', () => {
         finalFullDid.authenticationKey
       ).toMatchObject<NewDidVerificationKey>({
         publicKey: keypair.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       })
 
       expect(finalFullDid.encryptionKey).toBeUndefined()
@@ -801,12 +781,10 @@ describe('DID management batching', () => {
 
     it('Correctly handles rotation of the authentication key', async () => {
       const { keypair: authKeypair, sign } = makeSigningKeyTool()
-      const { keypair: newAuthKeypair } = makeSigningKeyTool(
-        SigningAlgorithms.Ed25519
-      )
+      const { keypair: newAuthKeypair } = makeSigningKeyTool('ed25519')
       const createBuilder = new FullDidCreationBuilder(api, {
         publicKey: authKeypair.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       })
 
       const initialFullDid = await createBuilder.buildAndSubmit(
@@ -823,7 +801,7 @@ describe('DID management batching', () => {
         })
         .setAuthenticationKey({
           publicKey: newAuthKeypair.publicKey,
-          type: VerificationKeyType.Ed25519,
+          type: 'ed25519',
         })
         .addServiceEndpoint({
           id: 'id-2',
@@ -836,7 +814,7 @@ describe('DID management batching', () => {
       expect(() =>
         builderCopy.setAuthenticationKey({
           publicKey: authKeypair.publicKey,
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
         })
       ).toThrow()
 
@@ -853,7 +831,7 @@ describe('DID management batching', () => {
         finalFullDid.authenticationKey
       ).toMatchObject<NewDidVerificationKey>({
         publicKey: newAuthKeypair.publicKey,
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       })
 
       expect(finalFullDid.encryptionKey).toBeUndefined()
@@ -866,7 +844,7 @@ describe('DID management batching', () => {
       const { keypair, sign } = makeSigningKeyTool()
       const createBuilder = new FullDidCreationBuilder(api, {
         publicKey: keypair.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       }).addServiceEndpoint({
         id: 'id-1',
         types: ['type-1'],
@@ -884,7 +862,7 @@ describe('DID management batching', () => {
       const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
         .setAttestationKey({
           publicKey: keypair.publicKey,
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
         })
         .addServiceEndpoint({
           id: 'id-2',
@@ -931,7 +909,7 @@ describe('DID management batching', () => {
       const { keypair, sign } = makeSigningKeyTool()
       const createBuilder = new FullDidCreationBuilder(api, {
         publicKey: keypair.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       }).addServiceEndpoint({
         id: 'id-1',
         types: ['type-1'],
@@ -949,7 +927,7 @@ describe('DID management batching', () => {
       const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
         .setAttestationKey({
           publicKey: keypair.publicKey,
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
         })
         .addServiceEndpoint({
           id: 'id-2',
@@ -1162,12 +1140,12 @@ describe('DID extrinsics batching', () => {
 
 describe('Runtime constraints', () => {
   let testAuthKey: NewDidVerificationKey
-  const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  const { keypair, sign } = makeSigningKeyTool('ed25519')
 
   beforeAll(async () => {
     testAuthKey = {
       publicKey: keypair.publicKey,
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
     }
   })
   describe('DID creation', () => {
@@ -1176,7 +1154,7 @@ describe('Runtime constraints', () => {
       const newKeyAgreementKeys = Array(10).map(
         (_, index): NewDidEncryptionKey => ({
           publicKey: Uint8Array.from(new Array(32).fill(index)),
-          type: EncryptionKeyType.X25519,
+          type: 'x25519',
         })
       )
       await DidChain.generateCreateTxFromCreationDetails(
@@ -1191,7 +1169,7 @@ describe('Runtime constraints', () => {
       // One more than the maximum
       newKeyAgreementKeys.push({
         publicKey: Uint8Array.from(new Array(32).fill(100)),
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       })
       await expect(
         DidChain.generateCreateTxFromCreationDetails(

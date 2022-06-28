@@ -14,7 +14,6 @@ import {
   SignCallback,
   NewDidVerificationKey,
   SubmittableExtrinsic,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -31,10 +30,10 @@ function encodeVerificationKeyToAddress({
   type,
 }: Pick<DidVerificationKey, 'publicKey' | 'type'>): IIdentity['address'] {
   switch (type) {
-    case VerificationKeyType.Ed25519:
-    case VerificationKeyType.Sr25519:
+    case 'ed25519':
+    case 'sr25519':
       return encodeAddress(publicKey, ss58Format)
-    case VerificationKeyType.Ecdsa: {
+    case 'ecdsa': {
       // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
       const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
       return encodeAddress(pk, ss58Format)

@@ -11,6 +11,7 @@ import type { ApiPromise } from '@polkadot/api'
 import type {
   DecryptCallback,
   EncryptCallback,
+  EncryptionKeyType,
   KeyringPair,
   LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
@@ -35,8 +36,6 @@ const {
   Utils: { Crypto, Keyring, ss58Format },
   Message,
   MessageBodyType,
-  EncryptionKeyType,
-  VerificationKeyType,
   BalanceUtils,
 } = kilt
 
@@ -60,7 +59,7 @@ function makeSignCallback(keypair: KeyringPair): SignCallback {
 
 function makeSigningKeypair(
   seed: string,
-  alg: SigningAlgorithms = Did.SigningAlgorithms.Sr25519
+  alg: SigningAlgorithms = 'sr25519'
 ): {
   keypair: KeyringPair
   sign: SignCallback
@@ -83,7 +82,7 @@ function makeSigningKeypair(
 function makeEncryptionKeypair(seed: string): {
   secretKey: Uint8Array
   publicKey: Uint8Array
-  type: typeof EncryptionKeyType.X25519
+  type: EncryptionKeyType
 } {
   const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
     Crypto.hash(seed, 256)
@@ -91,7 +90,7 @@ function makeEncryptionKeypair(seed: string): {
   return {
     secretKey,
     publicKey,
-    type: EncryptionKeyType.X25519,
+    type: 'x25519',
   }
 }
 
@@ -99,7 +98,7 @@ function makeEncryptCallback({
   secretKey,
 }: {
   secretKey: Uint8Array
-  type: typeof EncryptionKeyType.X25519
+  type: EncryptionKeyType
 }): EncryptCallback {
   return async function encryptCallback({ data, peerPublicKey, alg }) {
     const { box, nonce } = Crypto.encryptAsymmetric(
@@ -115,7 +114,7 @@ function makeDecryptCallback({
   secretKey,
 }: {
   secretKey: Uint8Array
-  type: typeof EncryptionKeyType.X25519
+  type: EncryptionKeyType
 }): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey, alg }) {
     const decrypted = Crypto.decryptAsymmetric(
@@ -206,17 +205,16 @@ async function runAll() {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const address = Crypto.encodeAddress(authPublicKey, ss58Format)
-  const didCreationDetails = {
+  const testDid = Did.LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authPublicKey,
-      type: VerificationKeyType.Ed25519 as LightDidSupportedVerificationKeyType,
+      type: 'ed25519',
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     },
-  }
-  const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
+  })
   if (
     testDid.uri !==
     `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
@@ -226,14 +224,11 @@ async function runAll() {
 
   // Chain Did workflow -> creation & deletion
   console.log('DID workflow started')
-  const { keypair, sign } = makeSigningKeypair(
-    '//Foo',
-    Did.SigningAlgorithms.Ed25519
-  )
+  const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
 
   const fullDid = await new Did.FullDidCreationBuilder(api, {
     publicKey: keypair.publicKey,
-    type: VerificationKeyType.Ed25519,
+    type: 'ed25519',
   }).buildAndSubmit(sign, devFaucet.address, async (tx) => {
     await Blockchain.signAndSubmitTx(tx, devFaucet, {
       resolveOn: Blockchain.IS_IN_BLOCK,

@@ -15,11 +15,7 @@ import jsonld from 'jsonld'
 
 import { base58Encode, randomAsHex } from '@polkadot/util-crypto'
 
-import {
-  DidDocumentPublicKeyType,
-  DidPublicKey,
-  DidUri,
-} from '@kiltprotocol/types'
+import { DidPublicKey, DidUri } from '@kiltprotocol/types'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -55,7 +51,7 @@ beforeAll(async () => {
         uri: uri as DidPublicKey['uri'],
         publicKeyBase58: base58Encode(Crypto.decodeAddress(identifier)),
         controller: did,
-        type: DidDocumentPublicKeyType.Ed25519VerificationKey,
+        type: 'Ed25519VerificationKey2018',
       }
       if (fragment) {
         return { documentUrl: uri, document: key }

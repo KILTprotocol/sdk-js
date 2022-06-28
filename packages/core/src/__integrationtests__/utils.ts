@@ -12,7 +12,7 @@ import { BN } from '@polkadot/util'
 
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import { DidMigrationCallback, SigningAlgorithms } from '@kiltprotocol/did'
+import { DidMigrationCallback } from '@kiltprotocol/did'
 import {
   Blockchain,
   BlockchainApiConnection,
@@ -89,7 +89,7 @@ export const devBob = keyring.createFromUri('//Bob')
 export const devCharlie = keyring.createFromUri('//Charlie')
 
 export function addressFromRandom(): IIdentity['address'] {
-  return makeSigningKeyTool(SigningAlgorithms.Ed25519).keypair.address
+  return makeSigningKeyTool('ed25519').keypair.address
 }
 
 export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {

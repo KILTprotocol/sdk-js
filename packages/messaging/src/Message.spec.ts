@@ -15,7 +15,6 @@ import {
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
-  EncryptionAlgorithms,
   ICredential,
   IDidDetails,
   IDidResolver,
@@ -32,7 +31,6 @@ import { Quote, RequestForAttestation } from '@kiltprotocol/core'
 import {
   FullDidDetails,
   LightDidDetails,
-  SigningAlgorithms,
   Utils as DidUtils,
 } from '@kiltprotocol/did'
 import {
@@ -119,7 +117,7 @@ const mockResolver = {
 } as IDidResolver
 
 beforeAll(async () => {
-  const aliceAuthKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  const aliceAuthKey = makeSigningKeyTool('ed25519')
   aliceSign = aliceAuthKey.sign
   aliceLightDid = LightDidDetails.fromDetails({
     authenticationKey: aliceAuthKey.authenticationKey,
@@ -132,7 +130,7 @@ beforeAll(async () => {
   })
   aliceFullDid = await createLocalDemoFullDidFromLightDid(aliceLightDid)
 
-  const bobAuthKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  const bobAuthKey = makeSigningKeyTool('ed25519')
   bobSign = bobAuthKey.sign
   bobLightDid = LightDidDetails.fromDetails({
     authenticationKey: bobAuthKey.authenticationKey,
@@ -201,7 +199,7 @@ describe('Messaging', () => {
     ).rejects.toThrowError(SDKErrors.ERROR_DECODING_MESSAGE)
 
     const encryptedWrongBody = await aliceEncKey.encrypt({
-      alg: EncryptionAlgorithms.NaclBox,
+      alg: 'x25519-xsalsa20-poly1305',
       data: Crypto.coToUInt8('{ wrong JSON'),
       publicKey: aliceLightDid.encryptionKey!.publicKey,
       peerPublicKey: bobLightDid.encryptionKey!.publicKey,

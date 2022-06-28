@@ -8,7 +8,7 @@
 // This module is not part of the public-facing api.
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor'
+import { decode as cborDecode, encode as cborEncode } from 'cbor'
 
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
@@ -17,7 +17,7 @@ import type {
   NewDidEncryptionKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
+import { encryptionKeyTypes, VerificationKeyType } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
@@ -32,28 +32,29 @@ export function getEncodingForVerificationKeyType(
   type: VerificationKeyType
 ): string | undefined {
   switch (type) {
-    case VerificationKeyType.Sr25519:
+    case 'sr25519':
       return '00'
-    case VerificationKeyType.Ed25519:
+    case 'ed25519':
       return '01'
     default:
       return undefined
   }
 }
+
 export function getVerificationKeyTypeForEncoding(
   encoding: string
 ): LightDidSupportedVerificationKeyType | undefined {
   switch (encoding) {
     case '00':
-      return VerificationKeyType.Sr25519
+      return 'sr25519'
     case '01':
-      return VerificationKeyType.Ed25519
+      return 'ed25519'
     default:
       return undefined
   }
 }
 
-const supportedEncryptionKeyTypes = new Set(Object.values(EncryptionKeyType))
+const supportedEncryptionKeyTypes = new Set(encryptionKeyTypes)
 
 /**
  * The options that can be used to create a light DID.

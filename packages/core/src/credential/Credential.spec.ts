@@ -25,12 +25,10 @@ import type {
   IRequestForAttestation,
   SignCallback,
 } from '@kiltprotocol/types'
-import { VerificationKeyType } from '@kiltprotocol/types'
 import {
   DidDetails,
   FullDidDetails,
   LightDidDetails,
-  SigningAlgorithms,
   Utils as DidUtils,
 } from '@kiltprotocol/did'
 import {
@@ -233,10 +231,10 @@ describe('RequestForAttestation', () => {
     ).toBe(true)
   })
   it('verify credentials signed by a light DID', async () => {
-    const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    const { keypair, sign } = makeSigningKeyTool('ed25519')
     identityDave = await LightDidDetails.fromIdentifier(
       encodeAddress(keypair.publicKey, ss58Format),
-      VerificationKeyType.Ed25519
+      'ed25519'
     )
 
     const credential = await buildCredential(
@@ -263,10 +261,10 @@ describe('RequestForAttestation', () => {
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
-    const migratedAndDeleted = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    const migratedAndDeleted = makeSigningKeyTool('ed25519')
     migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedAndDeleted.keypair.publicKey, ss58Format),
-      VerificationKeyType.Ed25519
+      'ed25519'
     )
     migratedAndDeletedFullDid = new FullDidDetails({
       identifier: migratedAndDeletedLightDid.identifier,
@@ -441,12 +439,12 @@ describe('create presentation', () => {
     unmigratedClaimerKey = makeSigningKeyTool()
     unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(unmigratedClaimerKey.keypair.publicKey, ss58Format),
-      VerificationKeyType.Sr25519
+      'sr25519'
     )
     const migratedClaimerKey = makeSigningKeyTool()
     migratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedClaimerKey.keypair.publicKey, ss58Format),
-      VerificationKeyType.Sr25519
+      'sr25519'
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
@@ -458,10 +456,10 @@ describe('create presentation', () => {
         id: 'new-auth',
       }
     )
-    migratedThenDeletedKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    migratedThenDeletedKey = makeSigningKeyTool('ed25519')
     migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedThenDeletedKey.keypair.publicKey, ss58Format),
-      VerificationKeyType.Ed25519
+      'ed25519'
     )
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedThenDeletedClaimerLightDid as LightDidDetails

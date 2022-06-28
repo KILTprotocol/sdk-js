@@ -21,12 +21,7 @@ import {
   MessageBodyType,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import {
-  DidDetails,
-  DidResolver,
-  EncryptionAlgorithms,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+import { DidDetails, DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -142,7 +137,7 @@ export class Message implements IMessage {
       DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
         receiverKeyDetails.type as EncryptionKeyType
       )
-    if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
+    if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
       throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
@@ -284,7 +279,7 @@ export class Message implements IMessage {
       DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
         senderKey.type as EncryptionKeyType
       )
-    if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
+    if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
       throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )

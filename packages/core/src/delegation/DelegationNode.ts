@@ -12,7 +12,6 @@ import {
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
-  KeyRelationship,
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -281,7 +280,7 @@ export class DelegationNode implements IDelegationNode {
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
-      delegeeDid.getVerificationKeys(KeyRelationship.authentication)
+      delegeeDid.getVerificationKeys('authentication')
     )
     if (!authenticationKey) {
       throw new SDKErrors.ERROR_DID_ERROR(
