@@ -6,10 +6,10 @@
  */
 
 import type {
+  DidIdentifier,
   DidKey,
   DidServiceEndpoint,
-  IDidDetails,
-  DidIdentifier,
+  DidUri,
   KeyRelationship,
   NewDidEncryptionKey,
   NewDidVerificationKey,
@@ -40,7 +40,7 @@ export type ServiceEndpoints = Record<
 export type DidKeySelectionCallback<T> = (keys: T[]) => Promise<T | null>
 
 export type DidConstructorDetails = {
-  uri: IDidDetails['uri']
+  uri: DidUri
   // Accepts a list of keys where the ID does not include the DID URI.
   keys: PublicKeys
   keyRelationships: MapKeysToRelationship

@@ -20,6 +20,7 @@ import {
   VerificationKeyType,
   VerificationKeyRelationship,
   EncryptionKeyRelationship,
+  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
@@ -39,7 +40,7 @@ type ServiceEndpointsInner = Map<
 >
 
 export abstract class DidDetails implements IDidDetails {
-  public readonly uri: IDidDetails['uri']
+  public readonly uri: DidUri
 
   // { key ID -> key details} - key ID does not include the DID subject
   protected publicKeys: PublicKeysInner

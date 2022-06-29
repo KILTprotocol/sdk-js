@@ -6,7 +6,7 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types'
-import type { DidSignature, IDidDetails } from './DidDetails.js'
+import type { DidSignature, DidUri } from './DidDetails.js'
 import type { CompressedAttestation, IAttestation } from './Attestation.js'
 import type { CompressedCredential, ICredential } from './Credential.js'
 import type { IClaim, PartialClaim } from './Claim.js'
@@ -180,7 +180,7 @@ export interface IConfirmPayment extends IMessageBodyBase {
 export interface IRequestCredentialContent {
   cTypes: Array<{
     cTypeHash: ICType['hash']
-    trustedAttesters?: Array<IDidDetails['uri']>
+    trustedAttesters?: DidUri[]
     requiredProperties?: string[]
   }>
   challenge?: string
@@ -270,13 +270,7 @@ export type CompressedRejectedTerms = [
 export type CompressedRejectTerms = ['reject-terms', CompressedRejectedTerms]
 
 export type CompressedRequestCredentialContent = [
-  Array<
-    [
-      ICType['hash'],
-      Array<IDidDetails['uri']> | undefined,
-      string[] | undefined
-    ]
-  >,
+  Array<[ICType['hash'], DidUri[] | undefined, string[] | undefined]>,
   string?
 ]
 
@@ -369,8 +363,8 @@ export type CompressedMessageBody =
 export interface IMessage {
   body: MessageBody
   createdAt: number
-  sender: IDidDetails['uri']
-  receiver: IDidDetails['uri']
+  sender: DidUri
+  receiver: DidUri
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IDidDetails } from './DidDetails'
+import type { DidUri } from './DidDetails'
 import type { ICType } from './CType'
 
 export type IClaimContents = Record<
@@ -15,7 +15,7 @@ export type IClaimContents = Record<
 export interface IClaim {
   cTypeHash: ICType['hash']
   contents: IClaimContents
-  owner: IDidDetails['uri']
+  owner: DidUri
 }
 
 /**

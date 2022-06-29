@@ -20,7 +20,6 @@ import type {
   IClaim,
   ICredential,
   ICType,
-  IDidDetails,
   IDidResolver,
   IRequestForAttestation,
   SignCallback,
@@ -48,7 +47,7 @@ jest.mock('../attestation/Attestation.chain')
 
 async function buildCredential(
   claimer: DidDetails,
-  attesterDid: IDidDetails['uri'],
+  attesterDid: DidUri,
   contents: IClaim['contents'],
   legitimations: ICredential[],
   sign: SignCallback

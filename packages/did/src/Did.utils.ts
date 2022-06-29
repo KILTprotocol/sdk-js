@@ -11,17 +11,17 @@ import { ApiPromise } from '@polkadot/api'
 import { u32 } from '@polkadot/types'
 
 import {
+  DidIdentifier,
   DidKey,
   DidPublicKey,
+  DidServiceEndpoint,
+  DidUri,
+  EncryptionAlgorithms,
   EncryptionKeyType,
   encryptionKeyTypes,
-  IDidDetails,
-  DidIdentifier,
   NewDidKey,
-  VerificationKeyType,
-  DidServiceEndpoint,
-  EncryptionAlgorithms,
   SigningAlgorithms,
+  VerificationKeyType,
   verificationKeyTypes,
 } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -67,7 +67,7 @@ export function getKiltDidFromIdentifier(
   didType: 'full' | 'light',
   version?: number,
   encodedDetails?: string
-): IDidDetails['uri'] {
+): DidUri {
   const typeString = didType === 'full' ? '' : `light:`
   let versionValue = version
   // If no version is specified, take the default one depending on the requested DID type.
@@ -81,7 +81,7 @@ export function getKiltDidFromIdentifier(
 }
 
 export type IDidParsingResult = {
-  did: IDidDetails['uri']
+  did: DidUri
   version: number
   type: 'light' | 'full'
   identifier: DidIdentifier
@@ -96,7 +96,7 @@ export type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parseDidUri(didUri: IDidDetails['uri']): IDidParsingResult {
+export function parseDidUri(didUri: DidUri): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
     const version = matches.version
@@ -141,9 +141,7 @@ export function parseDidUri(didUri: IDidDetails['uri']): IDidParsingResult {
  * @param didUri A KILT DID uri as a string.
  * @returns The identifier contained within the DID uri.
  */
-export function getIdentifierFromKiltDid(
-  didUri: IDidDetails['uri']
-): DidIdentifier {
+export function getIdentifierFromKiltDid(didUri: DidUri): DidIdentifier {
   return parseDidUri(didUri).identifier
 }
 
@@ -154,10 +152,7 @@ export function getIdentifierFromKiltDid(
  * @param didB A second KILT DID uri as a string.
  * @returns Whether didA and didB refer to the same DID subject.
  */
-export function isSameSubject(
-  didA: IDidDetails['uri'],
-  didB: IDidDetails['uri']
-): boolean {
+export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
   // eslint-disable-next-line prefer-const
   let { identifier: identifierA, type: typeA } = parseDidUri(didA)
   // eslint-disable-next-line prefer-const
@@ -271,13 +266,11 @@ export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
 export function validateKiltDidUri(
   input: unknown,
   allowFragment = false
-): input is IDidDetails['uri'] {
+): input is DidUri {
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, type, fragment } = parseDidUri(
-    input as IDidDetails['uri']
-  )
+  const { identifier, type, fragment } = parseDidUri(input as DidUri)
   if (!allowFragment && fragment) {
     throw new SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
@@ -452,7 +445,7 @@ export function checkServiceEndpointSizeConstraints(
  * @returns The full public key URI, which includes the subject's DID and the provided key ID.
  */
 export function assembleKeyUri(
-  did: IDidDetails['uri'],
+  did: DidUri,
   keyId: DidKey['id']
 ): DidPublicKey['uri'] {
   if (parseDidUri(did).fragment) {

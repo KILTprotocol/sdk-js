@@ -16,7 +16,6 @@ import {
   DidResourceUri,
   DidUri,
   ICredential,
-  IDidDetails,
   IDidResolver,
   IEncryptedMessage,
   IQuote,
@@ -55,9 +54,7 @@ let bobFullDid: FullDidDetails
 let bobSign: SignCallback
 const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
-const resolveDoc = async (
-  did: IDidDetails['uri']
-): Promise<DidResolvedDetails | null> => {
+const resolveDoc = async (did: DidUri): Promise<DidResolvedDetails | null> => {
   if (did.startsWith(aliceLightDidWithDetails.uri)) {
     return {
       details: aliceLightDidWithDetails,

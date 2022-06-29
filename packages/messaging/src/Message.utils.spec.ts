@@ -44,7 +44,6 @@ import type {
   ICredential,
   ICType,
   IDelegationData,
-  IDidDetails,
   IDidResolver,
   IInformCreateDelegation,
   IInformDelegationCreation,
@@ -95,8 +94,8 @@ import { Message } from './Message'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildCredential(
-  claimerDid: IDidDetails['uri'],
-  attesterDid: IDidDetails['uri'],
+  claimerDid: DidUri,
+  attesterDid: DidUri,
   contents: IClaim['contents'],
   legitimations: ICredential[]
 ): Promise<ICredential> {
@@ -231,7 +230,7 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveDoc = async (
-      didUri: IDidDetails['uri']
+      didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
       if (didUri === identityAlice.uri) {
         return {

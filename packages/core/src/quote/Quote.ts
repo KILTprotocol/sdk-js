@@ -22,9 +22,9 @@ import type {
   CompressedQuoteAttesterSigned,
   DidPublicKey,
   DidSignature,
+  DidUri,
   DidVerificationKey,
   ICostBreakdown,
-  IDidDetails,
   IDidResolver,
   IQuote,
   IQuoteAgreement,
@@ -168,7 +168,7 @@ export async function verifyAttesterSignedQuote(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: IRequestForAttestation['rootHash'],
-  attesterIdentity: IDidDetails['uri'],
+  attesterIdentity: DidUri,
   claimerIdentity: DidDetails,
   sign: SignCallback,
   {

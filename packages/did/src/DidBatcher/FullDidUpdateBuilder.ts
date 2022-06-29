@@ -19,7 +19,7 @@ import type {
   DidServiceEndpoint,
   DidKey,
   SubmittableExtrinsic,
-  IDidDetails,
+  DidUri,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
@@ -55,7 +55,7 @@ export type FullDidUpdateCallback = (
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
   protected identifier: DidIdentifier
-  protected uri: IDidDetails['uri']
+  protected uri: DidUri
   protected batch: Extrinsic[] = []
 
   protected oldAuthenticationKey: DidVerificationKey
