@@ -6,7 +6,6 @@
  */
 
 import {
-  DidPublicKey,
   DidPublicServiceEndpoint,
   DidResolvedDetails,
   DidResourceUri,
@@ -115,7 +114,7 @@ export async function resolveDoc(
  * @returns The details associated with the key.
  */
 export async function resolveKey(
-  didUri: DidPublicKey['uri']
+  didUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
   const { did, identifier, fragment: keyId, type } = parseDidUri(didUri)
 

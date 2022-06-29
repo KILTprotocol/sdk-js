@@ -11,7 +11,6 @@
 
 import {
   DidKey,
-  DidPublicKey,
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
@@ -88,7 +87,7 @@ const resolveDoc = async (did: DidUri): Promise<DidResolvedDetails | null> => {
   return null
 }
 const resolveKey = async (
-  keyUri: DidPublicKey['uri']
+  keyUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> => {
   const { fragment, did } = DidUtils.parseDidUri(keyUri)
   const { details } = (await resolveDoc(did as DidUri)) as DidResolvedDetails

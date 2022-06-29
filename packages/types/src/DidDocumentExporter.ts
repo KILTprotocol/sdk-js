@@ -88,10 +88,10 @@ export type DidPublicServiceEndpoint = {
 export type DidDocument = {
   id: DidUri
   verificationMethod: DidPublicKey[]
-  authentication: DidPublicKey['uri']
-  assertionMethod?: DidPublicKey['uri']
-  keyAgreement?: DidPublicKey['uri']
-  capabilityDelegation?: DidPublicKey['uri']
+  authentication: DidResourceUri
+  assertionMethod?: DidResourceUri
+  keyAgreement?: DidResourceUri
+  capabilityDelegation?: DidResourceUri
   service?: DidPublicServiceEndpoint[]
 }
 

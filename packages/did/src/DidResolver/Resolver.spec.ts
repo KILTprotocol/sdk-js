@@ -12,7 +12,6 @@ import Keyring from '@polkadot/keyring'
 import {
   DidIdentifier,
   DidKey,
-  DidPublicKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
   DidResourceUri,
@@ -208,7 +207,7 @@ describe('When resolving a key', () => {
 
   it('returns null if either the DID or the key do not exist', async () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
-    let keyIdUri: DidPublicKey['uri'] = `${deletedFullDid}#enc`
+    let keyIdUri: DidResourceUri = `${deletedFullDid}#enc`
 
     expect(await DidResolver.resolveKey(keyIdUri)).toBeNull()
 

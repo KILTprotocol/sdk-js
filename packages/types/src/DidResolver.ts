@@ -8,6 +8,7 @@
 import {
   DidPublicKey,
   DidPublicServiceEndpoint,
+  DidResourceUri,
 } from './DidDocumentExporter.js'
 import type { IDidDetails, DidKey, DidUri } from './DidDetails.js'
 
@@ -54,7 +55,7 @@ export interface IDidResolver {
    * @returns A promise of a [[DidResolvedDetails]] object if the didUri contains no fragment, [[ResolvedDidKey]] or [[ResolvedDidServiceEndpoint]] otherwise. Null if a resource cannot be resolved.
    */
   resolve: (
-    didUri: DidUri | DidPublicKey['uri'] | DidPublicServiceEndpoint['uri']
+    didUri: DidUri | DidResourceUri | DidPublicServiceEndpoint['uri']
   ) => Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
   >
@@ -73,7 +74,7 @@ export interface IDidResolver {
    * @returns A promise of a [[ResolvedDidKey]] object representing the DID public key or null if
    * the DID or key URI cannot be resolved.
    */
-  resolveKey: (didUri: DidPublicKey['uri']) => Promise<ResolvedDidKey | null>
+  resolveKey: (didUri: DidResourceUri) => Promise<ResolvedDidKey | null>
   /**
    * Resolves a DID URI identifying a service endpoint associated with a DID.
    *

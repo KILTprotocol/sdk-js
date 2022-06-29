@@ -13,7 +13,7 @@ import { u32 } from '@polkadot/types'
 import {
   DidIdentifier,
   DidKey,
-  DidPublicKey,
+  DidResourceUri,
   DidServiceEndpoint,
   DidUri,
   EncryptionAlgorithms,
@@ -447,7 +447,7 @@ export function checkServiceEndpointSizeConstraints(
 export function assembleKeyUri(
   did: DidUri,
   keyId: DidKey['id']
-): DidPublicKey['uri'] {
+): DidResourceUri {
   if (parseDidUri(did).fragment) {
     throw new SDKErrors.ERROR_DID_ERROR(
       `Cannot assemble key URI from a DID that already has a fragment: ${did}`

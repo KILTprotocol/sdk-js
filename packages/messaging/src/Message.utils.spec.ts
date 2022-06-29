@@ -35,7 +35,6 @@ import type {
   CompressedSubmitDelegationApproval,
   CompressedSubmitTerms,
   CompressedTerms,
-  DidPublicKey,
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
@@ -252,7 +251,7 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (
-      keyUri: DidPublicKey['uri']
+      keyUri: DidResourceUri
     ): Promise<ResolvedDidKey | null> => {
       const { identifier, type, version, fragment, encodedDetails } =
         DidUtils.parseDidUri(keyUri)

@@ -9,7 +9,7 @@ import {
   CompressedMessageBody,
   DecryptCallback,
   DidEncryptionKey,
-  DidPublicKey,
+  DidResourceUri,
   EncryptCallback,
   EncryptionKeyType,
   ICType,
@@ -241,7 +241,7 @@ export class Message implements IMessage {
     senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     encryptCallback: EncryptCallback,
-    receiverKeyUri: DidPublicKey['uri'],
+    receiverKeyUri: DidResourceUri,
     {
       resolver = DidResolver,
     }: {

@@ -7,7 +7,7 @@
 
 import type { BN } from '@polkadot/util'
 
-import type { DidPublicKey } from './DidDocumentExporter'
+import type { DidResourceUri } from './DidDocumentExporter'
 import type { IIdentity } from './Identity'
 
 type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
@@ -52,6 +52,7 @@ export type VerificationKeyRelationship = Extract<
 export const verificationKeyTypes = ['sr25519', 'ed25519', 'ecdsa'] as const
 export type VerificationKeyType = typeof verificationKeyTypes[number]
 
+
 export type LightDidSupportedVerificationKeyType = Extract<
   VerificationKeyType,
   'ed25519' | 'sr25519'
@@ -60,7 +61,8 @@ export type LightDidSupportedVerificationKeyType = Extract<
 /**
  * Subset of key relationships which pertain to key agreement/encryption keys.
  */
-export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement'>
+export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement
+'>
 /**
  * Possible types for a DID encryption key.
  */
@@ -207,6 +209,6 @@ export interface IDidDetails {
  * A signature issued with a DID associated key, indicating which key was used to sign.
  */
 export type DidSignature = {
-  keyUri: DidPublicKey['uri']
+  keyUri: DidResourceUri
   signature: string
 }

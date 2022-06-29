@@ -9,26 +9,26 @@ import { u8aToHex } from '@polkadot/util'
 
 import {
   DidEncryptionKey,
+  DidIdentifier,
   DidKey,
-  DidPublicKey,
+  DidResourceUri,
   DidServiceEndpoint,
   DidSignature,
-  DidVerificationKey,
-  IDidDetails,
-  DidIdentifier,
-  SignCallback,
-  VerificationKeyType,
-  VerificationKeyRelationship,
-  EncryptionKeyRelationship,
   DidUri,
+  DidVerificationKey,
+  EncryptionKeyRelationship,
+  IDidDetails,
+  SignCallback,
+  VerificationKeyRelationship,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
 import {
+  assembleKeyUri,
   getSigningAlgorithmForVerificationKeyType,
   isVerificationKey,
-  assembleKeyUri,
 } from '../Did.utils.js'
 
 import { checkDidCreationDetails } from './DidDetails.utils.js'
@@ -209,7 +209,7 @@ export abstract class DidDetails implements IDidDetails {
    *
    * @returns The full public key URI, which includes the subject's DID and the provided key ID.
    */
-  public assembleKeyUri(keyId: DidKey['id']): DidPublicKey['uri'] {
+  public assembleKeyUri(keyId: DidKey['id']): DidResourceUri {
     return assembleKeyUri(this.uri, keyId)
   }
 

@@ -18,7 +18,7 @@ import type {
   IRequestForAttestation,
 } from './RequestForAttestation.js'
 import type { CompressedTerms, ITerms } from './Terms.js'
-import type { DidPublicKey, IClaimContents } from './index.js'
+import type { DidResourceUri, IClaimContents } from './index.js'
 
 export type MessageBodyType =
   | 'error'
@@ -385,8 +385,8 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * - `senderKeyUri` - The URI of the sender's encryption key.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyUri: DidPublicKey['uri']
-  senderKeyUri: DidPublicKey['uri']
+  receiverKeyUri: DidResourceUri
+  senderKeyUri: DidResourceUri
   ciphertext: string
   nonce: string
 }
