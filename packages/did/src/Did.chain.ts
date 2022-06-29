@@ -9,15 +9,15 @@ import type {
   BTreeMap,
   BTreeSet,
   Enum,
+  GenericAccountId,
   Option,
   Struct,
-  Vec,
-  u8,
-  u64,
-  GenericAccountId,
   Text,
   u128,
   u32,
+  u64,
+  u8,
+  Vec,
 } from '@polkadot/types'
 import type {
   BlockNumber,
@@ -32,16 +32,16 @@ import type { ApiPromise } from '@polkadot/api'
 import {
   Deposit,
   DidEncryptionKey,
+  DidIdentifier,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
   DidVerificationKey,
-  DidIdentifier,
   IIdentity,
   KeyRelationship,
+  NewDidKey,
   SignCallback,
   SigningOptions,
-  NewDidKey,
   SubmittableExtrinsic,
   VerificationKeyType,
   verificationKeyTypes,
@@ -273,17 +273,47 @@ export async function queryKey(
   return didDetails.publicKeys.find((key) => key.id === keyId) || null
 }
 
-function decodeServiceChainRecord(
-  serviceDetails: IServiceEndpointChainRecordCodec
-): DidServiceEndpoint {
-  const id = hexToString(serviceDetails.id.toString())
+interface BlockchainEndpoint {
+  id: DidServiceEndpoint['id']
+  serviceTypes: DidServiceEndpoint['types']
+  // The blockchain uses the original name `urls` which is not spec-compliant
+  urls: DidServiceEndpoint['uris']
+}
+
+function endpointToBlockchainEndpoint({
+  id,
+  types,
+  uris,
+}: DidServiceEndpoint): BlockchainEndpoint {
   return {
     id,
-    types: serviceDetails.serviceTypes.map((type) =>
-      hexToString(type.toString())
-    ),
-    uris: serviceDetails.urls.map((url) => hexToString(url.toString())),
+    serviceTypes: types,
+    urls: uris,
   }
+}
+
+function blockchainEndpointToEndpoint({
+  id,
+  serviceTypes,
+  urls,
+}: BlockchainEndpoint): DidServiceEndpoint {
+  return {
+    id,
+    types: serviceTypes,
+    uris: urls,
+  }
+}
+
+function decodeServiceChainRecord({
+  id,
+  serviceTypes,
+  urls,
+}: IServiceEndpointChainRecordCodec): DidServiceEndpoint {
+  return blockchainEndpointToEndpoint({
+    id: hexToString(id.toString()),
+    serviceTypes: serviceTypes.map((type) => hexToString(type.toString())),
+    urls: urls.map((url) => hexToString(url.toString())),
+  })
 }
 
 /**
@@ -495,13 +525,7 @@ export async function generateCreateTxFromCreationDetails(
     checkServiceEndpointInput(api, service)
   })
 
-  const newServiceDetails = serviceEndpoints.map(({ id, types, uris }) => {
-    return {
-      id,
-      urls: uris,
-      serviceTypes: types,
-    }
-  })
+  const newServiceDetails = serviceEndpoints.map(endpointToBlockchainEndpoint)
 
   const rawCreationDetails = {
     did: details.identifier,
@@ -693,12 +717,7 @@ export async function getAddEndpointExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   checkServiceEndpointInput(api, endpoint)
-
-  return api.tx.did.addServiceEndpoint({
-    id: endpoint.id,
-    serviceTypes: endpoint.types,
-    urls: endpoint.uris,
-  })
+  return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
 }
 
 /**
