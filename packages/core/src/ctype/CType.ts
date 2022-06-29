@@ -92,7 +92,7 @@ export function getIdForSchema(
 }
 
 /**
- * Verifies data against CType schema or CType schema against metaschema.
+ * Verifies data against CType schema or CType schema against meta-schema.
  *
  * @param object Data to be verified against schema.
  * @param schema Schema to verify against.
@@ -237,7 +237,7 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
  * @param schema The JSON schema from which the [[CType]] should be generated.
  * @param owner The public SS58 address of the owner of the [[CType]].
  *
- * @returns A ctype object with ctypehash, owner and the schema.
+ * @returns A ctype object with cTypeHash, owner and the schema.
  */
 export function fromSchema(
   schema: CTypeSchemaWithoutId | ICType['schema'],

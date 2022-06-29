@@ -162,7 +162,7 @@ export function encodeObjectAsStr(
 }
 
 /**
- * Hashes numbers, booleans, and objects by stringifying them. Object keys are sorted to yield consistent hashing.
+ * Hashes numbers, booleans, and objects by stringify-ing them. Object keys are sorted to yield consistent hashing.
  *
  * @param value Object or value to be hashed.
  * @param nonce Optional nonce to obscure hashed values that could be guessed.

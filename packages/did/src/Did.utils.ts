@@ -57,7 +57,7 @@ export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
  * @param identifier A ss58 encoded address valid on the KILT network.
  * @param didType 'full' to produce a FullDid's uri, 'light' for a LightDid.
  * @param version KILT DID specification version number.
- * @param encodedDetails When compiling a LightDid uri, encoded DidDetails can be appeneded to the end of the uri.
+ * @param encodedDetails When compiling a LightDid uri, encoded DidDetails can be appended to the end of the uri.
  * @returns A DID uri as a string.
  */
 export function getKiltDidFromIdentifier(
@@ -213,7 +213,7 @@ const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
  * Given the identifier of a key type, returns the identifier of the encryption algorithm for which it is used.
  *
  * @param keyType Key type identifier.
- * @returns Encryption algorithm indentifier.
+ * @returns Encryption algorithm identifier.
  */
 export function getEncryptionAlgorithmForEncryptionKeyType(
   keyType: EncryptionKeyType
@@ -307,7 +307,7 @@ export function validateKiltDidUri(
 export function isUri(str: string): boolean {
   try {
     const url = new URL(str) // this actually accepts any URI but throws if it can't be parsed
-    return url.href === str || encodeURI(decodeURI(str)) === str // make sure our URI has not been converted implictly by URL
+    return url.href === str || encodeURI(decodeURI(str)) === str // make sure our URI has not been converted implicitly by URL
   } catch {
     return false
   }
@@ -351,7 +351,7 @@ export function checkServiceEndpointSyntax(
   if (!isUriFragment(endpoint.id)) {
     errors.push(
       new SDKErrors.ERROR_DID_ERROR(
-        `The service ID must be valid as a URI fragment according to RFC#3986, which '${endpoint.id}' is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding the desired id.`
+        `The service ID must be valid as a URI fragment according to RFC#3986, which '${endpoint.id}' is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
       )
     )
   }
@@ -359,7 +359,7 @@ export function checkServiceEndpointSyntax(
     if (!isUri(url)) {
       errors.push(
         new SDKErrors.ERROR_DID_ERROR(
-          `A service URL must be a URI according to RFC#3986, which '${url}' (service id '${endpoint.id}') is not. Make sure not to use disallowed characters (e.g. blankspace) or consider URL-encoding resource locators beforehand.`
+          `A service URL must be a URI according to RFC#3986, which '${url}' (service id '${endpoint.id}') is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
         )
       )
     }
@@ -373,7 +373,7 @@ export function checkServiceEndpointSyntax(
  *   - The `endpoint.types` array has at most 1 service type, with a value that is at most 50 ASCII characters long.
  *   - The `endpoint.urls` array has at most 1 URL, with a value that is at most 200 ASCII characters long.
  *
- * @param api An api instance required for reading up-to-date size contraints from the blockchain runtime.
+ * @param api An api instance required for reading up-to-date size constraints from the blockchain runtime.
  * @param endpoint A service endpoint object to check.
  * @returns Validation result and errors, if any.
  */
