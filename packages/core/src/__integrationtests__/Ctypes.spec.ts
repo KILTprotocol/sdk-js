@@ -141,6 +141,6 @@ describe('When there is an CtypeCreator and a verifier', () => {
   })
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

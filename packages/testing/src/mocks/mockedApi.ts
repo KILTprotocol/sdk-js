@@ -186,7 +186,7 @@ export function getMockedApi(): MockApiPromise {
   )
 
   function getMockSubmittableExtrinsic(): SubmittableExtrinsic {
-    const result: ISubmittableResult = TxResultsQueue.shift() || defaultTxResult
+    const result = TxResultsQueue.shift() || defaultTxResult
     return new MockSubmittableExtrinsic(result) as any as SubmittableExtrinsic
   }
 

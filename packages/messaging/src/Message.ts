@@ -17,7 +17,6 @@ import {
   IEncryptedMessage,
   IEncryptedMessageContents,
   IMessage,
-  ISubmitCredential,
   MessageBody,
   MessageBodyType,
 } from '@kiltprotocol/types'
@@ -81,7 +80,7 @@ export class Message implements IMessage {
         break
       case Message.BodyType.SUBMIT_CREDENTIAL:
         {
-          const submitClaimsForCtype: ISubmitCredential = body
+          const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach((credential) => {
             if (!DidUtils.isSameSubject(credential.claim.owner, sender)) {
               throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')

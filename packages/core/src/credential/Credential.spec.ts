@@ -100,10 +100,8 @@ describe('Credential', () => {
   let migratedAndDeletedLightDid: DidDetails
   let migratedAndDeletedFullDid: DidDetails
 
-  const mockResolver: IDidResolver = (() => {
-    const resolve = async (
-      didUri: DidUri
-    ): Promise<DidResolvedDetails | null> => {
+  const mockResolver = (() => {
+    async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
       switch (did) {
@@ -131,6 +129,7 @@ describe('Credential', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,
@@ -185,11 +184,9 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(
-      Credential.verify(credential, {
-        resolver: mockResolver,
-      })
-    ).resolves.not.toThrow()
+    await Credential.verify(credential, {
+      resolver: mockResolver,
+    })
   })
   it('verify credentials signed by a light DID', async () => {
     const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
@@ -212,11 +209,9 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(
-      Credential.verify(credential, {
-        resolver: mockResolver,
-      })
-    ).resolves.not.toThrow()
+    await Credential.verify(credential, {
+      resolver: mockResolver,
+    })
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
@@ -256,11 +251,11 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    await expect(
-      Credential.verify(credential, {
+    expect(
+      await Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).resolves.toBeFalsy()
+    ).toBeFalsy()
   })
 
   it('compresses and decompresses the credentials object', () => {

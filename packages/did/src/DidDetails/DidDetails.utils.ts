@@ -25,7 +25,7 @@ export function checkDidCreationDetails({
       `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`
     )
   }
-  const allowedKeyRelationships: Set<string> = new Set([
+  const allowedKeyRelationships = new Set([
     ...Object.values(KeyRelationship),
     'none',
   ])
@@ -36,17 +36,14 @@ export function checkDidCreationDetails({
       )
     }
   })
-  const keyIds = new Set<string>(Object.keys(keys))
-  const keyReferences = new Set<string>()
 
-  // TODO: Find a more efficient way to populate the keyReferences set
-  Object.values(keyRelationships).forEach((keysRel) => {
-    keysRel.forEach((keyRel) => {
-      keyReferences.add(keyRel)
-    })
-  })
-  keyReferences.forEach((id) => {
-    if (!keyIds.has(id))
+  const providedIds = new Set(Object.keys(keys))
+  const allIds = Object.values(keyRelationships).flatMap((ids) => [
+    ...ids.values(),
+  ])
+
+  allIds.forEach((id) => {
+    if (!providedIds.has(id))
       throw new SDKErrors.ERROR_DID_ERROR(`No key with id ${id} in "keys"`)
   })
 }

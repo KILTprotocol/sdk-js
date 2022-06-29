@@ -119,10 +119,9 @@ jest.mock('../Did.chain.ts', () => ({
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(existingIdentifier, 'full')
-      )
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(existingIdentifier, 'full')
+    )
 
     expect(fullDidDetails).not.toBeNull()
 
@@ -251,10 +250,9 @@ describe('When creating an instance from the chain', () => {
   })
 
   it('returns null if the identifier does not exist', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
-      )
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
+    )
     expect(fullDidDetails).toBeNull()
   })
 })

@@ -10,20 +10,19 @@ import { decodeAddress } from '@polkadot/util-crypto'
 import Keyring from '@polkadot/keyring'
 
 import {
+  DidIdentifier,
   DidKey,
+  DidPublicKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
+  DidResourceUri,
   DidServiceEndpoint,
+  DidUri,
+  EncryptionKeyType,
   IDidDetails,
-  DidIdentifier,
-  KeyringPair,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
   VerificationKeyType,
-  EncryptionKeyType,
-  DidUri,
-  DidPublicKey,
-  DidResourceUri,
 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 
@@ -198,11 +197,11 @@ describe('When resolving a key', () => {
       identifierWithAuthenticationKey,
       'full'
     )
-    const keyIdUri: DidPublicKey['uri'] = `${fullDid}#auth`
+    const keyIdUri: DidResourceUri = `${fullDid}#auth`
 
-    await expect(
-      DidResolver.resolveKey(keyIdUri)
-    ).resolves.toStrictEqual<ResolvedDidKey>({
+    expect(
+      await DidResolver.resolveKey(keyIdUri)
+    ).toStrictEqual<ResolvedDidKey>({
       controller: fullDid,
       publicKey: new Uint8Array(32).fill(0),
       uri: keyIdUri,
@@ -214,7 +213,7 @@ describe('When resolving a key', () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
     let keyIdUri: DidPublicKey['uri'] = `${deletedFullDid}#enc`
 
-    await expect(DidResolver.resolveKey(keyIdUri)).resolves.toBeNull()
+    expect(await DidResolver.resolveKey(keyIdUri)).toBeNull()
 
     const didWithNoEncryptionKey = getKiltDidFromIdentifier(
       identifierWithAuthenticationKey,
@@ -222,19 +221,17 @@ describe('When resolving a key', () => {
     )
     keyIdUri = `${didWithNoEncryptionKey}#enc`
 
-    await expect(DidResolver.resolveKey(keyIdUri)).resolves.toBeNull()
+    expect(await DidResolver.resolveKey(keyIdUri)).toBeNull()
   })
 
   it('throws for invalid URIs', async () => {
     const uriWithoutFragment = getKiltDidFromIdentifier(
       deletedIdentifier,
       'full'
-    )
-    // @ts-ignore
+    ) as DidResourceUri
     await expect(DidResolver.resolveKey(uriWithoutFragment)).rejects.toThrow()
 
-    const invalidUri = 'invalid-uri'
-    // @ts-ignore
+    const invalidUri = 'invalid-uri' as DidResourceUri
     await expect(DidResolver.resolveKey(invalidUri)).rejects.toThrow()
   })
 })
@@ -247,9 +244,9 @@ describe('When resolving a service endpoint', () => {
     )
     const serviceIdUri: DidResourceUri = `${fullDid}#service-1`
 
-    await expect(
-      DidResolver.resolveServiceEndpoint(serviceIdUri)
-    ).resolves.toStrictEqual<ResolvedDidServiceEndpoint>({
+    expect(
+      await DidResolver.resolveServiceEndpoint(serviceIdUri)
+    ).toStrictEqual<ResolvedDidServiceEndpoint>({
       uri: serviceIdUri,
       type: [`type-service-1`],
       serviceEndpoint: [`x:url-service-1`],
@@ -260,9 +257,7 @@ describe('When resolving a service endpoint', () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
     let serviceIdUri: DidResourceUri = `${deletedFullDid}#service-1`
 
-    await expect(
-      DidResolver.resolveServiceEndpoint(serviceIdUri)
-    ).resolves.toBeNull()
+    expect(await DidResolver.resolveServiceEndpoint(serviceIdUri)).toBeNull()
 
     const didWithNoServiceEndpoints = getKiltDidFromIdentifier(
       identifierWithAuthenticationKey,
@@ -270,24 +265,20 @@ describe('When resolving a service endpoint', () => {
     )
     serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
 
-    await expect(
-      DidResolver.resolveServiceEndpoint(serviceIdUri)
-    ).resolves.toBeNull()
+    expect(await DidResolver.resolveServiceEndpoint(serviceIdUri)).toBeNull()
   })
 
   it('throws for invalid URIs', async () => {
-    const uriWithoutFragment: DidUri = getKiltDidFromIdentifier(
+    const uriWithoutFragment = getKiltDidFromIdentifier(
       deletedIdentifier,
       'full'
-    )
+    ) as DidResourceUri
     await expect(
-      // @ts-ignore
       DidResolver.resolveServiceEndpoint(uriWithoutFragment)
     ).rejects.toThrow()
 
-    const invalidUri = 'invalid-uri'
+    const invalidUri = 'invalid-uri' as DidResourceUri
     await expect(
-      // @ts-ignore
       DidResolver.resolveServiceEndpoint(invalidUri)
     ).rejects.toThrow()
   })
@@ -393,7 +384,7 @@ describe('When resolving a full DID', () => {
     ).address
     const randomDid = getKiltDidFromIdentifier(randomIdentifier, 'full')
 
-    await expect(DidResolver.resolveDoc(randomDid)).resolves.toBeNull()
+    expect(await DidResolver.resolveDoc(randomDid)).toBeNull()
   })
 
   it('correctly resolves a deleted DID', async () => {
@@ -428,9 +419,9 @@ describe('When resolving a full DID', () => {
 })
 
 describe('When resolving a light DID', () => {
-  const keyring: Keyring = new Keyring({ ss58Format })
-  const authKey: KeyringPair = keyring.addFromMnemonic('auth')
-  const encryptionKey: KeyringPair = keyring.addFromMnemonic('enc')
+  const keyring = new Keyring({ ss58Format })
+  const authKey = keyring.addFromMnemonic('auth')
+  const encryptionKey = keyring.addFromMnemonic('enc')
 
   it('correctly resolves the details with an authentication key', async () => {
     const lightDidWithAuthenticationKey = LightDidDetails.fromDetails({

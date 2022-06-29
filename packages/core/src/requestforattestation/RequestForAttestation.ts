@@ -53,10 +53,7 @@ function getHashLeaves(
   legitimations: ICredential[],
   delegationId: IDelegationNode['id'] | null
 ): Uint8Array[] {
-  const result: Uint8Array[] = []
-  claimHashes.forEach((item) => {
-    result.push(Crypto.coToUInt8(item))
-  })
+  const result = claimHashes.map((item) => Crypto.coToUInt8(item))
   if (legitimations) {
     legitimations.forEach((legitimation) => {
       result.push(Crypto.coToUInt8(legitimation.rootHash))
@@ -76,12 +73,12 @@ function getHashLeaves(
  * @returns The hash.
  */
 export function calculateRootHash(credential: Partial<ICredential>): Hash {
-  const hashes: Uint8Array[] = getHashLeaves(
+  const hashes = getHashLeaves(
     credential.claimHashes || [],
     credential.legitimations || [],
     credential.delegationId || null
   )
-  const root: Uint8Array = getHashRoot(hashes)
+  const root = getHashRoot(hashes)
   return Crypto.u8aToHex(root)
 }
 
@@ -173,7 +170,7 @@ export async function signWithDidKey(
     sign,
     keyId
   )
-  addSignature(credential, signature, signatureKeyId, { challenge })
+  await addSignature(credential, signature, signatureKeyId, { challenge })
 }
 
 /**
@@ -212,7 +209,7 @@ export function verifyDataIntegrity(input: ICredential): boolean {
     )
 
   // check legitimations
-  input.legitimations.forEach((legitimation: ICredential) => {
+  input.legitimations.forEach((legitimation) => {
     if (!verifyDataIntegrity(legitimation)) {
       throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
     }

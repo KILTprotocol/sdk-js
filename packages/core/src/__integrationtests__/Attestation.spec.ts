@@ -11,7 +11,6 @@
 
 import type {
   IAttestation,
-  IClaim,
   ICredential,
   KeyringPair,
 } from '@kiltprotocol/types'
@@ -120,7 +119,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should be possible to make a claim', async () => {
-    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
+    const content = { name: 'Ralph', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
       content,
@@ -134,12 +133,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.authenticationKey.id
     )
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    await expect(Credential.verifySignature(credential)).resolves.toBe(true)
+    expect(await Credential.verifySignature(credential)).toBe(true)
     expect(credential.claim.contents).toMatchObject(content)
   })
 
   it('should be possible to attest a claim and then claim the attestation deposit back', async () => {
-    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
+    const content = { name: 'Ralph', age: 12 }
 
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
@@ -183,7 +182,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim without enough tokens', async () => {
-    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
+    const content = { name: 'Ralph', age: 12 }
 
     const claim = Claim.fromCTypeAndClaimContents(
       driversLicenseCType,
@@ -238,7 +237,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       type: 'object',
     })
 
-    const content: IClaim['contents'] = { name: 'Ralph', weight: 120 }
+    const content = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
@@ -266,7 +265,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     let attestation: IAttestation
 
     beforeAll(async () => {
-      const content: IClaim['contents'] = { name: 'Rolfi', age: 18 }
+      const content = { name: 'Rolfi', age: 18 }
       const claim = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
         content,
@@ -473,6 +472,6 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   })
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

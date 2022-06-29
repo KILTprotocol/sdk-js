@@ -99,7 +99,9 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     const testCType = CType.fromSchema(rawCType)
-    expect(Credential.verify(credential, { ctype: testCType })).toBeTruthy()
+    expect(
+      await Credential.verify(credential, { ctype: testCType })
+    ).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
     delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
@@ -376,7 +378,7 @@ describe('create presentation', () => {
   let migratedThenDeletedClaimerFullDid: DidDetails
   let attester: DidDetails
   let ctype: ICType
-  let reqForAtt: ICredential
+  let credential: ICredential
 
   // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
@@ -400,9 +402,7 @@ describe('create presentation', () => {
   }
 
   const mockResolver: IDidResolver = (() => {
-    const resolve = async (
-      didUri: DidUri
-    ): Promise<DidResolvedDetails | null> => {
+    async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
       switch (did) {
@@ -442,6 +442,7 @@ describe('create presentation', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,
@@ -484,7 +485,7 @@ describe('create presentation', () => {
     ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = Credential.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -499,24 +500,22 @@ describe('create presentation', () => {
   it('should create presentation and exclude specific attributes using a full DID', async () => {
     const challenge = UUID.generate()
     const presentation = await Credential.createPresentation({
-      credential: reqForAtt,
+      credential,
       selectedAttributes: ['name'],
       sign: newKeyForMigratedClaimerDid.sign,
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await expect(
-      Credential.verify(presentation, {
-        resolver: mockResolver,
-      })
-    ).resolves.not.toThrow()
+    await Credential.verify(presentation, {
+      resolver: mockResolver,
+    })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = Credential.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -529,24 +528,22 @@ describe('create presentation', () => {
 
     const challenge = UUID.generate()
     const presentation = await Credential.createPresentation({
-      credential: reqForAtt,
+      credential,
       selectedAttributes: ['name'],
       sign: unmigratedClaimerKey.sign,
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
-    await expect(
-      Credential.verify(presentation, {
-        resolver: mockResolver,
-      })
-    ).resolves.not.toThrow()
+    await Credential.verify(presentation, {
+      resolver: mockResolver,
+    })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = Credential.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -560,18 +557,16 @@ describe('create presentation', () => {
 
     const challenge = UUID.generate()
     const presentation = await Credential.createPresentation({
-      credential: reqForAtt,
+      credential,
       selectedAttributes: ['name'],
       sign: newKeyForMigratedClaimerDid.sign,
       // Use of full DID to sign the presentation.
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await expect(
-      Credential.verify(presentation, {
-        resolver: mockResolver,
-      })
-    ).resolves.not.toThrow()
+    await Credential.verify(presentation, {
+      resolver: mockResolver,
+    })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
 
@@ -579,7 +574,7 @@ describe('create presentation', () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = Credential.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -593,7 +588,7 @@ describe('create presentation', () => {
 
     const challenge = UUID.generate()
     const att = await Credential.createPresentation({
-      credential: reqForAtt,
+      credential,
       selectedAttributes: ['name'],
       sign: newKeyForMigratedClaimerDid.sign,
       // Still using the light DID, which should fail since it has been migrated
@@ -604,14 +599,14 @@ describe('create presentation', () => {
       Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).resolves.toBeFalsy()
+    ).rejects.toThrow()
   })
 
   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = Credential.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -625,7 +620,7 @@ describe('create presentation', () => {
 
     const challenge = UUID.generate()
     const presentation = await Credential.createPresentation({
-      credential: reqForAtt,
+      credential,
       selectedAttributes: ['name'],
       sign: migratedThenDeletedKey.sign,
       // Still using the light DID, which should fail since it has been migrated and then deleted
@@ -636,13 +631,13 @@ describe('create presentation', () => {
       Credential.verify(presentation, {
         resolver: mockResolver,
       })
-    ).resolves.toBeFalsy()
+    ).rejects.toThrow()
   })
 
   it('should verify the credential claims structure against the ctype', () => {
-    expect(Credential.verifyAgainstCType(reqForAtt, ctype)).toBeTruthy()
-    reqForAtt.claim.contents.name = 123
+    expect(Credential.verifyAgainstCType(credential, ctype)).toBeTruthy()
+    credential.claim.contents.name = 123
 
-    expect(Credential.verifyAgainstCType(reqForAtt, ctype)).toBeFalsy()
+    expect(Credential.verifyAgainstCType(credential, ctype)).toBeFalsy()
   })
 })

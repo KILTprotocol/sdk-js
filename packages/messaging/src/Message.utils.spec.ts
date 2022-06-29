@@ -112,7 +112,7 @@ async function buildCredential(
     type: 'object',
   }
 
-  const testCType: ICType = CType.fromSchema(rawCType)
+  const testCType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(testCType, contents, claimerDid)
   // build request for attestation with legitimations

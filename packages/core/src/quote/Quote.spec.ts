@@ -61,10 +61,8 @@ describe('Quote', () => {
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
 
-  const mockResolver: IDidResolver = (() => {
-    const resolve = async (
-      didUri: string
-    ): Promise<DidResolvedDetails | null> => {
+  const mockResolver = (() => {
+    async function resolve(didUri: string): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
@@ -76,6 +74,7 @@ describe('Quote', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,
@@ -168,13 +167,13 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    await expect(
-      claimerIdentity.signPayload(
+    expect(
+      await claimerIdentity.signPayload(
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
         claimer.sign,
         claimerIdentity.authenticationKey.id
       )
-    ).resolves.toEqual(quoteBothAgreed.claimerSignature)
+    ).toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = DidUtils.parseDidUri(
       validAttesterSignedQuote.attesterSignature.keyUri
@@ -196,11 +195,9 @@ describe('Quote', () => {
         )
       )
     ).toBeTruthy()
-    await expect(() =>
-      Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-        resolver: mockResolver,
-      })
-    ).not.toThrow()
+    await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
+      resolver: mockResolver,
+    })
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,
@@ -232,10 +229,8 @@ describe('Quote compression', () => {
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
-  const mockResolver: IDidResolver = (() => {
-    const resolve = async (
-      didUri: string
-    ): Promise<DidResolvedDetails | null> => {
+  const mockResolver = (() => {
+    async function resolve(didUri: string): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const didWithoutFragment = didUri.split('#')[0]
       switch (didWithoutFragment) {
@@ -247,6 +242,7 @@ describe('Quote compression', () => {
           return null
       }
     }
+
     return {
       resolve,
       resolveDoc: resolve,

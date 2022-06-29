@@ -72,12 +72,11 @@ describe('When creating an instance from the details', () => {
       },
       serviceEndpoints: endpoints,
     }
-    const lightDidDetails: LightDidDetails =
-      LightDidDetails.fromDetails(validOptions)
+    const lightDidDetails = LightDidDetails.fromDetails(validOptions)
 
     expect(lightDidDetails?.identifier).toStrictEqual(authKey.address)
 
-    const encodedDetails: string = serializeAndEncodeAdditionalLightDidDetails({
+    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey: {
         publicKey: encKey.publicKey,
         type: EncryptionKeyType.X25519,
@@ -184,12 +183,11 @@ describe('When creating an instance from the details', () => {
         type: EncryptionKeyType.X25519,
       },
     }
-    const lightDidDetails: LightDidDetails =
-      LightDidDetails.fromDetails(validOptions)
+    const lightDidDetails = LightDidDetails.fromDetails(validOptions)
 
     expect(lightDidDetails?.identifier).toStrictEqual(authKey.address)
 
-    const encodedDetails: string = serializeAndEncodeAdditionalLightDidDetails({
+    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey: {
         publicKey: encKey.publicKey,
         type: EncryptionKeyType.X25519,
@@ -321,8 +319,7 @@ describe('When creating an instance from a URI', () => {
       serviceEndpoints: endpoints,
     }
     // We are sure this is correct because of the describe case above
-    const expectedLightDidDetails: LightDidDetails =
-      LightDidDetails.fromDetails(creationOptions)
+    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
 
     const builtLightDidDetails = LightDidDetails.fromUri(
       expectedLightDidDetails.uri
@@ -374,8 +371,7 @@ describe('When creating an instance from a URI', () => {
       serviceEndpoints: endpoints,
     }
     // We are sure this is correct because of the describe case above
-    const expectedLightDidDetails: LightDidDetails =
-      LightDidDetails.fromDetails(creationOptions)
+    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
 
     const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
 
@@ -387,7 +383,7 @@ describe('When creating an instance from a URI', () => {
     const validKiltAddress = new Keyring({ ss58Format }).addFromMnemonic(
       'random'
     )
-    const incorrectURIs: DidUri[] = [
+    const incorrectURIs = [
       'did:kilt:light:sdasdsadas',
       // @ts-ignore not a valid did uri
       'random-uri',
@@ -401,7 +397,7 @@ describe('When creating an instance from a URI', () => {
       `did:kilt:light:00${validKiltAddress}:randomdetails`,
     ]
     incorrectURIs.forEach((uri) => {
-      expect(() => LightDidDetails.fromUri(uri)).toThrow()
+      expect(() => LightDidDetails.fromUri(uri as DidUri)).toThrow()
     })
   })
 })
@@ -421,14 +417,12 @@ describe('When creating an instance from an identifier', () => {
     }
 
     // We are sure this is correct because of the describe case above
-    const expectedLightDidDetails: LightDidDetails =
-      LightDidDetails.fromDetails(creationOptions)
+    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
     // We are sure this is correct because of the describe case above
-    const builtLightDidDetails: LightDidDetails =
-      LightDidDetails.fromIdentifier(
-        authKey.address,
-        VerificationKeyType.Sr25519
-      )
+    const builtLightDidDetails = LightDidDetails.fromIdentifier(
+      authKey.address,
+      VerificationKeyType.Sr25519
+    )
 
     expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
       expectedLightDidDetails
@@ -459,14 +453,12 @@ describe('When creating an instance from an identifier', () => {
     }
 
     // We are sure this is correct because of the describe case above
-    const expectedLightDidDetails: LightDidDetails =
-      LightDidDetails.fromDetails(creationOptions)
+    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
     // We are sure this is correct because of the describe case above
-    const builtLightDidDetails: LightDidDetails =
-      LightDidDetails.fromIdentifier(
-        authKey.address,
-        VerificationKeyType.Ed25519
-      )
+    const builtLightDidDetails = LightDidDetails.fromIdentifier(
+      authKey.address,
+      VerificationKeyType.Ed25519
+    )
 
     expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
       expectedLightDidDetails

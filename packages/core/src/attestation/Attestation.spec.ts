@@ -80,7 +80,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: IAttestation = Attestation.fromCredentialAndDid(
+    const attestation = Attestation.fromCredentialAndDid(
       credential,
       identityAlice
     )
@@ -113,7 +113,7 @@ describe('Attestation', () => {
       ])
     )
 
-    const attestation: IAttestation = Attestation.fromCredentialAndDid(
+    const attestation = Attestation.fromCredentialAndDid(
       credential,
       identityAlice
     )

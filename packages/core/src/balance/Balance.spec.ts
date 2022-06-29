@@ -66,11 +66,11 @@ describe('Balance', () => {
     bob = keyring.addFromUri('//Bob')
   })
   it('should listen to balance changes', (done) => {
-    const listener = (
+    function listener(
       account: string,
       balances: Balances,
       changes: Balances
-    ): void => {
+    ): void {
       expect(account).toBe(bob.address)
       expect(balances.free.toNumber()).toBe(BALANCE)
       expect(changes.free.toNumber()).toBe(FEE)
