@@ -12,7 +12,7 @@ import { verify } from './Crypto.js'
 import { ss58Format } from './ss58Format.js'
 
 /**
- * Validates an given address string against the External Address Format (SS58) with our Prefix of 38.
+ * Validates a given address string against the External Address Format (SS58) with our Prefix of 38.
  *
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".

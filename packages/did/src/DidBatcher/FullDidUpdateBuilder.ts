@@ -337,7 +337,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * The operation will fail in the following cases:
    *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
-   *   - The starting state does not have an delegation key
+   *   - The starting state does not have a delegation key
    *   - There was already an attestation key marked for addition
    *   - The old attestation key was already marked for deletion.
    *
@@ -401,7 +401,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Mark an service endpoint to be removed in the next DID operation.
+   * Mark a service endpoint to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
    *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)

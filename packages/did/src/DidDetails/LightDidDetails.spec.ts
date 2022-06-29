@@ -318,7 +318,7 @@ describe('When creating an instance from a URI', () => {
       },
       serviceEndpoints: endpoints,
     }
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
 
     const builtLightDidDetails = LightDidDetails.fromUri(
@@ -370,7 +370,7 @@ describe('When creating an instance from a URI', () => {
       },
       serviceEndpoints: endpoints,
     }
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
 
     const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
@@ -416,9 +416,9 @@ describe('When creating an instance from an identifier', () => {
       },
     }
 
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const builtLightDidDetails = LightDidDetails.fromIdentifier(
       authKey.address,
       VerificationKeyType.Sr25519
@@ -452,9 +452,9 @@ describe('When creating an instance from an identifier', () => {
       },
     }
 
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const builtLightDidDetails = LightDidDetails.fromIdentifier(
       authKey.address,
       VerificationKeyType.Ed25519

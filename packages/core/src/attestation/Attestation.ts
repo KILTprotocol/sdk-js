@@ -84,7 +84,7 @@ export function fromRequestAndDid(
 /**
  * Tries to query the delegationId and if successful query the rootId.
  *
- * @param input - The Id of the Delegation stored in [[Attestation]] , or the whole Attestation object.
+ * @param input - The ID of the Delegation stored in [[Attestation]] , or the whole Attestation object.
  * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
  */
 export async function getDelegationDetails(

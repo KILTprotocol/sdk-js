@@ -59,7 +59,7 @@ export async function getOwner(
 }
 
 /**
- * Queries the blockchain and returns whether a CType with the provide hash exists.
+ * Queries the blockchain and returns whether a CType with the provided hash exists.
  *
  * @param ctypeHash The has of the CType to check.
  * @returns True if a CType with the provided hash exists, false otherwise.

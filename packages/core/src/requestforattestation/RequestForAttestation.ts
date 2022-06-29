@@ -463,7 +463,7 @@ export function compress(
  * Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when reqForAtt is not an Array and it's length is not equal to the defined length of 8.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when reqForAtt is not an Array and its length is not equal to the defined length of 8.
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */

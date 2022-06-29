@@ -94,7 +94,7 @@ export async function queryConnectedDidForAccount(
  *
  * @param linkedDid The DID to use for the lookup.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
- * @returns A list of addresses to accounts linked to the DID, encoded using `networkPrefix`.
+ * @returns A list of addresses of accounts linked to the DID, encoded using `networkPrefix`.
  */
 export async function queryConnectedAccountsForDid(
   linkedDid: DidIdentifier,
@@ -139,7 +139,7 @@ export async function queryIsConnected(
   account: Address
 ): Promise<boolean> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
+  // The following function returns something different from 0x00 if there is an entry for the provided key, 0x00 otherwise.
   const connectedEntry = await api.query.didLookup.connectedAccounts.hash(
     didIdentifier,
     account
@@ -198,7 +198,7 @@ export async function getAccountSignedAssociationExtrinsic(
 }
 
 /**
- * Returns a extrinsic to release an account link by the account that owns the deposit.
+ * Returns an extrinsic to release an account link by the account that owns the deposit.
  * Must be signed and submitted by the deposit owner account.
  *
  * @param linkedAccount Account whose link should be released (not the deposit owner).

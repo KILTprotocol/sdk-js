@@ -342,7 +342,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Checks on chain whether a identity with the given DID is delegating to the current node.
+   * Checks on chain whether an identity with the given DID is delegating to the current node.
    *
    * @param did The DID to search for.
    *

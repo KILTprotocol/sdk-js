@@ -39,7 +39,7 @@ const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
 /**
  * Produces JSON-LD readable representations of [[IClaim]]['contents']. This is done by implicitly or explicitly transforming property keys to globally unique predicates.
- * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed to predicates by prepending the [[CType]][schema][$id].
+ * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed into predicates by prepending the [[CType]][schema][$id].
  *
  * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
  * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
@@ -70,7 +70,7 @@ function jsonLDcontents(
 
 /**
  * Produces JSON-LD readable representations of KILT claims. This is done by implicitly or explicitly transforming property keys to globally unique predicates.
- * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed to predicates by prepending the [[CType]][schema][$id].
+ * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed into predicates by prepending the [[CType]][schema][$id].
  *
  * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
  * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.

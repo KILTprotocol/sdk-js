@@ -57,7 +57,7 @@ function checkWeb3NameInputConstraints(
 }
 
 /**
- * Returns a extrinsic to claim a new web3name.
+ * Returns an extrinsic to claim a new web3name.
  *
  * @param name Web3Name that should be claimed.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
@@ -72,7 +72,7 @@ export async function getClaimTx(
 }
 
 /**
- * Returns a extrinsic to release a web3name by its owner.
+ * Returns an extrinsic to release a web3name by its owner.
  *
  * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
  */
@@ -82,7 +82,7 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
 }
 
 /**
- * Returns a extrinsic to release a web3name by the account that owns the deposit.
+ * Returns an extrinsic to release a web3name by the account that owns the deposit.
  *
  * @param name Web3Name that should be released.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].

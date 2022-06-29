@@ -75,7 +75,7 @@ export class DidBatchBuilder {
   ): void {
     const lastBatch = this.batches[this.batches.length - 1]
 
-    // If there was not previous batch, or the new extrinsic requires a different key, create and add a new batch.
+    // If there was no previous batch, or the new extrinsic requires a different key, create and add a new batch.
     if (!lastBatch || lastBatch.keyRelationship !== keyRelationship) {
       this.batches.push({
         keyRelationship,

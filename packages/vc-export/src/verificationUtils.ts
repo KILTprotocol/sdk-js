@@ -61,13 +61,13 @@ export class PROOF_MALFORMED_ERROR extends Error {
 }
 
 /**
- * Verifies a KILT self signed proof (claimer signature) against a KILT style Verifiable Credential.
+ * Verifies a KILT self-signed proof (claimer signature) against a KILT style Verifiable Credential.
  * This entails computing the root hash from the hashes contained in the `protected` section of the credentialSubject.
  * The resulting hash is then verified against the signature and public key contained in the proof (the latter
  * could be a DID URI). It is also expected to by identical to the credential id.
  *
  * @param credential Verifiable Credential to verify proof against.
- * @param proof KILT self signed proof object.
+ * @param proof KILT self-signed proof object.
  * @param documentLoader Must be able to KILT DID fragments (i.e. The key reference).
  * @returns Object indicating whether proof could be verified.
  */
@@ -146,7 +146,7 @@ export async function verifySelfSignedProof(
  * This record is then compared against attester address and delegation id (the latter of which is taken directly from the credential).
  *
  * @param credential Verifiable Credential to verify proof against.
- * @param proof KILT self signed proof object.
+ * @param proof KILT self-signed proof object.
  * @returns Object indicating whether proof could be verified.
  */
 export async function verifyAttestedProof(
@@ -223,7 +223,7 @@ export async function verifyAttestedProof(
  * Values and nonces contained within this proof will be hashed, the result of which is expected to equal hashes on the credential.
  *
  * @param credential Verifiable Credential to verify proof against.
- * @param proof KILT self signed proof object.
+ * @param proof KILT self-signed proof object.
  * @param options Allows passing custom hasher.
  * @param options.hasher A custom hasher. Defaults to hex(blake2-256('nonce'+'value')).
  * @returns Object indicating whether proof could be verified.

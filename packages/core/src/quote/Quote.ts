@@ -238,7 +238,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  * Decompresses the cost from storage and/or message.
  *
  * @param cost A compressed cost array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when cost is not an Array and it's length does not equal the defined length of 3.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when cost is not an Array and its length does not equal the defined length of 3.
  *
  * @returns An object that has the same properties as a cost.
  */
@@ -282,7 +282,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  * Decompresses an [[Quote]] from storage and/or message.
  *
  * @param quote A compressed [[Quote]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quote is not an Array and it's length does not equal the defined length of 6.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quote is not an Array and its length does not equal the defined length of 6.
  * @returns An object that has the same properties as an [[Quote]].
  */
 export function decompressQuote(quote: CompressedQuote): IQuote {
@@ -359,7 +359,7 @@ export function compressAttesterSignedQuote(
  * Decompresses an attester signed [[Quote]] from storage and/or message.
  *
  * @param attesterSignedQuote A compressed attester signed [[Quote]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when attesterSignedQuote is not an Array and it's length does not equal the defined length of 7.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when attesterSignedQuote is not an Array and its length does not equal the defined length of 7.
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
@@ -419,7 +419,7 @@ export function compressQuoteAgreement(
  * Decompresses a [[Quote]] Agreement from storage and/or message.
  *
  * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quoteAgreement is not an Array and it's length does not equal the defined length of 9.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quoteAgreement is not an Array and its length does not equal the defined length of 9.
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */
