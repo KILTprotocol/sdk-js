@@ -331,8 +331,8 @@ export function isUriFragment(str: string): boolean {
 
 /**
  * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
- *   - The `id` property is string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
- *   - The if the `urls` property contains one or more strings, they must be valid URIs according to RFC#3986.
+ *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
+ *   - If the `urls` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
  * @param endpoint A service endpoint object to check.
  * @returns Validation result and errors, if any.
