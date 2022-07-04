@@ -53,9 +53,15 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 }
 
 export async function initializeApi(): Promise<void> {
-  if (process.env.TEST_WS_ADDRESS) {
-    console.log(`connecting to node ${process.env.TEST_WS_ADDRESS}`)
-    await init({ address: process.env.TEST_WS_ADDRESS })
+  const { TEST_WS_ADDRESS, JEST_WORKER_ID } = process.env
+  if (TEST_WS_ADDRESS) {
+    if (JEST_WORKER_ID !== '1') {
+      throw new Error(
+        'TEST_WS_ADDRESS is set but more than one jest worker was started. You cannot run tests in parallel when TEST_WS_ADDRESS is set. Please run jest with `-w 1`.'
+      )
+    }
+    console.log(`connecting to node ${TEST_WS_ADDRESS}`)
+    await init({ address: TEST_WS_ADDRESS })
     connect()
   } else {
     const started = await getStartedTestContainer()
@@ -137,16 +143,12 @@ export async function endowAccounts(
   addresses: string[],
   resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = Blockchain.IS_FINALIZED
 ): Promise<void> {
-  try {
-    const api = await BlockchainApiConnection.getConnectionOrConnect()
-    const transactions = await Promise.all(
-      addresses.map((address) => Balance.getTransferTx(address, ENDOWMENT))
-    )
-    const batch = api.tx.utility.batchAll(transactions)
-    await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
-  } catch (error) {
-    console.log(error)
-  }
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const transactions = await Promise.all(
+    addresses.map((address) => Balance.getTransferTx(address, ENDOWMENT))
+  )
+  const batch = api.tx.utility.batchAll(transactions)
+  await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
 }
 
 export async function fundAccount(
@@ -154,11 +156,7 @@ export async function fundAccount(
   amount: BN
 ): Promise<void> {
   const transferTx = await Balance.getTransferTx(address, amount)
-  try {
-    await submitExtrinsic(transferTx, devFaucet)
-  } catch (error) {
-    console.error(error)
-  }
+  await submitExtrinsic(transferTx, devFaucet)
 }
 
 export async function createEndowedTestAccount(
