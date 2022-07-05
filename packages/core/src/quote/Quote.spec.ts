@@ -36,7 +36,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as CType from '../ctype'
-import * as Credential from '../requestforattestation'
+import * as Credential from '../credential'
 import * as Quote from './Quote'
 import { QuoteSchema } from './QuoteSchema'
 

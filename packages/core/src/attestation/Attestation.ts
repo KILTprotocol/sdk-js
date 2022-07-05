@@ -16,7 +16,7 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import { query } from './Attestation.chain.js'
-import * as Credential from '../requestforattestation/index.js'
+import * as Credential from '../credential/index.js'
 
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[Credential]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.

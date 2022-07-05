@@ -26,7 +26,7 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { HexString } from '@polkadot/util/types'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as Credential from '../requestforattestation'
+import * as Credential from '../credential'
 import * as Attestation from './Attestation'
 
 let mockedApi: any

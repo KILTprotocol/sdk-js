@@ -19,7 +19,7 @@ import type {
   IClaim,
 } from '@kiltprotocol/types'
 import * as Claim from '../claim'
-import * as Credential from '../requestforattestation'
+import * as Credential from '../credential'
 import { getOwner, isStored } from './CType.chain'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CType.schemas'

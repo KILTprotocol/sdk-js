@@ -26,7 +26,7 @@ import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as Credential from '../requestforattestation'
+import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
 import {

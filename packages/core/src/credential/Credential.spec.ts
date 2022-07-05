@@ -42,7 +42,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as CType from '../ctype'
-import * as Credential from '../requestforattestation'
+import * as Credential from './Credential'
 import * as Claim from '../claim'
 import * as Attestation from '../attestation'
 
