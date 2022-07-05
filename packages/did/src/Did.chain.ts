@@ -114,7 +114,7 @@ async function queryDidEncoded(
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
 }
 
-// Query ALL deleted DIDs, which can be very time consuming if the number of deleted DIDs gets large.
+// Query ALL deleted DIDs, which can be very time-consuming if the number of deleted DIDs gets large.
 async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
@@ -350,7 +350,7 @@ export async function queryDidDeletionStatus(
   didIdentifier: DidIdentifier
 ): Promise<boolean> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
+  // The following function returns something different from 0x00 if there is an entry for the provided key, 0x00 otherwise.
   const encodedStorageHash = await api.query.did.didBlacklist.hash(
     didIdentifier
   )
@@ -655,7 +655,7 @@ export async function getRemoveKeyExtrinsic(
 }
 
 /**
- * Builds an extrinsic to add an additional public key for a given verification relationship if this allows multiple keys in the same role.
+ * Builds an extrinsic to add another public key for a given verification relationship if this allows multiple keys in the same role.
  *
  * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (currently only keyAgreement allows multiple keys).
  * @param key Data describing the public key.
@@ -685,7 +685,7 @@ export async function getAddKeyExtrinsic(
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
  *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
- * @returns An extrinsic that must be authorized (signed) by the FullDid with which the service endpoint should be associated.
+ * @returns An extrinsic that must be authorised (signed) by the FullDid with which the service endpoint should be associated.
  */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
@@ -704,7 +704,7 @@ export async function getAddEndpointExtrinsic(
  *
  * @param endpointId The ID of the service endpoint to include in the extrinsic.
  * The ID must be at most 50 ASCII characters long.
- * @returns An extrinsic that must be authorized (signed) by the FullDid associated with the service endpoint to be removed.
+ * @returns An extrinsic that must be authorised (signed) by the FullDid associated with the service endpoint to be removed.
  */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']

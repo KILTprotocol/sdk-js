@@ -72,7 +72,7 @@ export function errorCheckDelegationData(
 }
 
 /**
- * Checks if the message body is well formed.
+ * Checks if the message body is well-formed.
  *
  * @param body The message body.
  * @throws [[SDKError]] if there are issues with form or content of the message body.
@@ -209,7 +209,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
 }
 
 /**
- * Checks if the message object is well formed.
+ * Checks if the message object is well-formed.
  *
  * @param message The message object.
  * @throws [[SDKError]] if there are issues with form or content of the message object.
@@ -397,7 +397,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
  *
  * @param body The body of the compressed [[IMessage]] which depends on the [[MessageBodyType]] that needs to be decompressed.
  *
- * @returns Returns the compressed message back to its original form and more human readable.
+ * @returns Returns the compressed message back to its original form and more human-readable.
  */
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // body[0] is the [[MessageBodyType]] being sent.

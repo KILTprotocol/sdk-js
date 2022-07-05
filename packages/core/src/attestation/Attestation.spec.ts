@@ -43,7 +43,7 @@ describe('Attestation', () => {
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
   let testCType: ICType
-  let testcontents: any
+  let testContents: any
   let testClaim: IClaim
   let requestForAttestation: IRequestForAttestation
 
@@ -60,10 +60,10 @@ describe('Attestation', () => {
 
     testCType = CType.fromSchema(rawCTypeSchema, identityAlice)
 
-    testcontents = {}
+    testContents = {}
     testClaim = Claim.fromCTypeAndClaimContents(
       testCType,
-      testcontents,
+      testContents,
       identityBob
     )
     requestForAttestation = RequestForAttestation.fromClaim(testClaim)

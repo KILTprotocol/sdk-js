@@ -40,7 +40,7 @@ For reference, look for example at the docBlock at the beginning of `Attestation
 
 Since they're available to SDK users, public methods must be documented.
 
-On top of the the linting rules mentioned above (must document all parameters, must have a description...), we recommend that you observe the following guidelines to make the documentation as helpful as possible:
+On top of the linting rules mentioned above (must document all parameters, must have a description...), we recommend that you observe the following guidelines to make the documentation as helpful as possible:
 
 * Method description:
   * Make it concise and clear;
