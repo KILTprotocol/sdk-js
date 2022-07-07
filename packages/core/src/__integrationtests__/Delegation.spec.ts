@@ -15,7 +15,7 @@ import type {
   KeyringPair,
   SignCallback,
 } from '@kiltprotocol/types'
-import { Permission, Permissions } from '@kiltprotocol/types'
+import { Permission, PermissionType } from '@kiltprotocol/types'
 import {
   createFullDidFromSeed,
   KeyTool,
@@ -82,7 +82,7 @@ async function addDelegation(
   delegee: FullDidDetails,
   delegatorSign: SignCallback,
   delegeeSign: SignCallback,
-  permissions: Permissions[] = [Permission.ATTEST, Permission.DELEGATE]
+  permissions: PermissionType[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
   const delegationNode = DelegationNode.newNode({
     hierarchyId,

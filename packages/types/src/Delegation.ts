@@ -13,7 +13,7 @@ export const Permission = {
   ATTEST: 1 << 0, // 0001
   DELEGATE: 1 << 1, // 0010
 } as const
-export type Permissions = typeof Permission[keyof typeof Permission]
+export type PermissionType = typeof Permission[keyof typeof Permission]
 
 export interface IDelegationNode {
   id: string
@@ -21,7 +21,7 @@ export interface IDelegationNode {
   parentId?: IDelegationNode['id']
   childrenIds: Array<IDelegationNode['id']>
   account: IDidDetails['uri']
-  permissions: Permissions[]
+  permissions: PermissionType[]
   revoked: boolean
 }
 
