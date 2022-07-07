@@ -35,7 +35,6 @@ const {
   Blockchain,
   Utils: { Crypto, Keyring, ss58Format },
   Message,
-  MessageBodyType,
   BalanceUtils,
 } = kilt
 
@@ -346,7 +345,7 @@ async function runAll() {
       content: {
         requestForAttestation: request,
       },
-      type: MessageBodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     },
     bob.uri,
     alice.uri

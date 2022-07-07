@@ -148,7 +148,7 @@ describe('Messaging', () => {
   it('verify message encryption and signing', async () => {
     const message = new Message(
       {
-        type: Message.BodyType.REQUEST_CREDENTIAL,
+        type: 'request-credential',
         content: {
           cTypes: [{ cTypeHash: `${Crypto.hashStr('0x12345678')}` }],
         },
@@ -264,7 +264,7 @@ describe('Messaging', () => {
         requestForAttestation: content,
         quote: bothSigned,
       },
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -301,7 +301,7 @@ describe('Messaging', () => {
       content: {
         attestation,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -333,7 +333,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBody: ISubmitCredential = {
       content: [credential],
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -400,7 +400,7 @@ describe('Messaging', () => {
         requestForAttestation: content,
         quote: bothSigned,
       },
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     // Create request for attestation to the light DID with encoded details
@@ -443,7 +443,7 @@ describe('Messaging', () => {
         requestForAttestation: contentWithEncodedDetails,
         quote: bothSignedEncodedDetails,
       },
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -501,7 +501,7 @@ describe('Messaging', () => {
       content: {
         attestation,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     const attestationWithEncodedDetails = {
@@ -516,7 +516,7 @@ describe('Messaging', () => {
       content: {
         attestation: attestationWithEncodedDetails,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -569,7 +569,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBody: ISubmitCredential = {
       content: [credential],
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     const credentialWithEncodedDetails: ICredential = {
@@ -579,7 +579,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBodyWithEncodedDetails: ISubmitCredential = {
       content: [credentialWithEncodedDetails],
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     // Should not throw if the owner and sender DID is the same.

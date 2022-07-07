@@ -18,7 +18,6 @@ import {
   IEncryptedMessageContents,
   IMessage,
   MessageBody,
-  MessageBodyType,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import { DidDetails, DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
@@ -33,11 +32,6 @@ import {
 
 export class Message implements IMessage {
   /**
-   * Lists all possible body types of [[Message]].
-   */
-  public static readonly BodyType = MessageBodyType
-
-  /**
    * Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
    *
    * @param message The [[Message]] object which needs to be decrypted.
@@ -47,7 +41,7 @@ export class Message implements IMessage {
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
-      case Message.BodyType.REQUEST_ATTESTATION:
+      case 'request-attestation':
         {
           const requestAttestation = body
           if (
@@ -60,7 +54,7 @@ export class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_ATTESTATION:
+      case 'submit-attestation':
         {
           const submitAttestation = body
           if (
@@ -73,7 +67,7 @@ export class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_CREDENTIAL:
+      case 'submit-credential':
         {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach((claim) => {
