@@ -12,6 +12,7 @@ import type {
   DidUri,
   IDidDetails,
   IIdentity,
+  LightDidSupportedVerificationKeyType,
   SignCallback,
 } from '@kiltprotocol/types'
 
@@ -22,7 +23,6 @@ import { FullDidCreationBuilder } from '../DidBatcher/FullDidCreationBuilder.js'
 
 import type {
   DidConstructorDetails,
-  LightDidSupportedVerificationKeyType,
   MapKeysToRelationship,
   NewLightDidAuthenticationKey,
   PublicKeys,

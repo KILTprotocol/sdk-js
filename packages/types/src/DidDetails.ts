@@ -41,10 +41,10 @@ export type KeyRelationship = typeof keyRelationships[number]
 /**
  * Subset of key relationships which pertain to signing/verification keys.
  */
-export type VerificationKeyRelationship =
-  | 'authentication'
-  | 'capabilityDelegation'
-  | 'assertionMethod'
+export type VerificationKeyRelationship = Extract<
+  KeyRelationship,
+  'authentication' | 'capabilityDelegation' | 'assertionMethod'
+>
 
 /**
  * Possible types for a DID verification key.
@@ -52,12 +52,15 @@ export type VerificationKeyRelationship =
 export const verificationKeyTypes = ['sr25519', 'ed25519', 'ecdsa'] as const
 export type VerificationKeyType = typeof verificationKeyTypes[number]
 
-export type LightDidSupportedVerificationKeyType = 'ed25519' | 'sr25519'
+export type LightDidSupportedVerificationKeyType = Extract<
+  VerificationKeyType,
+  'ed25519' | 'sr25519'
+>
 
 /**
  * Subset of key relationships which pertain to key agreement/encryption keys.
  */
-export type EncryptionKeyRelationship = 'keyAgreement'
+export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement'>
 /**
  * Possible types for a DID encryption key.
  */

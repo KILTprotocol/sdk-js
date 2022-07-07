@@ -14,6 +14,7 @@ import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 import type {
   DidServiceEndpoint,
+  LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -22,10 +23,7 @@ import { encryptionKeyTypes, VerificationKeyType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { checkServiceEndpointSyntax } from '../Did.utils.js'
-import {
-  LightDidSupportedVerificationKeyType,
-  NewLightDidAuthenticationKey,
-} from '../types.js'
+import { NewLightDidAuthenticationKey } from '../types.js'
 
 // Ecdsa not supported.
 export function getEncodingForVerificationKeyType(
