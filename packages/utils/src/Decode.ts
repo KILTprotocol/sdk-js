@@ -28,6 +28,6 @@ export function codecIsType(codec: Codec, types: string[]): boolean {
 export function assertCodecIsType(codec: Codec, types: string[]): void {
   if (!codecIsType(codec, types))
     throw new TypeError(
-      `expected Codec type(s) ${types}, got ${codec.toRawType()}`
+      `Expected Codec type(s) ${types}, got ${codec.toRawType()}`
     )
 }

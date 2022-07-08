@@ -82,13 +82,13 @@ export class FullDidDetails extends DidDetails {
   ): Promise<FullDidDetails | null> {
     const { identifier, fragment, type } = parseDidUri(didUri)
     if (fragment) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `DID URI cannot contain fragment: ${didUri}`
+      throw new SDKErrors.DidError(
+        `DID URI cannot contain fragment: "${didUri}"`
       )
     }
     if (type !== 'full') {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `DID URI does not refer to a full DID: ${didUri}`
+      throw new SDKErrors.DidError(
+        `DID URI "${didUri}" does not refer to a full DID`
       )
     }
     const didRec = await queryDetails(identifier)
@@ -186,8 +186,8 @@ export class FullDidDetails extends DidDetails {
   ): Promise<SubmittableExtrinsic> {
     const signingKey = await keySelection(this.getKeysForExtrinsic(extrinsic))
     if (!signingKey) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `The details for did ${this.uri} do not contain the required keys for this operation`
+      throw new SDKErrors.DidError(
+        `The details for DID "${this.uri}" do not contain the required keys for this operation`
       )
     }
     return generateDidAuthenticatedTx({

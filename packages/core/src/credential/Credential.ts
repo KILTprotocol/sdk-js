@@ -58,17 +58,17 @@ export function verifyDataIntegrity(credential: ICredential): boolean {
  * Throws on invalid input.
  *
  * @param input The potentially only partial ICredential.
- * @throws [[ERROR_ATTESTATION_NOT_PROVIDED]] or [[ERROR_RFA_NOT_PROVIDED]] when input's attestation and request respectively do not exist.
+ * @throws [[AttestationMissingError]] or [[RequestForAttestationMissingError]] when input's attestation and request respectively do not exist.
  *
  */
 export function verifyDataStructure(input: ICredential): void {
   if (input.attestation) {
     Attestation.verifyDataStructure(input.attestation)
-  } else throw new SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
+  } else throw new SDKErrors.AttestationMissingError()
 
   if (input.request) {
     RequestForAttestation.verifyDataStructure(input.request)
-  } else throw new SDKErrors.ERROR_RFA_NOT_PROVIDED()
+  } else throw new SDKErrors.RequestForAttestationMissingError()
 }
 
 /**
@@ -161,14 +161,14 @@ export async function verify(
  * Verifies the data of each element of the given Array of ICredentials.
  *
  * @param legitimations Array of ICredentials to validate.
- * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]] when one of the ICredentials data is unable to be verified.
+ * @throws [[LegitimationsUnverifiableError]] when one of the ICredentials data is unable to be verified.
  *
  * @returns Boolean whether each element of the given Array of ICredentials is verifiable.
  */
 export function validateLegitimations(legitimations: ICredential[]): boolean {
   legitimations.forEach((legitimation) => {
     if (!verifyDataIntegrity(legitimation)) {
-      throw new SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
+      throw new SDKErrors.LegitimationsUnverifiableError()
     }
   })
   return true
@@ -246,7 +246,7 @@ export async function createPresentation({
   const selectedKeyId = (await keySelection(keys))?.id
 
   if (!selectedKeyId) {
-    throw new SDKErrors.ERROR_UNSUPPORTED_KEY('authentication')
+    throw new SDKErrors.UnsupportedKeyError('authentication')
   }
 
   await RequestForAttestation.signWithDidKey(
@@ -281,12 +281,12 @@ export function compress(credential: ICredential): CompressedCredential {
  * Decompresses a [[Credential]] array from storage and/or message into an object.
  *
  * @param credential The [[CompressedCredential]] that should get decompressed.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when credential is not an Array or it's length is unequal 2.
+ * @throws [[DecompressionArrayError]] when credential is not an Array or it's length is unequal 2.
  * @returns A new [[Credential]] object.
  */
 export function decompress(credential: CompressedCredential): ICredential {
   if (!Array.isArray(credential) || credential.length !== 2) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
+    throw new SDKErrors.DecompressionArrayError('Credential')
   }
   const decompressedCredential = {
     request: RequestForAttestation.decompress(credential[0]),

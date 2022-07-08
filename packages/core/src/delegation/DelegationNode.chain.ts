@@ -40,7 +40,7 @@ export async function getStoreAsRootTx(
   const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   if (!delegation.isRoot()) {
-    throw new SDKErrors.ERROR_INVALID_ROOT_NODE()
+    throw new SDKErrors.InvalidRootNodeError()
   }
   return api.tx.delegation.createHierarchy(
     delegation.hierarchyId,
@@ -62,7 +62,7 @@ export async function getStoreAsDelegationTx(
   const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   if (delegation.isRoot()) {
-    throw new SDKErrors.ERROR_INVALID_DELEGATION_NODE()
+    throw new SDKErrors.InvalidDelegationNodeError()
   }
 
   return api.tx.delegation.addDelegation(
@@ -165,7 +165,7 @@ export async function getChildren(
     delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
       const childNode = await query(childId)
       if (!childNode) {
-        throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
+        throw new SDKErrors.DelegationIdMissingError()
       }
       return childNode
     })
@@ -205,7 +205,7 @@ export async function getAttestationHashes(
     DecoderUtils.assertCodecIsType(claimHashes, ['Option<Vec<H256>>'])
     return claimHashes.unwrapOrDefault().map((hash) => hash.toHex())
   }
-  throw new SDKErrors.ERROR_CODEC_MISMATCH(
+  throw new SDKErrors.CodecMismatchError(
     'Failed to query delegated attestations: Unknown pallet storage'
   )
 }

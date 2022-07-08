@@ -54,14 +54,14 @@ export async function countNodeDepth(
       const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
       delegationTreeTraversalSteps += steps
       if (node === null) {
-        throw new SDKErrors.ERROR_UNAUTHORIZED(
-          'Attester is not authorized to revoke this attestation. (attester not in delegation tree)'
+        throw new SDKErrors.UnauthorizedError(
+          'Attester is not authorized to revoke this attestation. (Attester not in delegation tree)'
         )
       }
     }
   } else if (attestation.owner !== attester) {
-    throw new SDKErrors.ERROR_UNAUTHORIZED(
-      'Attester is not authorized to revoke this attestation. (not the owner, no delegations)'
+    throw new SDKErrors.UnauthorizedError(
+      'Attester is not authorized to revoke this attestation. (Not the owner, no delegations)'
     )
   }
 
@@ -78,23 +78,17 @@ export function errorCheck(delegationNodeInput: IDelegationNode): void {
   const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw new SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.UnauthorizedError(
       'Must have at least one permission and no more then two'
     )
   }
 
   if (!rootId) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
-  } else if (typeof rootId !== 'string') {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-  } else if (!isHex(rootId)) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.DelegationIdMissingError()
+  } else if (typeof rootId !== 'string' || !isHex(rootId)) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
-  if (parentId) {
-    if (typeof parentId !== 'string') {
-      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    } else if (!isHex(parentId)) {
-      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    }
+  if (parentId && (typeof parentId !== 'string' || !isHex(parentId))) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
 }

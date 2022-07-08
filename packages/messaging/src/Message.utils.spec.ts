@@ -849,7 +849,7 @@ describe('Messaging Utilities', () => {
 
     expect(() =>
       MessageUtils.decompressMessage(compressedMalformed)
-    ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED)
+    ).toThrowError(SDKErrors.UnknownMessageBodyTypeError)
 
     const malformed = {
       content: '',
@@ -857,20 +857,20 @@ describe('Messaging Utilities', () => {
     } as unknown as MessageBody
 
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
-      SDKErrors.ERROR_MESSAGE_BODY_MALFORMED
+      SDKErrors.UnknownMessageBodyTypeError
     )
   })
   it('Checking required properties for given CType', () => {
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(['id', 'name'], testCType)
-    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING)
+    ).toThrowError(SDKErrors.CTypeUnknownPropertiesError)
 
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(
         ['id', 'name'],
         testCTypeWithMultipleProperties
       )
-    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING)
+    ).not.toThrowError(SDKErrors.CTypeUnknownPropertiesError)
 
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(
@@ -1045,38 +1045,38 @@ describe('Messaging Utilities', () => {
     messageRequestTerms.receiver = 'did:kilt:thisisnotareceiveraddress'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
     // @ts-ignore
     messageSubmitTerms.sender = 'this is not a sender did'
     expect(() =>
       MessageUtils.errorCheckMessage(messageSubmitTerms)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
     // @ts-ignore
     messageRejectTerms.sender = 'this is not a sender address'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRejectTerms)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
   })
   it('error check should throw errors on faulty bodies', () => {
     // @ts-ignore
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     submitTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitTermsBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     rejectTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-expect-error
     delete rejectTermsBody.content.claim.cTypeHash
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowError(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED)
+    ).toThrowError(SDKErrors.CTypeHashMissingError)
     requestAttestationBody.content.requestForAttestation.claimerSignature = {
       signature: 'this is not the claimers signature',
       // @ts-ignore
@@ -1090,66 +1090,66 @@ describe('Messaging Utilities', () => {
       'this is not the claim hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAttestationBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     rejectAttestationForClaimBody.content = 'this is not the root hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     requestCredentialBody.content.cTypes[0].cTypeHash =
       'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-expect-error
     delete submitCredentialBody.content[0].attestation.revoked
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_REVOCATION_BIT_MISSING)
+    ).toThrowError(SDKErrors.RevokedTypeError)
     // @ts-ignore
     acceptCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(acceptCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     rejectCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     delete requestAcceptDelegationBody.content.metaData
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_OBJECT_MALFORMED)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
     requestAcceptDelegationBody.content.signatures.inviter.signature =
       'this is not a signature'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     // @ts-ignore
     submitAcceptDelegationBody.content.signatures.invitee.keyUri =
       'this is not a key id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     submitAcceptDelegationBody.content.delegationData.parentId =
       'this is not a parent id hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE)
+    ).toThrowError(SDKErrors.DelegationIdTypeError)
     // @ts-expect-error
     delete rejectAcceptDelegationBody.content.account
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_OWNER_NOT_PROVIDED)
+    ).toThrowError(SDKErrors.OwnerMissingError)
     informCreateDelegationBody.content.delegationId =
       'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(informCreateDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     expect(() =>
       MessageUtils.errorCheckMessageBody({} as MessageBody)
-    ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED)
+    ).toThrowError(SDKErrors.UnknownMessageBodyTypeError)
   })
   it('error check of the delegation data in messaging', () => {
     // @ts-expect-error
@@ -1165,19 +1165,19 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckDelegationData(
         requestAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE)
+    ).toThrowError(SDKErrors.DelegationIdTypeError)
     submitAcceptDelegationBody.content.delegationData.permissions = []
     expect(() =>
       MessageUtils.errorCheckDelegationData(
         submitAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_UNAUTHORIZED)
+    ).toThrowError(SDKErrors.UnauthorizedError)
     // @ts-expect-error
     delete submitAcceptDelegationBody.content.delegationData.id
     expect(() =>
       MessageUtils.errorCheckDelegationData(
         submitAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_MISSING)
+    ).toThrowError(SDKErrors.DelegationIdMissingError)
   })
 })

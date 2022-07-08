@@ -356,7 +356,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -364,7 +364,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -372,7 +372,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -380,7 +380,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -388,7 +388,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 
@@ -398,16 +398,16 @@ describe('type guard', () => {
       signature: '',
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature.signature = randomAsHex(32).substring(2)
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature.signature = randomAsU8a(32)
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 
@@ -418,7 +418,7 @@ describe('type guard', () => {
       signature: undefined,
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -426,31 +426,31 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {
       keyUri: `did:kilt:${keypair.address}#mykey`,
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {}
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = { keyUri: null, signature: null }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 })

@@ -68,7 +68,7 @@ export async function resolveDoc(
       try {
         details = LightDidDetails.fromUri(did, false)
       } catch {
-        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(did)
+        throw new SDKErrors.InvalidDidFormatError(did)
       }
 
       const fullDidDetails = await queryDetails(details.identifier)
@@ -103,7 +103,7 @@ export async function resolveDoc(
       }
     }
     default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(did)
+      throw new SDKErrors.UnsupportedDidError(did)
   }
 }
 
@@ -120,7 +120,7 @@ export async function resolveKey(
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
-    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+    throw new SDKErrors.InvalidDidFormatError(didUri)
   }
 
   switch (type) {
@@ -141,7 +141,7 @@ export async function resolveKey(
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
       if (!resolvedDetails) {
-        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+        throw new SDKErrors.InvalidDidFormatError(didUri)
       }
       const key = resolvedDetails.details?.getKey(keyId)
       if (!key) {
@@ -155,7 +155,7 @@ export async function resolveKey(
       }
     }
     default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
+      throw new SDKErrors.UnsupportedDidError(didUri)
   }
 }
 
@@ -172,7 +172,7 @@ export async function resolveServiceEndpoint(
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
-    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
+    throw new SDKErrors.InvalidDidFormatError(serviceUri)
   }
 
   switch (type) {
@@ -190,7 +190,7 @@ export async function resolveServiceEndpoint(
     case 'light': {
       const resolvedDetails = await resolveDoc(did)
       if (!resolvedDetails) {
-        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
+        throw new SDKErrors.InvalidDidFormatError(serviceUri)
       }
       const serviceEndpoint = resolvedDetails.details?.getEndpoint(serviceId)
       if (!serviceEndpoint) {
@@ -203,7 +203,7 @@ export async function resolveServiceEndpoint(
       }
     }
     default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(did)
+      throw new SDKErrors.UnsupportedDidError(did)
   }
 }
 

@@ -39,33 +39,28 @@ export function errorCheckDelegationData(
   const { permissions, id, parentId, isPCR, account } = delegationData
 
   if (!id) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
-  } else if (typeof id !== 'string') {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-  } else if (!isHex(id)) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.DelegationIdMissingError()
+  } else if (typeof id !== 'string' || !isHex(id)) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
 
   if (!account) {
-    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  } else DidUtils.validateKiltDidUri(account)
+    throw new SDKErrors.OwnerMissingError()
+  }
+  DidUtils.validateKiltDidUri(account)
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
   }
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw new SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.UnauthorizedError(
       'Must have at least one permission and no more then two'
     )
   }
 
-  if (parentId) {
-    if (typeof parentId !== 'string') {
-      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    } else if (!isHex(parentId)) {
-      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    }
+  if (parentId && (typeof parentId !== 'string' || !isHex(parentId))) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
 }
 
@@ -128,7 +123,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
     case 'reject-attestation': {
       if (!isHex(body.content)) {
-        throw new SDKErrors.ERROR_HASH_MALFORMED()
+        throw new SDKErrors.HashMalformedError()
       }
       break
     }
@@ -143,7 +138,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
-                'required properties is expected to be a string'
+                'Required properties is expected to be a string'
               )
           })
         }
@@ -178,7 +173,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       errorCheckDelegationData(body.content.delegationData)
       isDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
-        throw new SDKErrors.ERROR_OBJECT_MALFORMED()
+        throw new SDKErrors.ObjectUnverifiableError()
       }
       break
     }
@@ -202,7 +197,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
 
     default:
-      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.UnknownMessageBodyTypeError()
   }
 }
 
@@ -223,18 +218,18 @@ export function errorCheckMessage(message: IMessage): void {
     inReplyTo,
   } = message
   if (messageId && typeof messageId !== 'string') {
-    throw new TypeError('message id is expected to be a string')
+    throw new TypeError('Message id is expected to be a string')
   }
   if (createdAt && typeof createdAt !== 'number') {
-    throw new TypeError('created at is expected to be a number')
+    throw new TypeError('Created at is expected to be a number')
   }
   if (receivedAt && typeof receivedAt !== 'number') {
-    throw new TypeError('received at is expected to be a number')
+    throw new TypeError('Received at is expected to be a number')
   }
   DidUtils.validateKiltDidUri(receiver)
   DidUtils.validateKiltDidUri(sender)
   if (inReplyTo && typeof inReplyTo !== 'string') {
-    throw new TypeError('in reply to is expected to be a string')
+    throw new TypeError('In reply to is expected to be a string')
   }
   errorCheckMessageBody(body)
 }
@@ -244,7 +239,7 @@ export function errorCheckMessage(message: IMessage): void {
  *
  * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
  * @param cType A [[CType]] used to verify the properties.
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
+ * @throws [[CTypeHashMissingError]] when the properties do not match the provide [[CType]].
  */
 export function verifyRequiredCTypeProperties(
   requiredProperties: string[],
@@ -252,11 +247,11 @@ export function verifyRequiredCTypeProperties(
 ): void {
   CType.verifyDataStructure(cType as ICType)
 
-  const validProperties = requiredProperties.find(
+  const unknownProperties = requiredProperties.find(
     (property) => !(property in cType.schema.properties)
   )
-  if (validProperties) {
-    throw new SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
+  if (unknownProperties) {
+    throw new SDKErrors.CTypeUnknownPropertiesError()
   }
 }
 
@@ -385,7 +380,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     default:
-      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.UnknownMessageBodyTypeError()
   }
   return [body.type, compressedContents] as CompressedMessageBody
 }
@@ -520,7 +515,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     default:
-      throw new SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+      throw new SDKErrors.UnknownMessageBodyTypeError()
   }
 
   return { type: body[0], content: decompressedContents } as MessageBody

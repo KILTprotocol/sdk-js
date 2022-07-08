@@ -45,7 +45,7 @@ describe('Configuration Service', () => {
   it('has configuration Object with default values', () => {
     expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
     expect(() => ConfigService.get('address')).toThrowError(
-      SDKErrors.ERROR_WS_ADDRESS_NOT_SET
+      SDKErrors.WsAddressNotSetError
     )
   })
   describe('set function for host address, logLevel and any custom configuration prop', () => {
@@ -70,11 +70,11 @@ describe('Configuration Service', () => {
     it('throws if address not set', () => {
       ConfigService.set({ address: '' })
       expect(() => ConfigService.get('address')).toThrowError(
-        SDKErrors.ERROR_WS_ADDRESS_NOT_SET
+        SDKErrors.WsAddressNotSetError
       )
       ConfigService.set({ address: undefined })
       expect(() => ConfigService.get('address')).toThrowError(
-        SDKErrors.ERROR_WS_ADDRESS_NOT_SET
+        SDKErrors.WsAddressNotSetError
       )
     })
     it('returns logLevel property', () => {

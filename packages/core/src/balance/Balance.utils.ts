@@ -81,7 +81,7 @@ export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
 export function balanceNumberToString(input: BalanceNumber): string {
   if (typeof input === 'string') {
     if (!input.match(/^-?\d*\.?\d+$/)) {
-      throw new Error('not a string representation of number')
+      throw new Error('Not a string representation of number')
     }
     return input
   }
@@ -92,7 +92,7 @@ export function balanceNumberToString(input: BalanceNumber): string {
   ) {
     return input.toString()
   }
-  throw new Error('could not convert to String')
+  throw new Error('Could not convert to String')
 }
 
 /**
@@ -121,7 +121,7 @@ export function toFemtoKilt(
     : stringRepresentation.split('.')
   if (fraction && fraction.length > unitVal + 15) {
     throw new Error(
-      `Too many decimal places: input with unit ${unit} and value ${stringRepresentation} exceeds the ${
+      `Too many decimal places: input with unit "${unit}" and value "${stringRepresentation}" exceeds the ${
         unitVal + 15
       } possible decimal places by ${fraction.length - unitVal + 15}`
     )

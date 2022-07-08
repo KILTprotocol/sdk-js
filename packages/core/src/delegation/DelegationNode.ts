@@ -173,14 +173,14 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Fetches the details of the hierarchy this delegation node belongs to.
    *
-   * @throws [[ERROR_HIERARCHY_QUERY]] when the hierarchy details could not be queried.
+   * @throws [[HierarchyQueryError]] when the hierarchy details could not be queried.
    * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
       const hierarchyDetails = await queryDetails(this.hierarchyId)
       if (!hierarchyDetails) {
-        throw new SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
+        throw new SDKErrors.HierarchyQueryError(this.hierarchyId)
       }
       this.hierarchyDetails = hierarchyDetails
       return hierarchyDetails
@@ -283,8 +283,8 @@ export class DelegationNode implements IDelegationNode {
       delegeeDid.getVerificationKeys('authentication')
     )
     if (!authenticationKey) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Delegee ${delegeeDid.uri} does not have any authentication key.`
+      throw new SDKErrors.DidError(
+        `Delegee "${delegeeDid.uri}" does not have any authentication key`
       )
     }
     const delegeeSignature = await delegeeDid.signPayload(
@@ -303,7 +303,7 @@ export class DelegationNode implements IDelegationNode {
   public async getLatestState(): Promise<DelegationNode> {
     const newNodeState = await query(this.id)
     if (!newNodeState) {
-      throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
+      throw new SDKErrors.DelegationIdMissingError()
     }
     return newNodeState
   }
@@ -321,7 +321,7 @@ export class DelegationNode implements IDelegationNode {
       return getStoreAsRootTx(this)
     }
     if (!signature) {
-      throw new SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING()
+      throw new SDKErrors.DelegationSignatureMissingError()
     }
     return getStoreAsDelegationTx(this, signature)
   }
@@ -396,8 +396,8 @@ export class DelegationNode implements IDelegationNode {
   public async getRevokeTx(did: DidUri): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
-      throw new SDKErrors.ERROR_UNAUTHORIZED(
-        `The DID ${did} is not among the delegators and may not revoke this node`
+      throw new SDKErrors.UnauthorizedError(
+        `The DID "${did}" is not among the delegators and may not revoke this node`
       )
     }
     const childCount = await this.subtreeNodeCount()

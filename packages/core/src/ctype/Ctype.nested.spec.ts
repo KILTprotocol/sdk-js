@@ -10,6 +10,7 @@
  */
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import * as CType from './CType'
 import * as Claim from '../claim'
 
@@ -168,9 +169,7 @@ describe('Nested CTypes', () => {
         claimContents,
         didAlice
       )
-    ).toThrowError(
-      new Error('Nested claim data does not validate against CType')
-    )
+    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
     expect(
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType.schema,
@@ -198,8 +197,6 @@ describe('Nested CTypes', () => {
         claimDeepContents,
         didAlice
       )
-    ).toThrowError(
-      new Error('Nested claim data does not validate against CType')
-    )
+    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
   })
 })

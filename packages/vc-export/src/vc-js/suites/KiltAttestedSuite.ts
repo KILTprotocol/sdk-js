@@ -65,9 +65,9 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
     try {
       const { document, proof } = options
       if (!document || typeof document !== 'object')
-        throw new TypeError('document must be a JsonLd object')
+        throw new TypeError('Document must be a JsonLd object')
       if (!proof || typeof proof !== 'object')
-        throw new TypeError('proof must be a JsonLd object')
+        throw new TypeError('Proof must be a JsonLd object')
       const compactedDoc = await this.compactDoc(document, options)
       const compactedProof = await this.compactProof<AttestedProof>(
         proof,

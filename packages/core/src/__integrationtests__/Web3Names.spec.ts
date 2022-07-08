@@ -58,10 +58,10 @@ describe('When there is an Web3NameCreator and a payer', () => {
     )
 
     if (paymentAccount === otherPaymentAccount) {
-      throw new Error('The payment accounts are the same.')
+      throw new Error('The payment accounts are the same')
     }
     if (w3nCreator === otherWeb3NameCreator) {
-      throw new Error('The web3name creators are the same.')
+      throw new Error('The web3name creators are the same')
     }
   }, 60_000)
 
@@ -198,7 +198,7 @@ describe('Runtime constraints', () => {
     await expect(
       Web3Names.getClaimTx('aa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3."'
+      `"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3"`
     )
   }, 30_000)
 
@@ -209,7 +209,7 @@ describe('Runtime constraints', () => {
     await expect(
       Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'
+      `"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32"`
     )
   }, 30_000)
 
@@ -220,7 +220,7 @@ describe('Runtime constraints', () => {
     await expect(
       Web3Names.getReclaimDepositTx('aa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3."'
+      `"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3"`
     )
   }, 30_000)
 
@@ -231,7 +231,7 @@ describe('Runtime constraints', () => {
     await expect(
       Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32."'
+      `"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32"`
     )
   }, 30_000)
 })

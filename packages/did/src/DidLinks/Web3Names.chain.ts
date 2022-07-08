@@ -45,13 +45,13 @@ function checkWeb3NameInputConstraints(
   ]
 
   if (web3Name.length < minLength) {
-    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
-      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}.`
+    throw new SDKErrors.Web3NameError(
+      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}`
     )
   }
   if (web3Name.length > maxLength) {
-    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
-      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}.`
+    throw new SDKErrors.Web3NameError(
+      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}`
     )
   }
 }

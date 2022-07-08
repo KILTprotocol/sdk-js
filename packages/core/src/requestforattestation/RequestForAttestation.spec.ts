@@ -121,7 +121,7 @@ describe('RequestForAttestation', () => {
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
     expect(() =>
       RequestForAttestation.verifyDataIntegrity(request)
-    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.NoProofForStatementError)
   })
 
   it('throws on wrong hash in claim hash tree', async () => {
@@ -372,21 +372,21 @@ describe('RequestForAttestation', () => {
       RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequestNoLegitimations)
-    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
+    ).toThrowError(SDKErrors.LegitimationsMissingError)
     expect(() =>
       RequestForAttestation.verifyDataIntegrity(builtRequestMalformedRootHash)
-    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
+    ).toThrowError(SDKErrors.RootHashUnverifiableError)
     expect(() =>
       RequestForAttestation.verifyDataIntegrity(
         builtRequestIncompleteClaimHashTree
       )
-    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.NoProofForStatementError)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequestMalformedSignature)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     expect(() =>
       RequestForAttestation.verifyDataIntegrity(builtRequestMalformedHashes)
-    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.NoProofForStatementError)
     expect(() =>
       RequestForAttestation.verifyDataStructure(builtRequest)
     ).not.toThrow()

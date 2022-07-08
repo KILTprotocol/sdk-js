@@ -87,13 +87,13 @@ export function checkLightDidCreationDetails(
     details.authenticationKey.type
   )
   if (!authenticationKeyTypeEncoding) {
-    throw SDKErrors.ERROR_UNSUPPORTED_KEY
+    throw new SDKErrors.UnsupportedKeyError(details.authenticationKey.type)
   }
 
   if (details.encryptionKey?.type) {
     if (!supportedEncryptionKeyTypes.has(details.encryptionKey.type)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Encryption key type ${details.encryptionKey.type} is not supported.`
+      throw new SDKErrors.DidError(
+        `Encryption key type "${details.encryptionKey.type}" is not supported`
       )
     }
   }
@@ -109,8 +109,8 @@ export function checkLightDidCreationDetails(
   details.serviceEndpoints?.forEach((service) => {
     // A service ID cannot have a reserved ID that is used for key IDs.
     if (service.id === 'authentication' || service.id === 'encryption') {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
+      throw new SDKErrors.DidError(
+        `Cannot specify a service ID with the name "${service.id}" as it is a reserved keyword`
       )
     }
     const [, errors] = checkServiceEndpointSyntax(service)
@@ -168,7 +168,7 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   const decoded = base58Decode(rawInput, true)
   const serializationFlag = decoded[0]
   if (serializationFlag !== 0x0) {
-    throw new SDKErrors.ERROR_DID_ERROR('Serialization algorithm not supported')
+    throw new SDKErrors.DidError('Serialization algorithm not supported')
   }
   const withoutFlag = decoded.slice(1)
   const deserialized: SerializableStructure = cborDecode(withoutFlag)

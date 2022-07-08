@@ -92,15 +92,15 @@ export async function createAttesterSignedQuote(
   } = {}
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
+    throw new SDKErrors.QuoteUnverifiableError()
   }
 
   const authenticationKey = await keySelection(
     attesterIdentity.getVerificationKeys('authentication')
   )
   if (!authenticationKey) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The attester ${attesterIdentity.uri} does not have a valid authentication key.`
+    throw new SDKErrors.DidError(
+      `The attester "${attesterIdentity.uri}" does not have a valid authentication key`
     )
   }
   const signature = await attesterIdentity.signPayload(
@@ -123,7 +123,7 @@ export async function createAttesterSignedQuote(
  * @param quote The object which to be verified.
  * @param options Optional settings.
  * @param options.resolver DidResolver used in the process of verifying the attester signature.
- * @throws [[ERROR_QUOTE_MALFORMED]] when the quote can not be validated with the QuoteSchema.
+ * @throws [[QuoteUnverifiableError]] when the quote can not be validated with the QuoteSchema.
  */
 export async function verifyAttesterSignedQuote(
   quote: IQuoteAttesterSigned,
@@ -143,12 +143,12 @@ export async function verifyAttesterSignedQuote(
 
   if (!result.verified) {
     // TODO: should throw a "signature not verifiable" error, with the reason attached.
-    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
+    throw new SDKErrors.QuoteUnverifiableError()
   }
 
   const messages: string[] = []
   if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
+    throw new SDKErrors.QuoteUnverifiableError()
   }
 }
 
@@ -182,7 +182,7 @@ export async function createQuoteAgreement(
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   if (attesterIdentity !== attesterSignedQuote.attesterDid)
-    throw new SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
+    throw new SDKErrors.DidIdentifierMismatchError(
       attesterIdentity,
       attesterSignedQuote.attesterDid
     )
@@ -198,8 +198,8 @@ export async function createQuoteAgreement(
     claimerIdentity.getVerificationKeys('authentication')
   )
   if (!claimerAuthenticationKey) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `Claimer DID ${claimerIdentity.uri} does not have an authentication key.`
+    throw new SDKErrors.DidError(
+      `Claimer DID "${claimerIdentity.uri}" does not have an authentication key`
     )
   }
 
@@ -222,13 +222,13 @@ export async function createQuoteAgreement(
  * Compresses the cost from a [[Quote]] object.
  *
  * @param cost A cost object that will be sorted and stripped into a [[Quote]].
- * @throws [[ERROR_COMPRESS_OBJECT]] when cost is missing any property defined in [[ICostBreakdown]].
+ * @throws [[CompressObjectError]] when cost is missing any property defined in [[ICostBreakdown]].
  *
  * @returns An ordered array of a cost.
  */
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
-    throw new SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
+    throw new SDKErrors.CompressObjectError(cost, 'Cost Breakdown')
   }
   return [cost.gross, cost.net, cost.tax]
 }
@@ -237,13 +237,13 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  * Decompresses the cost from storage and/or message.
  *
  * @param cost A compressed cost array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when cost is not an Array and its length does not equal the defined length of 3.
+ * @throws [[DecompressionArrayError]] when cost is not an Array and its length does not equal the defined length of 3.
  *
  * @returns An object that has the same properties as a cost.
  */
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
+    throw new SDKErrors.DecompressionArrayError('Cost Breakdown')
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
@@ -252,7 +252,7 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  * Compresses a [[Quote]] for storage and/or messaging.
  *
  * @param quote An [[Quote]] object that will be sorted and stripped for messaging or storage.
- * @throws [[ERROR_COMPRESS_OBJECT]] when quote is missing any property defined in [[IQuote]].
+ * @throws [[CompressObjectError]] when quote is missing any property defined in [[IQuote]].
  *
  * @returns An ordered array of an [[Quote]].
  */
@@ -265,7 +265,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     !quote.termsAndConditions ||
     !quote.timeframe
   ) {
-    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
+    throw new SDKErrors.CompressObjectError(quote, 'Quote')
   }
   return [
     quote.attesterDid,
@@ -281,12 +281,12 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  * Decompresses an [[Quote]] from storage and/or message.
  *
  * @param quote A compressed [[Quote]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quote is not an Array and its length does not equal the defined length of 6.
+ * @throws [[DecompressionArrayError]] when quote is not an Array and its length does not equal the defined length of 6.
  * @returns An object that has the same properties as an [[Quote]].
  */
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.DecompressionArrayError()
   }
   return {
     attesterDid: quote[0],
@@ -310,7 +310,7 @@ function decompressSignature(comp: [string, DidResourceUri]): DidSignature {
  * Compresses an attester signed [[Quote]] for storage and/or messaging.
  *
  * @param attesterSignedQuote An attester signed [[Quote]] object that will be sorted and stripped for messaging or storage.
- * @throws [[ERROR_COMPRESS_OBJECT]] when attesterSignedQuote is missing any property defined in [[IQuoteAttesterSigned]].
+ * @throws [[CompressObjectError]] when attesterSignedQuote is missing any property defined in [[IQuoteAttesterSigned]].
  *
  * @returns An ordered array of an attester signed [[Quote]].
  */
@@ -336,7 +336,7 @@ export function compressAttesterSignedQuote(
     !attesterSignature.signature ||
     !attesterSignature.keyUri
   ) {
-    throw new SDKErrors.ERROR_COMPRESS_OBJECT(
+    throw new SDKErrors.CompressObjectError(
       attesterSignedQuote,
       'Attester Signed Quote'
     )
@@ -356,7 +356,7 @@ export function compressAttesterSignedQuote(
  * Decompresses an attester signed [[Quote]] from storage and/or message.
  *
  * @param attesterSignedQuote A compressed attester signed [[Quote]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when attesterSignedQuote is not an Array and its length does not equal the defined length of 7.
+ * @throws [[DecompressionArrayError]] when attesterSignedQuote is not an Array and its length does not equal the defined length of 7.
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
@@ -364,7 +364,7 @@ export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.DecompressionArrayError()
   }
   return {
     attesterDid: attesterSignedQuote[0],
@@ -381,7 +381,7 @@ export function decompressAttesterSignedQuote(
  * Compresses a [[Quote]] Agreement for storage and/or messaging.
  *
  * @param quoteAgreement A [[Quote]] Agreement object that will be sorted and stripped for messaging or storage.
- * @throws [[ERROR_COMPRESS_OBJECT]] when quoteAgreement is missing any property defined in [[IQuoteAgreement]].
+ * @throws [[CompressObjectError]] when quoteAgreement is missing any property defined in [[IQuoteAgreement]].
  *
  * @returns An ordered array of a [[Quote]] Agreement.
  */
@@ -397,7 +397,7 @@ export function compressQuoteAgreement(
     !quoteAgreement.timeframe ||
     !quoteAgreement.attesterSignature
   ) {
-    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
+    throw new SDKErrors.CompressObjectError(quoteAgreement, 'Quote Agreement')
   }
   return [
     quoteAgreement.attesterDid,
@@ -416,7 +416,7 @@ export function compressQuoteAgreement(
  * Decompresses a [[Quote]] Agreement from storage and/or message.
  *
  * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quoteAgreement is not an Array and its length does not equal the defined length of 9.
+ * @throws [[DecompressionArrayError]] when quoteAgreement is not an Array and its length does not equal the defined length of 9.
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */
@@ -424,7 +424,7 @@ export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+    throw new SDKErrors.DecompressionArrayError()
   }
   return {
     attesterDid: quoteAgreement[0],

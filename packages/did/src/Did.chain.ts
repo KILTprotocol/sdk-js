@@ -200,8 +200,8 @@ function decodeDidPublicKeyDetails(
   const key = keyDetails.key.value
   const keyType = chainTypeToDidKeyType[key.type]
   if (!keyType) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `Unsupported key type "${key.type}" found on chain.`
+    throw new SDKErrors.DidError(
+      `Unsupported key type "${key.type}" found on chain`
     )
   }
   return {
@@ -465,8 +465,8 @@ export async function generateCreateTxFromCreationDetails(
   ).toNumber()
 
   if (keyAgreementKeys.length > maxKeyAgreementKeys) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
+    throw new SDKErrors.DidError(
+      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}`
     )
   }
 
@@ -486,8 +486,8 @@ export async function generateCreateTxFromCreationDetails(
   ).toNumber()
 
   if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID.`
+    throw new SDKErrors.DidError(
+      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID`
     )
   }
 
@@ -543,8 +543,8 @@ export async function generateCreateTxFromDidDetails(
 ): Promise<SubmittableExtrinsic> {
   const { authenticationKey } = did
   if (!authenticationKey) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The provided DID does not have an authentication key to sign the creation operation.`
+    throw new SDKErrors.DidError(
+      `The provided DID does not have an authentication key to sign the creation operation`
     )
   }
 
@@ -607,8 +607,8 @@ export async function getSetKeyExtrinsic(
     case 'assertionMethod':
       return api.tx.did.setAttestationKey(keyAsEnum)
     default:
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `setting a key is only allowed for the following key types: ${[
+      throw new SDKErrors.DidError(
+        `Setting a key is only allowed for the following key types: ${[
           'authentication',
           'capabilityDelegation',
           'assertionMethod',
@@ -636,14 +636,14 @@ export async function getRemoveKeyExtrinsic(
       return api.tx.did.removeAttestationKey()
     case 'keyAgreement':
       if (!keyId) {
-        throw new SDKErrors.ERROR_DID_ERROR(
-          `When removing a ${'keyAgreement'} key it is required to specify the id of the key to be removed.`
+        throw new SDKErrors.DidError(
+          'When removing a keyAgreement key it is required to specify the id of the key to be removed'
         )
       }
       return api.tx.did.removeKeyAgreementKey(keyId)
     default:
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `key removal is only allowed for the following key types: ${[
+      throw new SDKErrors.DidError(
+        `Key removal is only allowed for the following key types: ${[
           'keyAgreement',
           'capabilityDelegation',
           'assertionMethod',
@@ -668,8 +668,8 @@ export async function getAddKeyExtrinsic(
   if (keyRelationship === 'keyAgreement') {
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
-  throw new SDKErrors.ERROR_DID_ERROR(
-    `adding to the key set is only allowed for the following key types:  ${[
+  throw new SDKErrors.DidError(
+    `Adding to the key set is only allowed for the following key types: ${[
       'keyAgreement',
     ]}`
   )
@@ -712,7 +712,7 @@ export async function getRemoveEndpointExtrinsic(
     api.consts.did.maxServiceIdLength as u32
   ).toNumber()
   if (endpointId.length > maxServiceIdLength) {
-    throw new SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.DidError(
       `The service ID "${endpointId}" has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
     )
   }
@@ -816,7 +816,7 @@ export function encodeDidSignature(
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
   if (!verificationKeyTypes.some((kt) => kt === key.type)) {
-    throw new SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.DidError(
       `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
   }
