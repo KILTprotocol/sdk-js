@@ -12,13 +12,11 @@ import Keyring from '@polkadot/keyring'
 import {
   DidIdentifier,
   DidKey,
-  DidPublicKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
   DidResourceUri,
   DidServiceEndpoint,
   DidUri,
-  IDidDetails,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
@@ -209,7 +207,7 @@ describe('When resolving a key', () => {
 
   it('returns null if either the DID or the key do not exist', async () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
-    let keyIdUri: DidPublicKey['uri'] = `${deletedFullDid}#enc`
+    let keyIdUri: DidResourceUri = `${deletedFullDid}#enc`
 
     expect(await DidResolver.resolveKey(keyIdUri)).toBeNull()
 
@@ -295,9 +293,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
-      fullDidWithAuthenticationKey
-    )
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'auth',
@@ -319,7 +315,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(fullDidWithAllKeys)
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithAllKeys)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'auth',
@@ -359,9 +355,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
-      fullDidWithServiceEndpoints
-    )
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithServiceEndpoints)
     expect(details?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
       {
         id: 'id-1',
@@ -410,9 +404,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
-      fullDidWithAuthenticationKey
-    )
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
   })
 })
 
@@ -435,7 +427,7 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
+    expect(details?.uri).toStrictEqual<DidUri>(
       lightDidWithAuthenticationKey.uri
     )
     expect(lightDidWithAuthenticationKey?.getKeys()).toStrictEqual<DidKey[]>([
@@ -469,7 +461,7 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(lightDid.uri)
+    expect(details?.uri).toStrictEqual<DidUri>(lightDid.uri)
     expect(lightDid?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
@@ -556,6 +548,6 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(lightDid.uri)
+    expect(details?.uri).toStrictEqual<DidUri>(lightDid.uri)
   })
 })

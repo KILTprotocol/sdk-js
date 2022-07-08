@@ -9,7 +9,7 @@ import type {
   SubmittableExtrinsic,
   DidIdentifier,
   Deposit,
-  IDidDetails,
+  DidUri,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
@@ -136,7 +136,7 @@ export async function queryDidIdentifierForWeb3Name(
  * @returns The registered web3name for this DID if any.
  */
 export async function queryWeb3NameForDid(
-  did: IDidDetails['uri']
+  did: DidUri
 ): Promise<Web3Name | null> {
   const details = DidUtils.parseDidUri(did)
   return queryWeb3NameForDidIdentifier(details.identifier)
@@ -150,7 +150,7 @@ export async function queryWeb3NameForDid(
  */
 export async function queryDidForWeb3Name(
   name: Web3Name
-): Promise<IDidDetails['uri'] | null> {
+): Promise<DidUri | null> {
   const identifier = await queryDidIdentifierForWeb3Name(name)
   if (identifier === null) {
     return null

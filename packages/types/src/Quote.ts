@@ -6,7 +6,7 @@
  */
 
 import type { ICType } from './CType'
-import type { DidSignature, IDidDetails } from './DidDetails'
+import type { DidSignature, DidUri } from './DidDetails'
 import type { IRequestForAttestation } from './RequestForAttestation'
 
 export interface ICostBreakdown {
@@ -15,7 +15,7 @@ export interface ICostBreakdown {
   gross: number
 }
 export interface IQuote {
-  attesterDid: IDidDetails['uri']
+  attesterDid: DidUri
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
   currency: string

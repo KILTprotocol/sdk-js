@@ -6,7 +6,7 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types'
-import type { DidSignature, IDidDetails } from './DidDetails.js'
+import type { DidSignature, DidUri } from './DidDetails.js'
 import type { CompressedAttestation, IAttestation } from './Attestation.js'
 import type { CompressedCredential, ICredential } from './Credential.js'
 import type { IClaim, PartialClaim } from './Claim.js'
@@ -18,7 +18,7 @@ import type {
   IRequestForAttestation,
 } from './RequestForAttestation.js'
 import type { CompressedTerms, ITerms } from './Terms.js'
-import type { DidPublicKey, IClaimContents } from './index.js'
+import type { DidResourceUri, IClaimContents } from './index.js'
 
 export type MessageBodyType =
   | 'error'
@@ -180,7 +180,7 @@ export interface IConfirmPayment extends IMessageBodyBase {
 export interface IRequestCredentialContent {
   cTypes: Array<{
     cTypeHash: ICType['hash']
-    trustedAttesters?: Array<IDidDetails['uri']>
+    trustedAttesters?: DidUri[]
     requiredProperties?: string[]
   }>
   challenge?: string
@@ -270,13 +270,7 @@ export type CompressedRejectedTerms = [
 export type CompressedRejectTerms = ['reject-terms', CompressedRejectedTerms]
 
 export type CompressedRequestCredentialContent = [
-  Array<
-    [
-      ICType['hash'],
-      Array<IDidDetails['uri']> | undefined,
-      string[] | undefined
-    ]
-  >,
+  Array<[ICType['hash'], DidUri[] | undefined, string[] | undefined]>,
   string?
 ]
 
@@ -369,8 +363,8 @@ export type CompressedMessageBody =
 export interface IMessage {
   body: MessageBody
   createdAt: number
-  sender: IDidDetails['uri']
-  receiver: IDidDetails['uri']
+  sender: DidUri
+  receiver: DidUri
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -391,8 +385,8 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * - `senderKeyUri` - The URI of the sender's encryption key.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyUri: DidPublicKey['uri']
-  senderKeyUri: DidPublicKey['uri']
+  receiverKeyUri: DidResourceUri
+  senderKeyUri: DidResourceUri
   ciphertext: string
   nonce: string
 }

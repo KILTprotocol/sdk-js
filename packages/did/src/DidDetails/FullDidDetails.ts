@@ -10,8 +10,8 @@ import { BN } from '@polkadot/util'
 
 import type {
   DidIdentifier,
+  DidUri,
   DidVerificationKey,
-  IDidDetails,
   IIdentity,
   SignCallback,
   SubmittableExtrinsic,
@@ -78,7 +78,7 @@ export class FullDidDetails extends DidDetails {
    * @returns The reconstructed [[FullDidDetails]], or null if not DID with the provided identifier exists.
    */
   public static async fromChainInfo(
-    didUri: IDidDetails['uri']
+    didUri: DidUri
   ): Promise<FullDidDetails | null> {
     const { identifier, fragment, type } = parseDidUri(didUri)
     if (fragment) {

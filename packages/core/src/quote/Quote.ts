@@ -20,11 +20,11 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
-  DidPublicKey,
+  DidResourceUri,
   DidSignature,
+  DidUri,
   DidVerificationKey,
   ICostBreakdown,
-  IDidDetails,
   IDidResolver,
   IQuote,
   IQuoteAgreement,
@@ -168,7 +168,7 @@ export async function verifyAttesterSignedQuote(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: IRequestForAttestation['rootHash'],
-  attesterIdentity: IDidDetails['uri'],
+  attesterIdentity: DidUri,
   claimerIdentity: DidDetails,
   sign: SignCallback,
   {
@@ -298,13 +298,11 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
   }
 }
 
-function compressSignature(comp: DidSignature): [string, DidPublicKey['uri']] {
+function compressSignature(comp: DidSignature): [string, DidResourceUri] {
   return [comp.signature, comp.keyUri]
 }
 
-function decompressSignature(
-  comp: [string, DidPublicKey['uri']]
-): DidSignature {
+function decompressSignature(comp: [string, DidResourceUri]): DidSignature {
   return { signature: comp[0], keyUri: comp[1] }
 }
 

@@ -6,11 +6,10 @@
  */
 
 import {
-  DidPublicKey,
   DidPublicServiceEndpoint,
   DidResolvedDetails,
   DidResourceUri,
-  IDidDetails,
+  DidUri,
   IDidResolver,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
@@ -36,7 +35,7 @@ import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
  * @returns The details associated with the DID subject.
  */
 export async function resolveDoc(
-  did: IDidDetails['uri']
+  did: DidUri
 ): Promise<DidResolvedDetails | null> {
   const { identifier, type } = parseDidUri(did)
 
@@ -115,7 +114,7 @@ export async function resolveDoc(
  * @returns The details associated with the key.
  */
 export async function resolveKey(
-  didUri: DidPublicKey['uri']
+  didUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
   const { did, identifier, fragment: keyId, type } = parseDidUri(didUri)
 
@@ -215,7 +214,7 @@ export async function resolveServiceEndpoint(
  * @returns The DID, key details or service details depending on the input URI. Null otherwise.
  */
 export async function resolve(
-  didUri: IDidDetails['uri']
+  didUri: DidUri
 ): Promise<
   DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
 > {

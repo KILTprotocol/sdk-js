@@ -19,7 +19,7 @@
 import type {
   CompressedCredential,
   CompressedRequestForAttestation,
-  DidPublicKey,
+  DidResourceUri,
   DidVerificationKey,
   Hash,
   IClaim,
@@ -133,7 +133,7 @@ export function makeSigningData(
 export async function addSignature(
   req4Att: IRequestForAttestation,
   sig: string | Uint8Array,
-  keyUri: DidPublicKey['uri'],
+  keyUri: DidResourceUri,
   {
     challenge,
   }: {

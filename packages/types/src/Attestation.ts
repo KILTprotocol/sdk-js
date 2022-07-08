@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IDidDetails } from './DidDetails'
+import type { DidUri } from './DidDetails'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { IRequestForAttestation } from './RequestForAttestation'
@@ -13,7 +13,7 @@ import type { IRequestForAttestation } from './RequestForAttestation'
 export interface IAttestation {
   claimHash: IRequestForAttestation['rootHash']
   cTypeHash: ICType['hash']
-  owner: IDidDetails['uri']
+  owner: DidUri
   delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }

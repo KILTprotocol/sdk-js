@@ -53,7 +53,7 @@ export type DidPublicKey = {
   /**
    * The key controller, in the form of <did_subject>.
    */
-  controller: IDidDetails['uri']
+  controller: DidUri
   /**
    * The base58-encoded public component of the key.
    */
@@ -86,12 +86,12 @@ export type DidPublicServiceEndpoint = {
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
 export type DidDocument = {
-  id: IDidDetails['uri']
+  id: DidUri
   verificationMethod: DidPublicKey[]
-  authentication: DidPublicKey['uri']
-  assertionMethod?: DidPublicKey['uri']
-  keyAgreement?: DidPublicKey['uri']
-  capabilityDelegation?: DidPublicKey['uri']
+  authentication: DidResourceUri
+  assertionMethod?: DidResourceUri
+  keyAgreement?: DidResourceUri
+  capabilityDelegation?: DidResourceUri
   service?: DidPublicServiceEndpoint[]
 }
 

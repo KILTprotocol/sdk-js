@@ -10,7 +10,6 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 import type {
   DidIdentifier,
   DidUri,
-  IDidDetails,
   IIdentity,
   LightDidSupportedVerificationKeyType,
   SignCallback,
@@ -154,7 +153,7 @@ export class LightDidDetails extends DidDetails {
    * @returns The resulting [[LightDidDetails]].
    */
   public static fromUri(
-    uri: IDidDetails['uri'],
+    uri: DidUri,
     failIfFragmentPresent = true
   ): LightDidDetails {
     const { identifier, version, encodedDetails, fragment, type } =
