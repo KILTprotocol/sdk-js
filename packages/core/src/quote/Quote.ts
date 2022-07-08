@@ -32,7 +32,6 @@ import type {
   IRequestForAttestation,
   SignCallback,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import {
   DidDetails,
@@ -97,7 +96,7 @@ export async function createAttesterSignedQuote(
   }
 
   const authenticationKey = await keySelection(
-    attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
+    attesterIdentity.getVerificationKeys('authentication')
   )
   if (!authenticationKey) {
     throw new SDKErrors.ERROR_DID_ERROR(
@@ -138,7 +137,7 @@ export async function verifyAttesterSignedQuote(
   const result = await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
+    expectedVerificationMethod: 'authentication',
     resolver,
   })
 
@@ -191,12 +190,12 @@ export async function createQuoteAgreement(
   await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
+    expectedVerificationMethod: 'authentication',
     resolver,
   })
 
   const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
+    claimerIdentity.getVerificationKeys('authentication')
   )
   if (!claimerAuthenticationKey) {
     throw new SDKErrors.ERROR_DID_ERROR(

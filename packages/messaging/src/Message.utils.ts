@@ -7,27 +7,25 @@
 
 import {
   Attestation,
-  Credential,
   Claim,
+  Credential,
   CType,
   Quote,
   RequestForAttestation,
 } from '@kiltprotocol/core'
 import type {
-  ICredential,
   CompressedCredential,
   CompressedMessageBody,
-  MessageBody,
   CompressedRequestCredentialContent,
+  ICredential,
   ICType,
-  IMessage,
   IDelegationData,
+  IMessage,
+  MessageBody,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { isHex, isJsonObject } from '@polkadot/util'
 import { isDidSignature, Utils as DidUtils } from '@kiltprotocol/did'
-
-import { Message } from './Message.js'
 
 /**
  * Checks if delegation data is well formed.
@@ -79,11 +77,11 @@ export function errorCheckDelegationData(
  */
 export function errorCheckMessageBody(body: MessageBody): void {
   switch (body.type) {
-    case Message.BodyType.REQUEST_TERMS: {
+    case 'request-terms': {
       Claim.verifyDataStructure(body.content)
       break
     }
-    case Message.BodyType.SUBMIT_TERMS: {
+    case 'submit-terms': {
       Claim.verifyDataStructure(body.content.claim)
       body.content.legitimations.map((credential) =>
         Credential.verifyDataStructure(credential)
@@ -102,7 +100,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       }
       break
     }
-    case Message.BodyType.REJECT_TERMS: {
+    case 'reject-terms': {
       Claim.verifyDataStructure(body.content.claim)
       if (body.content.delegationId) {
         DataUtils.validateHash(
@@ -115,7 +113,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       )
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION: {
+    case 'request-attestation': {
       RequestForAttestation.verifyDataStructure(
         body.content.requestForAttestation
       )
@@ -124,17 +122,17 @@ export function errorCheckMessageBody(body: MessageBody): void {
       }
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION: {
+    case 'submit-attestation': {
       Attestation.verifyDataStructure(body.content.attestation)
       break
     }
-    case Message.BodyType.REJECT_ATTESTATION: {
+    case 'reject-attestation': {
       if (!isHex(body.content)) {
         throw new SDKErrors.ERROR_HASH_MALFORMED()
       }
       break
     }
-    case Message.BodyType.REQUEST_CREDENTIAL: {
+    case 'request-credential': {
       body.content.cTypes.forEach(
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
           DataUtils.validateHash(
@@ -152,13 +150,13 @@ export function errorCheckMessageBody(body: MessageBody): void {
       )
       break
     }
-    case Message.BodyType.SUBMIT_CREDENTIAL: {
+    case 'submit-credential': {
       body.content.map((credential) =>
         Credential.verifyDataStructure(credential)
       )
       break
     }
-    case Message.BodyType.ACCEPT_CREDENTIAL: {
+    case 'accept-credential': {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
@@ -167,7 +165,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       )
       break
     }
-    case Message.BodyType.REJECT_CREDENTIAL: {
+    case 'reject-credential': {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
@@ -176,7 +174,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       )
       break
     }
-    case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
+    case 'request-accept-delegation': {
       errorCheckDelegationData(body.content.delegationData)
       isDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
@@ -184,18 +182,18 @@ export function errorCheckMessageBody(body: MessageBody): void {
       }
       break
     }
-    case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
+    case 'submit-accept-delegation': {
       errorCheckDelegationData(body.content.delegationData)
       isDidSignature(body.content.signatures.inviter)
       isDidSignature(body.content.signatures.invitee)
       break
     }
 
-    case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
+    case 'reject-accept-delegation': {
       errorCheckDelegationData(body.content)
       break
     }
-    case Message.BodyType.INFORM_CREATE_DELEGATION: {
+    case 'inform-create-delegation': {
       DataUtils.validateHash(
         body.content.delegationId,
         'inform create delegation message delegation id invalid'
@@ -272,11 +270,11 @@ export function verifyRequiredCTypeProperties(
 export function compressMessage(body: MessageBody): CompressedMessageBody {
   let compressedContents: CompressedMessageBody[1]
   switch (body.type) {
-    case Message.BodyType.REQUEST_TERMS: {
+    case 'request-terms': {
       compressedContents = Claim.compress(body.content)
       break
     }
-    case Message.BodyType.SUBMIT_TERMS: {
+    case 'submit-terms': {
       compressedContents = [
         Claim.compress(body.content.claim),
         body.content.legitimations.map(
@@ -293,7 +291,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.REJECT_TERMS: {
+    case 'reject-terms': {
       compressedContents = [
         Claim.compress(body.content.claim),
         body.content.legitimations.map((val) => Credential.compress(val)),
@@ -301,7 +299,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION: {
+    case 'request-attestation': {
       compressedContents = [
         RequestForAttestation.compress(body.content.requestForAttestation),
         body.content.quote
@@ -310,11 +308,11 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION: {
+    case 'submit-attestation': {
       compressedContents = Attestation.compress(body.content.attestation)
       break
     }
-    case Message.BodyType.REQUEST_CREDENTIAL: {
+    case 'request-credential': {
       const compressedCtypes: CompressedRequestCredentialContent[0] =
         body.content.cTypes.map(
           ({ cTypeHash, trustedAttesters, requiredProperties }) => [
@@ -326,7 +324,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       compressedContents = [compressedCtypes, body.content.challenge]
       break
     }
-    case Message.BodyType.SUBMIT_CREDENTIAL: {
+    case 'submit-credential': {
       compressedContents = body.content.map(
         (credential: ICredential | CompressedCredential) =>
           Array.isArray(credential)
@@ -335,7 +333,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       )
       break
     }
-    case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
+    case 'request-accept-delegation': {
       compressedContents = [
         [
           body.content.delegationData.account,
@@ -352,7 +350,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
+    case 'submit-accept-delegation': {
       compressedContents = [
         [
           body.content.delegationData.account,
@@ -372,7 +370,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
+    case 'reject-accept-delegation': {
       compressedContents = [
         body.content.account,
         body.content.id,
@@ -382,7 +380,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.INFORM_CREATE_DELEGATION: {
+    case 'inform-create-delegation': {
       compressedContents = [body.content.delegationId, body.content.isPCR]
       break
     }
@@ -405,11 +403,11 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // Each index matches the object keys from the given [[MessageBodyType]].
   let decompressedContents: MessageBody['content']
   switch (body[0]) {
-    case Message.BodyType.REQUEST_TERMS: {
+    case 'request-terms': {
       decompressedContents = Claim.decompress(body[1])
       break
     }
-    case Message.BodyType.SUBMIT_TERMS: {
+    case 'submit-terms': {
       decompressedContents = {
         claim: Claim.decompress(body[1][0]),
         legitimations: body[1][1].map(
@@ -427,7 +425,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
 
       break
     }
-    case Message.BodyType.REJECT_TERMS: {
+    case 'reject-terms': {
       decompressedContents = {
         claim: Claim.decompress(body[1][0]),
         legitimations: body[1][1].map((val) => Credential.decompress(val)),
@@ -435,7 +433,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION: {
+    case 'request-attestation': {
       decompressedContents = {
         requestForAttestation: RequestForAttestation.decompress(body[1][0]),
         quote: body[1][1]
@@ -445,13 +443,13 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
 
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION: {
+    case 'submit-attestation': {
       decompressedContents = {
         attestation: Attestation.decompress(body[1]),
       }
       break
     }
-    case Message.BodyType.REQUEST_CREDENTIAL: {
+    case 'request-credential': {
       decompressedContents = {
         cTypes: body[1][0].map((val) => ({
           cTypeHash: val[0],
@@ -462,7 +460,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case Message.BodyType.SUBMIT_CREDENTIAL: {
+    case 'submit-credential': {
       decompressedContents = body[1].map(
         (credential: ICredential | CompressedCredential) =>
           !Array.isArray(credential)
@@ -472,7 +470,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
 
       break
     }
-    case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
+    case 'request-accept-delegation': {
       decompressedContents = {
         delegationData: {
           account: body[1][0][0],
@@ -488,7 +486,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
+    case 'submit-accept-delegation': {
       decompressedContents = {
         delegationData: {
           account: body[1][0][0],
@@ -504,7 +502,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
+    case 'reject-accept-delegation': {
       decompressedContents = {
         account: body[1][0],
         id: body[1][1],
@@ -514,7 +512,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case Message.BodyType.INFORM_CREATE_DELEGATION: {
+    case 'inform-create-delegation': {
       decompressedContents = {
         delegationId: body[1][0],
         isPCR: body[1][1],

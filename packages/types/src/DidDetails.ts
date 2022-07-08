@@ -30,42 +30,42 @@ export type DidUri =
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
  */
-export enum KeyRelationship {
-  authentication = 'authentication',
-  capabilityDelegation = 'capabilityDelegation',
-  assertionMethod = 'assertionMethod',
-  keyAgreement = 'keyAgreement',
-}
+export const keyRelationships = [
+  'authentication',
+  'capabilityDelegation',
+  'assertionMethod',
+  'keyAgreement',
+] as const
+export type KeyRelationship = typeof keyRelationships[number]
 
 /**
  * Subset of key relationships which pertain to signing/verification keys.
  */
-export type VerificationKeyRelationship =
-  | KeyRelationship.authentication
-  | KeyRelationship.capabilityDelegation
-  | KeyRelationship.assertionMethod
+export type VerificationKeyRelationship = Extract<
+  KeyRelationship,
+  'authentication' | 'capabilityDelegation' | 'assertionMethod'
+>
+
 /**
  * Possible types for a DID verification key.
  */
-export enum VerificationKeyType {
-  Sr25519 = 'sr25519',
-  Ed25519 = 'ed25519',
-  Ecdsa = 'ecdsa',
-}
-export type LightDidSupportedVerificationKeyType =
-  | VerificationKeyType.Ed25519
-  | VerificationKeyType.Sr25519
+export const verificationKeyTypes = ['sr25519', 'ed25519', 'ecdsa'] as const
+export type VerificationKeyType = typeof verificationKeyTypes[number]
+
+export type LightDidSupportedVerificationKeyType = Extract<
+  VerificationKeyType,
+  'ed25519' | 'sr25519'
+>
 
 /**
  * Subset of key relationships which pertain to key agreement/encryption keys.
  */
-export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
+export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement'>
 /**
  * Possible types for a DID encryption key.
  */
-export enum EncryptionKeyType {
-  X25519 = 'x25519',
-}
+export const encryptionKeyTypes = ['x25519'] as const
+export type EncryptionKeyType = typeof encryptionKeyTypes[number]
 
 /**
  * Type of a new key material to add under a DID.
@@ -157,6 +157,7 @@ export interface IDidDetails {
    * The decentralized identifier (DID) to which the remaining info pertains.
    */
   uri: DidUri
+
   /**
    * Retrieves a particular public key record via its id.
    *
@@ -164,6 +165,7 @@ export interface IDidDetails {
    * @returns [[DidKey]] or undefined if no key with this id is present.
    */
   getKey(id: DidKey['id']): DidKey | undefined
+
   /**
    * Retrieves public key details from the [[IDidDetails]].
    *
@@ -174,6 +176,7 @@ export interface IDidDetails {
   getVerificationKeys(
     relationship: VerificationKeyRelationship
   ): DidVerificationKey[]
+
   /**
    * Retrieves public key details from the [[IDidDetails]].
    *
@@ -182,13 +185,16 @@ export interface IDidDetails {
    * @returns An array of all or selected [[DidEncryptionKey]]s, depending on the `relationship` parameter.
    */
   getEncryptionKeys(relationship: EncryptionKeyRelationship): DidEncryptionKey[]
+
   getKeys(): DidKey[]
+
   /**
    * Retrieves the service endpoint associated with the DID, if any.
    *
    * @param id The identifier of the service endpoint, without the DID prefix.
    */
   getEndpoint(id: DidServiceEndpoint['id']): DidServiceEndpoint | undefined
+
   /**
    * Retrieves all the service endpoints associated with the DID.
    *

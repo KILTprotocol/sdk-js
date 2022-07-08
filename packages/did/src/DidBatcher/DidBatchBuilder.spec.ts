@@ -17,7 +17,6 @@ import {
   KeyringPair,
   NewDidKey,
   SignCallback,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 import {
   createLocalDemoFullDidFromKeypair,
@@ -40,9 +39,9 @@ jest.mock('../Did.chain.js', () => ({
     ): Promise<Extrinsic> => {
       const keyAsEnum = formatPublicKey(key)
       switch (keyRelationship) {
-        case KeyRelationship.capabilityDelegation:
+        case 'capabilityDelegation':
           return mockApi.tx.did.setDelegationKey(keyAsEnum)
-        case KeyRelationship.assertionMethod:
+        case 'assertionMethod':
           return mockApi.tx.did.setAttestationKey(keyAsEnum)
         default:
           return mockApi.tx.did.setAuthenticationKey(keyAsEnum)
@@ -64,9 +63,9 @@ describe('DidBatchBuilder', () => {
   describe('.addSingleExtrinsic()', () => {
     it('fails if the extrinsic is a DID extrinsic', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      const ext = await getSetKeyExtrinsic(KeyRelationship.assertionMethod, {
+      const ext = await getSetKeyExtrinsic('assertionMethod', {
         publicKey: Uint8Array.from(new Array(32).fill(1)),
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       })
       expect(() => builder.addSingleExtrinsic(ext)).toThrow()
     })
@@ -118,15 +117,15 @@ describe('DidBatchBuilder', () => {
         builder.batches
       ).toStrictEqual([
         {
-          keyRelationship: KeyRelationship.assertionMethod,
+          keyRelationship: 'assertionMethod',
           extrinsics: [ctype1Extrinsic, ctype2Extrinsic],
         },
         {
-          keyRelationship: KeyRelationship.capabilityDelegation,
+          keyRelationship: 'capabilityDelegation',
           extrinsics: [delegationExtrinsic],
         },
         {
-          keyRelationship: KeyRelationship.assertionMethod,
+          keyRelationship: 'assertionMethod',
           extrinsics: [ctype3Extrinsic],
         },
       ])

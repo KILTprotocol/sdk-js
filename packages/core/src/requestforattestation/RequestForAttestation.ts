@@ -30,7 +30,6 @@ import type {
   IRequestForAttestation,
   SignCallback,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import {
   DidDetails,
@@ -312,7 +311,7 @@ export async function verifySignature(
   const { verified } = await verifyDidSignature({
     signature: claimerSignature,
     message: signingData,
-    expectedVerificationMethod: KeyRelationship.authentication,
+    expectedVerificationMethod: 'authentication',
     resolver,
   })
   return verified

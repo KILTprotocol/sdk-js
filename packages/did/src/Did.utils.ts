@@ -14,6 +14,7 @@ import {
   DidKey,
   DidPublicKey,
   EncryptionKeyType,
+  encryptionKeyTypes,
   IDidDetails,
   DidIdentifier,
   NewDidKey,
@@ -21,6 +22,7 @@ import {
   DidServiceEndpoint,
   EncryptionAlgorithms,
   SigningAlgorithms,
+  verificationKeyTypes,
 } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -171,9 +173,9 @@ export function isSameSubject(
 }
 
 const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
-  [VerificationKeyType.Ed25519]: SigningAlgorithms.Ed25519,
-  [VerificationKeyType.Sr25519]: SigningAlgorithms.Sr25519,
-  [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
+  ed25519: 'ed25519',
+  sr25519: 'sr25519',
+  ecdsa: 'ecdsa-secp256k1',
 }
 const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
   (obj, [key, value]) => ({ ...obj, [value]: key }),
@@ -206,7 +208,7 @@ export function getVerificationKeyTypeForSigningAlgorithm(
 
 const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
   {
-    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+    x25519: 'x25519-xsalsa20-poly1305',
   }
 
 /**
@@ -223,7 +225,7 @@ export function getEncryptionAlgorithmForEncryptionKeyType(
 
 const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
   {
-    [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
+    'x25519-xsalsa20-poly1305': 'x25519',
   }
 
 /**
@@ -245,7 +247,7 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
  * @returns True if the key is a verification key, false otherwise.
  */
 export function isVerificationKey(key: NewDidKey | DidKey): boolean {
-  return Object.values(VerificationKeyType).some((kt) => kt === key.type)
+  return verificationKeyTypes.some((kt) => kt === key.type)
 }
 
 /**
@@ -255,7 +257,7 @@ export function isVerificationKey(key: NewDidKey | DidKey): boolean {
  * @returns True if the key is an encryption key, false otherwise.
  */
 export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
-  return Object.values(EncryptionKeyType).some((kt) => kt === key.type)
+  return encryptionKeyTypes.some((kt) => kt === key.type)
 }
 
 /**

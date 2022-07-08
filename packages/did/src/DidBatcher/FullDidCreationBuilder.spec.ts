@@ -16,11 +16,9 @@ import {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  EncryptionKeyType,
   NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { FullDidCreationBuilder } from './FullDidCreationBuilder'
@@ -40,11 +38,11 @@ describe('FullDidCreationBuilder', () => {
     describe('.fromLightDidDetails()', () => {
       const authKey: NewLightDidAuthenticationKey = {
         publicKey: Uint8Array.from(Array(32).fill(0)),
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       }
       const encKey: NewDidEncryptionKey = {
         publicKey: Uint8Array.from(Array(32).fill(0)),
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       }
       const service1: DidServiceEndpoint = {
         id: 'id-1',

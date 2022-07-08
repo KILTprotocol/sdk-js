@@ -14,7 +14,6 @@ import type {
   JsonLDDidDocument,
 } from '@kiltprotocol/types'
 import {
-  KeyRelationship,
   VerificationKeyTypesMap,
   EncryptionKeyTypesMap,
 } from '@kiltprotocol/types'
@@ -28,7 +27,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
 
   // Populate the `verificationMethod` array and then sets the `authentication` array with the key IDs (or undefined if no auth key is present - which should never happen)
   const authenticationKeysIds = details
-    .getVerificationKeys(KeyRelationship.authentication)
+    .getVerificationKeys('authentication')
     .map((authKey) => {
       result.verificationMethod.push({
         id: `${details.uri}#${authKey.id}`,
@@ -43,7 +42,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   }
 
   const keyAgreementKeysIds = details
-    .getEncryptionKeys(KeyRelationship.keyAgreement)
+    .getEncryptionKeys('keyAgreement')
     .map((keyAgrKey) => {
       result.verificationMethod.push({
         id: `${details.uri}#${keyAgrKey.id}`,
@@ -58,7 +57,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   }
 
   const assertionKeysIds = details
-    .getVerificationKeys(KeyRelationship.assertionMethod)
+    .getVerificationKeys('assertionMethod')
     .map((assKey) => {
       result.verificationMethod.push({
         id: `${details.uri}#${assKey.id}`,
@@ -73,7 +72,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
   }
 
   const delegationKeyIds = details
-    .getVerificationKeys(KeyRelationship.capabilityDelegation)
+    .getVerificationKeys('capabilityDelegation')
     .map((delKey) => {
       result.verificationMethod.push({
         id: `${details.uri}#${delKey.id}`,
