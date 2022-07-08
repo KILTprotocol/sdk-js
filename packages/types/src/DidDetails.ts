@@ -52,7 +52,6 @@ export type VerificationKeyRelationship = Extract<
 export const verificationKeyTypes = ['sr25519', 'ed25519', 'ecdsa'] as const
 export type VerificationKeyType = typeof verificationKeyTypes[number]
 
-
 export type LightDidSupportedVerificationKeyType = Extract<
   VerificationKeyType,
   'ed25519' | 'sr25519'
@@ -61,8 +60,8 @@ export type LightDidSupportedVerificationKeyType = Extract<
 /**
  * Subset of key relationships which pertain to key agreement/encryption keys.
  */
-export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement
-'>
+export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement'>
+
 /**
  * Possible types for a DID encryption key.
  */

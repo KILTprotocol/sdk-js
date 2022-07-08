@@ -15,10 +15,7 @@ import jsonld from 'jsonld'
 
 import { base58Encode, randomAsHex } from '@polkadot/util-crypto'
 
-import {
-  DidResourceUri,
-  DidUri,
-} from '@kiltprotocol/types'
+import { DidResourceUri, DidUri } from '@kiltprotocol/types'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 
