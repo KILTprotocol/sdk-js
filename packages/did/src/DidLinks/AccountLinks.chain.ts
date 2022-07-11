@@ -99,9 +99,12 @@ type LinkableAccountJson = JsonEnum<
   string | Uint8Array
 >
 
-type MultiSignatureJson = JsonEnum<
-  'MultiSignature' | 'EthereumSignature',
-  JsonEnum<SignatureType, string | Uint8Array> | string | Uint8Array
+type AssociateAccountRequest = JsonEnum<
+  'Dotsama' | 'Ethereum',
+  [
+    string | Uint8Array, // AccountId
+    string | Uint8Array | JsonEnum<SignatureType, string | Uint8Array> // signature
+  ]
 >
 
 type WithEtherumSupport = {
@@ -109,9 +112,8 @@ type WithEtherumSupport = {
     didLookup: {
       associateAccount: AugmentedSubmittable<
         (
-          account: LinkableAccountJson,
-          expiration: u64 | AnyNumber | Uint8Array,
-          proof: MultiSignatureJson
+          req: AssociateAccountRequest,
+          expiration: u64 | AnyNumber | Uint8Array
         ) => SubmittableExtrinsic
       >
       removeAccountAssociation: AugmentedSubmittable<
@@ -145,11 +147,13 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
     api instanceof ApiPromise &&
     ('isAccountId20' in
       api.createType(
-        api.tx.didLookup.associateAccount.meta.args[0].type.toString()
+        api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
+          'bool'
       ) ||
-      'isEthereumSignature' in
+      'isEthereum' in
         api.createType(
-          api.tx.didLookup.associateAccount.meta.args[2].type.toString()
+          api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() ||
+            'bool'
         ))
   )
 }
@@ -332,15 +336,13 @@ export async function getAccountSignedAssociationExtrinsic(
   if (isEthereumEnabled(api)) {
     if (sigType === 'Ethereum') {
       return api.tx.didLookup.associateAccount(
-        { AccountId20: account },
-        signatureValidUntilBlock,
-        { EthereumSignature: signature }
+        { Ethereum: [account, signature] },
+        signatureValidUntilBlock
       )
     }
     return api.tx.didLookup.associateAccount(
-      { AccountId32: account },
-      signatureValidUntilBlock,
-      makeJsonEnum('MultiSignature', makeJsonEnum(sigType, signature))
+      { Dotsama: [account, makeJsonEnum(sigType, signature)] },
+      signatureValidUntilBlock
     )
   }
   return api.tx.didLookup.associateAccount(
