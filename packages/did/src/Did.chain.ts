@@ -34,7 +34,6 @@ import {
   SubmittableExtrinsic,
   JsonEnum,
   NewDidVerificationKey,
-  NewDidEncryptionKey,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -55,6 +54,7 @@ import {
   checkServiceEndpointSyntax,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
+  isEncryptionKey,
   isVerificationKey,
   makeJsonEnum,
 } from './Did.utils.js'
@@ -428,9 +428,7 @@ export async function generateCreateTxFromCreationDetails(
     serviceEndpoints = [],
   } = details
 
-  const maxKeyAgreementKeys = (
-    api.consts.did.maxNewKeyAgreementKeys as u32
-  ).toNumber()
+  const maxKeyAgreementKeys = api.consts.did.maxNewKeyAgreementKeys.toNumber()
 
   if (keyAgreementKeys.length > maxKeyAgreementKeys) {
     throw new SDKErrors.ERROR_DID_ERROR(
@@ -449,9 +447,8 @@ export async function generateCreateTxFromCreationDetails(
     ? formatPublicKey(delegationKey)
     : undefined
 
-  const maxNumberOfServicesPerDid = (
-    api.consts.did.maxNumberOfServicesPerDid as u32
-  ).toNumber()
+  const maxNumberOfServicesPerDid =
+    api.consts.did.maxNumberOfServicesPerDid.toNumber()
 
   if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
     throw new SDKErrors.ERROR_DID_ERROR(
@@ -572,14 +569,20 @@ export async function getSetKeyExtrinsic(
   key: NewDidKey
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const keyAsEnum = formatPublicKey(key) as PublicKeyEnum<NewDidVerificationKey>
+  function requireVerificationKey(): PublicKeyEnum<NewDidVerificationKey> {
+    if (!isVerificationKey(key))
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `Unacceptable key type for key with role ${keyRelationship}: ${key.type}`
+      )
+    return formatPublicKey(key)
+  }
   switch (keyRelationship) {
     case 'authentication':
-      return api.tx.did.setAuthenticationKey(keyAsEnum)
+      return api.tx.did.setAuthenticationKey(requireVerificationKey())
     case 'capabilityDelegation':
-      return api.tx.did.setDelegationKey(keyAsEnum)
+      return api.tx.did.setDelegationKey(requireVerificationKey())
     case 'assertionMethod':
-      return api.tx.did.setAttestationKey(keyAsEnum)
+      return api.tx.did.setAttestationKey(requireVerificationKey())
     default:
       throw new SDKErrors.ERROR_DID_ERROR(
         `setting a key is only allowed for the following key types: ${[
@@ -638,11 +641,13 @@ export async function getAddKeyExtrinsic(
   key: NewDidKey
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const keyAsEnum = formatPublicKey(key)
   if (keyRelationship === 'keyAgreement') {
-    return api.tx.did.addKeyAgreementKey(
-      keyAsEnum as PublicKeyEnum<NewDidEncryptionKey>
-    )
+    if (!isEncryptionKey(key))
+      throw new SDKErrors.ERROR_DID_ERROR(
+        `Unacceptable key type for key with role ${keyRelationship}: ${key.type}`
+      )
+    const keyAsEnum = formatPublicKey(key)
+    return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
   throw new SDKErrors.ERROR_DID_ERROR(
     `adding to the key set is only allowed for the following key types:  ${[
