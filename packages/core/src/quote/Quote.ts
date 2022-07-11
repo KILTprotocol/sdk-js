@@ -16,22 +16,28 @@
  */
 
 import type {
-  IDidDetails,
-  IQuote,
+  CompressedCostBreakdown,
+  CompressedQuote,
+  CompressedQuoteAgreed,
+  CompressedQuoteAttesterSigned,
+  DidResourceUri,
+  DidSignature,
+  DidUri,
+  DidVerificationKey,
+  ICostBreakdown,
   IDidResolver,
+  IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  KeystoreSigner,
-  DidVerificationKey,
   IRequestForAttestation,
+  SignCallback,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
+import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import {
-  Utils as DidUtils,
-  DidResolver,
   DidDetails,
   DidKeySelectionCallback,
+  DidResolver,
+  Utils as DidUtils,
   verifyDidSignature,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
@@ -63,64 +69,34 @@ export function validateQuoteSchema(
   return result.valid
 }
 
-/**
- * Builds a [[Quote]] object, from a simple object with the same properties.
- *
- * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
- * @param options Optional settings.
- * @param options.resolver DidResolver used in the process of verifying the attester signature.
- * @throws [[ERROR_QUOTE_MALFORMED]] when the derived basicQuote can not be validated with the QuoteSchema.
- *
- * @returns A [[Quote]] object signed by an Attester.
- */
-export async function fromAttesterSignedInput(
-  deserializedQuote: IQuoteAttesterSigned,
-  {
-    resolver = DidResolver,
-  }: {
-    resolver?: IDidResolver
-  } = {}
-): Promise<IQuoteAttesterSigned> {
-  const { attesterSignature, ...basicQuote } = deserializedQuote
-  await verifyDidSignature({
-    signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
-    resolver,
-  })
-  const messages: string[] = []
-  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
-  }
-
-  return {
-    ...basicQuote,
-    attesterSignature,
-  }
-}
+// TODO: should have a "create quote" function.
 
 /**
- * Signs a [[Quote]] object as an Attester, created via [[fromQuoteDataAndIdentity]].
+ * Signs a [[Quote]] object as an Attester.
  *
  * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity The DID used to sign the object.
- * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param sign The callback to sign with the private key.
  * @param options Optional settings.
  * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @returns A signed [[Quote]] object.
  */
-export async function createAttesterSignature(
+export async function createAttesterSignedQuote(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
-  signer: KeystoreSigner,
+  sign: SignCallback,
   {
     keySelection = DidUtils.defaultKeySelectionCallback,
   }: {
     keySelection?: DidKeySelectionCallback<DidVerificationKey>
   } = {}
 ): Promise<IQuoteAttesterSigned> {
+  if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
+  }
+
   const authenticationKey = await keySelection(
-    attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
+    attesterIdentity.getVerificationKeys('authentication')
   )
   if (!authenticationKey) {
     throw new SDKErrors.ERROR_DID_ERROR(
@@ -129,7 +105,7 @@ export async function createAttesterSignature(
   }
   const signature = await attesterIdentity.signPayload(
     Crypto.hashObjectAsStr(quoteInput),
-    signer,
+    sign,
     authenticationKey.id
   )
   return {
@@ -142,33 +118,38 @@ export async function createAttesterSignature(
 }
 
 /**
- * Creates a [[Quote]] object signed by the given DID.
+ * Verifies a [[IQuoteAttesterSigned]] object.
  *
- * @param quoteInput A [[Quote]] object.
- * @param attesterIdentity The DID used to sign the object.
- * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param quote The object which to be verified.
  * @param options Optional settings.
- * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
- * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
- *
- * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
+ * @param options.resolver DidResolver used in the process of verifying the attester signature.
+ * @throws [[ERROR_QUOTE_MALFORMED]] when the quote can not be validated with the QuoteSchema.
  */
-export async function fromQuoteDataAndIdentity(
-  quoteInput: IQuote,
-  attesterIdentity: DidDetails,
-  signer: KeystoreSigner,
+export async function verifyAttesterSignedQuote(
+  quote: IQuoteAttesterSigned,
   {
-    keySelection = DidUtils.defaultKeySelectionCallback,
+    resolver = DidResolver,
   }: {
-    keySelection?: DidKeySelectionCallback<DidVerificationKey>
+    resolver?: IDidResolver
   } = {}
-): Promise<IQuoteAttesterSigned> {
-  if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+): Promise<void> {
+  const { attesterSignature, ...basicQuote } = quote
+  const result = await verifyDidSignature({
+    signature: attesterSignature,
+    message: Crypto.hashObjectAsStr(basicQuote),
+    expectedVerificationMethod: 'authentication',
+    resolver,
+  })
+
+  if (!result.verified) {
+    // TODO: should throw a "signature not verifiable" error, with the reason attached.
     throw new SDKErrors.ERROR_QUOTE_MALFORMED()
   }
-  return createAttesterSignature(quoteInput, attesterIdentity, signer, {
-    keySelection,
-  })
+
+  const messages: string[] = []
+  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
+    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
+  }
 }
 
 /**
@@ -178,7 +159,7 @@ export async function fromQuoteDataAndIdentity(
  * @param requestRootHash A root hash of the entire object.
  * @param attesterIdentity The uri of the Attester DID.
  * @param claimerIdentity The DID of the Claimer in order to sign.
- * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param sign The callback to sign with the private key.
  * @param options Optional settings.
  * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @param options.resolver DidResolver used in the process of verifying the attester signature.
@@ -187,9 +168,9 @@ export async function fromQuoteDataAndIdentity(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: IRequestForAttestation['rootHash'],
-  attesterIdentity: IDidDetails['uri'],
+  attesterIdentity: DidUri,
   claimerIdentity: DidDetails,
-  signer: KeystoreSigner,
+  sign: SignCallback,
   {
     keySelection = DidUtils.defaultKeySelectionCallback,
     resolver = DidResolver,
@@ -209,12 +190,12 @@ export async function createQuoteAgreement(
   await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
+    expectedVerificationMethod: 'authentication',
     resolver,
   })
 
   const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
+    claimerIdentity.getVerificationKeys('authentication')
   )
   if (!claimerAuthenticationKey) {
     throw new SDKErrors.ERROR_DID_ERROR(
@@ -224,7 +205,7 @@ export async function createQuoteAgreement(
 
   const signature = await claimerIdentity.signPayload(
     Crypto.hashObjectAsStr(attesterSignedQuote),
-    signer,
+    sign,
     claimerAuthenticationKey.id
   )
 
@@ -232,5 +213,228 @@ export async function createQuoteAgreement(
     ...attesterSignedQuote,
     rootHash: requestRootHash,
     claimerSignature: signature,
+  }
+}
+
+// TODO: Should have a `verifyQuoteAgreement` function
+
+/**
+ * Compresses the cost from a [[Quote]] object.
+ *
+ * @param cost A cost object that will be sorted and stripped into a [[Quote]].
+ * @throws [[ERROR_COMPRESS_OBJECT]] when cost is missing any property defined in [[ICostBreakdown]].
+ *
+ * @returns An ordered array of a cost.
+ */
+export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
+  if (!cost.gross || !cost.net || !cost.tax) {
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
+  }
+  return [cost.gross, cost.net, cost.tax]
+}
+
+/**
+ * Decompresses the cost from storage and/or message.
+ *
+ * @param cost A compressed cost array that is reverted back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when cost is not an Array and its length does not equal the defined length of 3.
+ *
+ * @returns An object that has the same properties as a cost.
+ */
+export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
+  if (!Array.isArray(cost) || cost.length !== 3) {
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
+  }
+  return { gross: cost[0], net: cost[1], tax: cost[2] }
+}
+
+/**
+ * Compresses a [[Quote]] for storage and/or messaging.
+ *
+ * @param quote An [[Quote]] object that will be sorted and stripped for messaging or storage.
+ * @throws [[ERROR_COMPRESS_OBJECT]] when quote is missing any property defined in [[IQuote]].
+ *
+ * @returns An ordered array of an [[Quote]].
+ */
+export function compressQuote(quote: IQuote): CompressedQuote {
+  if (
+    !quote.attesterDid ||
+    !quote.cTypeHash ||
+    !quote.cost ||
+    !quote.currency ||
+    !quote.termsAndConditions ||
+    !quote.timeframe
+  ) {
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
+  }
+  return [
+    quote.attesterDid,
+    quote.cTypeHash,
+    compressCost(quote.cost),
+    quote.currency,
+    quote.termsAndConditions,
+    quote.timeframe,
+  ]
+}
+
+/**
+ * Decompresses an [[Quote]] from storage and/or message.
+ *
+ * @param quote A compressed [[Quote]] array that is reverted back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quote is not an Array and its length does not equal the defined length of 6.
+ * @returns An object that has the same properties as an [[Quote]].
+ */
+export function decompressQuote(quote: CompressedQuote): IQuote {
+  if (!Array.isArray(quote) || quote.length !== 6) {
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+  }
+  return {
+    attesterDid: quote[0],
+    cTypeHash: quote[1],
+    cost: decompressCost(quote[2]),
+    currency: quote[3],
+    termsAndConditions: quote[4],
+    timeframe: quote[5],
+  }
+}
+
+function compressSignature(comp: DidSignature): [string, DidResourceUri] {
+  return [comp.signature, comp.keyUri]
+}
+
+function decompressSignature(comp: [string, DidResourceUri]): DidSignature {
+  return { signature: comp[0], keyUri: comp[1] }
+}
+
+/**
+ * Compresses an attester signed [[Quote]] for storage and/or messaging.
+ *
+ * @param attesterSignedQuote An attester signed [[Quote]] object that will be sorted and stripped for messaging or storage.
+ * @throws [[ERROR_COMPRESS_OBJECT]] when attesterSignedQuote is missing any property defined in [[IQuoteAttesterSigned]].
+ *
+ * @returns An ordered array of an attester signed [[Quote]].
+ */
+export function compressAttesterSignedQuote(
+  attesterSignedQuote: IQuoteAttesterSigned
+): CompressedQuoteAttesterSigned {
+  const {
+    attesterDid,
+    cTypeHash,
+    cost,
+    currency,
+    termsAndConditions,
+    timeframe,
+    attesterSignature,
+  } = attesterSignedQuote
+  if (
+    !attesterDid ||
+    !cTypeHash ||
+    !cost ||
+    !currency ||
+    !termsAndConditions ||
+    !timeframe ||
+    !attesterSignature.signature ||
+    !attesterSignature.keyUri
+  ) {
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(
+      attesterSignedQuote,
+      'Attester Signed Quote'
+    )
+  }
+  return [
+    attesterDid,
+    cTypeHash,
+    compressCost(cost),
+    currency,
+    termsAndConditions,
+    timeframe,
+    compressSignature(attesterSignature),
+  ]
+}
+
+/**
+ * Decompresses an attester signed [[Quote]] from storage and/or message.
+ *
+ * @param attesterSignedQuote A compressed attester signed [[Quote]] array that is reverted back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when attesterSignedQuote is not an Array and its length does not equal the defined length of 7.
+ *
+ * @returns An object that has the same properties as an attester signed [[Quote]].
+ */
+export function decompressAttesterSignedQuote(
+  attesterSignedQuote: CompressedQuoteAttesterSigned
+): IQuoteAttesterSigned {
+  if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+  }
+  return {
+    attesterDid: attesterSignedQuote[0],
+    cTypeHash: attesterSignedQuote[1],
+    cost: decompressCost(attesterSignedQuote[2]),
+    currency: attesterSignedQuote[3],
+    termsAndConditions: attesterSignedQuote[4],
+    timeframe: attesterSignedQuote[5],
+    attesterSignature: decompressSignature(attesterSignedQuote[6]),
+  }
+}
+
+/**
+ * Compresses a [[Quote]] Agreement for storage and/or messaging.
+ *
+ * @param quoteAgreement A [[Quote]] Agreement object that will be sorted and stripped for messaging or storage.
+ * @throws [[ERROR_COMPRESS_OBJECT]] when quoteAgreement is missing any property defined in [[IQuoteAgreement]].
+ *
+ * @returns An ordered array of a [[Quote]] Agreement.
+ */
+export function compressQuoteAgreement(
+  quoteAgreement: IQuoteAgreement
+): CompressedQuoteAgreed {
+  if (
+    !quoteAgreement.attesterDid ||
+    !quoteAgreement.cTypeHash ||
+    !quoteAgreement.cost ||
+    !quoteAgreement.currency ||
+    !quoteAgreement.termsAndConditions ||
+    !quoteAgreement.timeframe ||
+    !quoteAgreement.attesterSignature
+  ) {
+    throw new SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
+  }
+  return [
+    quoteAgreement.attesterDid,
+    quoteAgreement.cTypeHash,
+    compressCost(quoteAgreement.cost),
+    quoteAgreement.currency,
+    quoteAgreement.termsAndConditions,
+    quoteAgreement.timeframe,
+    compressSignature(quoteAgreement.attesterSignature),
+    compressSignature(quoteAgreement.claimerSignature),
+    quoteAgreement.rootHash,
+  ]
+}
+
+/**
+ * Decompresses a [[Quote]] Agreement from storage and/or message.
+ *
+ * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quoteAgreement is not an Array and its length does not equal the defined length of 9.
+ *
+ * @returns An object that has the same properties as a [[Quote]] Agreement.
+ */
+export function decompressQuoteAgreement(
+  quoteAgreement: CompressedQuoteAgreed
+): IQuoteAgreement {
+  if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
+    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY()
+  }
+  return {
+    attesterDid: quoteAgreement[0],
+    cTypeHash: quoteAgreement[1],
+    cost: decompressCost(quoteAgreement[2]),
+    currency: quoteAgreement[3],
+    termsAndConditions: quoteAgreement[4],
+    timeframe: quoteAgreement[5],
+    attesterSignature: decompressSignature(quoteAgreement[6]),
+    claimerSignature: decompressSignature(quoteAgreement[7]),
+    rootHash: quoteAgreement[8],
   }
 }

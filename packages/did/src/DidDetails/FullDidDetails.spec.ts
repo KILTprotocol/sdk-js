@@ -7,14 +7,7 @@
 
 import { BN } from '@polkadot/util'
 
-import {
-  DidKey,
-  DidServiceEndpoint,
-  DidIdentifier,
-  KeyRelationship,
-  VerificationKeyType,
-  EncryptionKeyType,
-} from '@kiltprotocol/types'
+import { DidKey, DidServiceEndpoint, DidIdentifier } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
@@ -40,31 +33,31 @@ const existingDidDetails: IDidChainRecordJSON = {
     {
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.Sr25519,
+      type: 'sr25519',
       includedAt: new BN(0),
     },
     {
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     },
     {
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     },
     {
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
       includedAt: new BN(0),
     },
     {
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
       includedAt: new BN(0),
     },
   ],
@@ -87,28 +80,26 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
   },
 ]
 
-jest.mock('../Did.chain.ts', () => {
-  return {
-    queryDetails: jest.fn(
-      async (
-        didIdentifier: DidIdentifier
-      ): Promise<IDidChainRecordJSON | null> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingDidDetails
-        }
-        return null
+jest.mock('../Did.chain.ts', () => ({
+  queryDetails: jest.fn(
+    async (
+      didIdentifier: DidIdentifier
+    ): Promise<IDidChainRecordJSON | null> => {
+      if (didIdentifier === existingIdentifier) {
+        return existingDidDetails
       }
-    ),
-    queryServiceEndpoints: jest.fn(
-      async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingServiceEndpoints
-        }
-        return []
+      return null
+    }
+  ),
+  queryServiceEndpoints: jest.fn(
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
+      if (didIdentifier === existingIdentifier) {
+        return existingServiceEndpoints
       }
-    ),
-  }
-})
+      return []
+    }
+  ),
+}))
 
 /*
  * Functions tested:
@@ -121,10 +112,9 @@ jest.mock('../Did.chain.ts', () => {
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(existingIdentifier, 'full')
-      )
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(existingIdentifier, 'full')
+    )
 
     expect(fullDidDetails).not.toBeNull()
 
@@ -136,16 +126,16 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('auth#1')).toStrictEqual<DidKey>({
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.Sr25519,
+      type: 'sr25519',
       includedAt: new BN(0),
     })
-    expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.authentication)
-    ).toStrictEqual<DidKey[]>([
+    expect(fullDidDetails?.getVerificationKeys('authentication')).toStrictEqual<
+      DidKey[]
+    >([
       {
         id: 'auth#1',
         publicKey: new Uint8Array(32).fill(0),
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
         includedAt: new BN(0),
       },
     ])
@@ -154,28 +144,28 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('enc#1')).toStrictEqual<DidKey>({
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     })
     expect(fullDidDetails?.getKey('enc#2')).toStrictEqual<DidKey>({
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     })
-    expect(
-      fullDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
-    ).toStrictEqual<DidKey[]>([
+    expect(fullDidDetails?.getEncryptionKeys('keyAgreement')).toStrictEqual<
+      DidKey[]
+    >([
       {
         id: 'enc#1',
         publicKey: new Uint8Array(32).fill(1),
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
         includedAt: new BN(0),
       },
       {
         id: 'enc#2',
         publicKey: new Uint8Array(32).fill(2),
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
         includedAt: new BN(0),
       },
     ])
@@ -184,16 +174,16 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('att#1')).toStrictEqual<DidKey>({
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
       includedAt: new BN(0),
     })
     expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.assertionMethod)
+      fullDidDetails?.getVerificationKeys('assertionMethod')
     ).toStrictEqual<DidKey[]>([
       {
         id: 'att#1',
         publicKey: new Uint8Array(32).fill(3),
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
         includedAt: new BN(0),
       },
     ])
@@ -202,16 +192,16 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('del#1')).toStrictEqual<DidKey>({
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
       includedAt: new BN(0),
     })
     expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.capabilityDelegation)
+      fullDidDetails?.getVerificationKeys('capabilityDelegation')
     ).toStrictEqual<DidKey[]>([
       {
         id: 'del#1',
         publicKey: new Uint8Array(32).fill(4),
-        type: VerificationKeyType.Ecdsa,
+        type: 'ecdsa',
         includedAt: new BN(0),
       },
     ])
@@ -253,10 +243,9 @@ describe('When creating an instance from the chain', () => {
   })
 
   it('returns null if the identifier does not exist', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
-      )
+    const fullDidDetails = await FullDidDetails.fromChainInfo(
+      getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
+    )
     expect(fullDidDetails).toBeNull()
   })
 })

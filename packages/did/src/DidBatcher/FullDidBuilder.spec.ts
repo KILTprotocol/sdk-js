@@ -15,18 +15,15 @@ import {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  EncryptionKeyType,
-  KeystoreSigner,
+  SignCallback,
   NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
   SubmittableExtrinsic,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
-import { ApiMocks } from '@kiltprotocol/testing'
+import { computeKeyId, ApiMocks } from '@kiltprotocol/testing'
 
 import { FullDidBuilder, VerificationKeyAction } from './FullDidBuilder'
-import { computeKeyId } from './TestUtils'
 
 jest.mock('./FullDidBuilder.utils.js', () => ({
   deriveChainKeyId: jest.fn((api: ApiPromise, key: NewDidKey): DidKey['id'] =>
@@ -37,7 +34,7 @@ jest.mock('./FullDidBuilder.utils.js', () => ({
 class TestAbstractFullDidBuilder extends FullDidBuilder {
   public build(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    signer: KeystoreSigner<any>,
+    sign: SignCallback<any>,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     submitter: string
     // @ts-ignore
@@ -52,7 +49,7 @@ describe('FullDidBuilder', () => {
   describe('Key agreement keys', () => {
     const newEncryptionKey: NewDidEncryptionKey = {
       publicKey: Uint8Array.from(Array(32).fill(1)),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     }
     describe('.addEncryptionKey()', () => {
       it('fails if the key has been marked for addition', async () => {
@@ -82,7 +79,7 @@ describe('FullDidBuilder', () => {
   describe('Attestation keys', () => {
     const newAttestationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(32).fill(11)),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
     }
     describe('.setAttestationKey()', () => {
       it('fails if another key has already been marked for addition', async () => {
@@ -111,7 +108,7 @@ describe('FullDidBuilder', () => {
   describe('Delegation keys', () => {
     const newDelegationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(32).fill(21)),
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
     }
     describe('.setDelegation()', () => {
       it('fails if another key has already been marked for addition', async () => {

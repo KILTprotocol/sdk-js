@@ -10,22 +10,26 @@
  */
 
 import { BN } from '@polkadot/util'
-import type { KeyringPair } from '@kiltprotocol/types'
-import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
+import type { IAttestation, KeyringPair } from '@kiltprotocol/types'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { FullDidDetails } from '@kiltprotocol/did'
 import { Attestation } from '../index'
 import { getTransferTx } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
   createEndowedTestAccount,
-  createFullDidFromSeed,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 
 let paymentAccount: KeyringPair
 let someDid: FullDidDetails
-const keystore = new DemoKeystore()
+let key: KeyTool
 
 beforeAll(async () => {
   await initializeApi()
@@ -33,19 +37,19 @@ beforeAll(async () => {
 
 beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
-  someDid = await createFullDidFromSeed(paymentAccount, keystore)
+  key = makeSigningKeyTool()
+  someDid = await createFullDidFromSeed(paymentAccount, key.keypair)
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
+  const transferTx = await getTransferTx(addressFromRandom(), new BN(1))
   await expect(
-    getTransferTx(addressFromRandom(), new BN(1)).then((tx) =>
-      submitExtrinsicWithResign(tx, paymentAccount)
-    )
+    submitExtrinsic(transferTx, paymentAccount)
   ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
-  const attestation = Attestation.fromAttestation({
+  const attestation: IAttestation = {
     claimHash:
       '0xfea1357cdba9982ebe7a8a3bb2db975cbb7424acd503d4dc3a7339778e8bb752',
     cTypeHash:
@@ -53,17 +57,19 @@ it('records an extrinsic error when ctype does not exist', async () => {
     delegationId: null,
     owner: someDid.uri,
     revoked: false,
+  }
+  const storeTx = await Attestation.getStoreTx(attestation)
+  const tx = await someDid.authorizeExtrinsic(
+    storeTx,
+    key.sign,
+    paymentAccount.address
+  )
+  await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
+    section: 'ctype',
+    name: 'CTypeNotFound',
   })
-  const tx = await attestation
-    .getStoreTx()
-    .then((ex) =>
-      someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
-    )
-  await expect(
-    submitExtrinsicWithResign(tx, paymentAccount)
-  ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
 }, 30_000)
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

@@ -8,3 +8,4 @@
 import '@polkadot/api-augment'
 
 export * as ApiMocks from './mocks/index.js'
+export * from './TestUtils.js'

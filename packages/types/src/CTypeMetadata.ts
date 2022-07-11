@@ -12,7 +12,7 @@ import type { ICType } from './CType'
  * Meant to contain a default label/description and an arbitrary number of translations,
  * where keys represent the use case (language) and values are the labels for this use case.
  */
-export interface IMultilangLabel {
+export interface IMultiLangLabel {
   /** Default label in the original language. */
   default: string
   /** An arbitrary number of translations where the key indicates the language. */
@@ -20,12 +20,12 @@ export interface IMultilangLabel {
 }
 
 export type IMetadataProperties = {
-  [key: string]: { title: IMultilangLabel; description?: IMultilangLabel }
+  [key: string]: { title: IMultiLangLabel; description?: IMultiLangLabel }
 }
 
 export interface IMetadata {
-  title: IMultilangLabel
-  description?: IMultilangLabel
+  title: IMultiLangLabel
+  description?: IMultiLangLabel
   properties: IMetadataProperties
 }
 

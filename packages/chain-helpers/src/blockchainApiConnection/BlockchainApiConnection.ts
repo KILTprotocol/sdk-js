@@ -6,18 +6,17 @@
  */
 
 /**
- * Blockchain Api Connection enables the building and accessing of the KILT [[Blockchain]] connection. In which it keeps one connection open and allows to reuse the connection for all [[Blockchain]] related tasks.
+ * Blockchain Api Connection enables the building and accessing of the KILT ApiPromise connection. In which it keeps one connection open and allows to reuse the connection for all ApiPromise related tasks.
  *
- * Other modules can access the [[Blockchain]] as such: `const blockchain = await getConnectionOrConnect()`.
+ * Other modules can access the ApiPromise as such: `const api = await getConnectionOrConnect()`.
  *
  * @packageDocumentation
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { ConfigService } from '@kiltprotocol/config'
-import { Blockchain } from '../blockchain/Blockchain.js'
 
-let instance: Promise<Blockchain> | null
+let instance: Promise<ApiPromise> | null
 
 /**
  * Builds a new blockchain connection instance.
@@ -27,12 +26,11 @@ let instance: Promise<Blockchain> | null
  */
 export async function buildConnection(
   host: string = ConfigService.get('address')
-): Promise<Blockchain> {
+): Promise<ApiPromise> {
   const provider = new WsProvider(host)
-  const api: ApiPromise = await ApiPromise.create({
+  return ApiPromise.create({
     provider,
   })
-  return new Blockchain(api)
 }
 
 /**
@@ -43,7 +41,7 @@ export async function buildConnection(
  *
  * @param connectionInstance The Blockchain instance, which should be cached.
  */
-export function setConnection(connectionInstance: Promise<Blockchain>): void {
+export function setConnection(connectionInstance: Promise<ApiPromise>): void {
   instance = connectionInstance
 }
 
@@ -52,7 +50,7 @@ export function setConnection(connectionInstance: Promise<Blockchain>): void {
  *
  * @returns Cached blockchain connection.
  */
-export function getConnection(): Promise<Blockchain> | null {
+export function getConnection(): Promise<ApiPromise> | null {
   return instance
 }
 
@@ -61,7 +59,7 @@ export function getConnection(): Promise<Blockchain> | null {
  *
  * @returns The cached or newly built blockchain connection instance.
  */
-export async function getConnectionOrConnect(): Promise<Blockchain> {
+export async function getConnectionOrConnect(): Promise<ApiPromise> {
   if (!instance) {
     instance = buildConnection()
   }
@@ -84,7 +82,7 @@ export function clearCache(): void {
 export async function connected(): Promise<boolean> {
   if (!instance) return false
   const resolved = await instance
-  return resolved.api.isConnected
+  return resolved.isConnected
 }
 
 /**
@@ -99,8 +97,8 @@ export async function disconnect(): Promise<boolean> {
   if (!oldInstance) return false
 
   const resolved = await oldInstance
-  const { isConnected } = resolved.api
-  await resolved.api.disconnect()
+  const { isConnected } = resolved
+  await resolved.disconnect()
 
   return isConnected
 }

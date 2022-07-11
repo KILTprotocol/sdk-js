@@ -1,10 +1,4 @@
-/**
- * Copyright 2018-2021 BOTLabs GmbH.
- *
- * This source code is licensed under the BSD 4-Clause "Original" license
- * found in the LICENSE file in the root directory of this source tree.
- */
-
+/* eslint-disable license-header/header */
 // Taken from https://github.com/ShivrajRath/jsonabc/blob/2ccf15f967f0e44e48fb7b163aebef43c0047166/index.js
 // Copied here, because the package defines a browser compatible script, but doesn't create it,
 // which leads to it failing in react-native. See https://github.com/ShivrajRath/jsonabc/issues/18
@@ -31,24 +25,24 @@ function isPlainObject(val) {
 }
 
 // Sorting Logic
-function sortObj(un, noarray) {
-  noarray = noarray || false
+function sortObj(un, noArray) {
+  noArray = noArray || false
 
   var or = {}
 
   if (isArray(un)) {
     // Sort or don't sort arrays
-    if (noarray) {
+    if (noArray) {
       or = un
     } else {
       or = un.sort()
     }
 
     or.forEach(function (v, i) {
-      or[i] = sortObj(v, noarray)
+      or[i] = sortObj(v, noArray)
     })
 
-    if (!noarray) {
+    if (!noArray) {
       or = or.sort(function (a, b) {
         a = JSON.stringify(a)
         b = JSON.stringify(b)
@@ -64,7 +58,7 @@ function sortObj(un, noarray) {
         return 0
       })
       .forEach(function (key) {
-        or[key] = sortObj(un[key], noarray)
+        or[key] = sortObj(un[key], noArray)
       })
   } else {
     or = un
@@ -81,14 +75,14 @@ function cleanJSON(input) {
 }
 
 // Sort the JSON (clean, parse, sort, stringify).
-function sort(inputStr, noarray) {
+function sort(inputStr, noArray) {
   var output, obj, r
 
   if (inputStr) {
     try {
       inputStr = cleanJSON(inputStr)
       obj = JSON.parse(inputStr)
-      r = sortObj(obj, noarray)
+      r = sortObj(obj, noArray)
       output = JSON.stringify(r, null, 4)
     } catch (ex) {
       console.error('jsonabc: Incorrect JSON object.', [], ex)

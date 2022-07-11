@@ -13,31 +13,28 @@ import {
   DidUri,
 } from './DidDetails.js'
 
-export enum DidDocumentPublicKeyType {
-  Ed25519VerificationKey = 'Ed25519VerificationKey2018',
-  Sr25519VerificationKey = 'Sr25519VerificationKey2020',
-  EcdsaVerificationKey = 'EcdsaSecp256k1VerificationKey2019',
-  X25519EncryptionKey = 'X25519KeyAgreementKey2019',
-}
+export type DidDocumentPublicKeyType =
+  | 'Ed25519VerificationKey2018'
+  | 'Sr25519VerificationKey2020'
+  | 'EcdsaSecp256k1VerificationKey2019'
+  | 'X25519KeyAgreementKey2019'
 
 export const VerificationKeyTypesMap: Record<
   VerificationKeyType,
   DidDocumentPublicKeyType
 > = {
   // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
-  [VerificationKeyType.Sr25519]:
-    DidDocumentPublicKeyType.Sr25519VerificationKey,
+  sr25519: 'Sr25519VerificationKey2020',
   // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
-  [VerificationKeyType.Ed25519]:
-    DidDocumentPublicKeyType.Ed25519VerificationKey,
-  [VerificationKeyType.Ecdsa]: DidDocumentPublicKeyType.EcdsaVerificationKey,
+  ed25519: 'Ed25519VerificationKey2018',
+  ecdsa: 'EcdsaSecp256k1VerificationKey2019',
 }
 
 export const EncryptionKeyTypesMap: Record<
   EncryptionKeyType,
   DidDocumentPublicKeyType
 > = {
-  [EncryptionKeyType.X25519]: DidDocumentPublicKeyType.X25519EncryptionKey,
+  x25519: 'X25519KeyAgreementKey2019',
 }
 
 /**
@@ -56,7 +53,7 @@ export type DidPublicKey = {
   /**
    * The key controller, in the form of <did_subject>.
    */
-  controller: IDidDetails['uri']
+  controller: DidUri
   /**
    * The base58-encoded public component of the key.
    */
@@ -89,12 +86,12 @@ export type DidPublicServiceEndpoint = {
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
 export type DidDocument = {
-  id: IDidDetails['uri']
+  id: DidUri
   verificationMethod: DidPublicKey[]
-  authentication: DidPublicKey['uri']
-  assertionMethod?: DidPublicKey['uri']
-  keyAgreement?: DidPublicKey['uri']
-  capabilityDelegation?: DidPublicKey['uri']
+  authentication: DidResourceUri
+  assertionMethod?: DidResourceUri
+  keyAgreement?: DidResourceUri
+  capabilityDelegation?: DidResourceUri
   service?: DidPublicServiceEndpoint[]
 }
 

@@ -40,12 +40,11 @@ For reference, look for example at the docBlock at the beginning of `Attestation
 
 Since they're available to SDK users, public methods must be documented.
 
-On top of the the linting rules mentioned above (must document all parameters, must have a description...), we recommend that you observe the following guidelines to make the documentation as helpful as possible:
+On top of the linting rules mentioned above (must document all parameters, must have a description...), we recommend that you observe the following guidelines to make the documentation as helpful as possible:
 
 * Method description:
   * Make it concise and clear;
   * Start with a capitalized verb in the 3rd person;
-  * If the method is async and/or static, add [ASYNC] and/or [STATIC] right before the description content.
 * `@param` and `@returns` fields: don't add types, since this is automatically added into the API doc;
 * Make sure you explain opaque abbreviations or jargon (example: TxStatus = transaction status);
 * When referring to SDK Classes and methods, make sure you link them in, using `[[]]`;
@@ -56,7 +55,7 @@ Example of a method docBlock that follows these guidelines:
 
 ```javascript
 /**
-  * [STATIC] Builds an identity object from a mnemonic string.
+  * Builds an identity object from a mnemonic string.
   *
   * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
   * @returns An [[Identity]].

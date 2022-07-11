@@ -10,10 +10,8 @@ import { BN } from '@polkadot/util'
 import {
   DidKey,
   DidServiceEndpoint,
-  EncryptionKeyType,
   DidIdentifier,
   NewDidVerificationKey,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
@@ -30,7 +28,7 @@ const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 function generateAuthenticationKeyDetails(): DidKey {
   return {
     id: 'auth',
-    type: VerificationKeyType.Ed25519,
+    type: 'ed25519',
     publicKey: new Uint8Array(32).fill(0),
   }
 }
@@ -38,7 +36,7 @@ function generateAuthenticationKeyDetails(): DidKey {
 function generateEncryptionKeyDetails(): DidKey {
   return {
     id: 'enc',
-    type: EncryptionKeyType.X25519,
+    type: 'x25519',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(15),
   }
@@ -47,7 +45,7 @@ function generateEncryptionKeyDetails(): DidKey {
 function generateAttestationKeyDetails(): DidKey {
   return {
     id: 'att',
-    type: VerificationKeyType.Sr25519,
+    type: 'sr25519',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(20),
   }
@@ -56,7 +54,7 @@ function generateAttestationKeyDetails(): DidKey {
 function generateDelegationKeyDetails(): DidKey {
   return {
     id: 'del',
-    type: VerificationKeyType.Ecdsa,
+    type: 'ecdsa',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(25),
   }
@@ -112,18 +110,10 @@ jest.mock('../Did.chain', () => {
       generateServiceEndpointDetails(serviceId)
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-      return [
-        (await queryServiceEndpoint(
-          didIdentifier,
-          'id-1'
-        )) as DidServiceEndpoint,
-        (await queryServiceEndpoint(
-          didIdentifier,
-          'id-2'
-        )) as DidServiceEndpoint,
-      ]
-    }
+    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => [
+      (await queryServiceEndpoint(didIdentifier, 'id-1')) as DidServiceEndpoint,
+      (await queryServiceEndpoint(didIdentifier, 'id-2')) as DidServiceEndpoint,
+    ]
   )
   return {
     queryDetails,
@@ -280,19 +270,19 @@ describe('When exporting a DID Document from a full DID', () => {
 
 describe('When exporting a DID Document from a light DID', () => {
   const authKey = generateAuthenticationKeyDetails() as NewDidVerificationKey
-  const encKey: DidKey = generateEncryptionKeyDetails()
-  const serviceEndpoints: DidServiceEndpoint[] = [
+  const encKey = generateEncryptionKeyDetails()
+  const serviceEndpoints = [
     generateServiceEndpointDetails('id-1'),
     generateServiceEndpointDetails('id-2'),
   ]
   const lightDidDetails = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     },
     serviceEndpoints,
   })

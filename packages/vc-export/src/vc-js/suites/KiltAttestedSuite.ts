@@ -6,10 +6,8 @@
  */
 
 /* eslint-disable max-classes-per-file */
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { ApiPromise } from '@polkadot/api'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type {
   DocumentLoader,
   ExpansionMap,
@@ -37,14 +35,14 @@ class AttestationError extends Error {
 }
 
 export class KiltAttestedSuite extends KiltAbstractSuite {
-  private readonly provider: Blockchain
+  private readonly provider: ApiPromise
 
-  constructor(options: { KiltConnection: Blockchain }) {
+  constructor(options: { KiltConnection: ApiPromise }) {
     // vc-js complains when there is no verificationMethod
     super({ type: KILT_ATTESTED_PROOF_TYPE, verificationMethod: '<none>' })
     if (
       !options.KiltConnection ||
-      !(options.KiltConnection instanceof Blockchain)
+      !(options.KiltConnection instanceof ApiPromise)
     )
       throw new TypeError('KiltConnection must be a Kilt blockchain connection')
     this.provider = options.KiltConnection

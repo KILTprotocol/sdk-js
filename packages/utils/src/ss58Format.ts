@@ -5,5 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './DemoKeystore.js'
-export * as DemoKeystoreUtils from './DemoKeystore.utils.js'
+/**
+ * The network SS58 prefix registered for KILT blockchain.
+ */
+export const ss58Format = 38
