@@ -9,26 +9,26 @@ import { u8aToHex } from '@polkadot/util'
 
 import {
   DidEncryptionKey,
+  DidIdentifier,
   DidKey,
-  DidPublicKey,
+  DidResourceUri,
   DidServiceEndpoint,
   DidSignature,
+  DidUri,
   DidVerificationKey,
-  IDidDetails,
-  DidIdentifier,
-  KeystoreSigner,
-  VerificationKeyType,
-  KeyRelationship,
-  VerificationKeyRelationship,
   EncryptionKeyRelationship,
+  IDidDetails,
+  SignCallback,
+  VerificationKeyRelationship,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
 import {
+  assembleKeyUri,
   getSigningAlgorithmForVerificationKeyType,
   isVerificationKey,
-  assembleKeyUri,
 } from '../Did.utils.js'
 
 import { checkDidCreationDetails } from './DidDetails.utils.js'
@@ -40,7 +40,7 @@ type ServiceEndpointsInner = Map<
 >
 
 export abstract class DidDetails implements IDidDetails {
-  public readonly uri: IDidDetails['uri']
+  public readonly uri: DidUri
 
   // { key ID -> key details} - key ID does not include the DID subject
   protected publicKeys: PublicKeysInner
@@ -78,9 +78,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first authentication key, in the order they are stored internally, of the given DID.
    */
   public get authenticationKey(): DidVerificationKey {
-    const firstAuthenticationKey = this.getVerificationKeys(
-      KeyRelationship.authentication
-    )[0]
+    const firstAuthenticationKey = this.getVerificationKeys('authentication')[0]
     if (!firstAuthenticationKey) {
       throw new SDKErrors.ERROR_DID_ERROR(
         'Unexpected error. Any DID should always have at least one authentication key.'
@@ -95,7 +93,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first encryption key, in the order they are stored internally, of the given DID.
    */
   public get encryptionKey(): DidEncryptionKey | undefined {
-    return this.getEncryptionKeys(KeyRelationship.keyAgreement)[0]
+    return this.getEncryptionKeys('keyAgreement')[0]
   }
 
   /**
@@ -104,7 +102,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first attestation key, in the order they are stored internally, of the given DID.
    */
   public get attestationKey(): DidVerificationKey | undefined {
-    return this.getVerificationKeys(KeyRelationship.assertionMethod)[0]
+    return this.getVerificationKeys('assertionMethod')[0]
   }
 
   /**
@@ -113,7 +111,7 @@ export abstract class DidDetails implements IDidDetails {
    * @returns The first delegation key, in the order they are stored internally, of the given DID.
    */
   public get delegationKey(): DidVerificationKey | undefined {
-    return this.getVerificationKeys(KeyRelationship.capabilityDelegation)[0]
+    return this.getVerificationKeys('capabilityDelegation')[0]
   }
 
   /**
@@ -196,14 +194,12 @@ export abstract class DidDetails implements IDidDetails {
    */
   public getEndpoints(type?: string): DidServiceEndpoint[] {
     const serviceEndpointsEntries = type
-      ? [...this.serviceEndpoints.entries()].filter(([, details]) => {
-          return details.types.includes(type)
-        })
+      ? [...this.serviceEndpoints.entries()].filter(([, details]) =>
+          details.types.includes(type)
+        )
       : [...this.serviceEndpoints.entries()]
 
-    return serviceEndpointsEntries.map(([id, details]) => {
-      return { id, ...details }
-    })
+    return serviceEndpointsEntries.map(([id, details]) => ({ id, ...details }))
   }
 
   /**
@@ -213,7 +209,7 @@ export abstract class DidDetails implements IDidDetails {
    *
    * @returns The full public key URI, which includes the subject's DID and the provided key ID.
    */
-  public assembleKeyUri(keyId: DidKey['id']): DidPublicKey['uri'] {
+  public assembleKeyUri(keyId: DidKey['id']): DidResourceUri {
     return assembleKeyUri(this.uri, keyId)
   }
 
@@ -221,14 +217,14 @@ export abstract class DidDetails implements IDidDetails {
    * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
    *
    * @param payload The byte array or HEX-encoded payload to sign.
-   * @param signer The keystore signer to use for the signing operation.
+   * @param sign The sign callback to use for the signing operation.
    * @param keyId The key ID to use to generate the signature.
    *
    * @returns The resulting [[DidSignature]].
    */
   public async signPayload(
     payload: Uint8Array | string,
-    signer: KeystoreSigner,
+    sign: SignCallback,
     keyId: DidVerificationKey['id']
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
@@ -245,7 +241,7 @@ export abstract class DidDetails implements IDidDetails {
         `No algorithm found for key type ${key.type}`
       )
     }
-    const { data: signature } = await signer.sign({
+    const { data: signature } = await sign({
       publicKey: key.publicKey,
       alg,
       data: Crypto.coToUInt8(payload),

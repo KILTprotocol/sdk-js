@@ -35,8 +35,6 @@ module.exports = {
     '!did/src/index.types.ts',
     '!did/src/Did.chain.ts',
     '!did/src/Did.utils.ts',
-    '!did/src/DemoKeystore/DemoKeystore.ts',
-    '!did/src/DemoKeystore/DemoKeystore.utils.ts',
     '!did/src/DidDetails/DidDetails.utils.ts',
     '!did/src/DidDetails/LightDidDetails.utils.ts',
     '!did/src/DidDetails/FullDidDetails.utils.ts',

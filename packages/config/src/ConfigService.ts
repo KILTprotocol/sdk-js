@@ -35,7 +35,7 @@ export type configOpts = {
 } & { [key: string]: any }
 
 /**
- *  Changes all existing Loggers of our default Factory with id 0 to the intended Level.
+ * Changes all existing Loggers of our default Factory with id 0 to the intended Level.
  *
  * @param level The intended LogLevel. LogLevel has a range of 0 to 5.
  * @returns The new set level.
@@ -102,7 +102,7 @@ export function set<K extends Partial<configOpts>>(opts: K): void {
 const options = new LoggerFactoryOptions().addLogGroupRule(
   new LogGroupRule(new RegExp('.+'), get('logLevel'))
 )
-// Create a named loggerfactory and pass in the options and export the factory.
+// Create a named logging factory and pass in the options and export the factory.
 // Named is since version 0.2.+ (it's recommended for future usage)
 export const LoggingFactory = LFService.createNamedLoggerFactory(
   'LoggerFactory',

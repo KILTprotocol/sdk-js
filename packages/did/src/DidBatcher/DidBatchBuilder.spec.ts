@@ -14,12 +14,16 @@ import { randomAsHex } from '@polkadot/util-crypto'
 
 import {
   KeyRelationship,
+  KeyringPair,
   NewDidVerificationKey,
-  VerificationKeyType,
+  SignCallback,
 } from '@kiltprotocol/types'
-import { ApiMocks } from '@kiltprotocol/testing'
-import { DemoKeystore, DemoKeystoreUtils } from '../DemoKeystore'
-import { getSetKeyExtrinsic, formatPublicKey } from '../Did.chain.js'
+import {
+  createLocalDemoFullDidFromKeypair,
+  ApiMocks,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { formatPublicKey, getSetKeyExtrinsic } from '../Did.chain.js'
 import { DidBatchBuilder } from './DidBatchBuilder'
 import { FullDidDetails } from '../DidDetails'
 
@@ -35,9 +39,9 @@ jest.mock('../Did.chain.js', () => ({
     ): Promise<Extrinsic> => {
       const keyAsEnum = formatPublicKey(key)
       switch (keyRelationship) {
-        case KeyRelationship.capabilityDelegation:
+        case 'capabilityDelegation':
           return mockApi.tx.did.setDelegationKey(keyAsEnum)
-        case KeyRelationship.assertionMethod:
+        case 'assertionMethod':
           return mockApi.tx.did.setAttestationKey(keyAsEnum)
         default:
           return mockApi.tx.did.setAuthenticationKey(keyAsEnum)
@@ -47,21 +51,21 @@ jest.mock('../Did.chain.js', () => ({
 }))
 
 describe('DidBatchBuilder', () => {
-  const keystore = new DemoKeystore()
+  let keypair: KeyringPair
+  let sign: SignCallback
   let fullDid: FullDidDetails
+
   beforeAll(async () => {
-    fullDid = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      'seed'
-    )
+    ;({ keypair, sign } = makeSigningKeyTool())
+    fullDid = await createLocalDemoFullDidFromKeypair(keypair)
   })
 
   describe('.addSingleExtrinsic()', () => {
     it('fails if the extrinsic is a DID extrinsic', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      const ext = await getSetKeyExtrinsic(KeyRelationship.assertionMethod, {
+      const ext = await getSetKeyExtrinsic('assertionMethod', {
         publicKey: Uint8Array.from(new Array(32).fill(1)),
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       })
       expect(() => builder.addSingleExtrinsic(ext)).toThrow()
     })
@@ -113,15 +117,15 @@ describe('DidBatchBuilder', () => {
         builder.batches
       ).toStrictEqual([
         {
-          keyRelationship: KeyRelationship.assertionMethod,
+          keyRelationship: 'assertionMethod',
           extrinsics: [ctype1Extrinsic, ctype2Extrinsic],
         },
         {
-          keyRelationship: KeyRelationship.capabilityDelegation,
+          keyRelationship: 'capabilityDelegation',
           extrinsics: [delegationExtrinsic],
         },
         {
-          keyRelationship: KeyRelationship.assertionMethod,
+          keyRelationship: 'assertionMethod',
           extrinsics: [ctype3Extrinsic],
         },
       ])
@@ -132,7 +136,7 @@ describe('DidBatchBuilder', () => {
   describe('.build()', () => {
     it('throws if batch is empty', async () => {
       const builder = new DidBatchBuilder(mockApi, fullDid)
-      await expect(builder.build(keystore, 'test-account')).rejects.toThrow()
+      await expect(builder.build(sign, 'test-account')).rejects.toThrow()
     })
     it.todo('successfully create a batch with only 1 extrinsic')
     it.todo('successfully create a batch with 1 extrinsic per required key')

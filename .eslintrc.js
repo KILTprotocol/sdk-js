@@ -143,7 +143,7 @@ module.exports = {
       },
     },
     {
-      files: ['**/__integrationtests__/*.ts'],
+      files: ['**/__integrationtests__/*.ts', '**/TestUtils.ts'],
       rules: {
         'import/extensions': 'off',
         'jsdoc/require-jsdoc': 'off',

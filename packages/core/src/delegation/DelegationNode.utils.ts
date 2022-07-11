@@ -5,11 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  IAttestation,
-  IDelegationNode,
-  IDidDetails,
-} from '@kiltprotocol/types'
+import type { DidUri, IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 import { DelegationNode } from './DelegationNode.js'
@@ -27,10 +23,10 @@ import { DelegationNode } from './DelegationNode.js'
  * @returns The bitset as single value uint8 array.
  */
 export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
-  const permissionsBitsetData: number = delegation.permissions.reduce(
+  const permissionsBitsetData = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )
-  const uint8: Uint8Array = new Uint8Array(4)
+  const uint8 = new Uint8Array(4)
   uint8[0] = permissionsBitsetData
   return uint8
 }
@@ -44,7 +40,7 @@ export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
  * @throws [[SDKError]] If the `attester` is neither the owner nor in the delegation tree of `attestation`.
  */
 export async function countNodeDepth(
-  attester: IDidDetails['uri'],
+  attester: DidUri,
   attestation: IAttestation
 ): Promise<number> {
   let delegationTreeTraversalSteps = 0

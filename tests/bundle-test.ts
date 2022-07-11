@@ -9,12 +9,19 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type {
+  DecryptCallback,
+  EncryptCallback,
   EncryptionKeyType,
   KeyringPair,
+  LightDidSupportedVerificationKeyType,
+  NewDidEncryptionKey,
+  ResponseData,
+  SignCallback,
+  SigningAlgorithms,
+  SigningData,
   SubmittableExtrinsic,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
-import type { LightDidSupportedVerificationKeyType } from '@kiltprotocol/did/src'
+import type { KeypairType } from '@polkadot/util-crypto/types'
 
 const { kilt } = window
 
@@ -23,83 +30,167 @@ const {
   Attestation,
   Credential,
   CType,
-  CTypeUtils,
   RequestForAttestation,
   Did,
-  BlockchainUtils,
-  Utils: { Crypto, Keyring },
+  Blockchain,
+  Utils: { Crypto, Keyring, ss58Format },
   Message,
-  MessageBodyType,
   BalanceUtils,
 } = kilt
 
 function getDefaultMigrationHandler(submitter: KeyringPair) {
   return async (e: SubmittableExtrinsic) => {
-    await BlockchainUtils.signAndSubmitTx(e, submitter, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    await Blockchain.signAndSubmitTx(e, submitter, {
+      resolveOn: Blockchain.IS_IN_BLOCK,
     })
   }
 }
 
-async function createFullDidFromSeed(
-  identity: KeyringPair,
-  keystore: InstanceType<typeof Did.DemoKeystore>,
+function makeSignCallback(keypair: KeyringPair): SignCallback {
+  return async function sign<A extends SigningAlgorithms>({
+    alg,
+    data,
+  }: SigningData<A>): Promise<ResponseData<A>> {
+    const signature = keypair.sign(data, { withType: false })
+    return { alg, data: signature }
+  }
+}
+
+function makeSigningKeypair(
   seed: string,
+  alg: SigningAlgorithms = 'sr25519'
+): {
+  keypair: KeyringPair
+  sign: SignCallback
+} {
+  const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
+    ed25519: 'ed25519',
+    sr25519: 'sr25519',
+    'ecdsa-secp256k1': 'ecdsa',
+  }
+  const type = keypairTypeForAlg[alg]
+  const keypair = new Keyring({ type }).addFromUri(seed, {}, type)
+  const sign = makeSignCallback(keypair)
+
+  return {
+    keypair,
+    sign,
+  }
+}
+
+function makeEncryptionKeypair(seed: string): {
+  secretKey: Uint8Array
+  publicKey: Uint8Array
+  type: EncryptionKeyType
+} {
+  const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
+    Crypto.hash(seed, 256)
+  )
+  return {
+    secretKey,
+    publicKey,
+    type: 'x25519',
+  }
+}
+
+function makeEncryptCallback({
+  secretKey,
+}: {
+  secretKey: Uint8Array
+  type: EncryptionKeyType
+}): EncryptCallback {
+  return async function encryptCallback({ data, peerPublicKey, alg }) {
+    const { box, nonce } = Crypto.encryptAsymmetric(
+      data,
+      peerPublicKey,
+      secretKey
+    )
+    return { alg, nonce, data: box }
+  }
+}
+
+function makeDecryptCallback({
+  secretKey,
+}: {
+  secretKey: Uint8Array
+  type: EncryptionKeyType
+}): DecryptCallback {
+  return async function decryptCallback({ data, nonce, peerPublicKey, alg }) {
+    const decrypted = Crypto.decryptAsymmetric(
+      { box: data, nonce },
+      peerPublicKey,
+      secretKey
+    )
+    if (!decrypted) throw new Error('Decryption failed')
+    return { data: decrypted, alg }
+  }
+}
+
+async function createFullDidFromKeypair(
+  payer: KeyringPair,
+  keypair: KeyringPair,
+  encryptionKey: NewDidEncryptionKey,
   api: ApiPromise
 ) {
-  const lightDid = await Did.DemoKeystoreUtils.createMinimalLightDidFromSeed(
-    keystore,
-    seed
-  )
+  const lightDid = Did.LightDidDetails.fromDetails({
+    authenticationKey: {
+      publicKey: keypair.publicKey,
+      type: keypair.type as LightDidSupportedVerificationKeyType,
+    },
+    encryptionKey,
+  })
+
+  const sign = makeSignCallback(keypair)
 
   const fullDid = await lightDid.migrate(
-    identity.address,
-    keystore,
-    getDefaultMigrationHandler(identity)
+    payer.address,
+    sign,
+    getDefaultMigrationHandler(payer)
   )
 
   const updatedFullDid = await new Did.FullDidUpdateBuilder(api, fullDid)
     .setAttestationKey(fullDid.authenticationKey)
     .setDelegationKey(fullDid.authenticationKey)
-    .buildAndSubmit(
-      keystore,
-      identity.address,
-      getDefaultMigrationHandler(identity)
-    )
+    .buildAndSubmit(sign, payer.address, getDefaultMigrationHandler(payer))
 
   return updatedFullDid
 }
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  const keystore = new Did.DemoKeystore()
   await kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const blockchain = await kilt.connect()
+  const api = await kilt.connect()
 
-  if (!blockchain) console.error('No blockchain connection established')
-  else blockchain.getStats().then((t) => console.info(t))
-  const keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
+  if (!api) console.error('No blockchain connection established')
+  const keyring = new Keyring({ ss58Format, type: 'ed25519' })
   // Accounts
   console.log('Account setup started')
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const devFaucet = keyring.createFromUri(FaucetSeed)
 
-  const alice = await createFullDidFromSeed(
+  const { keypair: aliceKeypair, sign: aliceSign } =
+    makeSigningKeypair('//Alice')
+  const aliceEncryptionKey = makeEncryptionKeypair('//Alice//enc')
+  const aliceDecryptCallback = makeDecryptCallback(aliceEncryptionKey)
+  const alice = await createFullDidFromKeypair(
     devFaucet,
-    keystore,
-    '//Alice',
-    blockchain.api
+    aliceKeypair,
+    aliceEncryptionKey,
+    api
   )
   if (!alice.encryptionKey)
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const bob = await createFullDidFromSeed(
+  const { keypair: bobKeypair, sign: bobSign } = makeSigningKeypair('//Bob')
+  const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
+  const bobEncryptCallback = makeEncryptCallback(bobEncryptionKey)
+  const bob = await createFullDidFromKeypair(
     devFaucet,
-    keystore,
-    '//Bob',
-    blockchain.api
+    bobKeypair,
+    bobEncryptionKey,
+    api
   )
   if (!bob.encryptionKey)
     throw new Error('Impossible: bob has no encryptionKey')
@@ -112,18 +203,17 @@ async function runAll() {
   const encPublicKey = Crypto.coToUInt8(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  const address = Crypto.encodeAddress(authPublicKey, 38)
-  const didCreationDetails = {
+  const address = Crypto.encodeAddress(authPublicKey, ss58Format)
+  const testDid = Did.LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authPublicKey,
-      type: 'ed25519' as LightDidSupportedVerificationKeyType,
+      type: 'ed25519',
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: 'x25519' as EncryptionKeyType,
+      type: 'x25519',
     },
-  }
-  const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
+  })
   if (
     testDid.uri !==
     `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
@@ -133,16 +223,14 @@ async function runAll() {
 
   // Chain Did workflow -> creation & deletion
   console.log('DID workflow started')
-  const keypair = await keystore.generateKeypair({
-    alg: Did.SigningAlgorithms.Ed25519,
-  })
+  const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
 
-  const fullDid = await new Did.FullDidCreationBuilder(blockchain.api, {
+  const fullDid = await new Did.FullDidCreationBuilder(api, {
     publicKey: keypair.publicKey,
-    type: 'ed25519' as VerificationKeyType,
-  }).buildAndSubmit(keystore, devFaucet.address, async (tx) => {
-    await BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    type: 'ed25519',
+  }).buildAndSubmit(sign, devFaucet.address, async (tx) => {
+    await Blockchain.signAndSubmitTx(tx, devFaucet, {
+      resolveOn: Blockchain.IS_IN_BLOCK,
     })
   })
 
@@ -163,12 +251,12 @@ async function runAll() {
   )
   const deleteTx = await fullDid.authorizeExtrinsic(
     extrinsic,
-    keystore,
+    sign,
     devFaucet.address
   )
 
-  await BlockchainUtils.signAndSubmitTx(deleteTx, devFaucet, {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  await Blockchain.signAndSubmitTx(deleteTx, devFaucet, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
   })
 
   const resolvedAgain = await Did.resolveDoc(fullDid.uri)
@@ -195,25 +283,25 @@ async function runAll() {
     type: 'object',
   })
 
-  const tx = await DriversLicense.getStoreTx()
+  const tx = await CType.getStoreTx(DriversLicense)
   const authorizedTx = await alice.authorizeExtrinsic(
     tx,
-    keystore,
+    aliceSign,
     devFaucet.address
   )
 
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, devFaucet, {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  await Blockchain.signAndSubmitTx(authorizedTx, devFaucet, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
   })
 
-  const stored = await DriversLicense.verifyStored()
+  const stored = await CType.verifyStored(DriversLicense)
   if (stored) {
     console.info('CType successfully stored onchain!')
   } else {
     throw new Error('ctype not stored!')
   }
 
-  const result = await CTypeUtils.verifyOwner({
+  const result = await CType.verifyOwner({
     ...DriversLicense,
     owner: alice.uri,
   })
@@ -232,20 +320,22 @@ async function runAll() {
     bob.uri
   )
   const request = RequestForAttestation.fromClaim(claim)
-  const signed = await request.signWithDidKey(
-    keystore,
+  await RequestForAttestation.signWithDidKey(
+    request,
+    bobSign,
     bob,
     bob.authenticationKey.id
   )
-  if (!RequestForAttestation.isIRequestForAttestation(signed))
+  if (!RequestForAttestation.isIRequestForAttestation(request))
     throw new Error('Not a valid Request!')
   else {
-    if (signed.verifyData()) console.info('Req4Att data verified')
+    if (RequestForAttestation.verifyDataIntegrity(request))
+      console.info('Req4Att data verified')
     else throw new Error('Req4Att not verifiable')
-    if (await signed.verifySignature())
+    if (await RequestForAttestation.verifySignature(request))
       console.info('Req4Att signature verified')
     else throw new Error('Req4Att Signature mismatch')
-    if (signed.claim.contents !== content)
+    if (request.claim.contents !== content)
       throw new Error('Claim content inside Req4Att mismatching')
   }
 
@@ -253,9 +343,9 @@ async function runAll() {
   const message = new Message(
     {
       content: {
-        requestForAttestation: signed,
+        requestForAttestation: request,
       },
-      type: MessageBodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     },
     bob.uri,
     alice.uri
@@ -263,34 +353,35 @@ async function runAll() {
   const encryptedMessage = await message.encrypt(
     bob.encryptionKey.id,
     bob,
-    keystore,
+    bobEncryptCallback,
     `${alice.uri}#${alice.encryptionKey.id}`
   )
 
   const decryptedMessage = await Message.decrypt(
     encryptedMessage,
-    keystore,
+    aliceDecryptCallback,
     alice
   )
   if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
     throw new Error('original and decrypted message are not the same')
   }
 
-  const attestation = Attestation.fromRequestAndDid(signed, alice.uri)
-  const credential = Credential.fromRequestAndAttestation(signed, attestation)
-  if (credential.verifyData()) console.info('Attested Claim Data verified!')
+  const attestation = Attestation.fromRequestAndDid(request, alice.uri)
+  const credential = Credential.fromRequestAndAttestation(request, attestation)
+  if (Credential.verifyDataIntegrity(credential))
+    console.info('Attested Claim Data verified!')
   else throw new Error('Attested Claim data not verifiable')
 
-  const txAtt = await attestation.getStoreTx()
+  const txAtt = await Attestation.getStoreTx(attestation)
   const authorizedAttTx = await alice.authorizeExtrinsic(
     txAtt,
-    keystore,
+    aliceSign,
     devFaucet.address
   )
-  await BlockchainUtils.signAndSubmitTx(authorizedAttTx, devFaucet, {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  await Blockchain.signAndSubmitTx(authorizedAttTx, devFaucet, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
   })
-  if (await credential.verify()) {
+  if (await Credential.verify(credential)) {
     console.info('Attested Claim verified with chain.')
   } else {
     throw new Error('attested Claim not verifiable with chain')

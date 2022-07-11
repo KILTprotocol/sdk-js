@@ -41,7 +41,7 @@ switch (true) {
 let exitCode
 
 async function fetch() {
-  provider.connect()
+  await provider.connect()
   await provider.isReady
   const result = await provider.send('state_getMetadata')
 
@@ -65,16 +65,21 @@ const timeout = new Promise((_, reject) => {
   }, 10000)
 })
 
-Promise.race([fetch(), timeout])
-  .catch((e) => {
-    console.error(`updating metadata failed with ${e}`)
+;(async () => {
+  try {
+    await Promise.race([fetch(), timeout])
+  } catch (error) {
+    console.error(`updating metadata failed with ${error}`)
     exitCode = exitCode || 1
-  })
-  .finally(() => {
+  } finally {
     console.log('disconnecting...')
     provider.disconnect().then(process.exit(exitCode))
     setTimeout(() => {
       console.error(`timeout while waiting for disconnect`)
       process.exit(exitCode)
     }, 10000)
-  })
+
+    await api.disconnect()
+    process.exit(exitCode)
+  }
+})()

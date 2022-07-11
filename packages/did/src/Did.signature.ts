@@ -155,7 +155,7 @@ export async function verifyDidSignature({
 }
 
 /**
- * Type guard assuring that a the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
+ * Type guard assuring that the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
  * Does not cryptographically verify the signature itself!
  *
  * @param input Arbitrary input.

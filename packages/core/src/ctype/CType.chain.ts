@@ -7,16 +7,12 @@
 
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
-import { DecoderUtils, Crypto } from '@kiltprotocol/utils'
-import type {
-  ICType,
-  IDidDetails,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
+import type { DidUri, ICType, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { getSchemaPropertiesForHash } from './CType.utils.js'
+import { getSchemaPropertiesForHash } from './CType.js'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
@@ -29,16 +25,15 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
  * @returns The SubmittableExtrinsic for the `add` call.
  */
 export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
   const preparedSchema = Crypto.encodeObjectAsStr(
     getSchemaPropertiesForHash(ctype.schema)
   )
-  const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(preparedSchema)
-  return tx
+  return api.tx.ctype.add(preparedSchema)
 }
 
-function decode(encoded: Option<AccountId>): IDidDetails['uri'] | null {
+function decode(encoded: Option<AccountId>): DidUri | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
     ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
@@ -53,20 +48,20 @@ function decode(encoded: Option<AccountId>): IDidDetails['uri'] | null {
  */
 export async function getOwner(
   ctypeHash: ICType['hash']
-): Promise<IDidDetails['uri'] | null> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.ctype.ctypes(ctypeHash)
+): Promise<DidUri | null> {
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.ctype.ctypes(ctypeHash)
   return decode(encoded)
 }
 
 /**
- * Queries the blockchain and returns whether a CType with the provide hash exists.
+ * Queries the blockchain and returns whether a CType with the provided hash exists.
  *
  * @param ctypeHash The has of the CType to check.
  * @returns True if a CType with the provided hash exists, false otherwise.
  */
 export async function isStored(ctypeHash: ICType['hash']): Promise<boolean> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.ctype.ctypes(ctypeHash)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.ctype.ctypes(ctypeHash)
   return encoded.isSome
 }

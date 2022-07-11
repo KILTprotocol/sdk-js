@@ -37,12 +37,12 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 export async function getStoreAsRootTx(
   delegation: DelegationNode
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   if (!delegation.isRoot()) {
-    throw SDKErrors.ERROR_INVALID_ROOT_NODE
+    throw new SDKErrors.ERROR_INVALID_ROOT_NODE()
   }
-  return blockchain.api.tx.delegation.createHierarchy(
+  return api.tx.delegation.createHierarchy(
     delegation.hierarchyId,
     await delegation.getCTypeHash()
   )
@@ -59,13 +59,13 @@ export async function getStoreAsDelegationTx(
   delegation: DelegationNode,
   signature: DidChain.SignatureEnum
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   if (delegation.isRoot()) {
-    throw SDKErrors.ERROR_INVALID_DELEGATION_NODE
+    throw new SDKErrors.ERROR_INVALID_DELEGATION_NODE()
   }
 
-  return blockchain.api.tx.delegation.addDelegation(
+  return api.tx.delegation.addDelegation(
     delegation.id,
     delegation.parentId || '',
     DidUtils.getIdentifierFromKiltDid(delegation.account),
@@ -83,9 +83,9 @@ export async function getStoreAsDelegationTx(
 export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegationNodes(delegationId)
+    await api.query.delegation.delegationNodes(delegationId)
   )
   if (!decoded) {
     return null
@@ -109,14 +109,12 @@ export async function getRevokeTx(
   maxParentChecks: number,
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.delegation.revokeDelegation(
-      delegationId,
-      maxParentChecks,
-      maxRevocations
-    )
-  return tx
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.delegation.revokeDelegation(
+    delegationId,
+    maxParentChecks,
+    maxRevocations
+  )
 }
 
 /**
@@ -130,10 +128,8 @@ export async function getRemoveTx(
   delegationId: IDelegationNode['id'],
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.delegation.removeDelegation(delegationId, maxRevocations)
-  return tx
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.delegation.removeDelegation(delegationId, maxRevocations)
 }
 
 /**
@@ -149,12 +145,8 @@ export async function getReclaimDepositTx(
   delegationId: IDelegationNode['id'],
   maxRemovals: number
 ): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = api.tx.delegation.reclaimDeposit(
-    delegationId,
-    maxRemovals
-  )
-  return tx
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.delegation.reclaimDeposit(delegationId, maxRemovals)
 }
 
 /**
@@ -171,7 +163,7 @@ export async function getChildren(
     delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
       const childNode = await query(childId)
       if (!childNode) {
-        throw SDKErrors.ERROR_DELEGATION_ID_MISSING
+        throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
       }
       return childNode
     })
@@ -210,14 +202,13 @@ function hasExternalAttestationsStorage(
 export async function getAttestationHashes(
   id: IDelegationNode['id']
 ): Promise<Array<IAttestation['claimHash']>> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  if (hasExternalAttestationsStorage(blockchain.api)) {
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  if (hasExternalAttestationsStorage(api)) {
     // this info is stored chain-side as a double map from (authorizationId, claimHash) -> boolean.
     // the following line retrieves all keys where authorizationId is equal to the delegation id.
-    const entries =
-      await blockchain.api.query.attestation.externalAttestations.keys({
-        delegation: id,
-      })
+    const entries = await api.query.attestation.externalAttestations.keys({
+      delegation: id,
+    })
     // extract claimHash from double map key & decode
     return entries.map((keys) => {
       const claimHash = keys.args[1]
@@ -225,12 +216,11 @@ export async function getAttestationHashes(
       return claimHash.toHex()
     })
   }
-  if (blockchain.api.query.attestation.delegatedAttestations) {
+  if (api.query.attestation.delegatedAttestations) {
     // Delegated attestations are stored as a simple map from delegationId -> Vec<claimHashes>
-    const claimHashes =
-      await blockchain.api.query.attestation.delegatedAttestations<
-        Option<Vec<Hash>>
-      >(id)
+    const claimHashes = await api.query.attestation.delegatedAttestations<
+      Option<Vec<Hash>>
+    >(id)
     DecoderUtils.assertCodecIsType(claimHashes, ['Option<Vec<H256>>'])
     return claimHashes.unwrapOrDefault().map((hash) => hash.toHex())
   }
@@ -240,7 +230,7 @@ export async function getAttestationHashes(
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.consts.delegation.deposit
 }
 

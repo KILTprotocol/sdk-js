@@ -32,7 +32,7 @@ test.beforeAll(async () => {
 })
 
 test('html bundle integration test', async ({ page }) => {
-  const fileurl = url.pathToFileURL(
+  const fileUrl = url.pathToFileURL(
     path.join(__dirname, 'bundle-test.html')
   ).href
   page.on('pageerror', (exception) => {
@@ -42,7 +42,7 @@ test('html bundle integration test', async ({ page }) => {
   page.on('console', async (msg) => {
     console.log(msg.text())
   })
-  await page.goto(fileurl)
+  await page.goto(fileUrl)
   await expect(page).toHaveTitle('Bundle tests')
 
   await page.evaluate(async () => {

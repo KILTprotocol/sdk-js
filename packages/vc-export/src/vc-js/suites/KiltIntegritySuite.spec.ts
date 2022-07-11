@@ -42,25 +42,26 @@ describe('jsigs', () => {
         'https://w3id.org/security/v2',
         { documentLoader, compactToRelative: false }
       )
-      await expect(purpose.match(compactedProof, {})).resolves.toBe(true)
-      await expect(
-        purpose.match(compactedProof, { document: credential, documentLoader })
-      ).resolves.toBe(true)
+      expect(await purpose.match(compactedProof, {})).toBe(true)
+      expect(
+        await purpose.match(compactedProof, {
+          document: credential,
+          documentLoader,
+        })
+      ).toBe(true)
     })
 
     it('suite matches proof', async () => {
       const proofWithContext = { ...proof, '@context': credential['@context'] }
-      await expect(suite.matchProof({ proof: proofWithContext })).resolves.toBe(
-        true
-      )
-      await expect(
-        suite.matchProof({
+      expect(await suite.matchProof({ proof: proofWithContext })).toBe(true)
+      expect(
+        await suite.matchProof({
           proof: proofWithContext,
           document: credential,
           purpose,
           documentLoader,
         })
-      ).resolves.toBe(true)
+      ).toBe(true)
     })
   })
 
@@ -70,21 +71,21 @@ describe('jsigs', () => {
     })
 
     it('verifies Kilt Credential Digest Proof', async () => {
-      await expect(
-        jsigs.verify(credential, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        await jsigs.verify(credential, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: true })
     })
 
     it('verifies Kilt Credential Digest Proof with props removed', async () => {
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       const { name, ...credentialSubject } = credential.credentialSubject
       expect(credentialSubject).not.toHaveProperty('name')
-      await expect(
-        jsigs.verify(
+      expect(
+        await jsigs.verify(
           { ...credential, credentialSubject },
           { suite, purpose, documentLoader }
         )
-      ).resolves.toMatchObject({ verified: true })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -100,9 +101,9 @@ describe('jsigs', () => {
 
     it('detects tampering on props', async () => {
       tamperCred.credentialSubject.name = 'MacGyver'
-      await expect(
-        jsigs.verify(tamperCred, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
   })
 })
@@ -114,23 +115,28 @@ describe('vc-js', () => {
     })
 
     it('verifies Kilt Credential Digest Proof', async () => {
-      await expect(
-        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        vcjs.verifyCredential({
+          credential,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).toMatchObject({ verified: true })
     })
 
     it('verifies Kilt Credential Digest Proof with props removed', async () => {
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       const { name, ...credentialSubject } = credential.credentialSubject
       expect(credentialSubject).not.toHaveProperty('name')
-      await expect(
+      expect(
         vcjs.verifyCredential({
           credential: { ...credential, credentialSubject },
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: true })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -146,14 +152,14 @@ describe('vc-js', () => {
 
     it('detects tampering on props', async () => {
       tamperCred.credentialSubject.name = 'MacGyver'
-      await expect(
+      expect(
         vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: false })
+      ).toMatchObject({ verified: false })
     })
   })
 })

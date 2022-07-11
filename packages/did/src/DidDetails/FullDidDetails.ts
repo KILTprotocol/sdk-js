@@ -9,11 +9,11 @@ import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidVerificationKey,
-  IDidDetails,
   DidIdentifier,
+  DidUri,
+  DidVerificationKey,
   IIdentity,
-  KeystoreSigner,
+  SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
@@ -23,8 +23,6 @@ import type {
   DidConstructorDetails,
   DidKeySelectionCallback,
   MapKeysToRelationship,
-  PublicKeys,
-  ServiceEndpoints,
 } from '../types.js'
 import {
   generateDidAuthenticatedTx,
@@ -73,14 +71,14 @@ export class FullDidDetails extends DidDetails {
 
   /**
    * Create a new instance of [[FullDidDetails]] after fetching the relevant information from the blockchain.
-   * Private keys are assumed to already live in the keystore to be used with this DID instance, as only the public keys are retrieved from the blockchain.
+   * Private keys are assumed to already live in another storage, as only the public keys are retrieved from the blockchain.
    *
    * @param didUri The URI of the DID to reconstruct.
    *
    * @returns The reconstructed [[FullDidDetails]], or null if not DID with the provided identifier exists.
    */
   public static async fromChainInfo(
-    didUri: IDidDetails['uri']
+    didUri: DidUri
   ): Promise<FullDidDetails | null> {
     const { identifier, fragment, type } = parseDidUri(didUri)
     if (fragment) {
@@ -104,7 +102,7 @@ export class FullDidDetails extends DidDetails {
       keyAgreementKeys,
     } = didRec
 
-    const keys: PublicKeys = publicKeys.reduce((res, key) => {
+    const keys = publicKeys.reduce((res, key) => {
       res[key.id] = key
       return res
     }, {})
@@ -120,12 +118,13 @@ export class FullDidDetails extends DidDetails {
       keyRelationships.capabilityDelegation = new Set([capabilityDelegationKey])
     }
 
-    const serviceEndpoints: ServiceEndpoints = (
-      await queryServiceEndpoints(identifier)
-    ).reduce((res, service) => {
-      res[service.id] = service
-      return res
-    }, {})
+    const serviceEndpoints = (await queryServiceEndpoints(identifier)).reduce(
+      (res, service) => {
+        res[service.id] = service
+        return res
+      },
+      {}
+    )
 
     return new FullDidDetails({
       identifier,
@@ -166,7 +165,7 @@ export class FullDidDetails extends DidDetails {
    * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will throw an error.
    *
    * @param extrinsic The unsigned extrinsic to sign.
-   * @param signer The keystore signer to use.
+   * @param sign The callback to sign the operation.
    * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
    * @param signingOptions The signing options.
    * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
@@ -175,7 +174,7 @@ export class FullDidDetails extends DidDetails {
    */
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
-    signer: KeystoreSigner,
+    sign: SignCallback,
     submitterAccount: IIdentity['address'],
     {
       keySelection = defaultKeySelectionCallback,
@@ -195,7 +194,7 @@ export class FullDidDetails extends DidDetails {
       didIdentifier: this.identifier,
       signingPublicKey: signingKey.publicKey,
       alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
-      signer,
+      sign,
       call: extrinsic,
       txCounter: txCounter || (await this.getNextNonce()),
       submitter: submitterAccount,

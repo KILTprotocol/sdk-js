@@ -20,14 +20,14 @@ import type {
   IRequestForAttestation,
   DidSignature,
   DidUri,
+  IAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { Attestation } from '../attestation/Attestation'
-import { Credential } from '../credential/Credential'
-import { CType } from '../ctype/CType'
+import * as Attestation from '../attestation'
+import * as CType from '../ctype'
 
-import { RequestForAttestation } from './RequestForAttestation'
-import * as RequestForAttestationUtils from './RequestForAttestation.utils'
+import * as RequestForAttestation from './index.js'
 
 const rawCType: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',
@@ -42,11 +42,11 @@ const rawCType: ICType['schema'] = {
 function buildRequestForAttestation(
   claimerDid: DidUri,
   contents: IClaimContents,
-  legitimations: Credential[]
-): RequestForAttestation {
+  legitimations: ICredential[]
+): IRequestForAttestation {
   // create claim
 
-  const testCType: CType = CType.fromSchema(rawCType)
+  const testCType: ICType = CType.fromSchema(rawCType)
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
@@ -67,11 +67,11 @@ describe('RequestForAttestation', () => {
     'did:kilt:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
   const identityCharlie =
     'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
-  let legitimationRequest: RequestForAttestation
-  let legitimationAttestation: Attestation
-  let legitimation: Credential
-  let legitimationAttestationCharlie: Attestation
-  let legitimationCharlie: Credential
+  let legitimationRequest: IRequestForAttestation
+  let legitimationAttestation: IAttestation
+  let legitimation: ICredential
+  let legitimationAttestationCharlie: IAttestation
+  let legitimationCharlie: ICredential
 
   beforeEach(async () => {
     legitimationRequest = buildRequestForAttestation(identityAlice, {}, [])
@@ -81,10 +81,10 @@ describe('RequestForAttestation', () => {
       identityCharlie
     )
     // combine to credential
-    legitimation = new Credential({
+    legitimation = {
       request: legitimationRequest,
       attestation: legitimationAttestation,
-    })
+    }
 
     // build attestation
     legitimationAttestationCharlie = Attestation.fromRequestAndDid(
@@ -92,10 +92,10 @@ describe('RequestForAttestation', () => {
       identityCharlie
     )
     // combine to credential
-    legitimationCharlie = new Credential({
+    legitimationCharlie = {
       request: legitimationRequest,
       attestation: legitimationAttestationCharlie,
-    })
+    }
   })
 
   it.todo('signing and verification')
@@ -111,13 +111,17 @@ describe('RequestForAttestation', () => {
       [legitimation]
     )
     // check proof on complete data
-    expect(request.verifyData()).toBeTruthy()
+    expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
+    const testCType = CType.fromSchema(rawCType)
+    expect(
+      RequestForAttestation.verify(request, { ctype: testCType })
+    ).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
-    expect(() => request.verifyData()).toThrowError(
-      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
-    )
+    expect(() =>
+      RequestForAttestation.verifyDataIntegrity(request)
+    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
   })
 
   it('throws on wrong hash in claim hash tree', async () => {
@@ -133,7 +137,7 @@ describe('RequestForAttestation', () => {
 
     request.claimNonceMap[Object.keys(request.claimNonceMap)[0]] = '1234'
     expect(() => {
-      RequestForAttestation.verifyData(request)
+      RequestForAttestation.verifyDataIntegrity(request)
     }).toThrow()
   })
 
@@ -142,10 +146,10 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityBob
     )
-    const legitimationBob = new Credential({
+    const legitimationBob = {
       request: legitimationRequest,
       attestation: legitimationAttestationBob,
-    })
+    }
     const reqForAtt = buildRequestForAttestation(
       identityBob,
       {
@@ -216,33 +220,20 @@ describe('RequestForAttestation', () => {
       reqForAtt.delegationId,
     ]
 
-    expect(RequestForAttestationUtils.compress(reqForAtt)).toEqual(
+    expect(RequestForAttestation.compress(reqForAtt)).toEqual(
       compressedReqForAtt
     )
-
-    expect(RequestForAttestationUtils.decompress(compressedReqForAtt)).toEqual(
-      reqForAtt
-    )
-
-    expect(reqForAtt.compress()).toEqual(compressedReqForAtt)
 
     expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
       reqForAtt
     )
+
     compressedReqForAtt.pop()
     // @ts-expect-error
     delete reqForAtt.claim.owner
 
     expect(() => {
-      RequestForAttestationUtils.compress(reqForAtt)
-    }).toThrow()
-
-    expect(() => {
-      RequestForAttestationUtils.decompress(compressedReqForAtt)
-    }).toThrow()
-
-    expect(() => {
-      reqForAtt.compress()
+      RequestForAttestation.compress(reqForAtt)
     }).toThrow()
 
     expect(() => {
@@ -256,15 +247,15 @@ describe('RequestForAttestation', () => {
       { a: 'a', b: 'b' },
       []
     )
-    request.removeClaimProperties(['a'])
+    RequestForAttestation.removeClaimProperties(request, ['a'])
 
     expect((request.claim.contents as any).a).toBeUndefined()
     expect(Object.keys(request.claimNonceMap)).toHaveLength(
       request.claimHashes.length - 1
     )
     expect((request.claim.contents as any).b).toBe('b')
-    expect(request.verifyData()).toBe(true)
-    expect(request.verifyRootHash()).toBe(true)
+    expect(RequestForAttestation.verifyDataIntegrity(request)).toBe(true)
+    expect(RequestForAttestation.verifyRootHash(request)).toBe(true)
   })
 
   it('should throw error on faulty constructor input', async () => {
@@ -336,7 +327,6 @@ describe('RequestForAttestation', () => {
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
     builtRequestIncompleteClaimHashTree.rootHash =
-      // @ts-expect-error
       RequestForAttestation.calculateRootHash(
         builtRequestIncompleteClaimHashTree
       )
@@ -355,7 +345,6 @@ describe('RequestForAttestation', () => {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
     builtRequestMalformedSignature.rootHash =
-      // @ts-expect-error
       RequestForAttestation.calculateRootHash(builtRequestMalformedSignature)
     const builtRequestMalformedHashes = {
       ...buildRequestForAttestation(
@@ -380,28 +369,35 @@ describe('RequestForAttestation', () => {
       }
     )
     builtRequestMalformedHashes.rootHash =
-      // @ts-expect-error
       RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
+      RequestForAttestation.verifyDataStructure(builtRequestNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
+      RequestForAttestation.verifyDataIntegrity(builtRequestMalformedRootHash)
     ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
+      RequestForAttestation.verifyDataIntegrity(
+        builtRequestIncompleteClaimHashTree
+      )
     ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
+      RequestForAttestation.verifyDataStructure(builtRequestMalformedSignature)
     ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
+      RequestForAttestation.verifyDataIntegrity(builtRequestMalformedHashes)
     ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequest)
+      RequestForAttestation.verifyDataStructure(builtRequest)
     ).not.toThrow()
     expect(() => {
-      RequestForAttestationUtils.errorCheck(builtRequestWithLegitimation)
+      RequestForAttestation.verifyDataStructure(builtRequestWithLegitimation)
+    }).not.toThrow()
+    expect(() =>
+      RequestForAttestation.verifyDataIntegrity(builtRequest)
+    ).not.toThrow()
+    expect(() => {
+      RequestForAttestation.verifyDataIntegrity(builtRequestWithLegitimation)
     }).not.toThrow()
   })
   it('checks Object instantiation', async () => {
@@ -414,11 +410,13 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    expect(builtRequest instanceof RequestForAttestation).toEqual(true)
+    expect(
+      RequestForAttestation.isIRequestForAttestation(builtRequest)
+    ).toEqual(true)
   })
 
   it('should verify the Request for attestation claims structure against the ctype', async () => {
-    const testCType: CType = CType.fromSchema(rawCType)
+    const testCType = CType.fromSchema(rawCType)
     const builtRequest = buildRequestForAttestation(
       identityBob,
       {
@@ -429,11 +427,11 @@ describe('RequestForAttestation', () => {
       []
     )
     expect(
-      RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
-    ).toBe(true)
+      RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
+    ).toBeTruthy()
     builtRequest.claim.contents.name = 123
     expect(
-      RequestForAttestationUtils.verifyStructure(builtRequest, testCType)
-    ).toBe(false)
+      RequestForAttestation.verifyAgainstCType(builtRequest, testCType)
+    ).toBeFalsy()
   })
 })

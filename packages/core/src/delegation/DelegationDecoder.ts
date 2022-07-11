@@ -19,7 +19,7 @@ import type {
   IDelegationNode,
   IDelegationHierarchyDetails,
 } from '@kiltprotocol/types'
-import { Permission } from '@kiltprotocol/types'
+import { Permission, PermissionType } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { Hash } from '@polkadot/types/interfaces/runtime'
 import { DecoderUtils } from '@kiltprotocol/utils'
@@ -63,8 +63,8 @@ export function decodeDelegationHierarchyDetails(
  * @param bitset The u32 number used as the bitset to encode permissions.
  * @returns The permission set.
  */
-function decodePermissions(bitset: number): Permission[] {
-  const permissions: Permission[] = []
+function decodePermissions(bitset: number): PermissionType[] {
+  const permissions: PermissionType[] = []
   // eslint-disable-next-line no-bitwise
   if (bitset & Permission.ATTEST) {
     permissions.push(Permission.ATTEST)

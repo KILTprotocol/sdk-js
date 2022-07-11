@@ -47,8 +47,8 @@ export class ERROR_UNSUPPORTED_KEY extends SDKError {
     super(`The provided key type "${keyType}" is currently not supported.`)
   }
 }
+export class ERROR_ENCRYPTION_ERROR extends SDKError {}
 export class ERROR_DID_ERROR extends SDKError {}
-export class ERROR_KEYSTORE_ERROR extends SDKError {}
 export class ERROR_DID_EXPORTER_ERROR extends SDKError {}
 export class ERROR_DID_BUILDER_ERROR extends SDKError {}
 export class ERROR_WEB3_NAME_ERROR extends SDKError {}

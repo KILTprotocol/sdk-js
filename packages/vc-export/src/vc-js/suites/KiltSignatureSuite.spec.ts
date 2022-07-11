@@ -15,11 +15,7 @@ import jsonld from 'jsonld'
 
 import { base58Encode, randomAsHex } from '@polkadot/util-crypto'
 
-import {
-  DidDocumentPublicKeyType,
-  DidPublicKey,
-  DidUri,
-} from '@kiltprotocol/types'
+import { DidResourceUri, DidUri } from '@kiltprotocol/types'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -27,9 +23,9 @@ import { KiltSignatureSuite as Suite } from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
 import { documentLoader as kiltDocumentLoader } from '../documentLoader'
 import type {
-  VerifiableCredential,
-  SelfSignedProof,
   IPublicKeyRecord,
+  SelfSignedProof,
+  VerifiableCredential,
 } from '../../types'
 import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
 
@@ -52,10 +48,10 @@ beforeAll(async () => {
     if (uri.startsWith('did:kilt:')) {
       const { identifier, fragment, did } = DidUtils.parseDidUri(uri as DidUri)
       const key: IPublicKeyRecord = {
-        uri: uri as DidPublicKey['uri'],
+        uri: uri as DidResourceUri,
         publicKeyBase58: base58Encode(Crypto.decodeAddress(identifier)),
         controller: did,
-        type: DidDocumentPublicKeyType.Ed25519VerificationKey,
+        type: 'Ed25519VerificationKey2018',
       }
       if (fragment) {
         return { documentUrl: uri, document: key }
@@ -80,25 +76,26 @@ describe('jsigs', () => {
         'https://w3id.org/security/v2',
         { documentLoader, compactToRelative: false }
       )
-      await expect(purpose.match(compactedProof, {})).resolves.toBe(true)
-      await expect(
-        purpose.match(compactedProof, { document: credential, documentLoader })
-      ).resolves.toBe(true)
+      expect(await purpose.match(compactedProof, {})).toBe(true)
+      expect(
+        await purpose.match(compactedProof, {
+          document: credential,
+          documentLoader,
+        })
+      ).toBe(true)
     })
 
     it('suite matches proof', async () => {
       const proofWithContext = { ...proof, '@context': credential['@context'] }
-      await expect(suite.matchProof({ proof: proofWithContext })).resolves.toBe(
-        true
-      )
-      await expect(
-        suite.matchProof({
+      expect(await suite.matchProof({ proof: proofWithContext })).toBe(true)
+      expect(
+        await suite.matchProof({
           proof: proofWithContext,
           document: credential,
           purpose,
           documentLoader,
         })
-      ).resolves.toBe(true)
+      ).toBe(true)
     })
   })
 
@@ -108,9 +105,9 @@ describe('jsigs', () => {
     })
 
     it('verifies Kilt Self Signed Proof', async () => {
-      await expect(
-        jsigs.verify(credential, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        await jsigs.verify(credential, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -126,9 +123,9 @@ describe('jsigs', () => {
 
     it('detects tampering', async () => {
       tamperCred.id = tamperCred.id.replace('1', '2')
-      await expect(
-        jsigs.verify(tamperCred, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
 
     it('detects signer mismatch', async () => {
@@ -137,9 +134,9 @@ describe('jsigs', () => {
         publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
-      await expect(
-        jsigs.verify(tamperCred, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
   })
 })
@@ -151,9 +148,14 @@ describe('vc-js', () => {
     })
 
     it('verifies Kilt Self Signed Proof', async () => {
-      await expect(
-        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        vcjs.verifyCredential({
+          credential,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -169,14 +171,14 @@ describe('vc-js', () => {
 
     it('detects tampering', async () => {
       tamperCred.id = tamperCred.id.replace('1', '2')
-      await expect(
+      expect(
         vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: false })
+      ).toMatchObject({ verified: false })
     })
 
     it('detects signer mismatch', async () => {
@@ -185,14 +187,14 @@ describe('vc-js', () => {
         publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
-      await expect(
+      expect(
         vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: false })
+      ).toMatchObject({ verified: false })
     })
   })
 })

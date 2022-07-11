@@ -8,3 +8,4 @@
 import '@kiltprotocol/augment-api'
 
 export * as ApiMocks from './mocks/index.js'
+export * from './TestUtils.js'

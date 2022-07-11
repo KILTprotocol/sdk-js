@@ -11,7 +11,6 @@
 
 import '@kiltprotocol/augment-api'
 
-export * from './DemoKeystore/index.js'
 export * from './DidDetails/index.js'
 export * from './DidBatcher/index.js'
 export * from './DidDocumentExporter/index.js'

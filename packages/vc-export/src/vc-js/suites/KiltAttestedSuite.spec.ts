@@ -9,9 +9,10 @@
  * @group unit/vc-js
  */
 
-import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ApiMocks } from '@kiltprotocol/testing'
 import jsigs, { purposes } from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
+import type { IAttestation } from '@kiltprotocol/types'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
 import { KiltAttestedSuite as AttestationSuite } from './KiltAttestedSuite'
@@ -20,7 +21,7 @@ import { documentLoader } from '../documentLoader'
 import type { AttestedProof } from '../../types'
 import { KILT_ATTESTED_PROOF_TYPE } from '../../constants'
 
-const attestation = Attestation.fromAttestation({
+const attestation: IAttestation = {
   claimHash:
     '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
   cTypeHash:
@@ -28,18 +29,18 @@ const attestation = Attestation.fromAttestation({
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   delegationId: null,
   revoked: false,
-})
+}
 
 const spy = jest
   .spyOn(Attestation, 'query')
-  .mockImplementation(async (): Promise<Attestation | null> => attestation)
+  .mockImplementation(async (): Promise<IAttestation | null> => attestation)
 
 let suite: AttestationSuite
 let purpose: purposes.ProofPurpose
 let proof: AttestedProof
 
 beforeAll(async () => {
-  const KiltConnection = new Blockchain({} as any)
+  const KiltConnection = ApiMocks.createAugmentedApi()
   suite = new AttestationSuite({ KiltConnection })
   purpose = new purposes.AssertionProofPurpose()
   credential.proof.some((p) => {
@@ -59,37 +60,38 @@ describe('jsigs', () => {
         'https://w3id.org/security/v2',
         { documentLoader, compactToRelative: false }
       )
-      await expect(purpose.match(compactedProof, {})).resolves.toBe(true)
-      await expect(
-        purpose.match(compactedProof, { document: credential, documentLoader })
-      ).resolves.toBe(true)
+      expect(await purpose.match(compactedProof, {})).toBe(true)
+      expect(
+        await purpose.match(compactedProof, {
+          document: credential,
+          documentLoader,
+        })
+      ).toBe(true)
     })
 
     it('suite matches proof', async () => {
       const proofWithContext = { ...proof, '@context': credential['@context'] }
-      await expect(suite.matchProof({ proof: proofWithContext })).resolves.toBe(
-        true
-      )
-      await expect(
-        suite.matchProof({
+      expect(await suite.matchProof({ proof: proofWithContext })).toBe(true)
+      expect(
+        await suite.matchProof({
           proof: proofWithContext,
           document: credential,
           purpose,
           documentLoader,
         })
-      ).resolves.toBe(true)
+      ).toBe(true)
     })
   })
 
   describe('attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation> => attestation)
+      spy.mockImplementation(async (): Promise<IAttestation> => attestation)
     })
 
     it('verifies Kilt Attestation Proof', async () => {
-      await expect(
-        jsigs.verify(credential, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        await jsigs.verify(credential, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -97,26 +99,26 @@ describe('jsigs', () => {
     beforeAll(() => {
       const revoked = { ...attestation, revoked: true }
       spy.mockImplementation(
-        async (): Promise<Attestation> => revoked as Attestation
+        async (): Promise<IAttestation> => revoked as IAttestation
       )
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {
-      await expect(
-        jsigs.verify(credential, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(credential, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
   })
 
   describe('not attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation | null> => null)
+      spy.mockImplementation(async (): Promise<IAttestation | null> => null)
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {
-      await expect(
-        jsigs.verify(credential, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(credential, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
   })
 })
@@ -124,13 +126,18 @@ describe('jsigs', () => {
 describe('vc-js', () => {
   describe('attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation> => attestation)
+      spy.mockImplementation(async (): Promise<IAttestation> => attestation)
     })
 
     it('verifies Kilt Attestation Proof', async () => {
-      await expect(
-        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        vcjs.verifyCredential({
+          credential,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -138,26 +145,36 @@ describe('vc-js', () => {
     beforeAll(() => {
       const revoked = { ...attestation, revoked: true }
       spy.mockImplementation(
-        async (): Promise<Attestation> => revoked as Attestation
+        async (): Promise<IAttestation> => revoked as IAttestation
       )
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {
-      await expect(
-        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        vcjs.verifyCredential({
+          credential,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).toMatchObject({ verified: false })
     })
   })
 
   describe('not attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<Attestation | null> => null)
+      spy.mockImplementation(async (): Promise<IAttestation | null> => null)
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {
-      await expect(
-        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        vcjs.verifyCredential({
+          credential,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).toMatchObject({ verified: false })
     })
   })
 })

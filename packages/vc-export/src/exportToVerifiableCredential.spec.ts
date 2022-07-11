@@ -10,12 +10,12 @@
  */
 
 import {
-  DidDocumentPublicKeyType,
-  DidPublicKey,
   DidUri,
+  ICredential,
+  ICType,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Attestation, Credential, CType } from '@kiltprotocol/core'
+import { Attestation } from '@kiltprotocol/core'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -25,13 +25,13 @@ import * as verificationUtils from './verificationUtils'
 import * as presentationUtils from './presentationUtils'
 import type { IPublicKeyRecord, VerifiableCredential } from './types'
 import {
-  KILT_VERIFIABLECREDENTIAL_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   KILT_CREDENTIAL_CONTEXT_URL,
+  KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
 
-const ctype = CType.fromCType({
+const ctype: ICType = {
   schema: {
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'membership',
@@ -52,9 +52,9 @@ const ctype = CType.fromCType({
   },
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-})
+}
 
-const credential = Credential.fromCredential({
+const credential: ICredential = {
   request: {
     claim: {
       contents: {
@@ -101,7 +101,7 @@ const credential = Credential.fromCredential({
     owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     revoked: false,
   },
-})
+}
 
 it('exports credential to VC', () => {
   expect(toVC.fromCredential(credential)).toMatchObject({
@@ -206,10 +206,10 @@ describe('proofs', () => {
   let documentLoader: DocumentLoader
   beforeAll(() => {
     VC = toVC.fromCredential(credential)
-    const keyId: DidPublicKey['uri'] = VC.proof[0].verificationMethod
+    const keyId = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
       uri: keyId,
-      type: DidDocumentPublicKeyType.Ed25519VerificationKey,
+      type: 'Ed25519VerificationKey2018',
       publicKeyBase58: base58Encode(
         Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)
       ),
@@ -228,9 +228,13 @@ describe('proofs', () => {
 
   it('it verifies self-signed proof', async () => {
     // verify
-    await expect(
-      verificationUtils.verifySelfSignedProof(VC, VC.proof[0], documentLoader)
-    ).resolves.toMatchObject({
+    expect(
+      await verificationUtils.verifySelfSignedProof(
+        VC,
+        VC.proof[0],
+        documentLoader
+      )
+    ).toMatchObject({
       verified: true,
     })
   })
@@ -299,15 +303,13 @@ describe('proofs', () => {
   })
 
   it('verifies attestation proof on chain', async () => {
-    jest
-      .spyOn(Attestation, 'query')
-      .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
+    jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
 
     const result = await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
-      status: verificationUtils.AttestationStatus.valid,
+      status: 'valid',
     })
   })
 
@@ -317,19 +319,23 @@ describe('proofs', () => {
     })
 
     it('errors on proof mismatch', async () => {
-      await expect(
-        verificationUtils.verifySelfSignedProof(VC, VC.proof[1], documentLoader)
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifySelfSignedProof(
+          VC,
+          VC.proof[1],
+          documentLoader
+        )
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[0])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[0])
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyAttestedProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
     })
@@ -353,42 +359,44 @@ describe('proofs', () => {
 
     it('it detects tampering with credential digest', async () => {
       VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
-      await expect(
-        verificationUtils.verifySelfSignedProof(VC, VC.proof[0], documentLoader)
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifySelfSignedProof(
+          VC,
+          VC.proof[0],
+          documentLoader
+        )
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
     })
 
     it('it detects tampering with credential fields', async () => {
-      jest
-        .spyOn(Attestation, 'query')
-        .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
+      jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
 
       VC.delegationId = '0x123'
-      await expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
-      await expect(
-        verificationUtils.verifyAttestedProof(VC, VC.proof[1])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+      ).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.invalid,
+        status: 'invalid',
       })
     })
 
-    it('it detects tampering on claimed properties', () => {
+    it('it detects tampering on claimed properties', async () => {
       VC.credentialSubject.name = 'Kort'
-      return expect(
-        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
-      ).resolves.toMatchObject({
+      expect(
+        await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).toMatchObject({
         verified: false,
       })
     })
@@ -410,17 +418,15 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.invalid,
+        status: 'invalid',
       })
     })
 
     it('fails if attestation on chain not identical', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(
-        Attestation.fromAttestation({
-          ...credential.attestation,
-          owner: credential.request.claim.owner,
-        })
-      )
+      jest.spyOn(Attestation, 'query').mockResolvedValue({
+        ...credential.attestation,
+        owner: credential.request.claim.owner,
+      })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,
@@ -428,17 +434,15 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.invalid,
+        status: 'invalid',
       })
     })
 
     it('fails if attestation revoked', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(
-        Attestation.fromAttestation({
-          ...credential.attestation,
-          revoked: true,
-        })
-      )
+      jest.spyOn(Attestation, 'query').mockResolvedValue({
+        ...credential.attestation,
+        revoked: true,
+      })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,
@@ -446,7 +450,7 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.revoked,
+        status: 'revoked',
       })
     })
   })

@@ -8,55 +8,51 @@
 // This module is not part of the public-facing api.
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor'
+import { decode as cborDecode, encode as cborEncode } from 'cbor'
 
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 import type {
   DidServiceEndpoint,
+  LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
+import { encryptionKeyTypes, VerificationKeyType } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { checkServiceEndpointSyntax } from '../Did.utils.js'
-import {
-  LightDidSupportedVerificationKeyType,
-  NewLightDidAuthenticationKey,
-} from '../types.js'
-
-const ENCRYPTION_KEY_MAP_KEY = 'e'
-const SERVICES_KEY_MAP_KEY = 's'
+import { NewLightDidAuthenticationKey } from '../types.js'
 
 // Ecdsa not supported.
 export function getEncodingForVerificationKeyType(
   type: VerificationKeyType
 ): string | undefined {
   switch (type) {
-    case VerificationKeyType.Sr25519:
+    case 'sr25519':
       return '00'
-    case VerificationKeyType.Ed25519:
+    case 'ed25519':
       return '01'
     default:
       return undefined
   }
 }
+
 export function getVerificationKeyTypeForEncoding(
   encoding: string
 ): LightDidSupportedVerificationKeyType | undefined {
   switch (encoding) {
     case '00':
-      return VerificationKeyType.Sr25519
+      return 'sr25519'
     case '01':
-      return VerificationKeyType.Ed25519
+      return 'ed25519'
     default:
       return undefined
   }
 }
 
-const supportedEncryptionKeyTypes = new Set(Object.values(EncryptionKeyType))
+const supportedEncryptionKeyTypes = new Set(encryptionKeyTypes)
 
 /**
  * The options that can be used to create a light DID.
@@ -124,6 +120,14 @@ export function checkLightDidCreationDetails(
   })
 }
 
+const ENCRYPTION_KEY_MAP_KEY = 'e'
+const SERVICES_KEY_MAP_KEY = 's'
+
+interface SerializableStructure {
+  [ENCRYPTION_KEY_MAP_KEY]?: NewDidEncryptionKey
+  [SERVICES_KEY_MAP_KEY]?: DidServiceEndpoint[]
+}
+
 /**
  * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm
  * and encoding the result in Base58 format with a multibase prefix.
@@ -139,15 +143,15 @@ export function serializeAndEncodeAdditionalLightDidDetails({
 }: Pick<LightDidCreationDetails, 'encryptionKey' | 'serviceEndpoints'>):
   | string
   | null {
-  const objectToSerialize: Map<string, unknown> = new Map()
+  const objectToSerialize: SerializableStructure = {}
   if (encryptionKey) {
-    objectToSerialize.set(ENCRYPTION_KEY_MAP_KEY, encryptionKey)
+    objectToSerialize[ENCRYPTION_KEY_MAP_KEY] = encryptionKey
   }
   if (serviceEndpoints && serviceEndpoints.length) {
-    objectToSerialize.set(SERVICES_KEY_MAP_KEY, serviceEndpoints)
+    objectToSerialize[SERVICES_KEY_MAP_KEY] = serviceEndpoints
   }
 
-  if (!objectToSerialize.size) {
+  if (Object.keys(objectToSerialize).length === 0) {
     return null
   }
 
@@ -167,7 +171,7 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
     throw new SDKErrors.ERROR_DID_ERROR('Serialization algorithm not supported')
   }
   const withoutFlag = decoded.slice(1)
-  const deserialized: Map<string, unknown> = cborDecode(withoutFlag)
+  const deserialized: SerializableStructure = cborDecode(withoutFlag)
 
   return {
     encryptionKey: deserialized[ENCRYPTION_KEY_MAP_KEY],
