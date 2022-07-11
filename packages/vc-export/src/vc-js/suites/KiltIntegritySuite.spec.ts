@@ -116,7 +116,7 @@ describe('vc-js', () => {
 
     it('verifies Kilt Credential Digest Proof', async () => {
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential,
           suite,
           purpose,
@@ -130,7 +130,7 @@ describe('vc-js', () => {
       const { name, ...credentialSubject } = credential.credentialSubject
       expect(credentialSubject).not.toHaveProperty('name')
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential: { ...credential, credentialSubject },
           suite,
           purpose,
@@ -153,7 +153,7 @@ describe('vc-js', () => {
     it('detects tampering on props', async () => {
       tamperCred.credentialSubject.name = 'MacGyver'
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,

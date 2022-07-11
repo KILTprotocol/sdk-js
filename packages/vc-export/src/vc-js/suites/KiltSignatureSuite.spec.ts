@@ -149,7 +149,7 @@ describe('vc-js', () => {
 
     it('verifies Kilt Self Signed Proof', async () => {
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential,
           suite,
           purpose,
@@ -172,7 +172,7 @@ describe('vc-js', () => {
     it('detects tampering', async () => {
       tamperCred.id = tamperCred.id.replace('1', '2')
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
@@ -188,7 +188,7 @@ describe('vc-js', () => {
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,

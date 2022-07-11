@@ -131,7 +131,7 @@ describe('vc-js', () => {
 
     it('verifies Kilt Attestation Proof', async () => {
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential,
           suite,
           purpose,
@@ -151,7 +151,7 @@ describe('vc-js', () => {
 
     it('fails to verify Kilt Attestation Proof', async () => {
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential,
           suite,
           purpose,
@@ -168,7 +168,7 @@ describe('vc-js', () => {
 
     it('fails to verify Kilt Attestation Proof', async () => {
       expect(
-        vcjs.verifyCredential({
+        await vcjs.verifyCredential({
           credential,
           suite,
           purpose,
