@@ -32,7 +32,6 @@ import {
   SigningOptions,
   NewDidKey,
   SubmittableExtrinsic,
-  verificationKeyTypes,
   JsonEnum,
   NewDidVerificationKey,
   NewDidEncryptionKey,
@@ -56,6 +55,7 @@ import {
   checkServiceEndpointSyntax,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
+  isVerificationKey,
   makeJsonEnum,
 } from './Did.utils.js'
 
@@ -795,7 +795,7 @@ export function encodeDidSignature(
   key: DidVerificationKey,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  if (!verificationKeyTypes.some((kt) => kt === key.type)) {
+  if (!isVerificationKey(key)) {
     throw new SDKErrors.ERROR_DID_ERROR(
       `encodedDidSignature requires a verification key. A key of type "${
         (key as any).type

@@ -247,7 +247,8 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
 export function isVerificationKey(
   key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
 ): key is NewDidVerificationKey | DidVerificationKey {
-  return verificationKeyTypes.some((kt) => kt === key.type.toLowerCase())
+  const keyType = key.type.toLowerCase()
+  return verificationKeyTypes.some((kt) => kt === keyType)
 }
 
 /**

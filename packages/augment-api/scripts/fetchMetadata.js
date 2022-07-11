@@ -78,8 +78,5 @@ const timeout = new Promise((_, reject) => {
       console.error(`timeout while waiting for disconnect`)
       process.exit(exitCode)
     }, 10000)
-
-    await api.disconnect()
-    process.exit(exitCode)
   }
 })()
