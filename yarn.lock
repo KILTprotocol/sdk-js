@@ -1284,7 +1284,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/sdk-js@workspace:packages/sdk-js":
+"@kiltprotocol/sdk-js@workspace:*, @kiltprotocol/sdk-js@workspace:packages/sdk-js":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
@@ -1315,6 +1315,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/sdk-js": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^8.0.0

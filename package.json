@@ -21,6 +21,7 @@
     "style": "prettier -l packages",
     "style:fix": "yarn style --write",
     "test": "jest --coverage --group=unit",
+    "test:breaking": "jest --group=breaking",
     "test:ci": "yarn test --ci --forceExit",
     "test:integration": "jest --group=integration -w 3 --testTimeout=30000",
     "test:integration:ci": "jest --group=integration -b -w 3 --testTimeout=60000",

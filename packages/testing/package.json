@@ -34,6 +34,7 @@
   "dependencies": {
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
+    "@kiltprotocol/sdk-js": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^8.0.0",
