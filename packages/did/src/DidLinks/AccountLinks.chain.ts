@@ -24,7 +24,7 @@ import { assert, BN, u8aToHex, u8aToU8a, u8aWrapBytes } from '@polkadot/util'
 import Keyring from '@polkadot/keyring'
 
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
-import { makeJsonEnum } from '../Did.utils.js'
+import { makePolkadotTypedValue } from '../Did.utils.js'
 
 // TODO: update with string pattern types once available
 /// A KILT-chain specific address, encoded with the KILT 38 network prefix.
@@ -181,7 +181,7 @@ export async function getAccountSignedAssociationExtrinsic(
   return api.tx.didLookup.associateAccount(
     account,
     signatureValidUntilBlock,
-    makeJsonEnum(sigType, signature)
+    makePolkadotTypedValue(sigType, signature)
   )
 }
 

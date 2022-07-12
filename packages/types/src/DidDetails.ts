@@ -212,6 +212,6 @@ export type DidSignature = {
   signature: string
 }
 
-export type JsonEnum<K extends string, V> = K extends any
+export type TypedValue<K extends string, V> = K extends any
   ? { [P in K]: V }
   : never

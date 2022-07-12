@@ -14,7 +14,7 @@ import {
   DidIdentifier,
   DidKey,
   DidResourceUri,
-  JsonEnum,
+  TypedValue,
   NewDidVerificationKey,
   DidVerificationKey,
   DidServiceEndpoint,
@@ -475,11 +475,11 @@ export function assembleKeyUri(
  * @param value The value associated with the variant.
  * @returns `{ Variant: value }`.
  */
-export function makeJsonEnum<K extends string, V>(
+export function makePolkadotTypedValue<K extends string, V>(
   variant: K,
   value: V
-): JsonEnum<Capitalize<K>, V> {
+): TypedValue<K, V> {
   return {
-    [variant.replace(/^[a-z]/g, (s) => s.toUpperCase())]: value,
-  } as JsonEnum<Capitalize<K>, V>
+    [variant]: value,
+  } as TypedValue<K, V>
 }

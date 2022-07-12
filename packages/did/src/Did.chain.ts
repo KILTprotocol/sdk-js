@@ -32,8 +32,9 @@ import {
   SigningOptions,
   NewDidKey,
   SubmittableExtrinsic,
-  JsonEnum,
+  TypedValue,
   NewDidVerificationKey,
+  NewDidEncryptionKey,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -56,7 +57,7 @@ import {
   getVerificationKeyTypeForSigningAlgorithm,
   isEncryptionKey,
   isVerificationKey,
-  makeJsonEnum,
+  makePolkadotTypedValue,
 } from './Did.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
@@ -151,11 +152,31 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
   }
 }
 
-const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
+type ChainKeyType = Capitalize<DidKey['type']>
+
+const chainTypeToDidKeyType: Record<ChainKeyType, DidKey['type']> = {
   Sr25519: 'sr25519',
   Ed25519: 'ed25519',
   Ecdsa: 'ecdsa',
   X25519: 'x25519',
+}
+
+const didKeyTypeToChainType = Object.entries(chainTypeToDidKeyType).reduce<
+  Record<DidKey['type'], ChainKeyType>
+>((obj, [key, val]) => ({ ...obj, [val]: key }), {} as any)
+
+type ChainKeyTypeFor<T extends DidKey['type']> = Capitalize<T>
+type DidKeyTypeFor<T extends ChainKeyType> = Lowercase<T>
+
+function getDidKeyTypeForChainKeyType<T extends ChainKeyType>(
+  keyType: T
+): DidKeyTypeFor<T> {
+  return chainTypeToDidKeyType[keyType] as DidKeyTypeFor<T>
+}
+function getChainKeyTypeForDidKeyType<T extends DidKey['type']>(
+  keyType: T
+): ChainKeyTypeFor<T> {
+  return didKeyTypeToChainType[keyType] as ChainKeyTypeFor<T>
 }
 
 function decodeDidPublicKeyDetails(
@@ -165,7 +186,7 @@ function decodeDidPublicKeyDetails(
   const key = keyDetails.key.isPublicEncryptionKey
     ? keyDetails.key.asPublicEncryptionKey
     : keyDetails.key.asPublicVerificationKey
-  const keyType = chainTypeToDidKeyType[key.type]
+  const keyType = getDidKeyTypeForChainKeyType(key.type)
   if (!keyType) {
     throw new SDKErrors.ERROR_DID_ERROR(
       `Unsupported key type "${key.type}" found on chain.`
@@ -345,11 +366,11 @@ export async function queryDeletedDidIdentifiers(): Promise<DidIdentifier[]> {
 
 // ### EXTRINSICS types
 
-export type PublicKeyEnum<K extends NewDidKey> = JsonEnum<
-  Capitalize<K['type']>,
-  Uint8Array
+export type TypedPublicKey<K extends ChainKeyTypeFor<NewDidKey['type']>> =
+  TypedValue<K, Uint8Array>
+export type SignatureEnum = TypedPublicKey<
+  ChainKeyTypeFor<NewDidVerificationKey['type']>
 >
-export type SignatureEnum = PublicKeyEnum<NewDidVerificationKey>
 
 export type AuthorizeCallInput = {
   didIdentifier: DidIdentifier
@@ -375,9 +396,14 @@ interface IDidAuthorizedCallOperation extends Struct {
  * @param key Object describing data associated with a public key.
  * @returns Data restructured to allow SCALE encoding by polkadot api.
  */
-export function formatPublicKey<K extends NewDidKey>(key: K): PublicKeyEnum<K> {
+export function formatPublicKey<K extends NewDidKey>(
+  key: K
+): TypedPublicKey<ChainKeyTypeFor<K['type']>> {
   const { type, publicKey } = key
-  return makeJsonEnum(type, publicKey) as PublicKeyEnum<K>
+  return makePolkadotTypedValue(
+    getChainKeyTypeForDidKeyType(type),
+    publicKey
+  ) as TypedPublicKey<ChainKeyTypeFor<K['type']>>
 }
 
 function checkServiceEndpointInput(
@@ -487,10 +513,11 @@ export async function generateCreateTxFromCreationDetails(
     publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
     alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
+  const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
   return api.tx.did.create(
     encodedDidCreationDetails,
-    makeJsonEnum(
-      getVerificationKeyTypeForSigningAlgorithm(signature.alg),
+    makePolkadotTypedValue(
+      getChainKeyTypeForDidKeyType(keyType),
       signature.data
     )
   )
@@ -566,23 +593,24 @@ export async function generateCreateTxFromDidDetails(
  */
 export async function getSetKeyExtrinsic(
   keyRelationship: KeyRelationship,
-  key: NewDidKey
+  key: NewDidVerificationKey
 ): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  function requireVerificationKey(): PublicKeyEnum<NewDidVerificationKey> {
-    if (!isVerificationKey(key))
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Unacceptable key type for key with role ${keyRelationship}: ${key.type}`
-      )
-    return formatPublicKey(key)
+  if (!isVerificationKey(key)) {
+    throw new SDKErrors.ERROR_DID_ERROR(
+      `Unacceptable key type for key with role ${keyRelationship}: ${
+        (key as any).type
+      }`
+    )
   }
+  const typedKey = formatPublicKey(key)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   switch (keyRelationship) {
     case 'authentication':
-      return api.tx.did.setAuthenticationKey(requireVerificationKey())
+      return api.tx.did.setAuthenticationKey(typedKey)
     case 'capabilityDelegation':
-      return api.tx.did.setDelegationKey(requireVerificationKey())
+      return api.tx.did.setDelegationKey(typedKey)
     case 'assertionMethod':
-      return api.tx.did.setAttestationKey(requireVerificationKey())
+      return api.tx.did.setAttestationKey(typedKey)
     default:
       throw new SDKErrors.ERROR_DID_ERROR(
         `setting a key is only allowed for the following key types: ${[
@@ -638,13 +666,15 @@ export async function getRemoveKeyExtrinsic(
  */
 export async function getAddKeyExtrinsic(
   keyRelationship: KeyRelationship,
-  key: NewDidKey
+  key: NewDidEncryptionKey
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   if (keyRelationship === 'keyAgreement') {
     if (!isEncryptionKey(key))
       throw new SDKErrors.ERROR_DID_ERROR(
-        `Unacceptable key type for key with role ${keyRelationship}: ${key.type}`
+        `Unacceptable key type for key with role ${keyRelationship}: ${
+          (key as any).type
+        }`
       )
     const keyAsEnum = formatPublicKey(key)
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
@@ -779,10 +809,11 @@ export async function generateDidAuthenticatedTx({
     publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
+  const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
   return api.tx.did.submitDidCall(
     signableCall,
-    makeJsonEnum(
-      getVerificationKeyTypeForSigningAlgorithm(signature.alg),
+    makePolkadotTypedValue(
+      getChainKeyTypeForDidKeyType(keyType),
       signature.data
     )
   )
@@ -808,5 +839,8 @@ export function encodeDidSignature(
     )
   }
 
-  return makeJsonEnum(key.type, hexToU8a(signature.signature))
+  return makePolkadotTypedValue(
+    getChainKeyTypeForDidKeyType(key.type),
+    hexToU8a(signature.signature)
+  )
 }
