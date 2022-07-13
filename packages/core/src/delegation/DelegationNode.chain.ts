@@ -52,7 +52,7 @@ export async function getStoreAsRootTx(
  * Generate the extrinsic to store a given delegation node under a given delegation hierarchy.
  *
  * @param delegation The delegation node to store under the hierarchy specified as part of the node.
- * @param signature The DID signature of the delegee owner of the new delegation node.
+ * @param signature The DID signature of the delegate owner of the new delegation node.
  * @returns The SubmittableExtrinsic for the `addDelegation` call.
  */
 export async function getStoreAsDelegationTx(

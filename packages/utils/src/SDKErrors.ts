@@ -87,12 +87,7 @@ export class DelegationIdTypeError extends SDKError {}
 
 export class DelegationIdMissingError extends SDKError {}
 
-export class DelegationSignatureMissingError extends SDKError {
-  constructor() {
-    // TODO: better name
-    super("Delegatee's signature missing")
-  }
-}
+export class DelegateSignatureMissingError extends SDKError {}
 
 export class InvalidRootNodeError extends SDKError {}
 

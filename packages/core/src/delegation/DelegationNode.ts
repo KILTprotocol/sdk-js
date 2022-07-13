@@ -261,16 +261,16 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Signs the delegation hash from the delegations' property values.
    *
-   * This is required to anchor the delegation node on chain in order to enforce the delegee's consent.
+   * This is required to anchor the delegation node on chain in order to enforce the delegate's consent.
    *
-   * @param delegeeDid The DID of the delegee.
-   * @param sign The callback to sign the delegation creation details for the delegee.
+   * @param delegateDid The DID of the delegate.
+   * @param sign The callback to sign the delegation creation details for the delegate.
    * @param options The additional signing options.
-   * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
+   * @param options.keySelection The logic to select the right key to sign for the delegate. It defaults to picking the first key from the set of valid keys.
    * @returns The DID signature over the delegation **as a hex string**.
    */
-  public async delegeeSign(
-    delegeeDid: DidDetails,
+  public async delegateSign(
+    delegateDid: DidDetails,
     sign: SignCallback,
     {
       keySelection = DidUtils.defaultKeySelectionCallback,
@@ -279,19 +279,19 @@ export class DelegationNode implements IDelegationNode {
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
-      delegeeDid.getVerificationKeys('authentication')
+      delegateDid.getVerificationKeys('authentication')
     )
     if (!authenticationKey) {
       throw new SDKErrors.DidError(
-        `Delegee "${delegeeDid.uri}" does not have any authentication key`
+        `Delegate "${delegateDid.uri}" does not have any authentication key`
       )
     }
-    const delegeeSignature = await delegeeDid.signPayload(
+    const delegateSignature = await delegateDid.signPayload(
       this.generateHash(),
       sign,
       authenticationKey.id
     )
-    return DidChain.encodeDidSignature(authenticationKey, delegeeSignature)
+    return DidChain.encodeDidSignature(authenticationKey, delegateSignature)
   }
 
   /**
