@@ -212,6 +212,9 @@ export type DidSignature = {
   signature: string
 }
 
+/**
+ * Utility type to construct single-key object union types like `{foo: string} | {bar: string}` from string literal union types (`'foo' | 'bar'`).
+ */
 export type TypedValue<K extends string, V> = K extends any
   ? { [P in K]: V }
   : never
