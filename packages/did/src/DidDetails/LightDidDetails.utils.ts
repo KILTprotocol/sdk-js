@@ -120,36 +120,12 @@ export function checkLightDidCreationDetails(
   })
 }
 
-/**
- * The initial interface of Endpoint was using `urls` instead of spec-compliant `uris`,
- * and we have to keep it for the backward compatibility with existing light DIDs.
- */
-interface LegacyEndpoint extends Omit<DidServiceEndpoint, 'uris'> {
-  urls: string[]
-}
-
-function modernEndpointToLegacy({
-  id,
-  types,
-  uris,
-}: DidServiceEndpoint): LegacyEndpoint {
-  return { id, types, urls: uris }
-}
-
-function legacyEndpointToModern({
-  id,
-  types,
-  urls,
-}: LegacyEndpoint): DidServiceEndpoint {
-  return { id, types, uris: urls }
-}
-
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
 
 interface SerializableStructure {
   [ENCRYPTION_KEY_MAP_KEY]?: NewDidEncryptionKey
-  [SERVICES_KEY_MAP_KEY]?: LegacyEndpoint[]
+  [SERVICES_KEY_MAP_KEY]?: DidServiceEndpoint[]
 }
 
 /**
@@ -172,8 +148,7 @@ export function serializeAndEncodeAdditionalLightDidDetails({
     objectToSerialize[ENCRYPTION_KEY_MAP_KEY] = encryptionKey
   }
   if (serviceEndpoints && serviceEndpoints.length > 0) {
-    const legacyFormatEndpoints = serviceEndpoints.map(modernEndpointToLegacy)
-    objectToSerialize[SERVICES_KEY_MAP_KEY] = legacyFormatEndpoints
+    objectToSerialize[SERVICES_KEY_MAP_KEY] = serviceEndpoints
   }
 
   if (Object.keys(objectToSerialize).length === 0) {
@@ -200,8 +175,6 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
 
   return {
     encryptionKey: deserialized[ENCRYPTION_KEY_MAP_KEY],
-    serviceEndpoints: deserialized[SERVICES_KEY_MAP_KEY]?.map(
-      legacyEndpointToModern
-    ),
+    serviceEndpoints: deserialized[SERVICES_KEY_MAP_KEY],
   }
 }
