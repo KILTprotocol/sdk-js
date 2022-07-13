@@ -30,7 +30,6 @@ import type {
   IRequestForAttestation,
   SignCallback,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as Attestation from '../attestation/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
@@ -243,11 +242,11 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const keys = claimerDid.getVerificationKeys(KeyRelationship.authentication)
+  const keys = claimerDid.getVerificationKeys('authentication')
   const selectedKeyId = (await keySelection(keys))?.id
 
   if (!selectedKeyId) {
-    throw new SDKErrors.ERROR_UNSUPPORTED_KEY(KeyRelationship.authentication)
+    throw new SDKErrors.ERROR_UNSUPPORTED_KEY('authentication')
   }
 
   await RequestForAttestation.signWithDidKey(

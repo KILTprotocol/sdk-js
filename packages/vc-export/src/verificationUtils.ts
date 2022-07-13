@@ -37,12 +37,7 @@ export interface VerificationResult {
   errors: Error[]
 }
 
-export enum AttestationStatus {
-  valid = 'valid',
-  invalid = 'invalid',
-  revoked = 'revoked',
-  unknown = 'unknown',
-}
+export type AttestationStatus = 'valid' | 'invalid' | 'revoked' | 'unknown'
 
 export interface AttestationVerificationResult extends VerificationResult {
   status: AttestationStatus
@@ -153,7 +148,7 @@ export async function verifyAttestedProof(
   credential: VerifiableCredential,
   proof: AttestedProof
 ): Promise<AttestationVerificationResult> {
-  let status: AttestationStatus = AttestationStatus.unknown
+  let status: AttestationStatus = 'unknown'
   try {
     // check proof
     const type = proof['@type'] || proof.type
@@ -188,14 +183,14 @@ export async function verifyAttestedProof(
     const onChain = await Attestation.query(claimHash)
     // if not found, credential has not been attested, proof is invalid
     if (!onChain) {
-      status = AttestationStatus.invalid
+      status = 'invalid'
       throw new Error(
         `attestation for credential with id ${claimHash} not found`
       )
     }
     // if data on proof does not correspond to data on chain, proof is incorrect
     if (onChain.owner !== attester || onChain.delegationId !== delegationId) {
-      status = AttestationStatus.invalid
+      status = 'invalid'
       throw new Error(
         `proof not matching on-chain data: proof ${{
           attester,
@@ -205,7 +200,7 @@ export async function verifyAttestedProof(
     }
     // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
     if (onChain.revoked) {
-      status = AttestationStatus.revoked
+      status = 'revoked'
       throw new Error('attestation revoked')
     }
   } catch (e) {
@@ -215,7 +210,7 @@ export async function verifyAttestedProof(
       status,
     }
   }
-  return { verified: true, errors: [], status: AttestationStatus.valid }
+  return { verified: true, errors: [], status: 'valid' }
 }
 
 /**

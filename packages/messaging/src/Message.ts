@@ -9,7 +9,7 @@ import {
   CompressedMessageBody,
   DecryptCallback,
   DidEncryptionKey,
-  DidPublicKey,
+  DidResourceUri,
   EncryptCallback,
   EncryptionKeyType,
   ICType,
@@ -18,15 +18,9 @@ import {
   IEncryptedMessageContents,
   IMessage,
   MessageBody,
-  MessageBodyType,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import {
-  DidDetails,
-  DidResolver,
-  EncryptionAlgorithms,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+import { DidDetails, DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -38,11 +32,6 @@ import {
 
 export class Message implements IMessage {
   /**
-   * Lists all possible body types of [[Message]].
-   */
-  public static readonly BodyType = MessageBodyType
-
-  /**
    * Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
    *
    * @param message The [[Message]] object which needs to be decrypted.
@@ -52,7 +41,7 @@ export class Message implements IMessage {
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
-      case Message.BodyType.REQUEST_ATTESTATION:
+      case 'request-attestation':
         {
           const requestAttestation = body
           if (
@@ -65,7 +54,7 @@ export class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_ATTESTATION:
+      case 'submit-attestation':
         {
           const submitAttestation = body
           if (
@@ -78,7 +67,7 @@ export class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_CREDENTIAL:
+      case 'submit-credential':
         {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach((claim) => {
@@ -142,7 +131,7 @@ export class Message implements IMessage {
       DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
         receiverKeyDetails.type as EncryptionKeyType
       )
-    if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
+    if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
       throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )
@@ -252,7 +241,7 @@ export class Message implements IMessage {
     senderKeyId: DidEncryptionKey['id'],
     senderDetails: DidDetails,
     encryptCallback: EncryptCallback,
-    receiverKeyUri: DidPublicKey['uri'],
+    receiverKeyUri: DidResourceUri,
     {
       resolver = DidResolver,
     }: {
@@ -284,7 +273,7 @@ export class Message implements IMessage {
       DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
         senderKey.type as EncryptionKeyType
       )
-    if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
+    if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
       throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
       )

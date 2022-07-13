@@ -9,7 +9,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { KeyRelationship } from '@kiltprotocol/types'
+import { keyRelationships as allKeyRelationships } from '@kiltprotocol/types'
 
 import type { DidConstructorDetails } from '../types.js'
 import { validateKiltDidUri } from '../Did.utils.js'
@@ -20,19 +20,16 @@ export function checkDidCreationDetails({
   keyRelationships,
 }: DidConstructorDetails): void {
   validateKiltDidUri(uri, false)
-  if (keyRelationships[KeyRelationship.authentication]?.size !== 1) {
+  if (keyRelationships.authentication?.size !== 1) {
     throw Error(
-      `One and only one ${KeyRelationship.authentication} key is required on any instance of DidDetails`
+      `One and only one ${'authentication'} key is required on any instance of DidDetails`
     )
   }
-  const allowedKeyRelationships = new Set([
-    ...Object.values(KeyRelationship),
-    'none',
-  ])
+  const allowedKeyRelationships = new Set([...allKeyRelationships, 'none'])
   Object.keys(keyRelationships).forEach((keyRel) => {
     if (!allowedKeyRelationships.has(keyRel)) {
       throw Error(
-        `key relationship ${keyRel} is not recognized. Allowed: ${KeyRelationship}`
+        `key relationship ${keyRel} is not recognized. Allowed: ${allKeyRelationships}`
       )
     }
   })

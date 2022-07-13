@@ -15,11 +15,7 @@ import jsonld from 'jsonld'
 
 import { base58Encode, randomAsHex } from '@polkadot/util-crypto'
 
-import {
-  DidDocumentPublicKeyType,
-  DidPublicKey,
-  DidUri,
-} from '@kiltprotocol/types'
+import { DidResourceUri, DidUri } from '@kiltprotocol/types'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -27,9 +23,9 @@ import { KiltSignatureSuite as Suite } from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
 import { documentLoader as kiltDocumentLoader } from '../documentLoader'
 import type {
-  VerifiableCredential,
-  SelfSignedProof,
   IPublicKeyRecord,
+  SelfSignedProof,
+  VerifiableCredential,
 } from '../../types'
 import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
 
@@ -52,10 +48,10 @@ beforeAll(async () => {
     if (uri.startsWith('did:kilt:')) {
       const { identifier, fragment, did } = DidUtils.parseDidUri(uri as DidUri)
       const key: IPublicKeyRecord = {
-        uri: uri as DidPublicKey['uri'],
+        uri: uri as DidResourceUri,
         publicKeyBase58: base58Encode(Crypto.decodeAddress(identifier)),
         controller: did,
-        type: DidDocumentPublicKeyType.Ed25519VerificationKey,
+        type: 'Ed25519VerificationKey2018',
       }
       if (fragment) {
         return { documentUrl: uri, document: key }

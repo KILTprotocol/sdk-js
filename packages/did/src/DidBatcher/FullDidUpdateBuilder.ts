@@ -19,9 +19,8 @@ import type {
   DidServiceEndpoint,
   DidKey,
   SubmittableExtrinsic,
-  IDidDetails,
+  DidUri,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
@@ -56,7 +55,7 @@ export type FullDidUpdateCallback = (
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
   protected identifier: DidIdentifier
-  protected uri: IDidDetails['uri']
+  protected uri: DidUri
   protected batch: Extrinsic[] = []
 
   protected oldAuthenticationKey: DidVerificationKey
@@ -101,7 +100,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     this.oldDelegationKey = details.delegationKey
 
     details
-      .getEncryptionKeys(KeyRelationship.keyAgreement)
+      .getEncryptionKeys('keyAgreement')
       .forEach(({ id, ...keyDetails }) =>
         this.oldKeyAgreementKeys.set(id, keyDetails)
       )

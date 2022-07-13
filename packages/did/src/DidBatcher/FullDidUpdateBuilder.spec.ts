@@ -22,14 +22,11 @@ import {
   DidKey,
   DidServiceEndpoint,
   DidVerificationKey,
-  EncryptionKeyType,
-  KeyRelationship,
   KeyringPair,
   NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
   SignCallback,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { FullDidUpdateBuilder } from './FullDidUpdateBuilder'
@@ -64,7 +61,7 @@ describe('FullDidUpdateBuilder', () => {
       >(
         new Map(
           fullDid
-            .getEncryptionKeys(KeyRelationship.keyAgreement)
+            .getEncryptionKeys('keyAgreement')
             .map(({ id, ...details }) => [id, { ...details }])
         )
       )
@@ -99,7 +96,7 @@ describe('FullDidUpdateBuilder', () => {
     })
     const newAuthenticationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(33).fill(1)),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
     }
 
     it('fails if the authentication key is set twice', async () => {
@@ -127,12 +124,12 @@ describe('FullDidUpdateBuilder', () => {
     let fullDid: FullDidDetails
     const newEncryptionKey: NewDidEncryptionKey = {
       publicKey: Uint8Array.from(Array(32).fill(1)),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     }
     beforeAll(async () => {
       const { keypair } = makeSigningKeyTool()
       fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
-        keyRelationships: new Set([KeyRelationship.keyAgreement]),
+        keyRelationships: new Set(['keyAgreement']),
       })
     })
 
@@ -237,12 +234,12 @@ describe('FullDidUpdateBuilder', () => {
     let fullDid: FullDidDetails
     const newAttestationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(33).fill(11)),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
     }
     beforeAll(async () => {
       const { keypair } = makeSigningKeyTool()
       fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
-        keyRelationships: new Set([KeyRelationship.assertionMethod]),
+        keyRelationships: new Set(['assertionMethod']),
       })
     })
     describe('.setAttestationKey()', () => {
@@ -325,12 +322,12 @@ describe('FullDidUpdateBuilder', () => {
     let fullDid: FullDidDetails
     const newDelegationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(33).fill(21)),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
     }
     beforeAll(async () => {
       const { keypair } = makeSigningKeyTool()
       fullDid = await createLocalDemoFullDidFromKeypair(keypair, {
-        keyRelationships: new Set([KeyRelationship.capabilityDelegation]),
+        keyRelationships: new Set(['capabilityDelegation']),
       })
     })
     describe('.setDelegationKey()', () => {

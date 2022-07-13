@@ -56,7 +56,7 @@ export function makeEncryptCallback({
   secretKey,
 }: {
   secretKey: Uint8Array
-  type: EncryptionKeyType.X25519
+  type: 'x25519'
 }): EncryptCallback {
   return async function encryptCallback({ data, peerPublicKey, alg }) {
     const { box, nonce } = Crypto.encryptAsymmetric(
@@ -80,7 +80,7 @@ export function makeDecryptCallback({
   secretKey,
 }: {
   secretKey: Uint8Array
-  type: EncryptionKeyType.X25519
+  type: 'x25519'
 }): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey, alg }) {
     const decrypted = Crypto.decryptAsymmetric(
@@ -114,7 +114,7 @@ export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
   const keypair = {
     secretKey,
     publicKey,
-    type: EncryptionKeyType.X25519,
+    type: 'x25519' as EncryptionKeyType,
   }
 
   const encrypt = makeEncryptCallback(keypair)
@@ -144,9 +144,9 @@ export function makeSignCallback(keypair: KeyringPair): SignCallback {
 }
 
 const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
-  [SigningAlgorithms.Ed25519]: 'ed25519',
-  [SigningAlgorithms.Sr25519]: 'sr25519',
-  [SigningAlgorithms.EcdsaSecp256k1]: 'ecdsa',
+  ed25519: 'ed25519',
+  sr25519: 'sr25519',
+  'ecdsa-secp256k1': 'ecdsa',
 }
 
 export interface KeyTool {
@@ -162,7 +162,7 @@ export interface KeyTool {
  * @returns The keypair, matching sign callback, a key usable as DID authentication key.
  */
 export function makeSigningKeyTool(
-  alg: SigningAlgorithms = SigningAlgorithms.Sr25519
+  alg: SigningAlgorithms = 'sr25519'
 ): KeyTool {
   const type = keypairTypeForAlg[alg]
   const seed = randomAsHex(32)
@@ -228,9 +228,9 @@ export async function createLocalDemoFullDidFromKeypair(
   keypair: KeyringPair,
   {
     keyRelationships = new Set([
-      KeyRelationship.assertionMethod,
-      KeyRelationship.capabilityDelegation,
-      KeyRelationship.keyAgreement,
+      'assertionMethod',
+      'capabilityDelegation',
+      'keyAgreement',
     ]),
     endpoints = {},
   }: {
@@ -257,7 +257,7 @@ export async function createLocalDemoFullDidFromKeypair(
     serviceEndpoints: endpoints,
   }
 
-  if (keyRelationships.has(KeyRelationship.keyAgreement)) {
+  if (keyRelationships.has('keyAgreement')) {
     const encryptionKeypair = makeEncryptionKeyTool(
       `${keypair.publicKey}//enc`
     ).keypair
@@ -268,14 +268,14 @@ export async function createLocalDemoFullDidFromKeypair(
     fullDidCreationDetails.keyRelationships.keyAgreement = new Set([encKey.id])
     fullDidCreationDetails.keys[encKey.id] = encKey
   }
-  if (keyRelationships.has(KeyRelationship.assertionMethod)) {
+  if (keyRelationships.has('assertionMethod')) {
     const attKey = makeDidKeyFromKeypair(keypair.derive('//att'))
     fullDidCreationDetails.keyRelationships.assertionMethod = new Set([
       attKey.id,
     ])
     fullDidCreationDetails.keys[attKey.id] = attKey
   }
-  if (keyRelationships.has(KeyRelationship.capabilityDelegation)) {
+  if (keyRelationships.has('capabilityDelegation')) {
     const delKey = makeDidKeyFromKeypair(keypair.derive('//del'))
     fullDidCreationDetails.keyRelationships.capabilityDelegation = new Set([
       delKey.id,

@@ -19,7 +19,7 @@
 import type {
   CompressedCredential,
   CompressedRequestForAttestation,
-  DidPublicKey,
+  DidResourceUri,
   DidVerificationKey,
   Hash,
   IClaim,
@@ -30,7 +30,6 @@ import type {
   IRequestForAttestation,
   SignCallback,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import {
   DidDetails,
@@ -134,7 +133,7 @@ export function makeSigningData(
 export async function addSignature(
   req4Att: IRequestForAttestation,
   sig: string | Uint8Array,
-  keyUri: DidPublicKey['uri'],
+  keyUri: DidResourceUri,
   {
     challenge,
   }: {
@@ -312,7 +311,7 @@ export async function verifySignature(
   const { verified } = await verifyDidSignature({
     signature: claimerSignature,
     message: signingData,
-    expectedVerificationMethod: KeyRelationship.authentication,
+    expectedVerificationMethod: 'authentication',
     resolver,
   })
   return verified

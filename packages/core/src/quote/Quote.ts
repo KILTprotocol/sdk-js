@@ -20,11 +20,11 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
-  DidPublicKey,
+  DidResourceUri,
   DidSignature,
+  DidUri,
   DidVerificationKey,
   ICostBreakdown,
-  IDidDetails,
   IDidResolver,
   IQuote,
   IQuoteAgreement,
@@ -32,7 +32,6 @@ import type {
   IRequestForAttestation,
   SignCallback,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import {
   DidDetails,
@@ -97,7 +96,7 @@ export async function createAttesterSignedQuote(
   }
 
   const authenticationKey = await keySelection(
-    attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
+    attesterIdentity.getVerificationKeys('authentication')
   )
   if (!authenticationKey) {
     throw new SDKErrors.ERROR_DID_ERROR(
@@ -138,7 +137,7 @@ export async function verifyAttesterSignedQuote(
   const result = await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
+    expectedVerificationMethod: 'authentication',
     resolver,
   })
 
@@ -169,7 +168,7 @@ export async function verifyAttesterSignedQuote(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: IRequestForAttestation['rootHash'],
-  attesterIdentity: IDidDetails['uri'],
+  attesterIdentity: DidUri,
   claimerIdentity: DidDetails,
   sign: SignCallback,
   {
@@ -191,12 +190,12 @@ export async function createQuoteAgreement(
   await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
+    expectedVerificationMethod: 'authentication',
     resolver,
   })
 
   const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
+    claimerIdentity.getVerificationKeys('authentication')
   )
   if (!claimerAuthenticationKey) {
     throw new SDKErrors.ERROR_DID_ERROR(
@@ -299,13 +298,11 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
   }
 }
 
-function compressSignature(comp: DidSignature): [string, DidPublicKey['uri']] {
+function compressSignature(comp: DidSignature): [string, DidResourceUri] {
   return [comp.signature, comp.keyUri]
 }
 
-function decompressSignature(
-  comp: [string, DidPublicKey['uri']]
-): DidSignature {
+function decompressSignature(comp: [string, DidResourceUri]): DidSignature {
   return { signature: comp[0], keyUri: comp[1] }
 }
 

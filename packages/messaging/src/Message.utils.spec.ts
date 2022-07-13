@@ -35,7 +35,6 @@ import type {
   CompressedSubmitDelegationApproval,
   CompressedSubmitTerms,
   CompressedTerms,
-  DidPublicKey,
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
@@ -44,7 +43,6 @@ import type {
   ICredential,
   ICType,
   IDelegationData,
-  IDidDetails,
   IDidResolver,
   IInformCreateDelegation,
   IInformDelegationCreation,
@@ -95,8 +93,8 @@ import { Message } from './Message'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildCredential(
-  claimerDid: IDidDetails['uri'],
-  attesterDid: IDidDetails['uri'],
+  claimerDid: DidUri,
+  attesterDid: DidUri,
   contents: IClaim['contents'],
   legitimations: ICredential[]
 ): Promise<ICredential> {
@@ -231,7 +229,7 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveDoc = async (
-      didUri: IDidDetails['uri']
+      didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
       if (didUri === identityAlice.uri) {
         return {
@@ -253,7 +251,7 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (
-      keyUri: DidPublicKey['uri']
+      keyUri: DidResourceUri
     ): Promise<ResolvedDidKey | null> => {
       const { identifier, type, version, fragment, encodedDetails } =
         DidUtils.parseDidUri(keyUri)
@@ -629,125 +627,119 @@ describe('Messaging Utilities', () => {
 
     requestTermsBody = {
       content: requestTermsContent,
-      type: Message.BodyType.REQUEST_TERMS,
+      type: 'request-terms',
     }
 
     compressedRequestTermsBody = [
-      Message.BodyType.REQUEST_TERMS,
+      'request-terms',
       compressedRequestTermsContent,
     ]
 
     submitTermsBody = {
       content: submitTermsContent,
-      type: Message.BodyType.SUBMIT_TERMS,
+      type: 'submit-terms',
     }
 
-    compressedSubmitTermsBody = [
-      Message.BodyType.SUBMIT_TERMS,
-      compressedSubmitTermsContent,
-    ]
+    compressedSubmitTermsBody = ['submit-terms', compressedSubmitTermsContent]
 
     rejectTermsBody = {
       content: rejectTermsContent,
-      type: Message.BodyType.REJECT_TERMS,
+      type: 'reject-terms',
     }
 
-    compressedRejectTermsBody = [
-      Message.BodyType.REJECT_TERMS,
-      compressedRejectTermsContent,
-    ]
+    compressedRejectTermsBody = ['reject-terms', compressedRejectTermsContent]
 
     requestAttestationBody = {
       content: requestAttestationContent,
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     compressedRequestAttestationBody = [
-      Message.BodyType.REQUEST_ATTESTATION,
+      'request-attestation',
       compressedRequestAttestationContent,
     ]
 
     submitAttestationBody = {
       content: submitAttestationContent,
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     compressedSubmitAttestationBody = [
-      Message.BodyType.SUBMIT_ATTESTATION,
+      'submit-attestation',
       compressedSubmitAttestationContent,
     ]
 
     rejectAttestationForClaimBody = {
       content: requestAttestationContent.requestForAttestation.rootHash,
-      type: Message.BodyType.REJECT_ATTESTATION,
+      type: 'reject-attestation',
     }
     requestCredentialBody = {
       content: requestCredentialContent,
-      type: Message.BodyType.REQUEST_CREDENTIAL,
+      type: 'request-credential',
     }
 
     compressedRequestCredentialBody = [
-      Message.BodyType.REQUEST_CREDENTIAL,
+      'request-credential',
       compressedRequestCredentialContent,
     ]
 
     submitCredentialBody = {
       content: submitCredentialContent,
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     compressedSubmitCredentialBody = [
-      Message.BodyType.SUBMIT_CREDENTIAL,
+      'submit-credential',
       compressedSubmitCredentialContent,
     ]
 
     acceptCredentialBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.ACCEPT_CREDENTIAL,
+      type: 'accept-credential',
     }
 
     rejectCredentialBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.REJECT_CREDENTIAL,
+      type: 'reject-credential',
     }
 
     requestAcceptDelegationBody = {
       content: requestAcceptDelegationContent,
-      type: Message.BodyType.REQUEST_ACCEPT_DELEGATION,
+      type: 'request-accept-delegation',
     }
 
     compressedRequestAcceptDelegationBody = [
-      Message.BodyType.REQUEST_ACCEPT_DELEGATION,
+      'request-accept-delegation',
       compressedRequestAcceptDelegationContent,
     ]
 
     submitAcceptDelegationBody = {
       content: submitAcceptDelegationContent,
-      type: Message.BodyType.SUBMIT_ACCEPT_DELEGATION,
+      type: 'submit-accept-delegation',
     }
 
     compressedSubmitAcceptDelegationBody = [
-      Message.BodyType.SUBMIT_ACCEPT_DELEGATION,
+      'submit-accept-delegation',
       compressedSubmitAcceptDelegationContent,
     ]
 
     rejectAcceptDelegationBody = {
       content: rejectAcceptDelegationContent,
-      type: Message.BodyType.REJECT_ACCEPT_DELEGATION,
+      type: 'reject-accept-delegation',
     }
 
     compressedRejectAcceptDelegationBody = [
-      Message.BodyType.REJECT_ACCEPT_DELEGATION,
+      'reject-accept-delegation',
       compressedRejectAcceptDelegationContent,
     ]
 
     informCreateDelegationBody = {
       content: informCreateDelegationContent,
-      type: Message.BodyType.INFORM_CREATE_DELEGATION,
+      type: 'inform-create-delegation',
     }
 
     compressedInformCreateDelegationBody = [
-      Message.BodyType.INFORM_CREATE_DELEGATION,
+      'inform-create-delegation',
       compressedInformCreateDelegationContent,
     ]
   })
@@ -861,7 +853,7 @@ describe('Messaging Utilities', () => {
 
     const malformed = {
       content: '',
-      type: 'Message.BodyType',
+      type: 'MessageBodyType',
     } as unknown as MessageBody
 
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(

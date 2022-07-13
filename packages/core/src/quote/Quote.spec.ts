@@ -26,11 +26,7 @@ import type {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import {
-  DidDetails,
-  SigningAlgorithms,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+import { DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
   makeSigningKeyTool,
@@ -42,10 +38,10 @@ import { QuoteSchema } from './QuoteSchema'
 
 describe('Quote', () => {
   let claimerIdentity: DidDetails
-  const claimer = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  const claimer = makeSigningKeyTool('ed25519')
 
   let attesterIdentity: DidDetails
-  const attester = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  const attester = makeSigningKeyTool('ed25519')
 
   let invalidCost: ICostBreakdown
   let date: string
@@ -250,8 +246,8 @@ describe('Quote compression', () => {
   })()
 
   beforeAll(async () => {
-    const claimer = makeSigningKeyTool(SigningAlgorithms.Ed25519)
-    const attester = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    const claimer = makeSigningKeyTool('ed25519')
+    const attester = makeSigningKeyTool('ed25519')
 
     claimerIdentity = await createLocalDemoFullDidFromKeypair(claimer.keypair)
     attesterIdentity = await createLocalDemoFullDidFromKeypair(attester.keypair)

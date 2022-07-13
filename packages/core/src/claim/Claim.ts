@@ -20,19 +20,19 @@
 import { hexToBn } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
 import type {
-  IClaim,
-  IDidDetails,
-  ICType,
   CompressedClaim,
-  PartialClaim,
   CompressedPartialClaim,
+  DidUri,
+  IClaim,
+  ICType,
+  PartialClaim,
 } from '@kiltprotocol/types'
-import { DataUtils, Crypto, jsonabc, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, DataUtils, jsonabc, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import {
-  verifyClaimAgainstSchema,
-  verifyClaimAgainstNestedSchemas,
   getIdForCTypeHash,
+  verifyClaimAgainstNestedSchemas,
+  verifyClaimAgainstSchema,
 } from '../ctype/index.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
@@ -264,7 +264,7 @@ export function fromNestedCTypeClaim(
   cTypeInput: ICType,
   nestedCType: Array<ICType['schema']>,
   claimContents: IClaim['contents'],
-  claimOwner: IDidDetails['uri']
+  claimOwner: DidUri
 ): IClaim {
   if (
     !verifyClaimAgainstNestedSchemas(
@@ -285,7 +285,7 @@ export function fromNestedCTypeClaim(
 }
 
 /**
- * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and IDidDetails['uri'].
+ * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and [[DidUri]].
  *
  * @param ctypeInput [[ICType]] for which the Claim will be built.
  * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
@@ -297,7 +297,7 @@ export function fromNestedCTypeClaim(
 export function fromCTypeAndClaimContents(
   ctypeInput: ICType,
   claimContents: IClaim['contents'],
-  claimOwner: IDidDetails['uri']
+  claimOwner: DidUri
 ): IClaim {
   if (ctypeInput.schema) {
     if (!verifyAgainstCType(claimContents, ctypeInput.schema)) {

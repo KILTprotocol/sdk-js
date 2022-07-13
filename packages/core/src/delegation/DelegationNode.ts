@@ -6,13 +6,12 @@
  */
 
 import {
+  DidUri,
   DidVerificationKey,
   IAttestation,
   ICType,
   IDelegationHierarchyDetails,
   IDelegationNode,
-  IDidDetails,
-  KeyRelationship,
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -69,7 +68,7 @@ export class DelegationNode implements IDelegationNode {
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
   private childrenIdentifiers: Array<IDelegationNode['id']> = []
-  public readonly account: IDidDetails['uri']
+  public readonly account: DidUri
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean
@@ -281,7 +280,7 @@ export class DelegationNode implements IDelegationNode {
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
-      delegeeDid.getVerificationKeys(KeyRelationship.authentication)
+      delegeeDid.getVerificationKeys('authentication')
     )
     if (!authenticationKey) {
       throw new SDKErrors.ERROR_DID_ERROR(
@@ -349,7 +348,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    did: IDidDetails['uri']
+    did: DidUri
   ): Promise<{ steps: number; node: DelegationNode | null }> {
     if (this.account === did) {
       return {
@@ -394,9 +393,7 @@ export class DelegationNode implements IDelegationNode {
    * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async getRevokeTx(
-    did: IDidDetails['uri']
-  ): Promise<SubmittableExtrinsic> {
+  public async getRevokeTx(did: DidUri): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
       throw new SDKErrors.ERROR_UNAUTHORIZED(

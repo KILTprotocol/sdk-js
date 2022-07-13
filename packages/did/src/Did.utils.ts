@@ -11,16 +11,18 @@ import { ApiPromise } from '@polkadot/api'
 import { u32 } from '@polkadot/types'
 
 import {
-  DidKey,
-  DidPublicKey,
-  EncryptionKeyType,
-  IDidDetails,
   DidIdentifier,
-  NewDidKey,
-  VerificationKeyType,
+  DidKey,
+  DidResourceUri,
   DidServiceEndpoint,
+  DidUri,
   EncryptionAlgorithms,
+  EncryptionKeyType,
+  encryptionKeyTypes,
+  NewDidKey,
   SigningAlgorithms,
+  VerificationKeyType,
+  verificationKeyTypes,
 } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -65,7 +67,7 @@ export function getKiltDidFromIdentifier(
   didType: 'full' | 'light',
   version?: number,
   encodedDetails?: string
-): IDidDetails['uri'] {
+): DidUri {
   const typeString = didType === 'full' ? '' : `light:`
   let versionValue = version
   // If no version is specified, take the default one depending on the requested DID type.
@@ -79,7 +81,7 @@ export function getKiltDidFromIdentifier(
 }
 
 export type IDidParsingResult = {
-  did: IDidDetails['uri']
+  did: DidUri
   version: number
   type: 'light' | 'full'
   identifier: DidIdentifier
@@ -94,7 +96,7 @@ export type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parseDidUri(didUri: IDidDetails['uri']): IDidParsingResult {
+export function parseDidUri(didUri: DidUri): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
     const version = matches.version
@@ -139,9 +141,7 @@ export function parseDidUri(didUri: IDidDetails['uri']): IDidParsingResult {
  * @param didUri A KILT DID uri as a string.
  * @returns The identifier contained within the DID uri.
  */
-export function getIdentifierFromKiltDid(
-  didUri: IDidDetails['uri']
-): DidIdentifier {
+export function getIdentifierFromKiltDid(didUri: DidUri): DidIdentifier {
   return parseDidUri(didUri).identifier
 }
 
@@ -152,10 +152,7 @@ export function getIdentifierFromKiltDid(
  * @param didB A second KILT DID uri as a string.
  * @returns Whether didA and didB refer to the same DID subject.
  */
-export function isSameSubject(
-  didA: IDidDetails['uri'],
-  didB: IDidDetails['uri']
-): boolean {
+export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
   // eslint-disable-next-line prefer-const
   let { identifier: identifierA, type: typeA } = parseDidUri(didA)
   // eslint-disable-next-line prefer-const
@@ -171,9 +168,9 @@ export function isSameSubject(
 }
 
 const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
-  [VerificationKeyType.Ed25519]: SigningAlgorithms.Ed25519,
-  [VerificationKeyType.Sr25519]: SigningAlgorithms.Sr25519,
-  [VerificationKeyType.Ecdsa]: SigningAlgorithms.EcdsaSecp256k1,
+  ed25519: 'ed25519',
+  sr25519: 'sr25519',
+  ecdsa: 'ecdsa-secp256k1',
 }
 const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
   (obj, [key, value]) => ({ ...obj, [value]: key }),
@@ -206,7 +203,7 @@ export function getVerificationKeyTypeForSigningAlgorithm(
 
 const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
   {
-    [EncryptionKeyType.X25519]: EncryptionAlgorithms.NaclBox,
+    x25519: 'x25519-xsalsa20-poly1305',
   }
 
 /**
@@ -223,7 +220,7 @@ export function getEncryptionAlgorithmForEncryptionKeyType(
 
 const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
   {
-    [EncryptionAlgorithms.NaclBox]: EncryptionKeyType.X25519,
+    'x25519-xsalsa20-poly1305': 'x25519',
   }
 
 /**
@@ -245,7 +242,7 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
  * @returns True if the key is a verification key, false otherwise.
  */
 export function isVerificationKey(key: NewDidKey | DidKey): boolean {
-  return Object.values(VerificationKeyType).some((kt) => kt === key.type)
+  return verificationKeyTypes.some((kt) => kt === key.type)
 }
 
 /**
@@ -255,7 +252,7 @@ export function isVerificationKey(key: NewDidKey | DidKey): boolean {
  * @returns True if the key is an encryption key, false otherwise.
  */
 export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
-  return Object.values(EncryptionKeyType).some((kt) => kt === key.type)
+  return encryptionKeyTypes.some((kt) => kt === key.type)
 }
 
 /**
@@ -269,13 +266,11 @@ export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
 export function validateKiltDidUri(
   input: unknown,
   allowFragment = false
-): input is IDidDetails['uri'] {
+): input is DidUri {
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, type, fragment } = parseDidUri(
-    input as IDidDetails['uri']
-  )
+  const { identifier, type, fragment } = parseDidUri(input as DidUri)
   if (!allowFragment && fragment) {
     throw new SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
@@ -450,9 +445,9 @@ export function checkServiceEndpointSizeConstraints(
  * @returns The full public key URI, which includes the subject's DID and the provided key ID.
  */
 export function assembleKeyUri(
-  did: IDidDetails['uri'],
+  did: DidUri,
   keyId: DidKey['id']
-): DidPublicKey['uri'] {
+): DidResourceUri {
   if (parseDidUri(did).fragment) {
     throw new SDKErrors.ERROR_DID_ERROR(
       `Cannot assemble key URI from a DID that already has a fragment: ${did}`

@@ -36,7 +36,6 @@ import {
   DidServiceEndpoint,
   DidSignature,
   DidVerificationKey,
-  EncryptionKeyType,
   DidIdentifier,
   IIdentity,
   KeyRelationship,
@@ -45,6 +44,7 @@ import {
   NewDidKey,
   SubmittableExtrinsic,
   VerificationKeyType,
+  verificationKeyTypes,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -187,10 +187,10 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
 }
 
 const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
-  Sr25519: VerificationKeyType.Sr25519,
-  Ed25519: VerificationKeyType.Ed25519,
-  Ecdsa: VerificationKeyType.Ecdsa,
-  X25519: EncryptionKeyType.X25519,
+  Sr25519: 'sr25519',
+  Ed25519: 'ed25519',
+  Ecdsa: 'ecdsa',
+  X25519: 'x25519',
 }
 
 function decodeDidPublicKeyDetails(
@@ -471,7 +471,7 @@ export async function generateCreateTxFromCreationDetails(
   }
 
   const newKeyAgreementKeys = keyAgreementKeys.map(({ publicKey }) =>
-    formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
+    formatPublicKey({ type: 'x25519', publicKey })
   )
 
   const newAssertionKey = assertionKey
@@ -548,10 +548,10 @@ export async function generateCreateTxFromDidDetails(
     )
   }
 
-  const keyAgreementKeys = did.getEncryptionKeys(KeyRelationship.keyAgreement)
+  const keyAgreementKeys = did.getEncryptionKeys('keyAgreement')
 
   // For now, it only takes the first attestation key, if present.
-  const assertionKeys = did.getVerificationKeys(KeyRelationship.assertionMethod)
+  const assertionKeys = did.getVerificationKeys('assertionMethod')
   if (assertionKeys.length > 1) {
     log.warn(
       `More than one attestation key (${assertionKeys.length}) specified. Only the first will be stored on the chain.`
@@ -560,9 +560,7 @@ export async function generateCreateTxFromDidDetails(
   const assertionKey = assertionKeys.pop()
 
   // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getVerificationKeys(
-    KeyRelationship.capabilityDelegation
-  )
+  const delegationKeys = did.getVerificationKeys('capabilityDelegation')
   if (delegationKeys.length > 1) {
     log.warn(
       `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
@@ -602,18 +600,18 @@ export async function getSetKeyExtrinsic(
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const keyAsEnum = formatPublicKey(key)
   switch (keyRelationship) {
-    case KeyRelationship.authentication:
+    case 'authentication':
       return api.tx.did.setAuthenticationKey(keyAsEnum)
-    case KeyRelationship.capabilityDelegation:
+    case 'capabilityDelegation':
       return api.tx.did.setDelegationKey(keyAsEnum)
-    case KeyRelationship.assertionMethod:
+    case 'assertionMethod':
       return api.tx.did.setAttestationKey(keyAsEnum)
     default:
       throw new SDKErrors.ERROR_DID_ERROR(
         `setting a key is only allowed for the following key types: ${[
-          KeyRelationship.authentication,
-          KeyRelationship.capabilityDelegation,
-          KeyRelationship.assertionMethod,
+          'authentication',
+          'capabilityDelegation',
+          'assertionMethod',
         ]}`
       )
   }
@@ -632,23 +630,23 @@ export async function getRemoveKeyExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   switch (keyRelationship) {
-    case KeyRelationship.capabilityDelegation:
+    case 'capabilityDelegation':
       return api.tx.did.removeDelegationKey()
-    case KeyRelationship.assertionMethod:
+    case 'assertionMethod':
       return api.tx.did.removeAttestationKey()
-    case KeyRelationship.keyAgreement:
+    case 'keyAgreement':
       if (!keyId) {
         throw new SDKErrors.ERROR_DID_ERROR(
-          `When removing a ${KeyRelationship.keyAgreement} key it is required to specify the id of the key to be removed.`
+          `When removing a ${'keyAgreement'} key it is required to specify the id of the key to be removed.`
         )
       }
       return api.tx.did.removeKeyAgreementKey(keyId)
     default:
       throw new SDKErrors.ERROR_DID_ERROR(
         `key removal is only allowed for the following key types: ${[
-          KeyRelationship.keyAgreement,
-          KeyRelationship.capabilityDelegation,
-          KeyRelationship.assertionMethod,
+          'keyAgreement',
+          'capabilityDelegation',
+          'assertionMethod',
         ]}`
       )
   }
@@ -667,12 +665,12 @@ export async function getAddKeyExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const keyAsEnum = formatPublicKey(key)
-  if (keyRelationship === KeyRelationship.keyAgreement) {
+  if (keyRelationship === 'keyAgreement') {
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
   throw new SDKErrors.ERROR_DID_ERROR(
     `adding to the key set is only allowed for the following key types:  ${[
-      KeyRelationship.keyAgreement,
+      'keyAgreement',
     ]}`
   )
 }
@@ -817,7 +815,7 @@ export function encodeDidSignature(
   key: Pick<ChainDidKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  if (!Object.values(VerificationKeyType).some((kt) => kt === key.type)) {
+  if (!verificationKeyTypes.some((kt) => kt === key.type)) {
     throw new SDKErrors.ERROR_DID_ERROR(
       `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
