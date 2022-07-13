@@ -320,7 +320,7 @@ export class DelegationNode implements IDelegationNode {
       return getStoreAsRootTx(this)
     }
     if (!signature) {
-      throw new SDKErrors.DelegationSignatureMissingError()
+      throw new SDKErrors.DelegateSignatureMissingError()
     }
     return getStoreAsDelegationTx(this, signature)
   }
