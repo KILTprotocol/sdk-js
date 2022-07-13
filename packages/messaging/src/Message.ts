@@ -148,8 +148,10 @@ export class Message implements IMessage {
           nonce: hexToU8a(nonce),
         })
       ).data
-    } catch {
-      throw new SDKErrors.DecodingMessageError()
+    } catch (cause) {
+      throw new SDKErrors.DecodingMessageError(undefined, {
+        cause: cause as Error,
+      })
     }
 
     const decoded = u8aToString(data)
@@ -188,8 +190,10 @@ export class Message implements IMessage {
       Message.ensureOwnerIsSender(decrypted)
 
       return decrypted
-    } catch (error) {
-      throw new SDKErrors.ParsingMessageError()
+    } catch (cause) {
+      throw new SDKErrors.ParsingMessageError(undefined, {
+        cause: cause as Error,
+      })
     }
   }
 

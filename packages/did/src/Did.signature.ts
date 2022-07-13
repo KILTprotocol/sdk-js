@@ -172,8 +172,10 @@ export function isDidSignature(input: unknown): input is DidSignature {
       throw new SDKErrors.SignatureMalformedError()
     }
     return true
-  } catch {
+  } catch (cause) {
     // TODO: type guards shouldn't throw
-    throw new SDKErrors.SignatureMalformedError()
+    throw new SDKErrors.SignatureMalformedError(undefined, {
+      cause: cause as Error,
+    })
   }
 }

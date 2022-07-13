@@ -135,8 +135,8 @@ export class HierarchyQueryError extends SDKError {
 }
 
 export class InvalidDidFormatError extends SDKError {
-  constructor(identifier: string) {
-    super(`Not a valid KILT DID "${identifier}"`)
+  constructor(identifier: string, options?: ErrorOptions) {
+    super(`Not a valid KILT DID "${identifier}"`, options)
   }
 }
 

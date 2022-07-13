@@ -67,8 +67,10 @@ export async function resolveDoc(
       let details: LightDidDetails
       try {
         details = LightDidDetails.fromUri(did, false)
-      } catch {
-        throw new SDKErrors.InvalidDidFormatError(did)
+      } catch (cause) {
+        throw new SDKErrors.InvalidDidFormatError(did, {
+          cause: cause as Error,
+        })
       }
 
       const fullDidDetails = await queryDetails(details.identifier)
