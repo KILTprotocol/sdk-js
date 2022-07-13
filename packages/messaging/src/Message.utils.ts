@@ -31,7 +31,6 @@ import { isDidSignature, Utils as DidUtils } from '@kiltprotocol/did'
  * Checks if delegation data is well formed.
  *
  * @param delegationData Delegation data to check.
- * @throws [[SDKError]] if delegationData is not a valid instance of [[IDelegationData]].
  */
 export function errorCheckDelegationData(
   delegationData: IDelegationData
@@ -68,7 +67,6 @@ export function errorCheckDelegationData(
  * Checks if the message body is well-formed.
  *
  * @param body The message body.
- * @throws [[SDKError]] if there are issues with form or content of the message body.
  */
 export function errorCheckMessageBody(body: MessageBody): void {
   switch (body.type) {
@@ -205,7 +203,6 @@ export function errorCheckMessageBody(body: MessageBody): void {
  * Checks if the message object is well-formed.
  *
  * @param message The message object.
- * @throws [[SDKError]] if there are issues with form or content of the message object.
  */
 export function errorCheckMessage(message: IMessage): void {
   const {
@@ -239,7 +236,6 @@ export function errorCheckMessage(message: IMessage): void {
  *
  * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
  * @param cType A [[CType]] used to verify the properties.
- * @throws [[CTypeHashMissingError]] when the properties do not match the provide [[CType]].
  */
 export function verifyRequiredCTypeProperties(
   requiredProperties: string[],

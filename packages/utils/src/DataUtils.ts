@@ -16,8 +16,6 @@ import { ss58Format } from './ss58Format.js'
  *
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @throws [[AddressTypeError]] when address not of type string or of invalid Format.
- *
  * @returns Boolean whether the given address string checks out against the Format.
  */
 export function validateAddress(
@@ -38,8 +36,6 @@ export function validateAddress(
  *
  * @param hash Hash string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @throws [[HashTypeError]] when hash not of type string or of invalid Format.
- *
  * @returns Boolean whether the given hash string checks out against the Format.
  */
 export function validateHash(hash: string, name: string): boolean {
@@ -59,9 +55,6 @@ export function validateHash(hash: string, name: string): boolean {
  * @param data The signed string of data.
  * @param signature The signature of the data to be validated.
  * @param signer Address of the signer identity.
- * @throws [[SignatureMalformedError]] when parameters are of invalid type.
- * @throws [[SignatureUnverifiableError]] when the signature could not be validated against the data.
- *
  * @returns Boolean whether the signature is valid for the given data.
  */
 export function validateSignature(

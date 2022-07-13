@@ -173,7 +173,6 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Fetches the details of the hierarchy this delegation node belongs to.
    *
-   * @throws [[HierarchyQueryError]] when the hierarchy details could not be queried.
    * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {

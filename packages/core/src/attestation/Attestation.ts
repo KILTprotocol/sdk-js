@@ -33,10 +33,6 @@ import { query } from './Attestation.chain.js'
  * Throws on invalid input.
  *
  * @param input The potentially only partial [[IAttestation]].
- * @throws [[CTypeHashMissingError]], [[ClaimHashMissingError]] or [[OwnerMissingError]] when input's cTypeHash, claimHash or owner respectively do not exist.
- * @throws [[DelegationIdTypeError]] when the input's delegationId is not of type 'string' or 'null'.
- * @throws [[RevokedTypeError]] when input.revoked is not of type 'boolean'.
- *
  */
 export function verifyDataStructure(input: IAttestation): void {
   if (!input.cTypeHash) {
@@ -174,8 +170,6 @@ export function compress(attestation: IAttestation): CompressedAttestation {
  * Decompresses an [[Attestation]] from storage and/or message into an object.
  *
  * @param attestation A compressed [[Attestation]] array that is decompressed back into an object.
- * @throws [[DecompressionArrayError]] when the attestation is not an array or its length is not equal to 5.
- *
  * @returns An object that has the same properties as an [[Attestation]].
  */
 export function decompress(attestation: CompressedAttestation): IAttestation {

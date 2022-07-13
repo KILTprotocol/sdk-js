@@ -37,7 +37,6 @@ export class Message implements IMessage {
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.sender The sender's DID taken from the [[IMessage]].
-   * @throws [[IdentityMismatchError]] when the sender is not the same subject as the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
@@ -91,9 +90,6 @@ export class Message implements IMessage {
    * @param receiverDetails The DID details of the receiver.
    * @param decryptionOptions Options to perform the decryption operation.
    * @param decryptionOptions.resolver The DID resolver to use.
-   *
-   * @throws [[DecodingMessageError]] when encrypted message couldn't be decrypted.
-   * @throws [[ParsingMessageError]] when the decoded message could not be parsed.
    * @returns The original [[Message]].
    */
   public static async decrypt(
@@ -325,7 +321,6 @@ export class Message implements IMessage {
    *
    * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
    * @param cType A [[CType]] used to verify the properties.
-   * @throws [[CTypeHashMissingError]] when the properties do not match the provide [[CType]].
    */
   public static verifyRequiredCTypeProperties(
     requiredProperties: string[],

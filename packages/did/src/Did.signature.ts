@@ -160,7 +160,6 @@ export async function verifyDidSignature({
  *
  * @param input Arbitrary input.
  * @returns True if validation of form has passed.
- * @throws [[SDKError]] if validation fails.
  */
 export function isDidSignature(input: unknown): input is DidSignature {
   const signature = input as DidSignature

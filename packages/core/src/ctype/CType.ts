@@ -123,8 +123,6 @@ export function verifyObjectAgainstSchema(
  * @param claimContents IClaim['contents'] to be verified against the schema.
  * @param schema ICType['schema'] to be verified against the [CTypeModel].
  * @param messages An array, which will be filled by schema errors.
- * @throws [[ObjectUnverifiableError]] when schema does not correspond to the CTypeModel.
- *
  * @returns Boolean whether both claimContents and schema could be verified.
  */
 export function verifyClaimAgainstSchema(
@@ -164,10 +162,6 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
  * Throws on invalid input.
  *
  * @param input The potentially only partial ICType.
- * @throws [[ObjectUnverifiableError]] when input does not correspond to either it's schema, or the CTypeWrapperModel.
- * @throws [[HashMalformedError]] when the input's hash does not match the hash calculated from ICType's schema.
- * @throws [[CTypeOwnerTypeError]] when the input's owner is not a DID or null.
- *
  */
 export function verifyDataStructure(input: ICType): void {
   if (!verifyObjectAgainstSchema(input, CTypeWrapperModel)) {
@@ -221,7 +215,6 @@ export function verifyClaimAgainstNestedSchemas(
  * Checks a CTypeMetadata object.
  *
  * @param metadata [[ICTypeMetadata]] that is to be instantiated.
- * @throws [[ObjectUnverifiableError]] when metadata is not verifiable with the MetadataModel.
  */
 export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
   if (!verifyObjectAgainstSchema(metadata, MetadataModel)) {
@@ -275,8 +268,6 @@ export function isICType(input: unknown): input is ICType {
  * Compresses a [[CType]] schema for storage and/or messaging.
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
- * @throws [[CompressObjectError]] when any of the four required properties of the cTypeSchema are missing.
- *
  * @returns An ordered array of a [[CType]] schema.
  */
 export function compressSchema(
@@ -305,8 +296,6 @@ export function compressSchema(
  * Decompresses a schema of a [[CType]] from storage and/or message.
  *
  * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
- * @throws [[DecompressionArrayError]] when either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
- *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
 export function decompressSchema(
@@ -340,8 +329,6 @@ export function compress(cType: ICType): CompressedCType {
  * Decompresses a [[CType]] from storage and/or message.
  *
  * @param cType A compressed [[CType]] array that is reverted back into an object.
- * @throws [[DecompressionArrayError]] when either the cType is not an Array or it's length is not equal to the defined length of 3.
- *
  * @returns An object that has the same properties as a [[CType]].
  */
 export function decompress(cType: CompressedCType): ICType {

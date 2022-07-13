@@ -88,7 +88,6 @@ export function calculateRootHash(
  *
  * @param req4Att - The RequestForAttestation object to remove properties from.
  * @param properties - Properties to remove from the [[Claim]] object.
- * @throws [[ClaimNonceMapMalformedError]] when a property which should be deleted wasn't found.
  */
 export function removeClaimProperties(
   req4Att: IRequestForAttestation,
@@ -189,8 +188,6 @@ export function verifyRootHash(input: IRequestForAttestation): boolean {
  *
  * @param input - The [[RequestForAttestation]] for which to verify data.
  * @returns Whether the data is valid.
- * @throws [[ClaimNonceMapMalformedError]] when any key of the claim contents could not be found in the claimHashTree.
- * @throws [[RootHashUnverifiableError]] when the rootHash is not verifiable.
  */
 export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
   // check claim hash
@@ -218,9 +215,6 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
  * Throws on invalid input.
  *
  * @param input - A potentially only partial [[IRequestForAttestation]].
- * @throws [[ClaimMissingError]], [[LegitimationsMissingError]], [[ClaimNonceMapMissingError]] or [[DelegationIdTypeError]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
- * @throws [[ClaimNonceMapMalformedError]] when any of the input's claimHashTree's keys missing their hash.
- *
  */
 export function verifyDataStructure(input: IRequestForAttestation): void {
   if (!input.claim) {
@@ -289,7 +283,6 @@ export function verifyAgainstCType(
  * @param verificationOpts Additional options to retrieve the details from the identifiers inside the request for attestation.
  * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
- * @throws [[IdentityMismatchError]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
  * @returns Whether the signature is correct.
  */
 export async function verifySignature(
@@ -369,7 +362,6 @@ type VerifyOptions = {
  * @param options.ctype - Ctype which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
- * @throws - If a check fails.
  */
 export async function verify(
   requestForAttestation: IRequestForAttestation,
@@ -460,8 +452,6 @@ export function compress(
  * Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
- * @throws [[DecompressionArrayError]] when reqForAtt is not an Array and its length is not equal to the defined length of 8.
- *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
 export function decompress(

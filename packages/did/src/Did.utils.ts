@@ -261,7 +261,6 @@ export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
  * @param input Arbitrary input.
  * @param allowFragment Whether the uri is allowed to have a fragment (following '#').
  * @returns True if validation has passed.
- * @throws [[SDKError]] if validation fails.
  */
 export function validateKiltDidUri(
   input: unknown,

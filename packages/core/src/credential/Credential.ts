@@ -58,8 +58,6 @@ export function verifyDataIntegrity(credential: ICredential): boolean {
  * Throws on invalid input.
  *
  * @param input The potentially only partial ICredential.
- * @throws [[AttestationMissingError]] or [[RequestForAttestationMissingError]] when input's attestation and request respectively do not exist.
- *
  */
 export function verifyDataStructure(input: ICredential): void {
   if (input.attestation) {
@@ -161,8 +159,6 @@ export async function verify(
  * Verifies the data of each element of the given Array of ICredentials.
  *
  * @param legitimations Array of ICredentials to validate.
- * @throws [[LegitimationsUnverifiableError]] when one of the ICredentials data is unable to be verified.
- *
  * @returns Boolean whether each element of the given Array of ICredentials is verifiable.
  */
 export function validateLegitimations(legitimations: ICredential[]): boolean {
@@ -281,7 +277,6 @@ export function compress(credential: ICredential): CompressedCredential {
  * Decompresses a [[Credential]] array from storage and/or message into an object.
  *
  * @param credential The [[CompressedCredential]] that should get decompressed.
- * @throws [[DecompressionArrayError]] when credential is not an Array or it's length is unequal 2.
  * @returns A new [[Credential]] object.
  */
 export function decompress(credential: CompressedCredential): ICredential {

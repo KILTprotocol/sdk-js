@@ -75,8 +75,6 @@ export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
  *
  * @param input [[BalanceNumber]] to convert.
  * @returns String representation of the given [[BalanceNumber]].
- * @throws On invalid number representation if given a string.
- * @throws On malformed input.
  */
 export function balanceNumberToString(input: BalanceNumber): string {
   if (typeof input === 'string') {
@@ -101,7 +99,6 @@ export function balanceNumberToString(input: BalanceNumber): string {
  * @param input [[BalanceNumber]] to convert.
  * @param unit Metric prefix of the given [[BalanceNumber]].
  * @returns Exact BN representation in femtoKilt, to use in transactions and calculations.
- * @throws Unknown metricPrefix, or if the input has too many decimal places for its unit.
  */
 export function toFemtoKilt(
   input: BalanceNumber,
