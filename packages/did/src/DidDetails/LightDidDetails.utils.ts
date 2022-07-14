@@ -147,7 +147,7 @@ export function serializeAndEncodeAdditionalLightDidDetails({
   if (encryptionKey) {
     objectToSerialize[ENCRYPTION_KEY_MAP_KEY] = encryptionKey
   }
-  if (serviceEndpoints && serviceEndpoints.length) {
+  if (serviceEndpoints && serviceEndpoints.length > 0) {
     objectToSerialize[SERVICES_KEY_MAP_KEY] = serviceEndpoints
   }
 

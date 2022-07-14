@@ -186,7 +186,7 @@ export abstract class FullDidBuilder {
     // Otherwise we can safely mark the service endpoint for addition.
     this.newServiceEndpoints.set(id, {
       types: details.types,
-      urls: details.urls,
+      uris: details.uris,
     })
     return this
   }

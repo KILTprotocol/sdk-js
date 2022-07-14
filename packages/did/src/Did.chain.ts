@@ -9,15 +9,15 @@ import type {
   BTreeMap,
   BTreeSet,
   Enum,
+  GenericAccountId,
   Option,
   Struct,
-  Vec,
-  u8,
-  u64,
-  GenericAccountId,
   Text,
   u128,
   u32,
+  u64,
+  u8,
+  Vec,
 } from '@polkadot/types'
 import type {
   BlockNumber,
@@ -32,16 +32,16 @@ import type { ApiPromise } from '@polkadot/api'
 import {
   Deposit,
   DidEncryptionKey,
+  DidIdentifier,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
   DidVerificationKey,
-  DidIdentifier,
   IIdentity,
   KeyRelationship,
+  NewDidKey,
   SignCallback,
   SigningOptions,
-  NewDidKey,
   SubmittableExtrinsic,
   VerificationKeyType,
   verificationKeyTypes,
@@ -273,17 +273,47 @@ export async function queryKey(
   return didDetails.publicKeys.find((key) => key.id === keyId) || null
 }
 
-function decodeServiceChainRecord(
-  serviceDetails: IServiceEndpointChainRecordCodec
-): DidServiceEndpoint {
-  const id = hexToString(serviceDetails.id.toString())
+interface BlockchainEndpoint {
+  id: DidServiceEndpoint['id']
+  serviceTypes: DidServiceEndpoint['types']
+  // The blockchain uses the original name `urls` which is not spec-compliant
+  urls: DidServiceEndpoint['uris']
+}
+
+function endpointToBlockchainEndpoint({
+  id,
+  types,
+  uris,
+}: DidServiceEndpoint): BlockchainEndpoint {
   return {
     id,
-    types: serviceDetails.serviceTypes.map((type) =>
-      hexToString(type.toString())
-    ),
-    urls: serviceDetails.urls.map((url) => hexToString(url.toString())),
+    serviceTypes: types,
+    urls: uris,
   }
+}
+
+function blockchainEndpointToEndpoint({
+  id,
+  serviceTypes,
+  urls,
+}: BlockchainEndpoint): DidServiceEndpoint {
+  return {
+    id,
+    types: serviceTypes,
+    uris: urls,
+  }
+}
+
+function decodeServiceChainRecord({
+  id,
+  serviceTypes,
+  urls,
+}: IServiceEndpointChainRecordCodec): DidServiceEndpoint {
+  return blockchainEndpointToEndpoint({
+    id: hexToString(id.toString()),
+    serviceTypes: serviceTypes.map((type) => hexToString(type.toString())),
+    urls: urls.map((url) => hexToString(url.toString())),
+  })
 }
 
 /**
@@ -439,7 +469,7 @@ function checkServiceEndpointInput(
  * Additionally, each service endpoint must respect the following conditions:
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
+ *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param sign The sign callback.
  *
@@ -495,10 +525,7 @@ export async function generateCreateTxFromCreationDetails(
     checkServiceEndpointInput(api, service)
   })
 
-  const newServiceDetails = serviceEndpoints.map((service) => {
-    const { id, urls } = service
-    return { id, urls, serviceTypes: service.types }
-  })
+  const newServiceDetails = serviceEndpoints.map(endpointToBlockchainEndpoint)
 
   const rawCreationDetails = {
     did: details.identifier,
@@ -682,7 +709,7 @@ export async function getAddKeyExtrinsic(
  * The service endpoint must respect the following conditions:
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
+ *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @returns An extrinsic that must be authorised (signed) by the FullDid with which the service endpoint should be associated.
  */
 export async function getAddEndpointExtrinsic(
@@ -690,11 +717,7 @@ export async function getAddEndpointExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   checkServiceEndpointInput(api, endpoint)
-
-  return api.tx.did.addServiceEndpoint({
-    serviceTypes: endpoint.types,
-    ...endpoint,
-  })
+  return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
 }
 
 /**

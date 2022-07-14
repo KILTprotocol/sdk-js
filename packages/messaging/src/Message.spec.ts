@@ -122,7 +122,7 @@ beforeAll(async () => {
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: aliceAuthKey.authenticationKey,
     encryptionKey: aliceEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
   })
   aliceFullDid = await createLocalDemoFullDidFromLightDid(aliceLightDid)
 
@@ -135,7 +135,7 @@ beforeAll(async () => {
   bobLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: bobAuthKey.authenticationKey,
     encryptionKey: bobEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
   })
   bobFullDid = await createLocalDemoFullDidFromLightDid(bobLightDid)
 })

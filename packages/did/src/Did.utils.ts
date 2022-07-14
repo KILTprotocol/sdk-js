@@ -326,7 +326,7 @@ export function isUriFragment(str: string): boolean {
 /**
  * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
  *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
- *   - If the `urls` property contains one or more strings, they must be valid URIs according to RFC#3986.
+ *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
  * @param endpoint A service endpoint object to check.
  * @returns Validation result and errors, if any.
@@ -349,11 +349,11 @@ export function checkServiceEndpointSyntax(
       )
     )
   }
-  endpoint.urls.forEach((url) => {
-    if (!isUri(url)) {
+  endpoint.uris.forEach((uri) => {
+    if (!isUri(uri)) {
       errors.push(
         new SDKErrors.DidError(
-          `A service URL must be a URI according to RFC#3986, which "${url}" (service id "${endpoint.id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
+          `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${endpoint.id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
         )
       )
     }
@@ -365,7 +365,7 @@ export function checkServiceEndpointSyntax(
  * Performs size checks on service endpoint data, making sure that the following conditions are met:
  *   - The `endpoint.id` is at most 50 ASCII characters long.
  *   - The `endpoint.types` array has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *   - The `endpoint.urls` array has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ *   - The `endpoint.uris` array has at most 1 URI, with a value that is at most 200 ASCII characters long.
  *
  * @param api An api instance required for reading up-to-date size constraints from the blockchain runtime.
  * @param endpoint A service endpoint object to check.
@@ -405,10 +405,10 @@ export function checkServiceEndpointSizeConstraints(
       )
     )
   }
-  if (endpoint.urls.length > maxNumberOfUrlsPerService) {
+  if (endpoint.uris.length > maxNumberOfUrlsPerService) {
     errors.push(
       new SDKErrors.DidError(
-        `The service with ID "${endpoint.id}" has too many URLs (${endpoint.urls.length}). Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
+        `The service with ID "${endpoint.id}" has too many URIs (${endpoint.uris.length}). Max number of URIs allowed per service is ${maxNumberOfUrlsPerService}.`
       )
     )
   }
@@ -422,12 +422,12 @@ export function checkServiceEndpointSizeConstraints(
       )
     }
   })
-  endpoint.urls.forEach((url) => {
-    const urlEncodedLength = stringToU8a(url).length
-    if (urlEncodedLength > maxServiceUrlLength) {
+  endpoint.uris.forEach((uri) => {
+    const uriEncodedLength = stringToU8a(uri).length
+    if (uriEncodedLength > maxServiceUrlLength) {
       errors.push(
         new SDKErrors.DidError(
-          `The service with ID "${endpoint.id}" has the URL "${url}" that is too long (${urlEncodedLength} bytes). Max number of bytes allowed for a service URL is ${maxServiceUrlLength}.`
+          `The service with ID "${endpoint.id}" has the URI "${uri}" that is too long (${uriEncodedLength} bytes). Max number of bytes allowed for a service URI is ${maxServiceUrlLength}.`
         )
       )
     }

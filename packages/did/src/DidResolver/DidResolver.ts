@@ -186,7 +186,7 @@ export async function resolveServiceEndpoint(
       return {
         uri: serviceUri,
         type: serviceEndpoint.types,
-        serviceEndpoint: serviceEndpoint.urls,
+        serviceEndpoint: serviceEndpoint.uris,
       }
     }
     case 'light': {
@@ -201,7 +201,7 @@ export async function resolveServiceEndpoint(
       return {
         uri: serviceUri,
         type: serviceEndpoint.types,
-        serviceEndpoint: serviceEndpoint.urls,
+        serviceEndpoint: serviceEndpoint.uris,
       }
     }
     default:

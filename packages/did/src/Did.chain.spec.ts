@@ -60,7 +60,7 @@ describe('services validation', () => {
         await getAddEndpointExtrinsic({
           id: 'service_1',
           types: [],
-          urls: [uri],
+          uris: [uri],
         })
       ).toBeDefined()
     }
@@ -73,7 +73,7 @@ describe('services validation', () => {
         await getAddEndpointExtrinsic({
           id,
           types: [],
-          urls: [],
+          uris: [],
         })
       ).toBeDefined()
     }
@@ -86,7 +86,7 @@ describe('services validation', () => {
         getAddEndpointExtrinsic({
           id,
           types: [],
-          urls: [],
+          uris: [],
         })
       ).rejects.toThrow('ID')
     }
@@ -99,7 +99,7 @@ describe('services validation', () => {
         getAddEndpointExtrinsic({
           id: 'service_1',
           types: [],
-          urls: [uri],
+          uris: [uri],
         })
       ).rejects.toThrow('URI')
     }
