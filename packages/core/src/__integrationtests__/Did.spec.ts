@@ -15,11 +15,9 @@ import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
   Chain as DidChain,
-  DidBatchBuilder,
+  didAuthorizeExtrinsics,
   DidDetails,
-  FullDidCreationBuilder,
   FullDidDetails,
-  FullDidUpdateBuilder,
   LightDidDetails,
   NewLightDidAuthenticationKey,
   resolveDoc,
@@ -51,7 +49,6 @@ import {
   createEndowedTestAccount,
   devBob,
   getDefaultMigrationCallback,
-  getDefaultSubmitCallback,
   initializeApi,
   submitExtrinsic,
 } from './utils'
@@ -500,18 +497,22 @@ describe('DID authorization', () => {
   const { sign, authenticationKey } = makeSigningKeyTool('ed25519')
 
   beforeAll(async () => {
-    const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey,
-    })
-    didDetails = await FullDidCreationBuilder.fromLightDidDetails(
-      api,
-      lightDidDetails
+    const createTx = await DidChain.generateCreateTxFromCreationDetails(
+      {
+        identifier: DidUtils.getIdentifierByKey(authenticationKey),
+        authenticationKey,
+        assertionKey: authenticationKey,
+        delegationKey: authenticationKey,
+      },
+      paymentAccount.address,
+      sign
     )
-      .setAttestationKey(authenticationKey)
-      .setDelegationKey(authenticationKey)
-      .buildAndSubmit(sign, paymentAccount.address, async (tx) =>
-        submitExtrinsic(tx, paymentAccount)
-      )
+    await submitExtrinsic(createTx, paymentAccount)
+    const optional = await FullDidDetails.fromChainInfo(
+      DidUtils.getFullDidUriByKey(authenticationKey)
+    )
+    if (!optional) throw new Error('Cannot query created DID')
+    didDetails = optional
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
@@ -569,64 +570,65 @@ describe('DID authorization', () => {
 
 describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
-    it('Build a complete full DID from a full light DID', async () => {
+    it('Build a complete full DID', async () => {
       const { keypair, sign, authenticationKey } = makeSigningKeyTool()
-      const lightDidDetails = LightDidDetails.fromDetails({
-        authenticationKey,
-        encryptionKey: {
-          publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: 'x25519',
-        },
-        serviceEndpoints: [
-          {
-            id: 'id-1',
-            types: ['type-1'],
-            uris: ['x:url-1'],
+      const extrinsic = await DidChain.generateCreateTxFromCreationDetails(
+        {
+          identifier: DidUtils.getIdentifierByKey(authenticationKey),
+          authenticationKey,
+          assertionKey: {
+            publicKey: Uint8Array.from(Array(32).fill(1)),
+            type: 'sr25519',
           },
-        ],
-      })
-      const builder = FullDidCreationBuilder.fromLightDidDetails(
-        api,
-        lightDidDetails,
-        { withServiceEndpoints: true, withEncryptionKey: true }
+          delegationKey: {
+            publicKey: Uint8Array.from(Array(33).fill(1)),
+            type: 'ecdsa',
+          },
+          keyAgreementKeys: [
+            {
+              publicKey: Uint8Array.from(Array(32).fill(1)),
+              type: 'x25519',
+            },
+            {
+              publicKey: Uint8Array.from(Array(32).fill(2)),
+              type: 'x25519',
+            },
+            {
+              publicKey: Uint8Array.from(Array(32).fill(3)),
+              type: 'x25519',
+            },
+          ],
+          serviceEndpoints: [
+            {
+              id: 'id-1',
+              types: ['type-1'],
+              uris: ['x:url-1'],
+            },
+            {
+              id: 'id-2',
+              types: ['type-2'],
+              uris: ['x:url-2'],
+            },
+            {
+              id: 'id-3',
+              types: ['type-3'],
+              uris: ['x:url-3'],
+            },
+          ],
+        },
+        paymentAccount.address,
+        sign
       )
-        .addEncryptionKey({
-          publicKey: Uint8Array.from(Array(32).fill(2)),
-          type: 'x25519',
-        })
-        .addEncryptionKey({
-          publicKey: Uint8Array.from(Array(32).fill(3)),
-          type: 'x25519',
-        })
-        .setAttestationKey({
-          publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: 'sr25519',
-        })
-        .setDelegationKey({
-          publicKey: Uint8Array.from(Array(33).fill(1)),
-          type: 'ecdsa',
-        })
-        .addServiceEndpoint({
-          id: 'id-2',
-          types: ['type-2'],
-          uris: ['x:url-2'],
-        })
-        .addServiceEndpoint({
-          id: 'id-3',
-          types: ['type-3'],
-          uris: ['x:url-3'],
-        })
-
-      const extrinsic = await builder.build(sign, paymentAccount.address)
       await submitExtrinsic(extrinsic, paymentAccount)
 
       const fullDid = await FullDidDetails.fromChainInfo(
-        DidUtils.getKiltDidFromIdentifier(lightDidDetails.identifier, 'full')
+        DidUtils.getFullDidUriByKey(authenticationKey)
       )
 
       expect(fullDid).not.toBeNull()
+      if (!fullDid) throw new Error('Cannot query created DID')
 
-      const authenticationKeys = fullDid!.getVerificationKeys('authentication')
+      const authenticationKeys = fullDid.getVerificationKeys('authentication')
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: keypair.publicKey,
@@ -634,10 +636,10 @@ describe('DID management batching', () => {
         },
       ])
 
-      const encryptionKeys = fullDid!.getEncryptionKeys('keyAgreement')
+      const encryptionKeys = fullDid.getEncryptionKeys('keyAgreement')
       expect(encryptionKeys).toHaveLength(3)
 
-      const assertionKeys = fullDid!.getVerificationKeys('assertionMethod')
+      const assertionKeys = fullDid.getVerificationKeys('assertionMethod')
       expect(assertionKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: Uint8Array.from(Array(32).fill(1)),
@@ -645,9 +647,7 @@ describe('DID management batching', () => {
         },
       ])
 
-      const delegationKeys = fullDid!.getVerificationKeys(
-        'capabilityDelegation'
-      )
+      const delegationKeys = fullDid.getVerificationKeys('capabilityDelegation')
       expect(delegationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: Uint8Array.from(Array(33).fill(1)),
@@ -655,7 +655,7 @@ describe('DID management batching', () => {
         },
       ])
 
-      const serviceEndpoints = fullDid!.getEndpoints()
+      const serviceEndpoints = fullDid.getEndpoints()
       expect(serviceEndpoints).toHaveLength(3)
       expect(serviceEndpoints).toMatchObject<DidServiceEndpoint[]>([
         {
@@ -687,9 +687,14 @@ describe('DID management batching', () => {
         ss58Format
       )
 
-      const builder = new FullDidCreationBuilder(api, didAuthKey)
-
-      const extrinsic = await builder.build(sign, paymentAccount.address)
+      const extrinsic = await DidChain.generateCreateTxFromCreationDetails(
+        {
+          identifier: DidUtils.getIdentifierByKey(didAuthKey),
+          authenticationKey: didAuthKey,
+        },
+        paymentAccount.address,
+        sign
+      )
       await submitExtrinsic(extrinsic, paymentAccount)
 
       const fullDid = await FullDidDetails.fromChainInfo(
@@ -697,8 +702,9 @@ describe('DID management batching', () => {
       )
 
       expect(fullDid).not.toBeNull()
+      if (!fullDid) throw new Error('Cannot query created DID')
 
-      const authenticationKeys = fullDid!.getVerificationKeys('authentication')
+      const authenticationKeys = fullDid.getVerificationKeys('authentication')
       expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: keypair.publicKey,
@@ -711,53 +717,67 @@ describe('DID management batching', () => {
   describe('FullDidUpdateBuilder', () => {
     it('Build from a complete full DID and remove everything but the authentication key', async () => {
       const { keypair, sign, authenticationKey } = makeSigningKeyTool()
-      const lightDidDetails = LightDidDetails.fromDetails({
-        authenticationKey,
-      })
-      const createBuilder = FullDidCreationBuilder.fromLightDidDetails(
-        api,
-        lightDidDetails
-      )
-        .addEncryptionKey({
-          publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: 'x25519',
-        })
-        .addEncryptionKey({
-          publicKey: Uint8Array.from(Array(32).fill(2)),
-          type: 'x25519',
-        })
-        .setAttestationKey({
-          publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: 'sr25519',
-        })
-        .setDelegationKey({
-          publicKey: Uint8Array.from(Array(33).fill(1)),
-          type: 'ecdsa',
-        })
-        .addServiceEndpoint({
-          id: 'id-1',
-          types: ['type-1'],
-          uris: ['x:url-1'],
-        })
-        .addServiceEndpoint({
-          id: 'id-2',
-          types: ['type-2'],
-          uris: ['x:url-2'],
-        })
 
-      const initialFullDid = await createBuilder.buildAndSubmit(
-        sign,
+      const createTx = await DidChain.generateCreateTxFromCreationDetails(
+        {
+          identifier: DidUtils.getIdentifierByKey(authenticationKey),
+          authenticationKey,
+          keyAgreementKeys: [
+            {
+              publicKey: Uint8Array.from(Array(32).fill(1)),
+              type: 'x25519',
+            },
+            {
+              publicKey: Uint8Array.from(Array(32).fill(2)),
+              type: 'x25519',
+            },
+          ],
+          assertionKey: {
+            publicKey: Uint8Array.from(Array(32).fill(1)),
+            type: 'sr25519',
+          },
+          delegationKey: {
+            publicKey: Uint8Array.from(Array(33).fill(1)),
+            type: 'ecdsa',
+          },
+          serviceEndpoints: [
+            {
+              id: 'id-1',
+              types: ['type-1'],
+              uris: ['x:url-1'],
+            },
+            {
+              id: 'id-2',
+              types: ['type-2'],
+              uris: ['x:url-2'],
+            },
+          ],
+        },
         paymentAccount.address,
-        getDefaultSubmitCallback(paymentAccount)
+        sign
       )
+      await submitExtrinsic(createTx, paymentAccount)
 
-      const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
-        .removeAllEncryptionKeys()
-        .removeAttestationKey()
-        .removeDelegationKey()
-        .removeAllServiceEndpoints()
+      const initialFullDid = await FullDidDetails.fromChainInfo(
+        DidUtils.getFullDidUriByKey(authenticationKey)
+      )
+      if (!initialFullDid) throw new Error('Cannot query created DID')
 
-      const extrinsic = await updateBuilder.build(sign, paymentAccount.address)
+      const encryptionKeys = initialFullDid.getEncryptionKeys('keyAgreement')
+      const extrinsic = await didAuthorizeExtrinsics({
+        batchFunction: api.tx.utility.batchAll,
+        did: initialFullDid,
+        extrinsics: [
+          await api.tx.did.removeKeyAgreementKey(encryptionKeys[0].id),
+          await api.tx.did.removeKeyAgreementKey(encryptionKeys[1].id),
+          await api.tx.did.removeAttestationKey(),
+          await api.tx.did.removeDelegationKey(),
+          await api.tx.did.removeServiceEndpoint('id-1'),
+          await api.tx.did.removeServiceEndpoint('id-2'),
+        ],
+        sign,
+        submitter: paymentAccount.address,
+      })
       await submitExtrinsic(extrinsic, paymentAccount)
 
       const finalFullDid = (await FullDidDetails.fromChainInfo(
@@ -780,45 +800,44 @@ describe('DID management batching', () => {
     }, 40_000)
 
     it('Correctly handles rotation of the authentication key', async () => {
-      const { keypair: authKeypair, sign } = makeSigningKeyTool()
-      const { keypair: newAuthKeypair } = makeSigningKeyTool('ed25519')
-      const createBuilder = new FullDidCreationBuilder(api, {
-        publicKey: authKeypair.publicKey,
-        type: 'sr25519',
+      const { authenticationKey, sign } = makeSigningKeyTool()
+      const { authenticationKey: newAuthKey } = makeSigningKeyTool('ed25519')
+
+      const createTx = await DidChain.generateCreateTxFromCreationDetails(
+        {
+          identifier: DidUtils.getIdentifierByKey(authenticationKey),
+          authenticationKey,
+        },
+        paymentAccount.address,
+        sign
+      )
+      await submitExtrinsic(createTx, paymentAccount)
+
+      const initialFullDid = await FullDidDetails.fromChainInfo(
+        DidUtils.getFullDidUriByKey(authenticationKey)
+      )
+      if (!initialFullDid) throw new Error('Cannot query created DID')
+
+      const extrinsic = await didAuthorizeExtrinsics({
+        batchFunction: api.tx.utility.batchAll,
+        did: initialFullDid,
+        extrinsics: [
+          await DidChain.getAddEndpointExtrinsic({
+            id: 'id-1',
+            types: ['type-1'],
+            uris: ['x:url-1'],
+          }),
+          await DidChain.getSetKeyExtrinsic('authentication', newAuthKey),
+          await DidChain.getAddEndpointExtrinsic({
+            id: 'id-2',
+            types: ['type-2'],
+            uris: ['x:url-2'],
+          }),
+        ],
+        sign,
+        submitter: paymentAccount.address,
       })
 
-      const initialFullDid = await createBuilder.buildAndSubmit(
-        sign,
-        paymentAccount.address,
-        getDefaultSubmitCallback(paymentAccount)
-      )
-
-      const updateBuilder = new FullDidUpdateBuilder(api, initialFullDid)
-        .addServiceEndpoint({
-          id: 'id-1',
-          types: ['type-1'],
-          uris: ['x:url-1'],
-        })
-        .setAuthenticationKey({
-          publicKey: newAuthKeypair.publicKey,
-          type: 'ed25519',
-        })
-        .addServiceEndpoint({
-          id: 'id-2',
-          types: ['type-2'],
-          uris: ['x:url-2'],
-        })
-
-      // Fails if an authentication key is set twice for the same builder
-      const builderCopy = updateBuilder
-      expect(() =>
-        builderCopy.setAuthenticationKey({
-          publicKey: authKeypair.publicKey,
-          type: 'sr25519',
-        })
-      ).toThrow()
-
-      const extrinsic = await updateBuilder.build(sign, paymentAccount.address)
       await submitExtrinsic(extrinsic, paymentAccount)
 
       const finalFullDid = (await FullDidDetails.fromChainInfo(
@@ -827,12 +846,7 @@ describe('DID management batching', () => {
 
       expect(finalFullDid).not.toBeNull()
 
-      expect(
-        finalFullDid.authenticationKey
-      ).toMatchObject<NewDidVerificationKey>({
-        publicKey: newAuthKeypair.publicKey,
-        type: 'ed25519',
-      })
+      expect(finalFullDid.authenticationKey).toMatchObject(newAuthKey)
 
       expect(finalFullDid.encryptionKey).toBeUndefined()
       expect(finalFullDid.attestationKey).toBeUndefined()
@@ -840,138 +854,131 @@ describe('DID management batching', () => {
       expect(finalFullDid.getEndpoints()).toHaveLength(2)
     }, 40_000)
 
-    it('non-atomic builder succeeds despite failures of some extrinsics', async () => {
-      const { keypair, sign } = makeSigningKeyTool()
-      const createBuilder = new FullDidCreationBuilder(api, {
-        publicKey: keypair.publicKey,
-        type: 'sr25519',
-      }).addServiceEndpoint({
+    it('simple `batch` succeeds despite failures of some extrinsics', async () => {
+      const { authenticationKey, sign } = makeSigningKeyTool()
+      const tx = await DidChain.generateCreateTxFromCreationDetails(
+        {
+          identifier: DidUtils.getIdentifierByKey(authenticationKey),
+          authenticationKey,
+          serviceEndpoints: [
+            {
+              id: 'id-1',
+              types: ['type-1'],
+              uris: ['x:url-1'],
+            },
+          ],
+        },
+        paymentAccount.address,
+        sign
+      )
+      // Create the full DID with a service endpoint
+      await submitExtrinsic(tx, paymentAccount)
+      const fullDid = await FullDidDetails.fromChainInfo(
+        DidUtils.getFullDidUriByKey(authenticationKey)
+      )
+      if (!fullDid) throw new Error('Cannot query created DID')
+
+      expect(fullDid.attestationKey).toBeUndefined()
+
+      // Try to set a new attestation key and a duplicate service endpoint
+      const updateTx = await didAuthorizeExtrinsics({
+        batchFunction: api.tx.utility.batch,
+        did: fullDid,
+        extrinsics: [
+          await DidChain.getSetKeyExtrinsic(
+            'assertionMethod',
+            authenticationKey
+          ),
+          await DidChain.getAddEndpointExtrinsic({
+            id: 'id-1',
+            types: ['type-2'],
+            uris: ['x:url-2'],
+          }),
+        ],
+        sign,
+        submitter: paymentAccount.address,
+      })
+      // Now the second operation fails but the batch succeeds
+      await submitExtrinsic(updateTx, paymentAccount)
+
+      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
+      if (!updatedFullDid) throw new Error('Cannot query created DID')
+
+      // .setAttestationKey() extrinsic went through in the batch
+      expect(updatedFullDid.attestationKey).toBeDefined()
+      // The service endpoint will match the one manually added, and not the one set in the batch
+      expect(
+        updatedFullDid.getEndpoint('id-1')
+      ).toStrictEqual<DidServiceEndpoint>({
         id: 'id-1',
         types: ['type-1'],
         uris: ['x:url-1'],
-      })
-      // Create the full DID with a service endpoint
-      const fullDid = await createBuilder.buildAndSubmit(
-        sign,
-        paymentAccount.address,
-        async (tx) => submitExtrinsic(tx, paymentAccount)
-      )
-      expect(fullDid.attestationKey).toBeUndefined()
-
-      // Configure the builder to set a new attestation key and a service endpoint
-      const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
-        .setAttestationKey({
-          publicKey: keypair.publicKey,
-          type: 'sr25519',
-        })
-        .addServiceEndpoint({
-          id: 'id-2',
-          types: ['type-2'],
-          uris: ['x:url-2'],
-        })
-
-      // Before consuming the builder, let's add the same service endpoint to the DID directly
-      const newEndpointTx = await DidChain.getAddEndpointExtrinsic({
-        id: 'id-2',
-        types: ['type-22'],
-        uris: ['x:url-22'],
-      })
-      const authorisedTx = await fullDid.authorizeExtrinsic(
-        newEndpointTx,
-        sign,
-        paymentAccount.address
-      )
-      await submitExtrinsic(authorisedTx, paymentAccount)
-
-      // Now, consuming the builder will result in the second operation to fail but the batch to succeed, so we can test the atomic flag.
-      await updateBuilder.buildAndSubmit(
-        sign,
-        paymentAccount.address,
-        async (tx) => submitExtrinsic(tx, paymentAccount),
-        // Not atomic
-        false
-      )
-
-      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
-      // .setAttestationKey() extrinsic went through in the batch
-      expect(updatedFullDid!.attestationKey).toBeDefined()
-      // The service endpoint will match the one manually added, and not the one set in the builder.
-      expect(
-        updatedFullDid!.getEndpoint('id-2')
-      ).toStrictEqual<DidServiceEndpoint>({
-        id: 'id-2',
-        types: ['type-22'],
-        uris: ['x:url-22'],
       })
     }, 60_000)
 
-    it('atomic builder fails if any extrinsics fails', async () => {
-      const { keypair, sign } = makeSigningKeyTool()
-      const createBuilder = new FullDidCreationBuilder(api, {
-        publicKey: keypair.publicKey,
-        type: 'sr25519',
-      }).addServiceEndpoint({
-        id: 'id-1',
-        types: ['type-1'],
-        uris: ['x:url-1'],
-      })
-      // Create the full DID with a service endpoint
-      const fullDid = await createBuilder.buildAndSubmit(
-        sign,
+    it('batchAll fails if any extrinsics fails', async () => {
+      const { authenticationKey, sign } = makeSigningKeyTool()
+      const createTx = await DidChain.generateCreateTxFromCreationDetails(
+        {
+          identifier: DidUtils.getIdentifierByKey(authenticationKey),
+          authenticationKey,
+          serviceEndpoints: [
+            {
+              id: 'id-1',
+              types: ['type-1'],
+              uris: ['x:url-1'],
+            },
+          ],
+        },
         paymentAccount.address,
-        async (tx) => submitExtrinsic(tx, paymentAccount)
+        sign
       )
+      await submitExtrinsic(createTx, paymentAccount)
+      const fullDid = await FullDidDetails.fromChainInfo(
+        DidUtils.getFullDidUriByKey(authenticationKey)
+      )
+      if (!fullDid) throw new Error('Cannot query created DID')
+
       expect(fullDid.attestationKey).toBeUndefined()
 
-      // Configure the builder to set a new attestation key and a service endpoint
-      const updateBuilder = new FullDidUpdateBuilder(api, fullDid)
-        .setAttestationKey({
-          publicKey: keypair.publicKey,
-          type: 'sr25519',
-        })
-        .addServiceEndpoint({
-          id: 'id-2',
-          types: ['type-2'],
-          uris: ['x:url-2'],
-        })
-
-      // Before consuming the builder, let's add the same service endpoint to the DID directly
-      const newEndpointTx = await DidChain.getAddEndpointExtrinsic({
-        id: 'id-2',
-        types: ['type-22'],
-        uris: ['x:url-22'],
-      })
-      const authorisedTx = await fullDid.authorizeExtrinsic(
-        newEndpointTx,
+      // Use batchAll to set a new attestation key and a duplicate service endpoint
+      const updateTx = await didAuthorizeExtrinsics({
+        batchFunction: api.tx.utility.batchAll,
+        did: fullDid,
+        extrinsics: [
+          await DidChain.getSetKeyExtrinsic(
+            'assertionMethod',
+            authenticationKey
+          ),
+          await DidChain.getAddEndpointExtrinsic({
+            id: 'id-1',
+            types: ['type-2'],
+            uris: ['x:url-2'],
+          }),
+        ],
         sign,
-        paymentAccount.address
-      )
-      await submitExtrinsic(authorisedTx, paymentAccount)
+        submitter: paymentAccount.address,
+      })
 
-      // Now, consuming the builder will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
+      // Now, submitting will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
       await expect(
-        updateBuilder.buildAndSubmit(
-          sign,
-          paymentAccount.address,
-          async (tx) => submitExtrinsic(tx, paymentAccount),
-          // Atomic
-          true
-        )
+        submitExtrinsic(updateTx, paymentAccount)
       ).rejects.toMatchObject({
         section: 'did',
         name: 'ServiceAlreadyPresent',
       })
 
       const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
+      if (!updatedFullDid) throw new Error('Cannot query created DID')
       // .setAttestationKey() extrinsic went through but it was then reverted
-      expect(updatedFullDid!.attestationKey).toBeUndefined()
+      expect(updatedFullDid.attestationKey).toBeUndefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.
       expect(
-        updatedFullDid!.getEndpoint('id-2')
+        updatedFullDid.getEndpoint('id-1')
       ).toStrictEqual<DidServiceEndpoint>({
-        id: 'id-2',
-        types: ['type-22'],
-        uris: ['x:url-22'],
+        id: 'id-1',
+        types: ['type-1'],
+        uris: ['x:url-1'],
       })
     }, 60_000)
   })
@@ -986,7 +993,7 @@ describe('DID extrinsics batching', () => {
     fullDid = await createFullDidFromSeed(paymentAccount, key.keypair)
   }, 50_000)
 
-  it('non-atomic batch succeeds despite failures of some extrinsics', async () => {
+  it('simple batch succeeds despite failures of some extrinsics', async () => {
     const ctype = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
@@ -1001,14 +1008,18 @@ describe('DID extrinsics batching', () => {
     })
     const delegationCreationTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
-    const tx = await new DidBatchBuilder(api, fullDid)
-      .addMultipleExtrinsics([
+    const tx = await didAuthorizeExtrinsics({
+      batchFunction: api.tx.utility.batch,
+      did: fullDid,
+      extrinsics: [
         ctypeCreationTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
         delegationCreationTx,
-      ])
-      .build(key.sign, paymentAccount.address, { atomic: false })
+      ],
+      sign: key.sign,
+      submitter: paymentAccount.address,
+    })
 
     // The entire submission promise is resolves and does not throw
     await submitExtrinsic(tx, paymentAccount)
@@ -1017,7 +1028,7 @@ describe('DID extrinsics batching', () => {
     expect(await CType.verifyStored(ctype)).toBeTruthy()
   })
 
-  it('atomic batch fails if any extrinsics fail', async () => {
+  it('batchAll fails if any extrinsics fail', async () => {
     const ctype = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
@@ -1032,14 +1043,18 @@ describe('DID extrinsics batching', () => {
     })
     const delegationCreationTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
-    const tx = await new DidBatchBuilder(api, fullDid)
-      .addMultipleExtrinsics([
+    const tx = await didAuthorizeExtrinsics({
+      batchFunction: api.tx.utility.batchAll,
+      did: fullDid,
+      extrinsics: [
         ctypeCreationTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
         delegationCreationTx,
-      ])
-      .build(key.sign, paymentAccount.address, { atomic: true })
+      ],
+      sign: key.sign,
+      submitter: paymentAccount.address,
+    })
 
     // The entire submission promise is rejected and throws.
     await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
@@ -1062,9 +1077,13 @@ describe('DID extrinsics batching', () => {
 
     const web3Name1ReleaseExt = await Web3Names.getReleaseByOwnerTx()
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
-    const tx = await new DidBatchBuilder(api, fullDid)
-      .addMultipleExtrinsics([web3Name1ReleaseExt, web3Name2ClaimExt])
-      .build(key.sign, paymentAccount.address)
+    const tx = await didAuthorizeExtrinsics({
+      batchFunction: api.tx.utility.batch,
+      did: fullDid,
+      extrinsics: [web3Name1ReleaseExt, web3Name2ClaimExt],
+      sign: key.sign,
+      submitter: paymentAccount.address,
+    })
     await submitExtrinsic(tx, paymentAccount)
 
     // Test for correct creation and deletion
@@ -1107,18 +1126,20 @@ describe('DID extrinsics batching', () => {
     // Delegation key
     const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)
 
-    const builder = new DidBatchBuilder(api, fullDid)
-      .addSingleExtrinsic(web3NameReleaseExt)
-      .addSingleExtrinsic(ctype1Creation)
-      .addSingleExtrinsic(delegationHierarchyCreation)
-      .addSingleExtrinsic(web3NameNewClaimExt)
-      .addSingleExtrinsic(ctype2Creation)
-      .addSingleExtrinsic(delegationHierarchyRemoval)
-
-    const batchedExtrinsics = await builder.build(
-      key.sign,
-      paymentAccount.address
-    )
+    const batchedExtrinsics = await didAuthorizeExtrinsics({
+      batchFunction: api.tx.utility.batchAll,
+      did: fullDid,
+      extrinsics: [
+        web3NameReleaseExt,
+        ctype1Creation,
+        delegationHierarchyCreation,
+        web3NameNewClaimExt,
+        ctype2Creation,
+        delegationHierarchyRemoval,
+      ],
+      sign: key.sign,
+      submitter: paymentAccount.address,
+    })
 
     await submitExtrinsic(batchedExtrinsics, paymentAccount)
 

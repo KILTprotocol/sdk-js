@@ -15,6 +15,7 @@ import type {
   KeyringPair,
   LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
+  NewDidVerificationKey,
   ResponseData,
   SignCallback,
   SigningAlgorithms,
@@ -148,11 +149,23 @@ async function createFullDidFromKeypair(
     getDefaultMigrationHandler(payer)
   )
 
-  const updatedFullDid = await new Did.FullDidUpdateBuilder(api, fullDid)
-    .setAttestationKey(fullDid.authenticationKey)
-    .setDelegationKey(fullDid.authenticationKey)
-    .buildAndSubmit(sign, payer.address, getDefaultMigrationHandler(payer))
+  const encodedKey = Did.Chain.formatPublicKey(fullDid.authenticationKey)
+  const extrinsic = await Did.didAuthorizeExtrinsics({
+    did: fullDid,
+    batchFunction: api.tx.utility.batchAll,
+    extrinsics: [
+      await api.tx.did.setAttestationKey(encodedKey),
+      await api.tx.did.setDelegationKey(encodedKey),
+    ],
+    sign,
+    submitter: payer.address,
+  })
+  await Blockchain.signAndSubmitTx(extrinsic, payer, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
+  })
 
+  const updatedFullDid = await Did.FullDidDetails.fromChainInfo(fullDid.uri)
+  if (!updatedFullDid) throw new Error('Could not update DID keys')
   return updatedFullDid
 }
 
@@ -225,14 +238,20 @@ async function runAll() {
   console.log('DID workflow started')
   const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
 
-  const fullDid = await new Did.FullDidCreationBuilder(api, {
-    publicKey: keypair.publicKey,
-    type: 'ed25519',
-  }).buildAndSubmit(sign, devFaucet.address, async (tx) => {
-    await Blockchain.signAndSubmitTx(tx, devFaucet, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
+  const authenticationKey = keypair as NewDidVerificationKey
+  const identifier = Did.Utils.getIdentifierByKey(authenticationKey)
+  const createTx = await Did.Chain.generateCreateTxFromCreationDetails(
+    { identifier, authenticationKey },
+    devFaucet.address,
+    sign
+  )
+  await Blockchain.signAndSubmitTx(createTx, devFaucet, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
   })
+  const fullDid = await Did.FullDidDetails.fromChainInfo(
+    Did.Utils.getFullDidUriByKey(authenticationKey)
+  )
+  if (!fullDid) throw new Error('Could not fetch created DID details')
 
   const resolved = await Did.resolveDoc(fullDid.uri)
 
