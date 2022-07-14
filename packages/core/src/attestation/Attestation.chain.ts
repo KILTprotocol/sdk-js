@@ -54,7 +54,7 @@ export async function getStoreTx(
           : undefined
       )
     default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to encode call: unknown authorization type'
       )
   }
@@ -97,7 +97,7 @@ function decode(
     } else if ('delegationId' in chainAttestation) {
       delegationId = chainAttestation.delegationId.unwrapOr(undefined)?.toHex()
     } else {
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to decode Attestation: unknown Codec type'
       )
     }
@@ -173,7 +173,7 @@ export async function getRevokeTx(
           : undefined
       )
     default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to encode call: unknown authorization type'
       )
   }
@@ -208,7 +208,7 @@ export async function getRemoveTx(
           : undefined
       )
     default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to encode call: unknown authorization type'
       )
   }

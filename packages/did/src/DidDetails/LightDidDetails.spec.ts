@@ -46,12 +46,12 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const validOptions: LightDidCreationDetails = {
@@ -85,7 +85,7 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.uri).toStrictEqual(expectedDid)
     // Verify base58 encoding
     expect(lightDidDetails?.uri).toStrictEqual(
-      `did:kilt:light:00${authKey.address}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
+      `did:kilt:light:00${authKey.address}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH18faKEFraMUeVFcqRoYctvTatCwndWGkkvHXJHZmXaNNU3QRm7kvV1Q6uJcJhZSGgbiYmY5xprchLXmooSZNBicRSTFUeRgmrAu`
     )
 
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
@@ -130,7 +130,7 @@ describe('When creating an instance from the details', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service-1',
       types: ['type-1'],
-      urls: ['x:url-1'],
+      uris: ['x:url-1'],
     })
     expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
       DidServiceEndpoint[]
@@ -138,7 +138,7 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
     ])
 
@@ -147,7 +147,7 @@ describe('When creating an instance from the details', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service-2',
       types: ['type-21', 'type-22'],
-      urls: ['x:url-21', 'x:url-22'],
+      uris: ['x:url-21', 'x:url-22'],
     })
     expect(lightDidDetails?.getEndpoints('type-21')).toStrictEqual<
       DidServiceEndpoint[]
@@ -155,7 +155,7 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ])
   })
@@ -292,12 +292,12 @@ describe('When creating an instance from a URI', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {
@@ -324,7 +324,7 @@ describe('When creating an instance from a URI', () => {
 
     // Verify base58 encoding
     expect(builtLightDidDetails.uri).toStrictEqual(
-      `did:kilt:light:00${expectedLightDidDetails.identifier}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
+      `did:kilt:light:00${expectedLightDidDetails.identifier}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH18faKEFraMUeVFcqRoYctvTatCwndWGkkvHXJHZmXaNNU3QRm7kvV1Q6uJcJhZSGgbiYmY5xprchLXmooSZNBicRSTFUeRgmrAu`
     )
     expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
       'authentication'
@@ -344,12 +344,12 @@ describe('When creating an instance from a URI', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {

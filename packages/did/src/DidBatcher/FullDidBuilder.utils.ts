@@ -11,7 +11,7 @@
 import { ApiPromise } from '@polkadot/api'
 
 import type { DidKey, NewDidKey } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { ChainDidPublicKey, formatPublicKey } from '../Did.chain.js'
 import { isEncryptionKey, isVerificationKey } from '../Did.utils.js'
@@ -27,7 +27,7 @@ function encodeToChainKey(api: ApiPromise, key: NewDidKey): ChainDidPublicKey {
   } else if (isEncryptionKey(key)) {
     keyClass = 'PublicEncryptionKey'
   } else {
-    throw TypeError('Unsupported key type.')
+    throw new SDKErrors.DidBuilderError('Unsupported key type')
   }
   return new (api.registry.getOrThrow<ChainDidPublicKey>(
     'DidDidDetailsDidPublicKey'

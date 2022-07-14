@@ -80,8 +80,8 @@ export abstract class DidDetails implements IDidDetails {
   public get authenticationKey(): DidVerificationKey {
     const firstAuthenticationKey = this.getVerificationKeys('authentication')[0]
     if (!firstAuthenticationKey) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        'Unexpected error. Any DID should always have at least one authentication key.'
+      throw new SDKErrors.DidError(
+        'Unexpected error. Any DID should always have at least one authentication key'
       )
     }
     return firstAuthenticationKey
@@ -229,16 +229,16 @@ export abstract class DidDetails implements IDidDetails {
   ): Promise<DidSignature> {
     const key = this.getKey(keyId)
     if (!key || !isVerificationKey(key)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Failed to find verification key with ID ${keyId} on DID (${this.uri})`
+      throw new SDKErrors.DidError(
+        `Failed to find verification key with ID "${keyId}" on DID "${this.uri}"`
       )
     }
     const alg = getSigningAlgorithmForVerificationKeyType(
       key.type as VerificationKeyType
     )
     if (!alg) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `No algorithm found for key type ${key.type}`
+      throw new SDKErrors.DidError(
+        `No algorithm found for key type "${key.type}"`
       )
     }
     const { data: signature } = await sign({

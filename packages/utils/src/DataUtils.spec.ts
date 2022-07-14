@@ -29,23 +29,23 @@ it('throws on address with other prefix', () => {
 
 it('throws for random strings', () => {
   expect(() => validateAddress('', 'test')).toThrowError(
-    SDKErrors.ERROR_ADDRESS_INVALID
+    SDKErrors.AddressInvalidError
   )
   expect(() => validateAddress('0x123', 'test')).toThrowError(
-    SDKErrors.ERROR_ADDRESS_INVALID
+    SDKErrors.AddressInvalidError
   )
   expect(() => validateAddress('bananenbabara', 'test')).toThrowError(
-    SDKErrors.ERROR_ADDRESS_INVALID
+    SDKErrors.AddressInvalidError
   )
   expect(() => validateAddress('ax843zoidsfho38290rdusa', 'test')).toThrowError(
-    SDKErrors.ERROR_ADDRESS_INVALID
+    SDKErrors.AddressInvalidError
   )
 })
 
 it('throws if address is no string', () => {
   expect(() =>
     validateAddress(Buffer.from([0, 0, 7]) as any, 'test')
-  ).toThrowError(SDKErrors.ERROR_ADDRESS_TYPE)
+  ).toThrowError(SDKErrors.AddressTypeError)
 })
 
 it('validates hash', () => {
@@ -59,25 +59,25 @@ it('throws on broken hashes', () => {
   const hash = Crypto.hashStr('test')
   expect(() => {
     validateHash(hash.substr(2), 'test')
-  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
     validateHash(hash.substr(0, 60), 'test')
-  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
     validateHash(hash.replace('0', 'O'), 'test')
-  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
     validateHash(`${hash.substr(0, hash.length - 1)}ß`, 'test')
-  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
     validateHash(hash.replace(/\w/i, 'P'), 'test')
-  }).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+  }).toThrowError(SDKErrors.HashMalformedError)
 })
 
 it('throws if hash is no string', () => {
   expect(() =>
     validateHash(Buffer.from([0, 0, 7]) as any, 'test')
-  ).toThrowError(SDKErrors.ERROR_HASH_TYPE)
+  ).toThrowError(SDKErrors.HashTypeError)
 })
 
 describe('validate signature util', () => {
@@ -96,7 +96,7 @@ describe('validate signature util', () => {
   it('throws when signature does not check out', () => {
     expect(() =>
       validateSignature('dörte', signature, signer.address)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE)
+    ).toThrowError(SDKErrors.SignatureUnverifiableError)
   })
 
   it('throws non-sdk error if input is bogus', () => {
@@ -109,16 +109,16 @@ describe('validate signature util', () => {
 
   it('throws when input is incomplete', () => {
     expect(() => validateSignature('data', null as any, 'signer')).toThrowError(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     expect(() =>
       validateSignature('data', 'signature', undefined as any)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     expect(() =>
       validateSignature({ key: ['value'] } as any, 'signature', 'signer')
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     expect(() => (validateSignature as any)()).toThrowError(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 })

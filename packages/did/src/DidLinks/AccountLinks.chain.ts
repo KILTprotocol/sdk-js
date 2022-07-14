@@ -6,7 +6,7 @@
  */
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { ss58Format } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import {
   Deposit,
   DidIdentifier,
@@ -237,7 +237,9 @@ function getMultiSignatureTypeFromKeypairType(
     case 'ecdsa':
       return 'Ecdsa'
     default:
-      throw new Error(`Unsupported signature algorithm '${keypairType}'`)
+      throw new SDKErrors.DidError(
+        `Unsupported signature algorithm "${keypairType}"`
+      )
   }
 }
 

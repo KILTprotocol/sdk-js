@@ -122,7 +122,7 @@ beforeAll(async () => {
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: aliceAuthKey.authenticationKey,
     encryptionKey: aliceEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
   })
   aliceFullDid = await createLocalDemoFullDidFromLightDid(aliceLightDid)
 
@@ -135,7 +135,7 @@ beforeAll(async () => {
   bobLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: bobAuthKey.authenticationKey,
     encryptionKey: bobEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
   })
   bobFullDid = await createLocalDemoFullDidFromLightDid(bobLightDid)
 })
@@ -192,7 +192,7 @@ describe('Messaging', () => {
           resolver: mockResolver,
         }
       )
-    ).rejects.toThrowError(SDKErrors.ERROR_DECODING_MESSAGE)
+    ).rejects.toThrowError(SDKErrors.DecodingMessageError)
 
     const encryptedWrongBody = await aliceEncKey.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
@@ -217,7 +217,7 @@ describe('Messaging', () => {
           resolver: mockResolver,
         }
       )
-    ).rejects.toThrowError(SDKErrors.ERROR_PARSING_MESSAGE)
+    ).rejects.toThrowError(SDKErrors.ParsingMessageError)
   })
 
   it('verifies the message with sender is the owner (as full DID)', async () => {
@@ -283,7 +283,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(requestAttestationBody, bobFullDid.uri, aliceFullDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const attestation = {
       delegationId: null,
@@ -320,7 +320,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(submitAttestationBody, aliceFullDid.uri, bobFullDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const credential: ICredential = {
       request: content,
@@ -352,7 +352,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(submitClaimsForCTypeBody, bobFullDid.uri, aliceFullDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
   })
 
   it('verifies the message with sender is the owner (as light DID)', async () => {
@@ -483,7 +483,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(requestAttestationBody, bobLightDid.uri, aliceLightDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const attestation = {
       delegationId: null,
@@ -556,7 +556,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(submitAttestationBody, aliceLightDid.uri, bobLightDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const credential: ICredential = {
       request: content,
@@ -627,6 +627,6 @@ describe('Messaging', () => {
           aliceLightDid.uri
         )
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
   })
 })

@@ -91,7 +91,7 @@ function exportToJsonDidDocument(details: IDidDetails): DidDocument {
     result.service = serviceEndpoints.map((service) => ({
       id: `${details.uri}#${service.id}`,
       type: service.types,
-      serviceEndpoint: service.urls,
+      serviceEndpoint: service.uris,
     }))
   }
 
@@ -121,8 +121,8 @@ export function exportToDidDocument(
     case 'application/ld+json':
       return exportToJsonLdDidDocument(details)
     default:
-      throw new SDKErrors.ERROR_DID_EXPORTER_ERROR(
-        `${mimeType} not supported by any of the available exporters.`
+      throw new SDKErrors.DidExporterError(
+        `The MIME type "${mimeType}" not supported by any of the available exporters`
       )
   }
 }

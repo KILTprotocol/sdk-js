@@ -44,14 +44,13 @@ const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
  * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
  * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
  * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]]'s ['contents'].
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] in case the claim's ['cTypeHash'] property is undefined.
  */
 function jsonLDcontents(
   claim: PartialClaim,
   expanded = true
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
-  if (!cTypeHash) throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+  if (!cTypeHash) throw new SDKErrors.CTypeHashMissingError()
   const vocabulary = `${getIdForCTypeHash(cTypeHash)}#`
   const result: Record<string, unknown> = {}
   if (owner) result['@id'] = owner
@@ -75,7 +74,6 @@ function jsonLDcontents(
  * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
  * @param expanded Return an expanded instead of a compacted representation. While property transformation is done explicitly in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
  * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]].
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] in case the claim's ['cTypeHash'] property is undefined.
  */
 export function toJsonLD(
   claim: PartialClaim,
@@ -110,7 +108,6 @@ function makeStatementsJsonLD(claim: PartialClaim): string[] {
  * @param options.nonceGenerator Nonce generator as defined by [[hashStatements]] to be used if no `nonces` are given. Default produces random UUIDs (v4).
  * @param options.hasher The hasher to be used. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
  * @returns An array of salted `hashes` and a `nonceMap` where keys correspond to unsalted statement hashes.
- * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] if the nonceMap or the nonceGenerator was non-exhaustive for any statement.
  */
 export function hashClaimContents(
   claim: PartialClaim,
@@ -136,7 +133,7 @@ export function hashClaimContents(
   const nonceMap = {}
   processed.forEach(({ digest, nonce, statement }) => {
     // throw if we can't map a digest to a nonce - this should not happen if the nonce map is complete and the credential has not been tampered with
-    if (!nonce) throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED(statement)
+    if (!nonce) throw new SDKErrors.ClaimNonceMapMalformedError(statement)
     nonceMap[digest] = nonce
   }, {})
   return { hashes, nonceMap }
@@ -178,15 +175,13 @@ export function verifyDisclosedAttributes(
     (status, { saltedHash, statement, digest, nonce }) => {
       // check if the statement digest was contained in the proof and mapped it to a nonce
       if (!digestsInProof.includes(digest) || !nonce) {
-        status.errors.push(
-          new SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT(statement)
-        )
+        status.errors.push(new SDKErrors.NoProofForStatementError(statement))
         return { ...status, verified: false }
       }
       // check if the hash is whitelisted in the proof
       if (!proof.hashes.includes(saltedHash)) {
         status.errors.push(
-          new SDKErrors.ERROR_INVALID_PROOF_FOR_STATEMENT(statement)
+          new SDKErrors.InvalidProofForStatementError(statement)
         )
         return { ...status, verified: false }
       }
@@ -201,13 +196,10 @@ export function verifyDisclosedAttributes(
  * Throws on invalid input.
  *
  * @param input The potentially only partial IClaim.
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when input's cTypeHash do not exist.
- * @throws [[ERROR_CLAIM_CONTENTS_MALFORMED]] when any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
- *
  */
 export function verifyDataStructure(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
-    throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    throw new SDKErrors.CTypeHashMissingError()
   }
   if (input.owner) {
     DidUtils.validateKiltDidUri(input.owner)
@@ -219,7 +211,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
         typeof key !== 'string' ||
         !['string', 'number', 'boolean', 'object'].includes(typeof value)
       ) {
-        throw new SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
+        throw new SDKErrors.ClaimContentsMalformedError()
       }
     })
   }
@@ -232,19 +224,19 @@ function verifyAgainstCType(
 ): boolean {
   return verifyClaimAgainstSchema(claimContents, cTypeSchema)
 }
+
 /**
  * Verifies the data structure and schema of a Claim.
  *
  * @param claimInput IClaim to verify.
  * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
- * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the provided cTypeSchema.
  */
 export function verify(
   claimInput: IClaim,
   cTypeSchema: ICType['schema']
 ): void {
   if (!verifyAgainstCType(claimInput.contents, cTypeSchema)) {
-    throw new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+    throw new SDKErrors.ClaimUnverifiableError()
   }
 
   verifyDataStructure(claimInput)
@@ -273,7 +265,7 @@ export function fromNestedCTypeClaim(
       claimContents
     )
   ) {
-    throw new SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
+    throw new SDKErrors.NestedClaimUnverifiableError()
   }
   const claim = {
     cTypeHash: cTypeInput.hash,
@@ -290,8 +282,6 @@ export function fromNestedCTypeClaim(
  * @param ctypeInput [[ICType]] for which the Claim will be built.
  * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
  * @param claimOwner The DID to be used as the Claim owner.
- * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the schema of the provided ctypeInput.
- *
  * @returns A Claim object.
  */
 export function fromCTypeAndClaimContents(
@@ -301,7 +291,7 @@ export function fromCTypeAndClaimContents(
 ): IClaim {
   if (ctypeInput.schema) {
     if (!verifyAgainstCType(claimContents, ctypeInput.schema)) {
-      throw new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+      throw new SDKErrors.ClaimUnverifiableError()
     }
   }
   const claim = {
@@ -367,7 +357,6 @@ export function compress(
  * Decompresses an [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedClaim]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
  * @returns An [[IClaim]] object that has the same properties compressed representation.
  */
 export function decompress(claim: CompressedClaim): IClaim
@@ -375,7 +364,6 @@ export function decompress(claim: CompressedClaim): IClaim
  * Decompresses a partial [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
  * @returns A [[PartialClaim]] object that has the same properties compressed representation.
  */
 export function decompress(claim: CompressedPartialClaim): PartialClaim
@@ -383,14 +371,13 @@ export function decompress(claim: CompressedPartialClaim): PartialClaim
  * Decompresses compressed representation of a (partial) [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedClaim]] or [[CompressedPartialClaim]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] if `claim` is not an Array or it's length is unequal 3.
  * @returns An [[IClaim]] or [[PartialClaim]] object that has the same properties compressed representation.
  */
 export function decompress(
   claim: CompressedClaim | CompressedPartialClaim
 ): IClaim | PartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
+    throw new SDKErrors.DecompressionArrayError('Claim')
   }
   const decompressedClaim = {
     cTypeHash: claim[0],

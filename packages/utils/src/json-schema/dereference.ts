@@ -100,7 +100,7 @@ export function dereference(
   // compute the schema's URI and add it to the mapping.
   const schemaURI = baseURI.href + (basePointer ? '#' + basePointer : '')
   if (lookup[schemaURI] !== undefined) {
-    throw new Error(`Duplicate schema URI "${schemaURI}".`)
+    throw new Error(`Duplicate schema URI "${schemaURI}"`)
   }
   lookup[schemaURI] = schema
 

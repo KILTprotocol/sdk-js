@@ -79,7 +79,7 @@ export type DidPublicServiceEndpoint = {
   /**
    * The set of services exposed by this endpoint.
    */
-  serviceEndpoint: DidServiceEndpoint['urls']
+  serviceEndpoint: DidServiceEndpoint['uris']
 }
 
 /**
