@@ -162,8 +162,8 @@ export class DidBatchBuilder {
     const batchesLength = this.batches.length
 
     if (!batchesLength) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Cannot build a batch with no transactions.'
+      throw new SDKErrors.DidBuilderError(
+        'Cannot build a batch with no transactions'
       )
     }
 

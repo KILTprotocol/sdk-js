@@ -239,34 +239,34 @@ describe('Attestation', () => {
     } as IAttestation
 
     expect(() => Attestation.verifyDataStructure(noClaimHash)).toThrowError(
-      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
+      SDKErrors.ClaimHashMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(noCTypeHash)).toThrowError(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+      SDKErrors.CTypeHashMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(malformedOwner)).toThrowError(
-      SDKErrors.ERROR_OWNER_NOT_PROVIDED
+      SDKErrors.OwnerMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(noRevocationBit)).toThrowError(
-      SDKErrors.ERROR_REVOCATION_BIT_MISSING
+      SDKErrors.RevokedTypeError
     )
 
     expect(() => Attestation.verifyDataStructure(everything)).not.toThrow()
 
     expect(() =>
       Attestation.verifyDataStructure(malformedClaimHash)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     expect(() =>
       Attestation.verifyDataStructure(malformedCTypeHash)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     expect(() =>
       Attestation.verifyDataStructure(malformedAddress)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
   })
   it('Typeguard should return true on complete Attestations', () => {
     const attestation = Attestation.fromRequestAndDid(

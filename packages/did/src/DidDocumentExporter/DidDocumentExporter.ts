@@ -121,8 +121,8 @@ export function exportToDidDocument(
     case 'application/ld+json':
       return exportToJsonLdDidDocument(details)
     default:
-      throw new SDKErrors.ERROR_DID_EXPORTER_ERROR(
-        `${mimeType} not supported by any of the available exporters.`
+      throw new SDKErrors.DidExporterError(
+        `The MIME type "${mimeType}" not supported by any of the available exporters`
       )
   }
 }

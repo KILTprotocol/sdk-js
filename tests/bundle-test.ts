@@ -218,8 +218,8 @@ async function runAll() {
     testDid.uri !==
     `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
   ) {
-    throw new Error('Did Test Unsuccessful')
-  } else console.info(`light did successfully created`)
+    throw new Error('DID Test Unsuccessful')
+  } else console.info(`light DID successfully created`)
 
   // Chain Did workflow -> creation & deletion
   console.log('DID workflow started')
@@ -241,9 +241,9 @@ async function runAll() {
     !resolved.metadata.deactivated &&
     resolved.details?.uri === fullDid.uri
   ) {
-    console.info('Did matches!')
+    console.info('DID matches')
   } else {
-    throw new Error('Dids not matching!')
+    throw new Error('DIDs do not match')
   }
 
   const extrinsic = await Did.Chain.getDeleteDidExtrinsic(
@@ -261,9 +261,9 @@ async function runAll() {
 
   const resolvedAgain = await Did.resolveDoc(fullDid.uri)
   if (resolvedAgain?.metadata.deactivated) {
-    console.info('Did successfully deleted!')
+    console.info('DID successfully deleted')
   } else {
-    throw new Error('Did not successfully deleted')
+    throw new Error('DID was not deleted')
   }
 
   // CType workflow
@@ -296,9 +296,9 @@ async function runAll() {
 
   const stored = await CType.verifyStored(DriversLicense)
   if (stored) {
-    console.info('CType successfully stored onchain!')
+    console.info('CType successfully stored on chain')
   } else {
-    throw new Error('ctype not stored!')
+    throw new Error('CType not stored')
   }
 
   const result = await CType.verifyOwner({
@@ -306,9 +306,9 @@ async function runAll() {
     owner: alice.uri,
   })
   if (result) {
-    console.info('owner verified')
+    console.info('Owner verified')
   } else {
-    throw new Error('ctype owner does not match ctype creator did')
+    throw new Error('CType owner does not match ctype creator DID')
   }
 
   // Attestation workflow
@@ -327,7 +327,7 @@ async function runAll() {
     bob.authenticationKey.id
   )
   if (!RequestForAttestation.isIRequestForAttestation(request))
-    throw new Error('Not a valid Request!')
+    throw new Error('Not a valid Request')
   else {
     if (RequestForAttestation.verifyDataIntegrity(request))
       console.info('Req4Att data verified')
@@ -363,13 +363,13 @@ async function runAll() {
     alice
   )
   if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
-    throw new Error('original and decrypted message are not the same')
+    throw new Error('Original and decrypted message are not the same')
   }
 
   const attestation = Attestation.fromRequestAndDid(request, alice.uri)
   const credential = Credential.fromRequestAndAttestation(request, attestation)
   if (Credential.verifyDataIntegrity(credential))
-    console.info('Attested Claim Data verified!')
+    console.info('Attested Claim Data verified')
   else throw new Error('Attested Claim data not verifiable')
 
   const txAtt = await Attestation.getStoreTx(attestation)
@@ -382,9 +382,9 @@ async function runAll() {
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
   if (await Credential.verify(credential)) {
-    console.info('Attested Claim verified with chain.')
+    console.info('Attested Claim verified with chain')
   } else {
-    throw new Error('attested Claim not verifiable with chain')
+    throw new Error('Attested Claim not verifiable with chain')
   }
 }
 

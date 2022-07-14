@@ -37,7 +37,6 @@ export class Message implements IMessage {
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.sender The sender's DID taken from the [[IMessage]].
-   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender is not the same subject as the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
@@ -50,7 +49,7 @@ export class Message implements IMessage {
               sender
             )
           ) {
-            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
+            throw new SDKErrors.IdentityMismatchError('Claim', 'Sender')
           }
         }
         break
@@ -63,7 +62,7 @@ export class Message implements IMessage {
               sender
             )
           ) {
-            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
+            throw new SDKErrors.IdentityMismatchError('Attestation', 'Sender')
           }
         }
         break
@@ -72,7 +71,7 @@ export class Message implements IMessage {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
-              throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
+              throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
             }
           })
         }
@@ -91,9 +90,6 @@ export class Message implements IMessage {
    * @param receiverDetails The DID details of the receiver.
    * @param decryptionOptions Options to perform the decryption operation.
    * @param decryptionOptions.resolver The DID resolver to use.
-   *
-   * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
-   * @throws [[ERROR_PARSING_MESSAGE]] when the decoded message could not be parsed.
    * @returns The original [[Message]].
    */
   public static async decrypt(
@@ -111,20 +107,20 @@ export class Message implements IMessage {
 
     const senderKeyDetails = await resolver.resolveKey(senderKeyUri)
     if (!senderKeyDetails) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve sender encryption key ${senderKeyUri}`
+      throw new SDKErrors.DidError(
+        `Could not resolve sender encryption key "${senderKeyUri}"`
       )
     }
     const { fragment } = DidUtils.parseDidUri(receiverKeyUri)
     if (!fragment) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `No fragment for the receiver key ID ${receiverKeyUri}`
+      throw new SDKErrors.DidError(
+        `No fragment for the receiver key ID "${receiverKeyUri}"`
       )
     }
     const receiverKeyDetails = receiverDetails.getKey(fragment)
     if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve receiver encryption key ${receiverKeyUri}`
+      throw new SDKErrors.DidError(
+        `Could not resolve receiver encryption key "${receiverKeyUri}"`
       )
     }
     const receiverKeyAlgType =
@@ -132,8 +128,8 @@ export class Message implements IMessage {
         receiverKeyDetails.type as EncryptionKeyType
       )
     if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
-      throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
-        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
+      throw new SDKErrors.EncryptionError(
+        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
       )
     }
 
@@ -148,8 +144,10 @@ export class Message implements IMessage {
           nonce: hexToU8a(nonce),
         })
       ).data
-    } catch {
-      throw new SDKErrors.ERROR_DECODING_MESSAGE()
+    } catch (cause) {
+      throw new SDKErrors.DecodingMessageError(undefined, {
+        cause: cause as Error,
+      })
     }
 
     const decoded = u8aToString(data)
@@ -176,7 +174,7 @@ export class Message implements IMessage {
       }
 
       if (sender !== senderKeyDetails.controller) {
-        throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
+        throw new SDKErrors.IdentityMismatchError('Encryption key', 'Sender')
       }
 
       // checks the message body
@@ -188,8 +186,10 @@ export class Message implements IMessage {
       Message.ensureOwnerIsSender(decrypted)
 
       return decrypted
-    } catch (error) {
-      throw new SDKErrors.ERROR_PARSING_MESSAGE()
+    } catch (cause) {
+      throw new SDKErrors.ParsingMessageError(undefined, {
+        cause: cause as Error,
+      })
     }
   }
 
@@ -250,23 +250,21 @@ export class Message implements IMessage {
   ): Promise<IEncryptedMessage> {
     const receiverKey = await resolver.resolveKey(receiverKeyUri)
     if (!receiverKey) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot resolve key ${receiverKeyUri}`
-      )
+      throw new SDKErrors.DidError(`Cannot resolve key "${receiverKeyUri}"`)
     }
     if (this.receiver !== receiverKey.controller) {
-      throw new SDKErrors.ERROR_IDENTITY_MISMATCH(
+      throw new SDKErrors.IdentityMismatchError(
         'receiver public key',
         'receiver'
       )
     }
     if (this.sender !== senderDetails.uri) {
-      throw new SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
+      throw new SDKErrors.IdentityMismatchError('sender public key', 'sender')
     }
     const senderKey = senderDetails.getKey(senderKeyId)
     if (!senderKey || !DidUtils.isEncryptionKey(senderKey)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot find key with ID ${senderKeyId} for the sender DID.`
+      throw new SDKErrors.DidError(
+        `Cannot find key with ID "${senderKeyId}" for the sender DID`
       )
     }
     const senderKeyAlgType =
@@ -274,8 +272,8 @@ export class Message implements IMessage {
         senderKey.type as EncryptionKeyType
       )
     if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
-      throw new SDKErrors.ERROR_ENCRYPTION_ERROR(
-        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
+      throw new SDKErrors.EncryptionError(
+        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
       )
     }
 
@@ -323,7 +321,6 @@ export class Message implements IMessage {
    *
    * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
    * @param cType A [[CType]] used to verify the properties.
-   * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
    */
   public static verifyRequiredCTypeProperties(
     requiredProperties: string[],

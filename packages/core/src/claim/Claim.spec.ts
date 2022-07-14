@@ -263,15 +263,15 @@ describe('Claim', () => {
     expect(() => Claim.verifyDataStructure(everything)).not.toThrow()
 
     expect(() => Claim.verifyDataStructure(noCTypeHash)).toThrowError(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+      SDKErrors.CTypeHashMissingError
     )
 
     expect(() => Claim.verifyDataStructure(malformedCTypeHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED
+      SDKErrors.HashMalformedError
     )
 
     expect(() => Claim.verifyDataStructure(malformedAddress)).toThrowError(
-      SDKErrors.ERROR_ADDRESS_INVALID
+      SDKErrors.AddressInvalidError
     )
   })
 })

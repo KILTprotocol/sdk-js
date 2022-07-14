@@ -45,7 +45,7 @@ switch (true) {
     break
   default:
     throw new Error(
-      `can only handle ws/wss and http/https endpoints, received ${argv.endpoint}`
+      `Can only handle ws/wss and http/https endpoints, received "${argv.endpoint}"`
     )
 }
 
@@ -65,7 +65,7 @@ async function fetch() {
       metadata = JSON.stringify(api.runtimeMetadata.toJSON(), null, 2)
       break
     default:
-      throw new Error('unexpected output format')
+      throw new Error('Unexpected output format')
   }
 
   console.log(
@@ -79,7 +79,7 @@ async function fetch() {
 const timeout = new Promise((_, reject) => {
   setTimeout(() => {
     exitCode = exitCode || 124
-    reject(new Error('timeout waiting for metadata fetch'))
+    reject(new Error('Timeout waiting for metadata fetch'))
   }, 10000)
 })
 

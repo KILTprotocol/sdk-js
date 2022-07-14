@@ -512,19 +512,19 @@ describe('DelegationNode', () => {
       } as IDelegationNode
 
       expect(() => errorCheck(malformedPermissionsDelegationNode)).toThrowError(
-        SDKErrors.ERROR_UNAUTHORIZED
+        SDKErrors.UnauthorizedError
       )
 
       expect(() => errorCheck(missingRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_MISSING
+        SDKErrors.DelegationIdMissingError
       )
 
       expect(() => errorCheck(malformedRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE
+        SDKErrors.DelegationIdTypeError
       )
 
       expect(() => errorCheck(malformedParentIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE
+        SDKErrors.DelegationIdTypeError
       )
     })
   })
