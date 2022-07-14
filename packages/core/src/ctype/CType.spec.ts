@@ -130,23 +130,25 @@ describe('CType', () => {
       },
     }
     expect(() => CType.verifyDataStructure(wrongHashCtype)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED
+      SDKErrors.HashMalformedError
     )
     expect(() => CType.verifyDataStructure(faultySchemaCtype)).toThrowError(
-      SDKErrors.ERROR_OBJECT_MALFORMED
+      SDKErrors.ObjectUnverifiableError
     )
     expect(() =>
       CType.verifyDataStructure(invalidAddressCtype)
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Not a valid KILT did: did:kilt:Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N"`
+      `"Not a valid KILT DID \\"did:kilt:Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N\\""`
     )
     expect(() =>
       CType.verifyDataStructure(faultyAddressTypeCType)
-    ).toThrowErrorMatchingInlineSnapshot(`"Not a valid KILT did: 4262626426"`)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Not a valid KILT DID \\"4262626426\\""`
+    )
     expect(() =>
       CType.verifyDataStructure(wrongSchemaIdCType)
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Provided $id \\"kilt:ctype:0xd5302762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" and schema $id \\"kilt:ctype:0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" are not matching"`
+      `"Provided $id \\"kilt:ctype:0xd5302762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" does not match schema $id \\"kilt:ctype:0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\""`
     )
   })
 
@@ -300,7 +302,7 @@ describe('CType verification', () => {
     ).toBeFalsy()
     expect(() => {
       CType.verifyClaimAgainstSchema(badClaim, ctypeInput)
-    }).toThrow(SDKErrors.ERROR_OBJECT_MALFORMED)
+    }).toThrow(SDKErrors.ObjectUnverifiableError)
   })
   it('verifies ctypes', () => {
     expect(

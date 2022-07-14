@@ -7,14 +7,7 @@
 
 import { BN } from '@polkadot/util'
 
-import {
-  DidKey,
-  DidServiceEndpoint,
-  DidIdentifier,
-  KeyRelationship,
-  VerificationKeyType,
-  EncryptionKeyType,
-} from '@kiltprotocol/types'
+import { DidKey, DidServiceEndpoint, DidIdentifier } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
 import { getKiltDidFromIdentifier } from '../Did.utils'
@@ -40,31 +33,31 @@ const existingDidDetails: IDidChainRecordJSON = {
     {
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.Sr25519,
+      type: 'sr25519',
       includedAt: new BN(0),
     },
     {
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     },
     {
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     },
     {
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
       includedAt: new BN(0),
     },
     {
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
       includedAt: new BN(0),
     },
   ],
@@ -78,12 +71,12 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
   {
     id: 'service#1',
     types: ['type-1'],
-    urls: ['url-1'],
+    uris: ['url-1'],
   },
   {
     id: 'service#2',
     types: ['type-2'],
-    urls: ['url-2'],
+    uris: ['url-2'],
   },
 ]
 
@@ -133,16 +126,16 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('auth#1')).toStrictEqual<DidKey>({
       id: 'auth#1',
       publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.Sr25519,
+      type: 'sr25519',
       includedAt: new BN(0),
     })
-    expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.authentication)
-    ).toStrictEqual<DidKey[]>([
+    expect(fullDidDetails?.getVerificationKeys('authentication')).toStrictEqual<
+      DidKey[]
+    >([
       {
         id: 'auth#1',
         publicKey: new Uint8Array(32).fill(0),
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
         includedAt: new BN(0),
       },
     ])
@@ -151,28 +144,28 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('enc#1')).toStrictEqual<DidKey>({
       id: 'enc#1',
       publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     })
     expect(fullDidDetails?.getKey('enc#2')).toStrictEqual<DidKey>({
       id: 'enc#2',
       publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
       includedAt: new BN(0),
     })
-    expect(
-      fullDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
-    ).toStrictEqual<DidKey[]>([
+    expect(fullDidDetails?.getEncryptionKeys('keyAgreement')).toStrictEqual<
+      DidKey[]
+    >([
       {
         id: 'enc#1',
         publicKey: new Uint8Array(32).fill(1),
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
         includedAt: new BN(0),
       },
       {
         id: 'enc#2',
         publicKey: new Uint8Array(32).fill(2),
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
         includedAt: new BN(0),
       },
     ])
@@ -181,16 +174,16 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('att#1')).toStrictEqual<DidKey>({
       id: 'att#1',
       publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
       includedAt: new BN(0),
     })
     expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.assertionMethod)
+      fullDidDetails?.getVerificationKeys('assertionMethod')
     ).toStrictEqual<DidKey[]>([
       {
         id: 'att#1',
         publicKey: new Uint8Array(32).fill(3),
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
         includedAt: new BN(0),
       },
     ])
@@ -199,16 +192,16 @@ describe('When creating an instance from the chain', () => {
     expect(fullDidDetails?.getKey('del#1')).toStrictEqual<DidKey>({
       id: 'del#1',
       publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
       includedAt: new BN(0),
     })
     expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.capabilityDelegation)
+      fullDidDetails?.getVerificationKeys('capabilityDelegation')
     ).toStrictEqual<DidKey[]>([
       {
         id: 'del#1',
         publicKey: new Uint8Array(32).fill(4),
-        type: VerificationKeyType.Ecdsa,
+        type: 'ecdsa',
         includedAt: new BN(0),
       },
     ])
@@ -219,7 +212,7 @@ describe('When creating an instance from the chain', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service#1',
       types: ['type-1'],
-      urls: ['url-1'],
+      uris: ['url-1'],
     })
     expect(fullDidDetails?.getEndpoints('type-1')).toStrictEqual<
       DidServiceEndpoint[]
@@ -227,7 +220,7 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'service#1',
         types: ['type-1'],
-        urls: ['url-1'],
+        uris: ['url-1'],
       },
     ])
 
@@ -236,7 +229,7 @@ describe('When creating an instance from the chain', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service#2',
       types: ['type-2'],
-      urls: ['url-2'],
+      uris: ['url-2'],
     })
     expect(fullDidDetails?.getEndpoints('type-2')).toStrictEqual<
       DidServiceEndpoint[]
@@ -244,7 +237,7 @@ describe('When creating an instance from the chain', () => {
       {
         id: 'service#2',
         types: ['type-2'],
-        urls: ['url-2'],
+        uris: ['url-2'],
       },
     ])
   })

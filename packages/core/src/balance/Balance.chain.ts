@@ -45,7 +45,7 @@ export async function getBalances(
  *
  * @param accountAddress Address of the account on which to listen for all balance changes.
  * @param listener Listener to receive all balance change updates.
- * @returns A promise containing a function that let's you unsubscribe from all balance changes.
+ * @returns A promise containing a function that lets you unsubscribe from all balance changes.
  */
 export async function listenToBalanceChanges(
   accountAddress: KeyringPair['address'],

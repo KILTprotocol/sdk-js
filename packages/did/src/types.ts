@@ -6,17 +6,16 @@
  */
 
 import type {
+  DidIdentifier,
   DidKey,
   DidServiceEndpoint,
-  IDidDetails,
-  DidIdentifier,
+  DidUri,
   KeyRelationship,
   NewDidEncryptionKey,
   NewDidVerificationKey,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
-export { SigningAlgorithms, EncryptionAlgorithms } from '@kiltprotocol/types'
+export { SigningAlgorithms } from '@kiltprotocol/types'
 
 /**
  * Map from a key relationship (including the 'none' relationship) -> set of key IDs.
@@ -41,7 +40,7 @@ export type ServiceEndpoints = Record<
 export type DidKeySelectionCallback<T> = (keys: T[]) => Promise<T | null>
 
 export type DidConstructorDetails = {
-  uri: IDidDetails['uri']
+  uri: DidUri
   // Accepts a list of keys where the ID does not include the DID URI.
   keys: PublicKeys
   keyRelationships: MapKeysToRelationship
@@ -59,9 +58,7 @@ export type FullDidCreationDetails = {
 }
 
 // Ecdsa not supported.
-export type LightDidSupportedVerificationKeyType =
-  | VerificationKeyType.Ed25519
-  | VerificationKeyType.Sr25519
+export type LightDidSupportedVerificationKeyType = 'ed25519' | 'sr25519'
 
 /**
  * A new public key specified when creating a new light DID.

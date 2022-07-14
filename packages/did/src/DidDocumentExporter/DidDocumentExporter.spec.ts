@@ -10,10 +10,8 @@ import { BN } from '@polkadot/util'
 import {
   DidKey,
   DidServiceEndpoint,
-  EncryptionKeyType,
   DidIdentifier,
   NewDidVerificationKey,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecordJSON } from '../Did.chain'
@@ -30,7 +28,7 @@ const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 function generateAuthenticationKeyDetails(): DidKey {
   return {
     id: 'auth',
-    type: VerificationKeyType.Ed25519,
+    type: 'ed25519',
     publicKey: new Uint8Array(32).fill(0),
   }
 }
@@ -38,7 +36,7 @@ function generateAuthenticationKeyDetails(): DidKey {
 function generateEncryptionKeyDetails(): DidKey {
   return {
     id: 'enc',
-    type: EncryptionKeyType.X25519,
+    type: 'x25519',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(15),
   }
@@ -47,7 +45,7 @@ function generateEncryptionKeyDetails(): DidKey {
 function generateAttestationKeyDetails(): DidKey {
   return {
     id: 'att',
-    type: VerificationKeyType.Sr25519,
+    type: 'sr25519',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(20),
   }
@@ -56,7 +54,7 @@ function generateAttestationKeyDetails(): DidKey {
 function generateDelegationKeyDetails(): DidKey {
   return {
     id: 'del',
-    type: VerificationKeyType.Ecdsa,
+    type: 'ecdsa',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(25),
   }
@@ -66,7 +64,7 @@ function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
   return {
     id: serviceId,
     types: [`type-${serviceId}`],
-    urls: [`x:url-${serviceId}`],
+    uris: [`x:url-${serviceId}`],
   }
 }
 
@@ -280,11 +278,11 @@ describe('When exporting a DID Document from a light DID', () => {
   const lightDidDetails = LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authKey.publicKey,
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
     },
     encryptionKey: {
       publicKey: encKey.publicKey,
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     },
     serviceEndpoints,
   })
@@ -295,15 +293,15 @@ describe('When exporting a DID Document from a light DID', () => {
     expect(didDoc).toMatchInlineSnapshot(`
       Object {
         "authentication": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#authentication",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
         ],
-        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD",
+        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
         "keyAgreement": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#encryption",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
         ],
         "service": Array [
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#id-1",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-1",
             "serviceEndpoint": Array [
               "x:url-id-1",
             ],
@@ -312,7 +310,7 @@ describe('When exporting a DID Document from a light DID', () => {
             ],
           },
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#id-2",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-2",
             "serviceEndpoint": Array [
               "x:url-id-2",
             ],
@@ -323,14 +321,14 @@ describe('When exporting a DID Document from a light DID', () => {
         ],
         "verificationMethod": Array [
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#authentication",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "Ed25519VerificationKey2018",
           },
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#encryption",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "X25519KeyAgreementKey2019",
           },
@@ -348,15 +346,15 @@ describe('When exporting a DID Document from a light DID', () => {
           "https://www.w3.org/ns/did/v1",
         ],
         "authentication": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#authentication",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
         ],
-        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD",
+        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
         "keyAgreement": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#encryption",
+          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
         ],
         "service": Array [
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#id-1",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-1",
             "serviceEndpoint": Array [
               "x:url-id-1",
             ],
@@ -365,7 +363,7 @@ describe('When exporting a DID Document from a light DID', () => {
             ],
           },
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#id-2",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-2",
             "serviceEndpoint": Array [
               "x:url-id-2",
             ],
@@ -376,14 +374,14 @@ describe('When exporting a DID Document from a light DID', () => {
         ],
         "verificationMethod": Array [
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#authentication",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "Ed25519VerificationKey2018",
           },
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92gfAP9rxwnAYtVpSURWBmreSbN1snYMwoDZfLdzMUdwGhHn9Qx13mXVkHRLmbs8c8Ve6X5aKFSJGy9xD#encryption",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "X25519KeyAgreementKey2019",
           },

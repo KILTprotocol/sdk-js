@@ -47,7 +47,7 @@ export async function updateCredentialDigestProof(
   )
   if (statements.length < 1)
     throw new Error(
-      `no statements extracted from ${JSON.stringify(
+      `No statements extracted from ${JSON.stringify(
         credential.credentialSubject
       )}`
     )
@@ -56,7 +56,7 @@ export async function updateCredentialDigestProof(
     if (Object.keys(proof.nonces).includes(digest)) {
       claimNonces[digest] = proof.nonces[digest]
     } else {
-      throw new Error(`nonce missing for ${stmt}`)
+      throw new Error(`Nonce missing for "${stmt}"`)
     }
   })
 
@@ -81,7 +81,7 @@ export async function removeProperties(
   const unknownProps = whitelist.filter((prop) => !propertyNames.includes(prop))
   if (unknownProps.length > 0) {
     throw new Error(
-      `whitelisted properties ${unknownProps} do not exist on this credential`
+      `Whitelisted properties "${unknownProps}" do not exist on this credential`
     )
   }
   // copy credential
@@ -99,7 +99,7 @@ export async function removeProperties(
   )
   if (oldClaimsProof.length !== 1)
     throw new Error(
-      `expected exactly one proof of type ${KILT_CREDENTIAL_DIGEST_PROOF_TYPE}`
+      `Expected exactly one proof of type "${KILT_CREDENTIAL_DIGEST_PROOF_TYPE}"`
     )
   proofs = proofs.filter((p) => p.type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
   // compute new (reduced) proof

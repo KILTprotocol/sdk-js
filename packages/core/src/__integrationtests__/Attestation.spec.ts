@@ -403,7 +403,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         officialLicenseAuthorityCType,
         {
           LicenseType: "Driver's License",
-          LicenseSubtypes: 'sportscars, tanks',
+          LicenseSubtypes: 'sports cars, tanks',
         },
         attester.uri
       )

@@ -12,12 +12,10 @@ import { verify } from './Crypto.js'
 import { ss58Format } from './ss58Format.js'
 
 /**
- * Validates an given address string against the External Address Format (SS58) with our Prefix of 38.
+ * Validates a given address string against the External Address Format (SS58) with our Prefix of 38.
  *
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @throws [[ERROR_ADDRESS_TYPE]] when address not of type string or of invalid Format.
- *
  * @returns Boolean whether the given address string checks out against the Format.
  */
 export function validateAddress(
@@ -25,10 +23,10 @@ export function validateAddress(
   name: string
 ): boolean {
   if (typeof address !== 'string') {
-    throw new SDKErrors.ERROR_ADDRESS_TYPE()
+    throw new SDKErrors.AddressTypeError()
   }
   if (!checkAddress(address, ss58Format)[0]) {
-    throw new SDKErrors.ERROR_ADDRESS_INVALID(address, name)
+    throw new SDKErrors.AddressInvalidError(address, name)
   }
   return true
 }
@@ -38,17 +36,15 @@ export function validateAddress(
  *
  * @param hash Hash string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @throws [[ERROR_HASH_TYPE]] when hash not of type string or of invalid Format.
- *
  * @returns Boolean whether the given hash string checks out against the Format.
  */
 export function validateHash(hash: string, name: string): boolean {
   if (typeof hash !== 'string') {
-    throw new SDKErrors.ERROR_HASH_TYPE()
+    throw new SDKErrors.HashTypeError()
   }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
   if (!hash.match(blake2bPattern)) {
-    throw new SDKErrors.ERROR_HASH_MALFORMED(hash, name)
+    throw new SDKErrors.HashMalformedError(hash, name)
   }
   return true
 }
@@ -59,9 +55,6 @@ export function validateHash(hash: string, name: string): boolean {
  * @param data The signed string of data.
  * @param signature The signature of the data to be validated.
  * @param signer Address of the signer identity.
- * @throws [[ERROR_SIGNATURE_DATA_TYPE]] when parameters are of invalid type.
- * @throws [[ERROR_SIGNATURE_UNVERIFIABLE]] when the signature could not be validated against the data.
- *
  * @returns Boolean whether the signature is valid for the given data.
  */
 export function validateSignature(
@@ -74,10 +67,10 @@ export function validateSignature(
     typeof signature !== 'string' ||
     typeof signer !== 'string'
   ) {
-    throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    throw new SDKErrors.SignatureMalformedError()
   }
   if (!verify(data, signature, signer)) {
-    throw new SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
+    throw new SDKErrors.SignatureUnverifiableError()
   }
   return true
 }

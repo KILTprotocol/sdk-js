@@ -23,17 +23,14 @@ import type {
   IDidResolver,
   DidResolvedDetails,
   DidKey,
-  IDidDetails,
   SignCallback,
   IAttestation,
 } from '@kiltprotocol/types'
-import { VerificationKeyType } from '@kiltprotocol/types'
 import { Crypto, UUID, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import {
   DidDetails,
   FullDidDetails,
   LightDidDetails,
-  SigningAlgorithms,
   Utils as DidUtils,
 } from '@kiltprotocol/did'
 import {
@@ -110,7 +107,7 @@ describe('Credential', () => {
     // just deleting a field will result in a wrong proof
     delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
     expect(() => Credential.verifyDataIntegrity(credential)).toThrowError(
-      SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT
+      SDKErrors.NoProofForStatementError
     )
   })
 
@@ -315,19 +312,19 @@ describe('Credential', () => {
     )
     expect(() =>
       Credential.verifyDataStructure(builtCredentialNoLegitimations)
-    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED)
+    ).toThrowError(SDKErrors.LegitimationsMissingError)
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialMalformedRootHash)
-    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE)
+    ).toThrowError(SDKErrors.RootHashUnverifiableError)
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialIncompleteClaimHashTree)
-    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.NoProofForStatementError)
     expect(() =>
       Credential.verifyDataStructure(builtCredentialMalformedSignature)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialMalformedHashes)
-    ).toThrowError(SDKErrors.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowError(SDKErrors.NoProofForStatementError)
     expect(() => Credential.verifyDataStructure(builtCredential)).not.toThrow()
     expect(() => {
       Credential.verifyDataStructure(builtCredentialWithLegitimation)
@@ -421,7 +418,7 @@ describe('Credential', () => {
 
   async function buildCredential2(
     claimer: DidDetails,
-    attesterDid: IDidDetails['uri'],
+    attesterDid: DidUri,
     contents: IClaim['contents'],
     legitimations: ICredential[],
     sign: SignCallback
@@ -516,10 +513,10 @@ describe('Credential', () => {
     })
   })
   it('verify credentials signed by a light DID', async () => {
-    const { keypair, sign } = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    const { keypair, sign } = makeSigningKeyTool('ed25519')
     identityDave = await LightDidDetails.fromIdentifier(
       encodeAddress(keypair.publicKey, ss58Format),
-      VerificationKeyType.Ed25519
+      'ed25519'
     )
 
     const [credential] = await buildCredential2(
@@ -542,10 +539,10 @@ describe('Credential', () => {
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
-    const migratedAndDeleted = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    const migratedAndDeleted = makeSigningKeyTool('ed25519')
     migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedAndDeleted.keypair.publicKey, ss58Format),
-      VerificationKeyType.Ed25519
+      'ed25519'
     )
     migratedAndDeletedFullDid = new FullDidDetails({
       identifier: migratedAndDeletedLightDid.identifier,
@@ -740,12 +737,12 @@ describe('create presentation', () => {
     unmigratedClaimerKey = makeSigningKeyTool()
     unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(unmigratedClaimerKey.keypair.publicKey, ss58Format),
-      VerificationKeyType.Sr25519
+      'sr25519'
     )
     const migratedClaimerKey = makeSigningKeyTool()
     migratedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedClaimerKey.keypair.publicKey, ss58Format),
-      VerificationKeyType.Sr25519
+      'sr25519'
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
@@ -757,10 +754,10 @@ describe('create presentation', () => {
         id: 'new-auth',
       }
     )
-    migratedThenDeletedKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+    migratedThenDeletedKey = makeSigningKeyTool('ed25519')
     migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
       encodeAddress(migratedThenDeletedKey.keypair.publicKey, ss58Format),
-      VerificationKeyType.Ed25519
+      'ed25519'
     )
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedThenDeletedClaimerLightDid as LightDidDetails

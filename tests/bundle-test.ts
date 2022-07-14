@@ -11,6 +11,7 @@ import type { ApiPromise } from '@polkadot/api'
 import type {
   DecryptCallback,
   EncryptCallback,
+  EncryptionKeyType,
   KeyringPair,
   LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
@@ -33,9 +34,6 @@ const {
   Blockchain,
   Utils: { Crypto, Keyring, ss58Format },
   Message,
-  MessageBodyType,
-  EncryptionKeyType,
-  VerificationKeyType,
   BalanceUtils,
 } = kilt
 
@@ -59,7 +57,7 @@ function makeSignCallback(keypair: KeyringPair): SignCallback {
 
 function makeSigningKeypair(
   seed: string,
-  alg: SigningAlgorithms = Did.SigningAlgorithms.Sr25519
+  alg: SigningAlgorithms = 'sr25519'
 ): {
   keypair: KeyringPair
   sign: SignCallback
@@ -82,7 +80,7 @@ function makeSigningKeypair(
 function makeEncryptionKeypair(seed: string): {
   secretKey: Uint8Array
   publicKey: Uint8Array
-  type: typeof EncryptionKeyType.X25519
+  type: EncryptionKeyType
 } {
   const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
     Crypto.hash(seed, 256)
@@ -90,7 +88,7 @@ function makeEncryptionKeypair(seed: string): {
   return {
     secretKey,
     publicKey,
-    type: EncryptionKeyType.X25519,
+    type: 'x25519',
   }
 }
 
@@ -98,7 +96,7 @@ function makeEncryptCallback({
   secretKey,
 }: {
   secretKey: Uint8Array
-  type: typeof EncryptionKeyType.X25519
+  type: EncryptionKeyType
 }): EncryptCallback {
   return async function encryptCallback({ data, peerPublicKey, alg }) {
     const { box, nonce } = Crypto.encryptAsymmetric(
@@ -114,7 +112,7 @@ function makeDecryptCallback({
   secretKey,
 }: {
   secretKey: Uint8Array
-  type: typeof EncryptionKeyType.X25519
+  type: EncryptionKeyType
 }): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey, alg }) {
     const decrypted = Crypto.decryptAsymmetric(
@@ -205,34 +203,30 @@ async function runAll() {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const address = Crypto.encodeAddress(authPublicKey, ss58Format)
-  const didCreationDetails = {
+  const testDid = Did.LightDidDetails.fromDetails({
     authenticationKey: {
       publicKey: authPublicKey,
-      type: VerificationKeyType.Ed25519 as LightDidSupportedVerificationKeyType,
+      type: 'ed25519',
     },
     encryptionKey: {
       publicKey: encPublicKey,
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     },
-  }
-  const testDid = Did.LightDidDetails.fromDetails(didCreationDetails)
+  })
   if (
     testDid.uri !==
     `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
   ) {
-    throw new Error('Did Test Unsuccessful')
-  } else console.info(`light did successfully created`)
+    throw new Error('DID Test Unsuccessful')
+  } else console.info(`light DID successfully created`)
 
   // Chain Did workflow -> creation & deletion
   console.log('DID workflow started')
-  const { keypair, sign } = makeSigningKeypair(
-    '//Foo',
-    Did.SigningAlgorithms.Ed25519
-  )
+  const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
 
   const fullDid = await new Did.FullDidCreationBuilder(api, {
     publicKey: keypair.publicKey,
-    type: VerificationKeyType.Ed25519,
+    type: 'ed25519',
   }).buildAndSubmit(sign, devFaucet.address, async (tx) => {
     await Blockchain.signAndSubmitTx(tx, devFaucet, {
       resolveOn: Blockchain.IS_IN_BLOCK,
@@ -246,9 +240,9 @@ async function runAll() {
     !resolved.metadata.deactivated &&
     resolved.details?.uri === fullDid.uri
   ) {
-    console.info('Did matches!')
+    console.info('DID matches')
   } else {
-    throw new Error('Dids not matching!')
+    throw new Error('DIDs do not match')
   }
 
   const extrinsic = await Did.Chain.getDeleteDidExtrinsic(
@@ -266,9 +260,9 @@ async function runAll() {
 
   const resolvedAgain = await Did.resolveDoc(fullDid.uri)
   if (resolvedAgain?.metadata.deactivated) {
-    console.info('Did successfully deleted!')
+    console.info('DID successfully deleted')
   } else {
-    throw new Error('Did not successfully deleted')
+    throw new Error('DID was not deleted')
   }
 
   // CType workflow
@@ -301,9 +295,9 @@ async function runAll() {
 
   const stored = await CType.verifyStored(DriversLicense)
   if (stored) {
-    console.info('CType successfully stored onchain!')
+    console.info('CType successfully stored on chain')
   } else {
-    throw new Error('ctype not stored!')
+    throw new Error('CType not stored')
   }
 
   const result = await CType.verifyOwner({
@@ -311,9 +305,9 @@ async function runAll() {
     owner: alice.uri,
   })
   if (result) {
-    console.info('owner verified')
+    console.info('Owner verified')
   } else {
-    throw new Error('ctype owner does not match ctype creator did')
+    throw new Error('CType owner does not match ctype creator DID')
   }
 
   // Attestation workflow
@@ -332,7 +326,7 @@ async function runAll() {
     bob.authenticationKey.id
   )
   if (!Credential.isICredential(credential))
-    throw new Error('Not a valid Request!')
+    throw new Error('Not a valid Request')
   else {
     if (Credential.verifyDataIntegrity(credential))
       console.info('Req4Att data verified')
@@ -350,7 +344,7 @@ async function runAll() {
       content: {
         credential,
       },
-      type: MessageBodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     },
     bob.uri,
     alice.uri
@@ -368,12 +362,12 @@ async function runAll() {
     alice
   )
   if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
-    throw new Error('original and decrypted message are not the same')
+    throw new Error('Original and decrypted message are not the same')
   }
 
   const attestation = Attestation.fromCredentialAndDid(credential, alice.uri)
   if (Attestation.verifyAgainstCredential(attestation, credential))
-    console.info('Attestation Data verified!')
+    console.info('Attestation Data verified')
   else throw new Error('Attestation Claim data not verifiable')
 
   const txAtt = await Attestation.getStoreTx(attestation)
@@ -386,7 +380,7 @@ async function runAll() {
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
   if (await Attestation.checkValidity(credential.rootHash)) {
-    console.info('Attestation verified with chain.')
+    console.info('Attestation verified with chain')
   } else {
     throw new Error('Attestation not verifiable with chain')
   }

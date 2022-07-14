@@ -78,7 +78,7 @@ const chainQueryReturnTuples: {
  * @param outerQuery The name of the module which you want to query.
  * @param innerQuery The name of the storage item of the module which you want to query.
  * @param mockValue The value which the mock should return.
- * @returns The mockvalue wrapped into either a vector or an option.
+ * @returns The mock value wrapped into either a vector or an option.
  */
 export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
   outerQuery: T,
@@ -138,7 +138,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     default:
       // should never occur
       throw new Error(
-        `Missing module ${outerQuery} for KILT chain. 
+        `Missing module "${outerQuery}" for KILT chain. 
         The following ones exist: attestation, ctype, delegation, did, portablegabi.`
       )
   }

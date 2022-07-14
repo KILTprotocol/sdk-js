@@ -14,7 +14,6 @@ import {
   SignCallback,
   NewDidVerificationKey,
   SubmittableExtrinsic,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -31,18 +30,16 @@ function encodeVerificationKeyToAddress({
   type,
 }: Pick<DidVerificationKey, 'publicKey' | 'type'>): IIdentity['address'] {
   switch (type) {
-    case VerificationKeyType.Ed25519:
-    case VerificationKeyType.Sr25519:
+    case 'ed25519':
+    case 'sr25519':
       return encodeAddress(publicKey, ss58Format)
-    case VerificationKeyType.Ecdsa: {
+    case 'ecdsa': {
       // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
       const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
       return encodeAddress(pk, ss58Format)
     }
     default:
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Unsupported key type ${type}.`
-      )
+      throw new SDKErrors.DidBuilderError(`Unsupported key type "${type}"`)
   }
 }
 
@@ -110,6 +107,7 @@ export class FullDidCreationBuilder extends FullDidBuilder {
    *
    * @returns The [[FullDidDetails]] as returned by the provided callback.
    */
+
   /* istanbul ignore next */
   public async buildAndSubmit(
     sign: SignCallback,
@@ -126,8 +124,8 @@ export class FullDidCreationBuilder extends FullDidBuilder {
       getKiltDidFromIdentifier(encodedAddress, 'full')
     )
     if (!fetchedDidDetails) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Something went wrong during the creation.'
+      throw new SDKErrors.DidBuilderError(
+        'Something went wrong during the creation'
       )
     }
     return fetchedDidDetails

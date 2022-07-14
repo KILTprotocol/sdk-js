@@ -8,52 +8,51 @@
 // This module is not part of the public-facing api.
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor'
+import { decode as cborDecode, encode as cborEncode } from 'cbor'
 
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 import type {
   DidServiceEndpoint,
+  LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
+import { encryptionKeyTypes, VerificationKeyType } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { checkServiceEndpointSyntax } from '../Did.utils.js'
-import {
-  LightDidSupportedVerificationKeyType,
-  NewLightDidAuthenticationKey,
-} from '../types.js'
+import { NewLightDidAuthenticationKey } from '../types.js'
 
 // Ecdsa not supported.
 export function getEncodingForVerificationKeyType(
   type: VerificationKeyType
 ): string | undefined {
   switch (type) {
-    case VerificationKeyType.Sr25519:
+    case 'sr25519':
       return '00'
-    case VerificationKeyType.Ed25519:
+    case 'ed25519':
       return '01'
     default:
       return undefined
   }
 }
+
 export function getVerificationKeyTypeForEncoding(
   encoding: string
 ): LightDidSupportedVerificationKeyType | undefined {
   switch (encoding) {
     case '00':
-      return VerificationKeyType.Sr25519
+      return 'sr25519'
     case '01':
-      return VerificationKeyType.Ed25519
+      return 'ed25519'
     default:
       return undefined
   }
 }
 
-const supportedEncryptionKeyTypes = new Set(Object.values(EncryptionKeyType))
+const supportedEncryptionKeyTypes = new Set(encryptionKeyTypes)
 
 /**
  * The options that can be used to create a light DID.
@@ -88,13 +87,13 @@ export function checkLightDidCreationDetails(
     details.authenticationKey.type
   )
   if (!authenticationKeyTypeEncoding) {
-    throw SDKErrors.ERROR_UNSUPPORTED_KEY
+    throw new SDKErrors.UnsupportedKeyError(details.authenticationKey.type)
   }
 
   if (details.encryptionKey?.type) {
     if (!supportedEncryptionKeyTypes.has(details.encryptionKey.type)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Encryption key type ${details.encryptionKey.type} is not supported.`
+      throw new SDKErrors.DidError(
+        `Encryption key type "${details.encryptionKey.type}" is not supported`
       )
     }
   }
@@ -110,8 +109,8 @@ export function checkLightDidCreationDetails(
   details.serviceEndpoints?.forEach((service) => {
     // A service ID cannot have a reserved ID that is used for key IDs.
     if (service.id === 'authentication' || service.id === 'encryption') {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
+      throw new SDKErrors.DidError(
+        `Cannot specify a service ID with the name "${service.id}" as it is a reserved keyword`
       )
     }
     const [, errors] = checkServiceEndpointSyntax(service)
@@ -148,7 +147,7 @@ export function serializeAndEncodeAdditionalLightDidDetails({
   if (encryptionKey) {
     objectToSerialize[ENCRYPTION_KEY_MAP_KEY] = encryptionKey
   }
-  if (serviceEndpoints && serviceEndpoints.length) {
+  if (serviceEndpoints && serviceEndpoints.length > 0) {
     objectToSerialize[SERVICES_KEY_MAP_KEY] = serviceEndpoints
   }
 
@@ -169,7 +168,7 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   const decoded = base58Decode(rawInput, true)
   const serializationFlag = decoded[0]
   if (serializationFlag !== 0x0) {
-    throw new SDKErrors.ERROR_DID_ERROR('Serialization algorithm not supported')
+    throw new SDKErrors.DidError('Serialization algorithm not supported')
   }
   const withoutFlag = decoded.slice(1)
   const deserialized: SerializableStructure = cborDecode(withoutFlag)

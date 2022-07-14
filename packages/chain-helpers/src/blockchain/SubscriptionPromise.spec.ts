@@ -30,7 +30,7 @@ it('rejects promise on timeout', async () => {
     timeout: 500,
   })
   subscription('something else')
-  await expect(promise).rejects.toThrow(SDKErrors.ERROR_TIMEOUT)
+  await expect(promise).rejects.toThrow(SDKErrors.TimeoutError)
 })
 
 it('resolves the promise', async () => {

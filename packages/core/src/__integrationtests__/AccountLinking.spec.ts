@@ -177,13 +177,13 @@ describe('When there is an on-chain DID', () => {
 
   describe.each(['ed25519', 'sr25519', 'ecdsa'])(
     'and an %s account different than the sender to link',
-    (keytype) => {
+    (keyType) => {
       let keypair: KeyringPair
       beforeAll(async () => {
         keypair = keyring.addFromMnemonic(
           mnemonicGenerate(),
           undefined,
-          keytype as KeypairType
+          keyType as KeypairType
         )
         didKey = makeSigningKeyTool()
         newDidKey = makeSigningKeyTool()

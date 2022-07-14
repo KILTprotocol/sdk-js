@@ -6,21 +6,22 @@
  */
 
 import type { ICType } from './CType'
-import type { IDidDetails } from './DidDetails'
+import type { DidUri } from './DidDetails'
 
 /* eslint-disable no-bitwise */
-export enum Permission {
-  ATTEST = 1 << 0, // 0001
-  DELEGATE = 1 << 1, // 0010
-}
+export const Permission = {
+  ATTEST: 1 << 0, // 0001
+  DELEGATE: 1 << 1, // 0010
+} as const
+export type PermissionType = typeof Permission[keyof typeof Permission]
 
 export interface IDelegationNode {
   id: string
   hierarchyId: IDelegationNode['id']
   parentId?: IDelegationNode['id']
   childrenIds: Array<IDelegationNode['id']>
-  account: IDidDetails['uri']
-  permissions: Permission[]
+  account: DidUri
+  permissions: PermissionType[]
   revoked: boolean
 }
 

@@ -8,8 +8,9 @@
 import {
   DidPublicKey,
   DidPublicServiceEndpoint,
+  DidResourceUri,
 } from './DidDocumentExporter.js'
-import type { IDidDetails, DidKey } from './DidDetails.js'
+import type { IDidDetails, DidKey, DidUri } from './DidDetails.js'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
@@ -18,7 +19,7 @@ export type DidResolutionDocumentMetadata = {
   /**
    * If present, it indicates that the resolved by DID should be treated as if it were the DID as specified in this property.
    */
-  canonicalId?: IDidDetails['uri']
+  canonicalId?: DidUri
   /**
    * A boolean flag indicating whether the resolved DID has been deactivated.
    */
@@ -54,10 +55,7 @@ export interface IDidResolver {
    * @returns A promise of a [[DidResolvedDetails]] object if the didUri contains no fragment, [[ResolvedDidKey]] or [[ResolvedDidServiceEndpoint]] otherwise. Null if a resource cannot be resolved.
    */
   resolve: (
-    didUri:
-      | IDidDetails['uri']
-      | DidPublicKey['uri']
-      | DidPublicServiceEndpoint['uri']
+    didUri: DidUri | DidResourceUri | DidPublicServiceEndpoint['uri']
   ) => Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
   >
@@ -68,7 +66,7 @@ export interface IDidResolver {
    * @returns A promise of a [[DidResolvedDetails]] object representing the DID document or null if the DID
    * cannot be resolved.
    */
-  resolveDoc: (did: IDidDetails['uri']) => Promise<DidResolvedDetails | null>
+  resolveDoc: (did: DidUri) => Promise<DidResolvedDetails | null>
   /**
    * Resolves a DID URI identifying a public key associated with a DID.
    *
@@ -76,7 +74,7 @@ export interface IDidResolver {
    * @returns A promise of a [[ResolvedDidKey]] object representing the DID public key or null if
    * the DID or key URI cannot be resolved.
    */
-  resolveKey: (didUri: DidPublicKey['uri']) => Promise<ResolvedDidKey | null>
+  resolveKey: (didUri: DidResourceUri) => Promise<ResolvedDidKey | null>
   /**
    * Resolves a DID URI identifying a service endpoint associated with a DID.
    *

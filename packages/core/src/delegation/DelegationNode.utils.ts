@@ -5,11 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  IAttestation,
-  IDelegationNode,
-  IDidDetails,
-} from '@kiltprotocol/types'
+import type { DidUri, IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 import { DelegationNode } from './DelegationNode.js'
@@ -41,10 +37,9 @@ export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
  * @param attester Identity to be located in the delegation tree.
  * @param attestation Attestation whose delegation tree to search.
  * @returns 0 if `attester` is the owner of `attestation`, the number of delegation nodes traversed otherwise.
- * @throws [[SDKError]] If the `attester` is neither the owner nor in the delegation tree of `attestation`.
  */
 export async function countNodeDepth(
-  attester: IDidDetails['uri'],
+  attester: DidUri,
   attestation: IAttestation
 ): Promise<number> {
   let delegationTreeTraversalSteps = 0
@@ -58,14 +53,14 @@ export async function countNodeDepth(
       const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
       delegationTreeTraversalSteps += steps
       if (node === null) {
-        throw new SDKErrors.ERROR_UNAUTHORIZED(
-          'Attester is not authorized to revoke this attestation. (attester not in delegation tree)'
+        throw new SDKErrors.UnauthorizedError(
+          'Attester is not authorized to revoke this attestation. (Attester not in delegation tree)'
         )
       }
     }
   } else if (attestation.owner !== attester) {
-    throw new SDKErrors.ERROR_UNAUTHORIZED(
-      'Attester is not authorized to revoke this attestation. (not the owner, no delegations)'
+    throw new SDKErrors.UnauthorizedError(
+      'Attester is not authorized to revoke this attestation. (Not the owner, no delegations)'
     )
   }
 
@@ -76,29 +71,22 @@ export async function countNodeDepth(
  * Checks for errors on delegation node data.
  *
  * @param delegationNodeInput Delegation node data.
- * @throws [[SDKError]] in case of errors.
  */
 export function errorCheck(delegationNodeInput: IDelegationNode): void {
   const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw new SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.UnauthorizedError(
       'Must have at least one permission and no more then two'
     )
   }
 
   if (!rootId) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
-  } else if (typeof rootId !== 'string') {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-  } else if (!isHex(rootId)) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.DelegationIdMissingError()
+  } else if (typeof rootId !== 'string' || !isHex(rootId)) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
-  if (parentId) {
-    if (typeof parentId !== 'string') {
-      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    } else if (!isHex(parentId)) {
-      throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    }
+  if (parentId && (typeof parentId !== 'string' || !isHex(parentId))) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
 }

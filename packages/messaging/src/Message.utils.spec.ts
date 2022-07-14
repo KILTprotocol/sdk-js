@@ -35,7 +35,6 @@ import type {
   CompressedSubmitDelegationApproval,
   CompressedSubmitTerms,
   CompressedTerms,
-  DidPublicKey,
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
@@ -44,7 +43,6 @@ import type {
   IClaim,
   ICType,
   IDelegationData,
-  IDidDetails,
   IDidResolver,
   IInformCreateDelegation,
   IInformDelegationCreation,
@@ -95,8 +93,8 @@ import { Message } from './Message'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildCredential(
-  claimerDid: IDidDetails['uri'],
-  attesterDid: IDidDetails['uri'],
+  claimerDid: DidUri,
+  attesterDid: DidUri,
   contents: IClaim['contents'],
   legitimations: ICredential[]
 ): Promise<[ICredential, IAttestation]> {
@@ -226,7 +224,7 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveDoc = async (
-      didUri: IDidDetails['uri']
+      didUri: DidUri
     ): Promise<DidResolvedDetails | null> => {
       if (didUri === identityAlice.uri) {
         return {
@@ -248,7 +246,7 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (
-      keyUri: DidPublicKey['uri']
+      keyUri: DidResourceUri
     ): Promise<ResolvedDidKey | null> => {
       const { identifier, type, version, fragment, encodedDetails } =
         DidUtils.parseDidUri(keyUri)
@@ -615,125 +613,119 @@ describe('Messaging Utilities', () => {
 
     requestTermsBody = {
       content: requestTermsContent,
-      type: Message.BodyType.REQUEST_TERMS,
+      type: 'request-terms',
     }
 
     compressedRequestTermsBody = [
-      Message.BodyType.REQUEST_TERMS,
+      'request-terms',
       compressedRequestTermsContent,
     ]
 
     submitTermsBody = {
       content: submitTermsContent,
-      type: Message.BodyType.SUBMIT_TERMS,
+      type: 'submit-terms',
     }
 
-    compressedSubmitTermsBody = [
-      Message.BodyType.SUBMIT_TERMS,
-      compressedSubmitTermsContent,
-    ]
+    compressedSubmitTermsBody = ['submit-terms', compressedSubmitTermsContent]
 
     rejectTermsBody = {
       content: rejectTermsContent,
-      type: Message.BodyType.REJECT_TERMS,
+      type: 'reject-terms',
     }
 
-    compressedRejectTermsBody = [
-      Message.BodyType.REJECT_TERMS,
-      compressedRejectTermsContent,
-    ]
+    compressedRejectTermsBody = ['reject-terms', compressedRejectTermsContent]
 
     requestAttestationBody = {
       content: requestAttestationContent,
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     compressedRequestAttestationBody = [
-      Message.BodyType.REQUEST_ATTESTATION,
+      'request-attestation',
       compressedRequestAttestationContent,
     ]
 
     submitAttestationBody = {
       content: submitAttestationContent,
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     compressedSubmitAttestationBody = [
-      Message.BodyType.SUBMIT_ATTESTATION,
+      'submit-attestation',
       compressedSubmitAttestationContent,
     ]
 
     rejectAttestationForClaimBody = {
       content: requestAttestationContent.credential.rootHash,
-      type: Message.BodyType.REJECT_ATTESTATION,
+      type: 'reject-attestation',
     }
     requestCredentialBody = {
       content: requestCredentialContent,
-      type: Message.BodyType.REQUEST_CREDENTIAL,
+      type: 'request-credential',
     }
 
     compressedRequestCredentialBody = [
-      Message.BodyType.REQUEST_CREDENTIAL,
+      'request-credential',
       compressedRequestCredentialContent,
     ]
 
     submitCredentialBody = {
       content: submitCredentialContent,
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     compressedSubmitCredentialBody = [
-      Message.BodyType.SUBMIT_CREDENTIAL,
+      'submit-credential',
       compressedSubmitCredentialContent,
     ]
 
     acceptCredentialBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.ACCEPT_CREDENTIAL,
+      type: 'accept-credential',
     }
 
     rejectCredentialBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.REJECT_CREDENTIAL,
+      type: 'reject-credential',
     }
 
     requestAcceptDelegationBody = {
       content: requestAcceptDelegationContent,
-      type: Message.BodyType.REQUEST_ACCEPT_DELEGATION,
+      type: 'request-accept-delegation',
     }
 
     compressedRequestAcceptDelegationBody = [
-      Message.BodyType.REQUEST_ACCEPT_DELEGATION,
+      'request-accept-delegation',
       compressedRequestAcceptDelegationContent,
     ]
 
     submitAcceptDelegationBody = {
       content: submitAcceptDelegationContent,
-      type: Message.BodyType.SUBMIT_ACCEPT_DELEGATION,
+      type: 'submit-accept-delegation',
     }
 
     compressedSubmitAcceptDelegationBody = [
-      Message.BodyType.SUBMIT_ACCEPT_DELEGATION,
+      'submit-accept-delegation',
       compressedSubmitAcceptDelegationContent,
     ]
 
     rejectAcceptDelegationBody = {
       content: rejectAcceptDelegationContent,
-      type: Message.BodyType.REJECT_ACCEPT_DELEGATION,
+      type: 'reject-accept-delegation',
     }
 
     compressedRejectAcceptDelegationBody = [
-      Message.BodyType.REJECT_ACCEPT_DELEGATION,
+      'reject-accept-delegation',
       compressedRejectAcceptDelegationContent,
     ]
 
     informCreateDelegationBody = {
       content: informCreateDelegationContent,
-      type: Message.BodyType.INFORM_CREATE_DELEGATION,
+      type: 'inform-create-delegation',
     }
 
     compressedInformCreateDelegationBody = [
-      Message.BodyType.INFORM_CREATE_DELEGATION,
+      'inform-create-delegation',
       compressedInformCreateDelegationContent,
     ]
   })
@@ -843,28 +835,28 @@ describe('Messaging Utilities', () => {
 
     expect(() =>
       MessageUtils.decompressMessage(compressedMalformed)
-    ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED)
+    ).toThrowError(SDKErrors.UnknownMessageBodyTypeError)
 
     const malformed = {
       content: '',
-      type: 'Message.BodyType',
+      type: 'MessageBodyType',
     } as unknown as MessageBody
 
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
-      SDKErrors.ERROR_MESSAGE_BODY_MALFORMED
+      SDKErrors.UnknownMessageBodyTypeError
     )
   })
   it('Checking required properties for given CType', () => {
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(['id', 'name'], testCType)
-    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING)
+    ).toThrowError(SDKErrors.CTypeUnknownPropertiesError)
 
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(
         ['id', 'name'],
         testCTypeWithMultipleProperties
       )
-    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING)
+    ).not.toThrowError(SDKErrors.CTypeUnknownPropertiesError)
 
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(
@@ -1039,38 +1031,38 @@ describe('Messaging Utilities', () => {
     messageRequestTerms.receiver = 'did:kilt:thisisnotareceiveraddress'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
     // @ts-ignore
     messageSubmitTerms.sender = 'this is not a sender did'
     expect(() =>
       MessageUtils.errorCheckMessage(messageSubmitTerms)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
     // @ts-ignore
     messageRejectTerms.sender = 'this is not a sender address'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRejectTerms)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
   })
   it('error check should throw errors on faulty bodies', () => {
     // @ts-ignore
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     submitTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitTermsBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     rejectTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-expect-error
     delete rejectTermsBody.content.claim.cTypeHash
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowError(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED)
+    ).toThrowError(SDKErrors.CTypeHashMissingError)
     requestAttestationBody.content.credential.claimerSignature = {
       signature: 'this is not the claimers signature',
       // @ts-ignore
@@ -1084,61 +1076,61 @@ describe('Messaging Utilities', () => {
       'this is not the claim hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAttestationBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     rejectAttestationForClaimBody.content = 'this is not the root hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     requestCredentialBody.content.cTypes[0].cTypeHash =
       'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     acceptCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(acceptCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     rejectCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectCredentialBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     delete requestAcceptDelegationBody.content.metaData
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_OBJECT_MALFORMED)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
     requestAcceptDelegationBody.content.signatures.inviter.signature =
       'this is not a signature'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     // @ts-ignore
     submitAcceptDelegationBody.content.signatures.invitee.keyUri =
       'this is not a key id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     submitAcceptDelegationBody.content.delegationData.parentId =
       'this is not a parent id hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE)
+    ).toThrowError(SDKErrors.DelegationIdTypeError)
     // @ts-expect-error
     delete rejectAcceptDelegationBody.content.account
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_OWNER_NOT_PROVIDED)
+    ).toThrowError(SDKErrors.OwnerMissingError)
     informCreateDelegationBody.content.delegationId =
       'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(informCreateDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
     expect(() =>
       MessageUtils.errorCheckMessageBody({} as MessageBody)
-    ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED)
+    ).toThrowError(SDKErrors.UnknownMessageBodyTypeError)
   })
   it('error check of the delegation data in messaging', () => {
     // @ts-expect-error
@@ -1154,19 +1146,19 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckDelegationData(
         requestAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE)
+    ).toThrowError(SDKErrors.DelegationIdTypeError)
     submitAcceptDelegationBody.content.delegationData.permissions = []
     expect(() =>
       MessageUtils.errorCheckDelegationData(
         submitAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_UNAUTHORIZED)
+    ).toThrowError(SDKErrors.UnauthorizedError)
     // @ts-expect-error
     delete submitAcceptDelegationBody.content.delegationData.id
     expect(() =>
       MessageUtils.errorCheckDelegationData(
         submitAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_MISSING)
+    ).toThrowError(SDKErrors.DelegationIdMissingError)
   })
 })

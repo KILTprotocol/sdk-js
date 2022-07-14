@@ -23,11 +23,10 @@ export function codecIsType(codec: Codec, types: string[]): boolean {
  *
  * @param codec The codec to type check.
  * @param types An array of strings denoting types to check against.
- * @throws `TypeError` If codec type is not contained in the allowed `types`.
  */
 export function assertCodecIsType(codec: Codec, types: string[]): void {
   if (!codecIsType(codec, types))
     throw new TypeError(
-      `expected Codec type(s) ${types}, got ${codec.toRawType()}`
+      `Expected Codec type(s) ${types}, got ${codec.toRawType()}`
     )
 }

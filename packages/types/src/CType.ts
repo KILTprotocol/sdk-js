@@ -6,7 +6,7 @@
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { IDidDetails } from './DidDetails'
+import type { DidUri } from './DidDetails'
 
 export type InstanceType =
   | 'array'
@@ -31,7 +31,7 @@ export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
 
 export interface ICType {
   hash: HexString
-  owner: IDidDetails['uri'] | null
+  owner: DidUri | null
   schema: ICTypeSchema
 }
 

@@ -19,9 +19,8 @@ import type {
   DidServiceEndpoint,
   DidKey,
   SubmittableExtrinsic,
-  IDidDetails,
+  DidUri,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
@@ -56,7 +55,7 @@ export type FullDidUpdateCallback = (
  */
 export class FullDidUpdateBuilder extends FullDidBuilder {
   protected identifier: DidIdentifier
-  protected uri: IDidDetails['uri']
+  protected uri: DidUri
   protected batch: Extrinsic[] = []
 
   protected oldAuthenticationKey: DidVerificationKey
@@ -101,7 +100,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     this.oldDelegationKey = details.delegationKey
 
     details
-      .getEncryptionKeys(KeyRelationship.keyAgreement)
+      .getEncryptionKeys('keyAgreement')
       .forEach(({ id, ...keyDetails }) =>
         this.oldKeyAgreementKeys.set(id, keyDetails)
       )
@@ -128,8 +127,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     this.checkBuilderConsumption()
     // Check that no other authentication key has already been set.
     if (this.newAuthenticationKey) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'A new authentication key has already been marked for addition.'
+      throw new SDKErrors.DidBuilderError(
+        'A new authentication key has already been marked for addition'
       )
     }
 
@@ -159,14 +158,14 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     const newKeyId = deriveChainKeyId(this.apiObject, key)
     // 1. Check if the key is already present in the DID.
     if (this.oldKeyAgreementKeys.has(newKeyId)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Key agreement key with ID ${newKeyId} already present under the full DID.`
+      throw new SDKErrors.DidBuilderError(
+        `Key agreement key with ID "${newKeyId}" already present under the full DID`
       )
     }
     // 2. Check if the key has already been marked for deletion.
     if (this.keyAgreementKeysToDelete.has(newKeyId)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Key agreement key with ID ${newKeyId} has already been marked for deletion and cannot be re-added in the same operation.`
+      throw new SDKErrors.DidBuilderError(
+        `Key agreement key with ID "${newKeyId}" has already been marked for deletion and cannot be re-added in the same operation`
       )
     }
     const extrinsic = this.apiObject.tx.did.addKeyAgreementKey(
@@ -195,20 +194,20 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     this.checkBuilderConsumption()
     // 1. Check that the key exists in the DID.
     if (!this.oldKeyAgreementKeys.has(keyId)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Key agreement key with ID ${keyId} not present under the full DID.`
+      throw new SDKErrors.DidBuilderError(
+        `Key agreement key with ID "${keyId}" not present under the full DID`
       )
     }
     // 2. Check if the key has already been marked for addition.
     if (this.newKeyAgreementKeys.has(keyId)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Key agreement key with ID ${keyId} has already been marked for addition and cannot be deleted in the same operation.`
+      throw new SDKErrors.DidBuilderError(
+        `Key agreement key with ID "${keyId}" has already been marked for addition and cannot be deleted in the same operation`
       )
     }
     // 3. Check if the key has already been marked for deletion.
     if (this.keyAgreementKeysToDelete.has(keyId)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Key agreement key with ID ${keyId} has already been marked for deletion. Failing since this may lead to unexpected behaviour.`
+      throw new SDKErrors.DidBuilderError(
+        `Key agreement key with ID "${keyId}" has already been marked for deletion. Failing since this may lead to unexpected behaviour.`
       )
     }
     const extrinsic = this.apiObject.tx.did.removeKeyAgreementKey(keyId)
@@ -250,8 +249,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public setAttestationKey(key: NewDidVerificationKey): this {
     // Check that the attestation key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'The assertion key has already been marked for deletion.'
+      throw new SDKErrors.DidBuilderError(
+        'The assertion key has already been marked for deletion'
       )
     }
     const extrinsic = this.apiObject.tx.did.setAttestationKey(
@@ -279,20 +278,20 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     this.checkBuilderConsumption()
     // 1. Check that the DID has an attestation key.
     if (!this.oldAssertionKey) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'The DID does not have an attestation key to remove.'
+      throw new SDKErrors.DidBuilderError(
+        'The DID does not have an attestation key to remove'
       )
     }
     // 2. Check if another attestation key was already marked for addition.
     if (this.newAssertionKey.action === 'update') {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'A new assertion key has already been marked for addition.'
+      throw new SDKErrors.DidBuilderError(
+        'A new assertion key has already been marked for addition'
       )
     }
     // 3. Check that the old key has not already been marked for deletion.
     if (this.newAssertionKey.action === 'delete') {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Another assertion key was already been marked for deletion. Failing since this may lead to unexpected behaviour.'
+      throw new SDKErrors.DidBuilderError(
+        'Another assertion key was already been marked for deletion. Failing since this may lead to unexpected behaviour'
       )
     }
 
@@ -318,8 +317,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public setDelegationKey(key: NewDidVerificationKey): this {
     // Check that the delegation key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'The delegation key has already been marked for deletion.'
+      throw new SDKErrors.DidBuilderError(
+        'The delegation key has already been marked for deletion'
       )
     }
     const extrinsic = this.apiObject.tx.did.setDelegationKey(
@@ -337,7 +336,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * The operation will fail in the following cases:
    *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
-   *   - The starting state does not have an delegation key
+   *   - The starting state does not have a delegation key
    *   - There was already an attestation key marked for addition
    *   - The old attestation key was already marked for deletion.
    *
@@ -347,18 +346,20 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     this.checkBuilderConsumption()
     // 1. Check that the DID has a delegation key.
     if (!this.oldDelegationKey) {
-      throw new Error('The DID does not have a delegation key to remove.')
+      throw new SDKErrors.DidBuilderError(
+        'The DID does not have a delegation key to remove'
+      )
     }
     // 2. Check that a new key has not already been marked for addition.
     if (this.newDelegationKey.action === 'update') {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'A new delegation key has already been marked for addition.'
+      throw new SDKErrors.DidBuilderError(
+        'A new delegation key has already been marked for addition'
       )
     }
     // 3. Check that the old key has not already been marked for deletion.
     if (this.newDelegationKey.action === 'delete') {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Another delegation key was already been marked for deletion. Failing since this may lead to unexpected behaviour.'
+      throw new SDKErrors.DidBuilderError(
+        'Another delegation key was already been marked for deletion. Failing since this may lead to unexpected behaviour'
       )
     }
     const extrinsic = this.apiObject.tx.did.removeDelegationKey()
@@ -384,8 +385,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   public addServiceEndpoint(service: DidServiceEndpoint): this {
     // Check if the service is already present in the DID.
     if (this.oldServiceEndpoints.has(service.id)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Service endpoint with ID ${service.id} already present under the DID.`
+      throw new SDKErrors.DidBuilderError(
+        `Service endpoint with ID "${service.id}" already present under the DID`
       )
     }
 
@@ -401,7 +402,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
   }
 
   /**
-   * Mark an service endpoint to be removed in the next DID operation.
+   * Mark a service endpoint to be removed in the next DID operation.
    *
    * The operation will fail in the following cases:
    *   - The builder has already been consumed (by calling `.build()` or `.buildAndSubmit()`)
@@ -416,14 +417,14 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     this.checkBuilderConsumption()
     // 1. Check that the service exists in the DID.
     if (!this.oldServiceEndpoints.has(serviceId)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Service endpoint with ID ${serviceId} not present under the full DID.`
+      throw new SDKErrors.DidBuilderError(
+        `Service endpoint with ID "${serviceId}" not present under the full DID`
       )
     }
     // 2. Check if the service has already been marked for deletion.
     if (this.serviceEndpointsToDelete.has(serviceId)) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        `Service endpoint with ID ${serviceId} has already been marked for deletion. Failing since this may lead to unexpected behaviour.`
+      throw new SDKErrors.DidBuilderError(
+        `Service endpoint with ID "${serviceId}" has already been marked for deletion. Failing since this may lead to unexpected behaviour.`
       )
     }
     const extrinsic = this.apiObject.tx.did.removeServiceEndpoint(serviceId)
@@ -461,6 +462,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
    *
    * @returns The [[FullDidDetails]] as returned by the provided callback.
    */
+
   /* istanbul ignore next */
   public async buildAndSubmit(
     sign: SignCallback,
@@ -472,8 +474,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     await callback(extrinsic)
     const fetchedDidDetails = await FullDidDetails.fromChainInfo(this.uri)
     if (!fetchedDidDetails) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Something went wrong during the creation.'
+      throw new SDKErrors.DidBuilderError(
+        'Something went wrong during the creation'
       )
     }
     return fetchedDidDetails
@@ -502,8 +504,8 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       : this.apiObject.tx.utility.batch
 
     if (!this.batch.length) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Builder was empty, hence it cannot be consumed.'
+      throw new SDKErrors.DidBuilderError(
+        'Builder was empty, hence it cannot be consumed'
       )
     }
 

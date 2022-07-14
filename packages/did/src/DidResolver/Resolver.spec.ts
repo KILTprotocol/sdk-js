@@ -12,17 +12,13 @@ import Keyring from '@polkadot/keyring'
 import {
   DidIdentifier,
   DidKey,
-  DidPublicKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
   DidResourceUri,
   DidServiceEndpoint,
   DidUri,
-  EncryptionKeyType,
-  IDidDetails,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 
@@ -46,7 +42,7 @@ const deletedIdentifier = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
 function generateAuthenticationKeyDetails(): DidKey {
   return {
     id: 'auth',
-    type: VerificationKeyType.Ed25519,
+    type: 'ed25519',
     publicKey: new Uint8Array(32).fill(0),
   }
 }
@@ -54,7 +50,7 @@ function generateAuthenticationKeyDetails(): DidKey {
 function generateEncryptionKeyDetails(): DidKey {
   return {
     id: 'enc',
-    type: EncryptionKeyType.X25519,
+    type: 'x25519',
     publicKey: new Uint8Array(32).fill(1),
     includedAt: new BN(15),
   }
@@ -63,7 +59,7 @@ function generateEncryptionKeyDetails(): DidKey {
 function generateAttestationKeyDetails(): DidKey {
   return {
     id: 'att',
-    type: VerificationKeyType.Sr25519,
+    type: 'sr25519',
     publicKey: new Uint8Array(32).fill(2),
     includedAt: new BN(20),
   }
@@ -72,7 +68,7 @@ function generateAttestationKeyDetails(): DidKey {
 function generateDelegationKeyDetails(): DidKey {
   return {
     id: 'del',
-    type: VerificationKeyType.Ecdsa,
+    type: 'ecdsa',
     publicKey: new Uint8Array(32).fill(3),
     includedAt: new BN(25),
   }
@@ -82,7 +78,7 @@ function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
   return {
     id: serviceId,
     types: [`type-${serviceId}`],
-    urls: [`x:url-${serviceId}`],
+    uris: [`x:url-${serviceId}`],
   }
 }
 
@@ -205,13 +201,13 @@ describe('When resolving a key', () => {
       controller: fullDid,
       publicKey: new Uint8Array(32).fill(0),
       uri: keyIdUri,
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
     })
   })
 
   it('returns null if either the DID or the key do not exist', async () => {
     const deletedFullDid = getKiltDidFromIdentifier(deletedIdentifier, 'full')
-    let keyIdUri: DidPublicKey['uri'] = `${deletedFullDid}#enc`
+    let keyIdUri: DidResourceUri = `${deletedFullDid}#enc`
 
     expect(await DidResolver.resolveKey(keyIdUri)).toBeNull()
 
@@ -297,13 +293,11 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
-      fullDidWithAuthenticationKey
-    )
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'auth',
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
         publicKey: new Uint8Array(32).fill(0),
       },
     ])
@@ -321,28 +315,28 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(fullDidWithAllKeys)
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithAllKeys)
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'auth',
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
         publicKey: new Uint8Array(32).fill(0),
       },
       {
         id: 'enc',
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
         publicKey: new Uint8Array(32).fill(1),
         includedAt: new BN(15),
       },
       {
         id: 'att',
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
         publicKey: new Uint8Array(32).fill(2),
         includedAt: new BN(20),
       },
       {
         id: 'del',
-        type: VerificationKeyType.Ecdsa,
+        type: 'ecdsa',
         publicKey: new Uint8Array(32).fill(3),
         includedAt: new BN(25),
       },
@@ -361,19 +355,17 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
-      fullDidWithServiceEndpoints
-    )
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithServiceEndpoints)
     expect(details?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
       {
         id: 'id-1',
         types: ['type-id-1'],
-        urls: ['x:url-id-1'],
+        uris: ['x:url-id-1'],
       },
       {
         id: 'id-2',
         types: ['type-id-2'],
-        urls: ['x:url-id-2'],
+        uris: ['x:url-id-2'],
       },
     ])
   })
@@ -412,9 +404,7 @@ describe('When resolving a full DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
-      fullDidWithAuthenticationKey
-    )
+    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
   })
 })
 
@@ -427,7 +417,7 @@ describe('When resolving a light DID', () => {
     const lightDidWithAuthenticationKey = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
     })
     const { details, metadata } = (await DidResolver.resolve(
@@ -437,13 +427,13 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(
+    expect(details?.uri).toStrictEqual<DidUri>(
       lightDidWithAuthenticationKey.uri
     )
     expect(lightDidWithAuthenticationKey?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
         publicKey: authKey.publicKey,
       },
     ])
@@ -453,11 +443,11 @@ describe('When resolving a light DID', () => {
     const lightDid = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
       encryptionKey: {
         publicKey: encryptionKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
       serviceEndpoints: [
         generateServiceEndpointDetails('service-1'),
@@ -471,16 +461,16 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(lightDid.uri)
+    expect(details?.uri).toStrictEqual<DidUri>(lightDid.uri)
     expect(lightDid?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
         publicKey: authKey.publicKey,
       },
       {
         id: 'encryption',
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
         publicKey: encryptionKey.publicKey,
       },
     ])
@@ -488,12 +478,12 @@ describe('When resolving a light DID', () => {
       {
         id: 'service-1',
         types: ['type-service-1'],
-        urls: ['x:url-service-1'],
+        uris: ['x:url-service-1'],
       },
       {
         id: 'service-2',
         types: ['type-service-2'],
-        urls: ['x:url-service-2'],
+        uris: ['x:url-service-2'],
       },
     ])
   })
@@ -518,7 +508,7 @@ describe('When resolving a light DID', () => {
     expect(details?.getKeys()).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
         publicKey: decodeAddress(
           identifierWithAuthenticationKey,
           false,
@@ -547,7 +537,7 @@ describe('When resolving a light DID', () => {
     const lightDid = LightDidDetails.fromDetails({
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
     })
     const keyIdUri: DidUri = `${lightDid.uri}#auth`
@@ -558,6 +548,6 @@ describe('When resolving a light DID', () => {
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<IDidDetails['uri']>(lightDid.uri)
+    expect(details?.uri).toStrictEqual<DidUri>(lightDid.uri)
   })
 })

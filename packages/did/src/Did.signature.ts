@@ -45,7 +45,7 @@ function verifyDidSignatureFromDetails({
   if (!key) {
     return {
       verified: false,
-      reason: `No key with ID ${keyId} for the DID ${details.uri}`,
+      reason: `No key with ID "${keyId}" for the DID ${details.uri}`,
     }
   }
   // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
@@ -58,7 +58,7 @@ function verifyDidSignatureFromDetails({
   ) {
     return {
       verified: false,
-      reason: `No key with ID ${keyId} for the verification method ${expectedVerificationMethod}`,
+      reason: `No key with ID "${keyId}" for the verification method "${expectedVerificationMethod}"`,
     }
   }
   const isSignatureValid = Crypto.verify(
@@ -112,7 +112,7 @@ export async function verifyDidSignature({
   } catch {
     return {
       verified: false,
-      reason: `Signature key ID ${signature.keyUri} invalid.`,
+      reason: `Signature key ID "${signature.keyUri}" invalid`,
     }
   }
   const resolutionDetails = await resolver.resolveDoc(signature.keyUri)
@@ -120,21 +120,21 @@ export async function verifyDidSignature({
   if (!resolutionDetails) {
     return {
       verified: false,
-      reason: `No result for provided key ID ${signature.keyUri}`,
+      reason: `No result for provided key ID "${signature.keyUri}"`,
     }
   }
   // Verification also fails if the DID has been deleted.
   if (resolutionDetails.metadata.deactivated) {
     return {
       verified: false,
-      reason: 'DID for provided key is deactivated.',
+      reason: 'DID for provided key is deactivated',
     }
   }
   // Verification also fails if the signer is a migrated light DID.
   if (resolutionDetails.metadata.canonicalId) {
     return {
       verified: false,
-      reason: 'DID for provided key has been migrated and not usable anymore.',
+      reason: 'DID for provided key has been migrated and not usable anymore',
     }
   }
   // Otherwise, the details used are either the migrated full DID details or the light DID details.
@@ -155,12 +155,11 @@ export async function verifyDidSignature({
 }
 
 /**
- * Type guard assuring that a the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
+ * Type guard assuring that the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
  * Does not cryptographically verify the signature itself!
  *
  * @param input Arbitrary input.
  * @returns True if validation of form has passed.
- * @throws [[SDKError]] if validation fails.
  */
 export function isDidSignature(input: unknown): input is DidSignature {
   const signature = input as DidSignature
@@ -169,11 +168,13 @@ export function isDidSignature(input: unknown): input is DidSignature {
       !isHex(signature.signature) ||
       !validateKiltDidUri(signature.keyUri, true)
     ) {
-      throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+      throw new SDKErrors.SignatureMalformedError()
     }
     return true
-  } catch (e) {
+  } catch (cause) {
     // TODO: type guards shouldn't throw
-    throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    throw new SDKErrors.SignatureMalformedError(undefined, {
+      cause: cause as Error,
+    })
   }
 }

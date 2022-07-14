@@ -100,7 +100,7 @@ export function dereference(
   // compute the schema's URI and add it to the mapping.
   const schemaURI = baseURI.href + (basePointer ? '#' + basePointer : '')
   if (lookup[schemaURI] !== undefined) {
-    throw new Error(`Duplicate schema URI "${schemaURI}".`)
+    throw new Error(`Duplicate schema URI "${schemaURI}"`)
   }
   lookup[schemaURI] = schema
 
@@ -117,7 +117,7 @@ export function dereference(
     })
   }
 
-  // if a $ref is found, resolve it's absolute URI.
+  // if a $ref is found, resolve its absolute URI.
   if (schema.$ref && schema.__absolute_ref__ === undefined) {
     const url = new URL(schema.$ref, baseURI)
     url.hash = url.hash // normalize hash https://url.spec.whatwg.org/#dom-url-hash
@@ -127,7 +127,7 @@ export function dereference(
     })
   }
 
-  // if a $recursiveRef is found, resolve it's absolute URI.
+  // if a $recursiveRef is found, resolve its absolute URI.
   if (schema.$recursiveRef && schema.__absolute_recursive_ref__ === undefined) {
     const url = new URL(schema.$recursiveRef, baseURI)
     url.hash = url.hash // normalize hash https://url.spec.whatwg.org/#dom-url-hash
@@ -137,7 +137,7 @@ export function dereference(
     })
   }
 
-  // if an $anchor is found, compute it's URI and add it to the mapping.
+  // if an $anchor is found, compute its URI and add it to the mapping.
   if (schema.$anchor) {
     const url = new URL('#' + schema.$anchor, baseURI)
     lookup[url.href] = schema

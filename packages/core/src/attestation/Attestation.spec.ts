@@ -43,7 +43,7 @@ describe('Attestation', () => {
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
   let testCType: ICType
-  let testcontents: any
+  let testContents: any
   let testClaim: IClaim
   let credential: ICredential
 
@@ -60,10 +60,10 @@ describe('Attestation', () => {
 
     testCType = CType.fromSchema(rawCTypeSchema, identityAlice)
 
-    testcontents = {}
+    testContents = {}
     testClaim = Claim.fromCTypeAndClaimContents(
       testCType,
-      testcontents,
+      testContents,
       identityBob
     )
     credential = Credential.fromClaim(testClaim)
@@ -239,34 +239,34 @@ describe('Attestation', () => {
     } as IAttestation
 
     expect(() => Attestation.verifyDataStructure(noClaimHash)).toThrowError(
-      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
+      SDKErrors.ClaimHashMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(noCTypeHash)).toThrowError(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+      SDKErrors.CTypeHashMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(malformedOwner)).toThrowError(
-      SDKErrors.ERROR_OWNER_NOT_PROVIDED
+      SDKErrors.OwnerMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(noRevocationBit)).toThrowError(
-      SDKErrors.ERROR_REVOCATION_BIT_MISSING
+      SDKErrors.RevokedTypeError
     )
 
     expect(() => Attestation.verifyDataStructure(everything)).not.toThrow()
 
     expect(() =>
       Attestation.verifyDataStructure(malformedClaimHash)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     expect(() =>
       Attestation.verifyDataStructure(malformedCTypeHash)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     expect(() =>
       Attestation.verifyDataStructure(malformedAddress)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
   })
   it('Typeguard should return true on complete Attestations', () => {
     const attestation = Attestation.fromCredentialAndDid(

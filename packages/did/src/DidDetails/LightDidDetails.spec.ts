@@ -7,14 +7,7 @@
 
 import { Keyring } from '@polkadot/api'
 
-import {
-  DidKey,
-  DidServiceEndpoint,
-  DidUri,
-  EncryptionKeyType,
-  KeyRelationship,
-  VerificationKeyType,
-} from '@kiltprotocol/types'
+import { DidKey, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 
 import { getKiltDidFromIdentifier } from '../Did.utils'
@@ -53,22 +46,22 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const validOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
       encryptionKey: {
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
       serviceEndpoints: endpoints,
     }
@@ -79,7 +72,7 @@ describe('When creating an instance from the details', () => {
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey: {
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
       serviceEndpoints: endpoints,
     })!
@@ -92,21 +85,21 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.uri).toStrictEqual(expectedDid)
     // Verify base58 encoding
     expect(lightDidDetails?.uri).toStrictEqual(
-      `did:kilt:light:00${authKey.address}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
+      `did:kilt:light:00${authKey.address}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH18faKEFraMUeVFcqRoYctvTatCwndWGkkvHXJHZmXaNNU3QRm7kvV1Q6uJcJhZSGgbiYmY5xprchLXmooSZNBicRSTFUeRgmrAu`
     )
 
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
       id: 'authentication',
       publicKey: authKey.publicKey,
-      type: VerificationKeyType.Sr25519,
+      type: 'sr25519',
     })
     expect(
-      lightDidDetails?.getVerificationKeys(KeyRelationship.authentication)
+      lightDidDetails?.getVerificationKeys('authentication')
     ).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
     ])
     expect(lightDidDetails?.authenticationKey.id).toStrictEqual(
@@ -116,15 +109,15 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
       id: 'encryption',
       publicKey: encKey.publicKey,
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     })
-    expect(
-      lightDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
-    ).toStrictEqual<DidKey[]>([
+    expect(lightDidDetails?.getEncryptionKeys('keyAgreement')).toStrictEqual<
+      DidKey[]
+    >([
       {
         id: 'encryption',
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
     ])
     expect(lightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
@@ -137,7 +130,7 @@ describe('When creating an instance from the details', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service-1',
       types: ['type-1'],
-      urls: ['x:url-1'],
+      uris: ['x:url-1'],
     })
     expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
       DidServiceEndpoint[]
@@ -145,7 +138,7 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
     ])
 
@@ -154,7 +147,7 @@ describe('When creating an instance from the details', () => {
     ).toStrictEqual<DidServiceEndpoint>({
       id: 'service-2',
       types: ['type-21', 'type-22'],
-      urls: ['x:url-21', 'x:url-22'],
+      uris: ['x:url-21', 'x:url-22'],
     })
     expect(lightDidDetails?.getEndpoints('type-21')).toStrictEqual<
       DidServiceEndpoint[]
@@ -162,7 +155,7 @@ describe('When creating an instance from the details', () => {
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ])
   })
@@ -176,11 +169,11 @@ describe('When creating an instance from the details', () => {
     const validOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       },
       encryptionKey: {
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
     }
     const lightDidDetails = LightDidDetails.fromDetails(validOptions)
@@ -190,7 +183,7 @@ describe('When creating an instance from the details', () => {
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey: {
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
     })!
     const expectedDid = getKiltDidFromIdentifier(
@@ -208,15 +201,15 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
       id: 'authentication',
       publicKey: authKey.publicKey,
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
     })
     expect(
-      lightDidDetails?.getVerificationKeys(KeyRelationship.authentication)
+      lightDidDetails?.getVerificationKeys('authentication')
     ).toStrictEqual<DidKey[]>([
       {
         id: 'authentication',
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       },
     ])
     expect(lightDidDetails?.authenticationKey.id).toStrictEqual(
@@ -226,15 +219,15 @@ describe('When creating an instance from the details', () => {
     expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
       id: 'encryption',
       publicKey: encKey.publicKey,
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     })
-    expect(
-      lightDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
-    ).toStrictEqual<DidKey[]>([
+    expect(lightDidDetails?.getEncryptionKeys('keyAgreement')).toStrictEqual<
+      DidKey[]
+    >([
       {
         id: 'encryption',
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
     ])
     expect(lightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
@@ -261,7 +254,7 @@ describe('When creating an instance from the details', () => {
       authenticationKey: {
         publicKey: authKey.publicKey,
         // @ts-ignore Not an authentication key type
-        type: VerificationKeyType.Ecdsa,
+        type: 'ecdsa',
       },
     }
     expect(() => LightDidDetails.fromDetails(invalidOptions)).toThrowError()
@@ -276,7 +269,7 @@ describe('When creating an instance from the details', () => {
     const invalidOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       },
       encryptionKey: {
         publicKey: encKey.publicKey,
@@ -299,26 +292,26 @@ describe('When creating an instance from a URI', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
       encryptionKey: {
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
       serviceEndpoints: endpoints,
     }
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
 
     const builtLightDidDetails = LightDidDetails.fromUri(
@@ -331,7 +324,7 @@ describe('When creating an instance from a URI', () => {
 
     // Verify base58 encoding
     expect(builtLightDidDetails.uri).toStrictEqual(
-      `did:kilt:light:00${expectedLightDidDetails.identifier}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
+      `did:kilt:light:00${expectedLightDidDetails.identifier}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH18faKEFraMUeVFcqRoYctvTatCwndWGkkvHXJHZmXaNNU3QRm7kvV1Q6uJcJhZSGgbiYmY5xprchLXmooSZNBicRSTFUeRgmrAu`
     )
     expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
       'authentication'
@@ -351,26 +344,26 @@ describe('When creating an instance from a URI', () => {
       {
         id: 'service-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       },
       {
         id: 'service-2',
         types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        uris: ['x:url-21', 'x:url-22'],
       },
     ]
     const creationOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
       encryptionKey: {
         publicKey: encKey.publicKey,
-        type: EncryptionKeyType.X25519,
+        type: 'x25519',
       },
       serviceEndpoints: endpoints,
     }
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
 
     const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
@@ -412,23 +405,23 @@ describe('When creating an instance from an identifier', () => {
     const creationOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Sr25519,
+        type: 'sr25519',
       },
     }
 
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const builtLightDidDetails = LightDidDetails.fromIdentifier(
       authKey.address,
-      VerificationKeyType.Sr25519
+      'sr25519'
     )
 
     expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
       expectedLightDidDetails
     )
     expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
-      getEncodingForVerificationKeyType(VerificationKeyType.Sr25519)
+      getEncodingForVerificationKeyType('sr25519')
     )
 
     expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
@@ -448,23 +441,23 @@ describe('When creating an instance from an identifier', () => {
     const creationOptions: LightDidCreationDetails = {
       authenticationKey: {
         publicKey: authKey.publicKey,
-        type: VerificationKeyType.Ed25519,
+        type: 'ed25519',
       },
     }
 
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
-    // We are sure this is correct because of the describe case above
+    // We are sure this is correct because of the described case above
     const builtLightDidDetails = LightDidDetails.fromIdentifier(
       authKey.address,
-      VerificationKeyType.Ed25519
+      'ed25519'
     )
 
     expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
       expectedLightDidDetails
     )
     expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
-      getEncodingForVerificationKeyType(VerificationKeyType.Ed25519)
+      getEncodingForVerificationKeyType('ed25519')
     )
 
     expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(

@@ -9,13 +9,7 @@
  * @group unit/did
  */
 
-import {
-  DidSignature,
-  KeyRelationship,
-  KeyringPair,
-  SignCallback,
-  VerificationKeyType,
-} from '@kiltprotocol/types'
+import { DidSignature, KeyringPair, SignCallback } from '@kiltprotocol/types'
 import Keyring from '@polkadot/keyring'
 import {
   mnemonicGenerate,
@@ -41,10 +35,7 @@ describe('light DID', () => {
     keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
       mnemonicGenerate()
     )
-    details = LightDidDetails.fromIdentifier(
-      keypair.address,
-      VerificationKeyType.Sr25519
-    )
+    details = LightDidDetails.fromIdentifier(keypair.address, 'sr25519')
     sign = async ({ data, alg }) => ({ data: keypair.sign(data), alg })
   })
 
@@ -75,7 +66,7 @@ describe('light DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: true,
@@ -95,7 +86,7 @@ describe('light DID', () => {
       await verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: true,
@@ -115,7 +106,7 @@ describe('light DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.assertionMethod,
+        expectedVerificationMethod: 'assertionMethod',
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
@@ -135,7 +126,7 @@ describe('light DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
@@ -154,7 +145,7 @@ describe('light DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
@@ -175,7 +166,7 @@ describe('light DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
@@ -201,7 +192,7 @@ describe('light DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
@@ -231,7 +222,7 @@ describe('full DID', () => {
       uri: `did:kilt:${keypair.address}`,
       keys: {
         '0x12345': {
-          type: VerificationKeyType.Sr25519,
+          type: 'sr25519',
           publicKey: keypair.publicKey,
         },
       },
@@ -267,7 +258,7 @@ describe('full DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: true,
@@ -287,7 +278,7 @@ describe('full DID', () => {
       await verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: true,
@@ -313,7 +304,7 @@ describe('full DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
@@ -333,7 +324,7 @@ describe('full DID', () => {
       await verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        expectedVerificationMethod: KeyRelationship.authentication,
+        expectedVerificationMethod: 'authentication',
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
@@ -365,7 +356,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -373,7 +364,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -381,7 +372,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -389,7 +380,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -397,7 +388,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 
@@ -407,16 +398,16 @@ describe('type guard', () => {
       signature: '',
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature.signature = randomAsHex(32).substring(2)
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature.signature = randomAsU8a(32)
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 
@@ -427,7 +418,7 @@ describe('type guard', () => {
       signature: undefined,
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -435,31 +426,31 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {
       keyUri: `did:kilt:${keypair.address}#mykey`,
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {}
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = { keyUri: null, signature: null }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 })

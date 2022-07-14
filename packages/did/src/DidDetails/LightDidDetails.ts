@@ -10,11 +10,10 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 import type {
   DidIdentifier,
   DidUri,
-  IDidDetails,
   IIdentity,
+  LightDidSupportedVerificationKeyType,
   SignCallback,
 } from '@kiltprotocol/types'
-import { VerificationKeyType } from '@kiltprotocol/types'
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -23,7 +22,6 @@ import { FullDidCreationBuilder } from '../DidBatcher/FullDidCreationBuilder.js'
 
 import type {
   DidConstructorDetails,
-  LightDidSupportedVerificationKeyType,
   MapKeysToRelationship,
   NewLightDidAuthenticationKey,
   PublicKeys,
@@ -155,28 +153,28 @@ export class LightDidDetails extends DidDetails {
    * @returns The resulting [[LightDidDetails]].
    */
   public static fromUri(
-    uri: IDidDetails['uri'],
+    uri: DidUri,
     failIfFragmentPresent = true
   ): LightDidDetails {
     const { identifier, version, encodedDetails, fragment, type } =
       parseDidUri(uri)
 
     if (type !== 'light') {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot build a light DID from the provided URI ${uri} because it does not refer to a light DID.`
+      throw new SDKErrors.DidError(
+        `Cannot build a light DID from the provided URI "${uri}" because it does not refer to a light DID`
       )
     }
     if (fragment && failIfFragmentPresent) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot build a light DID from the provided URI ${uri} because it has a fragment.`
+      throw new SDKErrors.DidError(
+        `Cannot build a light DID from the provided URI "${uri}" because it has a fragment`
       )
     }
     const authKeyTypeEncoding = identifier.substring(0, 2)
     const decodedAuthKeyType =
       getVerificationKeyTypeForEncoding(authKeyTypeEncoding)
     if (!decodedAuthKeyType) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type.`
+      throw new SDKErrors.DidError(
+        `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type`
       )
     }
     const authenticationKey: NewLightDidAuthenticationKey = {
@@ -206,7 +204,7 @@ export class LightDidDetails extends DidDetails {
    */
   public static fromIdentifier(
     identifier: DidIdentifier,
-    keyType: LightDidSupportedVerificationKeyType = VerificationKeyType.Sr25519
+    keyType: LightDidSupportedVerificationKeyType = 'sr25519'
   ): LightDidDetails {
     const authenticationKey: NewLightDidAuthenticationKey = {
       publicKey: decodeAddress(identifier, false, ss58Format),
@@ -247,9 +245,7 @@ export class LightDidDetails extends DidDetails {
       getKiltDidFromIdentifier(this.identifier, 'full')
     )
     if (!fullDidDetails) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        'Something went wrong during the migration.'
-      )
+      throw new SDKErrors.DidError('Something went wrong during the migration')
     }
     return fullDidDetails
   }

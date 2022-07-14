@@ -9,7 +9,7 @@ import type {
   SubmittableExtrinsic,
   DidIdentifier,
   Deposit,
-  IDidDetails,
+  DidUri,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
@@ -45,19 +45,19 @@ function checkWeb3NameInputConstraints(
   ]
 
   if (web3Name.length < minLength) {
-    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
-      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}.`
+    throw new SDKErrors.Web3NameError(
+      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}`
     )
   }
   if (web3Name.length > maxLength) {
-    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
-      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}.`
+    throw new SDKErrors.Web3NameError(
+      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}`
     )
   }
 }
 
 /**
- * Returns a extrinsic to claim a new web3name.
+ * Returns an extrinsic to claim a new web3name.
  *
  * @param name Web3Name that should be claimed.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
@@ -72,7 +72,7 @@ export async function getClaimTx(
 }
 
 /**
- * Returns a extrinsic to release a web3name by its owner.
+ * Returns an extrinsic to release a web3name by its owner.
  *
  * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
  */
@@ -82,7 +82,7 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
 }
 
 /**
- * Returns a extrinsic to release a web3name by the account that owns the deposit.
+ * Returns an extrinsic to release a web3name by the account that owns the deposit.
  *
  * @param name Web3Name that should be released.
  * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
@@ -136,7 +136,7 @@ export async function queryDidIdentifierForWeb3Name(
  * @returns The registered web3name for this DID if any.
  */
 export async function queryWeb3NameForDid(
-  did: IDidDetails['uri']
+  did: DidUri
 ): Promise<Web3Name | null> {
   const details = DidUtils.parseDidUri(did)
   return queryWeb3NameForDidIdentifier(details.identifier)
@@ -150,7 +150,7 @@ export async function queryWeb3NameForDid(
  */
 export async function queryDidForWeb3Name(
   name: Web3Name
-): Promise<IDidDetails['uri'] | null> {
+): Promise<DidUri | null> {
   const identifier = await queryDidIdentifierForWeb3Name(name)
   if (identifier === null) {
     return null

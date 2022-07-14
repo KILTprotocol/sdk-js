@@ -118,7 +118,7 @@ export function verify(
 export type BitLength = 64 | 128 | 256 | 384 | 512
 
 /**
- * Create the blake2b and return the result as a u8a with the specified `bitLength`.
+ * Create the blake2b and return the result as an u8a with the specified `bitLength`.
  *
  * @param value Value to be hashed.
  * @param bitLength Bit length of hash.
@@ -162,7 +162,7 @@ export function encodeObjectAsStr(
 }
 
 /**
- * Hashes numbers, booleans, and objects by stringifying them. Object keys are sorted to yield consistent hashing.
+ * Hashes numbers, booleans, and objects by stringify-ing them. Object keys are sorted to yield consistent hashing.
  *
  * @param value Object or value to be hashed.
  * @param nonce Optional nonce to obscure hashed values that could be guessed.

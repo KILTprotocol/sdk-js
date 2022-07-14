@@ -9,13 +9,7 @@
  * @group unit/vc-export
  */
 
-import {
-  DidDocumentPublicKeyType,
-  DidUri,
-  IAttestation,
-  ICType,
-  ICredential,
-} from '@kiltprotocol/types'
+import { DidUri, IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 import { Attestation } from '@kiltprotocol/core'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
@@ -215,7 +209,7 @@ describe('proofs', () => {
     const keyId = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
       uri: keyId,
-      type: DidDocumentPublicKeyType.Ed25519VerificationKey,
+      type: 'Ed25519VerificationKey2018',
       publicKeyBase58: base58Encode(
         Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)
       ),
@@ -321,7 +315,7 @@ describe('proofs', () => {
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
-      status: verificationUtils.AttestationStatus.valid,
+      status: 'valid',
     })
   })
 
@@ -400,7 +394,7 @@ describe('proofs', () => {
         await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
       ).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.invalid,
+        status: 'invalid',
       })
     })
 
@@ -430,7 +424,7 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.invalid,
+        status: 'invalid',
       })
     })
 
@@ -446,7 +440,7 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.invalid,
+        status: 'invalid',
       })
     })
 
@@ -462,7 +456,7 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: verificationUtils.AttestationStatus.revoked,
+        status: 'revoked',
       })
     })
   })

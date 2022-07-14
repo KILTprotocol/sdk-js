@@ -70,7 +70,7 @@ describe('CType', () => {
     // @ts-expect-error
     delete faultyMetadata.metadata.properties
     expect(() => CType.verifyCTypeMetadata(metadata)).toThrow(
-      SDKErrors.ERROR_OBJECT_MALFORMED
+      SDKErrors.ObjectUnverifiableError
     )
   })
 })

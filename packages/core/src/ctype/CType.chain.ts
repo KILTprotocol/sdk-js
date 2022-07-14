@@ -8,11 +8,7 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
-import type {
-  ICType,
-  IDidDetails,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { DidUri, ICType, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -37,7 +33,7 @@ export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
   return api.tx.ctype.add(preparedSchema)
 }
 
-function decode(encoded: Option<AccountId>): IDidDetails['uri'] | null {
+function decode(encoded: Option<AccountId>): DidUri | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
     ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
@@ -52,14 +48,14 @@ function decode(encoded: Option<AccountId>): IDidDetails['uri'] | null {
  */
 export async function getOwner(
   ctypeHash: ICType['hash']
-): Promise<IDidDetails['uri'] | null> {
+): Promise<DidUri | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await api.query.ctype.ctypes<Option<AccountId>>(ctypeHash)
   return decode(encoded)
 }
 
 /**
- * Queries the blockchain and returns whether a CType with the provide hash exists.
+ * Queries the blockchain and returns whether a CType with the provided hash exists.
  *
  * @param ctypeHash The has of the CType to check.
  * @returns True if a CType with the provided hash exists, false otherwise.

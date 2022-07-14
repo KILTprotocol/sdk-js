@@ -12,7 +12,6 @@ import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 
 import type { VerificationKeyRelationship } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -27,17 +26,17 @@ type SectionMapping<V extends string> = Record<string, MethodMapping<V>>
 const methodMapping: SectionMapping<
   VerificationKeyRelationship | 'paymentAccount'
 > = {
-  attestation: { default: KeyRelationship.assertionMethod },
-  ctype: { default: KeyRelationship.assertionMethod },
-  delegation: { default: KeyRelationship.capabilityDelegation },
+  attestation: { default: 'assertionMethod' },
+  ctype: { default: 'assertionMethod' },
+  delegation: { default: 'capabilityDelegation' },
   did: {
     create: 'paymentAccount',
     reclaimDeposit: 'paymentAccount',
     submitDidCall: 'paymentAccount',
-    default: KeyRelationship.authentication,
+    default: 'authentication',
   },
-  didLookup: { default: KeyRelationship.authentication },
-  web3Names: { default: KeyRelationship.authentication },
+  didLookup: { default: 'authentication' },
+  web3Names: { default: 'authentication' },
   // Batch calls are not included here
   default: { default: 'paymentAccount' },
 }

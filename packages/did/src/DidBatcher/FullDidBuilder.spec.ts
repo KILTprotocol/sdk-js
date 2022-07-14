@@ -15,13 +15,11 @@ import {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  EncryptionKeyType,
   SignCallback,
   NewDidEncryptionKey,
   NewDidKey,
   NewDidVerificationKey,
   SubmittableExtrinsic,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { computeKeyId, ApiMocks } from '@kiltprotocol/testing'
 
@@ -51,7 +49,7 @@ describe('FullDidBuilder', () => {
   describe('Key agreement keys', () => {
     const newEncryptionKey: NewDidEncryptionKey = {
       publicKey: Uint8Array.from(Array(32).fill(1)),
-      type: EncryptionKeyType.X25519,
+      type: 'x25519',
     }
     describe('.addEncryptionKey()', () => {
       it('fails if the key has been marked for addition', async () => {
@@ -81,7 +79,7 @@ describe('FullDidBuilder', () => {
   describe('Attestation keys', () => {
     const newAttestationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(32).fill(11)),
-      type: VerificationKeyType.Ecdsa,
+      type: 'ecdsa',
     }
     describe('.setAttestationKey()', () => {
       it('fails if another key has already been marked for addition', async () => {
@@ -110,7 +108,7 @@ describe('FullDidBuilder', () => {
   describe('Delegation keys', () => {
     const newDelegationKey: NewDidVerificationKey = {
       publicKey: Uint8Array.from(Array(32).fill(21)),
-      type: VerificationKeyType.Ed25519,
+      type: 'ed25519',
     }
     describe('.setDelegation()', () => {
       it('fails if another key has already been marked for addition', async () => {
@@ -139,7 +137,7 @@ describe('FullDidBuilder', () => {
     const newServiceEndpoint: DidServiceEndpoint = {
       id: 'id-new',
       types: ['type-new'],
-      urls: ['x:url-new'],
+      uris: ['x:url-new'],
     }
 
     describe('.addServiceEndpoint()', () => {
@@ -171,7 +169,7 @@ describe('FullDidBuilder', () => {
               newServiceEndpoint.id,
               {
                 types: newServiceEndpoint.types,
-                urls: newServiceEndpoint.urls,
+                uris: newServiceEndpoint.uris,
               },
             ],
           ])

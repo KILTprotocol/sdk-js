@@ -9,15 +9,15 @@ import type {
   BTreeMap,
   BTreeSet,
   Enum,
+  GenericAccountId,
   Option,
   Struct,
-  Vec,
-  u8,
-  u64,
-  GenericAccountId,
   Text,
   u128,
   u32,
+  u64,
+  u8,
+  Vec,
 } from '@polkadot/types'
 import type {
   BlockNumber,
@@ -32,19 +32,19 @@ import type { ApiPromise } from '@polkadot/api'
 import {
   Deposit,
   DidEncryptionKey,
+  DidIdentifier,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
   DidVerificationKey,
-  EncryptionKeyType,
-  DidIdentifier,
   IIdentity,
   KeyRelationship,
+  NewDidKey,
   SignCallback,
   SigningOptions,
-  NewDidKey,
   SubmittableExtrinsic,
   VerificationKeyType,
+  verificationKeyTypes,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -114,7 +114,7 @@ async function queryDidEncoded(
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
 }
 
-// Query ALL deleted DIDs, which can be very time consuming if the number of deleted DIDs gets large.
+// Query ALL deleted DIDs, which can be very time-consuming if the number of deleted DIDs gets large.
 async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
@@ -187,10 +187,10 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
 }
 
 const chainTypeToDidKeyType: Record<string, DidKey['type']> = {
-  Sr25519: VerificationKeyType.Sr25519,
-  Ed25519: VerificationKeyType.Ed25519,
-  Ecdsa: VerificationKeyType.Ecdsa,
-  X25519: EncryptionKeyType.X25519,
+  Sr25519: 'sr25519',
+  Ed25519: 'ed25519',
+  Ecdsa: 'ecdsa',
+  X25519: 'x25519',
 }
 
 function decodeDidPublicKeyDetails(
@@ -200,8 +200,8 @@ function decodeDidPublicKeyDetails(
   const key = keyDetails.key.value
   const keyType = chainTypeToDidKeyType[key.type]
   if (!keyType) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `Unsupported key type "${key.type}" found on chain.`
+    throw new SDKErrors.DidError(
+      `Unsupported key type "${key.type}" found on chain`
     )
   }
   return {
@@ -273,17 +273,47 @@ export async function queryKey(
   return didDetails.publicKeys.find((key) => key.id === keyId) || null
 }
 
-function decodeServiceChainRecord(
-  serviceDetails: IServiceEndpointChainRecordCodec
-): DidServiceEndpoint {
-  const id = hexToString(serviceDetails.id.toString())
+interface BlockchainEndpoint {
+  id: DidServiceEndpoint['id']
+  serviceTypes: DidServiceEndpoint['types']
+  // The blockchain uses the original name `urls` which is not spec-compliant
+  urls: DidServiceEndpoint['uris']
+}
+
+function endpointToBlockchainEndpoint({
+  id,
+  types,
+  uris,
+}: DidServiceEndpoint): BlockchainEndpoint {
   return {
     id,
-    types: serviceDetails.serviceTypes.map((type) =>
-      hexToString(type.toString())
-    ),
-    urls: serviceDetails.urls.map((url) => hexToString(url.toString())),
+    serviceTypes: types,
+    urls: uris,
   }
+}
+
+function blockchainEndpointToEndpoint({
+  id,
+  serviceTypes,
+  urls,
+}: BlockchainEndpoint): DidServiceEndpoint {
+  return {
+    id,
+    types: serviceTypes,
+    uris: urls,
+  }
+}
+
+function decodeServiceChainRecord({
+  id,
+  serviceTypes,
+  urls,
+}: IServiceEndpointChainRecordCodec): DidServiceEndpoint {
+  return blockchainEndpointToEndpoint({
+    id: hexToString(id.toString()),
+    serviceTypes: serviceTypes.map((type) => hexToString(type.toString())),
+    urls: urls.map((url) => hexToString(url.toString())),
+  })
 }
 
 /**
@@ -350,7 +380,7 @@ export async function queryDidDeletionStatus(
   didIdentifier: DidIdentifier
 ): Promise<boolean> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
+  // The following function returns something different from 0x00 if there is an entry for the provided key, 0x00 otherwise.
   const encodedStorageHash = await api.query.did.didBlacklist.hash(
     didIdentifier
   )
@@ -439,7 +469,7 @@ function checkServiceEndpointInput(
  * Additionally, each service endpoint must respect the following conditions:
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
+ *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
  * @param submitterAddress The KILT address authorised to submit the creation operation.
  * @param sign The sign callback.
  *
@@ -465,13 +495,13 @@ export async function generateCreateTxFromCreationDetails(
   ).toNumber()
 
   if (keyAgreementKeys.length > maxKeyAgreementKeys) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}.`
+    throw new SDKErrors.DidError(
+      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}`
     )
   }
 
   const newKeyAgreementKeys = keyAgreementKeys.map(({ publicKey }) =>
-    formatPublicKey({ type: EncryptionKeyType.X25519, publicKey })
+    formatPublicKey({ type: 'x25519', publicKey })
   )
 
   const newAssertionKey = assertionKey
@@ -486,8 +516,8 @@ export async function generateCreateTxFromCreationDetails(
   ).toNumber()
 
   if (serviceEndpoints.length > maxNumberOfServicesPerDid) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID.`
+    throw new SDKErrors.DidError(
+      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID`
     )
   }
 
@@ -495,10 +525,7 @@ export async function generateCreateTxFromCreationDetails(
     checkServiceEndpointInput(api, service)
   })
 
-  const newServiceDetails = serviceEndpoints.map((service) => {
-    const { id, urls } = service
-    return { id, urls, serviceTypes: service.types }
-  })
+  const newServiceDetails = serviceEndpoints.map(endpointToBlockchainEndpoint)
 
   const rawCreationDetails = {
     did: details.identifier,
@@ -543,15 +570,15 @@ export async function generateCreateTxFromDidDetails(
 ): Promise<SubmittableExtrinsic> {
   const { authenticationKey } = did
   if (!authenticationKey) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The provided DID does not have an authentication key to sign the creation operation.`
+    throw new SDKErrors.DidError(
+      `The provided DID does not have an authentication key to sign the creation operation`
     )
   }
 
-  const keyAgreementKeys = did.getEncryptionKeys(KeyRelationship.keyAgreement)
+  const keyAgreementKeys = did.getEncryptionKeys('keyAgreement')
 
   // For now, it only takes the first attestation key, if present.
-  const assertionKeys = did.getVerificationKeys(KeyRelationship.assertionMethod)
+  const assertionKeys = did.getVerificationKeys('assertionMethod')
   if (assertionKeys.length > 1) {
     log.warn(
       `More than one attestation key (${assertionKeys.length}) specified. Only the first will be stored on the chain.`
@@ -560,9 +587,7 @@ export async function generateCreateTxFromDidDetails(
   const assertionKey = assertionKeys.pop()
 
   // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getVerificationKeys(
-    KeyRelationship.capabilityDelegation
-  )
+  const delegationKeys = did.getVerificationKeys('capabilityDelegation')
   if (delegationKeys.length > 1) {
     log.warn(
       `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
@@ -602,18 +627,18 @@ export async function getSetKeyExtrinsic(
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const keyAsEnum = formatPublicKey(key)
   switch (keyRelationship) {
-    case KeyRelationship.authentication:
+    case 'authentication':
       return api.tx.did.setAuthenticationKey(keyAsEnum)
-    case KeyRelationship.capabilityDelegation:
+    case 'capabilityDelegation':
       return api.tx.did.setDelegationKey(keyAsEnum)
-    case KeyRelationship.assertionMethod:
+    case 'assertionMethod':
       return api.tx.did.setAttestationKey(keyAsEnum)
     default:
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `setting a key is only allowed for the following key types: ${[
-          KeyRelationship.authentication,
-          KeyRelationship.capabilityDelegation,
-          KeyRelationship.assertionMethod,
+      throw new SDKErrors.DidError(
+        `Setting a key is only allowed for the following key types: ${[
+          'authentication',
+          'capabilityDelegation',
+          'assertionMethod',
         ]}`
       )
   }
@@ -632,30 +657,30 @@ export async function getRemoveKeyExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   switch (keyRelationship) {
-    case KeyRelationship.capabilityDelegation:
+    case 'capabilityDelegation':
       return api.tx.did.removeDelegationKey()
-    case KeyRelationship.assertionMethod:
+    case 'assertionMethod':
       return api.tx.did.removeAttestationKey()
-    case KeyRelationship.keyAgreement:
+    case 'keyAgreement':
       if (!keyId) {
-        throw new SDKErrors.ERROR_DID_ERROR(
-          `When removing a ${KeyRelationship.keyAgreement} key it is required to specify the id of the key to be removed.`
+        throw new SDKErrors.DidError(
+          'When removing a keyAgreement key it is required to specify the id of the key to be removed'
         )
       }
       return api.tx.did.removeKeyAgreementKey(keyId)
     default:
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `key removal is only allowed for the following key types: ${[
-          KeyRelationship.keyAgreement,
-          KeyRelationship.capabilityDelegation,
-          KeyRelationship.assertionMethod,
+      throw new SDKErrors.DidError(
+        `Key removal is only allowed for the following key types: ${[
+          'keyAgreement',
+          'capabilityDelegation',
+          'assertionMethod',
         ]}`
       )
   }
 }
 
 /**
- * Builds an extrinsic to add an additional public key for a given verification relationship if this allows multiple keys in the same role.
+ * Builds an extrinsic to add another public key for a given verification relationship if this allows multiple keys in the same role.
  *
  * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (currently only keyAgreement allows multiple keys).
  * @param key Data describing the public key.
@@ -667,12 +692,12 @@ export async function getAddKeyExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const keyAsEnum = formatPublicKey(key)
-  if (keyRelationship === KeyRelationship.keyAgreement) {
+  if (keyRelationship === 'keyAgreement') {
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
-  throw new SDKErrors.ERROR_DID_ERROR(
-    `adding to the key set is only allowed for the following key types:  ${[
-      KeyRelationship.keyAgreement,
+  throw new SDKErrors.DidError(
+    `Adding to the key set is only allowed for the following key types: ${[
+      'keyAgreement',
     ]}`
   )
 }
@@ -684,19 +709,15 @@ export async function getAddKeyExtrinsic(
  * The service endpoint must respect the following conditions:
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URL, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
- * @returns An extrinsic that must be authorized (signed) by the FullDid with which the service endpoint should be associated.
+ *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
+ * @returns An extrinsic that must be authorised (signed) by the FullDid with which the service endpoint should be associated.
  */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   checkServiceEndpointInput(api, endpoint)
-
-  return api.tx.did.addServiceEndpoint({
-    serviceTypes: endpoint.types,
-    ...endpoint,
-  })
+  return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
 }
 
 /**
@@ -704,7 +725,7 @@ export async function getAddEndpointExtrinsic(
  *
  * @param endpointId The ID of the service endpoint to include in the extrinsic.
  * The ID must be at most 50 ASCII characters long.
- * @returns An extrinsic that must be authorized (signed) by the FullDid associated with the service endpoint to be removed.
+ * @returns An extrinsic that must be authorised (signed) by the FullDid associated with the service endpoint to be removed.
  */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
@@ -714,7 +735,7 @@ export async function getRemoveEndpointExtrinsic(
     api.consts.did.maxServiceIdLength as u32
   ).toNumber()
   if (endpointId.length > maxServiceIdLength) {
-    throw new SDKErrors.ERROR_DID_ERROR(
+    throw new SDKErrors.DidError(
       `The service ID "${endpointId}" has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
     )
   }
@@ -817,8 +838,8 @@ export function encodeDidSignature(
   key: Pick<ChainDidKey, 'type'>,
   signature: Pick<DidSignature, 'signature'>
 ): SignatureEnum {
-  if (!Object.values(VerificationKeyType).some((kt) => kt === key.type)) {
-    throw new SDKErrors.ERROR_DID_ERROR(
+  if (!verificationKeyTypes.some((kt) => kt === key.type)) {
+    throw new SDKErrors.DidError(
       `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead.`
     )
   }

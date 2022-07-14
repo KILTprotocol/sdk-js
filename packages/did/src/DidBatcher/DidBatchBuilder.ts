@@ -75,7 +75,7 @@ export class DidBatchBuilder {
   ): void {
     const lastBatch = this.batches[this.batches.length - 1]
 
-    // If there was not previous batch, or the new extrinsic requires a different key, create and add a new batch.
+    // If there was no previous batch, or the new extrinsic requires a different key, create and add a new batch.
     if (!lastBatch || lastBatch.keyRelationship !== keyRelationship) {
       this.batches.push({
         keyRelationship,
@@ -162,8 +162,8 @@ export class DidBatchBuilder {
     const batchesLength = this.batches.length
 
     if (!batchesLength) {
-      throw new SDKErrors.ERROR_DID_BUILDER_ERROR(
-        'Cannot build a batch with no transactions.'
+      throw new SDKErrors.DidBuilderError(
+        'Cannot build a batch with no transactions'
       )
     }
 

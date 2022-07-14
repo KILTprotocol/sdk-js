@@ -11,12 +11,9 @@
 
 import {
   DidKey,
-  DidPublicKey,
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
-  EncryptionAlgorithms,
-  IDidDetails,
   IDidResolver,
   IEncryptedMessage,
   IQuote,
@@ -31,7 +28,6 @@ import { Quote, Credential } from '@kiltprotocol/core'
 import {
   FullDidDetails,
   LightDidDetails,
-  SigningAlgorithms,
   Utils as DidUtils,
 } from '@kiltprotocol/did'
 import {
@@ -56,9 +52,7 @@ let bobFullDid: FullDidDetails
 let bobSign: SignCallback
 const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
-const resolveDoc = async (
-  did: IDidDetails['uri']
-): Promise<DidResolvedDetails | null> => {
+const resolveDoc = async (did: DidUri): Promise<DidResolvedDetails | null> => {
   if (did.startsWith(aliceLightDidWithDetails.uri)) {
     return {
       details: aliceLightDidWithDetails,
@@ -92,7 +86,7 @@ const resolveDoc = async (
   return null
 }
 const resolveKey = async (
-  keyUri: DidPublicKey['uri']
+  keyUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> => {
   const { fragment, did } = DidUtils.parseDidUri(keyUri)
   const { details } = (await resolveDoc(did as DidUri)) as DidResolvedDetails
@@ -118,7 +112,7 @@ const mockResolver = {
 } as IDidResolver
 
 beforeAll(async () => {
-  const aliceAuthKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  const aliceAuthKey = makeSigningKeyTool('ed25519')
   aliceSign = aliceAuthKey.sign
   aliceLightDid = LightDidDetails.fromDetails({
     authenticationKey: aliceAuthKey.authenticationKey,
@@ -127,11 +121,11 @@ beforeAll(async () => {
   aliceLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: aliceAuthKey.authenticationKey,
     encryptionKey: aliceEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
   })
   aliceFullDid = await createLocalDemoFullDidFromLightDid(aliceLightDid)
 
-  const bobAuthKey = makeSigningKeyTool(SigningAlgorithms.Ed25519)
+  const bobAuthKey = makeSigningKeyTool('ed25519')
   bobSign = bobAuthKey.sign
   bobLightDid = LightDidDetails.fromDetails({
     authenticationKey: bobAuthKey.authenticationKey,
@@ -140,7 +134,7 @@ beforeAll(async () => {
   bobLightDidWithDetails = LightDidDetails.fromDetails({
     authenticationKey: bobAuthKey.authenticationKey,
     encryptionKey: bobEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], urls: ['x:url-1'] }],
+    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
   })
   bobFullDid = await createLocalDemoFullDidFromLightDid(bobLightDid)
 })
@@ -149,7 +143,7 @@ describe('Messaging', () => {
   it('verify message encryption and signing', async () => {
     const message = new Message(
       {
-        type: Message.BodyType.REQUEST_CREDENTIAL,
+        type: 'request-credential',
         content: {
           cTypes: [{ cTypeHash: `${Crypto.hashStr('0x12345678')}` }],
         },
@@ -197,10 +191,10 @@ describe('Messaging', () => {
           resolver: mockResolver,
         }
       )
-    ).rejects.toThrowError(SDKErrors.ERROR_DECODING_MESSAGE)
+    ).rejects.toThrowError(SDKErrors.DecodingMessageError)
 
     const encryptedWrongBody = await aliceEncKey.encrypt({
-      alg: EncryptionAlgorithms.NaclBox,
+      alg: 'x25519-xsalsa20-poly1305',
       data: Crypto.coToUInt8('{ wrong JSON'),
       publicKey: aliceLightDid.encryptionKey!.publicKey,
       peerPublicKey: bobLightDid.encryptionKey!.publicKey,
@@ -222,7 +216,7 @@ describe('Messaging', () => {
           resolver: mockResolver,
         }
       )
-    ).rejects.toThrowError(SDKErrors.ERROR_PARSING_MESSAGE)
+    ).rejects.toThrowError(SDKErrors.ParsingMessageError)
   })
 
   it('verifies the message with sender is the owner (as full DID)', async () => {
@@ -265,7 +259,7 @@ describe('Messaging', () => {
         credential: content,
         quote: bothSigned,
       },
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -288,7 +282,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(requestAttestationBody, bobFullDid.uri, aliceFullDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const attestation = {
       delegationId: null,
@@ -302,7 +296,7 @@ describe('Messaging', () => {
       content: {
         attestation,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -325,11 +319,11 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(submitAttestationBody, aliceFullDid.uri, bobFullDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const submitClaimsForCTypeBody: ISubmitCredential = {
       content: [content],
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -352,7 +346,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(submitClaimsForCTypeBody, bobFullDid.uri, aliceFullDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
   })
 
   it('verifies the message with sender is the owner (as light DID)', async () => {
@@ -396,7 +390,7 @@ describe('Messaging', () => {
         credential: content,
         quote: bothSigned,
       },
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     // Create request for attestation to the light DID with encoded details
@@ -439,7 +433,7 @@ describe('Messaging', () => {
         credential: contentWithEncodedDetails,
         quote: bothSignedEncodedDetails,
       },
-      type: Message.BodyType.REQUEST_ATTESTATION,
+      type: 'request-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -483,7 +477,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(requestAttestationBody, bobLightDid.uri, aliceLightDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const attestation = {
       delegationId: null,
@@ -497,7 +491,7 @@ describe('Messaging', () => {
       content: {
         attestation,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     const attestationWithEncodedDetails = {
@@ -512,7 +506,7 @@ describe('Messaging', () => {
       content: {
         attestation: attestationWithEncodedDetails,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION,
+      type: 'submit-attestation',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -556,16 +550,16 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(submitAttestationBody, aliceLightDid.uri, bobLightDid.uri)
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const submitClaimsForCTypeBody: ISubmitCredential = {
       content: [content],
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     const submitClaimsForCTypeBodyWithEncodedDetails: ISubmitCredential = {
       content: [contentWithEncodedDetails],
-      type: Message.BodyType.SUBMIT_CREDENTIAL,
+      type: 'submit-credential',
     }
 
     // Should not throw if the owner and sender DID is the same.
@@ -617,6 +611,6 @@ describe('Messaging', () => {
           aliceLightDid.uri
         )
       )
-    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH)
+    ).toThrowError(SDKErrors.IdentityMismatchError)
   })
 })

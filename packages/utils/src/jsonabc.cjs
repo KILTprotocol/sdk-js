@@ -25,24 +25,24 @@ function isPlainObject(val) {
 }
 
 // Sorting Logic
-function sortObj(un, noarray) {
-  noarray = noarray || false
+function sortObj(un, noArray) {
+  noArray = noArray || false
 
   var or = {}
 
   if (isArray(un)) {
     // Sort or don't sort arrays
-    if (noarray) {
+    if (noArray) {
       or = un
     } else {
       or = un.sort()
     }
 
     or.forEach(function (v, i) {
-      or[i] = sortObj(v, noarray)
+      or[i] = sortObj(v, noArray)
     })
 
-    if (!noarray) {
+    if (!noArray) {
       or = or.sort(function (a, b) {
         a = JSON.stringify(a)
         b = JSON.stringify(b)
@@ -58,7 +58,7 @@ function sortObj(un, noarray) {
         return 0
       })
       .forEach(function (key) {
-        or[key] = sortObj(un[key], noarray)
+        or[key] = sortObj(un[key], noArray)
       })
   } else {
     or = un
@@ -75,14 +75,14 @@ function cleanJSON(input) {
 }
 
 // Sort the JSON (clean, parse, sort, stringify).
-function sort(inputStr, noarray) {
+function sort(inputStr, noArray) {
   var output, obj, r
 
   if (inputStr) {
     try {
       inputStr = cleanJSON(inputStr)
       obj = JSON.parse(inputStr)
-      r = sortObj(obj, noarray)
+      r = sortObj(obj, noArray)
       output = JSON.stringify(r, null, 4)
     } catch (ex) {
       console.error('jsonabc: Incorrect JSON object.', [], ex)

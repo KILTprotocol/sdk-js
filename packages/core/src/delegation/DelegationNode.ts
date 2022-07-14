@@ -6,13 +6,12 @@
  */
 
 import {
+  DidUri,
   DidVerificationKey,
   IAttestation,
   ICType,
   IDelegationHierarchyDetails,
   IDelegationNode,
-  IDidDetails,
-  KeyRelationship,
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -69,7 +68,7 @@ export class DelegationNode implements IDelegationNode {
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
   private childrenIdentifiers: Array<IDelegationNode['id']> = []
-  public readonly account: IDidDetails['uri']
+  public readonly account: DidUri
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean
@@ -174,14 +173,13 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Fetches the details of the hierarchy this delegation node belongs to.
    *
-   * @throws [[ERROR_HIERARCHY_QUERY]] when the hierarchy details could not be queried.
    * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
       const hierarchyDetails = await queryDetails(this.hierarchyId)
       if (!hierarchyDetails) {
-        throw new SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
+        throw new SDKErrors.HierarchyQueryError(this.hierarchyId)
       }
       this.hierarchyDetails = hierarchyDetails
       return hierarchyDetails
@@ -263,16 +261,16 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Signs the delegation hash from the delegations' property values.
    *
-   * This is required to anchor the delegation node on chain in order to enforce the delegee's consent.
+   * This is required to anchor the delegation node on chain in order to enforce the delegate's consent.
    *
-   * @param delegeeDid The DID of the delegee.
-   * @param sign The callback to sign the delegation creation details for the delegee.
+   * @param delegateDid The DID of the delegate.
+   * @param sign The callback to sign the delegation creation details for the delegate.
    * @param options The additional signing options.
-   * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
+   * @param options.keySelection The logic to select the right key to sign for the delegate. It defaults to picking the first key from the set of valid keys.
    * @returns The DID signature over the delegation **as a hex string**.
    */
-  public async delegeeSign(
-    delegeeDid: DidDetails,
+  public async delegateSign(
+    delegateDid: DidDetails,
     sign: SignCallback,
     {
       keySelection = DidUtils.defaultKeySelectionCallback,
@@ -281,19 +279,19 @@ export class DelegationNode implements IDelegationNode {
     } = {}
   ): Promise<DidChain.SignatureEnum> {
     const authenticationKey = await keySelection(
-      delegeeDid.getVerificationKeys(KeyRelationship.authentication)
+      delegateDid.getVerificationKeys('authentication')
     )
     if (!authenticationKey) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Delegee ${delegeeDid.uri} does not have any authentication key.`
+      throw new SDKErrors.DidError(
+        `Delegate "${delegateDid.uri}" does not have any authentication key`
       )
     }
-    const delegeeSignature = await delegeeDid.signPayload(
+    const delegateSignature = await delegateDid.signPayload(
       this.generateHash(),
       sign,
       authenticationKey.id
     )
-    return DidChain.encodeDidSignature(authenticationKey, delegeeSignature)
+    return DidChain.encodeDidSignature(authenticationKey, delegateSignature)
   }
 
   /**
@@ -304,7 +302,7 @@ export class DelegationNode implements IDelegationNode {
   public async getLatestState(): Promise<DelegationNode> {
     const newNodeState = await query(this.id)
     if (!newNodeState) {
-      throw new SDKErrors.ERROR_DELEGATION_ID_MISSING()
+      throw new SDKErrors.DelegationIdMissingError()
     }
     return newNodeState
   }
@@ -322,7 +320,7 @@ export class DelegationNode implements IDelegationNode {
       return getStoreAsRootTx(this)
     }
     if (!signature) {
-      throw new SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING()
+      throw new SDKErrors.DelegateSignatureMissingError()
     }
     return getStoreAsDelegationTx(this, signature)
   }
@@ -342,14 +340,14 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Checks on chain whether a identity with the given DID is delegating to the current node.
+   * Checks on chain whether an identity with the given DID is delegating to the current node.
    *
    * @param did The DID to search for.
    *
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    did: IDidDetails['uri']
+    did: DidUri
   ): Promise<{ steps: number; node: DelegationNode | null }> {
     if (this.account === did) {
       return {
@@ -394,13 +392,11 @@ export class DelegationNode implements IDelegationNode {
    * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async getRevokeTx(
-    did: IDidDetails['uri']
-  ): Promise<SubmittableExtrinsic> {
+  public async getRevokeTx(did: DidUri): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
-      throw new SDKErrors.ERROR_UNAUTHORIZED(
-        `The DID ${did} is not among the delegators and may not revoke this node`
+      throw new SDKErrors.UnauthorizedError(
+        `The DID "${did}" is not among the delegators and may not revoke this node`
       )
     }
     const childCount = await this.subtreeNodeCount()
