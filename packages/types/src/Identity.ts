@@ -6,9 +6,9 @@
  */
 
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import type { Index } from '@polkadot/types/interfaces/runtime/types'
+import type { AnyNumber } from '@polkadot/types/types/codec'
 import type { BoxKeyPair } from 'tweetnacl'
-import type { Index } from '@polkadot/types/interfaces'
-import type { AnyNumber } from '@polkadot/types/types'
 import type { KeyringPair } from './index.js'
 
 export interface IIdentity {

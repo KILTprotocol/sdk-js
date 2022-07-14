@@ -29,6 +29,7 @@ module.exports = {
     '!**/SDKErrors.ts',
     '!utils/src/json-schema/*',
     '!testing/**',
+    '!augment-api/**',
     // TODO: write tests for these files and remove here
     '!**/*.chain.ts',
     '!did/src/index.types.ts',

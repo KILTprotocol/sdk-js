@@ -14,6 +14,9 @@ import {
   DidIdentifier,
   DidKey,
   DidResourceUri,
+  TypedValue,
+  NewDidVerificationKey,
+  DidVerificationKey,
   DidServiceEndpoint,
   DidUri,
   EncryptionAlgorithms,
@@ -23,6 +26,8 @@ import {
   SigningAlgorithms,
   VerificationKeyType,
   verificationKeyTypes,
+  NewDidEncryptionKey,
+  DidEncryptionKey,
 } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -243,8 +248,11 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
  * @param key Representation of a DID key.
  * @returns True if the key is a verification key, false otherwise.
  */
-export function isVerificationKey(key: NewDidKey | DidKey): boolean {
-  return verificationKeyTypes.some((kt) => kt === key.type)
+export function isVerificationKey(
+  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
+): key is NewDidVerificationKey | DidVerificationKey {
+  const keyType = key.type.toLowerCase()
+  return verificationKeyTypes.some((kt) => kt === keyType)
 }
 
 /**
@@ -253,8 +261,11 @@ export function isVerificationKey(key: NewDidKey | DidKey): boolean {
  * @param key Representation of a DID key.
  * @returns True if the key is an encryption key, false otherwise.
  */
-export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
-  return encryptionKeyTypes.some((kt) => kt === key.type)
+export function isEncryptionKey(
+  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
+): key is NewDidEncryptionKey | DidEncryptionKey {
+  const keyType = key.type.toLowerCase()
+  return encryptionKeyTypes.some((kt) => kt === keyType)
 }
 
 /**
@@ -455,4 +466,21 @@ export function assembleKeyUri(
     )
   }
   return `${did}#${keyId}`
+}
+
+/**
+ * Helper to produce polkadot-js style enum representations, consisting of an object with a single key-value pair.
+ * The enum variant becomes the object's key (first letter capitalized).
+ *
+ * @param variant The enum variant descriptor as a string.
+ * @param value The value associated with the variant.
+ * @returns `{ Variant: value }`.
+ */
+export function makePolkadotTypedValue<K extends string, V>(
+  variant: K,
+  value: V
+): TypedValue<K, V> {
+  return {
+    [variant]: value,
+  } as TypedValue<K, V>
 }

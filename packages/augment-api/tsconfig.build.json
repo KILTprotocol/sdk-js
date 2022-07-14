@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "outDir": "./lib/cjs",
+    "skipLibCheck": true,
+    "noUnusedLocals": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "coverage",
+    "**/*.spec.ts",
+    "src/**/definitions.ts",
+  ]
+}

@@ -9,6 +9,4 @@
  * @module @kiltprotocol/config
  */
 
-import '@polkadot/api-augment'
-
 export * as ConfigService from './ConfigService.js'
