@@ -12,10 +12,7 @@ import type { IClaim, PartialClaim } from './Claim.js'
 import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
 import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote.js'
-import type {
-  CompressedCredential,
-  ICredential,
-} from './RequestForAttestation.js'
+import type { CompressedCredential, ICredential } from './Credential.js'
 import type { CompressedTerms, ITerms } from './Terms.js'
 import type { DidResourceUri, IClaimContents } from './index.js'
 

@@ -7,7 +7,7 @@
 
 import type { ICType } from './CType'
 import type { DidSignature, DidUri } from './DidDetails'
-import type { ICredential } from './RequestForAttestation'
+import type { ICredential } from './Credential'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>

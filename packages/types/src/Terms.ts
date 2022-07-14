@@ -13,7 +13,7 @@ import type {
 } from './Quote'
 import type { CompressedPartialClaim } from './Message'
 import type { PartialClaim } from './Claim'
-import type { CompressedCredential, ICredential } from './RequestForAttestation'
+import type { CompressedCredential, ICredential } from './Credential'
 
 export interface ITerms {
   claim: PartialClaim
