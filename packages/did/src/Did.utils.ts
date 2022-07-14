@@ -96,7 +96,9 @@ export type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parseDidUri(didUri: DidUri): IDidParsingResult {
+export function parseDidUri(
+  didUri: DidUri | DidResourceUri
+): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
     const version = matches.version
@@ -265,7 +267,7 @@ export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
 export function validateKiltDidUri(
   input: unknown,
   allowFragment = false
-): input is DidUri {
+): input is DidUri | DidResourceUri {
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
