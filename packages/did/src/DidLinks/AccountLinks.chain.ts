@@ -75,6 +75,9 @@ export type LinkingSignerCallback = (
   address: KiltAddress
 ) => Promise<HexString>
 
+/**
+ * Type describing storage type that is yet to be deployed to spiritnet.
+ */
 interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly isAccountId20: boolean
   readonly asAccountId20: U8aFixed
@@ -83,11 +86,17 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly type: 'AccountId20' | 'AccountId32'
 }
 
+/**
+ * Type required for encoding of the above.
+ */
 type LinkableAccountJson = TypedValue<
   PalletDidLookupLinkableAccountLinkableAccountId['type'],
   string | Uint8Array
 >
 
+/**
+ * Type required for encoding Enum type for association request extrinsics.
+ */
 type AssociateAccountRequest = TypedValue<
   'Dotsama' | 'Ethereum',
   [
@@ -96,6 +105,9 @@ type AssociateAccountRequest = TypedValue<
   ]
 >
 
+/**
+ * Api augmentation override for when the ethereum enabled pallet version has landed.
+ */
 type WithEtherumSupport = {
   tx: {
     didLookup: {
@@ -130,7 +142,12 @@ type WithEtherumSupport = {
   }
 }
 
-// TODO: improve
+/**
+ * Detects whether api augmentation indicates presence of Ethereum linking enabled pallet.
+ *
+ * @param api The api object.
+ * @returns True if Ethereum linking is supported.
+ */
 function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
   return (
     api instanceof ApiPromise &&
@@ -147,6 +164,12 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
   )
 }
 
+/**
+ * Prepares encoding a LinkableAccountId.
+ *
+ * @param address 20 or 32 byte address as string (hex or ss58 encoded).
+ * @returns `{ AccountId20 | AccountId32: Uint8Array }`
+ */
 function encodeMultiAddress(
   address: Address
 ): TypedValue<'AccountId20' | 'AccountId32', Uint8Array> {
