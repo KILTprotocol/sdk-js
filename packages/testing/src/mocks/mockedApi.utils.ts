@@ -138,7 +138,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     default:
       // should never occur
       throw new Error(
-        `Missing module ${outerQuery} for KILT chain. 
+        `Missing module "${outerQuery}" for KILT chain. 
         The following ones exist: attestation, ctype, delegation, did, portablegabi.`
       )
   }

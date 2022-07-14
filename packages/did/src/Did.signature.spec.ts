@@ -75,6 +75,37 @@ describe('light DID', () => {
     })
   })
 
+  it('verifies old did signature (with `keyId` property) over string', async () => {
+    const SIGNED_STRING = 'signed string'
+    const signature = await details.signPayload(
+      SIGNED_STRING,
+      sign,
+      details.authenticationKey.id
+    )
+    const oldSignature: any = {
+      ...signature,
+      keyId: signature.keyUri,
+    }
+    delete oldSignature.keyUri
+
+    // Test the old signature is correctly crafted
+    expect(oldSignature.signature).toBeDefined()
+    expect(oldSignature.keyId).toBeDefined()
+    expect(oldSignature.keyUri).toBeUndefined()
+
+    await expect(
+      verifyDidSignature({
+        message: SIGNED_STRING,
+        signature,
+        expectedVerificationMethod: 'authentication',
+      })
+    ).resolves.toMatchObject<VerificationResult>({
+      verified: true,
+      didDetails: details,
+      key: details.authenticationKey,
+    })
+  })
+
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const signature = await details.signPayload(
@@ -170,7 +201,7 @@ describe('light DID', () => {
       })
     ).toMatchObject<VerificationResult>({
       verified: false,
-      reason: expect.stringMatching(/signature key id .+ invalid/i),
+      reason: expect.stringMatching(/Signature key URI .+ invalid/i),
     })
   })
 
@@ -356,7 +387,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -364,7 +395,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -372,7 +403,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -380,7 +411,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -388,7 +419,7 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 
@@ -398,16 +429,16 @@ describe('type guard', () => {
       signature: '',
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature.signature = randomAsHex(32).substring(2)
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature.signature = randomAsU8a(32)
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 
@@ -418,7 +449,7 @@ describe('type guard', () => {
       signature: undefined,
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     signature = {
       // @ts-expect-error
@@ -426,31 +457,31 @@ describe('type guard', () => {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {
       signature: randomAsHex(32),
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {
       keyUri: `did:kilt:${keypair.address}#mykey`,
     }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = {}
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
     // @ts-expect-error
     signature = { keyUri: null, signature: null }
     expect(() => isDidSignature(signature)).toThrow(
-      SDKErrors.ERROR_SIGNATURE_DATA_TYPE
+      SDKErrors.SignatureMalformedError
     )
   })
 })

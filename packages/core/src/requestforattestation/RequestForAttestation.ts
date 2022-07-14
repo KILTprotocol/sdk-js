@@ -88,7 +88,6 @@ export function calculateRootHash(
  *
  * @param req4Att - The RequestForAttestation object to remove properties from.
  * @param properties - Properties to remove from the [[Claim]] object.
- * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
  */
 export function removeClaimProperties(
   req4Att: IRequestForAttestation,
@@ -189,13 +188,11 @@ export function verifyRootHash(input: IRequestForAttestation): boolean {
  *
  * @param input - The [[RequestForAttestation]] for which to verify data.
  * @returns Whether the data is valid.
- * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
- * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
  */
 export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
   // check claim hash
   if (!verifyRootHash(input)) {
-    throw new SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
+    throw new SDKErrors.RootHashUnverifiableError()
   }
 
   // verify properties against selective disclosure proof
@@ -205,9 +202,7 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
   })
   // TODO: how do we want to deal with multiple errors during claim verification?
   if (!verificationResult.verified)
-    throw (
-      verificationResult.errors[0] || new SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
-    )
+    throw verificationResult.errors[0] || new SDKErrors.ClaimUnverifiableError()
 
   // check legitimations
   Credential.validateLegitimations(input.legitimations)
@@ -220,25 +215,22 @@ export function verifyDataIntegrity(input: IRequestForAttestation): boolean {
  * Throws on invalid input.
  *
  * @param input - A potentially only partial [[IRequestForAttestation]].
- * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
- * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
- *
  */
 export function verifyDataStructure(input: IRequestForAttestation): void {
   if (!input.claim) {
-    throw new SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
+    throw new SDKErrors.ClaimMissingError()
   } else {
     Claim.verifyDataStructure(input.claim)
   }
   if (!input.claim.owner) {
-    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    throw new SDKErrors.OwnerMissingError()
   }
   if (!input.legitimations && !Array.isArray(input.legitimations)) {
-    throw new SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
+    throw new SDKErrors.LegitimationsMissingError()
   }
 
   if (!input.claimNonceMap) {
-    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
+    throw new SDKErrors.ClaimNonceMapMissingError()
   }
   if (
     typeof input.claimNonceMap !== 'object' ||
@@ -250,10 +242,10 @@ export function verifyDataStructure(input: IRequestForAttestation): void {
         !nonce
     )
   ) {
-    throw new SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
+    throw new SDKErrors.ClaimNonceMapMalformedError()
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.DelegationIdTypeError()
   }
   if (input.claimerSignature) isDidSignature(input.claimerSignature)
 }
@@ -291,7 +283,6 @@ export function verifyAgainstCType(
  * @param verificationOpts Additional options to retrieve the details from the identifiers inside the request for attestation.
  * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
- * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
  * @returns Whether the signature is correct.
  */
 export async function verifySignature(
@@ -371,7 +362,6 @@ type VerifyOptions = {
  * @param options.ctype - Ctype which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
- * @throws - If a check fails.
  */
 export async function verify(
   requestForAttestation: IRequestForAttestation,
@@ -382,7 +372,7 @@ export async function verify(
 
   if (ctype) {
     const isSchemaValid = verifyAgainstCType(requestForAttestation, ctype)
-    if (!isSchemaValid) throw new SDKErrors.ERROR_CREDENTIAL_UNVERIFIABLE()
+    if (!isSchemaValid) throw new SDKErrors.CredentialUnverifiableError()
   }
 
   if (challenge) {
@@ -390,7 +380,7 @@ export async function verify(
       challenge,
       resolver,
     })
-    if (!isSignatureCorrect) throw new SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
+    if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
   }
 }
 
@@ -462,15 +452,13 @@ export function compress(
  * Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when reqForAtt is not an Array and its length is not equal to the defined length of 8.
- *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
+    throw new SDKErrors.DecompressionArrayError('Request for Attestation')
   }
   const decompressedRequestForAttestation = {
     claim: Claim.decompress(reqForAtt[0]),

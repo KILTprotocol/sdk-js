@@ -1,20 +1,10 @@
 /* eslint-disable */
 
-const { HttpProvider, WsProvider, ApiPromise } = require('@polkadot/api')
+const { HttpProvider, WsProvider } = require('@polkadot/api')
 const yargs = require('yargs')
 const fs = require('fs')
 
 const { argv } = yargs
-  .option('format', {
-    alias: 'f',
-    description: 'output format: {hex, json}',
-    type: 'string',
-    default: 'json',
-    choices: ['hex', 'json'],
-    requiresArg: true,
-    // if arg is set multiple times, make the last value count
-    coerce: (val) => (Array.isArray(val) ? val.pop() : val),
-  })
   .option('endpoint', {
     alias: 'e',
     description: 'http or ws endpoint from which to fetch metadata',
@@ -29,7 +19,6 @@ const { argv } = yargs
     type: 'string',
     demandOption: true,
     requiresArg: true,
-    coerce: (val) => (Array.isArray(val) ? val.pop() : val),
   })
   .help()
   .alias('help', 'h')
@@ -45,33 +34,26 @@ switch (true) {
     break
   default:
     throw new Error(
-      `can only handle ws/wss and http/https endpoints, received ${argv.endpoint}`
+      `Can only handle ws/wss and http/https endpoints, received "${argv.endpoint}"`
     )
 }
-
-const api = new ApiPromise({ provider })
 
 let exitCode
 
 async function fetch() {
-  await api.connect()
-  await api.isReady
-  let metadata
-  switch (argv.format) {
-    case 'hex':
-      metadata = `"${api.runtimeMetadata.toHex()}"`
-      break
-    case 'json':
-      metadata = JSON.stringify(api.runtimeMetadata.toJSON(), null, 2)
-      break
-    default:
-      throw new Error('unexpected output format')
-  }
+  await provider.connect()
+  await provider.isReady
+  const result = await provider.send('state_getMetadata')
 
-  console.log(
-    `writing metadata to ${argv.outfile}:\n${metadata.substring(0, 100)}...`
-  )
-  fs.writeFileSync(argv.outfile, metadata)
+  const metadata = JSON.stringify({ result })
+
+  const outfile = Array.isArray(argv.outfile) ? argv.outfile : [argv.outfile]
+  outfile.forEach((file) => {
+    console.log(
+      `writing metadata to ${file}:\n${metadata.substring(0, 100)}...`
+    )
+    fs.writeFileSync(file, metadata)
+  })
   console.log('success')
   exitCode = 0
 }
@@ -79,7 +61,7 @@ async function fetch() {
 const timeout = new Promise((_, reject) => {
   setTimeout(() => {
     exitCode = exitCode || 124
-    reject(new Error('timeout waiting for metadata fetch'))
+    reject(new Error('Timeout waiting for metadata fetch'))
   }, 10000)
 })
 
@@ -91,12 +73,10 @@ const timeout = new Promise((_, reject) => {
     exitCode = exitCode || 1
   } finally {
     console.log('disconnecting...')
+    provider.disconnect().then(process.exit(exitCode))
     setTimeout(() => {
       console.error(`timeout while waiting for disconnect`)
       process.exit(exitCode)
     }, 10000)
-
-    await api.disconnect()
-    process.exit(exitCode)
   }
 })()

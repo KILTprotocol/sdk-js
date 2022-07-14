@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Enum, Option, Struct, U128 } from '@polkadot/types'
+import type { bool, Enum, Option, Struct, U128 } from '@polkadot/types'
 import type {
   Deposit,
   IAttestation,
@@ -17,6 +17,7 @@ import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
 import type { BN } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder.js'
@@ -49,18 +50,18 @@ export async function getStoreTx(
         claimHash,
         cTypeHash,
         delegationId
-          ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+          ? ({ delegation: { subjectNodeId: delegationId } } as any) // maxChecks parameter is unused on the chain side and therefore omitted
           : undefined
       )
     default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to encode call: unknown authorization type'
       )
   }
 }
 
 export interface AuthorizationId extends Enum {
-  readonly isDelegation: boolean
+  readonly isDelegation: bool
   readonly asDelegation: H256
 }
 
@@ -68,7 +69,7 @@ interface AttestationDetailsV1 extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
   readonly delegationId: Option<DelegationNodeId>
-  readonly revoked: boolean
+  readonly revoked: bool
   readonly deposit: Deposit
 }
 
@@ -96,7 +97,7 @@ function decode(
     } else if ('delegationId' in chainAttestation) {
       delegationId = chainAttestation.delegationId.unwrapOr(undefined)?.toHex()
     } else {
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to decode Attestation: unknown Codec type'
       )
     }
@@ -124,12 +125,10 @@ function decode(
  */
 export async function queryRaw(
   claimHash: IRequestForAttestation['rootHash']
-): Promise<Option<AttestationDetails>> {
+): Promise<Option<AttestationAttestationsAttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.attestation.attestations<Option<AttestationDetails>>(
-    claimHash
-  )
+  return api.query.attestation.attestations(claimHash)
 }
 
 /**
@@ -170,11 +169,11 @@ export async function getRevokeTx(
       return api.tx.attestation.revoke(
         claimHash,
         maxParentChecks
-          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+          ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
           : undefined
       )
     default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to encode call: unknown authorization type'
       )
   }
@@ -205,11 +204,11 @@ export async function getRemoveTx(
       return api.tx.attestation.remove(
         claimHash,
         maxParentChecks
-          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+          ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
           : undefined
       )
     default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
+      throw new SDKErrors.CodecMismatchError(
         'Failed to encode call: unknown authorization type'
       )
   }

@@ -9,7 +9,7 @@
  * @module @kiltprotocol/did
  */
 
-import '@polkadot/api-augment'
+import '@kiltprotocol/augment-api'
 
 export * from './DidDetails/index.js'
 export * from './DidBatcher/index.js'

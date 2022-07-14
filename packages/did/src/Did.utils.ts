@@ -12,9 +12,11 @@ import { u32 } from '@polkadot/types'
 
 import {
   DidIdentifier,
-  JsonEnum,
   DidKey,
   DidResourceUri,
+  TypedValue,
+  NewDidVerificationKey,
+  DidVerificationKey,
   DidServiceEndpoint,
   DidUri,
   EncryptionAlgorithms,
@@ -24,6 +26,8 @@ import {
   SigningAlgorithms,
   VerificationKeyType,
   verificationKeyTypes,
+  NewDidEncryptionKey,
+  DidEncryptionKey,
 } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -97,7 +101,9 @@ export type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parseDidUri(didUri: DidUri): IDidParsingResult {
+export function parseDidUri(
+  didUri: DidUri | DidResourceUri
+): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches && matches.identifier) {
     const version = matches.version
@@ -133,7 +139,7 @@ export function parseDidUri(didUri: DidUri): IDidParsingResult {
     }
   }
 
-  throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+  throw new SDKErrors.InvalidDidFormatError(didUri)
 }
 
 /**
@@ -242,8 +248,11 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
  * @param key Representation of a DID key.
  * @returns True if the key is a verification key, false otherwise.
  */
-export function isVerificationKey(key: NewDidKey | DidKey): boolean {
-  return verificationKeyTypes.some((kt) => kt === key.type)
+export function isVerificationKey(
+  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
+): key is NewDidVerificationKey | DidVerificationKey {
+  const keyType = key.type.toLowerCase()
+  return verificationKeyTypes.some((kt) => kt === keyType)
 }
 
 /**
@@ -252,8 +261,11 @@ export function isVerificationKey(key: NewDidKey | DidKey): boolean {
  * @param key Representation of a DID key.
  * @returns True if the key is an encryption key, false otherwise.
  */
-export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
-  return encryptionKeyTypes.some((kt) => kt === key.type)
+export function isEncryptionKey(
+  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
+): key is NewDidEncryptionKey | DidEncryptionKey {
+  const keyType = key.type.toLowerCase()
+  return encryptionKeyTypes.some((kt) => kt === keyType)
 }
 
 /**
@@ -262,34 +274,33 @@ export function isEncryptionKey(key: NewDidKey | DidKey): boolean {
  * @param input Arbitrary input.
  * @param allowFragment Whether the uri is allowed to have a fragment (following '#').
  * @returns True if validation has passed.
- * @throws [[SDKError]] if validation fails.
  */
 export function validateKiltDidUri(
   input: unknown,
   allowFragment = false
-): input is DidUri {
+): input is DidUri | DidResourceUri {
   if (typeof input !== 'string') {
-    throw TypeError(`DID string expected, got ${typeof input}`)
+    throw new TypeError(`DID string expected, got ${typeof input}`)
   }
   const { identifier, type, fragment } = parseDidUri(input as DidUri)
   if (!allowFragment && fragment) {
-    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(input)
+    throw new SDKErrors.InvalidDidFormatError(input)
   }
 
   switch (type) {
     case 'full':
       if (!checkAddress(identifier, ss58Format)[0]) {
-        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+        throw new SDKErrors.AddressInvalidError(identifier, 'DID identifier')
       }
       break
     case 'light':
       // Identifier includes the first two characters for the key type encoding
       if (!checkAddress(identifier.substring(2), ss58Format)[0]) {
-        throw new SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+        throw new SDKErrors.AddressInvalidError(identifier, 'DID identifier')
       }
       break
     default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(input)
+      throw new SDKErrors.UnsupportedDidError(input)
   }
   return true
 }
@@ -328,7 +339,7 @@ export function isUriFragment(str: string): boolean {
 /**
  * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
  *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
- *   - If the `urls` property contains one or more strings, they must be valid URIs according to RFC#3986.
+ *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
  * @param endpoint A service endpoint object to check.
  * @returns Validation result and errors, if any.
@@ -339,23 +350,23 @@ export function checkServiceEndpointSyntax(
   const errors: Error[] = []
   if (endpoint.id.startsWith('did:kilt')) {
     errors.push(
-      new SDKErrors.ERROR_DID_ERROR(
-        `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id '${endpoint.id}'`
+      new SDKErrors.DidError(
+        `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${endpoint.id}"`
       )
     )
   }
   if (!isUriFragment(endpoint.id)) {
     errors.push(
-      new SDKErrors.ERROR_DID_ERROR(
-        `The service ID must be valid as a URI fragment according to RFC#3986, which '${endpoint.id}' is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
+      new SDKErrors.DidError(
+        `The service ID must be valid as a URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
       )
     )
   }
-  endpoint.urls.forEach((url) => {
-    if (!isUri(url)) {
+  endpoint.uris.forEach((uri) => {
+    if (!isUri(uri)) {
       errors.push(
-        new SDKErrors.ERROR_DID_ERROR(
-          `A service URL must be a URI according to RFC#3986, which '${url}' (service id '${endpoint.id}') is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
+        new SDKErrors.DidError(
+          `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${endpoint.id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
         )
       )
     }
@@ -367,7 +378,7 @@ export function checkServiceEndpointSyntax(
  * Performs size checks on service endpoint data, making sure that the following conditions are met:
  *   - The `endpoint.id` is at most 50 ASCII characters long.
  *   - The `endpoint.types` array has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *   - The `endpoint.urls` array has at most 1 URL, with a value that is at most 200 ASCII characters long.
+ *   - The `endpoint.uris` array has at most 1 URI, with a value that is at most 200 ASCII characters long.
  *
  * @param api An api instance required for reading up-to-date size constraints from the blockchain runtime.
  * @param endpoint A service endpoint object to check.
@@ -395,22 +406,22 @@ export function checkServiceEndpointSizeConstraints(
   const idEncodedLength = stringToU8a(endpoint.id).length
   if (idEncodedLength > maxServiceIdLength) {
     errors.push(
-      new SDKErrors.ERROR_DID_ERROR(
-        `The service ID '${endpoint.id}' is too long (${idEncodedLength} bytes). Max number of bytes allowed for a service ID is ${maxServiceIdLength}.`
+      new SDKErrors.DidError(
+        `The service ID "${endpoint.id}" is too long (${idEncodedLength} bytes). Max number of bytes allowed for a service ID is ${maxServiceIdLength}.`
       )
     )
   }
   if (endpoint.types.length > maxNumberOfTypesPerService) {
     errors.push(
-      new SDKErrors.ERROR_DID_ERROR(
-        `The service with ID '${endpoint.id}' has too many types (${endpoint.types.length}). Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
+      new SDKErrors.DidError(
+        `The service with ID "${endpoint.id}" has too many types (${endpoint.types.length}). Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
       )
     )
   }
-  if (endpoint.urls.length > maxNumberOfUrlsPerService) {
+  if (endpoint.uris.length > maxNumberOfUrlsPerService) {
     errors.push(
-      new SDKErrors.ERROR_DID_ERROR(
-        `The service with ID '${endpoint.id}' has too many URLs (${endpoint.urls.length}). Max number of URLs allowed per service is ${maxNumberOfUrlsPerService}.`
+      new SDKErrors.DidError(
+        `The service with ID "${endpoint.id}" has too many URIs (${endpoint.uris.length}). Max number of URIs allowed per service is ${maxNumberOfUrlsPerService}.`
       )
     )
   }
@@ -418,18 +429,18 @@ export function checkServiceEndpointSizeConstraints(
     const typeEncodedLength = stringToU8a(type).length
     if (typeEncodedLength > maxServiceTypeLength) {
       errors.push(
-        new SDKErrors.ERROR_DID_ERROR(
-          `The service with ID '${endpoint.id}' has the type '${type}' that is too long (${typeEncodedLength} bytes). Max number of bytes allowed for a service type is ${maxServiceTypeLength}.`
+        new SDKErrors.DidError(
+          `The service with ID "${endpoint.id}" has the type "${type}" that is too long (${typeEncodedLength} bytes). Max number of bytes allowed for a service type is ${maxServiceTypeLength}.`
         )
       )
     }
   })
-  endpoint.urls.forEach((url) => {
-    const urlEncodedLength = stringToU8a(url).length
-    if (urlEncodedLength > maxServiceUrlLength) {
+  endpoint.uris.forEach((uri) => {
+    const uriEncodedLength = stringToU8a(uri).length
+    if (uriEncodedLength > maxServiceUrlLength) {
       errors.push(
-        new SDKErrors.ERROR_DID_ERROR(
-          `The service with ID '${endpoint.id}' has the URL '${url}' that is too long (${urlEncodedLength} bytes). Max number of bytes allowed for a service URL is ${maxServiceUrlLength}.`
+        new SDKErrors.DidError(
+          `The service with ID "${endpoint.id}" has the URI "${uri}" that is too long (${uriEncodedLength} bytes). Max number of bytes allowed for a service URI is ${maxServiceUrlLength}.`
         )
       )
     }
@@ -450,25 +461,26 @@ export function assembleKeyUri(
   keyId: DidKey['id']
 ): DidResourceUri {
   if (parseDidUri(did).fragment) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `Cannot assemble key URI from a DID that already has a fragment: ${did}`
+    throw new SDKErrors.DidError(
+      `Cannot assemble key URI from a DID that already has a fragment: "${did}"`
     )
   }
   return `${did}#${keyId}`
 }
 
 /**
- * Helper function to simplify creating polkadot's SCALE codec enum types.
+ * Helper to produce polkadot-js style enum representations, consisting of an object with a single key-value pair.
+ * The enum variant becomes the object's key (first letter capitalized).
  *
- * @param variant String describing the enum variant. Will be capitalized to yield the key of the returned object's single property.
- * @param value Value associated with the variant. Will be the value of the returned object's single property.
- * @returns Object in the form { Variant: value }.
+ * @param variant The enum variant descriptor as a string.
+ * @param value The value associated with the variant.
+ * @returns `{ Variant: value }`.
  */
-export function makeJsonEnum<K extends string, V>(
+export function makePolkadotTypedValue<K extends string, V>(
   variant: K,
   value: V
-): JsonEnum<Capitalize<K>, V> {
+): TypedValue<K, V> {
   return {
-    [variant.replace(/^[a-z]/g, (s) => s.toUpperCase())]: value,
-  } as JsonEnum<Capitalize<K>, V>
+    [variant]: value,
+  } as TypedValue<K, V>
 }

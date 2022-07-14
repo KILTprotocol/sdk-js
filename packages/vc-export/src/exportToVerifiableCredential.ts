@@ -42,7 +42,7 @@ export function fromCredentialIRI(credentialId: string): HexString {
     : credentialId
   if (!isHex(hexString))
     throw new Error(
-      'credential id is not a valid identifier (could not extract base16 / hex encoded string)'
+      'Credential id is not a valid identifier (could not extract base16 / hex encoded string)'
     )
   return hexString
 }
@@ -58,7 +58,7 @@ export function toCredentialIRI(rootHash: string): string {
     return rootHash
   }
   if (!isHex(rootHash))
-    throw new Error('root hash is not a base16 / hex encoded string)')
+    throw new Error('Root hash is not a base16 / hex encoded string)')
   return KILT_CREDENTIAL_IRI_PREFIX + rootHash
 }
 

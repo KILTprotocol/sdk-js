@@ -50,7 +50,7 @@ export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<DidUri | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.ctype.ctypes<Option<AccountId>>(ctypeHash)
+  const encoded = await api.query.ctype.ctypes(ctypeHash)
   return decode(encoded)
 }
 
@@ -62,6 +62,6 @@ export async function getOwner(
  */
 export async function isStored(ctypeHash: ICType['hash']): Promise<boolean> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.ctype.ctypes<Option<AccountId>>(ctypeHash)
+  const encoded = await api.query.ctype.ctypes(ctypeHash)
   return encoded.isSome
 }

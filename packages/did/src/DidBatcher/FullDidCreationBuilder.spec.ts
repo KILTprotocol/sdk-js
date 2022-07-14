@@ -47,12 +47,12 @@ describe('FullDidCreationBuilder', () => {
       const service1: DidServiceEndpoint = {
         id: 'id-1',
         types: ['type-1'],
-        urls: ['x:url-1'],
+        uris: ['x:url-1'],
       }
       const service2: DidServiceEndpoint = {
         id: 'id-2',
         types: ['type-2'],
-        urls: ['x:url-2'],
+        uris: ['x:url-2'],
       }
       const lightDidDetails = LightDidDetails.fromDetails({
         authenticationKey: authKey,
@@ -84,8 +84,8 @@ describe('FullDidCreationBuilder', () => {
           Map<DidServiceEndpoint['id'], Omit<DidServiceEndpoint, 'id'>>
         >(
           new Map([
-            [service1.id, { types: service1.types, urls: service1.urls }],
-            [service2.id, { types: service2.types, urls: service2.urls }],
+            [service1.id, { types: service1.types, uris: service1.uris }],
+            [service2.id, { types: service2.types, uris: service2.uris }],
           ])
         )
       })

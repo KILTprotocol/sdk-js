@@ -8,27 +8,16 @@
 import type {
   SubmittableExtrinsic,
   DidIdentifier,
-  Deposit,
   DidUri,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import type { Option, Bytes, Struct, u128, u64, u32 } from '@polkadot/types'
-import type { AccountId } from '@polkadot/types/interfaces'
+import type { u128, u32 } from '@polkadot/types'
 import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
 import * as DidUtils from '../Did.utils.js'
-
-/**
- * Web3NameOwner is a private interface for parsing the owner infos of a Web3Name from the on-chain format.
- */
-interface Web3NameOwner extends Struct {
-  owner: AccountId
-  claimedAt: u64
-  deposit: Deposit
-}
 
 /**
  * Web3Name is the type of a nickname for a DID.
@@ -45,13 +34,13 @@ function checkWeb3NameInputConstraints(
   ]
 
   if (web3Name.length < minLength) {
-    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
-      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}.`
+    throw new SDKErrors.Web3NameError(
+      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}`
     )
   }
   if (web3Name.length > maxLength) {
-    throw new SDKErrors.ERROR_WEB3_NAME_ERROR(
-      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}.`
+    throw new SDKErrors.Web3NameError(
+      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}`
     )
   }
 }
@@ -106,7 +95,7 @@ export async function queryWeb3NameForDidIdentifier(
   didIdentifier: DidIdentifier
 ): Promise<Web3Name | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.web3Names.names<Option<Bytes>>(didIdentifier)
+  const encoded = await api.query.web3Names.names(didIdentifier)
   DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
   return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
@@ -121,7 +110,7 @@ export async function queryDidIdentifierForWeb3Name(
   name: Web3Name
 ): Promise<DidIdentifier | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.web3Names.owner<Option<Web3NameOwner>>(name)
+  const encoded = await api.query.web3Names.owner(name)
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])

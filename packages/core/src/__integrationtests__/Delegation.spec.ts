@@ -79,18 +79,18 @@ async function addDelegation(
   hierarchyId: IDelegationNode['id'],
   parentId: DelegationNode['id'],
   delegator: FullDidDetails,
-  delegee: FullDidDetails,
+  delegate: FullDidDetails,
   delegatorSign: SignCallback,
-  delegeeSign: SignCallback,
+  delegateSign: SignCallback,
   permissions: PermissionType[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
   const delegationNode = DelegationNode.newNode({
     hierarchyId,
     parentId,
-    account: delegee.uri,
+    account: delegate.uri,
     permissions,
   })
-  const signature = await delegationNode.delegeeSign(delegee, delegeeSign)
+  const signature = await delegationNode.delegateSign(delegate, delegateSign)
   const storeTx = await delegationNode.getStoreTx(signature)
   const authorizedStoreTx = await delegator.authorizeExtrinsic(
     storeTx,
@@ -227,18 +227,18 @@ describe('and attestation rights have been delegated', () => {
 describe('revocation', () => {
   let delegator: FullDidDetails
   let delegatorSign: SignCallback
-  let firstDelegee: FullDidDetails
-  let firstDelegeeSign: SignCallback
-  let secondDelegee: FullDidDetails
-  let secondDelegeeSign: SignCallback
+  let firstDelegate: FullDidDetails
+  let firstDelegateSign: SignCallback
+  let secondDelegate: FullDidDetails
+  let secondDelegateSign: SignCallback
 
   beforeAll(() => {
     delegator = root
     delegatorSign = rootKey.sign
-    firstDelegee = attester
-    firstDelegeeSign = attesterKey.sign
-    secondDelegee = claimer
-    secondDelegeeSign = claimerKey.sign
+    firstDelegate = attester
+    firstDelegateSign = attesterKey.sign
+    secondDelegate = claimer
+    secondDelegateSign = claimerKey.sign
   })
 
   it('delegator can revoke but not remove delegation', async () => {
@@ -251,9 +251,9 @@ describe('revocation', () => {
       rootNode.id,
       rootNode.id,
       delegator,
-      firstDelegee,
+      firstDelegate,
       delegatorSign,
-      firstDelegeeSign
+      firstDelegateSign
     )
 
     // Test revocation
@@ -287,7 +287,7 @@ describe('revocation', () => {
     expect(await DelegationNode.query(delegationA.id)).not.toBeNull()
   }, 60_000)
 
-  it('delegee cannot revoke root but can revoke own delegation', async () => {
+  it('delegate cannot revoke root but can revoke own delegation', async () => {
     const delegationRoot = await writeHierarchy(
       delegator,
       driversLicenseCType.hash,
@@ -297,14 +297,14 @@ describe('revocation', () => {
       delegationRoot.id,
       delegationRoot.id,
       delegator,
-      firstDelegee,
+      firstDelegate,
       delegatorSign,
-      firstDelegeeSign
+      firstDelegateSign
     )
     const revokeTx = await getRevokeTx(delegationRoot.id, 1, 1)
-    const authorizedRevokeTx = await firstDelegee.authorizeExtrinsic(
+    const authorizedRevokeTx = await firstDelegate.authorizeExtrinsic(
       revokeTx,
-      firstDelegeeSign,
+      firstDelegateSign,
       paymentAccount.address
     )
     await expect(
@@ -315,10 +315,10 @@ describe('revocation', () => {
     })
     expect(await delegationRoot.verify()).toBe(true)
 
-    const revokeTx2 = await delegationA.getRevokeTx(firstDelegee.uri)
-    const authorizedRevokeTx2 = await firstDelegee.authorizeExtrinsic(
+    const revokeTx2 = await delegationA.getRevokeTx(firstDelegate.uri)
+    const authorizedRevokeTx2 = await firstDelegate.authorizeExtrinsic(
       revokeTx2,
-      firstDelegeeSign,
+      firstDelegateSign,
       paymentAccount.address
     )
     await submitExtrinsic(authorizedRevokeTx2, paymentAccount)
@@ -335,17 +335,17 @@ describe('revocation', () => {
       delegationRoot.id,
       delegationRoot.id,
       delegator,
-      firstDelegee,
+      firstDelegate,
       delegatorSign,
-      firstDelegeeSign
+      firstDelegateSign
     )
     const delegationB = await addDelegation(
       delegationRoot.id,
       delegationA.id,
-      firstDelegee,
-      secondDelegee,
-      firstDelegeeSign,
-      secondDelegeeSign
+      firstDelegate,
+      secondDelegate,
+      firstDelegateSign,
+      secondDelegateSign
     )
     delegationRoot = await delegationRoot.getLatestState()
     const revokeTx = await delegationRoot.getRevokeTx(delegator.uri)

@@ -145,9 +145,9 @@ export type DidServiceEndpoint = {
    */
   types: string[]
   /**
-   * A list of URLs the endpoint exposes its services at.
+   * A list of URIs the endpoint exposes its services at.
    */
-  urls: string[]
+  uris: string[]
 }
 
 /**
@@ -212,6 +212,9 @@ export type DidSignature = {
   signature: string
 }
 
-export type JsonEnum<K extends string, V> = K extends any
+/**
+ * Utility type to construct single-key object union types like `{foo: string} | {bar: string}` from string literal union types (`'foo' | 'bar'`).
+ */
+export type TypedValue<K extends string, V> = K extends any
   ? { [P in K]: V }
   : never

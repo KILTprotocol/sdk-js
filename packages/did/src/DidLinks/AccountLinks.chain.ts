@@ -6,14 +6,15 @@
  */
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { ss58Format } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import type {
   Deposit,
   DidIdentifier,
   IIdentity,
-  JsonEnum,
+  TypedValue,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 
 import {
   decodeAddress,
@@ -21,15 +22,7 @@ import {
   ethereumEncode,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import type {
-  bool,
-  Enum,
-  Option,
-  Struct,
-  u128,
-  u64,
-  U8aFixed,
-} from '@polkadot/types'
+import type { bool, Enum, Option, u128, u64, U8aFixed } from '@polkadot/types'
 import type {
   AccountId32,
   Extrinsic,
@@ -56,7 +49,7 @@ import type {
   AugmentedSubmittable,
 } from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
-import { makeJsonEnum } from '../Did.utils.js'
+import { makePolkadotTypedValue } from '../Did.utils.js'
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
 
 // TODO: update with string pattern types once available
@@ -90,21 +83,16 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly type: 'AccountId20' | 'AccountId32'
 }
 
-interface PalletDidLookupConnectionRecord extends Struct {
-  readonly did: AccountId32
-  readonly deposit: Deposit
-}
-
-type LinkableAccountJson = JsonEnum<
+type LinkableAccountJson = TypedValue<
   PalletDidLookupLinkableAccountLinkableAccountId['type'],
   string | Uint8Array
 >
 
-type AssociateAccountRequest = JsonEnum<
+type AssociateAccountRequest = TypedValue<
   'Dotsama' | 'Ethereum',
   [
     string | Uint8Array, // AccountId
-    string | Uint8Array | JsonEnum<SignatureType, string | Uint8Array> // signature
+    string | Uint8Array | TypedValue<SignatureType, string | Uint8Array> // signature
   ]
 >
 
@@ -161,10 +149,10 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
 
 function encodeMultiAddress(
   address: Address
-): JsonEnum<'AccountId20' | 'AccountId32', Uint8Array> {
+): TypedValue<'AccountId20' | 'AccountId32', Uint8Array> {
   const accountDecoded = decodeAddress(address)
   const isEthereumAddress = accountDecoded.length === 20
-  return makeJsonEnum(
+  return makePolkadotTypedValue(
     isEthereumAddress ? 'AccountId20' : 'AccountId32',
     accountDecoded
   )
@@ -179,9 +167,7 @@ async function queryConnectedDid(
   if (isEthereumEnabled(api)) {
     return api.query.didLookup.connectedDids(encodeMultiAddress(linkedAccount))
   }
-  return api.query.didLookup.connectedDids<
-    Option<PalletDidLookupConnectionRecord>
-  >(linkedAccount)
+  return api.query.didLookup.connectedDids(linkedAccount)
 }
 
 /**
@@ -342,14 +328,18 @@ export async function getAccountSignedAssociationExtrinsic(
       )
     }
     return api.tx.didLookup.associateAccount(
-      { Dotsama: [account, makeJsonEnum(sigType, signature)] },
+      { Dotsama: [account, makePolkadotTypedValue(sigType, signature)] },
       signatureValidUntilBlock
     )
   }
+  if (sigType === 'Ethereum')
+    throw new SDKErrors.CodecMismatchError(
+      'Ethereum linking is not yet supported by this chain'
+    )
   return api.tx.didLookup.associateAccount(
     account,
     signatureValidUntilBlock,
-    makeJsonEnum(sigType, signature)
+    makePolkadotTypedValue(sigType, signature)
   )
 }
 
@@ -412,7 +402,9 @@ function getMultiSignatureTypeFromKeypairType(
     case 'ethereum':
       return 'Ethereum'
     default:
-      throw new Error(`Unsupported signature algorithm '${keypairType}'`)
+      throw new SDKErrors.DidError(
+        `Unsupported signature algorithm "${keypairType}"`
+      )
   }
 }
 
