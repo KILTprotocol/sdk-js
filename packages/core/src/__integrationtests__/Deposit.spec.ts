@@ -9,7 +9,8 @@
  * @group integration/deposit
  */
 
-import { Chain as DidChain, FullDidDetails, Web3Names } from '@kiltprotocol/did'
+import { Web3Names } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromLightDid,
   createFullDidFromSeed,
@@ -18,9 +19,11 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import {
+  DidDetails,
   IAttestation,
   ICredential,
   KeyringPair,
+  KiltKeyringPair,
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -49,18 +52,20 @@ let attestation: IAttestation
 let storedEndpointsCount: BN
 
 async function checkDeleteFullDid(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
+  identity: KiltKeyringPair,
+  fullDid: DidDetails,
   sign: SignCallback
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
-  const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
+  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
+    fullDid.identifier
+  )
+  const deleteDid = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
 
-  tx = await fullDid.authorizeExtrinsic(deleteDid, sign, identity.address)
+  tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
   const balanceBeforeDeleting = await Balance.getBalances(identity.address)
 
-  const didResult = await DidChain.queryDetails(fullDid.identifier)
+  const didResult = await Did.Chain.queryDetails(fullDid.identifier)
   const didDeposit = didResult!.deposit
 
   await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
@@ -74,17 +79,19 @@ async function checkDeleteFullDid(
 
 async function checkReclaimFullDid(
   identity: KeyringPair,
-  fullDid: FullDidDetails
+  fullDid: DidDetails
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
-  tx = await DidChain.getReclaimDepositExtrinsic(
+  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
+    fullDid.identifier
+  )
+  tx = await Did.Chain.getReclaimDepositExtrinsic(
     fullDid.identifier,
     storedEndpointsCount
   )
 
   const balanceBeforeRevoking = await Balance.getBalances(identity.address)
 
-  const didResult = await DidChain.queryDetails(fullDid.identifier)
+  const didResult = await Did.Chain.queryDetails(fullDid.identifier)
   const didDeposit = didResult!.deposit
 
   await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
@@ -97,15 +104,20 @@ async function checkReclaimFullDid(
 }
 
 async function checkRemoveFullDidAttestation(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
+  identity: KiltKeyringPair,
+  fullDid: DidDetails,
   sign: SignCallback,
   credential: ICredential
 ): Promise<boolean> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getStoreTx(attestation)
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
+  authorizedTx = await Did.authorizeExtrinsic(
+    fullDid,
+    tx,
+    sign,
+    identity.address
+  )
 
   await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
 
@@ -122,7 +134,12 @@ async function checkRemoveFullDidAttestation(
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getRemoveTx(attestation.claimHash, 0)
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
+  authorizedTx = await Did.authorizeExtrinsic(
+    fullDid,
+    tx,
+    sign,
+    identity.address
+  )
 
   await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
 
@@ -134,15 +151,20 @@ async function checkRemoveFullDidAttestation(
 }
 
 async function checkReclaimFullDidAttestation(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
+  identity: KiltKeyringPair,
+  fullDid: DidDetails,
   sign: SignCallback,
   credential: ICredential
 ): Promise<boolean> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getStoreTx(attestation)
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
+  authorizedTx = await Did.authorizeExtrinsic(
+    fullDid,
+    tx,
+    sign,
+    identity.address
+  )
 
   await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
 
@@ -170,24 +192,31 @@ async function checkReclaimFullDidAttestation(
 }
 
 async function checkDeletedDidReclaimAttestation(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
+  identity: KiltKeyringPair,
+  fullDid: DidDetails,
   sign: SignCallback,
   credential: ICredential
 ): Promise<void> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getStoreTx(attestation)
-  authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
+  authorizedTx = await Did.authorizeExtrinsic(
+    fullDid,
+    tx,
+    sign,
+    identity.address
+  )
 
   await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
 
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
+  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
+    fullDid.identifier
+  )
 
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
-  tx = await fullDid.authorizeExtrinsic(deleteDid, sign, identity.address)
+  const deleteDid = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
+  tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
   await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
 
@@ -197,8 +226,8 @@ async function checkDeletedDidReclaimAttestation(
 }
 
 async function checkWeb3Deposit(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
+  identity: KiltKeyringPair,
+  fullDid: DidDetails,
   sign: SignCallback
 ): Promise<boolean> {
   const web3Name = 'test-web3name'
@@ -206,12 +235,13 @@ async function checkWeb3Deposit(
   const depositAmount = await Web3Names.queryDepositAmount()
 
   const claimTx = await Web3Names.getClaimTx(web3Name)
-  let didAuthorisedTx = await fullDid.authorizeExtrinsic(
+  let didAuthorizedTx = await Did.authorizeExtrinsic(
+    fullDid,
     claimTx,
     sign,
     identity.address
   )
-  await submitExtrinsic(didAuthorisedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(didAuthorizedTx, identity, Blockchain.IS_FINALIZED)
   const balanceAfterClaiming = await Balance.getBalances(identity.address)
   if (
     !balanceAfterClaiming.reserved
@@ -222,12 +252,13 @@ async function checkWeb3Deposit(
   }
 
   const releaseTx = await Web3Names.getReleaseByOwnerTx()
-  didAuthorisedTx = await fullDid.authorizeExtrinsic(
+  didAuthorizedTx = await Did.authorizeExtrinsic(
+    fullDid,
     releaseTx,
     sign,
     identity.address
   )
-  await submitExtrinsic(didAuthorisedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(didAuthorizedTx, identity, Blockchain.IS_FINALIZED)
   const balanceAfterReleasing = await Balance.getBalances(identity.address)
 
   if (!balanceAfterReleasing.reserved.eq(balanceBeforeClaiming.reserved)) {
@@ -261,7 +292,8 @@ beforeAll(async () => {
 
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
-    const extrinsic = await attester.authorizeExtrinsic(
+    const extrinsic = await Did.authorizeExtrinsic(
+      attester,
       await CType.getStoreTx(driversLicenseCType),
       attesterKey.sign,
       devFaucet.address
@@ -285,21 +317,21 @@ beforeAll(async () => {
     credential,
     claimer.sign,
     claimerLightDid,
-    claimerLightDid.authenticationKey.id
+    claimerLightDid.authentication[0].id
   )
 }, 120_000)
 
 describe('Different deposits scenarios', () => {
-  let testFullDidOne: FullDidDetails
-  let testFullDidTwo: FullDidDetails
-  let testFullDidThree: FullDidDetails
-  let testFullDidFour: FullDidDetails
-  let testFullDidFive: FullDidDetails
-  let testFullDidSix: FullDidDetails
-  let testFullDidSeven: FullDidDetails
-  let testFullDidEight: FullDidDetails
-  let testFullDidNine: FullDidDetails
-  let testFullDidTen: FullDidDetails
+  let testFullDidOne: DidDetails
+  let testFullDidTwo: DidDetails
+  let testFullDidThree: DidDetails
+  let testFullDidFour: DidDetails
+  let testFullDidFive: DidDetails
+  let testFullDidSix: DidDetails
+  let testFullDidSeven: DidDetails
+  let testFullDidEight: DidDetails
+  let testFullDidNine: DidDetails
+  let testFullDidTen: DidDetails
 
   beforeAll(async () => {
     const testDidFive = await createMinimalLightDidFromKeypair(keys[4].keypair)

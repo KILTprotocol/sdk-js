@@ -15,6 +15,7 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  DidDetails,
   DidResolvedDetails,
   IClaim,
   ICostBreakdown,
@@ -26,7 +27,7 @@ import type {
   ICredential,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
   makeSigningKeyTool,
@@ -164,14 +165,15 @@ describe('Quote', () => {
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
     expect(
-      await claimerIdentity.signPayload(
+      await Did.signPayload(
+        claimerIdentity,
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
         claimer.sign,
-        claimerIdentity.authenticationKey.id
+        claimerIdentity.authentication[0].id
       )
     ).toEqual(quoteBothAgreed.claimerSignature)
 
-    const { fragment: attesterKeyId } = DidUtils.parseDidUri(
+    const { fragment: attesterKeyId } = Did.Utils.parseDidUri(
       validAttesterSignedQuote.attesterSignature.keyUri
     )
 
@@ -187,7 +189,8 @@ describe('Quote', () => {
         }),
         validAttesterSignedQuote.attesterSignature.signature,
         u8aToHex(
-          attesterIdentity.getKey(attesterKeyId!)?.publicKey || new Uint8Array()
+          Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
+            new Uint8Array()
         )
       )
     ).toBe(true)

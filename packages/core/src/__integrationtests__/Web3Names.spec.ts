@@ -11,14 +11,19 @@
 
 import { randomAsHex } from '@polkadot/util-crypto'
 
-import type { KeyringPair } from '@kiltprotocol/types'
+import type {
+  DidDetails,
+  KeyringPair,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import {
   createFullDidFromSeed,
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { FullDidDetails, Web3Names } from '@kiltprotocol/did'
+import { Web3Names } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -34,9 +39,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let w3nCreatorKey: KeyTool
   let otherW3NCreatorKey: KeyTool
 
-  let w3nCreator: FullDidDetails
-  let otherWeb3NameCreator: FullDidDetails
-  let paymentAccount: KeyringPair
+  let w3nCreator: DidDetails
+  let otherWeb3NameCreator: DidDetails
+  let paymentAccount: KiltKeyringPair
   let otherPaymentAccount: KeyringPair
   let nick: Web3Names.Web3Name
   let differentNick: Web3Names.Web3Name
@@ -68,7 +73,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should not be possible to create a w3n name w/o tokens', async () => {
     const tx = await Web3Names.getClaimTx(nick)
     const bobbyBroke = makeSigningKeyTool().keypair
-    const authorizedTx = await w3nCreator.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeExtrinsic(
+      w3nCreator,
       tx,
       w3nCreatorKey.sign,
       bobbyBroke.address
@@ -81,7 +87,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to create a w3n name with enough tokens', async () => {
     const tx = await Web3Names.getClaimTx(nick)
-    const authorizedTx = await w3nCreator.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeExtrinsic(
+      w3nCreator,
       tx,
       w3nCreatorKey.sign,
       paymentAccount.address
@@ -114,7 +121,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to create the same w3n twice', async () => {
     const tx = await Web3Names.getClaimTx(nick)
-    const authorizedTx = await otherWeb3NameCreator.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeExtrinsic(
+      otherWeb3NameCreator,
       tx,
       otherW3NCreatorKey.sign,
       paymentAccount.address
@@ -134,7 +142,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to create a second w3n for the same did', async () => {
     const tx = await Web3Names.getClaimTx('nick2')
-    const authorizedTx = await w3nCreator.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeExtrinsic(
+      w3nCreator,
       tx,
       w3nCreatorKey.sign,
       paymentAccount.address
@@ -169,7 +178,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should be possible to remove a w3n by the owner did', async () => {
     // prepare the w3n on chain
     const prepareTx = await Web3Names.getClaimTx(differentNick)
-    const prepareAuthorizedTx = await w3nCreator.authorizeExtrinsic(
+    const prepareAuthorizedTx = await Did.authorizeExtrinsic(
+      w3nCreator,
       prepareTx,
       w3nCreatorKey.sign,
       paymentAccount.address
@@ -181,7 +191,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
     )
 
     const tx = await Web3Names.getReleaseByOwnerTx()
-    const authorizedTx = await w3nCreator.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeExtrinsic(
+      w3nCreator,
       tx,
       w3nCreatorKey.sign,
       paymentAccount.address

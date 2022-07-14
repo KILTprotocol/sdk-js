@@ -8,6 +8,7 @@
 import {
   CompressedMessageBody,
   DecryptCallback,
+  DidDetails,
   DidEncryptionKey,
   DidResourceUri,
   EncryptCallback,
@@ -20,7 +21,8 @@ import {
   MessageBody,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DidDetails, DidResolver, Utils as DidUtils } from '@kiltprotocol/did'
+import { DidResolver } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -44,7 +46,7 @@ export class Message implements IMessage {
         {
           const requestAttestation = body
           if (
-            !DidUtils.isSameSubject(
+            !Did.Utils.isSameSubject(
               requestAttestation.content.credential.claim.owner,
               sender
             )
@@ -57,7 +59,7 @@ export class Message implements IMessage {
         {
           const submitAttestation = body
           if (
-            !DidUtils.isSameSubject(
+            !Did.Utils.isSameSubject(
               submitAttestation.content.attestation.owner,
               sender
             )
@@ -70,7 +72,7 @@ export class Message implements IMessage {
         {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach((credential) => {
-            if (!DidUtils.isSameSubject(credential.claim.owner, sender)) {
+            if (!Did.Utils.isSameSubject(credential.claim.owner, sender)) {
               throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
             }
           })
@@ -111,20 +113,20 @@ export class Message implements IMessage {
         `Could not resolve sender encryption key "${senderKeyUri}"`
       )
     }
-    const { fragment } = DidUtils.parseDidUri(receiverKeyUri)
+    const { fragment } = Did.Utils.parseDidUri(receiverKeyUri)
     if (!fragment) {
       throw new SDKErrors.DidError(
         `No fragment for the receiver key ID "${receiverKeyUri}"`
       )
     }
-    const receiverKeyDetails = receiverDetails.getKey(fragment)
-    if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
+    const receiverKeyDetails = Did.getKey(receiverDetails, fragment)
+    if (!receiverKeyDetails || !Did.Utils.isEncryptionKey(receiverKeyDetails)) {
       throw new SDKErrors.DidError(
         `Could not resolve receiver encryption key "${receiverKeyUri}"`
       )
     }
     const receiverKeyAlgType =
-      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
+      Did.Utils.getEncryptionAlgorithmForEncryptionKeyType(
         receiverKeyDetails.type as EncryptionKeyType
       )
     if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
@@ -261,14 +263,14 @@ export class Message implements IMessage {
     if (this.sender !== senderDetails.uri) {
       throw new SDKErrors.IdentityMismatchError('sender public key', 'sender')
     }
-    const senderKey = senderDetails.getKey(senderKeyId)
-    if (!senderKey || !DidUtils.isEncryptionKey(senderKey)) {
+    const senderKey = Did.getKey(senderDetails, senderKeyId)
+    if (!senderKey || !Did.Utils.isEncryptionKey(senderKey)) {
       throw new SDKErrors.DidError(
         `Cannot find key with ID "${senderKeyId}" for the sender DID`
       )
     }
     const senderKeyAlgType =
-      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
+      Did.Utils.getEncryptionAlgorithmForEncryptionKeyType(
         senderKey.type as EncryptionKeyType
       )
     if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
@@ -302,8 +304,8 @@ export class Message implements IMessage {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      senderKeyUri: senderDetails.assembleKeyUri(senderKey.id),
-      receiverKeyUri: receiverKey.uri,
+      senderKeyUri: `${senderDetails.uri}${senderKey.id}`,
+      receiverKeyUri: receiverKey.id,
     }
   }
 

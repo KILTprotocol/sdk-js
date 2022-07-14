@@ -20,6 +20,8 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  DidDetails,
+  DidKeySelectionCallback,
   DidResourceUri,
   DidSignature,
   DidUri,
@@ -33,13 +35,8 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import {
-  DidDetails,
-  DidKeySelectionCallback,
-  DidResolver,
-  Utils as DidUtils,
-  verifyDidSignature,
-} from '@kiltprotocol/did'
+import { DidResolver, verifyDidSignature } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -86,7 +83,7 @@ export async function createAttesterSignedQuote(
   attesterIdentity: DidDetails,
   sign: SignCallback,
   {
-    keySelection = DidUtils.defaultKeySelectionCallback,
+    keySelection = Did.Utils.defaultKeySelectionCallback,
   }: {
     keySelection?: DidKeySelectionCallback<DidVerificationKey>
   } = {}
@@ -95,15 +92,14 @@ export async function createAttesterSignedQuote(
     throw new SDKErrors.QuoteUnverifiableError()
   }
 
-  const authenticationKey = await keySelection(
-    attesterIdentity.getVerificationKeys('authentication')
-  )
+  const authenticationKey = await keySelection(attesterIdentity.authentication)
   if (!authenticationKey) {
     throw new SDKErrors.DidError(
       `The attester "${attesterIdentity.uri}" does not have a valid authentication key`
     )
   }
-  const signature = await attesterIdentity.signPayload(
+  const signature = await Did.signPayload(
+    attesterIdentity,
     Crypto.hashObjectAsStr(quoteInput),
     sign,
     authenticationKey.id
@@ -111,7 +107,7 @@ export async function createAttesterSignedQuote(
   return {
     ...quoteInput,
     attesterSignature: {
-      keyUri: attesterIdentity.assembleKeyUri(authenticationKey.id),
+      keyUri: `${attesterIdentity.uri}${authenticationKey.id}`,
       signature: signature.signature,
     },
   }
@@ -171,7 +167,7 @@ export async function createQuoteAgreement(
   claimerIdentity: DidDetails,
   sign: SignCallback,
   {
-    keySelection = DidUtils.defaultKeySelectionCallback,
+    keySelection = Did.Utils.defaultKeySelectionCallback,
     resolver = DidResolver,
   }: {
     keySelection?: DidKeySelectionCallback<DidVerificationKey>
@@ -194,7 +190,7 @@ export async function createQuoteAgreement(
   })
 
   const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getVerificationKeys('authentication')
+    claimerIdentity.authentication
   )
   if (!claimerAuthenticationKey) {
     throw new SDKErrors.DidError(
@@ -202,7 +198,8 @@ export async function createQuoteAgreement(
     )
   }
 
-  const signature = await claimerIdentity.signPayload(
+  const signature = await Did.signPayload(
+    claimerIdentity,
     Crypto.hashObjectAsStr(attesterSignedQuote),
     sign,
     claimerAuthenticationKey.id

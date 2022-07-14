@@ -81,7 +81,7 @@ export async function verifySelfSignedProof(
     let { verificationMethod } = proof
     // we always fetch the verification method to make sure the key is in fact associated with the did
     if (typeof verificationMethod !== 'string') {
-      verificationMethod = verificationMethod.uri
+      verificationMethod = verificationMethod.id
     }
     if (!verificationMethod) {
       throw new Error('verificationMethod not understood')

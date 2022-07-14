@@ -10,7 +10,7 @@ import {
   DidPublicServiceEndpoint,
   DidResourceUri,
 } from './DidDocumentExporter.js'
-import type { IDidDetails, DidKey, DidUri } from './DidDetails.js'
+import type { DidDetails, DidKey, DidUri } from './DidDetails.js'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
@@ -35,14 +35,14 @@ export type DidResolvedDetails = {
   /**
    * The resolved DID details. It is undefined if the DID has been deleted.
    */
-  details?: IDidDetails
+  details?: DidDetails
   /**
    * The DID resolution metadata.
    */
   metadata: DidResolutionDocumentMetadata
 }
 
-export type ResolvedDidKey = Pick<DidPublicKey, 'uri' | 'controller'> &
+export type ResolvedDidKey = Pick<DidPublicKey, 'id' | 'controller'> &
   Pick<DidKey, 'publicKey' | 'type' | 'includedAt'>
 
 export type ResolvedDidServiceEndpoint = DidPublicServiceEndpoint
@@ -55,7 +55,7 @@ export interface IDidResolver {
    * @returns A promise of a [[DidResolvedDetails]] object if the didUri contains no fragment, [[ResolvedDidKey]] or [[ResolvedDidServiceEndpoint]] otherwise. Null if a resource cannot be resolved.
    */
   resolve: (
-    didUri: DidUri | DidResourceUri | DidPublicServiceEndpoint['uri']
+    didUri: DidUri | DidResourceUri | DidPublicServiceEndpoint['id']
   ) => Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
   >
@@ -83,6 +83,6 @@ export interface IDidResolver {
    * the DID or service endpoint URI cannot be resolved.
    */
   resolveServiceEndpoint: (
-    didUri: DidPublicServiceEndpoint['uri']
+    didUri: DidPublicServiceEndpoint['id']
   ) => Promise<ResolvedDidServiceEndpoint | null>
 }

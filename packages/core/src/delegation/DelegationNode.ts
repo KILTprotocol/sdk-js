@@ -5,7 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
+import type {
+  DidDetails,
+  DidKeySelectionCallback,
   DidUri,
   DidVerificationKey,
   IAttestation,
@@ -17,12 +19,7 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { DidKeySelectionCallback } from '@kiltprotocol/did'
-import {
-  DidDetails,
-  Chain as DidChain,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
@@ -273,25 +270,25 @@ export class DelegationNode implements IDelegationNode {
     delegateDid: DidDetails,
     sign: SignCallback,
     {
-      keySelection = DidUtils.defaultKeySelectionCallback,
+      keySelection = Did.Utils.defaultKeySelectionCallback,
     }: {
       keySelection?: DidKeySelectionCallback<DidVerificationKey>
     } = {}
-  ): Promise<DidUtils.EncodedSignature> {
-    const authenticationKey = await keySelection(
-      delegateDid.getVerificationKeys('authentication')
-    )
+  ): Promise<Did.Utils.EncodedSignature> {
+    // TODO: do we need keySelection for the single authentication key here and elsewhere?
+    const authenticationKey = await keySelection(delegateDid.authentication)
     if (!authenticationKey) {
       throw new SDKErrors.DidError(
         `Delegate "${delegateDid.uri}" does not have any authentication key`
       )
     }
-    const delegateSignature = await delegateDid.signPayload(
+    const delegateSignature = await Did.signPayload(
+      delegateDid,
       this.generateHash(),
       sign,
       authenticationKey.id
     )
-    return DidChain.encodeDidSignature(authenticationKey, delegateSignature)
+    return Did.Chain.encodeDidSignature(authenticationKey, delegateSignature)
   }
 
   /**
@@ -314,7 +311,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async getStoreTx(
-    signature?: DidUtils.EncodedSignature
+    signature?: Did.Utils.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
       return getStoreAsRootTx(this)

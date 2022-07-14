@@ -9,11 +9,11 @@ import type {
   SubmittableExtrinsic,
   DidIdentifier,
   DidUri,
+  KiltAddress,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import type { u128, u32 } from '@polkadot/types'
 import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
@@ -29,8 +29,8 @@ function checkWeb3NameInputConstraints(
   web3Name: Web3Name
 ): void {
   const [minLength, maxLength] = [
-    (api.consts.web3Names.minNameLength as u32).toNumber(),
-    (api.consts.web3Names.maxNameLength as u32).toNumber(),
+    api.consts.web3Names.minNameLength.toNumber(),
+    api.consts.web3Names.maxNameLength.toNumber(),
   ]
 
   if (web3Name.length < minLength) {
@@ -115,7 +115,9 @@ export async function queryDidIdentifierForWeb3Name(
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])
 
-  return encoded.isSome ? encoded.unwrap().owner.toString() : null
+  return encoded.isSome
+    ? (encoded.unwrap().owner.toString() as KiltAddress)
+    : null
 }
 
 /**
@@ -154,5 +156,5 @@ export async function queryDidForWeb3Name(
  */
 export async function queryDepositAmount(): Promise<BN> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return (api.consts.web3Names.deposit as u128).toBn()
+  return api.consts.web3Names.deposit.toBn()
 }

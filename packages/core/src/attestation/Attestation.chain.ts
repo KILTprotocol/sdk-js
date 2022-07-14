@@ -10,6 +10,7 @@ import type {
   Deposit,
   IAttestation,
   ICredential,
+  KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
@@ -106,7 +107,7 @@ function decode(
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toHex(),
       owner: DidUtils.getKiltDidFromIdentifier(
-        chainAttestation.attester.toString(),
+        chainAttestation.attester.toString() as KiltAddress,
         'full'
       ),
       delegationId: delegationId || null,
@@ -234,7 +235,7 @@ export async function getReclaimDepositTx(
 
 async function queryDepositAmountEncoded(): Promise<U128> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.attestation.deposit as U128
+  return api.consts.attestation.deposit
 }
 
 /**

@@ -9,7 +9,8 @@
  * @group unit/messaging
  */
 
-import {
+import type {
+  DidDetails,
   DidKey,
   DidResolvedDetails,
   DidResourceUri,
@@ -25,11 +26,7 @@ import {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Quote, Credential } from '@kiltprotocol/core'
-import {
-  FullDidDetails,
-  LightDidDetails,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromLightDid,
   makeEncryptionKeyTool,
@@ -40,15 +37,15 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { Message } from './Message'
 
-let aliceLightDid: LightDidDetails
-let aliceLightDidWithDetails: LightDidDetails
-let aliceFullDid: FullDidDetails
+let aliceLightDid: DidDetails
+let aliceLightDidWithDetails: DidDetails
+let aliceFullDid: DidDetails
 let aliceSign: SignCallback
 const aliceEncKey = makeEncryptionKeyTool('Alice//enc')
 
-let bobLightDid: LightDidDetails
-let bobLightDidWithDetails: LightDidDetails
-let bobFullDid: FullDidDetails
+let bobLightDid: DidDetails
+let bobLightDidWithDetails: DidDetails
+let bobFullDid: DidDetails
 let bobSign: SignCallback
 const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
@@ -88,12 +85,13 @@ const resolveDoc = async (did: DidUri): Promise<DidResolvedDetails | null> => {
 const resolveKey = async (
   keyUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> => {
-  const { fragment, did } = DidUtils.parseDidUri(keyUri)
+  const { fragment, did } = Did.Utils.parseDidUri(keyUri)
   const { details } = (await resolveDoc(did as DidUri)) as DidResolvedDetails
-  const key = details?.getKey(fragment!) as DidKey
+  if (!details) throw new Error('Could not resolve details')
+  const key = Did.getKey(details, fragment!) as DidKey
   return {
     controller: details!.uri,
-    uri: keyUri,
+    id: keyUri,
     publicKey: key.publicKey,
     type: key.type,
   }
@@ -114,27 +112,27 @@ const mockResolver = {
 beforeAll(async () => {
   const aliceAuthKey = makeSigningKeyTool('ed25519')
   aliceSign = aliceAuthKey.sign
-  aliceLightDid = LightDidDetails.fromDetails({
-    authenticationKey: aliceAuthKey.authenticationKey,
-    encryptionKey: aliceEncKey.keypair,
+  aliceLightDid = Did.createDetails({
+    authentication: aliceAuthKey.authentication,
+    keyAgreement: aliceEncKey.keyAgreement,
   })
-  aliceLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: aliceAuthKey.authenticationKey,
-    encryptionKey: aliceEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
+  aliceLightDidWithDetails = Did.createDetails({
+    authentication: aliceAuthKey.authentication,
+    keyAgreement: aliceEncKey.keyAgreement,
+    service: [{ id: '#id-1', type: ['type-1'], serviceEndpoint: ['x:url-1'] }],
   })
   aliceFullDid = await createLocalDemoFullDidFromLightDid(aliceLightDid)
 
   const bobAuthKey = makeSigningKeyTool('ed25519')
   bobSign = bobAuthKey.sign
-  bobLightDid = LightDidDetails.fromDetails({
-    authenticationKey: bobAuthKey.authenticationKey,
-    encryptionKey: bobEncKey.keypair,
+  bobLightDid = Did.createDetails({
+    authentication: bobAuthKey.authentication,
+    keyAgreement: bobEncKey.keyAgreement,
   })
-  bobLightDidWithDetails = LightDidDetails.fromDetails({
-    authenticationKey: bobAuthKey.authenticationKey,
-    encryptionKey: bobEncKey.keypair,
-    serviceEndpoints: [{ id: 'id-1', types: ['type-1'], uris: ['x:url-1'] }],
+  bobLightDidWithDetails = Did.createDetails({
+    authentication: bobAuthKey.authentication,
+    keyAgreement: bobEncKey.keyAgreement,
+    service: [{ id: '#id-1', type: ['type-1'], serviceEndpoint: ['x:url-1'] }],
   })
   bobFullDid = await createLocalDemoFullDidFromLightDid(bobLightDid)
 })
@@ -152,7 +150,7 @@ describe('Messaging', () => {
       bobLightDid.uri
     )
     const encryptedMessage = await message.encrypt(
-      'encryption',
+      '#encryption',
       aliceLightDid,
       aliceEncKey.encrypt,
       `${bobLightDid.uri}#encryption`,
@@ -196,16 +194,14 @@ describe('Messaging', () => {
     const encryptedWrongBody = await aliceEncKey.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
       data: Crypto.coToUInt8('{ wrong JSON'),
-      publicKey: aliceLightDid.encryptionKey!.publicKey,
-      peerPublicKey: bobLightDid.encryptionKey!.publicKey,
+      publicKey: aliceLightDid.keyAgreement![0].publicKey,
+      peerPublicKey: bobLightDid.keyAgreement![0].publicKey,
     })
     const encryptedMessageWrongBody: IEncryptedMessage = {
       ciphertext: u8aToHex(encryptedWrongBody.data),
       nonce: u8aToHex(encryptedWrongBody.nonce),
-      senderKeyUri: aliceLightDid.assembleKeyUri(
-        aliceLightDid.encryptionKey!.id
-      ),
-      receiverKeyUri: bobLightDid.assembleKeyUri(bobLightDid.encryptionKey!.id),
+      senderKeyUri: `${aliceLightDid.uri}${aliceLightDid.keyAgreement![0].id}`,
+      receiverKeyUri: `${bobLightDid.uri}${bobLightDid.keyAgreement![0].id}`,
     }
     await expect(() =>
       Message.decrypt(

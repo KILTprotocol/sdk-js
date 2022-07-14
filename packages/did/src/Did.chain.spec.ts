@@ -58,9 +58,9 @@ describe('services validation', () => {
     async (uri) => {
       expect(
         await getAddEndpointExtrinsic({
-          id: 'service_1',
-          types: [],
-          uris: [uri],
+          id: '#service_1',
+          type: [],
+          serviceEndpoint: [uri],
         })
       ).toBeDefined()
     }
@@ -71,9 +71,9 @@ describe('services validation', () => {
     async (id) => {
       expect(
         await getAddEndpointExtrinsic({
-          id,
-          types: [],
-          uris: [],
+          id: `#${id}`,
+          type: [],
+          serviceEndpoint: [],
         })
       ).toBeDefined()
     }
@@ -84,9 +84,9 @@ describe('services validation', () => {
     async (id) => {
       await expect(
         getAddEndpointExtrinsic({
-          id,
-          types: [],
-          uris: [],
+          id: `#${id}`,
+          type: [],
+          serviceEndpoint: [],
         })
       ).rejects.toThrow('ID')
     }
@@ -97,9 +97,9 @@ describe('services validation', () => {
     async (uri) => {
       await expect(
         getAddEndpointExtrinsic({
-          id: 'service_1',
-          types: [],
-          uris: [uri],
+          id: '#service_1',
+          type: [],
+          serviceEndpoint: [uri],
         })
       ).rejects.toThrow('URI')
     }

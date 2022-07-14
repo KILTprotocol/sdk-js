@@ -16,28 +16,24 @@ import { encodeAddress, Keyring } from '@polkadot/keyring'
 
 import {
   DecryptCallback,
+  DidDetails,
   DidKey,
+  DidServiceEndpoint,
+  DidVerificationKey,
   EncryptCallback,
   EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
+  KiltKeyringPair,
   LightDidSupportedVerificationKeyType,
-  NewLightDidAuthenticationKey,
+  NewLightDidVerificationKey,
   ResponseData,
   SignCallback,
   SigningAlgorithms,
   SigningData,
 } from '@kiltprotocol/types'
 import { Crypto, ss58Format } from '@kiltprotocol/utils'
-import {
-  Chain,
-  DidConstructorDetails,
-  FullDidDetails,
-  LightDidDetails,
-  PublicKeys,
-  ServiceEndpoints,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 
@@ -91,11 +87,13 @@ export function makeDecryptCallback({
 }
 
 export interface EncryptionKeyTool {
-  keypair: {
-    secretKey: Uint8Array
-    publicKey: Uint8Array
-    type: EncryptionKeyType
-  }
+  keyAgreement: [
+    {
+      secretKey: Uint8Array
+      publicKey: Uint8Array
+      type: EncryptionKeyType
+    }
+  ]
   encrypt: EncryptCallback
   decrypt: DecryptCallback
 }
@@ -118,7 +116,7 @@ export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
   const decrypt = makeDecryptCallback(keypair)
 
   return {
-    keypair,
+    keyAgreement: [keypair],
     encrypt,
     decrypt,
   }
@@ -147,9 +145,9 @@ const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
 }
 
 export interface KeyTool {
-  keypair: KeyringPair
+  keypair: KiltKeyringPair
   sign: SignCallback
-  authenticationKey: NewLightDidAuthenticationKey
+  authentication: [NewLightDidVerificationKey]
 }
 
 /**
@@ -163,7 +161,11 @@ export function makeSigningKeyTool(
 ): KeyTool {
   const type = keypairTypeForAlg[alg]
   const seed = randomAsHex(32)
-  const keypair = new Keyring({ type, ss58Format }).addFromUri(seed, {}, type)
+  const keypair = new Keyring({ type, ss58Format }).addFromUri(
+    seed,
+    {},
+    type
+  ) as KiltKeyringPair
   const sign = makeSignCallback(keypair)
 
   const authenticationKey = {
@@ -174,7 +176,7 @@ export function makeSigningKeyTool(
   return {
     keypair,
     sign,
-    authenticationKey,
+    authentication: [authenticationKey],
   }
 }
 
@@ -182,44 +184,46 @@ export function makeSigningKeyTool(
  * Given a keypair, creates a light DID with an authentication and an encryption key.
  *
  * @param keypair KeyringPair instance for authentication key.
- * @returns LightDidDetails instance.
+ * @returns DidDetails.
  */
 export async function createMinimalLightDidFromKeypair(
   keypair: KeyringPair
-): Promise<LightDidDetails> {
-  return LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: keypair.publicKey,
-      type: keypair.type as LightDidSupportedVerificationKeyType,
-    },
-    encryptionKey: makeEncryptionKeyTool(`${keypair.publicKey}//enc`).keypair,
+): Promise<DidDetails> {
+  const type = keypair.type as LightDidSupportedVerificationKeyType
+  return Did.createDetails({
+    authentication: [{ publicKey: keypair.publicKey, type }],
+    keyAgreement: makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
+      .keyAgreement,
   })
 }
 
 // Mock function to generate a key ID without having to rely on a real chain metadata.
 export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
-  return blake2AsHex(key, 256)
+  return `#${blake2AsHex(key, 256)}`
 }
 
-function makeDidKeyFromKeypair({ publicKey, type }: KeyringPair): DidKey {
+function makeDidKeyFromKeypair({
+  publicKey,
+  type,
+}: KeyringPair): DidVerificationKey {
   return {
     id: computeKeyId(publicKey),
     publicKey,
-    type: DidUtils.getVerificationKeyTypeForSigningAlgorithm(
+    type: Did.Utils.getVerificationKeyTypeForSigningAlgorithm(
       type as SigningAlgorithms
     ),
   }
 }
 
 /**
- * Creates an instance of [[FullDidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.
+ * Creates [[DidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.
  *
  * @param keypair The KeyringPair for authentication key, other keys derived from it.
  * @param generationOptions The additional options for generation.
  * @param generationOptions.keyRelationships The set of key relationships to indicate which keys must be added to the DID.
  * @param generationOptions.endpoints The set of service endpoints that must be added to the DID.
  *
- * @returns A promise resolving to a [[FullDidDetails]] object. The resulting object is NOT stored on chain.
+ * @returns A promise resolving to a [[DidDetails]] object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoFullDidFromKeypair(
   keypair: KeyringPair,
@@ -229,61 +233,46 @@ export async function createLocalDemoFullDidFromKeypair(
       'capabilityDelegation',
       'keyAgreement',
     ]),
-    endpoints = {},
+    endpoints = [],
   }: {
     keyRelationships?: Set<Omit<KeyRelationship, 'authentication'>>
-    endpoints?: ServiceEndpoints
+    endpoints?: DidServiceEndpoint[]
   } = {}
-): Promise<FullDidDetails> {
+): Promise<DidDetails> {
   const identifier = encodeAddress(
     blake2AsU8a(keypair.address, 256),
     ss58Format
   )
-  const uri = DidUtils.getKiltDidFromIdentifier(identifier, 'full')
+  const uri = Did.Utils.getKiltDidFromIdentifier(identifier, 'full')
 
   const authKey = makeDidKeyFromKeypair(keypair)
 
-  const fullDidCreationDetails: DidConstructorDetails = {
+  const result: DidDetails = {
+    identifier,
     uri,
-    keyRelationships: {
-      authentication: new Set([authKey.id]),
-    },
-    keys: {
-      [authKey.id]: authKey,
-    },
-    serviceEndpoints: endpoints,
+    authentication: [authKey],
+    service: endpoints,
   }
 
   if (keyRelationships.has('keyAgreement')) {
-    const encryptionKeypair = makeEncryptionKeyTool(
-      `${keypair.publicKey}//enc`
-    ).keypair
+    const encryptionKeypair = makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
+      .keyAgreement[0]
     const encKey = {
       ...encryptionKeypair,
       id: computeKeyId(encryptionKeypair.publicKey),
     }
-    fullDidCreationDetails.keyRelationships.keyAgreement = new Set([encKey.id])
-    fullDidCreationDetails.keys[encKey.id] = encKey
+    result.keyAgreement = [encKey]
   }
   if (keyRelationships.has('assertionMethod')) {
     const attKey = makeDidKeyFromKeypair(keypair.derive('//att'))
-    fullDidCreationDetails.keyRelationships.assertionMethod = new Set([
-      attKey.id,
-    ])
-    fullDidCreationDetails.keys[attKey.id] = attKey
+    result.assertionMethod = [attKey]
   }
   if (keyRelationships.has('capabilityDelegation')) {
     const delKey = makeDidKeyFromKeypair(keypair.derive('//del'))
-    fullDidCreationDetails.keyRelationships.capabilityDelegation = new Set([
-      delKey.id,
-    ])
-    fullDidCreationDetails.keys[delKey.id] = delKey
+    result.capabilityDelegation = [delKey]
   }
 
-  return new FullDidDetails({
-    ...fullDidCreationDetails,
-    identifier,
-  })
+  return result
 }
 
 /**
@@ -294,48 +283,35 @@ export async function createLocalDemoFullDidFromKeypair(
  * @returns A FullDid instance that is not yet written to the blockchain.
  */
 export async function createLocalDemoFullDidFromLightDid(
-  lightDid: LightDidDetails
-): Promise<FullDidDetails> {
+  lightDid: DidDetails
+): Promise<DidDetails> {
   const { identifier } = lightDid
-  const authKey = lightDid.authenticationKey
-  const encKey = lightDid.encryptionKey
+  const [authKey] = lightDid.authentication
 
-  const keys: PublicKeys = {
-    [authKey.id]: authKey,
-  }
-  if (encKey) {
-    keys[encKey.id] = encKey
-  }
-
-  return new FullDidDetails({
-    uri: DidUtils.getKiltDidFromIdentifier(identifier, 'full'),
-    keyRelationships: {
-      authentication: new Set([authKey.id]),
-      keyAgreement: encKey ? new Set([encKey.id]) : new Set([]),
-      assertionMethod: new Set([authKey.id]),
-      capabilityDelegation: new Set([authKey.id]),
-    },
-    keys,
-    serviceEndpoints: {},
+  return {
+    uri: Did.Utils.getKiltDidFromIdentifier(identifier, 'full'),
+    authentication: [authKey],
+    keyAgreement: lightDid.keyAgreement,
+    assertionMethod: [authKey],
+    capabilityDelegation: [authKey],
     identifier,
-  })
+  }
 }
 
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
-  payer: KeyringPair,
-  lightDidForId: LightDidDetails,
+  payer: KiltKeyringPair,
+  lightDidForId: DidDetails,
   sign: SignCallback
-): Promise<FullDidDetails> {
-  const { authenticationKey } = lightDidForId
-  const tx = await Chain.generateCreateTxFromCreationDetails(
+): Promise<DidDetails> {
+  const { authentication } = lightDidForId
+  const tx = await Did.Chain.getStoreTx(
     {
-      identifier: DidUtils.getIdentifierByKey(authenticationKey),
-      authenticationKey,
-      assertionKey: authenticationKey,
-      delegationKey: authenticationKey,
-      keyAgreementKeys: lightDidForId.getEncryptionKeys('keyAgreement'),
-      serviceEndpoints: lightDidForId.getEndpoints(),
+      authentication,
+      assertionMethod: authentication,
+      capabilityDelegation: authentication,
+      keyAgreement: lightDidForId.keyAgreement,
+      service: lightDidForId.service,
     },
     payer.address,
     sign
@@ -343,17 +319,17 @@ export async function createFullDidFromLightDid(
   await Blockchain.signAndSubmitTx(tx, payer, {
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
-  const fullDid = await FullDidDetails.fromChainInfo(
-    DidUtils.getFullDidUriByKey(authenticationKey)
+  const fullDid = await Did.query(
+    Did.Utils.getFullDidUriByKey(authentication[0])
   )
   if (!fullDid) throw new Error('Could not fetch created DID details')
   return fullDid
 }
 
 export async function createFullDidFromSeed(
-  payer: KeyringPair,
+  payer: KiltKeyringPair,
   keypair: KeyringPair
-): Promise<FullDidDetails> {
+): Promise<DidDetails> {
   const lightDid = await createMinimalLightDidFromKeypair(keypair)
   const sign = makeSignCallback(keypair)
   return createFullDidFromLightDid(payer, lightDid, sign)

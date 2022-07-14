@@ -208,10 +208,10 @@ describe('proofs', () => {
     VC = toVC.fromCredentialAndAttestation(credential, attestation)
     const keyId = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
-      uri: keyId,
+      id: keyId,
       type: 'Ed25519VerificationKey2018',
       publicKeyBase58: base58Encode(
-        Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)
+        Crypto.decodeAddress(DidUtils.parseDidUri(keyId).address)
       ),
       controller: VC.credentialSubject['@id'] as DidUri,
     }

@@ -7,7 +7,6 @@
 
 import { ConfigService } from '@kiltprotocol/config'
 import type {
-  IIdentity,
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
@@ -203,13 +202,12 @@ export function isRecoverableTxError(
  */
 export async function signAndSubmitTx(
   tx: SubmittableExtrinsic,
-  signer: KeyringPair | IIdentity,
+  signer: KeyringPair,
   {
     tip,
     ...opts
   }: Partial<SubscriptionPromise.Options> & Partial<{ tip: AnyNumber }> = {}
 ): Promise<ISubmittableResult> {
-  const signKeyringPair = (signer as IIdentity).signKeyringPair || signer
-  const signedTx = await tx.signAsync(signKeyringPair, { tip })
+  const signedTx = await tx.signAsync(signer, { tip })
   return submitSignedTx(signedTx, opts)
 }

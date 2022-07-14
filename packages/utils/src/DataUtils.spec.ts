@@ -10,6 +10,7 @@
  */
 
 import { encodeAddress } from '@polkadot/keyring'
+import type { KiltAddress, KiltKeyringPair } from '@kiltprotocol/types'
 import { Keyring, SDKErrors, ss58Format } from './index'
 import { validateAddress, validateHash, validateSignature } from './DataUtils'
 import * as Crypto from './Crypto'
@@ -24,22 +25,24 @@ it('validates address with prefix 38', () => {
 })
 
 it('throws on address with other prefix', () => {
-  expect(() => validateAddress(encodeAddress(key, 42), 'test')).toThrow('test')
+  expect(() =>
+    validateAddress(encodeAddress(key, 42) as KiltAddress, 'test')
+  ).toThrow('test')
 })
 
 it('throws for random strings', () => {
-  expect(() => validateAddress('', 'test')).toThrowError(
+  expect(() => validateAddress('' as KiltAddress, 'test')).toThrowError(
     SDKErrors.AddressInvalidError
   )
-  expect(() => validateAddress('0x123', 'test')).toThrowError(
+  expect(() => validateAddress('0x123' as KiltAddress, 'test')).toThrowError(
     SDKErrors.AddressInvalidError
   )
-  expect(() => validateAddress('bananenbabara', 'test')).toThrowError(
-    SDKErrors.AddressInvalidError
-  )
-  expect(() => validateAddress('ax843zoidsfho38290rdusa', 'test')).toThrowError(
-    SDKErrors.AddressInvalidError
-  )
+  expect(() =>
+    validateAddress('bananenbabara' as KiltAddress, 'test')
+  ).toThrowError(SDKErrors.AddressInvalidError)
+  expect(() =>
+    validateAddress('ax843zoidsfho38290rdusa' as KiltAddress, 'test')
+  ).toThrowError(SDKErrors.AddressInvalidError)
 })
 
 it('throws if address is no string', () => {
@@ -86,7 +89,7 @@ describe('validate signature util', () => {
     type: 'ed25519',
     ss58Format,
   })
-  const signer = keyring.addFromUri('//Alice')
+  const signer = keyring.addFromUri('//Alice') as KiltKeyringPair
   const signature = Crypto.signStr('data', signer)
 
   it('verifies when inputs are strings and signature checks out', () => {
@@ -101,21 +104,25 @@ describe('validate signature util', () => {
 
   it('throws non-sdk error if input is bogus', () => {
     expect(() =>
-      validateSignature('dörte', 'signature', 'signer')
+      validateSignature('dörte', 'signature', 'signer' as KiltAddress)
     ).toThrowErrorMatchingInlineSnapshot(
       `"Invalid signature length, expected [64..66] bytes, found 9"`
     )
   })
 
   it('throws when input is incomplete', () => {
-    expect(() => validateSignature('data', null as any, 'signer')).toThrowError(
-      SDKErrors.SignatureMalformedError
-    )
+    expect(() =>
+      validateSignature('data', null as any, 'signer' as KiltAddress)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
     expect(() =>
       validateSignature('data', 'signature', undefined as any)
     ).toThrowError(SDKErrors.SignatureMalformedError)
     expect(() =>
-      validateSignature({ key: ['value'] } as any, 'signature', 'signer')
+      validateSignature(
+        { key: ['value'] } as any,
+        'signature',
+        'signer' as KiltAddress
+      )
     ).toThrowError(SDKErrors.SignatureMalformedError)
     expect(() => (validateSignature as any)()).toThrowError(
       SDKErrors.SignatureMalformedError

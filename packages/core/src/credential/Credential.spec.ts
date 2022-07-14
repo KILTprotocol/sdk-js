@@ -11,37 +11,32 @@
 
 /* eslint-disable dot-notation */
 
-import { encodeAddress } from '@polkadot/util-crypto'
 import type {
-  IClaim,
-  IClaimContents,
-  ICType,
   CompressedCredential,
-  ICredential,
+  DidDetails,
+  DidResolvedDetails,
   DidSignature,
   DidUri,
-  IDidResolver,
-  DidResolvedDetails,
-  DidKey,
-  SignCallback,
+  DidVerificationKey,
   IAttestation,
+  IClaim,
+  IClaimContents,
+  ICredential,
+  ICType,
+  IDidResolver,
+  SignCallback,
 } from '@kiltprotocol/types'
-import { Crypto, UUID, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import {
-  DidDetails,
-  FullDidDetails,
-  LightDidDetails,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
+import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
+import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
+import * as Attestation from '../attestation'
+import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from './Credential'
-import * as Claim from '../claim'
-import * as Attestation from '../attestation'
 
 const rawCType: ICType['schema'] = {
   $id: 'kilt:ctype:0x2',
@@ -401,7 +396,7 @@ describe('Credential', () => {
   const mockResolver = (() => {
     async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const { did } = DidUtils.parseDidUri(didUri)
+      const { did } = Did.Utils.parseDidUri(didUri)
       switch (did) {
         case identityAlice?.uri:
           return { details: identityAlice, metadata: { deactivated: false } }
@@ -469,7 +464,7 @@ describe('Credential', () => {
       credential,
       sign,
       claimer,
-      claimer.authenticationKey.id
+      claimer.authentication[0].id
     )
     // build attestation
     const testAttestation = Attestation.fromCredentialAndDid(
@@ -532,11 +527,10 @@ describe('Credential', () => {
     })
   })
   it('verify credentials signed by a light DID', async () => {
-    const { keypair, sign } = makeSigningKeyTool('ed25519')
-    identityDave = await LightDidDetails.fromIdentifier(
-      encodeAddress(keypair.publicKey, ss58Format),
-      'ed25519'
-    )
+    const { sign, authentication } = makeSigningKeyTool('ed25519')
+    identityDave = await Did.createDetails({
+      authentication,
+    })
 
     const [credential] = await buildCredential2(
       identityDave,
@@ -559,26 +553,17 @@ describe('Credential', () => {
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
     const migratedAndDeleted = makeSigningKeyTool('ed25519')
-    migratedAndDeletedLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedAndDeleted.keypair.publicKey, ss58Format),
-      'ed25519'
-    )
-    migratedAndDeletedFullDid = new FullDidDetails({
+    migratedAndDeletedLightDid = Did.createDetails({
+      authentication: migratedAndDeleted.authentication,
+    })
+    migratedAndDeletedFullDid = {
       identifier: migratedAndDeletedLightDid.identifier,
-      uri: DidUtils.getKiltDidFromIdentifier(
+      uri: Did.Utils.getKiltDidFromIdentifier(
         migratedAndDeletedLightDid.identifier,
         'full'
       ),
-      keyRelationships: {
-        authentication: new Set([
-          migratedAndDeletedLightDid.authenticationKey.id,
-        ]),
-      },
-      keys: {
-        [migratedAndDeletedLightDid.authenticationKey.id]:
-          migratedAndDeletedLightDid.authenticationKey,
-      },
-    })
+      authentication: [migratedAndDeletedLightDid.authentication[0]],
+    }
 
     const [credential] = await buildCredential2(
       migratedAndDeletedLightDid,
@@ -682,29 +667,26 @@ describe('create presentation', () => {
 
   // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
-    lightDidForId: LightDidDetails,
-    newAuthenticationKey?: DidKey
-  ): FullDidDetails {
-    const uri = DidUtils.getKiltDidFromIdentifier(
+    lightDidForId: DidDetails,
+    newAuthenticationKey?: DidVerificationKey
+  ): DidDetails {
+    const uri = Did.Utils.getKiltDidFromIdentifier(
       lightDidForId.identifier,
       'full'
     )
-    const authKey = newAuthenticationKey || lightDidForId.authenticationKey
+    const authKey = newAuthenticationKey || lightDidForId.authentication[0]
 
-    return new FullDidDetails({
+    return {
       identifier: lightDidForId.identifier,
       uri,
-      keyRelationships: {
-        authentication: new Set([authKey.id]),
-      },
-      keys: { [authKey.id]: authKey },
-    })
+      authentication: [authKey],
+    }
   }
 
   const mockResolver: IDidResolver = (() => {
     async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const { did } = DidUtils.parseDidUri(didUri)
+      const { did } = Did.Utils.parseDidUri(didUri)
       switch (did) {
         case migratedClaimerLightDid?.uri:
           return {
@@ -754,32 +736,29 @@ describe('create presentation', () => {
     attester = await createLocalDemoFullDidFromKeypair(keypair)
 
     unmigratedClaimerKey = makeSigningKeyTool()
-    unmigratedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(unmigratedClaimerKey.keypair.publicKey, ss58Format),
-      'sr25519'
-    )
+    unmigratedClaimerLightDid = Did.createDetails({
+      authentication: unmigratedClaimerKey.authentication,
+    })
     const migratedClaimerKey = makeSigningKeyTool()
-    migratedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedClaimerKey.keypair.publicKey, ss58Format),
-      'sr25519'
-    )
+    migratedClaimerLightDid = Did.createDetails({
+      authentication: migratedClaimerKey.authentication,
+    })
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
     newKeyForMigratedClaimerDid = makeSigningKeyTool()
     migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
-      migratedClaimerLightDid as LightDidDetails,
+      migratedClaimerLightDid,
       {
-        ...newKeyForMigratedClaimerDid.authenticationKey,
-        id: 'new-auth',
+        ...newKeyForMigratedClaimerDid.authentication[0],
+        id: '#new-auth',
       }
     )
     migratedThenDeletedKey = makeSigningKeyTool('ed25519')
-    migratedThenDeletedClaimerLightDid = LightDidDetails.fromIdentifier(
-      encodeAddress(migratedThenDeletedKey.keypair.publicKey, ss58Format),
-      'ed25519'
-    )
+    migratedThenDeletedClaimerLightDid = Did.createDetails({
+      authentication: migratedThenDeletedKey.authentication,
+    })
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
-      migratedThenDeletedClaimerLightDid as LightDidDetails
+      migratedThenDeletedClaimerLightDid
     )
 
     ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)

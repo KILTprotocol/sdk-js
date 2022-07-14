@@ -49,8 +49,8 @@ import type {
 } from '@polkadot/types/interfaces'
 import { GenericEventData, TypeRegistry, U64 } from '@polkadot/types'
 import type {
-  IIdentity,
   ISubmittableResult,
+  KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from './mockedApi.utils.js'
@@ -58,6 +58,7 @@ import { createRegistryFromMetadata } from './typeRegistry.js'
 
 export interface MockApiPromise extends ApiPromise {
   __queueResults(results: Array<Partial<ExtrinsicStatus>>): void
+
   __setDefaultResult(status: Partial<ExtrinsicStatus>): void
 }
 
@@ -70,6 +71,7 @@ class MockSubmittableExtrinsic {
   }
 
   nonce = { toHuman: (): number | undefined => undefined }
+
   constructor(result: ISubmittableResult) {
     this.result = result
   }
@@ -250,10 +252,7 @@ export function getMockedApi(): MockApiPromise {
         // default return value decodes to BN(0)
         // default return value decodes to AccountInfo with all entries holding BN(0)
         account: jest.fn(
-          async (
-            address: IIdentity['address'],
-            cb
-          ): Promise<AccountInfoWithProviders> =>
+          async (address: KiltAddress, cb): Promise<AccountInfoWithProviders> =>
             TYPE_REGISTRY.createType('AccountInfoWithProviders')
         ),
       },

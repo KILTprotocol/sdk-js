@@ -8,16 +8,19 @@
 import { BN } from '@polkadot/util'
 
 import {
-  DidKey,
   DidServiceEndpoint,
   DidIdentifier,
   NewDidVerificationKey,
+  DidDetails,
+  DidVerificationKey,
+  DidEncryptionKey,
+  UriFragment,
 } from '@kiltprotocol/types'
 
-import type { IDidChainRecordJSON } from '../Did.chain'
-import { exportToDidDocument } from './DidDocumentExporter'
-import { FullDidDetails, LightDidDetails } from '../index.js'
-import { getKiltDidFromIdentifier } from '../Did.utils'
+import type { IDidChainRecord } from '../Did.chain.js'
+import { exportToDidDocument } from './DidDocumentExporter.js'
+import * as Did from '../index.js'
+import { getKiltDidFromIdentifier, stripFragment } from '../Did.utils'
 
 /**
  * @group unit/did
@@ -25,46 +28,49 @@ import { getKiltDidFromIdentifier } from '../Did.utils'
 
 const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
-function generateAuthenticationKeyDetails(): DidKey {
+function generateAuthenticationKeyDetails(): DidVerificationKey {
   return {
-    id: 'auth',
+    id: '#auth',
     type: 'ed25519',
     publicKey: new Uint8Array(32).fill(0),
   }
 }
 
-function generateEncryptionKeyDetails(): DidKey {
+function generateEncryptionKeyDetails(): DidEncryptionKey {
   return {
-    id: 'enc',
+    id: '#enc',
     type: 'x25519',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(15),
   }
 }
 
-function generateAttestationKeyDetails(): DidKey {
+function generateAttestationKeyDetails(): DidVerificationKey {
   return {
-    id: 'att',
+    id: '#att',
     type: 'sr25519',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(20),
   }
 }
 
-function generateDelegationKeyDetails(): DidKey {
+function generateDelegationKeyDetails(): DidVerificationKey {
   return {
-    id: 'del',
+    id: '#del',
     type: 'ecdsa',
     publicKey: new Uint8Array(32).fill(0),
     includedAt: new BN(25),
   }
 }
 
-function generateServiceEndpointDetails(serviceId: string): DidServiceEndpoint {
+function generateServiceEndpointDetails(
+  serviceId: UriFragment
+): DidServiceEndpoint {
+  const fragment = stripFragment(serviceId)
   return {
     id: serviceId,
-    types: [`type-${serviceId}`],
-    uris: [`x:url-${serviceId}`],
+    type: [`type-${fragment}`],
+    serviceEndpoint: [`x:url-${fragment}`],
   }
 }
 
@@ -73,33 +79,23 @@ jest.mock('../Did.chain', () => {
     async (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       didIdentifier: DidIdentifier
-    ): Promise<IDidChainRecordJSON | null> => {
+    ): Promise<IDidChainRecord | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
       const attKey = generateAttestationKeyDetails()
       const delKey = generateDelegationKeyDetails()
 
       return {
-        authenticationKey: authKey.id,
-        keyAgreementKeys: [encKey.id],
-        assertionMethodKey: attKey.id,
-        capabilityDelegationKey: delKey.id,
-        publicKeys: [authKey, encKey, attKey, delKey],
+        authentication: [authKey],
+        keyAgreement: [encKey],
+        assertionMethod: [attKey],
+        capabilityDelegation: [delKey],
         lastTxCounter: new BN(0),
         deposit: {
           amount: new BN(2),
-          owner: didIdentifier,
+          owner: Did.Utils.getAddressFromIdentifier(didIdentifier),
         },
       }
-    }
-  )
-  const queryKey = jest.fn(
-    async (
-      didIdentifier: DidIdentifier,
-      keyId: DidKey['id']
-    ): Promise<DidKey | null> => {
-      const details = await queryDetails(didIdentifier)
-      return details?.publicKeys.find((key) => key.id === keyId) || null
     }
   )
   const queryServiceEndpoint = jest.fn(
@@ -111,13 +107,18 @@ jest.mock('../Did.chain', () => {
   )
   const queryServiceEndpoints = jest.fn(
     async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => [
-      (await queryServiceEndpoint(didIdentifier, 'id-1')) as DidServiceEndpoint,
-      (await queryServiceEndpoint(didIdentifier, 'id-2')) as DidServiceEndpoint,
+      (await queryServiceEndpoint(
+        didIdentifier,
+        '#id-1'
+      )) as DidServiceEndpoint,
+      (await queryServiceEndpoint(
+        didIdentifier,
+        '#id-2'
+      )) as DidServiceEndpoint,
     ]
   )
   return {
     queryDetails,
-    queryKey,
     queryServiceEndpoint,
     queryServiceEndpoints,
   }
@@ -125,9 +126,9 @@ jest.mock('../Did.chain', () => {
 
 describe('When exporting a DID Document from a full DID', () => {
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await FullDidDetails.fromChainInfo(
+    const fullDidDetails = (await Did.query(
       getKiltDidFromIdentifier(identifier, 'full')
-    )) as FullDidDetails
+    )) as DidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
 
@@ -139,13 +140,6 @@ describe('When exporting a DID Document from a full DID', () => {
           controller:
             'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
           type: 'Ed25519VerificationKey2018',
-          publicKeyBase58: '11111111111111111111111111111111',
-        },
-        {
-          id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
-          controller:
-            'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-          type: 'X25519KeyAgreementKey2019',
           publicKeyBase58: '11111111111111111111111111111111',
         },
         {
@@ -162,19 +156,18 @@ describe('When exporting a DID Document from a full DID', () => {
           type: 'EcdsaSecp256k1VerificationKey2019',
           publicKeyBase58: '11111111111111111111111111111111',
         },
+        {
+          id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
+          controller:
+            'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+          type: 'X25519KeyAgreementKey2019',
+          publicKeyBase58: '11111111111111111111111111111111',
+        },
       ],
-      authentication: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth',
-      ],
-      keyAgreement: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
-      ],
-      assertionMethod: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#att',
-      ],
-      capabilityDelegation: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#del',
-      ],
+      authentication: ['#auth'],
+      keyAgreement: ['#enc'],
+      assertionMethod: ['#att'],
+      capabilityDelegation: ['#del'],
       service: [
         {
           id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#id-1',
@@ -191,9 +184,9 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await FullDidDetails.fromChainInfo(
+    const fullDidDetails = (await Did.query(
       getKiltDidFromIdentifier(identifier, 'full')
-    )) as FullDidDetails
+    )) as DidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
 
@@ -206,13 +199,6 @@ describe('When exporting a DID Document from a full DID', () => {
           controller:
             'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
           type: 'Ed25519VerificationKey2018',
-          publicKeyBase58: '11111111111111111111111111111111',
-        },
-        {
-          id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
-          controller:
-            'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-          type: 'X25519KeyAgreementKey2019',
           publicKeyBase58: '11111111111111111111111111111111',
         },
         {
@@ -229,19 +215,18 @@ describe('When exporting a DID Document from a full DID', () => {
           type: 'EcdsaSecp256k1VerificationKey2019',
           publicKeyBase58: '11111111111111111111111111111111',
         },
+        {
+          id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
+          controller:
+            'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+          type: 'X25519KeyAgreementKey2019',
+          publicKeyBase58: '11111111111111111111111111111111',
+        },
       ],
-      authentication: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#auth',
-      ],
-      keyAgreement: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#enc',
-      ],
-      assertionMethod: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#att',
-      ],
-      capabilityDelegation: [
-        'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#del',
-      ],
+      authentication: ['#auth'],
+      keyAgreement: ['#enc'],
+      assertionMethod: ['#att'],
+      capabilityDelegation: ['#del'],
       service: [
         {
           id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#id-1',
@@ -258,11 +243,12 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('fails to export to an unsupported mimetype', async () => {
-    const fullDidDetails = (await FullDidDetails.fromChainInfo(
+    const fullDidDetails = (await Did.query(
       getKiltDidFromIdentifier(identifier, 'full')
-    )) as FullDidDetails
+    )) as DidDetails
 
     expect(() =>
+      // @ts-ignore
       exportToDidDocument(fullDidDetails, 'random-mime-type')
     ).toThrow()
   })
@@ -271,20 +257,14 @@ describe('When exporting a DID Document from a full DID', () => {
 describe('When exporting a DID Document from a light DID', () => {
   const authKey = generateAuthenticationKeyDetails() as NewDidVerificationKey
   const encKey = generateEncryptionKeyDetails()
-  const serviceEndpoints = [
-    generateServiceEndpointDetails('id-1'),
-    generateServiceEndpointDetails('id-2'),
+  const service = [
+    generateServiceEndpointDetails('#id-1'),
+    generateServiceEndpointDetails('#id-2'),
   ]
-  const lightDidDetails = LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: authKey.publicKey,
-      type: 'ed25519',
-    },
-    encryptionKey: {
-      publicKey: encKey.publicKey,
-      type: 'x25519',
-    },
-    serviceEndpoints,
+  const lightDidDetails = Did.createDetails({
+    authentication: [{ publicKey: authKey.publicKey, type: 'ed25519' }],
+    keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
+    service,
   })
 
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, and two service endpoints', async () => {
@@ -293,15 +273,15 @@ describe('When exporting a DID Document from a light DID', () => {
     expect(didDoc).toMatchInlineSnapshot(`
       Object {
         "authentication": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
+          "#authentication",
         ],
-        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
+        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
         "keyAgreement": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
+          "#encryption",
         ],
         "service": Array [
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-1",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-1",
             "serviceEndpoint": Array [
               "x:url-id-1",
             ],
@@ -310,7 +290,7 @@ describe('When exporting a DID Document from a light DID', () => {
             ],
           },
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-2",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-2",
             "serviceEndpoint": Array [
               "x:url-id-2",
             ],
@@ -321,14 +301,14 @@ describe('When exporting a DID Document from a light DID', () => {
         ],
         "verificationMethod": Array [
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "Ed25519VerificationKey2018",
           },
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "X25519KeyAgreementKey2019",
           },
@@ -346,15 +326,15 @@ describe('When exporting a DID Document from a light DID', () => {
           "https://www.w3.org/ns/did/v1",
         ],
         "authentication": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
+          "#authentication",
         ],
-        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
+        "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
         "keyAgreement": Array [
-          "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
+          "#encryption",
         ],
         "service": Array [
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-1",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-1",
             "serviceEndpoint": Array [
               "x:url-id-1",
             ],
@@ -363,7 +343,7 @@ describe('When exporting a DID Document from a light DID', () => {
             ],
           },
           Object {
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#id-2",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#id-2",
             "serviceEndpoint": Array [
               "x:url-id-2",
             ],
@@ -374,14 +354,14 @@ describe('When exporting a DID Document from a light DID', () => {
         ],
         "verificationMethod": Array [
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#authentication",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#authentication",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "Ed25519VerificationKey2018",
           },
           Object {
-            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y",
-            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z12Wrs96dsMieVXwA6iiQakN3jrPpq2AHJnPu7PQJMbMs89qcTUmV1fNSEtQpsEfLDpUtqE67KBHWBBhVU7ZzFLTKz9agh8dsDNoacGg7MQLkqvzTRUE42m4df4RGKtJ92geoaqk2PZ2Rk9pDx65NpUtQUkb6hfpQPGhgJgYvtL1he6SFPGBXQsCqird5d7HvmTPPz33Een3AnU8y#encryption",
+            "controller": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf",
+            "id": "did:kilt:light:014nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS:z16QMTH1Pc4A99Und9RZvzyikFR73Aepx9exPZPgXJX18upeuSpgXeat2LsjEQpXUBUtaRtdpSXpv42KitoFqySLjiuXVcghuoWviPci3QrnQMeD161howeWdF5GTbBFRHSVXpEu9PWbtUEsnLfDf2NQgu4LmktN8Ti6CAmdQtQiVNbJkB7TnyzLiJJ27rYayWj15mjJ9EoNyyu3rDJGomi2vUgt2DiSUXaJbnSzuuFf#encryption",
             "publicKeyBase58": "11111111111111111111111111111111",
             "type": "X25519KeyAgreementKey2019",
           },
@@ -392,6 +372,7 @@ describe('When exporting a DID Document from a light DID', () => {
 
   it('fails to export to an unsupported mimetype', async () => {
     expect(() =>
+      // @ts-ignore
       exportToDidDocument(lightDidDetails, 'random-mime-type')
     ).toThrow()
   })

@@ -7,15 +7,19 @@
 
 import type { BN } from '@polkadot/util'
 
-import type { DidResourceUri } from './DidDocumentExporter'
-import type { IIdentity } from './Identity'
+import type { DidResourceUri, UriFragment } from './DidDocumentExporter'
+import type { KiltAddress } from './Address'
 
-type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+type AuthenticationKeyType = '00' | '01'
+type DidUriVersion = '' | `v${string}:`
+type LightDidEncodedData = '' | `:${string}`
 
 /**
  * A KILT DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
  */
-export type DidIdentifier = IIdentity['address']
+export type DidIdentifier =
+  | KiltAddress
+  | `${AuthenticationKeyType}${KiltAddress}`
 
 // NOTICE: The following string pattern types must be kept in sync with regex patterns @kiltprotocol/did/Utils
 
@@ -23,9 +27,8 @@ export type DidIdentifier = IIdentity['address']
  * A string containing a KILT DID Uri.
  */
 export type DidUri =
-  | `did:kilt:${DidIdentifier}`
-  | `did:kilt:light:${Digit}${Digit}${DidIdentifier}`
-  | `did:kilt:light:${Digit}${Digit}${DidIdentifier}:${string}`
+  | `did:kilt:${DidUriVersion}${KiltAddress}`
+  | `did:kilt:light:${DidUriVersion}${AuthenticationKeyType}${KiltAddress}${LightDidEncodedData}`
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
@@ -52,6 +55,9 @@ export type VerificationKeyRelationship = Extract<
 export const verificationKeyTypes = ['sr25519', 'ed25519', 'ecdsa'] as const
 export type VerificationKeyType = typeof verificationKeyTypes[number]
 
+/**
+ * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
+ */
 export type LightDidSupportedVerificationKeyType = Extract<
   VerificationKeyType,
   'ed25519' | 'sr25519'
@@ -73,6 +79,7 @@ export type EncryptionKeyType = typeof encryptionKeyTypes[number]
  */
 export type BaseNewDidKey = {
   publicKey: Uint8Array
+  type: string
 }
 
 /**
@@ -83,13 +90,8 @@ export type NewDidVerificationKey = BaseNewDidKey & {
 }
 /**
  * A new public key specified when creating a new light DID.
- *
- * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
  */
-export type NewLightDidAuthenticationKey = Omit<
-  NewDidVerificationKey,
-  'type'
-> & {
+export type NewLightDidVerificationKey = NewDidVerificationKey & {
   type: LightDidSupportedVerificationKeyType
 }
 /**
@@ -108,7 +110,7 @@ export type BaseDidKey = {
   /**
    * Key id without the leading did:kilt:<did_identifier> prefix.
    */
-  id: string
+  id: UriFragment
   /**
    * The public key material.
    */
@@ -117,6 +119,10 @@ export type BaseDidKey = {
    * The inclusion block of the key, if stored on chain.
    */
   includedAt?: BN
+  /**
+   * The type of the key.
+   */
+  type: string
 }
 
 /**
@@ -139,69 +145,15 @@ export type DidServiceEndpoint = {
   /**
    * The identifier of the endpoint, without the leading did:kilt:<did_identifier> prefix.
    */
-  id: string
+  id: UriFragment
   /**
    * A list of service types the endpoint exposes.
    */
-  types: string[]
+  type: string[]
   /**
    * A list of URIs the endpoint exposes its services at.
    */
-  uris: string[]
-}
-
-/**
- * An internal representation of data associated with a DID, equivalent to a DID document.
- */
-export interface IDidDetails {
-  /**
-   * The decentralized identifier (DID) to which the remaining info pertains.
-   */
-  uri: DidUri
-
-  /**
-   * Retrieves a particular public key record via its id.
-   *
-   * @param id The key ID, without the leading DID URI.
-   * @returns [[DidKey]] or undefined if no key with this id is present.
-   */
-  getKey(id: DidKey['id']): DidKey | undefined
-
-  /**
-   * Retrieves public key details from the [[IDidDetails]].
-   *
-   * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
-   * relationship, undefined to return all keys.
-   * @returns An array of all or selected [[DidVerificationKey]]s, depending on the `relationship` parameter.
-   */
-  getVerificationKeys(
-    relationship: VerificationKeyRelationship
-  ): DidVerificationKey[]
-
-  /**
-   * Retrieves public key details from the [[IDidDetails]].
-   *
-   * @param relationship A [[KeyRelationship]] or 'none' to filter out keys with a specific key
-   * relationship, undefined to return all keys.
-   * @returns An array of all or selected [[DidEncryptionKey]]s, depending on the `relationship` parameter.
-   */
-  getEncryptionKeys(relationship: EncryptionKeyRelationship): DidEncryptionKey[]
-
-  getKeys(): DidKey[]
-
-  /**
-   * Retrieves the service endpoint associated with the DID, if any.
-   *
-   * @param id The identifier of the service endpoint, without the DID prefix.
-   */
-  getEndpoint(id: DidServiceEndpoint['id']): DidServiceEndpoint | undefined
-
-  /**
-   * Retrieves all the service endpoints associated with the DID.
-   *
-   * @param type The type of the service endpoints to filter and include in the result.
-   */
-  getEndpoints(type?: string): DidServiceEndpoint[]
+  serviceEndpoint: string[]
 }
 
 /**
@@ -211,3 +163,28 @@ export type DidSignature = {
   keyUri: DidResourceUri
   signature: string
 }
+
+export interface DidDetails {
+  identifier: DidIdentifier
+  uri: DidUri
+
+  authentication: [DidVerificationKey]
+  assertionMethod?: [DidVerificationKey]
+  capabilityDelegation?: [DidVerificationKey]
+  keyAgreement?: DidEncryptionKey[]
+
+  service?: DidServiceEndpoint[]
+}
+
+export interface DidCreationDetails {
+  identifier?: DidIdentifier
+
+  authentication: [NewDidVerificationKey]
+  assertionMethod?: [NewDidVerificationKey]
+  capabilityDelegation?: [NewDidVerificationKey]
+  keyAgreement?: NewDidEncryptionKey[]
+
+  service?: DidServiceEndpoint[]
+}
+
+export type DidKeySelectionCallback<T> = (keys: T[]) => Promise<T | null>

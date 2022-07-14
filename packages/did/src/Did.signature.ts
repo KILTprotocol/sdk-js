@@ -8,30 +8,32 @@
 import { u8aToHex, isHex } from '@polkadot/util'
 
 import {
+  DidDetails,
   DidResourceUri,
   DidSignature,
   DidVerificationKey,
-  IDidDetails,
   IDidResolver,
+  UriFragment,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { DidResolver } from './DidResolver/index.js'
 import { parseDidUri, validateKiltDidUri } from './Did.utils.js'
+import * as Did from './index.js'
 
 type DidSignatureVerificationFromDetailsInput = {
   message: string | Uint8Array
   signature: string
   keyId: DidVerificationKey['id']
   expectedVerificationMethod?: VerificationKeyRelationship
-  details: IDidDetails
+  details: DidDetails
 }
 
 export type VerificationResult = {
   verified: boolean
   reason?: string
-  didDetails?: IDidDetails
+  didDetails?: DidDetails
   key?: DidVerificationKey
 }
 
@@ -42,7 +44,7 @@ function verifyDidSignatureFromDetails({
   expectedVerificationMethod,
   details,
 }: DidSignatureVerificationFromDetailsInput): VerificationResult {
-  const key = details.getKey(keyId)
+  const key = Did.getKey(details, keyId)
   if (!key) {
     return {
       verified: false,
@@ -52,9 +54,8 @@ function verifyDidSignatureFromDetails({
   // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
   if (
     expectedVerificationMethod &&
-    !details
-      .getVerificationKeys(expectedVerificationMethod)
-      .map((verKey) => verKey.id)
+    !details[expectedVerificationMethod]
+      ?.map((verKey) => verKey.id)
       .includes(keyId)
   ) {
     return {
@@ -104,7 +105,7 @@ export async function verifyDidSignature({
   expectedVerificationMethod,
   resolver = DidResolver,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
-  let keyId: string
+  let keyId: UriFragment
   let keyUri: DidResourceUri
   try {
     // Add support for old signatures that had the `keyId` instead of the `keyUri`
@@ -149,7 +150,7 @@ export async function verifyDidSignature({
       ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
           ?.details
       : resolutionDetails.details
-  ) as IDidDetails
+  ) as DidDetails
 
   return verifyDidSignatureFromDetails({
     message,
