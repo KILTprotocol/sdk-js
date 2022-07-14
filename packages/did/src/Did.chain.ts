@@ -165,9 +165,12 @@ const didKeyTypeToChainType = Object.entries(chainTypeToDidKeyType).reduce<
   Record<DidKey['type'], ChainKeyType>
 >((obj, [key, val]) => ({ ...obj, [val]: key }), {} as any)
 
-type ChainKeyTypeFor<T extends DidKey['type']> = Capitalize<T>
+// TODO: This is hacky, but `typeof chainTypeToDidKeyType[T]` does not give us the right union type. Improve once alternatives come up.
+// E.g. `'Ed25519' | 'Ecdsa'` would not be converted to `'ed25519' | 'ecdsa'` but results in a union of all values in the mapping.
 type DidKeyTypeFor<T extends ChainKeyType> = Lowercase<T>
+type ChainKeyTypeFor<T extends DidKey['type']> = Capitalize<T>
 
+// TODO: Due to the issue above, this function is required to force the `DidKeyTypeFor` type. Refactor once this is no longer necessary.
 function getDidKeyTypeForChainKeyType<T extends ChainKeyType>(
   keyType: T
 ): DidKeyTypeFor<T> {
