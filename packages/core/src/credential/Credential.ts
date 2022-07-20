@@ -146,15 +146,15 @@ export async function addSignature(
  * Adds a claimer signature to a Credential using a DID key.
  *
  * @param credential - The Credential to add the signature to.
- * @param sign - The signing callback.
+ * @param signCallback - The signing callback.
  * @param didDetails - The DID details of the signer.
  * @param keyId - The DID key id to be used for the signing.
  * @param options - Optional parameters.
  * @param options.challenge - An optional challenge, which will be included in the signing process.
  */
-export async function signWithDidKey(
+export async function sign(
   credential: ICredential,
-  sign: SignCallback,
+  signCallback: SignCallback,
   didDetails: DidDetails,
   keyId: DidVerificationKey['id'],
   {
@@ -165,7 +165,7 @@ export async function signWithDidKey(
 ): Promise<void> {
   const { signature, keyUri: signatureKeyId } = await didDetails.signPayload(
     makeSigningData(credential, challenge),
-    sign,
+    signCallback,
     keyId
   )
   await addSignature(credential, signature, signatureKeyId, { challenge })
@@ -446,7 +446,7 @@ function getAttributes(credential: ICredential): Set<string> {
  *
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
- * @param presentationOptions.sign The callback to sign the presentation.
+ * @param presentationOptions.signCallback The callback to sign the presentation.
  * @param presentationOptions.claimerDid The DID details of the presenter.
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
@@ -457,14 +457,14 @@ function getAttributes(credential: ICredential): Set<string> {
 export async function createPresentation({
   credential,
   selectedAttributes,
-  sign,
+  signCallback,
   challenge,
   claimerDid,
   keySelection = DidUtils.defaultKeySelectionCallback,
 }: {
   credential: ICredential
   selectedAttributes?: string[]
-  sign: SignCallback
+  signCallback: SignCallback
   challenge?: string
   claimerDid: DidDetails
   keySelection?: DidKeySelectionCallback<DidVerificationKey>
@@ -491,7 +491,7 @@ export async function createPresentation({
     throw new SDKErrors.UnsupportedKeyError('authentication')
   }
 
-  await signWithDidKey(presentation, sign, claimerDid, selectedKeyId, {
+  await sign(presentation, signCallback, claimerDid, selectedKeyId, {
     challenge,
   })
 

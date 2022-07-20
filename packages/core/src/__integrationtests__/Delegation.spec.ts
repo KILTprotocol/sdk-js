@@ -183,7 +183,7 @@ describe('and attestation rights have been delegated', () => {
     const credential = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await Credential.signWithDidKey(
+    await Credential.sign(
       credential,
       claimerKey.sign,
       claimer,

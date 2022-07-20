@@ -281,7 +281,7 @@ beforeAll(async () => {
   )
 
   credential = Credential.fromClaim(claim)
-  await Credential.signWithDidKey(
+  await Credential.sign(
     credential,
     claimer.sign,
     claimerLightDid,

@@ -126,7 +126,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.uri
     )
     const credential = Credential.fromClaim(claim)
-    await Credential.signWithDidKey(
+    await Credential.sign(
       credential,
       claimerKey.sign,
       claimer,
@@ -148,7 +148,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const credential = Credential.fromClaim(claim)
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
 
-    await Credential.signWithDidKey(
+    await Credential.sign(
       credential,
       claimerKey.sign,
       claimer,
@@ -192,7 +192,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const credential = Credential.fromClaim(claim)
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
 
-    await Credential.signWithDidKey(
+    await Credential.sign(
       credential,
       claimerKey.sign,
       claimer,
@@ -272,7 +272,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer.uri
       )
       credential = Credential.fromClaim(claim)
-      await Credential.signWithDidKey(
+      await Credential.sign(
         credential,
         claimerKey.sign,
         claimer,
@@ -316,8 +316,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.uri
       )
-      const fakecredential = Credential.fromClaim(claim)
-      await Credential.signWithDidKey(
+      const fakeCredential = Credential.fromClaim(claim)
+      await Credential.sign(
         credential,
         claimerKey.sign,
         claimer,
@@ -325,7 +325,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
 
       expect(
-        Attestation.verifyAgainstCredential(attestation, fakecredential)
+        Attestation.verifyAgainstCredential(attestation, fakeCredential)
       ).toBeFalsy()
     }, 15_000)
 
@@ -408,7 +408,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attester.uri
       )
       const credential1 = Credential.fromClaim(licenseAuthorization)
-      await Credential.signWithDidKey(
+      await Credential.sign(
         credential1,
         claimerKey.sign,
         claimer,
@@ -435,7 +435,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const credential2 = Credential.fromClaim(iBelieveICanDrive, {
         legitimations: [credential1],
       })
-      await Credential.signWithDidKey(
+      await Credential.sign(
         credential2,
         claimerKey.sign,
         claimer,

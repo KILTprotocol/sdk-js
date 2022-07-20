@@ -319,12 +319,7 @@ async function runAll() {
     bob.uri
   )
   const credential = Credential.fromClaim(claim)
-  await Credential.signWithDidKey(
-    credential,
-    bobSign,
-    bob,
-    bob.authenticationKey.id
-  )
+  await Credential.sign(credential, bobSign, bob, bob.authenticationKey.id)
   if (!Credential.isICredential(credential))
     throw new Error('Not a valid Request')
   else {

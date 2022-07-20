@@ -100,9 +100,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
     const testCType = CType.fromSchema(rawCType)
-    expect(
-      await Credential.verify(credential, { ctype: testCType })
-    ).toBeTruthy()
+    await Credential.verify(credential, { ctype: testCType })
 
     // just deleting a field will result in a wrong proof
     delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
@@ -446,7 +444,7 @@ describe('Credential', () => {
     const credential = Credential.fromClaim(claim, {
       legitimations,
     })
-    await Credential.signWithDidKey(
+    await Credential.sign(
       credential,
       sign,
       claimer,
@@ -783,7 +781,7 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      sign: newKeyForMigratedClaimerDid.sign,
+      signCallback: newKeyForMigratedClaimerDid.sign,
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
@@ -811,7 +809,7 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      sign: unmigratedClaimerKey.sign,
+      signCallback: unmigratedClaimerKey.sign,
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
@@ -840,7 +838,7 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      sign: newKeyForMigratedClaimerDid.sign,
+      signCallback: newKeyForMigratedClaimerDid.sign,
       // Use of full DID to sign the presentation.
       claimerDid: migratedClaimerFullDid,
       challenge,
@@ -871,7 +869,7 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      sign: newKeyForMigratedClaimerDid.sign,
+      signCallback: newKeyForMigratedClaimerDid.sign,
       // Still using the light DID, which should fail since it has been migrated
       claimerDid: migratedClaimerLightDid,
       challenge,
@@ -903,7 +901,7 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      sign: migratedThenDeletedKey.sign,
+      signCallback: migratedThenDeletedKey.sign,
       // Still using the light DID, which should fail since it has been migrated and then deleted
       claimerDid: migratedThenDeletedClaimerLightDid,
       challenge,
