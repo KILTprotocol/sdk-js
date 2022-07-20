@@ -391,13 +391,13 @@ export async function verify(
   }
 
   if (challenge) {
-    const isSignatureCorrect = verifySignature(credential, {
+    const isSignatureCorrect = await verifySignature(credential, {
       challenge,
       resolver,
     })
     if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
   } else if (checkSignatureWithoutChallenge) {
-    const isSignatureCorrect = verifySignature(credential, {
+    const isSignatureCorrect = await verifySignature(credential, {
       resolver,
     })
     if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
