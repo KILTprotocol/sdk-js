@@ -60,7 +60,7 @@ function buildCredential(
 ): ICredential {
   // create claim
 
-  const testCType: ICType = CType.fromSchema(rawCType)
+  const testCType = CType.fromSchema(rawCType)
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
@@ -127,7 +127,7 @@ describe('Credential', () => {
   })
 
   it('compresses and decompresses the credential object', async () => {
-    const reqForAtt = buildCredential(
+    const credential = buildCredential(
       identityBob,
       {
         a: 'a',
@@ -151,34 +151,34 @@ describe('Credential', () => {
       legitimation.delegationId,
     ]
 
-    const compressedReqForAtt: CompressedCredential = [
+    const compressedCredential: CompressedCredential = [
       [
-        reqForAtt.claim.cTypeHash,
-        reqForAtt.claim.owner,
-        reqForAtt.claim.contents,
+        credential.claim.cTypeHash,
+        credential.claim.owner,
+        credential.claim.contents,
       ],
-      reqForAtt.claimNonceMap,
-      reqForAtt.claimerSignature,
-      reqForAtt.claimHashes,
-      reqForAtt.rootHash,
+      credential.claimNonceMap,
+      credential.claimerSignature,
+      credential.claimHashes,
+      credential.rootHash,
       [compressedLegitimation],
-      reqForAtt.delegationId,
+      credential.delegationId,
     ]
 
-    expect(Credential.compress(reqForAtt)).toEqual(compressedReqForAtt)
+    expect(Credential.compress(credential)).toEqual(compressedCredential)
 
-    expect(Credential.decompress(compressedReqForAtt)).toEqual(reqForAtt)
+    expect(Credential.decompress(compressedCredential)).toEqual(credential)
 
-    compressedReqForAtt.pop()
+    compressedCredential.pop()
     // @ts-expect-error
-    delete reqForAtt.claim.owner
+    delete credential.claim.owner
 
     expect(() => {
-      Credential.compress(reqForAtt)
+      Credential.compress(credential)
     }).toThrow()
 
     expect(() => {
-      Credential.decompress(compressedReqForAtt)
+      Credential.decompress(compressedCredential)
     }).toThrow()
   })
 
@@ -412,6 +412,7 @@ describe('Credential', () => {
     } as IDidResolver
   })()
 
+  // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
   async function buildCredential2(
     claimer: DidDetails,
     attesterDid: DidUri,

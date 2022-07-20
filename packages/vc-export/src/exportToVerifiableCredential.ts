@@ -66,7 +66,7 @@ export function toCredentialIRI(rootHash: string): string {
  * Transforms a regular KILT credential to its VC representation.
  *
  * @param input The credential to transform.
- * @param attestation The corresponding attestation to the credential.
+ * @param attestation The attestation corresponding to the credential.
  * @param ctype (optional) The full specification of the credential's CType. If specified, the CType will be included with the VC on its `credentialSchema` property.
  * @returns The VC representation of the KILT credential and optionally its CType.
  */

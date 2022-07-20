@@ -139,7 +139,7 @@ export async function checkValidity(
 ): Promise<boolean> {
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
   const chainAttestation = await query(claimHash)
-  return !!(chainAttestation !== null && !chainAttestation.revoked)
+  return chainAttestation !== null && !chainAttestation.revoked
 }
 
 /**
@@ -156,8 +156,8 @@ export function verifyAgainstCredential(
   attestation: IAttestation,
   credential: ICredential
 ): boolean {
-  if (credential.claim.cTypeHash !== attestation.cTypeHash) return false
   return (
+    credential.claim.cTypeHash === attestation.cTypeHash &&
     credential.rootHash === attestation.claimHash &&
     Credential.verifyDataIntegrity(credential)
   )

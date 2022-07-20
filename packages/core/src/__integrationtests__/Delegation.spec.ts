@@ -205,9 +205,7 @@ describe('and attestation rights have been delegated', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    await expect(
-      Attestation.checkValidity(attestation.claimHash)
-    ).resolves.toBe(true)
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
 
     // revoke attestation through root
     const revokeTx = await Attestation.getRevokeTx(attestation.claimHash, 1)

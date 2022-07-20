@@ -10,7 +10,8 @@
  * A Credential represents a [[Claim]] which needs to be validated. In practice, the Credential is sent from a claimer to an attester for attesting and to a verifier for verification.
  *
  * A Credential object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
- * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
+ * The credential is made tamper-proof by hashing the claim properties and generating a digest from that, which is used to reference the Credential.
+ * It can be signed by the claimer, to authenticate the holder and to prevent replay attacks.
  * A Credential also supports hiding of claim data during a credential presentation.
  *
  * @packageDocumentation
@@ -175,7 +176,7 @@ export async function sign(
  * Verifies if the credential hash matches the contents of it.
  *
  * @param input - The credential to check.
- * @returns Wether they match or not.
+ * @returns Whether they match or not.
  */
 export function verifyRootHash(input: ICredential): boolean {
   return input.rootHash === calculateRootHash(input)
@@ -315,7 +316,7 @@ export async function verifySignature(
 
 export type Options = {
   legitimations?: ICredential[]
-  delegationId?: IDelegationNode['id']
+  delegationId?: IDelegationNode['id'] | null
 }
 
 /**
@@ -329,7 +330,7 @@ export type Options = {
  */
 export function fromClaim(
   claim: IClaim,
-  { legitimations, delegationId }: Options = {}
+  { legitimations = [], delegationId = null }: Options = {}
 ): ICredential {
   const { hashes: claimHashes, nonceMap: claimNonceMap } =
     Claim.hashClaimContents(claim)
@@ -343,11 +344,11 @@ export function fromClaim(
   // signature will be added afterwards!
   const credential = {
     claim,
-    legitimations: legitimations || [],
+    legitimations,
     claimHashes,
     claimNonceMap,
     rootHash,
-    delegationId: delegationId || null,
+    delegationId,
   }
   verifyDataStructure(credential)
   return credential
@@ -521,22 +522,22 @@ export function compress(credential: ICredential): CompressedCredential {
 /**
  * Decompresses a [[Credential]] from storage and/or message.
  *
- * @param reqForAtt A compressed [[Credential]] array that is reverted back into an object.
+ * @param credential A compressed [[Credential]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as a [[Credential]].
  */
-export function decompress(reqForAtt: CompressedCredential): ICredential {
-  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
+export function decompress(credential: CompressedCredential): ICredential {
+  if (!Array.isArray(credential) || credential.length !== 7) {
     throw new SDKErrors.DecompressionArrayError('Credential')
   }
   const decompressedCredential = {
-    claim: Claim.decompress(reqForAtt[0]),
-    claimNonceMap: reqForAtt[1],
-    claimerSignature: reqForAtt[2],
-    claimHashes: reqForAtt[3],
-    rootHash: reqForAtt[4],
-    legitimations: reqForAtt[5].map(decompress),
-    delegationId: reqForAtt[6],
+    claim: Claim.decompress(credential[0]),
+    claimNonceMap: credential[1],
+    claimerSignature: credential[2],
+    claimHashes: credential[3],
+    rootHash: credential[4],
+    legitimations: credential[5].map(decompress),
+    delegationId: credential[6],
   }
   verifyDataStructure(decompressedCredential)
   return decompressedCredential

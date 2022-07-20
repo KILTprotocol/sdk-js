@@ -321,16 +321,16 @@ async function runAll() {
   const credential = Credential.fromClaim(claim)
   await Credential.sign(credential, bobSign, bob, bob.authenticationKey.id)
   if (!Credential.isICredential(credential))
-    throw new Error('Not a valid Request')
+    throw new Error('Not a valid Credential')
   else {
     if (Credential.verifyDataIntegrity(credential))
-      console.info('Req4Att data verified')
-    else throw new Error('Req4Att not verifiable')
+      console.info('Credential data verified')
+    else throw new Error('Credential not verifiable')
     if (await Credential.verifySignature(credential))
-      console.info('Req4Att signature verified')
-    else throw new Error('Req4Att Signature mismatch')
+      console.info('Credential signature verified')
+    else throw new Error('Credential Signature mismatch')
     if (credential.claim.contents !== content)
-      throw new Error('Claim content inside Req4Att mismatching')
+      throw new Error('Claim content inside Credential mismatching')
   }
 
   console.log('Test Messaging with encryption + decryption')

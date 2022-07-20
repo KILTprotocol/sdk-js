@@ -113,16 +113,16 @@ async function buildCredential(
   const testCType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(testCType, contents, claimerDid)
-  // build request for attestation with legitimations
-  const requestForAttestation = Credential.fromClaim(claim, {
+  // build credential with legitimations
+  const credential = Credential.fromClaim(claim, {
     legitimations,
   })
   // build attestation
   const testAttestation = Attestation.fromCredentialAndDid(
-    requestForAttestation,
+    credential,
     attesterDid
   )
-  return [requestForAttestation, testAttestation]
+  return [credential, testAttestation]
 }
 
 describe('Messaging Utilities', () => {

@@ -424,7 +424,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await submitExtrinsic(authorizedStoreTx, tokenHolder)
 
-      // make request including legitimation
+      // make credential including legitimation
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         driversLicenseCType,
         { name: 'Dominic Toretto', age: 52 },
