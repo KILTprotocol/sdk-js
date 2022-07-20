@@ -70,7 +70,7 @@ describe('When there is an on-chain DID', () => {
           did.identifier,
           paymentAccount.address
         )
-      ).toBeFalsy()
+      ).toBe(false)
 
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
       const signedTx = await did.authorizeExtrinsic(
@@ -105,7 +105,7 @@ describe('When there is an on-chain DID', () => {
           did.identifier,
           paymentAccount.address
         )
-      ).toBeTruthy()
+      ).toBe(true)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
@@ -135,7 +135,7 @@ describe('When there is an on-chain DID', () => {
           did.identifier,
           paymentAccount.address
         )
-      ).toBeFalsy()
+      ).toBe(false)
       // Check that new DID has the account linked
       expect(
         await AccountLinks.queryConnectedAccountsForDid(
@@ -148,7 +148,7 @@ describe('When there is an on-chain DID', () => {
           newDid.identifier,
           paymentAccount.address
         )
-      ).toBeTruthy()
+      ).toBe(true)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = await AccountLinks.getLinkRemovalByAccountTx()
@@ -171,7 +171,7 @@ describe('When there is an on-chain DID', () => {
           did.identifier,
           paymentAccount.address
         )
-      ).toBeFalsy()
+      ).toBe(false)
     })
   })
 
@@ -232,10 +232,10 @@ describe('When there is an on-chain DID', () => {
             did.identifier,
             paymentAccount.address
           )
-        ).toBeFalsy()
+        ).toBe(false)
         expect(
           await AccountLinks.queryIsConnected(did.identifier, keypair.address)
-        ).toBeTruthy()
+        ).toBe(true)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
         const linkAuthorisation =
@@ -271,10 +271,10 @@ describe('When there is an on-chain DID', () => {
             did.identifier,
             paymentAccount.address
           )
-        ).toBeFalsy()
+        ).toBe(false)
         expect(
           await AccountLinks.queryIsConnected(did.identifier, keypair.address)
-        ).toBeFalsy()
+        ).toBe(false)
         // Check that new DID has the account linked
         expect(
           await AccountLinks.queryConnectedAccountsForDid(
@@ -287,13 +287,13 @@ describe('When there is an on-chain DID', () => {
             newDid.identifier,
             paymentAccount.address
           )
-        ).toBeFalsy()
+        ).toBe(false)
         expect(
           await AccountLinks.queryIsConnected(
             newDid.identifier,
             keypair.address
           )
-        ).toBeTruthy()
+        ).toBe(true)
       })
       it('should be possible for the DID to remove the link', async () => {
         const removeLinkTx = await AccountLinks.getLinkRemovalByDidExtrinsic(
@@ -327,10 +327,10 @@ describe('When there is an on-chain DID', () => {
             did.identifier,
             paymentAccount.address
           )
-        ).toBeFalsy()
+        ).toBe(false)
         expect(
           await AccountLinks.queryIsConnected(did.identifier, keypair.address)
-        ).toBeFalsy()
+        ).toBe(false)
       })
     }
   )
@@ -395,13 +395,13 @@ describe('When there is an on-chain DID', () => {
           did.identifier,
           paymentAccount.address
         )
-      ).toBeFalsy()
+      ).toBe(false)
       expect(
         await AccountLinks.queryIsConnected(
           did.identifier,
           genericAccount.address
         )
-      ).toBeTruthy()
+      ).toBe(true)
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
@@ -449,13 +449,13 @@ describe('When there is an on-chain DID', () => {
           did.identifier,
           paymentAccount.address
         )
-      ).toBeFalsy()
+      ).toBe(false)
       expect(
         await AccountLinks.queryIsConnected(
           did.identifier,
           genericAccount.address
         )
-      ).toBeFalsy()
+      ).toBe(false)
     })
   })
 })

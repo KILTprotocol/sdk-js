@@ -225,9 +225,9 @@ describe('write and didDeleteTx', () => {
     expect(await DidChain.queryDeletedDidIdentifiers()).not.toContain(
       details.identifier
     )
-    expect(
-      await DidChain.queryDidDeletionStatus(details.identifier)
-    ).toBeFalsy()
+    expect(await DidChain.queryDidDeletionStatus(details.identifier)).toBe(
+      false
+    )
 
     await submitExtrinsic(submittable, paymentAccount)
 
@@ -237,9 +237,7 @@ describe('write and didDeleteTx', () => {
     expect(await DidChain.queryDeletedDidIdentifiers()).toContain(
       details.identifier
     )
-    expect(
-      await DidChain.queryDidDeletionStatus(details.identifier)
-    ).toBeTruthy()
+    expect(await DidChain.queryDidDeletionStatus(details.identifier)).toBe(true)
   }, 60_000)
 })
 
@@ -376,7 +374,7 @@ describe('DID migration', () => {
     )) as DidResolvedDetails
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
-    expect(metadata.deactivated).toBeFalsy()
+    expect(metadata.deactivated).toBe(false)
   })
 
   it('migrates light DID with sr25519 auth key', async () => {
@@ -418,7 +416,7 @@ describe('DID migration', () => {
     )) as DidResolvedDetails
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
-    expect(metadata.deactivated).toBeFalsy()
+    expect(metadata.deactivated).toBe(false)
   })
 
   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
@@ -472,7 +470,7 @@ describe('DID migration', () => {
     )) as DidResolvedDetails
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
-    expect(metadata.deactivated).toBeFalsy()
+    expect(metadata.deactivated).toBe(false)
 
     // Remove and claim the deposit back
     const storedEndpointsCount = await DidChain.queryEndpointsCounts(
@@ -490,7 +488,7 @@ describe('DID migration', () => {
     ).toStrictEqual([])
     expect(
       await DidChain.queryDidDeletionStatus(migratedFullDid.identifier)
-    ).toBeTruthy()
+    ).toBe(true)
   }, 60_000)
 })
 
@@ -1014,7 +1012,7 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(tx, paymentAccount)
 
     // The ctype has been created, even though the delegation operations failed.
-    expect(await CType.verifyStored(ctype)).toBeTruthy()
+    expect(await CType.verifyStored(ctype)).toBe(true)
   })
 
   it('atomic batch fails if any extrinsics fail', async () => {
@@ -1048,7 +1046,7 @@ describe('DID extrinsics batching', () => {
     })
 
     // The ctype has not been created, since atomicity ensures the whole batch is reverted in case of failure.
-    expect(await CType.verifyStored(ctype)).toBeFalsy()
+    expect(await CType.verifyStored(ctype)).toBe(false)
   })
 
   it('can batch extrinsics for the same required key type', async () => {
@@ -1129,12 +1127,12 @@ describe('DID extrinsics batching', () => {
     ).toStrictEqual(fullDid.identifier)
 
     // Test correct use of attestation keys
-    expect(await CType.verifyStored(ctype1)).toBeTruthy()
-    expect(await CType.verifyStored(ctype2)).toBeTruthy()
+    expect(await CType.verifyStored(ctype1)).toBe(true)
+    expect(await CType.verifyStored(ctype2)).toBe(true)
 
     // Test correct use of delegation keys
     const node = await DelegationNode.query(rootNode.id)
-    expect(node?.revoked).toBeTruthy()
+    expect(node?.revoked).toBe(true)
   })
 })
 

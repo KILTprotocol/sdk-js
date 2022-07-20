@@ -190,7 +190,7 @@ describe('Quote', () => {
           attesterIdentity.getKey(attesterKeyId!)?.publicKey || new Uint8Array()
         )
       )
-    ).toBeTruthy()
+    ).toBe(true)
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
       resolver: mockResolver,
     })
@@ -203,11 +203,11 @@ describe('Quote', () => {
     ).toEqual(validAttesterSignedQuote)
   })
   it('validates created quotes against QuoteSchema', () => {
-    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBeTruthy()
-    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBeFalsy()
-    expect(
-      Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
-    ).toBeFalsy()
+    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBe(true)
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBe(false)
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)).toBe(
+      false
+    )
   })
 })
 

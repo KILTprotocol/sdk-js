@@ -143,8 +143,8 @@ it('should be possible to delegate attestation rights', async () => {
     rootKey.sign,
     attesterKey.sign
   )
-  expect(await rootNode.verify()).toBeTruthy()
-  expect(await delegatedNode.verify()).toBeTruthy()
+  expect(await rootNode.verify()).toBe(true)
+  expect(await delegatedNode.verify()).toBe(true)
 }, 60_000)
 
 describe('and attestation rights have been delegated', () => {
@@ -166,8 +166,8 @@ describe('and attestation rights have been delegated', () => {
       attesterKey.sign
     )
 
-    expect(await rootNode.verify()).toBeTruthy()
-    expect(await delegatedNode.verify()).toBeTruthy()
+    expect(await rootNode.verify()).toBe(true)
+    expect(await delegatedNode.verify()).toBe(true)
   }, 75_000)
 
   it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
@@ -189,9 +189,9 @@ describe('and attestation rights have been delegated', () => {
       claimer,
       claimer.authenticationKey.id
     )
-    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    expect(await Credential.verifySignature(credential)).toBeTruthy()
-    expect(await Credential.verify(credential)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(await Credential.verifySignature(credential)).toBe(true)
+    expect(await Credential.verify(credential)).toBe(true)
 
     const attestation = Attestation.fromCredentialAndDid(
       credential,
@@ -207,7 +207,7 @@ describe('and attestation rights have been delegated', () => {
 
     await expect(
       Attestation.checkValidity(attestation.claimHash)
-    ).resolves.toBeTruthy()
+    ).resolves.toBe(true)
 
     // revoke attestation through root
     const revokeTx = await Attestation.getRevokeTx(attestation.claimHash, 1)
@@ -217,7 +217,7 @@ describe('and attestation rights have been delegated', () => {
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx2, paymentAccount)
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   }, 75_000)
 })
 
@@ -280,7 +280,7 @@ describe('revocation', () => {
     })
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
-    expect(await delegationA.verify()).toBeFalsy()
+    expect(await delegationA.verify()).toBe(false)
     expect(await DelegationNode.query(delegationA.id)).not.toBeNull()
   }, 60_000)
 

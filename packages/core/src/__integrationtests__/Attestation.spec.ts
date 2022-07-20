@@ -168,7 +168,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       tokenHolder.address
     )
     await submitExtrinsic(authorizedStoreTx, tokenHolder)
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBeTruthy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
     const reclaimTx = await Attestation.getReclaimDepositTx(
@@ -178,7 +178,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     // Test that the attestation has been deleted.
     expect(await Attestation.query(attestation.claimHash)).toBeNull()
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   }, 60_000)
 
   it('should not be possible to attest a claim without enough tokens', async () => {
@@ -218,7 +218,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       `"1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low"`
     )
 
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
@@ -288,9 +288,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await submitExtrinsic(authorizedStoreTx, tokenHolder)
 
       await Credential.verify(credential)
-      expect(
-        await Attestation.checkValidity(attestation.claimHash)
-      ).toBeTruthy()
+      expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
@@ -326,7 +324,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
       expect(
         Attestation.verifyAgainstCredential(attestation, fakeCredential)
-      ).toBeFalsy()
+      ).toBe(false)
     }, 15_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
@@ -354,7 +352,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await submitExtrinsic(authorizedRevokeTx, tokenHolder)
 
-      expect(await Credential.verify(credential)).toBeFalsy()
+      expect(await Credential.verify(credential)).toBe(false)
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
@@ -461,13 +459,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       ).toBe(true)
       expect(
         Attestation.verifyAgainstCredential(licenseGranted, credential2)
-      ).toBeTruthy()
+      ).toBe(true)
       expect(
         Attestation.verifyAgainstCredential(
           licenseAuthorizationGranted,
           credential1
         )
-      ).toBeTruthy()
+      ).toBe(true)
     }, 70_000)
   })
 })

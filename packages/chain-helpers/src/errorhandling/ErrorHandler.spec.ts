@@ -25,7 +25,7 @@ describe('ErrorHandler', () => {
       events: [evtRecord] as unknown as EventRecord[],
     } as ISubmittableResult
 
-    expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeTruthy()
+    expect(ErrorHandler.extrinsicFailed(submittableResult)).toBe(true)
   })
 
   it('test extrinsic succeeded', () => {
@@ -39,6 +39,6 @@ describe('ErrorHandler', () => {
       events: [evtRecord] as unknown as EventRecord[],
     } as ISubmittableResult
 
-    expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeFalsy()
+    expect(ErrorHandler.extrinsicFailed(submittableResult)).toBe(false)
   })
 })

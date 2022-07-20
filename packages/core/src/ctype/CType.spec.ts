@@ -92,11 +92,11 @@ describe('CType', () => {
   it('verifies the claim structure', () => {
     expect(
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBeTruthy()
+    ).toBe(true)
     claim.contents.name = 123
     expect(
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBeFalsy()
+    ).toBe(false)
   })
 
   it('throws error on faulty input', () => {
@@ -243,8 +243,8 @@ describe('blank ctypes', () => {
     )
   })
   it('typeguard returns true or false for complete or incomplete CTypes', () => {
-    expect(CType.isICType(ctype1)).toBeTruthy()
-    expect(CType.isICType({ ...ctype2, owner: '' })).toBeFalsy()
+    expect(CType.isICType(ctype1)).toBe(true)
+    expect(CType.isICType({ ...ctype2, owner: '' })).toBe(false)
   })
 })
 
@@ -291,23 +291,23 @@ describe('CType verification', () => {
     'third-property': true,
   }
   it('verifies claims', () => {
-    expect(
-      CType.verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)
-    ).toBeTruthy()
-    expect(
-      CType.verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)
-    ).toBeFalsy()
+    expect(CType.verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)).toBe(
+      true
+    )
+    expect(CType.verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)).toBe(
+      false
+    )
     expect(
       CType.verifyObjectAgainstSchema(badClaim, CTypeWrapperModel, [])
-    ).toBeFalsy()
+    ).toBe(false)
     expect(() => {
       CType.verifyClaimAgainstSchema(badClaim, ctypeInput)
     }).toThrow(SDKErrors.ObjectUnverifiableError)
   })
   it('verifies ctypes', () => {
-    expect(
-      CType.verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)
-    ).toBeTruthy()
+    expect(CType.verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)).toBe(
+      true
+    )
   })
 })
 
@@ -330,12 +330,12 @@ describe('CType registration verification', () => {
 
     it('does not verify registration when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBeFalsy()
+      expect(await CType.verifyStored(ctype)).toBe(false)
     })
 
     it('does not verify owner when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBeFalsy()
+      expect(await CType.verifyOwner(ctype)).toBe(false)
     })
   })
 
@@ -347,27 +347,27 @@ describe('CType registration verification', () => {
 
     it('verifies registration when owner not set', async () => {
       const ctype = CType.fromSchema(rawCType)
-      expect(await CType.verifyStored(ctype)).toBeTruthy()
+      expect(await CType.verifyStored(ctype)).toBe(true)
     })
 
     it('verifies registration when owner matches', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBeTruthy()
+      expect(await CType.verifyStored(ctype)).toBe(true)
     })
 
     it('verifies registration when owner does not match', async () => {
       const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyStored(ctype)).toBeTruthy()
+      expect(await CType.verifyStored(ctype)).toBe(true)
     })
 
     it('verifies owner when owner matches', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBeTruthy()
+      expect(await CType.verifyOwner(ctype)).toBe(true)
     })
 
     it('does not verify owner when owner does not match', async () => {
       const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyOwner(ctype)).toBeFalsy()
+      expect(await CType.verifyOwner(ctype)).toBe(false)
     })
   })
 })

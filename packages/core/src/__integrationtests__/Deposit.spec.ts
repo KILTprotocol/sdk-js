@@ -426,7 +426,7 @@ describe('Different deposits scenarios', () => {
   it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
     expect(
       await checkWeb3Deposit(keys[9].keypair, testFullDidTen, keys[9].sign)
-    ).toBeTruthy()
+    ).toBe(true)
   }, 120_000)
 })
 

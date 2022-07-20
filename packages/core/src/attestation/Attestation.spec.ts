@@ -84,7 +84,7 @@ describe('Attestation', () => {
       credential,
       identityAlice
     )
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBeTruthy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
   })
 
   it('verify attestations not on chain', async () => {
@@ -99,7 +99,7 @@ describe('Attestation', () => {
       owner: identityAlice,
       revoked: false,
     }
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   })
 
   it('verify attestation revoked', async () => {
@@ -117,7 +117,7 @@ describe('Attestation', () => {
       credential,
       identityAlice
     )
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   })
 
   it('compresses and decompresses the attestation object', () => {
@@ -273,9 +273,9 @@ describe('Attestation', () => {
       credential,
       identityAlice
     )
-    expect(Attestation.isIAttestation(attestation)).toBeTruthy()
-    expect(
-      Attestation.isIAttestation({ ...attestation, owner: '' })
-    ).toBeFalsy()
+    expect(Attestation.isIAttestation(attestation)).toBe(true)
+    expect(Attestation.isIAttestation({ ...attestation, owner: '' })).toBe(
+      false
+    )
   })
 })
