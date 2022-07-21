@@ -352,7 +352,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await submitExtrinsic(authorizedRevokeTx, tokenHolder)
 
-      expect(await Credential.verify(credential)).toBe(false)
+      await expect(Credential.verify(credential)).rejects.toThrow()
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
