@@ -87,19 +87,25 @@ export function calculateRootHash(credential: Partial<ICredential>): Hash {
  *
  * @param credential - The Credential object to remove properties from.
  * @param properties - Properties to remove from the [[Claim]] object.
+ * @returns A cloned Credential with removed properties.
  */
 export function removeClaimProperties(
   credential: ICredential,
   properties: string[]
-): void {
+): ICredential {
+  const presentation: ICredential =
+    // clone the credential because properties will be deleted later.
+    // TODO: find a nice way to clone stuff
+    JSON.parse(JSON.stringify(credential))
+
   properties.forEach((key) => {
-    // eslint-disable-next-line no-param-reassign
-    delete credential.claim.contents[key]
+    delete presentation.claim.contents[key]
   })
-  // eslint-disable-next-line no-param-reassign
-  credential.claimNonceMap = hashClaimContents(credential.claim, {
-    nonces: credential.claimNonceMap,
+  presentation.claimNonceMap = hashClaimContents(presentation.claim, {
+    nonces: presentation.claimNonceMap,
   }).nonceMap
+
+  return presentation
 }
 
 /**
@@ -470,11 +476,6 @@ export async function createPresentation({
   claimerDid: DidDetails
   keySelection?: DidKeySelectionCallback<DidVerificationKey>
 }): Promise<ICredential> {
-  const presentation: ICredential =
-    // clone the credential because properties will be deleted later.
-    // TODO: find a nice way to clone stuff
-    JSON.parse(JSON.stringify(credential))
-
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
     ? Array.from(getAttributes(credential)).filter(
@@ -483,7 +484,10 @@ export async function createPresentation({
     : []
 
   // remove these attributes
-  removeClaimProperties(presentation, excludedClaimProperties)
+  const presentation = removeClaimProperties(
+    credential,
+    excludedClaimProperties
+  )
 
   const keys = claimerDid.getVerificationKeys('authentication')
   const selectedKeyId = (await keySelection(keys))?.id

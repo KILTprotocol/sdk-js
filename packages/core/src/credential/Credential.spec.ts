@@ -187,15 +187,15 @@ describe('Credential', () => {
 
   it('hides claim properties', async () => {
     const credential = buildCredential(identityBob, { a: 'a', b: 'b' }, [])
-    Credential.removeClaimProperties(credential, ['a'])
+    const newCredential = Credential.removeClaimProperties(credential, ['a'])
 
-    expect((credential.claim.contents as any).a).toBeUndefined()
-    expect(Object.keys(credential.claimNonceMap)).toHaveLength(
-      credential.claimHashes.length - 1
+    expect((newCredential.claim.contents as any).a).toBeUndefined()
+    expect(Object.keys(newCredential.claimNonceMap)).toHaveLength(
+      newCredential.claimHashes.length - 1
     )
-    expect((credential.claim.contents as any).b).toBe('b')
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    expect(Credential.verifyRootHash(credential)).toBe(true)
+    expect((newCredential.claim.contents as any).b).toBe('b')
+    expect(Credential.verifyDataIntegrity(newCredential)).toBe(true)
+    expect(Credential.verifyRootHash(newCredential)).toBe(true)
   })
 
   it('should throw error on faulty constructor input', async () => {
