@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { AnyNumber } from '@polkadot/types/types/codec'
 import type { BN } from '@polkadot/util'
-import { AnyNumber } from '@polkadot/types/types'
 
 export type Balances = {
   free: BN

@@ -9,8 +9,6 @@
  * @module @kiltprotocol/utils
  */
 
-import '@polkadot/api-augment'
-
 import * as jsonabcCjs from './jsonabc.cjs'
 
 export const jsonabc = jsonabcCjs

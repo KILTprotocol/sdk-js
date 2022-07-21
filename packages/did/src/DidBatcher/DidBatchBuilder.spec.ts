@@ -15,7 +15,7 @@ import { randomAsHex } from '@polkadot/util-crypto'
 import {
   KeyRelationship,
   KeyringPair,
-  NewDidKey,
+  NewDidVerificationKey,
   SignCallback,
 } from '@kiltprotocol/types'
 import {
@@ -35,7 +35,7 @@ jest.mock('../Did.chain.js', () => ({
   getSetKeyExtrinsic: jest.fn(
     async (
       keyRelationship: KeyRelationship,
-      key: NewDidKey
+      key: NewDidVerificationKey
     ): Promise<Extrinsic> => {
       const keyAsEnum = formatPublicKey(key)
       switch (keyRelationship) {

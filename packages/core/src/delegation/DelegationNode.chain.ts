@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Option, U128, Vec } from '@polkadot/types'
+import type { bool, Option, U128, Vec } from '@polkadot/types'
 import type {
   IAttestation,
   IDelegationNode,
@@ -17,11 +17,11 @@ import type { H256, Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import type { Chain as DidChain } from '@kiltprotocol/did'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
-import {
-  decodeDelegationNode,
-  IChainDelegationNode,
-} from './DelegationDecoder.js'
+import type { BN } from '@polkadot/util'
+import type { AugmentedQueryDoubleMap } from '@polkadot/api/types'
+import type { Observable } from '@polkadot/types/types'
+import type { ApiPromise } from '@polkadot/api'
+import { decodeDelegationNode } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
 import type { AuthorizationId } from '../attestation/Attestation.chain.js'
@@ -67,7 +67,7 @@ export async function getStoreAsDelegationTx(
 
   return api.tx.delegation.addDelegation(
     delegation.id,
-    delegation.parentId,
+    delegation.parentId || '',
     DidUtils.getIdentifierFromKiltDid(delegation.account),
     permissionsAsBitset(delegation),
     signature
@@ -85,9 +85,7 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded = decodeDelegationNode(
-    await api.query.delegation.delegationNodes<Option<IChainDelegationNode>>(
-      delegationId
-    )
+    await api.query.delegation.delegationNodes(delegationId)
   )
   if (!decoded) {
     return null
@@ -174,6 +172,27 @@ export async function getChildren(
   return childrenNodes
 }
 
+type WithExternalAttestationsStorage = ApiPromise & {
+  query: {
+    attestation: {
+      externalAttestations: AugmentedQueryDoubleMap<
+        'promise',
+        (
+          key1: AuthorizationId | { delegation: string },
+          key2: H256
+        ) => Observable<Option<bool>>,
+        [AuthorizationId, H256]
+      >
+    }
+  }
+}
+
+function hasExternalAttestationsStorage(
+  api: ApiPromise
+): api is WithExternalAttestationsStorage {
+  return 'externalAttestations' in api.query.attestation
+}
+
 /**
  * Query the blockchain to retrieve all the attestations (their claim hashes) created with the provided delegation.
  *
@@ -184,12 +203,12 @@ export async function getAttestationHashes(
   id: IDelegationNode['id']
 ): Promise<Array<IAttestation['claimHash']>> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  if (api.query.attestation.externalAttestations) {
+  if (hasExternalAttestationsStorage(api)) {
     // this info is stored chain-side as a double map from (authorizationId, claimHash) -> boolean.
     // the following line retrieves all keys where authorizationId is equal to the delegation id.
-    const entries = await api.query.attestation.externalAttestations.keys<
-      [AuthorizationId, H256]
-    >({ delegation: id })
+    const entries = await api.query.attestation.externalAttestations.keys({
+      delegation: id,
+    })
     // extract claimHash from double map key & decode
     return entries.map((keys) => {
       const claimHash = keys.args[1]
@@ -212,7 +231,7 @@ export async function getAttestationHashes(
 
 async function queryDepositAmountEncoded(): Promise<U128> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.delegation.deposit as U128
+  return api.consts.delegation.deposit
 }
 
 /**

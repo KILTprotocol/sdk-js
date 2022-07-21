@@ -13,7 +13,7 @@ declare module 'vc-js' {
     purpose?: purposes.ProofPurpose
     documentLoader?: DocumentLoader
     expansionMap?: ExpansionMap
-  }): { verified: boolean; results: unknown[]; error?: Error }
+  }): Promise<{ verified: boolean; results: unknown[]; error?: Error }>
   function issue(options: {
     credential: JsonLdObj
     suite?: suites.LinkedDataProof | suites.LinkedDataProof[]
