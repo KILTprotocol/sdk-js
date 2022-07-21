@@ -49,7 +49,6 @@ import type {
   AugmentedSubmittable,
 } from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
-import { makePolkadotTypedValue } from '../Did.utils.js'
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
 
 // TODO: update with string pattern types once available
@@ -168,17 +167,16 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
  * Prepares encoding a LinkableAccountId.
  *
  * @param address 20 or 32 byte address as string (hex or ss58 encoded).
- * @returns `{ AccountId20 | AccountId32: Uint8Array }`
+ * @returns `{ AccountId20 | AccountId32: Uint8Array }`.
  */
 function encodeMultiAddress(
   address: Address
 ): TypedValue<'AccountId20' | 'AccountId32', Uint8Array> {
   const accountDecoded = decodeAddress(address)
   const isEthereumAddress = accountDecoded.length === 20
-  return makePolkadotTypedValue(
-    isEthereumAddress ? 'AccountId20' : 'AccountId32',
-    accountDecoded
-  )
+  return {
+    [isEthereumAddress ? 'AccountId20' : 'AccountId32']: accountDecoded,
+  } as TypedValue<'AccountId20' | 'AccountId32', Uint8Array>
 }
 
 /* ### QUERY ### */
@@ -350,8 +348,13 @@ export async function getAccountSignedAssociationExtrinsic(
         signatureValidUntilBlock
       )
     }
+    const proof = {
+      [sigType]: signature,
+    } as TypedValue<Exclude<SignatureType, 'Ethereum'>, typeof signature>
     return api.tx.didLookup.associateAccount(
-      { Dotsama: [account, makePolkadotTypedValue(sigType, signature)] },
+      {
+        Dotsama: [account, proof],
+      },
       signatureValidUntilBlock
     )
   }
@@ -359,10 +362,15 @@ export async function getAccountSignedAssociationExtrinsic(
     throw new SDKErrors.CodecMismatchError(
       'Ethereum linking is not yet supported by this chain'
     )
+
+  const proof = {
+    [sigType]: signature,
+  } as TypedValue<Exclude<SignatureType, 'Ethereum'>, typeof signature>
+
   return api.tx.didLookup.associateAccount(
     account,
     signatureValidUntilBlock,
-    makePolkadotTypedValue(sigType, signature)
+    proof
   )
 }
 

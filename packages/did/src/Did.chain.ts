@@ -28,6 +28,7 @@ import {
   TypedValue,
   NewDidVerificationKey,
   NewDidEncryptionKey,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -51,7 +52,6 @@ import {
   getVerificationKeyTypeForSigningAlgorithm,
   isEncryptionKey,
   isVerificationKey,
-  makePolkadotTypedValue,
 } from './Did.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Did')
@@ -146,36 +146,6 @@ function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
   }
 }
 
-type ChainKeyType = Capitalize<DidKey['type']>
-
-const chainTypeToDidKeyType: Record<ChainKeyType, DidKey['type']> = {
-  Sr25519: 'sr25519',
-  Ed25519: 'ed25519',
-  Ecdsa: 'ecdsa',
-  X25519: 'x25519',
-}
-
-const didKeyTypeToChainType = Object.entries(chainTypeToDidKeyType).reduce<
-  Record<DidKey['type'], ChainKeyType>
->((obj, [key, val]) => ({ ...obj, [val]: key }), {} as any)
-
-// TODO: This is hacky, but `typeof chainTypeToDidKeyType[T]` does not give us the right union type. Improve once alternatives come up.
-// E.g. `'Ed25519' | 'Ecdsa'` would not be converted to `'ed25519' | 'ecdsa'` but results in a union of all values in the mapping.
-type DidKeyTypeFor<T extends ChainKeyType> = Lowercase<T>
-type ChainKeyTypeFor<T extends DidKey['type']> = Capitalize<T>
-
-// TODO: Due to the issue above, this function is required to force the `DidKeyTypeFor` type. Refactor once this is no longer necessary.
-function getDidKeyTypeForChainKeyType<T extends ChainKeyType>(
-  keyType: T
-): DidKeyTypeFor<T> {
-  return chainTypeToDidKeyType[keyType] as DidKeyTypeFor<T>
-}
-function getChainKeyTypeForDidKeyType<T extends DidKey['type']>(
-  keyType: T
-): ChainKeyTypeFor<T> {
-  return didKeyTypeToChainType[keyType] as ChainKeyTypeFor<T>
-}
-
 function decodeDidPublicKeyDetails(
   keyId: Hash,
   keyDetails: ChainDidPublicKeyDetails
@@ -183,7 +153,7 @@ function decodeDidPublicKeyDetails(
   const key = keyDetails.key.isPublicEncryptionKey
     ? keyDetails.key.asPublicEncryptionKey
     : keyDetails.key.asPublicVerificationKey
-  const keyType = getDidKeyTypeForChainKeyType(key.type)
+  const keyType = key.type.toLowerCase() as Lowercase<typeof key.type>
   if (!keyType) {
     throw new SDKErrors.DidError(
       `Unsupported key type "${key.type}" found on chain`
@@ -393,12 +363,6 @@ export async function queryDeletedDidIdentifiers(): Promise<DidIdentifier[]> {
 
 // ### EXTRINSICS types
 
-export type TypedPublicKey<K extends ChainKeyTypeFor<NewDidKey['type']>> =
-  TypedValue<K, Uint8Array>
-export type SignatureEnum = TypedPublicKey<
-  ChainKeyTypeFor<NewDidVerificationKey['type']>
->
-
 export type AuthorizeCallInput = {
   didIdentifier: DidIdentifier
   txCounter: AnyNumber
@@ -409,6 +373,10 @@ export type AuthorizeCallInput = {
 
 // ### EXTRINSICS
 
+type FormattedPublicKey<K extends NewDidKey> = TypedValue<
+  Capitalize<K['type']>,
+  K['publicKey']
+>
 /**
  * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
  *
@@ -417,12 +385,9 @@ export type AuthorizeCallInput = {
  */
 export function formatPublicKey<K extends NewDidKey>(
   key: K
-): TypedPublicKey<ChainKeyTypeFor<K['type']>> {
-  const { type, publicKey } = key
-  return makePolkadotTypedValue(
-    getChainKeyTypeForDidKeyType(type),
-    publicKey
-  ) as TypedPublicKey<ChainKeyTypeFor<K['type']>>
+): FormattedPublicKey<K> {
+  // Chain accepts also lowercase key type, but type system complains.
+  return { [key.type]: key.publicKey } as FormattedPublicKey<K>
 }
 
 function checkServiceEndpointInput(
@@ -530,13 +495,12 @@ export async function generateCreateTxFromCreationDetails(
     alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
   const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
-  return api.tx.did.create(
-    encodedDidCreationDetails,
-    makePolkadotTypedValue(
-      getChainKeyTypeForDidKeyType(keyType),
-      signature.data
-    )
-  )
+  // Chain also accepts lowercase key types, but type system complains.
+  const signatureForPolkadot = { [keyType]: signature.data } as TypedValue<
+    Capitalize<typeof keyType>,
+    typeof signature.data
+  >
+  return api.tx.did.create(encodedDidCreationDetails, signatureForPolkadot)
 }
 
 /**
@@ -823,16 +787,19 @@ export async function generateDidAuthenticatedTx({
     alg,
   })
   const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
-  return api.tx.did.submitDidCall(
-    signableCall,
-    makePolkadotTypedValue(
-      getChainKeyTypeForDidKeyType(keyType),
-      signature.data
-    )
-  )
+  // Chain also accepts lowercase key types, but type system complains.
+  const signatureForPolkadot = { [keyType]: signature.data } as TypedValue<
+    Capitalize<typeof keyType>,
+    typeof signature.data
+  >
+  return api.tx.did.submitDidCall(signableCall, signatureForPolkadot)
 }
 
 // ### Chain utils
+export type SignatureEnum = TypedValue<
+  Capitalize<VerificationKeyType>,
+  Uint8Array
+>
 /**
  * Compiles an enum-type key-value pair representation of a signature created with a FullDid verification method. Required for creating FullDid signed extrinsics.
  *
@@ -852,8 +819,6 @@ export function encodeDidSignature(
     )
   }
 
-  return makePolkadotTypedValue(
-    getChainKeyTypeForDidKeyType(key.type),
-    hexToU8a(signature.signature)
-  )
+  // TypeScript can't infer key type on type union and chain accepts lowercase key types, so we have to add a type assertion.
+  return { [key.type]: hexToU8a(signature.signature) } as SignatureEnum
 }

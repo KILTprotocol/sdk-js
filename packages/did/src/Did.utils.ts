@@ -14,7 +14,6 @@ import {
   DidIdentifier,
   DidKey,
   DidResourceUri,
-  TypedValue,
   NewDidVerificationKey,
   DidVerificationKey,
   DidServiceEndpoint,
@@ -466,21 +465,4 @@ export function assembleKeyUri(
     )
   }
   return `${did}#${keyId}`
-}
-
-/**
- * Helper to produce polkadot-js style enum representations, consisting of an object with a single key-value pair.
- * The enum variant becomes the object's key (first letter capitalized).
- *
- * @param variant The enum variant descriptor as a string.
- * @param value The value associated with the variant.
- * @returns `{ Variant: value }`.
- */
-export function makePolkadotTypedValue<K extends string, V>(
-  variant: K,
-  value: V
-): TypedValue<K, V> {
-  return {
-    [variant]: value,
-  } as TypedValue<K, V>
 }
