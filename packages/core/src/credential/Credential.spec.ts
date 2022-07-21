@@ -100,7 +100,10 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     const testCType = CType.fromSchema(rawCType)
-    await Credential.verify(credential, { ctype: testCType })
+    await Credential.verify(credential, {
+      ctype: testCType,
+      checkSignatureWithoutChallenge: false,
+    })
 
     // just deleting a field will result in a wrong proof
     delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
@@ -572,11 +575,11 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    expect(
-      await Credential.verify(credential, {
+    await expect(
+      Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).toBe(false)
+    ).rejects.toThrowError()
   })
 
   it('compresses and decompresses the credentials object', () => {

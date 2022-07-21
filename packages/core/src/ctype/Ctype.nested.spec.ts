@@ -188,8 +188,10 @@ describe('Nested CTypes', () => {
   })
 
   it('verify claim from a nested ctype', () => {
-    expect(nestedData).toBe(true)
-    expect(nestedDeepData).toBe(true)
+    expect(nestedData).toBeDefined()
+    expect(nestedData).not.toBeNull()
+    expect(nestedDeepData).toBeDefined()
+    expect(nestedDeepData).not.toBeNull()
     expect(() =>
       Claim.fromNestedCTypeClaim(
         deeplyNestedCType,

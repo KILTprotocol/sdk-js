@@ -82,7 +82,6 @@ describe('Balance', () => {
 
   it('should get the balance', async () => {
     const currentBalance = await getBalances(bob.address)
-    expect(currentBalance.free.toNumber()).toBe(true)
     expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
   })
 
