@@ -12,7 +12,6 @@ import type {
   DidIdentifier,
   IIdentity,
   SubmittableExtrinsic,
-  TypedValue,
 } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 
@@ -45,6 +44,7 @@ import type {
   AugmentedSubmittable,
 } from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
+import { EncodedSignature } from '../Did.utils.js'
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
 
 // TODO: update with string pattern types once available
@@ -67,6 +67,10 @@ export type LinkingSignerCallback = (
   address: KiltAddress
 ) => Promise<HexString>
 
+type EncodedMultiAddress =
+  | { AccountId20: Uint8Array }
+  | { AccountId32: Uint8Array }
+
 /**
  * Type describing storage type that is yet to be deployed to spiritnet.
  */
@@ -78,24 +82,17 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly type: 'AccountId20' | 'AccountId32'
 }
 
-/**
- * Type required for encoding of the above.
- */
-type LinkableAccountJson = TypedValue<
-  PalletDidLookupLinkableAccountLinkableAccountId['type'],
-  string | Uint8Array
->
+type AssociateAccountRequestValue = [
+  string | Uint8Array, // AccountId
+  string | Uint8Array | EncodedSignature // signature
+]
 
 /**
  * Type required for encoding Enum type for association request extrinsics.
  */
-type AssociateAccountRequest = TypedValue<
-  'Dotsama' | 'Ethereum',
-  [
-    string | Uint8Array, // AccountId
-    string | Uint8Array | TypedValue<KeypairType, string | Uint8Array> // signature
-  ]
->
+type AssociateAccountRequest =
+  | { Dotsama: AssociateAccountRequestValue }
+  | { Ethereum: AssociateAccountRequestValue }
 
 /**
  * Api augmentation override for when the ethereum enabled pallet version has landed.
@@ -110,7 +107,7 @@ type WithEtherumSupport = {
         ) => SubmittableExtrinsic
       >
       removeAccountAssociation: AugmentedSubmittable<
-        (account: LinkableAccountJson) => SubmittableExtrinsic,
+        (account: EncodedMultiAddress) => SubmittableExtrinsic,
         [PalletDidLookupLinkableAccountLinkableAccountId]
       >
     }
@@ -119,14 +116,14 @@ type WithEtherumSupport = {
     didLookup: {
       connectedDids: AugmentedQuery<
         'promise',
-        (arg: LinkableAccountJson) => Option<PalletDidLookupConnectionRecord>,
+        (arg: EncodedMultiAddress) => Option<PalletDidLookupConnectionRecord>,
         [PalletDidLookupLinkableAccountLinkableAccountId]
       >
       connectedAccounts: AugmentedQueryDoubleMap<
         'promise',
         (
           didId: string | Uint8Array,
-          accountId: LinkableAccountJson
+          accountId: EncodedMultiAddress
         ) => Option<bool>,
         [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]
       >
@@ -162,14 +159,12 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
  * @param address 20 or 32 byte address as string (hex or ss58 encoded).
  * @returns `{ AccountId20 | AccountId32: Uint8Array }`.
  */
-function encodeMultiAddress(
-  address: Address
-): TypedValue<'AccountId20' | 'AccountId32', Uint8Array> {
+function encodeMultiAddress(address: Address): EncodedMultiAddress {
   const accountDecoded = decodeAddress(address)
   const isEthereumAddress = accountDecoded.length === 20
-  return {
-    [isEthereumAddress ? 'AccountId20' : 'AccountId32']: accountDecoded,
-  } as TypedValue<'AccountId20' | 'AccountId32', Uint8Array>
+  return isEthereumAddress
+    ? { AccountId20: accountDecoded }
+    : { AccountId32: accountDecoded }
 }
 
 /* ### QUERY ### */
@@ -333,6 +328,8 @@ export async function getAccountSignedAssociationExtrinsic(
   signature: Uint8Array | HexString,
   sigType: KeypairType
 ): Promise<Extrinsic> {
+  const proof = { [sigType]: signature } as EncodedSignature
+
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   if (isEthereumEnabled(api)) {
     if (sigType === 'ethereum') {
@@ -341,24 +338,16 @@ export async function getAccountSignedAssociationExtrinsic(
         signatureValidUntilBlock
       )
     }
-    const proof = {
-      [sigType]: signature,
-    } as TypedValue<Exclude<KeypairType, 'ethereum'>, typeof signature>
     return api.tx.didLookup.associateAccount(
-      {
-        Dotsama: [account, proof],
-      },
+      { Dotsama: [account, proof] },
       signatureValidUntilBlock
     )
   }
+
   if (sigType === 'ethereum')
     throw new SDKErrors.CodecMismatchError(
       'Ethereum linking is not yet supported by this chain'
     )
-
-  const proof = {
-    [sigType]: signature,
-  } as TypedValue<Exclude<KeypairType, 'ethereum'>, typeof signature>
 
   return api.tx.didLookup.associateAccount(
     account,

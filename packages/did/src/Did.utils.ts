@@ -265,6 +265,17 @@ export function isEncryptionKey(
   return encryptionKeyTypes.some((kt) => kt === key.type)
 }
 
+export type EncodedVerificationKey =
+  | { sr25519: Uint8Array }
+  | { ed25519: Uint8Array }
+  | { ecdsa: Uint8Array }
+
+export type EncodedEncryptionKey = { x25519: Uint8Array }
+
+export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
+
+export type EncodedSignature = EncodedVerificationKey
+
 /**
  * Type guard assuring that a string (or other input) is a valid KILT DID uri.
  *

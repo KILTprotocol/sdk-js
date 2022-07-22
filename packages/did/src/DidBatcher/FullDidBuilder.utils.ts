@@ -13,7 +13,7 @@ import { ApiPromise } from '@polkadot/api'
 import type { DidKey, NewDidKey } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { ChainDidPublicKey, formatPublicKeyForChain } from '../Did.chain.js'
+import { ChainDidPublicKey, encodePublicKey } from '../Did.chain.js'
 import { isEncryptionKey, isVerificationKey } from '../Did.utils.js'
 
 function computeChainKeyId(publicKey: ChainDidPublicKey): DidKey['id'] {
@@ -21,19 +21,21 @@ function computeChainKeyId(publicKey: ChainDidPublicKey): DidKey['id'] {
 }
 
 function encodeToChainKey(api: ApiPromise, key: NewDidKey): ChainDidPublicKey {
-  let keyClass: string
   if (isVerificationKey(key)) {
-    keyClass = 'PublicVerificationKey'
-  } else if (isEncryptionKey(key)) {
-    keyClass = 'PublicEncryptionKey'
-  } else {
-    throw new SDKErrors.DidBuilderError('Unsupported key type')
+    return new (api.registry.getOrThrow<ChainDidPublicKey>(
+      'DidDidDetailsDidPublicKey'
+    ))(api.registry, {
+      PublicVerificationKey: encodePublicKey(key),
+    })
   }
-  return new (api.registry.getOrThrow<ChainDidPublicKey>(
-    'DidDidDetailsDidPublicKey'
-  ))(api.registry, {
-    [keyClass]: formatPublicKeyForChain(key),
-  })
+  if (isEncryptionKey(key)) {
+    return new (api.registry.getOrThrow<ChainDidPublicKey>(
+      'DidDidDetailsDidPublicKey'
+    ))(api.registry, {
+      PublicEncryptionKey: encodePublicKey(key),
+    })
+  }
+  throw new SDKErrors.DidBuilderError('Unsupported key type')
 }
 
 export function deriveChainKeyId(

@@ -26,7 +26,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
 import { increaseNonce } from '../DidDetails/FullDidDetails.utils.js'
 import {
-  formatPublicKeyForChain,
+  encodePublicKey,
   generateDidAuthenticatedTx,
   queryNonce,
 } from '../Did.chain.js'
@@ -133,7 +133,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
     }
 
     const extrinsic = this.apiObject.tx.did.setAuthenticationKey(
-      formatPublicKeyForChain(key)
+      encodePublicKey(key)
     )
 
     this.batch.push(extrinsic)
@@ -169,7 +169,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       )
     }
     const extrinsic = this.apiObject.tx.did.addKeyAgreementKey(
-      formatPublicKeyForChain(key)
+      encodePublicKey(key)
     )
 
     super.addEncryptionKey(key)
@@ -254,7 +254,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       )
     }
     const extrinsic = this.apiObject.tx.did.setAttestationKey(
-      formatPublicKeyForChain(key)
+      encodePublicKey(key)
     )
 
     super.setAttestationKey(key)
@@ -322,7 +322,7 @@ export class FullDidUpdateBuilder extends FullDidBuilder {
       )
     }
     const extrinsic = this.apiObject.tx.did.setDelegationKey(
-      formatPublicKeyForChain(key)
+      encodePublicKey(key)
     )
 
     super.setDelegationKey(key)
