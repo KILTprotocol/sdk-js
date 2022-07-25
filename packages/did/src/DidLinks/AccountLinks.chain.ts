@@ -7,24 +7,50 @@
 
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import {
+import type {
   Deposit,
   DidIdentifier,
   IIdentity,
+  TypedValue,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 
-import { encodeAddress, signatureVerify } from '@polkadot/util-crypto'
-import type { u128 } from '@polkadot/types'
-import type { Extrinsic, MultiSignature } from '@polkadot/types/interfaces'
-import type { AnyNumber, TypeDef } from '@polkadot/types/types'
+import {
+  decodeAddress,
+  encodeAddress,
+  ethereumEncode,
+  signatureVerify,
+} from '@polkadot/util-crypto'
+import type { bool, Enum, Option, u128, u64, U8aFixed } from '@polkadot/types'
+import type {
+  AccountId32,
+  Extrinsic,
+  MultiSignature,
+} from '@polkadot/types/interfaces'
+import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
-import { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
-import { assert, BN, u8aToHex, u8aToU8a, u8aWrapBytes } from '@polkadot/util'
-import Keyring from '@polkadot/keyring'
+import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
+import {
+  assert,
+  BN,
+  stringToU8a,
+  u8aConcatStrict,
+  u8aToHex,
+  u8aToU8a,
+  u8aWrapBytes,
+  U8A_WRAP_ETHEREUM,
+} from '@polkadot/util'
+import type Keyring from '@polkadot/keyring'
 
-import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
+import type {
+  AugmentedQuery,
+  AugmentedQueryDoubleMap,
+  AugmentedSubmittable,
+} from '@polkadot/api/types'
+import { ApiPromise } from '@polkadot/api'
 import { makePolkadotTypedValue } from '../Did.utils.js'
+import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
 
 // TODO: update with string pattern types once available
 /// A KILT-chain specific address, encoded with the KILT 38 network prefix.
@@ -32,10 +58,12 @@ export type KiltAddress = IIdentity['address']
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = IIdentity['address']
 
-export type Address = KiltAddress | SubstrateAddress
+export type EthereumAddress = HexString
+
+export type Address = KiltAddress | SubstrateAddress | EthereumAddress
 
 /// Type of signatures to link accounts to DIDs.
-export type SignatureType = MultiSignature['type']
+export type SignatureType = MultiSignature['type'] | 'Ethereum'
 
 /**
  * Type of a linking payload signing function.
@@ -47,7 +75,123 @@ export type LinkingSignerCallback = (
   address: KiltAddress
 ) => Promise<HexString>
 
+/**
+ * Type describing storage type that is yet to be deployed to spiritnet.
+ */
+interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
+  readonly isAccountId20: boolean
+  readonly asAccountId20: U8aFixed
+  readonly isAccountId32: boolean
+  readonly asAccountId32: AccountId32
+  readonly type: 'AccountId20' | 'AccountId32'
+}
+
+/**
+ * Type required for encoding of the above.
+ */
+type LinkableAccountJson = TypedValue<
+  PalletDidLookupLinkableAccountLinkableAccountId['type'],
+  string | Uint8Array
+>
+
+/**
+ * Type required for encoding Enum type for association request extrinsics.
+ */
+type AssociateAccountRequest = TypedValue<
+  'Dotsama' | 'Ethereum',
+  [
+    string | Uint8Array, // AccountId
+    string | Uint8Array | TypedValue<SignatureType, string | Uint8Array> // signature
+  ]
+>
+
+/**
+ * Api augmentation override for when the ethereum enabled pallet version has landed.
+ */
+type WithEtherumSupport = {
+  tx: {
+    didLookup: {
+      associateAccount: AugmentedSubmittable<
+        (
+          req: AssociateAccountRequest,
+          expiration: u64 | AnyNumber | Uint8Array
+        ) => SubmittableExtrinsic
+      >
+      removeAccountAssociation: AugmentedSubmittable<
+        (account: LinkableAccountJson) => SubmittableExtrinsic,
+        [PalletDidLookupLinkableAccountLinkableAccountId]
+      >
+    }
+  }
+  query: {
+    didLookup: {
+      connectedDids: AugmentedQuery<
+        'promise',
+        (arg: LinkableAccountJson) => Option<PalletDidLookupConnectionRecord>,
+        [PalletDidLookupLinkableAccountLinkableAccountId]
+      >
+      connectedAccounts: AugmentedQueryDoubleMap<
+        'promise',
+        (
+          didId: string | Uint8Array,
+          accountId: LinkableAccountJson
+        ) => Option<bool>,
+        [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]
+      >
+    }
+  }
+}
+
+/**
+ * Detects whether api augmentation indicates presence of Ethereum linking enabled pallet.
+ *
+ * @param api The api object.
+ * @returns True if Ethereum linking is supported.
+ */
+function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
+  return (
+    api instanceof ApiPromise &&
+    ('isAccountId20' in
+      api.createType(
+        api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
+          'bool'
+      ) ||
+      'isEthereum' in
+        api.createType(
+          api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() ||
+            'bool'
+        ))
+  )
+}
+
+/**
+ * Prepares encoding a LinkableAccountId.
+ *
+ * @param address 20 or 32 byte address as string (hex or ss58 encoded).
+ * @returns `{ AccountId20 | AccountId32: Uint8Array }`
+ */
+function encodeMultiAddress(
+  address: Address
+): TypedValue<'AccountId20' | 'AccountId32', Uint8Array> {
+  const accountDecoded = decodeAddress(address)
+  const isEthereumAddress = accountDecoded.length === 20
+  return makePolkadotTypedValue(
+    isEthereumAddress ? 'AccountId20' : 'AccountId32',
+    accountDecoded
+  )
+}
+
 /* ### QUERY ### */
+
+async function queryConnectedDid(
+  linkedAccount: Address
+): Promise<Option<PalletDidLookupConnectionRecord>> {
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  if (isEthereumEnabled(api)) {
+    return api.query.didLookup.connectedDids(encodeMultiAddress(linkedAccount))
+  }
+  return api.query.didLookup.connectedDids(linkedAccount)
+}
 
 /**
  * Gets deposit information for a given account link.
@@ -58,8 +202,7 @@ export type LinkingSignerCallback = (
 export async function queryAccountLinkDepositInfo(
   linkedAccount: Address
 ): Promise<Deposit | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await api.query.didLookup.connectedDids(linkedAccount)
+  const connectedDid = await queryConnectedDid(linkedAccount)
   return connectedDid.isSome ? connectedDid.unwrap().deposit : null
 }
 
@@ -72,9 +215,14 @@ export async function queryAccountLinkDepositInfo(
 export async function queryConnectedDidForAccount(
   linkedAccount: Address
 ): Promise<DidIdentifier | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const connectedDid = await api.query.didLookup.connectedDids(linkedAccount)
+  const connectedDid = await queryConnectedDid(linkedAccount)
   return connectedDid.isNone ? null : connectedDid.unwrap().did.toString()
+}
+
+function isLinkableAccountId(
+  arg: Codec
+): arg is PalletDidLookupLinkableAccountLinkableAccountId {
+  return 'isAccountId32' in arg && 'isAccountId20' in arg
 }
 
 /**
@@ -91,8 +239,19 @@ export async function queryConnectedAccountsForDid(
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const connectedAccountsRecords =
     await api.query.didLookup.connectedAccounts.keys(linkedDid)
-  return connectedAccountsRecords.map((account) =>
-    encodeAddress(account.args[1], networkPrefix)
+  return connectedAccountsRecords.map<string>(
+    ({ args: [, accountAddress] }) => {
+      if (isLinkableAccountId(accountAddress)) {
+        // linked account is substrate address (ethereum-enabled storage version)
+        if (accountAddress.isAccountId32)
+          return encodeAddress(accountAddress.asAccountId32, networkPrefix)
+        // linked account is ethereum address (ethereum-enabled storage version)
+        if (accountAddress.isAccountId20)
+          return ethereumEncode(accountAddress.asAccountId20)
+      }
+      // linked account is substrate account (legacy storage version)
+      return encodeAddress(accountAddress.toU8a(), networkPrefix)
+    }
   )
 }
 
@@ -125,13 +284,19 @@ export async function queryIsConnected(
   account: Address
 ): Promise<boolean> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  // The following function returns something different from 0x00 if there is an entry for the provided key, 0x00 otherwise.
-  const connectedEntry = await api.query.didLookup.connectedAccounts.hash(
-    didIdentifier,
-    account
-  )
-  // isEmpty returns true if there is no entry for the given key -> the function should return false.
-  return !connectedEntry.isEmpty
+  if (isEthereumEnabled(api)) {
+    // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
+    return !(
+      await api.query.didLookup.connectedAccounts.hash(
+        didIdentifier,
+        encodeMultiAddress(account)
+      )
+    ).isEmpty
+    // isEmpty returns true if there is no entry for the given key -> the function should return false.
+  }
+  return !(
+    await api.query.didLookup.connectedAccounts.hash(didIdentifier, account)
+  ).isEmpty
 }
 
 /**
@@ -178,6 +343,22 @@ export async function getAccountSignedAssociationExtrinsic(
   sigType: SignatureType
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
+  if (isEthereumEnabled(api)) {
+    if (sigType === 'Ethereum') {
+      return api.tx.didLookup.associateAccount(
+        { Ethereum: [account, signature] },
+        signatureValidUntilBlock
+      )
+    }
+    return api.tx.didLookup.associateAccount(
+      { Dotsama: [account, makePolkadotTypedValue(sigType, signature)] },
+      signatureValidUntilBlock
+    )
+  }
+  if (sigType === 'Ethereum')
+    throw new SDKErrors.CodecMismatchError(
+      'Ethereum linking is not yet supported by this chain'
+    )
   return api.tx.didLookup.associateAccount(
     account,
     signatureValidUntilBlock,
@@ -221,6 +402,11 @@ export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
+  if (isEthereumEnabled(api)) {
+    return api.tx.didLookup.removeAccountAssociation(
+      encodeMultiAddress(linkedAccount)
+    )
+  }
   return api.tx.didLookup.removeAccountAssociation(linkedAccount)
 }
 
@@ -236,6 +422,8 @@ function getMultiSignatureTypeFromKeypairType(
       return 'Sr25519'
     case 'ecdsa':
       return 'Ecdsa'
+    case 'ethereum':
+      return 'Ethereum'
     default:
       throw new SDKErrors.DidError(
         `Unsupported signature algorithm "${keypairType}"`
@@ -293,7 +481,15 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
       validTill,
     ])
     .toU8a()
-  const paddedDetails = u8aToHex(u8aWrapBytes(encodedDetails))
+  const paddedDetails = u8aToHex(
+    decodeAddress(accountAddress).length > 20
+      ? u8aWrapBytes(encodedDetails)
+      : u8aConcatStrict([
+          U8A_WRAP_ETHEREUM,
+          stringToU8a(`${encodedDetails.length}`),
+          encodedDetails,
+        ])
+  )
   // The signature may be prefixed; so we try to verify the signature without the prefix first.
   // If it fails, we try the same with the prefix and return the result of the second operation.
   let signature = u8aToU8a(await signingCallback(paddedDetails, accountAddress))

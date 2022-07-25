@@ -5,15 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  Option,
-  Struct,
-  u64,
-  GenericAccountId,
-  u128,
-  u32,
-} from '@polkadot/types'
-import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { Option, GenericAccountId, u128, u32 } from '@polkadot/types'
+import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
@@ -42,6 +35,7 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import type {
   DidDidDetails,
+  DidDidDetailsDidAuthorizedCallOperation,
   DidDidDetailsDidEncryptionKey,
   DidDidDetailsDidPublicKey,
   DidDidDetailsDidPublicKeyDetails,
@@ -411,14 +405,6 @@ export type AuthorizeCallInput = {
   call: Extrinsic
   submitter: IIdentity['address']
   blockNumber?: AnyNumber
-}
-
-interface IDidAuthorizedCallOperation extends Struct {
-  did: DidIdentifier
-  txCounter: u64
-  call: Call
-  submitter: GenericAccountId
-  blockNumber: AnyNumber
 }
 
 // ### EXTRINSICS
@@ -811,16 +797,17 @@ export async function generateDidAuthenticatedTx({
   blockNumber,
 }: AuthorizeCallInput & SigningOptions): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const signableCall = api.registry.createType<IDidAuthorizedCallOperation>(
-    api.tx.did.submitDidCall.meta.args[0].type.toString(),
-    {
-      txCounter,
-      did: didIdentifier,
-      call,
-      submitter,
-      blockNumber: blockNumber || (await api.query.system.number()),
-    }
-  )
+  const signableCall =
+    api.registry.createType<DidDidDetailsDidAuthorizedCallOperation>(
+      api.tx.did.submitDidCall.meta.args[0].type.toString(),
+      {
+        txCounter,
+        did: didIdentifier,
+        call,
+        submitter,
+        blockNumber: blockNumber || (await api.query.system.number()),
+      }
+    )
   const signature = await sign({
     data: signableCall.toU8a(),
     meta: {
