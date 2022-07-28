@@ -61,8 +61,9 @@ export async function getStoreTx(
 }
 
 export interface AuthorizationId extends Enum {
-  readonly isDelegation: bool
+  readonly isDelegation: boolean
   readonly asDelegation: H256
+  readonly type: 'Delegation'
 }
 
 interface AttestationDetailsV1 extends Struct {

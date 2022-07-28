@@ -175,9 +175,12 @@ describe('When there is an on-chain DID', () => {
     })
   })
 
-  describe.each(['ed25519', 'sr25519', 'ecdsa'])(
+  describe.each(['ed25519', 'sr25519', 'ecdsa', 'ethereum'])(
     'and an %s account different than the sender to link',
     (keyType) => {
+      // TODO: remove this line to test against ethereum linking enabled chains
+      const it = keyType === 'ethereum' ? test.skip : test
+
       let keypair: KeyringPair
       beforeAll(async () => {
         keypair = keyring.addFromMnemonic(
