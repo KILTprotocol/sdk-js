@@ -112,6 +112,25 @@ describe('Credential', () => {
     )
   })
 
+  it('throws on not allowing unsigned credential', async () => {
+    const credential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+    const testCType = CType.fromSchema(rawCType)
+    await expect(
+      Credential.verify(credential, {
+        ctype: testCType,
+        allowUnsigned: false,
+      })
+    ).rejects.toThrow()
+  })
+
   it('throws on wrong hash in claim hash tree', async () => {
     const credential = buildCredential(
       identityBob,
