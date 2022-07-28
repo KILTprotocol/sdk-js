@@ -102,7 +102,7 @@ describe('Credential', () => {
     const testCType = CType.fromSchema(rawCType)
     await Credential.verify(credential, {
       ctype: testCType,
-      checkSignatureWithoutChallenge: false,
+      allowUnsigned: true,
     })
 
     // just deleting a field will result in a wrong proof

@@ -364,7 +364,7 @@ type VerifyOptions = {
   ctype?: ICType
   challenge?: string
   resolver?: IDidResolver
-  checkSignatureWithoutChallenge?: boolean
+  allowUnsigned?: boolean
 }
 
 /**
@@ -376,7 +376,7 @@ type VerifyOptions = {
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.checkSignatureWithoutChallenge - Wether to check the signature without a challenge being present.
+ * @param options.allowUnsigned - Wether to check the signature without a challenge being present.
  * @param options.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
  */
 export async function verify(
@@ -385,7 +385,7 @@ export async function verify(
     ctype,
     challenge,
     resolver = DidResolver,
-    checkSignatureWithoutChallenge = true,
+    allowUnsigned = false,
   }: VerifyOptions = {}
 ): Promise<void> {
   verifyDataStructure(credential)
@@ -396,14 +396,9 @@ export async function verify(
     if (!isSchemaValid) throw new SDKErrors.CredentialUnverifiableError()
   }
 
-  if (challenge) {
+  if (challenge || !allowUnsigned) {
     const isSignatureCorrect = await verifySignature(credential, {
       challenge,
-      resolver,
-    })
-    if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
-  } else if (checkSignatureWithoutChallenge) {
-    const isSignatureCorrect = await verifySignature(credential, {
       resolver,
     })
     if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
