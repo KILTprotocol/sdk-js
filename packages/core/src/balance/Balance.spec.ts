@@ -82,7 +82,6 @@ describe('Balance', () => {
 
   it('should get the balance', async () => {
     const currentBalance = await getBalances(bob.address)
-    expect(currentBalance.free.toNumber()).toBeTruthy()
     expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
   })
 
@@ -90,7 +89,7 @@ describe('Balance', () => {
     const transferTx = await getTransferTx(bob.address, new BN(100))
     const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(status).toBeInstanceOf(SubmittableResult)
-    expect(status.isFinalized).toBeTruthy()
+    expect(status.isFinalized).toBe(true)
   })
   it('should make transfer of amount with arbitrary exponent', async () => {
     const amount = new BN(10)
@@ -106,6 +105,6 @@ describe('Balance', () => {
       expectedAmount
     )
     expect(status).toBeInstanceOf(SubmittableResult)
-    expect(status.isFinalized).toBeTruthy()
+    expect(status.isFinalized).toBe(true)
   })
 })

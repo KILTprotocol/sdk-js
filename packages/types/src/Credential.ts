@@ -5,18 +5,34 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IAttestation, CompressedAttestation } from './Attestation'
-import type {
-  IRequestForAttestation,
-  CompressedRequestForAttestation,
-} from './RequestForAttestation'
+import type { HexString } from '@polkadot/util/types'
+import type { DidSignature } from './DidDetails'
+import type { IClaim, CompressedClaim } from './Claim'
+import type { IDelegationNode } from './Delegation'
+
+export type Hash = HexString
+
+export type NonceHash = {
+  hash: Hash
+  nonce?: string
+}
 
 export interface ICredential {
-  attestation: IAttestation
-  request: IRequestForAttestation
+  claim: IClaim
+  claimNonceMap: Record<Hash, string>
+  claimHashes: Hash[]
+  claimerSignature?: DidSignature & { challenge?: string }
+  delegationId: IDelegationNode['id'] | null
+  legitimations: ICredential[]
+  rootHash: Hash
 }
 
 export type CompressedCredential = [
-  CompressedRequestForAttestation,
-  CompressedAttestation
+  CompressedClaim,
+  ICredential['claimNonceMap'],
+  ICredential['claimerSignature'],
+  ICredential['claimHashes'],
+  ICredential['rootHash'],
+  CompressedCredential[],
+  ICredential['delegationId']
 ]

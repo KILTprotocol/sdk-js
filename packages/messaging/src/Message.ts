@@ -45,7 +45,7 @@ export class Message implements IMessage {
           const requestAttestation = body
           if (
             !DidUtils.isSameSubject(
-              requestAttestation.content.requestForAttestation.claim.owner,
+              requestAttestation.content.credential.claim.owner,
               sender
             )
           ) {
@@ -69,8 +69,8 @@ export class Message implements IMessage {
       case 'submit-credential':
         {
           const submitClaimsForCtype = body
-          submitClaimsForCtype.content.forEach((claim) => {
-            if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
+          submitClaimsForCtype.content.forEach((credential) => {
+            if (!DidUtils.isSameSubject(credential.claim.owner, sender)) {
               throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
             }
           })

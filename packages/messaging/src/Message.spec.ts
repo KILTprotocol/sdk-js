@@ -14,7 +14,6 @@ import {
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
-  ICredential,
   IDidResolver,
   IEncryptedMessage,
   IQuote,
@@ -25,7 +24,7 @@ import {
   ResolvedDidServiceEndpoint,
   SignCallback,
 } from '@kiltprotocol/types'
-import { Quote, RequestForAttestation } from '@kiltprotocol/core'
+import { Quote, Credential } from '@kiltprotocol/core'
 import {
   FullDidDetails,
   LightDidDetails,
@@ -221,7 +220,7 @@ describe('Messaging', () => {
   })
 
   it('verifies the message with sender is the owner (as full DID)', async () => {
-    const content = RequestForAttestation.fromClaim({
+    const content = Credential.fromClaim({
       cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceFullDid.uri,
       contents: {},
@@ -257,7 +256,7 @@ describe('Messaging', () => {
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
-        requestForAttestation: content,
+        credential: content,
         quote: bothSigned,
       },
       type: 'request-attestation',
@@ -287,7 +286,7 @@ describe('Messaging', () => {
 
     const attestation = {
       delegationId: null,
-      claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
+      claimHash: requestAttestationBody.content.credential.rootHash,
       cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobFullDid.uri,
       revoked: false,
@@ -322,13 +321,8 @@ describe('Messaging', () => {
       )
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
-    const credential: ICredential = {
-      request: content,
-      attestation: submitAttestationBody.content.attestation,
-    }
-
     const submitClaimsForCTypeBody: ISubmitCredential = {
-      content: [credential],
+      content: [content],
       type: 'submit-credential',
     }
 
@@ -357,7 +351,7 @@ describe('Messaging', () => {
 
   it('verifies the message with sender is the owner (as light DID)', async () => {
     // Create request for attestation to the light DID with no encoded details
-    const content = RequestForAttestation.fromClaim({
+    const content = Credential.fromClaim({
       cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceLightDid.uri,
       contents: {},
@@ -393,14 +387,14 @@ describe('Messaging', () => {
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
-        requestForAttestation: content,
+        credential: content,
         quote: bothSigned,
       },
       type: 'request-attestation',
     }
 
     // Create request for attestation to the light DID with encoded details
-    const contentWithEncodedDetails = RequestForAttestation.fromClaim({
+    const contentWithEncodedDetails = Credential.fromClaim({
       cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceLightDidWithDetails.uri,
       contents: {},
@@ -436,7 +430,7 @@ describe('Messaging', () => {
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
       content: {
-        requestForAttestation: contentWithEncodedDetails,
+        credential: contentWithEncodedDetails,
         quote: bothSignedEncodedDetails,
       },
       type: 'request-attestation',
@@ -487,7 +481,7 @@ describe('Messaging', () => {
 
     const attestation = {
       delegationId: null,
-      claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
+      claimHash: requestAttestationBody.content.credential.rootHash,
       cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobLightDid.uri,
       revoked: false,
@@ -502,7 +496,7 @@ describe('Messaging', () => {
 
     const attestationWithEncodedDetails = {
       delegationId: null,
-      claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
+      claimHash: requestAttestationBody.content.credential.rootHash,
       cTypeHash: Crypto.hashStr('0x12345678'),
       owner: bobLightDidWithDetails.uri,
       revoked: false,
@@ -558,23 +552,13 @@ describe('Messaging', () => {
       )
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
-    const credential: ICredential = {
-      request: content,
-      attestation: submitAttestationBody.content.attestation,
-    }
-
     const submitClaimsForCTypeBody: ISubmitCredential = {
-      content: [credential],
+      content: [content],
       type: 'submit-credential',
     }
 
-    const credentialWithEncodedDetails: ICredential = {
-      request: contentWithEncodedDetails,
-      attestation: submitAttestationBody.content.attestation,
-    }
-
     const submitClaimsForCTypeBodyWithEncodedDetails: ISubmitCredential = {
-      content: [credentialWithEncodedDetails],
+      content: [contentWithEncodedDetails],
       type: 'submit-credential',
     }
 

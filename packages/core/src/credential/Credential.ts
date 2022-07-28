@@ -6,73 +6,269 @@
  */
 
 /**
- * In KILT, a [[Credential]] is an attested claim, which a Claimer can store locally and share with Verifiers as they wish.
+ * Credentials are a core building block of the KILT SDK.
+ * A Credential represents a [[Claim]] which needs to be validated. In practice, the Credential is sent from a claimer to an attester for attesting and to a verifier for verification.
  *
- * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in a [[Credential]] object.
- * This [[Credential]] also contains the original request for attestation.
- * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
+ * A Credential object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
+ * The credential is made tamper-proof by hashing the claim properties and generating a digest from that, which is used to reference the Credential.
+ * It can be signed by the claimer, to authenticate the holder and to prevent replay attacks.
+ * A Credential also supports hiding of claim data during a credential presentation.
  *
  * @packageDocumentation
  */
 
-import {
-  DidDetails,
-  DidKeySelectionCallback,
-  Utils as DidUtils,
-} from '@kiltprotocol/did'
 import type {
   CompressedCredential,
+  DidResourceUri,
   DidVerificationKey,
+  Hash,
   IAttestation,
-  ICredential,
+  IClaim,
   ICType,
+  IDelegationNode,
   IDidResolver,
-  IRequestForAttestation,
+  ICredential,
   SignCallback,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
-import * as Attestation from '../attestation/index.js'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import {
+  DidDetails,
+  DidResolver,
+  isDidSignature,
+  verifyDidSignature,
+  Utils as DidUtils,
+  DidKeySelectionCallback,
+} from '@kiltprotocol/did'
+import * as Claim from '../claim/index.js'
+import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
-import * as RequestForAttestation from '../requestforattestation/index.js'
 
-/**
- * Verifies whether the data of the given credential is valid. It is valid if:
- * * the [[RequestForAttestation]] object associated with this credential has valid data (see [[RequestForAttestation.verifyDataIntegrity]]);
- * and
- * * the hash of the [[RequestForAttestation]] object for the credential, and the hash of the [[Claim]] for the credential are the same.
- *
- * @param credential - The credential to verify.
- * @returns Whether the credential's data is valid.
- */
-export function verifyDataIntegrity(credential: ICredential): boolean {
-  if (credential.request.claim.cTypeHash !== credential.attestation.cTypeHash)
-    return false
-  return (
-    credential.request.rootHash === credential.attestation.claimHash &&
-    RequestForAttestation.verifyDataIntegrity(credential.request)
-  )
+function getHashRoot(leaves: Uint8Array[]): Uint8Array {
+  const result = Crypto.u8aConcat(...leaves)
+  return Crypto.hash(result)
+}
+
+function getHashLeaves(
+  claimHashes: Hash[],
+  legitimations: ICredential[],
+  delegationId: IDelegationNode['id'] | null
+): Uint8Array[] {
+  const result = claimHashes.map((item) => Crypto.coToUInt8(item))
+  if (legitimations) {
+    legitimations.forEach((legitimation) => {
+      result.push(Crypto.coToUInt8(legitimation.rootHash))
+    })
+  }
+  if (delegationId) {
+    result.push(Crypto.coToUInt8(delegationId))
+  }
+
+  return result
 }
 
 /**
- * Checks whether the input meets all the required criteria of an ICredential object.
+ * Calculates the root hash of the credential.
+ *
+ * @param credential The credential object.
+ * @returns The hash.
+ */
+export function calculateRootHash(credential: Partial<ICredential>): Hash {
+  const hashes = getHashLeaves(
+    credential.claimHashes || [],
+    credential.legitimations || [],
+    credential.delegationId || null
+  )
+  const root = getHashRoot(hashes)
+  return Crypto.u8aToHex(root)
+}
+
+/**
+ * Removes [[Claim]] properties from the [[Credential]] object, provides anonymity and security when building the [[createPresentation]] method.
+ *
+ * @param credential - The Credential object to remove properties from.
+ * @param properties - Properties to remove from the [[Claim]] object.
+ * @returns A cloned Credential with removed properties.
+ */
+export function removeClaimProperties(
+  credential: ICredential,
+  properties: string[]
+): ICredential {
+  const presentation: ICredential =
+    // clone the credential because properties will be deleted later.
+    // TODO: find a nice way to clone stuff
+    JSON.parse(JSON.stringify(credential))
+
+  properties.forEach((key) => {
+    delete presentation.claim.contents[key]
+  })
+  presentation.claimNonceMap = hashClaimContents(presentation.claim, {
+    nonces: presentation.claimNonceMap,
+  }).nonceMap
+
+  return presentation
+}
+
+/**
+ * Prepares credential data for signing.
+ *
+ * @param input - The Credential to prepare the data for.
+ * @param challenge - An optional challenge to be included in the signing process.
+ * @returns The prepared signing data as Uint8Array.
+ */
+export function makeSigningData(
+  input: ICredential,
+  challenge?: string
+): Uint8Array {
+  return new Uint8Array([
+    ...Crypto.coToUInt8(input.rootHash),
+    ...Crypto.coToUInt8(challenge),
+  ])
+}
+
+/**
+ * Add a claimer signature to a Credential.
+ *
+ * @param credential - The Credential to add the signature to.
+ * @param sig - The signature to be added.
+ * @param keyUri - The DID key uri of the key, which was used to make the signature.
+ * @param options - Optional parameters.
+ * @param options.challenge - An optional challenge, which was included in the signing process.
+ */
+export async function addSignature(
+  credential: ICredential,
+  sig: string | Uint8Array,
+  keyUri: DidResourceUri,
+  {
+    challenge,
+  }: {
+    challenge?: string
+  } = {}
+): Promise<void> {
+  const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
+  // eslint-disable-next-line no-param-reassign
+  credential.claimerSignature = { signature, keyUri, challenge }
+}
+
+/**
+ * Adds a claimer signature to a Credential using a DID key.
+ *
+ * @param credential - The Credential to add the signature to.
+ * @param signCallback - The signing callback.
+ * @param didDetails - The DID details of the signer.
+ * @param keyId - The DID key id to be used for the signing.
+ * @param options - Optional parameters.
+ * @param options.challenge - An optional challenge, which will be included in the signing process.
+ */
+export async function sign(
+  credential: ICredential,
+  signCallback: SignCallback,
+  didDetails: DidDetails,
+  keyId: DidVerificationKey['id'],
+  {
+    challenge,
+  }: {
+    challenge?: string
+  } = {}
+): Promise<void> {
+  const { signature, keyUri: signatureKeyId } = await didDetails.signPayload(
+    makeSigningData(credential, challenge),
+    signCallback,
+    keyId
+  )
+  await addSignature(credential, signature, signatureKeyId, { challenge })
+}
+
+/**
+ * Verifies if the credential hash matches the contents of it.
+ *
+ * @param input - The credential to check.
+ * @returns Whether they match or not.
+ */
+export function verifyRootHash(input: ICredential): boolean {
+  return input.rootHash === calculateRootHash(input)
+}
+
+/**
+ * Verifies the data of the [[Credential]] object; used to check that the data was not tampered with, by checking the data against hashes.
+ *
+ * @param input - The [[Credential]] for which to verify data.
+ * @returns Whether the data is valid.
+ */
+export function verifyDataIntegrity(input: ICredential): boolean {
+  // check claim hash
+  if (!verifyRootHash(input)) {
+    throw new SDKErrors.RootHashUnverifiableError()
+  }
+
+  // verify properties against selective disclosure proof
+  const verificationResult = Claim.verifyDisclosedAttributes(input.claim, {
+    nonces: input.claimNonceMap,
+    hashes: input.claimHashes,
+  })
+  // TODO: how do we want to deal with multiple errors during claim verification?
+  if (!verificationResult.verified)
+    throw verificationResult.errors[0] || new SDKErrors.ClaimUnverifiableError()
+
+  // check legitimations
+  input.legitimations.forEach((legitimation) => {
+    if (!verifyDataIntegrity(legitimation)) {
+      throw new SDKErrors.LegitimationsUnverifiableError()
+    }
+  })
+
+  return true
+}
+
+/**
+ * Checks whether the input meets all the required criteria of an [[ICredential]] object.
  * Throws on invalid input.
  *
- * @param input The potentially only partial ICredential.
+ * @param input - A potentially only partial [[Credential]].
+ *
  */
 export function verifyDataStructure(input: ICredential): void {
-  if (input.attestation) {
-    Attestation.verifyDataStructure(input.attestation)
-  } else throw new SDKErrors.AttestationMissingError()
+  if (!input.claim) {
+    throw new SDKErrors.ClaimMissingError()
+  } else {
+    Claim.verifyDataStructure(input.claim)
+  }
+  if (!input.claim.owner) {
+    throw new SDKErrors.OwnerMissingError()
+  }
+  if (!input.legitimations && !Array.isArray(input.legitimations)) {
+    throw new SDKErrors.LegitimationsMissingError()
+  }
 
-  if (input.request) {
-    RequestForAttestation.verifyDataStructure(input.request)
-  } else throw new SDKErrors.RequestForAttestationMissingError()
+  if (!input.claimNonceMap) {
+    throw new SDKErrors.ClaimNonceMapMissingError()
+  }
+  if (
+    typeof input.claimNonceMap !== 'object' ||
+    Object.entries(input.claimNonceMap).some(
+      ([digest, nonce]) =>
+        !digest ||
+        !DataUtils.validateHash(digest, 'statement digest') ||
+        typeof nonce !== 'string' ||
+        !nonce
+    )
+  ) {
+    throw new SDKErrors.ClaimNonceMapMalformedError()
+  }
+
+  if (!input.claimHashes) {
+    throw new SDKErrors.DataStructureError('claim hashes not provided')
+  }
+
+  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+    throw new SDKErrors.DelegationIdTypeError()
+  }
+  if (input.claimerSignature) isDidSignature(input.claimerSignature)
 }
 
 /**
- * Checks the [[Credential]] with a given [[CType]] to check if the claim meets the [[schema]] structure.
+ * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
  *
- * @param credential A [[Credential]] object of an attested claim used for verification.
+ * @param credential A [[Credential]] for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
  *
  * @returns A boolean if the [[Claim]] structure in the [[Credential]] is valid.
@@ -81,38 +277,140 @@ export function verifyAgainstCType(
   credential: ICredential,
   ctype: ICType
 ): boolean {
-  verifyDataStructure(credential)
-  return verifyClaimAgainstSchema(
-    credential.request.claim.contents,
-    ctype.schema
-  )
+  try {
+    verifyDataStructure(credential)
+  } catch {
+    return false
+  }
+  return verifyClaimAgainstSchema(credential.claim.contents, ctype.schema)
 }
 
 /**
- * Builds a new instance of [[Credential]], from all required properties.
+ * Verifies the signature of the [[Credential]].
+ * It supports migrated DIDs, meaning that if the original claim within the [[Credential]] included a light DID that was afterwards upgraded,
+ * the signature over the presentation **must** be generated with the full DID in order for the verification to be successful.
+ * On the other hand, a light DID that has been migrated and then deleted from the chain will not be allowed to generate valid presentations anymore.
  *
- * @param request - The request for attestation for the claim that was attested.
- * @param attestation - The attestation for the claim by the attester.
- * @returns A new [[Credential]] object.
+ * @param input - The [[Credential]].
+ * @param verificationOpts Additional verification options.
+ * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
+ * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
+ * @returns Whether the signature is correct.
  */
-export function fromRequestAndAttestation(
-  request: IRequestForAttestation,
-  attestation: IAttestation
+export async function verifySignature(
+  input: ICredential,
+  {
+    challenge,
+    resolver = DidResolver,
+  }: {
+    challenge?: string
+    resolver?: IDidResolver
+  } = {}
+): Promise<boolean> {
+  const { claimerSignature } = input
+  if (!claimerSignature) return false
+  if (challenge && challenge !== claimerSignature.challenge) return false
+  const signingData = makeSigningData(input, claimerSignature.challenge)
+  const { verified } = await verifyDidSignature({
+    signature: claimerSignature,
+    message: signingData,
+    expectedVerificationMethod: 'authentication',
+    resolver,
+  })
+  return verified
+}
+
+export type Options = {
+  legitimations?: ICredential[]
+  delegationId?: IDelegationNode['id'] | null
+}
+
+/**
+ * Builds a new [[ICredential]] object, from a complete set of required parameters.
+ *
+ * @param claim An [[IClaim]] object to build the credential for.
+ * @param option Container for different options that can be passed to this method.
+ * @param option.legitimations Array of [[Credential]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+ * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
+ * @returns A new [[ICredential]] object.
+ */
+export function fromClaim(
+  claim: IClaim,
+  { legitimations = [], delegationId = null }: Options = {}
 ): ICredential {
+  const { hashes: claimHashes, nonceMap: claimNonceMap } =
+    Claim.hashClaimContents(claim)
+
+  const rootHash = calculateRootHash({
+    legitimations,
+    claimHashes,
+    delegationId,
+  })
+
+  // signature will be added afterwards!
   const credential = {
-    request,
-    attestation,
+    claim,
+    legitimations,
+    claimHashes,
+    claimNonceMap,
+    rootHash,
+    delegationId,
   }
   verifyDataStructure(credential)
   return credential
 }
 
+type VerifyOptions = {
+  ctype?: ICType
+  challenge?: string
+  resolver?: IDidResolver
+  allowUnsigned?: boolean
+}
+
 /**
- * Custom Type Guard to determine input being of type ICredential.
+ * Verifies data structure, data integrity and claimers signature.
  *
- * @param input The potentially only partial ICredential.
+ * Upon presentation of a credential, a verifier would call this [[verify]] function.
  *
- * @returns Boolean whether input is of type ICredential.
+ * @param credential - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
+ * @param options.allowUnsigned - Wether to check the signature without a challenge being present.
+ * @param options.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
+ */
+export async function verify(
+  credential: ICredential,
+  {
+    ctype,
+    challenge,
+    resolver = DidResolver,
+    allowUnsigned = false,
+  }: VerifyOptions = {}
+): Promise<void> {
+  verifyDataStructure(credential)
+  verifyDataIntegrity(credential)
+
+  if (ctype) {
+    const isSchemaValid = verifyAgainstCType(credential, ctype)
+    if (!isSchemaValid) throw new SDKErrors.CredentialUnverifiableError()
+  }
+
+  if (challenge || !allowUnsigned) {
+    const isSignatureCorrect = await verifySignature(credential, {
+      challenge,
+      resolver,
+    })
+    if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
+  }
+}
+
+/**
+ * Custom Type Guard to determine input being of type [[ICredential]]..
+ *
+ * @param input - A potentially only partial [[ICredential]].
+ *
+ * @returns  Boolean whether input is of type ICredential.
  */
 export function isICredential(input: unknown): input is ICredential {
   try {
@@ -124,60 +422,13 @@ export function isICredential(input: unknown): input is ICredential {
 }
 
 /**
- * Verifies whether the credential is valid. It is valid if:
- * * the data is valid (see [[verifyDataIntegrity]]);
- * and
- * * the [[Attestation]] object for this credential is valid (see [[Attestation.checkValidity]], where the **chain** is queried).
- *
- * Upon presentation of a credential, a verifier would call this [[verify]] function.
- *
- * @param credential - The credential to check for validity.
- * @param verificationOpts The additional options to use upon attested credential verification.
- * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
- * Defaults to [[DidResolver]].
- * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
- * @returns A promise containing whether the provided credential is valid.
- */
-export async function verify(
-  credential: ICredential,
-  verificationOpts: {
-    resolver?: IDidResolver
-    challenge?: string
-  } = {}
-): Promise<boolean> {
-  return (
-    verifyDataIntegrity(credential) &&
-    (await RequestForAttestation.verifySignature(
-      credential.request,
-      verificationOpts
-    )) &&
-    Attestation.checkValidity(credential.attestation)
-  )
-}
-
-/**
- * Verifies the data of each element of the given Array of ICredentials.
- *
- * @param legitimations Array of ICredentials to validate.
- * @returns Boolean whether each element of the given Array of ICredentials is verifiable.
- */
-export function validateLegitimations(legitimations: ICredential[]): boolean {
-  legitimations.forEach((legitimation) => {
-    if (!verifyDataIntegrity(legitimation)) {
-      throw new SDKErrors.LegitimationsUnverifiableError()
-    }
-  })
-  return true
-}
-
-/**
- * Gets the hash of the claim that corresponds to this attestation.
+ * Gets the hash of the credential.
  *
  * @param credential - The credential to get the hash from.
- * @returns The hash of the claim for this attestation (claimHash).
+ * @returns The hash of the credential.
  */
 export function getHash(credential: ICredential): IAttestation['claimHash'] {
-  return credential.attestation.claimHash
+  return credential.rootHash
 }
 
 /**
@@ -186,9 +437,9 @@ export function getHash(credential: ICredential): IAttestation['claimHash'] {
  * @param credential The credential.
  * @returns The set of names.
  */
-export function getAttributes(credential: ICredential): Set<string> {
+function getAttributes(credential: ICredential): Set<string> {
   // TODO: move this to claim or contents
-  return new Set(Object.keys(credential.request.claim.contents))
+  return new Set(Object.keys(credential.claim.contents))
 }
 
 /**
@@ -197,7 +448,7 @@ export function getAttributes(credential: ICredential): Set<string> {
  *
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
- * @param presentationOptions.sign The callback to sign the presentation.
+ * @param presentationOptions.signCallback The callback to sign the presentation.
  * @param presentationOptions.claimerDid The DID details of the presenter.
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
@@ -208,23 +459,18 @@ export function getAttributes(credential: ICredential): Set<string> {
 export async function createPresentation({
   credential,
   selectedAttributes,
-  sign,
+  signCallback,
   challenge,
   claimerDid,
   keySelection = DidUtils.defaultKeySelectionCallback,
 }: {
   credential: ICredential
   selectedAttributes?: string[]
-  sign: SignCallback
+  signCallback: SignCallback
   challenge?: string
   claimerDid: DidDetails
   keySelection?: DidKeySelectionCallback<DidVerificationKey>
 }): Promise<ICredential> {
-  const presentation =
-    // clone the attestation and request for attestation because properties will be deleted later.
-    // TODO: find a nice way to clone stuff
-    JSON.parse(JSON.stringify(credential))
-
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
     ? Array.from(getAttributes(credential)).filter(
@@ -233,8 +479,8 @@ export async function createPresentation({
     : []
 
   // remove these attributes
-  RequestForAttestation.removeClaimProperties(
-    presentation.request,
+  const presentation = removeClaimProperties(
+    credential,
     excludedClaimProperties
   )
 
@@ -245,47 +491,52 @@ export async function createPresentation({
     throw new SDKErrors.UnsupportedKeyError('authentication')
   }
 
-  await RequestForAttestation.signWithDidKey(
-    presentation.request,
-    sign,
-    claimerDid,
-    selectedKeyId,
-    {
-      challenge,
-    }
-  )
+  await sign(presentation, signCallback, claimerDid, selectedKeyId, {
+    challenge,
+  })
 
   return presentation
 }
 
 /**
- * Compresses a [[Credential]] object into an array for storage and/or messaging.
+ * Compresses a [[Credential]] for storage and/or messaging.
  *
- * @param credential - The credential to compress.
- * @returns An array that contains the same properties of a [[Credential]].
+ * @param credential A [[Credential]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of a [[Credential]].
  */
 export function compress(credential: ICredential): CompressedCredential {
   verifyDataStructure(credential)
-
   return [
-    RequestForAttestation.compress(credential.request),
-    Attestation.compress(credential.attestation),
+    Claim.compress(credential.claim),
+    credential.claimNonceMap,
+    credential.claimerSignature,
+    credential.claimHashes,
+    credential.rootHash,
+    credential.legitimations.map(compress),
+    credential.delegationId,
   ]
 }
 
 /**
- * Decompresses a [[Credential]] array from storage and/or message into an object.
+ * Decompresses a [[Credential]] from storage and/or message.
  *
- * @param credential The [[CompressedCredential]] that should get decompressed.
- * @returns A new [[Credential]] object.
+ * @param credential A compressed [[Credential]] array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as a [[Credential]].
  */
 export function decompress(credential: CompressedCredential): ICredential {
-  if (!Array.isArray(credential) || credential.length !== 2) {
+  if (!Array.isArray(credential) || credential.length !== 7) {
     throw new SDKErrors.DecompressionArrayError('Credential')
   }
   const decompressedCredential = {
-    request: RequestForAttestation.decompress(credential[0]),
-    attestation: Attestation.decompress(credential[1]),
+    claim: Claim.decompress(credential[0]),
+    claimNonceMap: credential[1],
+    claimerSignature: credential[2],
+    claimHashes: credential[3],
+    rootHash: credential[4],
+    legitimations: credential[5].map(decompress),
+    delegationId: credential[6],
   }
   verifyDataStructure(decompressedCredential)
   return decompressedCredential

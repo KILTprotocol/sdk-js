@@ -9,7 +9,7 @@ import type { bool, Enum, Option, Struct, U128 } from '@polkadot/types'
 import type {
   Deposit,
   IAttestation,
-  IRequestForAttestation,
+  ICredential,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
@@ -83,7 +83,7 @@ export type AttestationDetails = AttestationDetailsV2
 
 function decode(
   encoded: Option<AttestationDetailsV1 | AttestationDetailsV2>,
-  claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
+  claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): IAttestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<AttestationAttestationsAttestationDetails>',
@@ -125,7 +125,7 @@ function decode(
  * @returns An Option wrapping scale encoded attestation data.
  */
 export async function queryRaw(
-  claimHash: IRequestForAttestation['rootHash']
+  claimHash: ICredential['rootHash']
 ): Promise<Option<AttestationAttestationsAttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const api = await BlockchainApiConnection.getConnectionOrConnect()
@@ -139,7 +139,7 @@ export async function queryRaw(
  * @returns A promise containing the retrieved [[Attestation]] or null.
  */
 export async function query(
-  claimHash: IRequestForAttestation['rootHash'] | IAttestation['claimHash']
+  claimHash: ICredential['rootHash'] | IAttestation['claimHash']
 ): Promise<IAttestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
@@ -154,7 +154,7 @@ export async function query(
  * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getRevokeTx(
-  claimHash: IRequestForAttestation['rootHash'] | IAttestation['claimHash'],
+  claimHash: ICredential['rootHash'] | IAttestation['claimHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
@@ -189,7 +189,7 @@ export async function getRevokeTx(
  * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getRemoveTx(
-  claimHash: IRequestForAttestation['rootHash'],
+  claimHash: ICredential['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
@@ -223,7 +223,7 @@ export async function getRemoveTx(
  * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getReclaimDepositTx(
-  claimHash: IRequestForAttestation['rootHash']
+  claimHash: ICredential['rootHash']
 ): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(

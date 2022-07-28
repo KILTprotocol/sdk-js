@@ -8,15 +8,11 @@
 import type { AnyJson } from '@polkadot/types/types/codec'
 import type { DidSignature, DidUri } from './DidDetails.js'
 import type { CompressedAttestation, IAttestation } from './Attestation.js'
-import type { CompressedCredential, ICredential } from './Credential.js'
 import type { IClaim, PartialClaim } from './Claim.js'
 import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
 import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote.js'
-import type {
-  CompressedRequestForAttestation,
-  IRequestForAttestation,
-} from './RequestForAttestation.js'
+import type { CompressedCredential, ICredential } from './Credential.js'
 import type { CompressedTerms, ITerms } from './Terms.js'
 import type { DidResourceUri, IClaimContents } from './index.js'
 
@@ -115,7 +111,7 @@ export type CompressedSubmitAttestation = [
 ]
 export type CompressedRejectAttestation = [
   'reject-attestation',
-  IRequestForAttestation['rootHash']
+  ICredential['rootHash']
 ]
 export type CompressedSubmitCredentials = [
   'submit-credential',
@@ -135,7 +131,7 @@ export type CompressedRejectAcceptDelegation = [
 ]
 
 export interface IRequestAttestationContent {
-  requestForAttestation: IRequestForAttestation
+  credential: ICredential
   quote?: IQuoteAgreement
 }
 
@@ -154,7 +150,7 @@ export interface ISubmitAttestation extends IMessageBodyBase {
 }
 
 export interface IRejectAttestation extends IMessageBodyBase {
-  content: IRequestForAttestation['rootHash']
+  content: ICredential['rootHash']
   type: 'reject-attestation'
 }
 
@@ -280,7 +276,7 @@ export type CompressedRequestCredentials = [
 ]
 
 export type CompressedRequestAttestationContent = [
-  CompressedRequestForAttestation,
+  CompressedCredential,
   CompressedQuoteAgreed | undefined
 ]
 

@@ -26,7 +26,6 @@ import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
 import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { DelegationNode } from '../delegation/DelegationNode'
@@ -144,8 +143,8 @@ it('should be possible to delegate attestation rights', async () => {
     rootKey.sign,
     attesterKey.sign
   )
-  expect(await rootNode.verify()).toBeTruthy()
-  expect(await delegatedNode.verify()).toBeTruthy()
+  expect(await rootNode.verify()).toBe(true)
+  expect(await delegatedNode.verify()).toBe(true)
 }, 60_000)
 
 describe('and attestation rights have been delegated', () => {
@@ -167,8 +166,8 @@ describe('and attestation rights have been delegated', () => {
       attesterKey.sign
     )
 
-    expect(await rootNode.verify()).toBeTruthy()
-    expect(await delegatedNode.verify()).toBeTruthy()
+    expect(await rootNode.verify()).toBe(true)
+    expect(await delegatedNode.verify()).toBe(true)
   }, 75_000)
 
   it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
@@ -181,19 +180,23 @@ describe('and attestation rights have been delegated', () => {
       content,
       claimer.uri
     )
-    const request = RequestForAttestation.fromClaim(claim, {
+    const credential = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await RequestForAttestation.signWithDidKey(
-      request,
+    await Credential.sign(
+      credential,
       claimerKey.sign,
       claimer,
       claimer.authenticationKey.id
     )
-    expect(RequestForAttestation.verifyDataIntegrity(request)).toBeTruthy()
-    expect(await RequestForAttestation.verifySignature(request)).toBeTruthy()
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(await Credential.verifySignature(credential)).toBe(true)
+    await Credential.verify(credential)
 
-    const attestation = Attestation.fromRequestAndDid(request, attester.uri)
+    const attestation = Attestation.fromCredentialAndDid(
+      credential,
+      attester.uri
+    )
     const storeTx = await Attestation.getStoreTx(attestation)
     const authorizedStoreTx = await attester.authorizeExtrinsic(
       storeTx,
@@ -202,25 +205,17 @@ describe('and attestation rights have been delegated', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    const credential = Credential.fromRequestAndAttestation(
-      request,
-      attestation
-    )
-    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    expect(await Credential.verify(credential)).toBeTruthy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
 
     // revoke attestation through root
-    const revokeTx = await Attestation.getRevokeTx(
-      credential.attestation.claimHash,
-      1
-    )
+    const revokeTx = await Attestation.getRevokeTx(attestation.claimHash, 1)
     const authorizedStoreTx2 = await root.authorizeExtrinsic(
       revokeTx,
       rootKey.sign,
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx2, paymentAccount)
-    expect(await Credential.verify(credential)).toBeFalsy()
+    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   }, 75_000)
 })
 
@@ -283,7 +278,7 @@ describe('revocation', () => {
     })
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
-    expect(await delegationA.verify()).toBeFalsy()
+    expect(await delegationA.verify()).toBe(false)
     expect(await DelegationNode.query(delegationA.id)).not.toBeNull()
   }, 60_000)
 

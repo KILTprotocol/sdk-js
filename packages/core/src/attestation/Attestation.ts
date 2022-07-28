@@ -8,7 +8,7 @@
 import type {
   IAttestation,
   IDelegationHierarchyDetails,
-  IRequestForAttestation,
+  ICredential,
   CompressedAttestation,
   DidUri,
 } from '@kiltprotocol/types'
@@ -16,10 +16,10 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import { query } from './Attestation.chain.js'
+import * as Credential from '../credential/index.js'
 
 /**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
- * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as a [[Credential]].
+ * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[Credential]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
@@ -62,18 +62,18 @@ export function verifyDataStructure(input: IAttestation): void {
 /**
  * Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
  *
- * @param request - The base request for attestation.
+ * @param credential - The base credential for attestation.
  * @param attesterDid - The attester's DID, used to attest to the underlying claim.
  * @returns A new [[Attestation]] object.
  */
-export function fromRequestAndDid(
-  request: IRequestForAttestation,
+export function fromCredentialAndDid(
+  credential: ICredential,
   attesterDid: DidUri
 ): IAttestation {
   const attestation = {
-    claimHash: request.rootHash,
-    cTypeHash: request.claim.cTypeHash,
-    delegationId: request.delegationId,
+    claimHash: credential.rootHash,
+    cTypeHash: credential.claim.cTypeHash,
+    delegationId: credential.delegationId,
     owner: attesterDid,
     revoked: false,
   }
@@ -131,21 +131,35 @@ export function isIAttestation(input: unknown): input is IAttestation {
 /**
  * Queries an attestation from the chain and checks if it is existing, if the owner of the attestation matches and if it was not revoked.
  *
- * @param attestation - The Attestation to verify.
  * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
  * @returns A promise containing whether the attestation is valid.
  */
 export async function checkValidity(
-  attestation: IAttestation,
-  claimHash: IAttestation['claimHash'] = attestation.claimHash
+  claimHash: IAttestation['claimHash'] | ICredential['rootHash']
 ): Promise<boolean> {
-  verifyDataStructure(attestation)
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
   const chainAttestation = await query(claimHash)
-  return !!(
-    chainAttestation !== null &&
-    chainAttestation.owner === attestation.owner &&
-    !chainAttestation.revoked
+  return chainAttestation !== null && !chainAttestation.revoked
+}
+
+/**
+ * Verifies whether the data of the given attestation matches the one from the corresponding credential. It is valid if:
+ * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
+ * and
+ * * the hash of the [[Credential]] object, and the hash of the [[Attestation]].
+ *
+ * @param attestation - The attestation to verify.
+ * @param credential - The credential to verify against.
+ * @returns Whether the data is valid.
+ */
+export function verifyAgainstCredential(
+  attestation: IAttestation,
+  credential: ICredential
+): boolean {
+  return (
+    credential.claim.cTypeHash === attestation.cTypeHash &&
+    credential.rootHash === attestation.claimHash &&
+    Credential.verifyDataIntegrity(credential)
   )
 }
 

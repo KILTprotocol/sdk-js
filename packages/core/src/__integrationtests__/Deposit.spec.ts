@@ -19,7 +19,7 @@ import {
 } from '@kiltprotocol/testing'
 import {
   IAttestation,
-  IRequestForAttestation,
+  ICredential,
   KeyringPair,
   SignCallback,
   SubmittableExtrinsic,
@@ -38,7 +38,7 @@ import {
 import { Balance } from '../balance'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
-import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 import * as CType from '../ctype'
@@ -100,12 +100,9 @@ async function checkRemoveFullDidAttestation(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   sign: SignCallback,
-  requestForAttestation: IRequestForAttestation
+  credential: ICredential
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.uri
-  )
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getStoreTx(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
@@ -122,10 +119,7 @@ async function checkRemoveFullDidAttestation(
     : new BN(0)
 
   const balanceBeforeRemoving = await Balance.getBalances(identity.address)
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.uri
-  )
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getRemoveTx(attestation.claimHash, 0)
   authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
@@ -143,12 +137,9 @@ async function checkReclaimFullDidAttestation(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   sign: SignCallback,
-  requestForAttestation: IRequestForAttestation
+  credential: ICredential
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.uri
-  )
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getStoreTx(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
@@ -156,10 +147,7 @@ async function checkReclaimFullDidAttestation(
   await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
 
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.uri
-  )
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
@@ -185,12 +173,9 @@ async function checkDeletedDidReclaimAttestation(
   identity: KeyringPair,
   fullDid: FullDidDetails,
   sign: SignCallback,
-  requestForAttestation: IRequestForAttestation
+  credential: ICredential
 ): Promise<void> {
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.uri
-  )
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await Attestation.getStoreTx(attestation)
   authorizedTx = await fullDid.authorizeExtrinsic(tx, sign, identity.address)
@@ -199,10 +184,7 @@ async function checkDeletedDidReclaimAttestation(
 
   storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
 
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.uri
-  )
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
   tx = await fullDid.authorizeExtrinsic(deleteDid, sign, identity.address)
@@ -256,7 +238,7 @@ async function checkWeb3Deposit(
 }
 
 let keys: KeyTool[]
-let requestForAttestation: IRequestForAttestation
+let credential: ICredential
 
 beforeAll(async () => {
   await initializeApi()
@@ -298,9 +280,9 @@ beforeAll(async () => {
     claimerLightDid.uri
   )
 
-  requestForAttestation = RequestForAttestation.fromClaim(claim)
-  await RequestForAttestation.signWithDidKey(
-    requestForAttestation,
+  credential = Credential.fromClaim(claim)
+  await Credential.sign(
+    credential,
     claimer.sign,
     claimerLightDid,
     claimerLightDid.authenticationKey.id
@@ -389,7 +371,7 @@ describe('Different deposits scenarios', () => {
         keys[2].keypair,
         testFullDidThree,
         keys[2].sign,
-        requestForAttestation
+        credential
       )
     ).toBe(true)
   }, 90_000)
@@ -399,7 +381,7 @@ describe('Different deposits scenarios', () => {
         keys[3].keypair,
         testFullDidFour,
         keys[3].sign,
-        requestForAttestation
+        credential
       )
     ).toBe(true)
   }, 90_000)
@@ -419,7 +401,7 @@ describe('Different deposits scenarios', () => {
         keys[6].keypair,
         testFullDidSeven,
         keys[6].sign,
-        requestForAttestation
+        credential
       )
     ).toBe(true)
   }, 90_000)
@@ -429,7 +411,7 @@ describe('Different deposits scenarios', () => {
         keys[7].keypair,
         testFullDidEight,
         keys[7].sign,
-        requestForAttestation
+        credential
       )
     ).toBe(true)
   }, 90_000)
@@ -438,13 +420,13 @@ describe('Different deposits scenarios', () => {
       keys[8].keypair,
       testFullDidNine,
       keys[8].sign,
-      requestForAttestation
+      credential
     )
   }, 120_000)
   it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
     expect(
       await checkWeb3Deposit(keys[9].keypair, testFullDidTen, keys[9].sign)
-    ).toBeTruthy()
+    ).toBe(true)
   }, 120_000)
 })
 

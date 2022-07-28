@@ -11,13 +11,10 @@ import {
   Credential,
   CType,
   Quote,
-  RequestForAttestation,
 } from '@kiltprotocol/core'
 import type {
-  CompressedCredential,
   CompressedMessageBody,
   CompressedRequestCredentialContent,
-  ICredential,
   ICType,
   IDelegationData,
   IMessage,
@@ -107,9 +104,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case 'request-attestation': {
-      RequestForAttestation.verifyDataStructure(
-        body.content.requestForAttestation
-      )
+      Credential.verifyDataStructure(body.content.credential)
       if (body.content.quote) {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
       }
@@ -268,11 +263,8 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     case 'submit-terms': {
       compressedContents = [
         Claim.compress(body.content.claim),
-        body.content.legitimations.map(
-          (credential: ICredential | CompressedCredential) =>
-            Array.isArray(credential)
-              ? credential
-              : Credential.compress(credential)
+        body.content.legitimations.map((credential) =>
+          Credential.compress(credential)
         ),
         body.content.delegationId,
         body.content.quote
@@ -292,7 +284,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     }
     case 'request-attestation': {
       compressedContents = [
-        RequestForAttestation.compress(body.content.requestForAttestation),
+        Credential.compress(body.content.credential),
         body.content.quote
           ? Quote.compressQuoteAgreement(body.content.quote)
           : undefined,
@@ -316,11 +308,8 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case 'submit-credential': {
-      compressedContents = body.content.map(
-        (credential: ICredential | CompressedCredential) =>
-          Array.isArray(credential)
-            ? credential
-            : Credential.compress(credential)
+      compressedContents = body.content.map((credential) =>
+        Credential.compress(credential)
       )
       break
     }
@@ -401,11 +390,8 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     case 'submit-terms': {
       decompressedContents = {
         claim: Claim.decompress(body[1][0]),
-        legitimations: body[1][1].map(
-          (credential: ICredential | CompressedCredential) =>
-            !Array.isArray(credential)
-              ? credential
-              : Credential.decompress(credential)
+        legitimations: body[1][1].map((credential) =>
+          Credential.decompress(credential)
         ),
         delegationId: body[1][2],
         quote: body[1][3]
@@ -426,7 +412,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     }
     case 'request-attestation': {
       decompressedContents = {
-        requestForAttestation: RequestForAttestation.decompress(body[1][0]),
+        credential: Credential.decompress(body[1][0]),
         quote: body[1][1]
           ? Quote.decompressQuoteAgreement(body[1][1])
           : undefined,
@@ -452,11 +438,8 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     case 'submit-credential': {
-      decompressedContents = body[1].map(
-        (credential: ICredential | CompressedCredential) =>
-          !Array.isArray(credential)
-            ? credential
-            : Credential.decompress(credential)
+      decompressedContents = body[1].map((credential) =>
+        Credential.decompress(credential)
       )
 
       break

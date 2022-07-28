@@ -46,18 +46,18 @@ describe('when there is a dev chain with a faucet', () => {
 
   it('should have enough coins available on the faucet', async () => {
     const balance = await getBalances(faucet.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
   it('Bob has tokens', async () => {
     const balance = await getBalances(bob.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
   })
 
   it('Alice has tokens', async () => {
     const balance = await getBalances(alice.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
   })
 
   it('getBalances should return 0 for new address', async () => {
@@ -79,7 +79,7 @@ describe('when there is a dev chain with a faucet', () => {
 
     expect(
       balanceBefore.free.sub(balanceAfter.free).gt(EXISTENTIAL_DEPOSIT)
-    ).toBeTruthy()
+    ).toBe(true)
     expect(balanceIdent.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
     expect(spy).toBeCalled()
   }, 30_000)

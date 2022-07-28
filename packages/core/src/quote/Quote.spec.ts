@@ -23,7 +23,7 @@ import type {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  IRequestForAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
@@ -32,7 +32,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from '../credential'
 import * as Quote from './Quote'
 import { QuoteSchema } from './QuoteSchema'
 
@@ -48,7 +48,7 @@ describe('Quote', () => {
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let request: IRequestForAttestation
+  let credential: ICredential
   let invalidCostQuoteData: IQuote
   let invalidPropertiesQuoteData: IQuote
   let validQuoteData: IQuote
@@ -106,8 +106,8 @@ describe('Quote', () => {
       owner: claimerIdentity.uri,
     }
 
-    // build request for attestation with legitimations
-    request = RequestForAttestation.fromClaim(claim)
+    // build credential with legitimations
+    credential = Credential.fromClaim(claim)
 
     // @ts-ignore
     invalidCostQuoteData = {
@@ -149,7 +149,7 @@ describe('Quote', () => {
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
-      request.rootHash,
+      credential.rootHash,
       attesterIdentity.uri,
       claimerIdentity,
       claimer.sign,
@@ -190,7 +190,7 @@ describe('Quote', () => {
           attesterIdentity.getKey(attesterKeyId!)?.publicKey || new Uint8Array()
         )
       )
-    ).toBeTruthy()
+    ).toBe(true)
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
       resolver: mockResolver,
     })
@@ -203,11 +203,11 @@ describe('Quote', () => {
     ).toEqual(validAttesterSignedQuote)
   })
   it('validates created quotes against QuoteSchema', () => {
-    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBeTruthy()
-    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBeFalsy()
-    expect(
-      Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
-    ).toBeFalsy()
+    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBe(true)
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBe(false)
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)).toBe(
+      false
+    )
   })
 })
 
@@ -217,7 +217,7 @@ describe('Quote compression', () => {
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let request: IRequestForAttestation
+  let credential: ICredential
   let validQuoteData: IQuote
   let validAttesterSignedQuote: IQuoteAttesterSigned
   let quoteBothAgreed: IQuoteAgreement
@@ -270,8 +270,8 @@ describe('Quote compression', () => {
       owner: claimerIdentity.uri,
     }
 
-    // build request for attestation with legitimations
-    request = RequestForAttestation.fromClaim(claim)
+    // build credential with legitimations
+    credential = Credential.fromClaim(claim)
 
     validQuoteData = {
       attesterDid: attesterIdentity.uri,
@@ -292,7 +292,7 @@ describe('Quote compression', () => {
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
-      request.rootHash,
+      credential.rootHash,
       attesterIdentity.uri,
       claimerIdentity,
       claimer.sign,

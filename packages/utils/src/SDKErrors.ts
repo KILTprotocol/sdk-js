@@ -57,10 +57,6 @@ export class RevokedTypeError extends SDKError {}
 
 export class OwnerMissingError extends SDKError {}
 
-export class AttestationMissingError extends SDKError {}
-
-export class RequestForAttestationMissingError extends SDKError {}
-
 export class LegitimationsMissingError extends SDKError {}
 
 export class ClaimNonceMapMissingError extends SDKError {}
@@ -82,6 +78,8 @@ export class HashMalformedError extends SDKError {
     }
   }
 }
+
+export class DataStructureError extends SDKError {}
 
 export class DelegationIdTypeError extends SDKError {}
 

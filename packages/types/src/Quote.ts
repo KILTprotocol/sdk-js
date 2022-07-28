@@ -7,7 +7,7 @@
 
 import type { ICType } from './CType'
 import type { DidSignature, DidUri } from './DidDetails'
-import type { IRequestForAttestation } from './RequestForAttestation'
+import type { ICredential } from './Credential'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>
@@ -27,7 +27,7 @@ export interface IQuoteAttesterSigned extends IQuote {
 }
 
 export interface IQuoteAgreement extends IQuoteAttesterSigned {
-  rootHash: IRequestForAttestation['rootHash']
+  rootHash: ICredential['rootHash']
   claimerSignature: DidSignature
 }
 

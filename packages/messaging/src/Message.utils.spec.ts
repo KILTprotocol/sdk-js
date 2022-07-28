@@ -11,7 +11,6 @@
 
 import type {
   CompressedAttestation,
-  CompressedCredential,
   CompressedDelegationData,
   CompressedInformCreateDelegation,
   CompressedInformDelegationCreation,
@@ -28,6 +27,7 @@ import type {
   CompressedRequestCredentialContent,
   CompressedRequestCredentials,
   CompressedRequestDelegationApproval,
+  CompressedCredential,
   CompressedRequestTerms,
   CompressedSubmitAcceptDelegation,
   CompressedSubmitAttestation,
@@ -39,8 +39,8 @@ import type {
   DidResourceUri,
   DidUri,
   IAcceptCredential,
+  IAttestation,
   IClaim,
-  ICredential,
   ICType,
   IDelegationData,
   IDidResolver,
@@ -60,6 +60,7 @@ import type {
   IRequestCredential,
   IRequestCredentialContent,
   IRequestDelegationApproval,
+  ICredential,
   IRequestTerms,
   ISubmitAcceptDelegation,
   ISubmitAttestation,
@@ -79,7 +80,6 @@ import {
   Credential,
   CType,
   Quote,
-  RequestForAttestation,
 } from '@kiltprotocol/core'
 import { DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
 import {
@@ -97,7 +97,7 @@ async function buildCredential(
   attesterDid: DidUri,
   contents: IClaim['contents'],
   legitimations: ICredential[]
-): Promise<ICredential> {
+): Promise<[ICredential, IAttestation]> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -113,21 +113,16 @@ async function buildCredential(
   const testCType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(testCType, contents, claimerDid)
-  // build request for attestation with legitimations
-  const requestForAttestation = RequestForAttestation.fromClaim(claim, {
+  // build credential with legitimations
+  const credential = Credential.fromClaim(claim, {
     legitimations,
   })
   // build attestation
-  const testAttestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
+  const testAttestation = Attestation.fromCredentialAndDid(
+    credential,
     attesterDid
   )
-  // combine to credential
-  const credential = Credential.fromRequestAndAttestation(
-    requestForAttestation,
-    testAttestation
-  )
-  return credential
+  return [credential, testAttestation]
 }
 
 describe('Messaging Utilities', () => {
@@ -330,7 +325,7 @@ describe('Messaging Utilities', () => {
       identityAlice.uri
     )
     // Legitimation
-    legitimation = await buildCredential(
+    ;[legitimation] = await buildCredential(
       identityAlice.uri,
       identityBob.uri,
       {},
@@ -339,25 +334,16 @@ describe('Messaging Utilities', () => {
     // Compressed Legitimation
     compressedLegitimation = [
       [
-        [
-          legitimation.request.claim.cTypeHash,
-          legitimation.request.claim.owner,
-          legitimation.request.claim.contents,
-        ],
-        legitimation.request.claimNonceMap,
-        legitimation.request.claimerSignature,
-        legitimation.request.claimHashes,
-        legitimation.request.rootHash,
-        [],
-        legitimation.request.delegationId,
+        legitimation.claim.cTypeHash,
+        legitimation.claim.owner,
+        legitimation.claim.contents,
       ],
-      [
-        legitimation.attestation.claimHash,
-        legitimation.attestation.cTypeHash,
-        legitimation.attestation.owner,
-        legitimation.attestation.revoked,
-        legitimation.attestation.delegationId,
-      ],
+      legitimation.claimNonceMap,
+      legitimation.claimerSignature,
+      legitimation.claimHashes,
+      legitimation.rootHash,
+      [],
+      legitimation.delegationId,
     ]
     // Quote Data
     quoteData = {
@@ -398,7 +384,7 @@ describe('Messaging Utilities', () => {
     // Quote agreement
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
-      legitimation.request.rootHash,
+      legitimation.rootHash,
       identityAlice.uri,
       identityBob,
       keyBob.sign,
@@ -464,7 +450,7 @@ describe('Messaging Utilities', () => {
 
     // Request Attestation Content
     requestAttestationContent = {
-      requestForAttestation: legitimation.request,
+      credential: legitimation,
       quote: bothSigned,
     }
 
@@ -472,16 +458,16 @@ describe('Messaging Utilities', () => {
     compressedRequestAttestationContent = [
       [
         [
-          legitimation.request.claim.cTypeHash,
-          legitimation.request.claim.owner,
-          legitimation.request.claim.contents,
+          legitimation.claim.cTypeHash,
+          legitimation.claim.owner,
+          legitimation.claim.contents,
         ],
-        legitimation.request.claimNonceMap,
-        legitimation.request.claimerSignature,
-        legitimation.request.claimHashes,
-        legitimation.request.rootHash,
+        legitimation.claimNonceMap,
+        legitimation.claimerSignature,
+        legitimation.claimHashes,
+        legitimation.rootHash,
         [],
-        legitimation.request.delegationId,
+        legitimation.delegationId,
       ],
       compressedQuoteAgreement,
     ]
@@ -490,7 +476,7 @@ describe('Messaging Utilities', () => {
     submitAttestationContent = {
       attestation: {
         delegationId: null,
-        claimHash: requestAttestationContent.requestForAttestation.rootHash,
+        claimHash: requestAttestationContent.credential.rootHash,
         cTypeHash: claim.cTypeHash,
         owner: identityBob.uri,
         revoked: false,
@@ -670,7 +656,7 @@ describe('Messaging Utilities', () => {
     ]
 
     rejectAttestationForClaimBody = {
-      content: requestAttestationContent.requestForAttestation.rootHash,
+      content: requestAttestationContent.credential.rootHash,
       type: 'reject-attestation',
     }
     requestCredentialBody = {
@@ -1077,7 +1063,7 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
     ).toThrowError(SDKErrors.CTypeHashMissingError)
-    requestAttestationBody.content.requestForAttestation.claimerSignature = {
+    requestAttestationBody.content.credential.claimerSignature = {
       signature: 'this is not the claimers signature',
       // @ts-ignore
       keyUri: 'this is not a key id',
@@ -1102,11 +1088,6 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestCredentialBody)
     ).toThrowError(SDKErrors.HashMalformedError)
-    // @ts-expect-error
-    delete submitCredentialBody.content[0].attestation.revoked
-    expect(() =>
-      MessageUtils.errorCheckMessageBody(submitCredentialBody)
-    ).toThrowError(SDKErrors.RevokedTypeError)
     // @ts-ignore
     acceptCredentialBody.content[0] = 'this is not a cTypeHash'
     expect(() =>

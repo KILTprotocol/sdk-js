@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ICredential, CompressedCredential } from './Credential'
 import type { CompressedCType, ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type {
@@ -14,6 +13,7 @@ import type {
 } from './Quote'
 import type { CompressedPartialClaim } from './Message'
 import type { PartialClaim } from './Claim'
+import type { CompressedCredential, ICredential } from './Credential'
 
 export interface ITerms {
   claim: PartialClaim

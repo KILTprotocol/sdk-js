@@ -6,24 +6,27 @@
  */
 
 /**
- * @group unit/attestation
+ * @group unit/credential
  */
 
-import { encodeAddress } from '@polkadot/util-crypto'
+/* eslint-disable dot-notation */
 
+import { encodeAddress } from '@polkadot/util-crypto'
 import type {
-  CompressedCredential,
-  DidKey,
-  DidResolvedDetails,
-  DidUri,
-  IAttestation,
   IClaim,
-  ICredential,
+  IClaimContents,
   ICType,
+  CompressedCredential,
+  ICredential,
+  DidSignature,
+  DidUri,
   IDidResolver,
-  IRequestForAttestation,
+  DidResolvedDetails,
+  DidKey,
   SignCallback,
+  IAttestation,
 } from '@kiltprotocol/types'
+import { Crypto, UUID, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import {
   DidDetails,
   FullDidDetails,
@@ -35,87 +38,355 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { ss58Format, UUID } from '@kiltprotocol/utils'
-import * as Attestation from '../attestation'
-import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
 import * as Credential from './Credential'
-import { query } from '../attestation/Attestation.chain'
+import * as Claim from '../claim'
+import * as Attestation from '../attestation'
 
-jest.mock('../attestation/Attestation.chain')
+const rawCType: ICType['schema'] = {
+  $id: 'kilt:ctype:0x2',
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'raw ctype',
+  properties: {
+    name: { type: 'string' },
+  },
+  type: 'object',
+}
 
-async function buildCredential(
-  claimer: DidDetails,
-  attesterDid: DidUri,
-  contents: IClaim['contents'],
-  legitimations: ICredential[],
-  sign: SignCallback
-): Promise<ICredential> {
+function buildCredential(
+  claimerDid: DidUri,
+  contents: IClaimContents,
+  legitimations: ICredential[]
+): ICredential {
   // create claim
-
-  const rawCType: ICType['schema'] = {
-    $id: 'kilt:ctype:0x1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Credential',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
 
   const testCType = CType.fromSchema(rawCType)
 
-  const claim = Claim.fromCTypeAndClaimContents(
-    testCType,
+  const claim: IClaim = {
+    cTypeHash: testCType.hash,
     contents,
-    claimer.uri
-  )
-  // build request for attestation with legitimations
-  const requestForAttestation = RequestForAttestation.fromClaim(claim, {
+    owner: claimerDid,
+  }
+  // build credential with legitimations
+  const credential = Credential.fromClaim(claim, {
     legitimations,
   })
-  await RequestForAttestation.signWithDidKey(
-    requestForAttestation,
-    sign,
-    claimer,
-    claimer.authenticationKey.id
-  )
-  // build attestation
-  const testAttestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    attesterDid
-  )
-  // combine to credential
-  const credential = Credential.fromRequestAndAttestation(
-    requestForAttestation,
-    testAttestation
-  )
   return credential
 }
 
-// Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
-function createMinimalFullDidFromLightDid(
-  lightDidForId: LightDidDetails,
-  newAuthenticationKey?: DidKey
-): FullDidDetails {
-  const uri = DidUtils.getKiltDidFromIdentifier(
-    lightDidForId.identifier,
-    'full'
-  )
-  const authKey = newAuthenticationKey || lightDidForId.authenticationKey
+describe('Credential', () => {
+  const identityAlice =
+    'did:kilt:4nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS'
+  const identityBob =
+    'did:kilt:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
+  let legitimation: ICredential
 
-  return new FullDidDetails({
-    identifier: lightDidForId.identifier,
-    uri,
-    keyRelationships: {
-      authentication: new Set([authKey.id]),
-    },
-    keys: { [authKey.id]: authKey },
+  beforeEach(async () => {
+    legitimation = buildCredential(identityAlice, {}, [])
   })
-}
 
-describe('RequestForAttestation', () => {
+  it.todo('signing and verification')
+
+  it('verify credential', async () => {
+    const credential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+    // check proof on complete data
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    const testCType = CType.fromSchema(rawCType)
+    await Credential.verify(credential, {
+      ctype: testCType,
+      allowUnsigned: true,
+    })
+
+    // just deleting a field will result in a wrong proof
+    delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
+    expect(() => Credential.verifyDataIntegrity(credential)).toThrowError(
+      SDKErrors.NoProofForStatementError
+    )
+  })
+
+  it('throws on not allowing unsigned credential', async () => {
+    const credential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+    const testCType = CType.fromSchema(rawCType)
+    await expect(
+      Credential.verify(credential, {
+        ctype: testCType,
+        allowUnsigned: false,
+      })
+    ).rejects.toThrow()
+  })
+
+  it('throws on wrong hash in claim hash tree', async () => {
+    const credential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+
+    credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]] = '1234'
+    expect(() => {
+      Credential.verifyDataIntegrity(credential)
+    }).toThrow()
+  })
+
+  it('compresses and decompresses the credential object', async () => {
+    const credential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+
+    const compressedLegitimation: CompressedCredential = [
+      [
+        legitimation.claim.cTypeHash,
+        legitimation.claim.owner,
+        legitimation.claim.contents,
+      ],
+      legitimation.claimNonceMap,
+      legitimation.claimerSignature,
+      legitimation.claimHashes,
+      legitimation.rootHash,
+      [],
+      legitimation.delegationId,
+    ]
+
+    const compressedCredential: CompressedCredential = [
+      [
+        credential.claim.cTypeHash,
+        credential.claim.owner,
+        credential.claim.contents,
+      ],
+      credential.claimNonceMap,
+      credential.claimerSignature,
+      credential.claimHashes,
+      credential.rootHash,
+      [compressedLegitimation],
+      credential.delegationId,
+    ]
+
+    expect(Credential.compress(credential)).toEqual(compressedCredential)
+
+    expect(Credential.decompress(compressedCredential)).toEqual(credential)
+
+    compressedCredential.pop()
+    // @ts-expect-error
+    delete credential.claim.owner
+
+    expect(() => {
+      Credential.compress(credential)
+    }).toThrow()
+
+    expect(() => {
+      Credential.decompress(compressedCredential)
+    }).toThrow()
+  })
+
+  it('hides claim properties', async () => {
+    const credential = buildCredential(identityBob, { a: 'a', b: 'b' }, [])
+    const newCredential = Credential.removeClaimProperties(credential, ['a'])
+
+    expect((newCredential.claim.contents as any).a).toBeUndefined()
+    expect(Object.keys(newCredential.claimNonceMap)).toHaveLength(
+      newCredential.claimHashes.length - 1
+    )
+    expect((newCredential.claim.contents as any).b).toBe('b')
+    expect(Credential.verifyDataIntegrity(newCredential)).toBe(true)
+    expect(Credential.verifyRootHash(newCredential)).toBe(true)
+  })
+
+  it('should throw error on faulty constructor input', async () => {
+    const builtCredential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    const builtCredentialWithLegitimation = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    ) as ICredential
+    const builtCredentialNoLegitimations = {
+      ...buildCredential(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as ICredential
+    // @ts-expect-error
+    delete builtCredentialNoLegitimations.legitimations
+
+    const builtCredentialMalformedRootHash = {
+      ...buildCredential(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as ICredential
+    // @ts-ignore
+    builtCredentialMalformedRootHash.rootHash = [
+      builtCredentialMalformedRootHash.rootHash.slice(0, 15),
+      (
+        (parseInt(builtCredentialMalformedRootHash.rootHash.charAt(15), 16) +
+          1) %
+        16
+      ).toString(16),
+      builtCredentialMalformedRootHash.rootHash.slice(16),
+    ].join('')
+    const builtCredentialIncompleteClaimHashTree = {
+      ...buildCredential(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as ICredential
+    const deletedKey = Object.keys(
+      builtCredentialIncompleteClaimHashTree.claimNonceMap
+    )[0]
+    delete builtCredentialIncompleteClaimHashTree.claimNonceMap[deletedKey]
+    builtCredentialIncompleteClaimHashTree.rootHash =
+      Credential.calculateRootHash(builtCredentialIncompleteClaimHashTree)
+    const builtCredentialMalformedSignature = {
+      ...buildCredential(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as ICredential
+    builtCredentialMalformedSignature.claimerSignature = {
+      signature: Crypto.hashStr('aaa'),
+    } as DidSignature
+    builtCredentialMalformedSignature.rootHash = Credential.calculateRootHash(
+      builtCredentialMalformedSignature
+    )
+    const builtCredentialMalformedHashes = {
+      ...buildCredential(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    } as ICredential
+    Object.entries(builtCredentialMalformedHashes.claimNonceMap).forEach(
+      ([hash, nonce]) => {
+        const scrambledHash = [
+          hash.slice(0, 15),
+          ((parseInt(hash.charAt(15), 16) + 1) % 16).toString(16),
+          hash.slice(16),
+        ].join('')
+        builtCredentialMalformedHashes.claimNonceMap[scrambledHash] = nonce
+        delete builtCredentialMalformedHashes.claimNonceMap[hash]
+      }
+    )
+    builtCredentialMalformedHashes.rootHash = Credential.calculateRootHash(
+      builtCredentialMalformedHashes
+    )
+    expect(() =>
+      Credential.verifyDataStructure(builtCredentialNoLegitimations)
+    ).toThrowError(SDKErrors.LegitimationsMissingError)
+    expect(() =>
+      Credential.verifyDataIntegrity(builtCredentialMalformedRootHash)
+    ).toThrowError(SDKErrors.RootHashUnverifiableError)
+    expect(() =>
+      Credential.verifyDataIntegrity(builtCredentialIncompleteClaimHashTree)
+    ).toThrowError(SDKErrors.NoProofForStatementError)
+    expect(() =>
+      Credential.verifyDataStructure(builtCredentialMalformedSignature)
+    ).toThrowError(SDKErrors.SignatureMalformedError)
+    expect(() =>
+      Credential.verifyDataIntegrity(builtCredentialMalformedHashes)
+    ).toThrowError(SDKErrors.NoProofForStatementError)
+    expect(() => Credential.verifyDataStructure(builtCredential)).not.toThrow()
+    expect(() => {
+      Credential.verifyDataStructure(builtCredentialWithLegitimation)
+    }).not.toThrow()
+    expect(() => Credential.verifyDataIntegrity(builtCredential)).not.toThrow()
+    expect(() => {
+      Credential.verifyDataIntegrity(builtCredentialWithLegitimation)
+    }).not.toThrow()
+  })
+  it('checks Object instantiation', async () => {
+    const builtCredential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    expect(Credential.isICredential(builtCredential)).toEqual(true)
+  })
+
+  it('should verify the credential claims structure against the ctype', async () => {
+    const testCType = CType.fromSchema(rawCType)
+    const builtCredential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    expect(Credential.verifyAgainstCType(builtCredential, testCType)).toBe(true)
+    builtCredential.claim.contents.name = 123
+    expect(Credential.verifyAgainstCType(builtCredential, testCType)).toBe(
+      false
+    )
+  })
+})
+
+describe('Credential', () => {
   let keyAlice: KeyTool
   let keyCharlie: KeyTool
   let identityAlice: DidDetails
@@ -163,6 +434,51 @@ describe('RequestForAttestation', () => {
     } as IDidResolver
   })()
 
+  // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
+  async function buildCredential2(
+    claimer: DidDetails,
+    attesterDid: DidUri,
+    contents: IClaim['contents'],
+    legitimations: ICredential[],
+    sign: SignCallback
+  ): Promise<[ICredential, IAttestation]> {
+    // create claim
+
+    const rawCType2: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    const testCType = CType.fromSchema(rawCType2)
+
+    const claim = Claim.fromCTypeAndClaimContents(
+      testCType,
+      contents,
+      claimer.uri
+    )
+    // build credential with legitimations
+    const credential = Credential.fromClaim(claim, {
+      legitimations,
+    })
+    await Credential.sign(
+      credential,
+      sign,
+      claimer,
+      claimer.authenticationKey.id
+    )
+    // build attestation
+    const testAttestation = Attestation.fromCredentialAndDid(
+      credential,
+      attesterDid
+    )
+    return [credential, testAttestation]
+  }
+
   beforeAll(async () => {
     keyAlice = makeSigningKeyTool()
     identityAlice = await createLocalDemoFullDidFromKeypair(keyAlice.keypair)
@@ -174,8 +490,7 @@ describe('RequestForAttestation', () => {
     identityCharlie = await createLocalDemoFullDidFromKeypair(
       keyCharlie.keypair
     )
-
-    legitimation = await buildCredential(
+    ;[legitimation] = await buildCredential2(
       identityAlice,
       identityBob.uri,
       {},
@@ -184,30 +499,21 @@ describe('RequestForAttestation', () => {
     )
     compressedLegitimation = [
       [
-        [
-          legitimation.request.claim.cTypeHash,
-          legitimation.request.claim.owner,
-          legitimation.request.claim.contents,
-        ],
-        legitimation.request.claimNonceMap,
-        legitimation.request.claimerSignature,
-        legitimation.request.claimHashes,
-        legitimation.request.rootHash,
-        [],
-        legitimation.request.delegationId,
+        legitimation.claim.cTypeHash,
+        legitimation.claim.owner,
+        legitimation.claim.contents,
       ],
-      [
-        legitimation.attestation.claimHash,
-        legitimation.attestation.cTypeHash,
-        legitimation.attestation.owner,
-        legitimation.attestation.revoked,
-        legitimation.attestation.delegationId,
-      ],
+      legitimation.claimNonceMap,
+      legitimation.claimerSignature,
+      legitimation.claimHashes,
+      legitimation.rootHash,
+      [],
+      legitimation.delegationId,
     ]
   })
 
   it('verify credentials signed by a full DID', async () => {
-    const credential = await buildCredential(
+    const [credential] = await buildCredential2(
       identityCharlie,
       identityAlice.uri,
       {
@@ -219,15 +525,11 @@ describe('RequestForAttestation', () => {
       keyCharlie.sign
     )
 
-    jest.mocked(query).mockResolvedValue(credential.attestation)
-
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    expect(
-      await Credential.verify(credential, {
-        resolver: mockResolver,
-      })
-    ).toBe(true)
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    await Credential.verify(credential, {
+      resolver: mockResolver,
+    })
   })
   it('verify credentials signed by a light DID', async () => {
     const { keypair, sign } = makeSigningKeyTool('ed25519')
@@ -236,7 +538,7 @@ describe('RequestForAttestation', () => {
       'ed25519'
     )
 
-    const credential = await buildCredential(
+    const [credential] = await buildCredential2(
       identityDave,
       identityAlice.uri,
       {
@@ -248,15 +550,11 @@ describe('RequestForAttestation', () => {
       sign
     )
 
-    jest.mocked(query).mockResolvedValue(credential.attestation)
-
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    expect(
-      await Credential.verify(credential, {
-        resolver: mockResolver,
-      })
-    ).toBe(true)
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    await Credential.verify(credential, {
+      resolver: mockResolver,
+    })
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
@@ -282,7 +580,7 @@ describe('RequestForAttestation', () => {
       },
     })
 
-    const credential = await buildCredential(
+    const [credential] = await buildCredential2(
       migratedAndDeletedLightDid,
       identityAlice.uri,
       {
@@ -294,15 +592,13 @@ describe('RequestForAttestation', () => {
       migratedAndDeleted.sign
     )
 
-    jest.mocked(query).mockResolvedValue(credential.attestation)
-
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBeTruthy()
-    expect(
-      await Credential.verify(credential, {
+    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    await expect(
+      Credential.verify(credential, {
         resolver: mockResolver,
       })
-    ).toBeFalsy()
+    ).rejects.toThrowError()
   })
 
   it('compresses and decompresses the credentials object', () => {
@@ -313,7 +609,7 @@ describe('RequestForAttestation', () => {
   it('Negative test for compresses and decompresses the credentials object', () => {
     compressedLegitimation.pop()
     // @ts-expect-error
-    delete legitimation.attestation
+    delete legitimation.claimHashes
 
     expect(() => {
       Credential.compress(legitimation)
@@ -324,48 +620,50 @@ describe('RequestForAttestation', () => {
     }).toThrow()
   })
   it('Typeguard should return true on complete Credentials', async () => {
-    const testAttestation = await buildCredential(
+    const [credential] = await buildCredential2(
       identityAlice,
       identityBob.uri,
       {},
       [],
       keyAlice.sign
     )
-    expect(Credential.isICredential(testAttestation)).toBeTruthy()
+    expect(Credential.isICredential(credential)).toBe(true)
     // @ts-expect-error
-    delete testAttestation.attestation.claimHash
+    delete credential.claimHashes
 
-    expect(Credential.isICredential(testAttestation)).toBeFalsy()
+    expect(Credential.isICredential(credential)).toBe(false)
   })
-  it('Should throw error when attestation is from different request', async () => {
-    const testAttestation = await buildCredential(
+  it('Should throw error when attestation is from different credential', async () => {
+    const [credential, attestation] = await buildCredential2(
       identityAlice,
       identityBob.uri,
       {},
       [],
       keyAlice.sign
     )
-    expect(Credential.verifyDataIntegrity(testAttestation)).toBeTruthy()
-    const { cTypeHash } = testAttestation.attestation
+    expect(Attestation.verifyAgainstCredential(attestation, credential)).toBe(
+      true
+    )
+    const { cTypeHash } = attestation
     // @ts-ignore
-    testAttestation.attestation.cTypeHash = [
+    attestation.cTypeHash = [
       cTypeHash.slice(0, 15),
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
       cTypeHash.slice(16),
     ].join('')
-    expect(Credential.verifyDataIntegrity(testAttestation)).toBeFalsy()
+    expect(Attestation.verifyAgainstCredential(attestation, credential)).toBe(
+      false
+    )
   })
   it('returns Claim Hash of the attestation', async () => {
-    const testAttestation = await buildCredential(
+    const [credential, attestation] = await buildCredential2(
       identityAlice,
       identityBob.uri,
       {},
       [],
       keyAlice.sign
     )
-    expect(Credential.getHash(testAttestation)).toEqual(
-      testAttestation.attestation.claimHash
-    )
+    expect(Credential.getHash(credential)).toEqual(attestation.claimHash)
   })
 })
 
@@ -380,10 +678,30 @@ describe('create presentation', () => {
   let migratedThenDeletedClaimerFullDid: DidDetails
   let attester: DidDetails
   let ctype: ICType
-  let reqForAtt: IRequestForAttestation
-  let attestation: IAttestation
+  let credential: ICredential
 
-  const mockResolver = (() => {
+  // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
+  function createMinimalFullDidFromLightDid(
+    lightDidForId: LightDidDetails,
+    newAuthenticationKey?: DidKey
+  ): FullDidDetails {
+    const uri = DidUtils.getKiltDidFromIdentifier(
+      lightDidForId.identifier,
+      'full'
+    )
+    const authKey = newAuthenticationKey || lightDidForId.authenticationKey
+
+    return new FullDidDetails({
+      identifier: lightDidForId.identifier,
+      uri,
+      keyRelationships: {
+        authentication: new Set([authKey.id]),
+      },
+      keys: { [authKey.id]: authKey },
+    })
+  }
+
+  const mockResolver: IDidResolver = (() => {
     async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
       // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
       const { did } = DidUtils.parseDidUri(didUri)
@@ -464,20 +782,10 @@ describe('create presentation', () => {
       migratedThenDeletedClaimerLightDid as LightDidDetails
     )
 
-    const rawCType: ICType['schema'] = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
     ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -487,50 +795,27 @@ describe('create presentation', () => {
         migratedClaimerFullDid.uri
       )
     )
-
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-  })
-
-  it('should build from reqForAtt and Attestation', async () => {
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(cred).toBeDefined()
   })
 
   it('should create presentation and exclude specific attributes using a full DID', async () => {
-    jest.mocked(query).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential,
       selectedAttributes: ['name'],
-      sign: newKeyForMigratedClaimerDid.sign,
+      signCallback: newKeyForMigratedClaimerDid.sign,
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    expect(
-      await Credential.verify(att, {
-        resolver: mockResolver,
-      })
-    ).toBe(true)
-    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+    await Credential.verify(presentation, {
+      resolver: mockResolver,
+    })
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
-    const rawCType: ICType['schema'] = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -541,41 +826,24 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    jest.mocked(query).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential,
       selectedAttributes: ['name'],
-      sign: unmigratedClaimerKey.sign,
+      signCallback: unmigratedClaimerKey.sign,
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    expect(
-      await Credential.verify(att, {
-        resolver: mockResolver,
-      })
-    ).toBe(true)
-    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+    await Credential.verify(presentation, {
+      resolver: mockResolver,
+    })
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
-    const rawCType: ICType['schema'] = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -587,43 +855,26 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    jest.mocked(query).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential,
       selectedAttributes: ['name'],
-      sign: newKeyForMigratedClaimerDid.sign,
+      signCallback: newKeyForMigratedClaimerDid.sign,
       // Use of full DID to sign the presentation.
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    expect(
-      await Credential.verify(att, {
-        resolver: mockResolver,
-      })
-    ).toBe(true)
-    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+    await Credential.verify(presentation, {
+      resolver: mockResolver,
+    })
+    expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
 
   it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
-    const rawCType: ICType['schema'] = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -635,42 +886,27 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    jest.mocked(query).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
     const att = await Credential.createPresentation({
-      credential: cred,
+      credential,
       selectedAttributes: ['name'],
-      sign: newKeyForMigratedClaimerDid.sign,
+      signCallback: newKeyForMigratedClaimerDid.sign,
       // Still using the light DID, which should fail since it has been migrated
       claimerDid: migratedClaimerLightDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    expect(
-      await Credential.verify(att, {
+    await expect(
+      Credential.verify(att, {
         resolver: mockResolver,
       })
-    ).toBeFalsy()
+    ).rejects.toThrow()
   })
 
   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
-    const rawCType: ICType['schema'] = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
     ctype = CType.fromSchema(rawCType, attester.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaim(
+    credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -682,38 +918,26 @@ describe('create presentation', () => {
       )
     )
 
-    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.uri)
-    jest.mocked(query).mockResolvedValue(attestation)
-
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-
     const challenge = UUID.generate()
-    const att = await Credential.createPresentation({
-      credential: cred,
+    const presentation = await Credential.createPresentation({
+      credential,
       selectedAttributes: ['name'],
-      sign: migratedThenDeletedKey.sign,
+      signCallback: migratedThenDeletedKey.sign,
       // Still using the light DID, which should fail since it has been migrated and then deleted
       claimerDid: migratedThenDeletedClaimerLightDid,
       challenge,
     })
-    expect(Credential.getAttributes(att)).toEqual(new Set(['name']))
-    expect(
-      await Credential.verify(att, {
+    await expect(
+      Credential.verify(presentation, {
         resolver: mockResolver,
       })
-    ).toBeFalsy()
-  })
-
-  it('should get attribute keys', async () => {
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(Credential.getAttributes(cred)).toEqual(new Set(['age', 'name']))
+    ).rejects.toThrow()
   })
 
   it('should verify the credential claims structure against the ctype', () => {
-    const cred = Credential.fromRequestAndAttestation(reqForAtt, attestation)
-    expect(Credential.verifyAgainstCType(cred, ctype)).toBeTruthy()
-    cred.request.claim.contents.name = 123
+    expect(Credential.verifyAgainstCType(credential, ctype)).toBe(true)
+    credential.claim.contents.name = 123
 
-    expect(Credential.verifyAgainstCType(cred, ctype)).toBeFalsy()
+    expect(Credential.verifyAgainstCType(credential, ctype)).toBe(false)
   })
 })

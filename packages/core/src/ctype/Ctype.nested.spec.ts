@@ -159,7 +159,7 @@ describe('Nested CTypes', () => {
         [passport.schema, kyc.schema],
         claimContents
       )
-    ).toBeTruthy()
+    ).toBe(true)
 
     claimContents.fullName = {}
     expect(() =>
@@ -176,7 +176,7 @@ describe('Nested CTypes', () => {
         [passport.schema, kyc.schema],
         claimDeepContents
       )
-    ).toBeTruthy()
+    ).toBe(true)
     ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
     expect(
       CType.verifyClaimAgainstNestedSchemas(
@@ -184,12 +184,14 @@ describe('Nested CTypes', () => {
         [passport.schema, kyc.schema],
         claimDeepContents
       )
-    ).toBeFalsy()
+    ).toBe(false)
   })
 
   it('verify claim from a nested ctype', () => {
-    expect(nestedData).toBeTruthy()
-    expect(nestedDeepData).toBeTruthy()
+    expect(nestedData).toBeDefined()
+    expect(nestedData).not.toBeNull()
+    expect(nestedDeepData).toBeDefined()
+    expect(nestedDeepData).not.toBeNull()
     expect(() =>
       Claim.fromNestedCTypeClaim(
         deeplyNestedCType,

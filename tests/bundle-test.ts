@@ -30,7 +30,6 @@ const {
   Attestation,
   Credential,
   CType,
-  RequestForAttestation,
   Did,
   Blockchain,
   Utils: { Crypto, Keyring, ss58Format },
@@ -319,31 +318,26 @@ async function runAll() {
     content,
     bob.uri
   )
-  const request = RequestForAttestation.fromClaim(claim)
-  await RequestForAttestation.signWithDidKey(
-    request,
-    bobSign,
-    bob,
-    bob.authenticationKey.id
-  )
-  if (!RequestForAttestation.isIRequestForAttestation(request))
-    throw new Error('Not a valid Request')
+  const credential = Credential.fromClaim(claim)
+  await Credential.sign(credential, bobSign, bob, bob.authenticationKey.id)
+  if (!Credential.isICredential(credential))
+    throw new Error('Not a valid Credential')
   else {
-    if (RequestForAttestation.verifyDataIntegrity(request))
-      console.info('Req4Att data verified')
-    else throw new Error('Req4Att not verifiable')
-    if (await RequestForAttestation.verifySignature(request))
-      console.info('Req4Att signature verified')
-    else throw new Error('Req4Att Signature mismatch')
-    if (request.claim.contents !== content)
-      throw new Error('Claim content inside Req4Att mismatching')
+    if (Credential.verifyDataIntegrity(credential))
+      console.info('Credential data verified')
+    else throw new Error('Credential not verifiable')
+    if (await Credential.verifySignature(credential))
+      console.info('Credential signature verified')
+    else throw new Error('Credential Signature mismatch')
+    if (credential.claim.contents !== content)
+      throw new Error('Claim content inside Credential mismatching')
   }
 
   console.log('Test Messaging with encryption + decryption')
   const message = new Message(
     {
       content: {
-        requestForAttestation: request,
+        credential,
       },
       type: 'request-attestation',
     },
@@ -366,11 +360,10 @@ async function runAll() {
     throw new Error('Original and decrypted message are not the same')
   }
 
-  const attestation = Attestation.fromRequestAndDid(request, alice.uri)
-  const credential = Credential.fromRequestAndAttestation(request, attestation)
-  if (Credential.verifyDataIntegrity(credential))
-    console.info('Attested Claim Data verified')
-  else throw new Error('Attested Claim data not verifiable')
+  const attestation = Attestation.fromCredentialAndDid(credential, alice.uri)
+  if (Attestation.verifyAgainstCredential(attestation, credential))
+    console.info('Attestation Data verified')
+  else throw new Error('Attestation Claim data not verifiable')
 
   const txAtt = await Attestation.getStoreTx(attestation)
   const authorizedAttTx = await alice.authorizeExtrinsic(
@@ -381,10 +374,10 @@ async function runAll() {
   await Blockchain.signAndSubmitTx(authorizedAttTx, devFaucet, {
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
-  if (await Credential.verify(credential)) {
-    console.info('Attested Claim verified with chain')
+  if (await Attestation.checkValidity(credential.rootHash)) {
+    console.info('Attestation verified with chain')
   } else {
-    throw new Error('Attested Claim not verifiable with chain')
+    throw new Error('Attestation not verifiable with chain')
   }
 }
 
