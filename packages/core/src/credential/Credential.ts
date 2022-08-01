@@ -396,13 +396,17 @@ export async function verify(
     if (!isSchemaValid) throw new SDKErrors.CredentialUnverifiableError()
   }
 
-  if (challenge || !allowUnsigned) {
-    const isSignatureCorrect = await verifySignature(credential, {
+  let isSignatureCorrect = false
+  if (challenge || credential.claimerSignature) {
+    isSignatureCorrect = await verifySignature(credential, {
       challenge,
       resolver,
     })
-    if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
+  } else if (allowUnsigned) {
+    isSignatureCorrect = true
   }
+
+  if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
 }
 
 /**
