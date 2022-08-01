@@ -380,10 +380,13 @@ type FormattedPublicKey<K extends NewDidKey> = TypedValue<
 /**
  * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
  *
+ * Chain accepts lowercase key type, but the type system complains.
+ * So this function enforces the type without capitalizing it.
+ *
  * @param key Object describing data associated with a public key.
  * @returns Data restructured to allow SCALE encoding by polkadot api.
  */
-export function formatPublicKey<K extends NewDidKey>(
+export function formatPublicKeyForChain<K extends NewDidKey>(
   key: K
 ): FormattedPublicKey<K> {
   // Chain accepts also lowercase key type, but type system complains.
@@ -447,14 +450,14 @@ export async function generateCreateTxFromCreationDetails(
   }
 
   const newKeyAgreementKeys = keyAgreementKeys.map(({ publicKey }) =>
-    formatPublicKey({ type: 'x25519', publicKey })
+    formatPublicKeyForChain({ type: 'x25519', publicKey })
   )
 
   const newAssertionKey = assertionKey
-    ? formatPublicKey(assertionKey)
+    ? formatPublicKeyForChain(assertionKey)
     : undefined
   const newDelegationKey = delegationKey
-    ? formatPublicKey(delegationKey)
+    ? formatPublicKeyForChain(delegationKey)
     : undefined
 
   const maxNumberOfServicesPerDid =
@@ -582,7 +585,7 @@ export async function getSetKeyExtrinsic(
       }`
     )
   }
-  const typedKey = formatPublicKey(key)
+  const typedKey = formatPublicKeyForChain(key)
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   switch (keyRelationship) {
     case 'authentication':
@@ -656,7 +659,7 @@ export async function getAddKeyExtrinsic(
           (key as any).type
         }`
       )
-    const keyAsEnum = formatPublicKey(key)
+    const keyAsEnum = formatPublicKeyForChain(key)
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
   throw new SDKErrors.DidError(

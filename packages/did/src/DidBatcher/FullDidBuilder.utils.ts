@@ -13,7 +13,7 @@ import { ApiPromise } from '@polkadot/api'
 import type { DidKey, NewDidKey } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { ChainDidPublicKey, formatPublicKey } from '../Did.chain.js'
+import { ChainDidPublicKey, formatPublicKeyForChain } from '../Did.chain.js'
 import { isEncryptionKey, isVerificationKey } from '../Did.utils.js'
 
 function computeChainKeyId(publicKey: ChainDidPublicKey): DidKey['id'] {
@@ -32,7 +32,7 @@ function encodeToChainKey(api: ApiPromise, key: NewDidKey): ChainDidPublicKey {
   return new (api.registry.getOrThrow<ChainDidPublicKey>(
     'DidDidDetailsDidPublicKey'
   ))(api.registry, {
-    [keyClass]: formatPublicKey(key),
+    [keyClass]: formatPublicKeyForChain(key),
   })
 }
 
