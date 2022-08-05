@@ -391,7 +391,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Delegations
        * # </weight>
        **/
-      addDelegation: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array, parentId: H256 | string | Uint8Array, delegate: AccountId32 | string | Uint8Array, permissions: DelegationDelegationHierarchyPermissions | { bits?: any } | string | Uint8Array, delegateSignature: DidDidDetailsDidSignature | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, H256, AccountId32, DelegationDelegationHierarchyPermissions, DidDidDetailsDidSignature]>;
+      addDelegation: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array, parentId: H256 | string | Uint8Array, delegate: AccountId32 | string | Uint8Array, permissions: DelegationDelegationHierarchyPermissions | { bits?: any } | string | Uint8Array, delegateSignature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, H256, AccountId32, DelegationDelegationHierarchyPermissions, DidDidDetailsDidSignature]>;
       /**
        * Create a new delegation root associated with a given CType hash.
        * 
@@ -860,7 +860,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Did
        * # </weight>
        **/
-      addKeyAgreementKey: AugmentedSubmittable<(newKey: DidDidDetailsDidEncryptionKey | { X25519: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidEncryptionKey]>;
+      addKeyAgreementKey: AugmentedSubmittable<(newKey: DidDidDetailsDidEncryptionKey | { x25519: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidEncryptionKey]>;
       /**
        * Add a new service endpoint under the given DID.
        * 
@@ -909,7 +909,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * (with N new service endpoints), DidEndpointsCount
        * # </weight>
        **/
-      create: AugmentedSubmittable<(details: DidDidDetailsDidCreationDetails | { did?: any; submitter?: any; newKeyAgreementKeys?: any; newAttestationKey?: any; newDelegationKey?: any; newServiceDetails?: any } | string | Uint8Array, signature: DidDidDetailsDidSignature | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidCreationDetails, DidDidDetailsDidSignature]>;
+      create: AugmentedSubmittable<(details: DidDidDetailsDidCreationDetails | { did?: any; submitter?: any; newKeyAgreementKeys?: any; newAttestationKey?: any; newDelegationKey?: any; newServiceDetails?: any } | string | Uint8Array, signature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidCreationDetails, DidDidDetailsDidSignature]>;
       /**
        * Delete a DID from the chain and all information associated with it,
        * after verifying that the delete operation has been signed by the DID
@@ -1046,7 +1046,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Did
        * # </weight>
        **/
-      setAttestationKey: AugmentedSubmittable<(newKey: DidDidDetailsDidVerificationKey | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidVerificationKey]>;
+      setAttestationKey: AugmentedSubmittable<(newKey: DidDidDetailsDidVerificationKey | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidVerificationKey]>;
       /**
        * Update the DID authentication key.
        * 
@@ -1065,7 +1065,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Did
        * # </weight>
        **/
-      setAuthenticationKey: AugmentedSubmittable<(newKey: DidDidDetailsDidVerificationKey | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidVerificationKey]>;
+      setAuthenticationKey: AugmentedSubmittable<(newKey: DidDidDetailsDidVerificationKey | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidVerificationKey]>;
       /**
        * Set or update the DID delegation key.
        * 
@@ -1084,7 +1084,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Did
        * # </weight>
        **/
-      setDelegationKey: AugmentedSubmittable<(newKey: DidDidDetailsDidVerificationKey | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidVerificationKey]>;
+      setDelegationKey: AugmentedSubmittable<(newKey: DidDidDetailsDidVerificationKey | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidVerificationKey]>;
       /**
        * Proxy a dispatchable call of another runtime extrinsic that
        * supports a DID origin.
@@ -1122,7 +1122,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Did
        * # </weight>
        **/
-      submitDidCall: AugmentedSubmittable<(didCall: DidDidDetailsDidAuthorizedCallOperation | { did?: any; txCounter?: any; call?: any; blockNumber?: any; submitter?: any } | string | Uint8Array, signature: DidDidDetailsDidSignature | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidSignature]>;
+      submitDidCall: AugmentedSubmittable<(didCall: DidDidDetailsDidAuthorizedCallOperation | { did?: any; txCounter?: any; call?: any; blockNumber?: any; submitter?: any } | string | Uint8Array, signature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidSignature]>;
     };
     didLookup: {
       /**
@@ -1144,7 +1144,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids + ConnectedAccounts
        * # </weight>
        **/
-      associateAccount: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array, proof: SpRuntimeMultiSignature | { Ed25519: any } | { Sr25519: any } | { Ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64, SpRuntimeMultiSignature]>;
+      associateAccount: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array, proof: SpRuntimeMultiSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64, SpRuntimeMultiSignature]>;
       /**
        * Associate the sender of the call to the DID that authorized this
        * call.

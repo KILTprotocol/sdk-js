@@ -30,7 +30,7 @@ import type {
 } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
-import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
+import type { VerifyResult } from '@polkadot/util-crypto/types'
 import {
   assert,
   BN,
@@ -62,7 +62,7 @@ export type EthereumAddress = HexString
 export type Address = KiltAddress | SubstrateAddress | EthereumAddress
 
 /// Type of signatures to link accounts to DIDs.
-export type SignatureType = MultiSignature['type'] | 'Ethereum'
+type SignatureType = Lowercase<MultiSignature['type']> | 'ethereum'
 
 /**
  * Type of a linking payload signing function.
@@ -342,7 +342,7 @@ export async function getAccountSignedAssociationExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   if (isEthereumEnabled(api)) {
-    if (sigType === 'Ethereum') {
+    if (sigType === 'ethereum') {
       return api.tx.didLookup.associateAccount(
         { Ethereum: [account, signature] },
         signatureValidUntilBlock
@@ -350,7 +350,7 @@ export async function getAccountSignedAssociationExtrinsic(
     }
     const proof = {
       [sigType]: signature,
-    } as TypedValue<Exclude<SignatureType, 'Ethereum'>, typeof signature>
+    } as TypedValue<Exclude<SignatureType, 'ethereum'>, typeof signature>
     return api.tx.didLookup.associateAccount(
       {
         Dotsama: [account, proof],
@@ -358,14 +358,14 @@ export async function getAccountSignedAssociationExtrinsic(
       signatureValidUntilBlock
     )
   }
-  if (sigType === 'Ethereum')
+  if (sigType === 'ethereum')
     throw new SDKErrors.CodecMismatchError(
       'Ethereum linking is not yet supported by this chain'
     )
 
   const proof = {
     [sigType]: signature,
-  } as TypedValue<Exclude<SignatureType, 'Ethereum'>, typeof signature>
+  } as TypedValue<Exclude<SignatureType, 'ethereum'>, typeof signature>
 
   return api.tx.didLookup.associateAccount(
     account,
@@ -419,25 +419,6 @@ export async function getLinkRemovalByDidExtrinsic(
 }
 
 /* ### HELPERS ### */
-
-function getMultiSignatureTypeFromKeypairType(
-  keypairType: KeypairType
-): SignatureType {
-  switch (keypairType) {
-    case 'ed25519':
-      return 'Ed25519'
-    case 'sr25519':
-      return 'Sr25519'
-    case 'ecdsa':
-      return 'Ecdsa'
-    case 'ethereum':
-      return 'Ethereum'
-    default:
-      throw new SDKErrors.DidError(
-        `Unsupported signature algorithm "${keypairType}"`
-      )
-  }
-}
 
 /**
  * Return the default sign callback, which uses the address argument to crete a signing closure for the given payload.
@@ -517,9 +498,8 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
     result = signatureVerify(paddedDetails, signature, accountAddress)
     assert(result.isValid, 'signature not valid')
   }
-  const { crypto } = result
 
-  const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
+  const sigType = result.crypto as SignatureType
   return getAccountSignedAssociationExtrinsic(
     accountAddress,
     validTill,

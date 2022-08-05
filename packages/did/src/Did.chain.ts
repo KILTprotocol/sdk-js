@@ -153,15 +153,9 @@ function decodeDidPublicKeyDetails(
   const key = keyDetails.key.isPublicEncryptionKey
     ? keyDetails.key.asPublicEncryptionKey
     : keyDetails.key.asPublicVerificationKey
-  const keyType = key.type.toLowerCase() as Lowercase<typeof key.type>
-  if (!keyType) {
-    throw new SDKErrors.DidError(
-      `Unsupported key type "${key.type}" found on chain`
-    )
-  }
   return {
     id: keyId.toHex(),
-    type: keyType,
+    type: key.type.toLowerCase() as typeof key.type,
     publicKey: key.value.toU8a(),
     includedAt: keyDetails.blockNumber.toBn(),
   }
@@ -374,14 +368,12 @@ export type AuthorizeCallInput = {
 // ### EXTRINSICS
 
 type FormattedPublicKey<K extends NewDidKey> = TypedValue<
-  Capitalize<K['type']>,
+  K['type'],
   K['publicKey']
 >
+
 /**
  * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
- *
- * Chain accepts lowercase key type, but the type system complains.
- * So this function enforces the type without capitalizing it.
  *
  * @param key Object describing data associated with a public key.
  * @returns Data restructured to allow SCALE encoding by polkadot api.
@@ -389,7 +381,6 @@ type FormattedPublicKey<K extends NewDidKey> = TypedValue<
 export function formatPublicKeyForChain<K extends NewDidKey>(
   key: K
 ): FormattedPublicKey<K> {
-  // Chain accepts also lowercase key type, but type system complains.
   return { [key.type]: key.publicKey } as FormattedPublicKey<K>
 }
 
@@ -498,9 +489,8 @@ export async function generateCreateTxFromCreationDetails(
     alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
   const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
-  // Chain also accepts lowercase key types, but type system complains.
   const signatureForPolkadot = { [keyType]: signature.data } as TypedValue<
-    Capitalize<typeof keyType>,
+    typeof keyType,
     typeof signature.data
   >
   return api.tx.did.create(encodedDidCreationDetails, signatureForPolkadot)
@@ -790,19 +780,16 @@ export async function generateDidAuthenticatedTx({
     alg,
   })
   const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
-  // Chain also accepts lowercase key types, but type system complains.
   const signatureForPolkadot = { [keyType]: signature.data } as TypedValue<
-    Capitalize<typeof keyType>,
+    typeof keyType,
     typeof signature.data
   >
   return api.tx.did.submitDidCall(signableCall, signatureForPolkadot)
 }
 
 // ### Chain utils
-export type SignatureEnum = TypedValue<
-  Capitalize<VerificationKeyType>,
-  Uint8Array
->
+export type SignatureEnum = TypedValue<VerificationKeyType, Uint8Array>
+
 /**
  * Compiles an enum-type key-value pair representation of a signature created with a FullDid verification method. Required for creating FullDid signed extrinsics.
  *
@@ -822,6 +809,6 @@ export function encodeDidSignature(
     )
   }
 
-  // TypeScript can't infer key type on type union and chain accepts lowercase key types, so we have to add a type assertion.
+  // TypeScript can't infer key type on type union, so we have to add a type assertion.
   return { [key.type]: hexToU8a(signature.signature) } as SignatureEnum
 }

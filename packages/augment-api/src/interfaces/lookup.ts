@@ -1791,9 +1791,9 @@ export default {
    **/
   DidDidDetailsDidSignature: {
     _enum: {
-      Ed25519: 'SpCoreEd25519Signature',
-      Sr25519: 'SpCoreSr25519Signature',
-      Ecdsa: 'SpCoreEcdsaSignature'
+      ed25519: 'SpCoreEd25519Signature',
+      sr25519: 'SpCoreSr25519Signature',
+      ecdsa: 'SpCoreEcdsaSignature'
     }
   },
   /**
@@ -1869,7 +1869,7 @@ export default {
    **/
   DidDidDetailsDidEncryptionKey: {
     _enum: {
-      X25519: '[u8;32]'
+      x25519: '[u8;32]'
     }
   },
   /**
@@ -1877,9 +1877,9 @@ export default {
    **/
   DidDidDetailsDidVerificationKey: {
     _enum: {
-      Ed25519: 'SpCoreEd25519Public',
-      Sr25519: 'SpCoreSr25519Public',
-      Ecdsa: 'SpCoreEcdsaPublic'
+      ed25519: 'SpCoreEd25519Public',
+      sr25519: 'SpCoreSr25519Public',
+      ecdsa: 'SpCoreEcdsaPublic'
     }
   },
   /**
@@ -1933,9 +1933,9 @@ export default {
    **/
   SpRuntimeMultiSignature: {
     _enum: {
-      Ed25519: 'SpCoreEd25519Signature',
-      Sr25519: 'SpCoreSr25519Signature',
-      Ecdsa: 'SpCoreEcdsaSignature'
+      ed25519: 'SpCoreEd25519Signature',
+      sr25519: 'SpCoreSr25519Signature',
+      ecdsa: 'SpCoreEcdsaSignature'
     }
   },
   /**
