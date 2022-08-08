@@ -11,8 +11,8 @@ import type {
   Deposit,
   DidIdentifier,
   IIdentity,
-  TypedValue,
   SubmittableExtrinsic,
+  TypedValue,
 } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 
@@ -23,14 +23,10 @@ import {
   signatureVerify,
 } from '@polkadot/util-crypto'
 import type { bool, Enum, Option, u128, u64, U8aFixed } from '@polkadot/types'
-import type {
-  AccountId32,
-  Extrinsic,
-  MultiSignature,
-} from '@polkadot/types/interfaces'
+import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
-import type { VerifyResult } from '@polkadot/util-crypto/types'
+import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
 import {
   assert,
   BN,
@@ -60,9 +56,6 @@ export type SubstrateAddress = IIdentity['address']
 export type EthereumAddress = HexString
 
 export type Address = KiltAddress | SubstrateAddress | EthereumAddress
-
-/// Type of signatures to link accounts to DIDs.
-type SignatureType = Lowercase<MultiSignature['type']> | 'ethereum'
 
 /**
  * Type of a linking payload signing function.
@@ -100,7 +93,7 @@ type AssociateAccountRequest = TypedValue<
   'Dotsama' | 'Ethereum',
   [
     string | Uint8Array, // AccountId
-    string | Uint8Array | TypedValue<SignatureType, string | Uint8Array> // signature
+    string | Uint8Array | TypedValue<KeypairType, string | Uint8Array> // signature
   ]
 >
 
@@ -338,7 +331,7 @@ export async function getAccountSignedAssociationExtrinsic(
   account: Address,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
-  sigType: SignatureType
+  sigType: KeypairType
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   if (isEthereumEnabled(api)) {
@@ -350,7 +343,7 @@ export async function getAccountSignedAssociationExtrinsic(
     }
     const proof = {
       [sigType]: signature,
-    } as TypedValue<Exclude<SignatureType, 'ethereum'>, typeof signature>
+    } as TypedValue<Exclude<KeypairType, 'ethereum'>, typeof signature>
     return api.tx.didLookup.associateAccount(
       {
         Dotsama: [account, proof],
@@ -365,7 +358,7 @@ export async function getAccountSignedAssociationExtrinsic(
 
   const proof = {
     [sigType]: signature,
-  } as TypedValue<Exclude<SignatureType, 'ethereum'>, typeof signature>
+  } as TypedValue<Exclude<KeypairType, 'ethereum'>, typeof signature>
 
   return api.tx.didLookup.associateAccount(
     account,
@@ -499,7 +492,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
     assert(result.isValid, 'signature not valid')
   }
 
-  const sigType = result.crypto as SignatureType
+  const sigType = result.crypto as KeypairType
   return getAccountSignedAssociationExtrinsic(
     accountAddress,
     validTill,
