@@ -1922,7 +1922,7 @@ declare module '@polkadot/types/lookup' {
     readonly asSr25519: SpCoreSr25519Signature;
     readonly isEcdsa: boolean;
     readonly asEcdsa: SpCoreEcdsaSignature;
-    readonly type: 'ed25519' | 'sr25519' | 'ecdsa';
+    readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
   }
 
   /** @name SpCoreEd25519Signature (206) */
@@ -2002,7 +2002,7 @@ declare module '@polkadot/types/lookup' {
   interface DidDidDetailsDidEncryptionKey extends Enum {
     readonly isX25519: boolean;
     readonly asX25519: U8aFixed;
-    readonly type: 'x25519';
+    readonly type: 'X25519';
   }
 
   /** @name DidDidDetailsDidVerificationKey (218) */
@@ -2013,7 +2013,7 @@ declare module '@polkadot/types/lookup' {
     readonly asSr25519: SpCoreSr25519Public;
     readonly isEcdsa: boolean;
     readonly asEcdsa: SpCoreEcdsaPublic;
-    readonly type: 'ed25519' | 'sr25519' | 'ecdsa';
+    readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
   }
 
   /** @name SpCoreEd25519Public (219) */
@@ -2067,7 +2067,7 @@ declare module '@polkadot/types/lookup' {
     readonly asSr25519: SpCoreSr25519Signature;
     readonly isEcdsa: boolean;
     readonly asEcdsa: SpCoreEcdsaSignature;
-    readonly type: 'ed25519' | 'sr25519' | 'ecdsa';
+    readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
   }
 
   /** @name PalletWeb3NamesCall (234) */

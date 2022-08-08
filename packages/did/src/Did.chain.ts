@@ -155,7 +155,7 @@ function decodeDidPublicKeyDetails(
     : keyDetails.key.asPublicVerificationKey
   return {
     id: keyId.toHex(),
-    type: key.type.toLowerCase() as typeof key.type,
+    type: key.type.toLowerCase() as DidKey['type'],
     publicKey: key.value.toU8a(),
     includedAt: keyDetails.blockNumber.toBn(),
   }
