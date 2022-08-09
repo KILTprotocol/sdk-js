@@ -10,10 +10,8 @@ import { readFile, writeFile } from 'fs/promises'
 const path = 'src/interfaces/augment-api-tx.ts'
 ;(async () => {
   const source = await readFile(path, 'utf8')
-  const fixed = source
-    .replace(/\bEd25519\b/g, 'ed25519')
-    .replace(/\bSr25519\b/g, 'sr25519')
-    .replace(/\bX25519\b/g, 'x25519')
-    .replace(/\bEcdsa\b/g, 'ecdsa')
+  const fixed = source.replace(/\b(Ed25519|Sr25519|X25519|Ecdsa)\b/g, (match) =>
+    match.toLowerCase()
+  )
   await writeFile(path, fixed, 'utf8')
 })()
