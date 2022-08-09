@@ -168,7 +168,7 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
  * Prepares encoding a LinkableAccountId.
  *
  * @param address 20 or 32 byte address as string (hex or ss58 encoded).
- * @returns `{ AccountId20 | AccountId32: Uint8Array }`
+ * @returns `{ AccountId20 | AccountId32: Uint8Array }`.
  */
 function encodeMultiAddress(
   address: Address
