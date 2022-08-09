@@ -24,7 +24,7 @@
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
     "build:types": "yarn generate:defs && yarn generate:meta && yarn build:fixes",
-    "build:fixes": "sed -i.backup -E 's/\\\\bEd25519\\\\b/ed25519/g; s/\\\\bSr25519\\\\b/sr25519/g; s/\\\\bX25519\\\\b/x25519/g; s/\\\\bEcdsa\\\\b/ecdsa/g' src/interfaces/augment-api-tx.ts && rm src/interfaces/augment-api-tx.ts.backup",
+    "build:fixes": "node scripts/fixTypes.mjs",
     "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
     "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
