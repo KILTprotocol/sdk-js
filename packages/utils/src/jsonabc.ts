@@ -8,24 +8,27 @@
   JSON ABC | License: MIT.
 */
 
-module.exports = {
-  sort: sort,
-  sortObj: sortObj,
-  cleanJSON: cleanJSON,
+export default {
+  sortObj,
+  sort,
+  cleanJSON,
 }
 
 // Is a value an array?
-function isArray(val) {
+function isArray(val: unknown): val is Array<any> {
   return Object.prototype.toString.call(val) === '[object Array]'
 }
 
 // Is a value an Object?
-function isPlainObject(val) {
+function isPlainObject(val: unknown): val is Object {
   return Object.prototype.toString.call(val) === '[object Object]'
 }
 
-// Sorting Logic
-function sortObj(un, noArray) {
+/**
+ * Sort the JSON (clean, parse, sort, stringify).
+ * @param noArray Sort or don't sort arrays
+ */
+export function sortObj<T extends object>(un: T, noArray?: boolean): T {
   noArray = noArray || false
 
   var or = {}
@@ -38,12 +41,12 @@ function sortObj(un, noArray) {
       or = un.sort()
     }
 
-    or.forEach(function (v, i) {
+    ;(or as Array<any>).forEach(function (v, i) {
       or[i] = sortObj(v, noArray)
     })
 
     if (!noArray) {
-      or = or.sort(function (a, b) {
+      or = (or as Array<any>).sort(function (a, b) {
         a = JSON.stringify(a)
         b = JSON.stringify(b)
         return a < b ? -1 : a > b ? 1 : 0
@@ -64,19 +67,22 @@ function sortObj(un, noArray) {
     or = un
   }
 
-  return or
+  return or as T
 }
 
-// Remove trailing commas
-function cleanJSON(input) {
+/** Remove trailing commas */
+export function cleanJSON(input: string): string {
   input = input.replace(/,[ \t\r\n]+}/g, '}')
   input = input.replace(/,[ \t\r\n]+\]/g, ']')
   return input
 }
 
-// Sort the JSON (clean, parse, sort, stringify).
-function sort(inputStr, noArray) {
-  var output, obj, r
+/**
+ * Sort the JSON (clean, parse, sort, stringify).
+ * @param noArray Sort or don't sort arrays
+ */
+export function sort(inputStr: string, noArray?: boolean): string | undefined {
+  var output: string | undefined, obj: any, r: {}
 
   if (inputStr) {
     try {
