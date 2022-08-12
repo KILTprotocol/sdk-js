@@ -4,6 +4,9 @@
 import type { BTreeMap, BTreeSet, Enum, Option, Struct, Text, Vec } from '@polkadot/types-codec';
 import type { AccountId32, BlockNumber, Hash } from '@polkadot/types/interfaces/runtime';
 
+// FIXME: This import should be automatically generated as part of the typegen process, but it is somehow not happening. So it has been manually added.
+import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
+
 /** @name PublicCredentialFilter */
 export interface PublicCredentialFilter extends Enum {
   readonly isCtypeHash: boolean;
