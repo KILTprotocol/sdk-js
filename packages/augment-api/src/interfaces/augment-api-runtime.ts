@@ -5,8 +5,7 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/api-base/types/calls';
 
-import type { RawDidLinkedInfo } from '.';
-import type { PalletDidLookupLinkableAccountLinkableAccountId, PublicCredentialsCredentialsCredentialEntry, RuntimeCommonAssetsAssetDid } from '@polkadot/types/lookup';
+import type { RawDidLinkedInfo } from '@kiltprotocol/augment-api/extraDefs';
 import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Text, Vec, u32 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
@@ -22,6 +21,7 @@ import type { AccountId, AccountId32, Block, Hash, Header, Index, KeyTypeId, Slo
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
+import type { PalletDidLookupLinkableAccountLinkableAccountId, PublicCredentialsCredentialsCredentialEntry, RuntimeCommonAssetsAssetDid } from '@polkadot/types/lookup';
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 
 export type __AugmentedCall<ApiType extends ApiTypes> = AugmentedCall<ApiType>;

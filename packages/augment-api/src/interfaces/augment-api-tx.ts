@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { Bytes, Compact, Option, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H256, MultiAddress, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { PalletDidLookupAssociateAccountRequest, MashnetNodeRuntimeOriginCaller, MashnetNodeRuntimeOpaqueSessionKeys, RuntimeCommonAuthorizationPalletAuthorize, MashnetNodeRuntimeProxyType, PalletDidLookupLinkableAccountLinkableAccountId, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, SpCoreVoid, SpRuntimeHeader } from '@polkadot/types/lookup';
+import type { DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, MashnetNodeRuntimeOpaqueSessionKeys, MashnetNodeRuntimeOriginCaller, MashnetNodeRuntimeProxyType, PalletDidLookupAssociateAccountRequest, PalletDidLookupLinkableAccountLinkableAccountId, PublicCredentialsCredentialsCredential, RuntimeCommonAuthorizationPalletAuthorize, SpCoreVoid, SpFinalityGrandpaEquivocationProof, SpRuntimeHeader } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;

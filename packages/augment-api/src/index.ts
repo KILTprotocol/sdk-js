@@ -5,11 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import './interfaces/augment-api-consts.js'
-import './interfaces/augment-api-query.js'
-import './interfaces/augment-api-rpc.js'
-import './interfaces/augment-api-tx.js'
-import './interfaces/augment-types.js'
+// Augment on-chain lookup types
 import './interfaces/types-lookup.js'
+
+// Augment types for createType(...)
+import './interfaces/augment-types.js'
+import './interfaces/registry.js'
+
+// Augment API interfaces
+import './interfaces/augment-api.js'
 
 export * from './types.js'
