@@ -5,7 +5,7 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/rpc-core/types/jsonrpc';
 
-import type { PublicCredentialFilter } from '@kiltprotocol/augment-api/extraDefs';
+import type { PublicCredentialFilter } from './extraDefs';
 import type { AugmentedRpc } from '@polkadot/rpc-core/types';
 import type { Metadata, StorageKey } from '@polkadot/types';
 import type { Bytes, HashMap, Json, Null, Option, Text, U256, U64, Vec, bool, f64, u32, u64 } from '@polkadot/types-codec';
