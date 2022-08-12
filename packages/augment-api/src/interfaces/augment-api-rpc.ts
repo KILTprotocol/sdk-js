@@ -31,6 +31,9 @@ import type { MigrationStatusResult, ReadProof, RuntimeVersion, TraceBlockRespon
 import type { ApplyExtrinsicResult, ChainProperties, ChainType, Health, NetworkState, NodeRole, PeerInfo, SyncState } from '@polkadot/types/interfaces/system';
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 
+// FIXME: This has been added manually but should be generated automatically as part of the typegen process.
+import type { PublicCredentialsCredentialsCredentialEntry } from '@polkadot/types/lookup';
+
 export type __AugmentedRpc = AugmentedRpc<() => unknown>;
 
 declare module '@polkadot/rpc-core/types/jsonrpc' {
