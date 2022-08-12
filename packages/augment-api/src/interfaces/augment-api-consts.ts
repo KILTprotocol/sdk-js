@@ -6,9 +6,8 @@
 import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
-import type { Option, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { Permill, Perquintill } from '@polkadot/types/interfaces/runtime';
-import type { FrameSupportPalletId, FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
+import type { u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { FrameSupportWeightsRuntimeDbWeight, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
 
@@ -73,64 +72,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxRevocations: u32 & AugmentedConst<ApiType>;
       maxSignatureByteLength: u16 & AugmentedConst<ApiType>;
-    };
-    democracy: {
-      /**
-       * Period in blocks where an external proposal may not be re-submitted after being vetoed.
-       **/
-      cooloffPeriod: u64 & AugmentedConst<ApiType>;
-      /**
-       * The period between a proposal being approved and enacted.
-       * 
-       * It should generally be a little more than the unstake period to ensure that
-       * voting stakers have an opportunity to remove themselves from the system in the case
-       * where they are on the losing side of a vote.
-       **/
-      enactmentPeriod: u64 & AugmentedConst<ApiType>;
-      /**
-       * Minimum voting period allowed for a fast-track referendum.
-       **/
-      fastTrackVotingPeriod: u64 & AugmentedConst<ApiType>;
-      /**
-       * Indicator for whether an emergency origin is even allowed to happen. Some chains may
-       * want to set this permanently to `false`, others may want to condition it on things such
-       * as an upgrade having happened recently.
-       **/
-      instantAllowed: bool & AugmentedConst<ApiType>;
-      /**
-       * How often (in blocks) new public referenda are launched.
-       **/
-      launchPeriod: u64 & AugmentedConst<ApiType>;
-      /**
-       * The maximum number of public proposals that can exist at any time.
-       **/
-      maxProposals: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum number of votes for an account.
-       * 
-       * Also used to compute weight, an overly big value can
-       * lead to extrinsic with very big weight: see `delegate` for instance.
-       **/
-      maxVotes: u32 & AugmentedConst<ApiType>;
-      /**
-       * The minimum amount to be used as a deposit for a public referendum proposal.
-       **/
-      minimumDeposit: u128 & AugmentedConst<ApiType>;
-      /**
-       * The amount of balance that must be deposited per byte of preimage stored.
-       **/
-      preimageByteDeposit: u128 & AugmentedConst<ApiType>;
-      /**
-       * The minimum period of vote locking.
-       * 
-       * It should be no shorter than enactment period to ensure that in the case of an approval,
-       * those successful voters are locked into the consequences that their votes entail.
-       **/
-      voteLockingPeriod: u64 & AugmentedConst<ApiType>;
-      /**
-       * How often (in blocks) to check for new votes.
-       **/
-      votingPeriod: u64 & AugmentedConst<ApiType>;
     };
     did: {
       /**
@@ -201,144 +142,17 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       deposit: u128 & AugmentedConst<ApiType>;
     };
+    grandpa: {
+      /**
+       * Max Authorities in use
+       **/
+      maxAuthorities: u32 & AugmentedConst<ApiType>;
+    };
     indices: {
       /**
        * The deposit needed for reserving an index.
        **/
       deposit: u128 & AugmentedConst<ApiType>;
-    };
-    inflation: {
-      /**
-       * The length of the initial period in which the constant reward is
-       * minted. Once the current block exceeds this, rewards are no further
-       * issued.
-       **/
-      initialPeriodLength: u64 & AugmentedConst<ApiType>;
-      /**
-       * The amount of newly issued tokens per block during the initial
-       * period.
-       **/
-      initialPeriodReward: u128 & AugmentedConst<ApiType>;
-    };
-    kiltLaunch: {
-      /**
-       * Maximum number of accounts that get unlocked in a single block.
-       **/
-      autoUnlockBound: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of claims which can be migrated in a single call.
-       * Used for weight estimation.
-       * 
-       * Note: Benchmarks will need to be re-run and weights adjusted if this
-       * changes.
-       **/
-      maxClaims: u32 & AugmentedConst<ApiType>;
-      /**
-       * The kilt launch's pallet id, used for deriving its sovereign account
-       * ID.
-       **/
-      palletId: FrameSupportPalletId & AugmentedConst<ApiType>;
-      /**
-       * Amount of Balance which will be made available for each account
-       * which has either vesting or locking such that transaction fees can
-       * be paid from this.
-       **/
-      usableBalance: u128 & AugmentedConst<ApiType>;
-    };
-    parachainStaking: {
-      /**
-       * Default number of blocks validation rounds last, as set in the
-       * genesis configuration.
-       **/
-      defaultBlocksPerRound: u64 & AugmentedConst<ApiType>;
-      /**
-       * Number of rounds a collator has to stay active after submitting a
-       * request to leave the set of collator candidates.
-       **/
-      exitQueueDelay: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of collators a single delegator can delegate.
-       **/
-      maxCollatorsPerDelegator: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of delegations which can be made within the same
-       * round.
-       * 
-       * NOTE: To prevent re-delegation-reward attacks, we should keep this
-       * to be one.
-       **/
-      maxDelegationsPerRound: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of delegators a single collator can have.
-       **/
-      maxDelegatorsPerCollator: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum size of the top candidates set.
-       **/
-      maxTopCandidates: u32 & AugmentedConst<ApiType>;
-      /**
-       * Max number of concurrent active unstaking requests before
-       * unlocking.
-       * 
-       * NOTE: To protect against irremovability of a candidate or delegator,
-       * we only allow for MaxUnstakeRequests - 1 many manual unstake
-       * requests. The last one serves as a placeholder for the cases of
-       * calling either `kick_delegator`, force_remove_candidate` or
-       * `execute_leave_candidates`. Otherwise, a user could max out their
-       * unstake requests and prevent themselves from being kicked from the
-       * set of candidates/delegators until they unlock their funds.
-       **/
-      maxUnstakeRequests: u32 & AugmentedConst<ApiType>;
-      /**
-       * Minimum number of blocks validation rounds can last.
-       **/
-      minBlocksPerRound: u64 & AugmentedConst<ApiType>;
-      /**
-       * Minimum stake required for any account to be added to the set of
-       * candidates.
-       **/
-      minCollatorCandidateStake: u128 & AugmentedConst<ApiType>;
-      /**
-       * Minimum number of collators selected from the set of candidates at
-       * every validation round.
-       **/
-      minCollators: u32 & AugmentedConst<ApiType>;
-      /**
-       * Minimum stake required for any account to be elected as validator
-       * for a round.
-       **/
-      minCollatorStake: u128 & AugmentedConst<ApiType>;
-      /**
-       * Minimum stake required for any account to be able to delegate.
-       **/
-      minDelegation: u128 & AugmentedConst<ApiType>;
-      /**
-       * Minimum stake required for any account to become a delegator.
-       **/
-      minDelegatorStake: u128 & AugmentedConst<ApiType>;
-      /**
-       * Minimum number of collators which cannot leave the network if there
-       * are no others.
-       **/
-      minRequiredCollators: u32 & AugmentedConst<ApiType>;
-      /**
-       * The rate in percent for the network rewards which are based on the
-       * maximum number of collators and the maximum amount a collator can
-       * stake.
-       **/
-      networkRewardRate: Perquintill & AugmentedConst<ApiType>;
-      /**
-       * The starting block number for the network rewards. Once the current
-       * block number exceeds this start, the beneficiary will receive the
-       * configured reward in each block.
-       **/
-      networkRewardStart: u64 & AugmentedConst<ApiType>;
-      /**
-       * Number of blocks for which unstaked balance will still be locked
-       * before it can be unlocked by actively calling the extrinsic
-       * `unlock_unstaked`.
-       **/
-      stakeDuration: u64 & AugmentedConst<ApiType>;
     };
     proxy: {
       /**
@@ -379,17 +193,20 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       proxyDepositFactor: u128 & AugmentedConst<ApiType>;
     };
-    scheduler: {
+    publicCredentials: {
       /**
-       * The maximum weight that may be scheduled per block for any dispatchables of less
-       * priority than `schedule::HARD_DEADLINE`.
+       * The amount of tokens to reserve when attesting a public credential.
        **/
-      maximumWeight: u64 & AugmentedConst<ApiType>;
+      deposit: u128 & AugmentedConst<ApiType>;
       /**
-       * The maximum number of scheduled calls in the queue for a single block.
-       * Not strictly enforced, but used for weight estimation.
+       * The maximum length in bytes of the encoded claims of a credential.
        **/
-      maxScheduledPerBlock: u32 & AugmentedConst<ApiType>;
+      maxEncodedClaimsLength: u32 & AugmentedConst<ApiType>;
+      /**
+       * The maximum length in bytes of the raw credential subject
+       * identifier.
+       **/
+      maxSubjectIdLength: u32 & AugmentedConst<ApiType>;
     };
     system: {
       /**
@@ -455,60 +272,12 @@ declare module '@polkadot/api-base/types/consts' {
        * transactions.
        **/
       operationalFeeMultiplier: u8 & AugmentedConst<ApiType>;
-      /**
-       * The fee to be paid for making a transaction; the per-byte portion.
-       **/
-      transactionByteFee: u128 & AugmentedConst<ApiType>;
-      /**
-       * The polynomial that is applied in order to derive fee from weight.
-       **/
-      weightToFee: Vec<FrameSupportWeightsWeightToFeeCoefficient> & AugmentedConst<ApiType>;
-    };
-    treasury: {
-      /**
-       * Percentage of spare funds (if any) that are burnt per spend period.
-       **/
-      burn: Permill & AugmentedConst<ApiType>;
-      /**
-       * The maximum number of approvals that can wait in the spending queue.
-       * 
-       * NOTE: This parameter is also used within the Bounties Pallet extension if enabled.
-       **/
-      maxApprovals: u32 & AugmentedConst<ApiType>;
-      /**
-       * The treasury's pallet id, used for deriving its sovereign account ID.
-       **/
-      palletId: FrameSupportPalletId & AugmentedConst<ApiType>;
-      /**
-       * Fraction of a proposal's value that should be bonded in order to place the proposal.
-       * An accepted proposal gets these back. A rejected proposal does not.
-       **/
-      proposalBond: Permill & AugmentedConst<ApiType>;
-      /**
-       * Maximum amount of funds that should be placed in a deposit for making a proposal.
-       **/
-      proposalBondMaximum: Option<u128> & AugmentedConst<ApiType>;
-      /**
-       * Minimum amount of funds that should be placed in a deposit for making a proposal.
-       **/
-      proposalBondMinimum: u128 & AugmentedConst<ApiType>;
-      /**
-       * Period between successive spends.
-       **/
-      spendPeriod: u64 & AugmentedConst<ApiType>;
     };
     utility: {
       /**
        * The limit on the number of batched calls.
        **/
       batchedCallsLimit: u32 & AugmentedConst<ApiType>;
-    };
-    vesting: {
-      maxVestingSchedules: u32 & AugmentedConst<ApiType>;
-      /**
-       * The minimum amount transferred to call `vested_transfer`.
-       **/
-      minVestedTransfer: u128 & AugmentedConst<ApiType>;
     };
     web3Names: {
       /**

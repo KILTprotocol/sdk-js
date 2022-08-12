@@ -1,5 +1,4 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-export * from './extraDefs/types';
-export * from './credentials/types';
+export * from './types';

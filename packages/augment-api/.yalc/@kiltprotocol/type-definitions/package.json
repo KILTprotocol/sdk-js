@@ -1,0 +1,20 @@
+{
+  "name": "@kiltprotocol/type-definitions",
+  "repository": "https://github.com/kiltprotocol/type-definitions",
+  "description": "Type decorations for the KILT blockchain.",
+  "main": "./lib/index.js",
+  "files": [
+    "/lib"
+  ],
+  "license": "BSD-4-Clause",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": "https://github.com/KILTprotocol/type-definitions/issues",
+  "homepage": "https://github.com/KILTprotocol/type-definitions#readme",
+  "version": "0.2.0",
+  "yalcSig": "c0d23eb97b34b2b1406a31d7ce3e86e0"
+}

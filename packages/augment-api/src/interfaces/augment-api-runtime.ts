@@ -5,19 +5,22 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/api-base/types/calls';
 
+import type { RawDidLinkedInfo } from '.';
+import type { PalletDidLookupLinkableAccountLinkableAccountId, PublicCredentialsCredentialsCredentialEntry, RuntimeCommonAssetsAssetDid } from '@polkadot/types/lookup';
 import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Vec, u32 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Text, Vec, u32 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
+import type { OpaqueKeyOwnershipProof } from '@polkadot/types/interfaces/babe';
 import type { CheckInherentsResult, InherentData } from '@polkadot/types/interfaces/blockbuilder';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
-import type { CollationInfo } from '@polkadot/types/interfaces/cumulus';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
+import type { AuthorityList, GrandpaEquivocationProof, SetId } from '@polkadot/types/interfaces/grandpa';
 import type { OpaqueMetadata } from '@polkadot/types/interfaces/metadata';
 import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
-import type { AccountId, Block, Header, Index, KeyTypeId, SlotDuration } from '@polkadot/types/interfaces/runtime';
+import type { AccountId, AccountId32, Block, Hash, Header, Index, KeyTypeId, SlotDuration } from '@polkadot/types/interfaces/runtime';
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
-import type { ApplyExtrinsicResultPre6 } from '@polkadot/types/interfaces/system';
+import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 
@@ -44,12 +47,12 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       slotDuration: AugmentedCall<ApiType, () => Observable<SlotDuration>>;
     };
-    /** 0x40fe3ad401f8959a/5 */
+    /** 0x40fe3ad401f8959a/6 */
     blockBuilder: {
       /**
        * Apply the given extrinsic.
        **/
-      applyExtrinsic: AugmentedCall<ApiType, (extrinsic: Extrinsic | IExtrinsic | string | Uint8Array) => Observable<ApplyExtrinsicResultPre6>>;
+      applyExtrinsic: AugmentedCall<ApiType, (extrinsic: Extrinsic | IExtrinsic | string | Uint8Array) => Observable<ApplyExtrinsicResult>>;
       /**
        * Check that the inherents are valid.
        **/
@@ -62,13 +65,6 @@ declare module '@polkadot/api-base/types/calls' {
        * Generate inherent extrinsics.
        **/
       inherentExtrinsics: AugmentedCall<ApiType, (inherent: InherentData | { data?: any } | string | Uint8Array) => Observable<Vec<Extrinsic>>>;
-    };
-    /** 0xea93e3f16f3d6962/2 */
-    collectCollationInfo: {
-      /**
-       * Collect information about a collation.
-       **/
-      collectCollationInfo: AugmentedCall<ApiType, (header: Header | { parentHash?: any; number?: any; stateRoot?: any; extrinsicsRoot?: any; digest?: any } | string | Uint8Array) => Observable<CollationInfo>>;
     };
     /** 0xdf6acb689907609b/4 */
     core: {
@@ -85,6 +81,40 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       version: AugmentedCall<ApiType, () => Observable<RuntimeVersion>>;
     };
+    /** 0xa02708c798d60bce/1 */
+    didApi: {
+      /**
+       * Return the information relative to the owner of the provided DID, if present.
+       **/
+      queryDid: AugmentedCall<ApiType, (did: AccountId32 | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
+      /**
+       * Return the information relative to the DID to which the provided account is linked, if any.
+       **/
+      queryDidByAccountId: AugmentedCall<ApiType, (name: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
+      /**
+       * Return the information relative to the owner of the provided web3name, if any.
+       **/
+      queryDidByW3n: AugmentedCall<ApiType, (name: Text | string) => Observable<Option<RawDidLinkedInfo>>>;
+    };
+    /** 0xed99c5acb25eedf5/3 */
+    grandpaApi: {
+      /**
+       * Get current GRANDPA authority set id.
+       **/
+      currentSetId: AugmentedCall<ApiType, () => Observable<SetId>>;
+      /**
+       * Generates a proof of key ownership for the given authority in the given set.
+       **/
+      generateKeyOwnershipProof: AugmentedCall<ApiType, (setId: SetId | AnyNumber | Uint8Array, authorityId: AuthorityId | string | Uint8Array) => Observable<Option<OpaqueKeyOwnershipProof>>>;
+      /**
+       * Get the current GRANDPA authorities and weights. This should not change except for when changes are scheduled and the corresponding delay has passed.
+       **/
+      grandpaAuthorities: AugmentedCall<ApiType, () => Observable<AuthorityList>>;
+      /**
+       * Submits an unsigned extrinsic to report an equivocation.
+       **/
+      submitReportEquivocationUnsignedExtrinsic: AugmentedCall<ApiType, (equivocationProof: GrandpaEquivocationProof | { setId?: any; equivocation?: any } | string | Uint8Array, keyOwnerProof: OpaqueKeyOwnershipProof | string | Uint8Array) => Observable<Option<Null>>>;
+    };
     /** 0x37e397fc7c91f5e4/1 */
     metadata: {
       /**
@@ -98,6 +128,17 @@ declare module '@polkadot/api-base/types/calls' {
        * Starts the off-chain task for given block header.
        **/
       offchainWorker: AugmentedCall<ApiType, (header: Header | { parentHash?: any; number?: any; stateRoot?: any; extrinsicsRoot?: any; digest?: any } | string | Uint8Array) => Observable<Null>>;
+    };
+    /** 0xd0ec702fbb0122f3/1 */
+    publicCredentialsApi: {
+      /**
+       * Return the credential details for the provided credential ID, if found.
+       **/
+      getCredential: AugmentedCall<ApiType, (credentialId: Hash | string | Uint8Array) => Observable<Option<PublicCredentialsCredentialsCredentialEntry>>>;
+      /**
+       * Return all the credentials issued to the provided subject, optionally filtering with the provided logic.
+       **/
+      getCredentials: AugmentedCall<ApiType, (subject: RuntimeCommonAssetsAssetDid | { chainId?: any; assetId?: any } | string | Uint8Array) => Observable<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>>>;
     };
     /** 0xab3c0572291feb8b/1 */
     sessionKeys: {

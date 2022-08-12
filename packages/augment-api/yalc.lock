@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "@kiltprotocol/type-definitions": {
+      "signature": "c0d23eb97b34b2b1406a31d7ce3e86e0",
+      "file": true
+    }
+  }
+}

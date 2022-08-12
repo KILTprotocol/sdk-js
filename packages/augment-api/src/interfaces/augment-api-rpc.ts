@@ -5,10 +5,12 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/rpc-core/types/jsonrpc';
 
+import type { PublicCredentialFilter } from '.';
+import type { PublicCredentialsCredentialsCredentialEntry } from '@polkadot/types/lookup'
 import type { AugmentedRpc } from '@polkadot/rpc-core/types';
 import type { Metadata, StorageKey } from '@polkadot/types';
 import type { Bytes, HashMap, Json, Null, Option, Text, U256, U64, Vec, bool, f64, u32, u64 } from '@polkadot/types-codec';
-import type { AnyNumber, Codec } from '@polkadot/types-codec/types';
+import type { AnyNumber, Codec, ITuple } from '@polkadot/types-codec/types';
 import type { ExtrinsicOrHash, ExtrinsicStatus } from '@polkadot/types/interfaces/author';
 import type { EpochAuthorship } from '@polkadot/types/interfaces/babe';
 import type { BeefySignedCommitment } from '@polkadot/types/interfaces/beefy';
@@ -161,6 +163,16 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * Upload new code without instantiating a contract from it
        **/
       uploadCode: AugmentedRpc<(uploadRequest: CodeUploadRequest | { origin?: any; code?: any; storageDepositLimit?: any } | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<CodeUploadResult>>;
+    };
+    credentials: {
+      /**
+       * Return the credential details for the provided credential ID, if found.
+       **/
+      getCredential: AugmentedRpc<(credential_id: Hash | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Option<PublicCredentialsCredentialsCredentialEntry>>>;
+      /**
+       * Return all the credentials issued to the provided subject, optionally filtering with the provided logic.
+       **/
+      getCredentials: AugmentedRpc<(subject: Text | string, filter?: PublicCredentialFilter | { ctypeHash: any } | { attester: any } | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>>>;
     };
     dev: {
       /**
