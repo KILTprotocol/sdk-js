@@ -1,3 +1,5 @@
+import type { Definitions } from '@polkadot/types/types'
+
 // TODO: Replace locally-linked yalc package with released one, once the new version 0.2 of the type-definitions package has been released.
 import { latest, runtime } from '@kiltprotocol/type-definitions'
 
@@ -11,4 +13,4 @@ import { latest, runtime } from '@kiltprotocol/type-definitions'
 export default {
   types: latest,
   runtime,
-}
+} as Definitions

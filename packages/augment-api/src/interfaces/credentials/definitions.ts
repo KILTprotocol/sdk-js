@@ -1,3 +1,5 @@
+import type { Definitions } from '@polkadot/types/types'
+
 import { rpc } from '@kiltprotocol/type-definitions'
 
 /*
@@ -10,4 +12,4 @@ export default {
   // The actual types are all exported from `./extraDefs`
   types: {},
   rpc: rpc.credentials
-}
+} as Definitions
