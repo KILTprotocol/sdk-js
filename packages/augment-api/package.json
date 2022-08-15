@@ -23,7 +23,8 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:types": "yarn generate:defs && yarn generate:meta",
+    "build:types": "yarn generate:defs && yarn generate:meta && yarn build:fixes",
+    "build:fixes": "node scripts/fixTypes.mjs",
     "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
     "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
