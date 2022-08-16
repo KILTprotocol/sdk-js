@@ -31,7 +31,7 @@ import {
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
-import jsonabc from './jsonabc.cjs'
+import jsonabc from './jsonabc.js'
 
 export { naclBoxPairFromSecret } from '@polkadot/util-crypto'
 
