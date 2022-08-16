@@ -435,15 +435,13 @@ export async function generateCreateTxFromCreationDetails(
     )
   }
 
-  const newKeyAgreementKeys = keyAgreementKeys.map(
-    ({ publicKey, type }) => ({ [type]: publicKey } as EncodedEncryptionKey)
-  )
+  const newKeyAgreementKeys = keyAgreementKeys.map(encodePublicKey)
 
   const newAssertionKey = assertionKey
-    ? ({ [assertionKey.type]: assertionKey.publicKey } as EncodedKey)
+    ? encodePublicKey(assertionKey)
     : undefined
   const newDelegationKey = delegationKey
-    ? ({ [delegationKey.type]: delegationKey.publicKey } as EncodedKey)
+    ? encodePublicKey(delegationKey)
     : undefined
 
   const maxNumberOfServicesPerDid =
@@ -567,7 +565,7 @@ export async function getSetKeyExtrinsic(
       }`
     )
   }
-  const typedKey = { [key.type]: key.publicKey } as EncodedVerificationKey
+  const typedKey = encodePublicKey(key)
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   switch (keyRelationship) {
     case 'authentication':
@@ -641,7 +639,7 @@ export async function getAddKeyExtrinsic(
           (key as any).type
         }`
       )
-    const keyAsEnum = { [key.type]: key.publicKey } as EncodedEncryptionKey
+    const keyAsEnum = encodePublicKey(key)
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
   throw new SDKErrors.DidError(

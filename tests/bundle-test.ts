@@ -148,7 +148,7 @@ async function createFullDidFromKeypair(
     getDefaultMigrationHandler(payer)
   )
 
-  const encodedKey = Did.Chain.formatPublicKey(fullDid.authenticationKey)
+  const encodedKey = Did.Chain.encodePublicKey(fullDid.authenticationKey)
   const extrinsic = await Did.didAuthorizeExtrinsics({
     did: fullDid,
     batchFunction: api.tx.utility.batchAll,
