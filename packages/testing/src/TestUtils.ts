@@ -30,8 +30,8 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, ss58Format } from '@kiltprotocol/utils'
 import {
+  Chain,
   DidConstructorDetails,
-  FullDidCreationBuilder,
   FullDidDetails,
   LightDidDetails,
   PublicKeys,
@@ -39,10 +39,7 @@ import {
   Utils as DidUtils,
 } from '@kiltprotocol/did'
 
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 
 /**
  * Generates a callback that can be used for encryption.
@@ -330,15 +327,27 @@ export async function createFullDidFromLightDid(
   lightDidForId: LightDidDetails,
   sign: SignCallback
 ): Promise<FullDidDetails> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return FullDidCreationBuilder.fromLightDidDetails(api, lightDidForId)
-    .setAttestationKey(lightDidForId.authenticationKey)
-    .setDelegationKey(lightDidForId.authenticationKey)
-    .buildAndSubmit(sign, payer.address, async (tx) => {
-      await Blockchain.signAndSubmitTx(tx, payer, {
-        resolveOn: Blockchain.IS_IN_BLOCK,
-      })
-    })
+  const { authenticationKey } = lightDidForId
+  const tx = await Chain.generateCreateTxFromCreationDetails(
+    {
+      identifier: DidUtils.getIdentifierByKey(authenticationKey),
+      authenticationKey,
+      assertionKey: authenticationKey,
+      delegationKey: authenticationKey,
+      keyAgreementKeys: lightDidForId.getEncryptionKeys('keyAgreement'),
+      serviceEndpoints: lightDidForId.getEndpoints(),
+    },
+    payer.address,
+    sign
+  )
+  await Blockchain.signAndSubmitTx(tx, payer, {
+    resolveOn: Blockchain.IS_IN_BLOCK,
+  })
+  const fullDid = await FullDidDetails.fromChainInfo(
+    DidUtils.getFullDidUriByKey(authenticationKey)
+  )
+  if (!fullDid) throw new Error('Could not fetch created DID details')
+  return fullDid
 }
 
 export async function createFullDidFromSeed(

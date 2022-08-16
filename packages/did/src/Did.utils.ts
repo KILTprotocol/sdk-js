@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { checkAddress } from '@polkadot/util-crypto'
+import { blake2AsU8a, checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { stringToU8a } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
 import { u32 } from '@polkadot/types'
@@ -15,9 +15,9 @@ import {
   DidKey,
   DidResourceUri,
   NewDidVerificationKey,
-  DidVerificationKey,
   DidServiceEndpoint,
   DidUri,
+  DidVerificationKey,
   EncryptionAlgorithms,
   EncryptionKeyType,
   encryptionKeyTypes,
@@ -474,4 +474,29 @@ export function assembleKeyUri(
     )
   }
   return `${did}#${keyId}`
+}
+
+export function getIdentifierByKey({
+  publicKey,
+  type,
+}: Pick<DidVerificationKey, 'publicKey' | 'type'>): DidIdentifier {
+  switch (type) {
+    case 'ed25519':
+    case 'sr25519':
+      return encodeAddress(publicKey, ss58Format)
+    case 'ecdsa': {
+      // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
+      const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+      return encodeAddress(pk, ss58Format)
+    }
+    default:
+      throw new SDKErrors.DidBuilderError(`Unsupported key type "${type}"`)
+  }
+}
+
+export function getFullDidUriByKey(
+  key: Pick<DidVerificationKey, 'publicKey' | 'type'>
+): DidUri {
+  const identifier = getIdentifierByKey(key)
+  return getKiltDidFromIdentifier(identifier, 'full')
 }

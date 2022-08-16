@@ -33,15 +33,17 @@ import { connect, init } from '../kilt'
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
+const WS_PORT = 9944
+
 async function getStartedTestContainer(): Promise<StartedTestContainer> {
   try {
     const image =
       process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
     console.log(`using testcontainer with image ${image}`)
     const testcontainer = new GenericContainer(image)
-      .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
-      .withExposedPorts(9944)
-      .withWaitStrategy(Wait.forLogMessage(/idle/i))
+      .withCmd(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
+      .withExposedPorts(WS_PORT)
+      .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
     const started = await testcontainer.start()
     return started
   } catch (error) {

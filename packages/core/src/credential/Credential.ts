@@ -393,15 +393,25 @@ export async function verify(
 
   if (ctype) {
     const isSchemaValid = verifyAgainstCType(credential, ctype)
-    if (!isSchemaValid) throw new SDKErrors.CredentialUnverifiableError()
+    if (!isSchemaValid)
+      throw new SDKErrors.CredentialUnverifiableError(
+        'CType verification failed'
+      )
   }
 
-  if (challenge || !allowUnsigned) {
+  if (challenge || credential.claimerSignature) {
     const isSignatureCorrect = await verifySignature(credential, {
       challenge,
       resolver,
     })
-    if (!isSignatureCorrect) throw new SDKErrors.SignatureUnverifiableError()
+    if (!isSignatureCorrect)
+      throw new SDKErrors.CredentialUnverifiableError(
+        'Signature not verifiable'
+      )
+  } else if (!allowUnsigned) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Signature required, but not provided'
+    )
   }
 }
 
