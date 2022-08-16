@@ -28,7 +28,7 @@ import { blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
-import jsonabc from './jsonabc.cjs'
+import jsonabc from './jsonabc.js'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
