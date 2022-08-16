@@ -21,7 +21,6 @@ import {
   DidVerificationKey,
   IIdentity,
   KeyRelationship,
-  NewDidKey,
   SignCallback,
   SigningOptions,
   SubmittableExtrinsic,
@@ -362,22 +361,6 @@ export type AuthorizeCallInput = {
 }
 
 // ### EXTRINSICS
-
-export function encodePublicKey(
-  key: NewDidVerificationKey
-): EncodedVerificationKey
-export function encodePublicKey(key: NewDidEncryptionKey): EncodedEncryptionKey
-
-/**
- * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
- *
- * @param key Object describing data associated with a public key.
- * @returns Data restructured to allow SCALE encoding by polkadot api.
- */
-export function encodePublicKey(key: NewDidKey): EncodedKey {
-  // TypeScript can't infer type here, so we have to add a type assertion.
-  return { [key.type]: key.publicKey } as EncodedKey
-}
 
 function checkServiceEndpointInput(
   api: ApiPromise,
