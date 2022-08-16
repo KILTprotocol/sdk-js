@@ -15,10 +15,7 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
-
-import { FullDidCreationBuilder } from '../DidBatcher/FullDidCreationBuilder.js'
 
 import type {
   DidConstructorDetails,
@@ -27,6 +24,7 @@ import type {
   PublicKeys,
 } from '../types.js'
 import {
+  getIdentifierByKey,
   getKiltDidFromIdentifier,
   LIGHT_DID_LATEST_VERSION,
   parseDidUri,
@@ -43,6 +41,7 @@ import {
   serializeAndEncodeAdditionalLightDidDetails,
 } from './LightDidDetails.utils.js'
 import { FullDidDetails } from './FullDidDetails.js'
+import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
 
 const authenticationKeyId = 'authentication'
 const encryptionKeyId = 'encryption'
@@ -232,12 +231,27 @@ export class LightDidDetails extends DidDetails {
     migrationCallback: DidMigrationCallback,
     { withEncryptionKey = true, withServiceEndpoints = false } = {}
   ): Promise<FullDidDetails> {
-    const api = await BlockchainApiConnection.getConnectionOrConnect()
-    const creationTx = await FullDidCreationBuilder.fromLightDidDetails(
-      api,
-      this,
-      { withEncryptionKey, withServiceEndpoints }
-    ).build(sign, submitterAddress)
+    const creationTx = await generateCreateTxFromCreationDetails(
+      {
+        identifier: getIdentifierByKey(this.authenticationKey),
+        authenticationKey: this.authenticationKey,
+        ...(withEncryptionKey &&
+          this.encryptionKey && {
+            keyAgreementKeys: [this.encryptionKey],
+          }),
+        ...(withServiceEndpoints &&
+          this.serviceEndpoints.size > 0 && {
+            serviceEndpoints: [...this.serviceEndpoints.entries()].map(
+              ([id, service]) => ({
+                id,
+                ...service,
+              })
+            ),
+          }),
+      },
+      submitterAddress,
+      sign
+    )
 
     await migrationCallback(creationTx)
 
