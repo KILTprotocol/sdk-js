@@ -277,7 +277,7 @@ export class DelegationNode implements IDelegationNode {
     }: {
       keySelection?: DidKeySelectionCallback<DidVerificationKey>
     } = {}
-  ): Promise<DidChain.SignatureEnum> {
+  ): Promise<DidUtils.EncodedSignature> {
     const authenticationKey = await keySelection(
       delegateDid.getVerificationKeys('authentication')
     )
@@ -314,7 +314,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async getStoreTx(
-    signature?: DidChain.SignatureEnum
+    signature?: DidUtils.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
       return getStoreAsRootTx(this)

@@ -23,7 +23,7 @@ import {
   ApiMocks,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { formatPublicKeyForChain, getSetKeyExtrinsic } from '../Did.chain.js'
+import { encodePublicKey, getSetKeyExtrinsic } from '../Did.chain.js'
 import { DidBatchBuilder } from './DidBatchBuilder'
 import { FullDidDetails } from '../DidDetails'
 
@@ -37,7 +37,7 @@ jest.mock('../Did.chain.js', () => ({
       keyRelationship: KeyRelationship,
       key: NewDidVerificationKey
     ): Promise<Extrinsic> => {
-      const keyAsEnum = formatPublicKeyForChain(key)
+      const keyAsEnum = encodePublicKey(key)
       switch (keyRelationship) {
         case 'capabilityDelegation':
           return mockApi.tx.did.setDelegationKey(keyAsEnum)

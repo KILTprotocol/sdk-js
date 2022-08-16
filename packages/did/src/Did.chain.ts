@@ -25,10 +25,8 @@ import {
   SignCallback,
   SigningOptions,
   SubmittableExtrinsic,
-  TypedValue,
   NewDidVerificationKey,
   NewDidEncryptionKey,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -37,10 +35,8 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import type {
   DidDidDetails,
   DidDidDetailsDidAuthorizedCallOperation,
-  DidDidDetailsDidEncryptionKey,
   DidDidDetailsDidPublicKey,
   DidDidDetailsDidPublicKeyDetails,
-  DidDidDetailsDidVerificationKey,
   DidServiceEndpointsDidEndpoint,
 } from '@kiltprotocol/augment-api'
 import type { DidDetails } from './DidDetails/index.js'
@@ -48,6 +44,10 @@ import type { FullDidCreationDetails } from './types.js'
 import {
   checkServiceEndpointSizeConstraints,
   checkServiceEndpointSyntax,
+  EncodedEncryptionKey,
+  EncodedKey,
+  EncodedSignature,
+  EncodedVerificationKey,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
   isEncryptionKey,
@@ -57,10 +57,6 @@ import {
 const log = ConfigService.LoggingFactory.getLogger('Did')
 
 // ### Chain type definitions
-
-export type ChainDidKey =
-  | DidDidDetailsDidVerificationKey
-  | DidDidDetailsDidEncryptionKey
 
 export type ChainDidPublicKey = DidDidDetailsDidPublicKey
 export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
@@ -367,10 +363,10 @@ export type AuthorizeCallInput = {
 
 // ### EXTRINSICS
 
-type FormattedPublicKey<K extends NewDidKey> = TypedValue<
-  K['type'],
-  K['publicKey']
->
+export function encodePublicKey(
+  key: NewDidVerificationKey
+): EncodedVerificationKey
+export function encodePublicKey(key: NewDidEncryptionKey): EncodedEncryptionKey
 
 /**
  * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
@@ -378,10 +374,9 @@ type FormattedPublicKey<K extends NewDidKey> = TypedValue<
  * @param key Object describing data associated with a public key.
  * @returns Data restructured to allow SCALE encoding by polkadot api.
  */
-export function formatPublicKeyForChain<K extends NewDidKey>(
-  key: K
-): FormattedPublicKey<K> {
-  return { [key.type]: key.publicKey } as FormattedPublicKey<K>
+export function encodePublicKey(key: NewDidKey): EncodedKey {
+  // TypeScript can't infer type here, so we have to add a type assertion.
+  return { [key.type]: key.publicKey } as EncodedKey
 }
 
 function checkServiceEndpointInput(
@@ -440,15 +435,15 @@ export async function generateCreateTxFromCreationDetails(
     )
   }
 
-  const newKeyAgreementKeys = keyAgreementKeys.map(({ publicKey }) =>
-    formatPublicKeyForChain({ type: 'x25519', publicKey })
+  const newKeyAgreementKeys = keyAgreementKeys.map(
+    ({ publicKey, type }) => ({ [type]: publicKey } as EncodedEncryptionKey)
   )
 
   const newAssertionKey = assertionKey
-    ? formatPublicKeyForChain(assertionKey)
+    ? ({ [assertionKey.type]: assertionKey.publicKey } as EncodedKey)
     : undefined
   const newDelegationKey = delegationKey
-    ? formatPublicKeyForChain(delegationKey)
+    ? ({ [delegationKey.type]: delegationKey.publicKey } as EncodedKey)
     : undefined
 
   const maxNumberOfServicesPerDid =
@@ -489,11 +484,8 @@ export async function generateCreateTxFromCreationDetails(
     alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
   })
   const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
-  const signatureForPolkadot = { [keyType]: signature.data } as TypedValue<
-    typeof keyType,
-    typeof signature.data
-  >
-  return api.tx.did.create(encodedDidCreationDetails, signatureForPolkadot)
+  const encodedSignature = { [keyType]: signature.data } as EncodedSignature
+  return api.tx.did.create(encodedDidCreationDetails, encodedSignature)
 }
 
 /**
@@ -575,7 +567,7 @@ export async function getSetKeyExtrinsic(
       }`
     )
   }
-  const typedKey = formatPublicKeyForChain(key)
+  const typedKey = { [key.type]: key.publicKey } as EncodedVerificationKey
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   switch (keyRelationship) {
     case 'authentication':
@@ -649,7 +641,7 @@ export async function getAddKeyExtrinsic(
           (key as any).type
         }`
       )
-    const keyAsEnum = formatPublicKeyForChain(key)
+    const keyAsEnum = { [key.type]: key.publicKey } as EncodedEncryptionKey
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
   }
   throw new SDKErrors.DidError(
@@ -780,16 +772,11 @@ export async function generateDidAuthenticatedTx({
     alg,
   })
   const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
-  const signatureForPolkadot = { [keyType]: signature.data } as TypedValue<
-    typeof keyType,
-    typeof signature.data
-  >
-  return api.tx.did.submitDidCall(signableCall, signatureForPolkadot)
+  const encodedSignature = { [keyType]: signature.data } as EncodedSignature
+  return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
 
 // ### Chain utils
-export type SignatureEnum = TypedValue<VerificationKeyType, Uint8Array>
-
 /**
  * Compiles an enum-type key-value pair representation of a signature created with a FullDid verification method. Required for creating FullDid signed extrinsics.
  *
@@ -800,7 +787,7 @@ export type SignatureEnum = TypedValue<VerificationKeyType, Uint8Array>
 export function encodeDidSignature(
   key: DidVerificationKey,
   signature: Pick<DidSignature, 'signature'>
-): SignatureEnum {
+): EncodedSignature {
   if (!isVerificationKey(key)) {
     throw new SDKErrors.DidError(
       `encodedDidSignature requires a verification key. A key of type "${
@@ -809,6 +796,5 @@ export function encodeDidSignature(
     )
   }
 
-  // TypeScript can't infer key type on type union, so we have to add a type assertion.
-  return { [key.type]: hexToU8a(signature.signature) } as SignatureEnum
+  return { [key.type]: hexToU8a(signature.signature) } as EncodedSignature
 }
