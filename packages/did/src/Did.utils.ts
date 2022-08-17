@@ -14,7 +14,6 @@ import {
   DidIdentifier,
   DidKey,
   DidResourceUri,
-  TypedValue,
   NewDidVerificationKey,
   DidServiceEndpoint,
   DidUri,
@@ -251,8 +250,7 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
 export function isVerificationKey(
   key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
 ): key is NewDidVerificationKey | DidVerificationKey {
-  const keyType = key.type.toLowerCase()
-  return verificationKeyTypes.some((kt) => kt === keyType)
+  return verificationKeyTypes.some((kt) => kt === key.type)
 }
 
 /**
@@ -264,9 +262,19 @@ export function isVerificationKey(
 export function isEncryptionKey(
   key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
 ): key is NewDidEncryptionKey | DidEncryptionKey {
-  const keyType = key.type.toLowerCase()
-  return encryptionKeyTypes.some((kt) => kt === keyType)
+  return encryptionKeyTypes.some((kt) => kt === key.type)
 }
+
+export type EncodedVerificationKey =
+  | { sr25519: Uint8Array }
+  | { ed25519: Uint8Array }
+  | { ecdsa: Uint8Array }
+
+export type EncodedEncryptionKey = { x25519: Uint8Array }
+
+export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
+
+export type EncodedSignature = EncodedVerificationKey
 
 /**
  * Type guard assuring that a string (or other input) is a valid KILT DID uri.
@@ -466,23 +474,6 @@ export function assembleKeyUri(
     )
   }
   return `${did}#${keyId}`
-}
-
-/**
- * Helper to produce polkadot-js style enum representations, consisting of an object with a single key-value pair.
- * The enum variant becomes the object's key (first letter capitalized).
- *
- * @param variant The enum variant descriptor as a string.
- * @param value The value associated with the variant.
- * @returns `{ Variant: value }`.
- */
-export function makePolkadotTypedValue<K extends string, V>(
-  variant: K,
-  value: V
-): TypedValue<K, V> {
-  return {
-    [variant]: value,
-  } as TypedValue<K, V>
 }
 
 export function getIdentifierByKey({

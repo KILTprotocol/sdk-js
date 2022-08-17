@@ -11,7 +11,6 @@ import type {
   Deposit,
   DidIdentifier,
   IIdentity,
-  TypedValue,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
@@ -23,11 +22,7 @@ import {
   signatureVerify,
 } from '@polkadot/util-crypto'
 import type { bool, Enum, Option, u128, u64, U8aFixed } from '@polkadot/types'
-import type {
-  AccountId32,
-  Extrinsic,
-  MultiSignature,
-} from '@polkadot/types/interfaces'
+import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
@@ -49,7 +44,7 @@ import type {
   AugmentedSubmittable,
 } from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
-import { makePolkadotTypedValue } from '../Did.utils.js'
+import { EncodedSignature } from '../Did.utils.js'
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
 
 // TODO: update with string pattern types once available
@@ -62,9 +57,6 @@ export type EthereumAddress = HexString
 
 export type Address = KiltAddress | SubstrateAddress | EthereumAddress
 
-/// Type of signatures to link accounts to DIDs.
-export type SignatureType = MultiSignature['type'] | 'Ethereum'
-
 /**
  * Type of a linking payload signing function.
  *
@@ -74,6 +66,10 @@ export type LinkingSignerCallback = (
   encodedLinkingDetails: HexString,
   address: KiltAddress
 ) => Promise<HexString>
+
+type EncodedMultiAddress =
+  | { AccountId20: Uint8Array }
+  | { AccountId32: Uint8Array }
 
 /**
  * Type describing storage type that is yet to be deployed to spiritnet.
@@ -86,24 +82,17 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly type: 'AccountId20' | 'AccountId32'
 }
 
-/**
- * Type required for encoding of the above.
- */
-type LinkableAccountJson = TypedValue<
-  PalletDidLookupLinkableAccountLinkableAccountId['type'],
-  string | Uint8Array
->
+type AssociateAccountRequestValue = [
+  string | Uint8Array, // AccountId
+  string | Uint8Array | EncodedSignature // signature
+]
 
 /**
  * Type required for encoding Enum type for association request extrinsics.
  */
-type AssociateAccountRequest = TypedValue<
-  'Dotsama' | 'Ethereum',
-  [
-    string | Uint8Array, // AccountId
-    string | Uint8Array | TypedValue<SignatureType, string | Uint8Array> // signature
-  ]
->
+type AssociateAccountRequest =
+  | { Dotsama: AssociateAccountRequestValue }
+  | { Ethereum: AssociateAccountRequestValue }
 
 /**
  * Api augmentation override for when the ethereum enabled pallet version has landed.
@@ -118,7 +107,7 @@ type WithEtherumSupport = {
         ) => SubmittableExtrinsic
       >
       removeAccountAssociation: AugmentedSubmittable<
-        (account: LinkableAccountJson) => SubmittableExtrinsic,
+        (account: EncodedMultiAddress) => SubmittableExtrinsic,
         [PalletDidLookupLinkableAccountLinkableAccountId]
       >
     }
@@ -127,14 +116,14 @@ type WithEtherumSupport = {
     didLookup: {
       connectedDids: AugmentedQuery<
         'promise',
-        (arg: LinkableAccountJson) => Option<PalletDidLookupConnectionRecord>,
+        (arg: EncodedMultiAddress) => Option<PalletDidLookupConnectionRecord>,
         [PalletDidLookupLinkableAccountLinkableAccountId]
       >
       connectedAccounts: AugmentedQueryDoubleMap<
         'promise',
         (
           didId: string | Uint8Array,
-          accountId: LinkableAccountJson
+          accountId: EncodedMultiAddress
         ) => Option<bool>,
         [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]
       >
@@ -170,15 +159,12 @@ function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
  * @param address 20 or 32 byte address as string (hex or ss58 encoded).
  * @returns `{ AccountId20 | AccountId32: Uint8Array }`.
  */
-function encodeMultiAddress(
-  address: Address
-): TypedValue<'AccountId20' | 'AccountId32', Uint8Array> {
+function encodeMultiAddress(address: Address): EncodedMultiAddress {
   const accountDecoded = decodeAddress(address)
   const isEthereumAddress = accountDecoded.length === 20
-  return makePolkadotTypedValue(
-    isEthereumAddress ? 'AccountId20' : 'AccountId32',
-    accountDecoded
-  )
+  return isEthereumAddress
+    ? { AccountId20: accountDecoded }
+    : { AccountId32: accountDecoded }
 }
 
 /* ### QUERY ### */
@@ -340,29 +326,33 @@ export async function getAccountSignedAssociationExtrinsic(
   account: Address,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
-  sigType: SignatureType
+  sigType: KeypairType
 ): Promise<Extrinsic> {
+  const proof = { [sigType]: signature } as EncodedSignature
+
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   if (isEthereumEnabled(api)) {
-    if (sigType === 'Ethereum') {
+    if (sigType === 'ethereum') {
       return api.tx.didLookup.associateAccount(
         { Ethereum: [account, signature] },
         signatureValidUntilBlock
       )
     }
     return api.tx.didLookup.associateAccount(
-      { Dotsama: [account, makePolkadotTypedValue(sigType, signature)] },
+      { Dotsama: [account, proof] },
       signatureValidUntilBlock
     )
   }
-  if (sigType === 'Ethereum')
+
+  if (sigType === 'ethereum')
     throw new SDKErrors.CodecMismatchError(
       'Ethereum linking is not yet supported by this chain'
     )
+
   return api.tx.didLookup.associateAccount(
     account,
     signatureValidUntilBlock,
-    makePolkadotTypedValue(sigType, signature)
+    proof
   )
 }
 
@@ -411,25 +401,6 @@ export async function getLinkRemovalByDidExtrinsic(
 }
 
 /* ### HELPERS ### */
-
-function getMultiSignatureTypeFromKeypairType(
-  keypairType: KeypairType
-): SignatureType {
-  switch (keypairType) {
-    case 'ed25519':
-      return 'Ed25519'
-    case 'sr25519':
-      return 'Sr25519'
-    case 'ecdsa':
-      return 'Ecdsa'
-    case 'ethereum':
-      return 'Ethereum'
-    default:
-      throw new SDKErrors.DidError(
-        `Unsupported signature algorithm "${keypairType}"`
-      )
-  }
-}
 
 /**
  * Return the default sign callback, which uses the address argument to crete a signing closure for the given payload.
@@ -509,9 +480,8 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
     result = signatureVerify(paddedDetails, signature, accountAddress)
     assert(result.isValid, 'signature not valid')
   }
-  const { crypto } = result
 
-  const sigType = getMultiSignatureTypeFromKeypairType(crypto as KeypairType)
+  const sigType = result.crypto as KeypairType
   return getAccountSignedAssociationExtrinsic(
     accountAddress,
     validTill,
