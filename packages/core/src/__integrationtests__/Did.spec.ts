@@ -347,13 +347,13 @@ describe('DID migration', () => {
       keyAgreement,
     })
 
-    const creationTx = await Did.Chain.getStoreTx(
+    const storeTx = await Did.Chain.getStoreTx(
       lightDidDetails,
       paymentAccount.address,
       sign
     )
 
-    await submitExtrinsic(creationTx, paymentAccount)
+    await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDid = await Did.query(
       Did.Utils.getFullDidUriByKey(authentication[0])
     )
@@ -397,13 +397,13 @@ describe('DID migration', () => {
       authentication,
     })
 
-    const creationTx = await Did.Chain.getStoreTx(
+    const storeTx = await Did.Chain.getStoreTx(
       lightDidDetails,
       paymentAccount.address,
       sign
     )
 
-    await submitExtrinsic(creationTx, paymentAccount)
+    await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDid = await Did.query(
       Did.Utils.getFullDidUriByKey(authentication[0])
     )
@@ -453,13 +453,13 @@ describe('DID migration', () => {
       service,
     })
 
-    const creationTx = await Did.Chain.getStoreTx(
+    const storeTx = await Did.Chain.getStoreTx(
       lightDidDetails,
       paymentAccount.address,
       sign
     )
 
-    await submitExtrinsic(creationTx, paymentAccount)
+    await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDid = await Did.query(
       Did.Utils.getFullDidUriByKey(authentication[0])
     )
@@ -1038,22 +1038,22 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await CType.getStoreTx(ctype)
+    const ctypeStoreTx = await CType.getStoreTx(ctype)
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
-    const delegationCreationTx = await rootNode.getStoreTx()
+    const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
       did: fullDid,
       extrinsics: [
-        ctypeCreationTx,
+        ctypeStoreTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
-        delegationCreationTx,
+        delegationStoreTx,
       ],
       sign: key.sign,
       submitter: paymentAccount.address,
@@ -1073,22 +1073,22 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await CType.getStoreTx(ctype)
+    const ctypeStoreTx = await CType.getStoreTx(ctype)
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
-    const delegationCreationTx = await rootNode.getStoreTx()
+    const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batchAll,
       did: fullDid,
       extrinsics: [
-        ctypeCreationTx,
+        ctypeStoreTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
-        delegationCreationTx,
+        delegationStoreTx,
       ],
       sign: key.sign,
       submitter: paymentAccount.address,
