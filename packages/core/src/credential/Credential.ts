@@ -18,14 +18,15 @@
  */
 
 import {
-  DidResolver,
   isDidSignature,
   verifyDidSignature,
+  resolve as didResolve,
   signPayload,
 } from '@kiltprotocol/did'
 import type {
   CompressedCredential,
   DidDetails,
+  DidResolve,
   DidResourceUri,
   DidVerificationKey,
   Hash,
@@ -34,7 +35,6 @@ import type {
   ICredential,
   ICType,
   IDelegationNode,
-  IDidResolver,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
@@ -293,7 +293,7 @@ export function verifyAgainstCType(
  *
  * @param input - The [[Credential]].
  * @param verificationOpts Additional verification options.
- * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
+ * @param verificationOpts.resolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  * @returns Whether the signature is correct.
  */
@@ -301,10 +301,10 @@ export async function verifySignature(
   input: ICredential,
   {
     challenge,
-    resolver = DidResolver,
+    resolve = didResolve,
   }: {
     challenge?: string
-    resolver?: IDidResolver
+    resolve?: DidResolve
   } = {}
 ): Promise<boolean> {
   const { claimerSignature } = input
@@ -315,7 +315,7 @@ export async function verifySignature(
     signature: claimerSignature,
     message: signingData,
     expectedVerificationMethod: 'authentication',
-    resolver,
+    resolve,
   })
   return verified
 }
@@ -363,7 +363,7 @@ export function fromClaim(
 type VerifyOptions = {
   ctype?: ICType
   challenge?: string
-  resolver?: IDidResolver
+  resolve?: DidResolve
   allowUnsigned?: boolean
 }
 
@@ -377,14 +377,14 @@ type VerifyOptions = {
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.allowUnsigned - Wether to check the signature without a challenge being present.
- * @param options.resolver - The resolver used to resolve the claimer's identity. Defaults to [[DidResolver]].
+ * @param options.resolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  */
 export async function verify(
   credential: ICredential,
   {
     ctype,
     challenge,
-    resolver = DidResolver,
+    resolve = didResolve,
     allowUnsigned = false,
   }: VerifyOptions = {}
 ): Promise<void> {
@@ -402,7 +402,7 @@ export async function verify(
   if (challenge || credential.claimerSignature) {
     const isSignatureCorrect = await verifySignature(credential, {
       challenge,
-      resolver,
+      resolve,
     })
     if (!isSignatureCorrect)
       throw new SDKErrors.CredentialUnverifiableError(

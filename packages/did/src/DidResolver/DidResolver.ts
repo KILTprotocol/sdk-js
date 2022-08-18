@@ -10,7 +10,6 @@ import {
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
-  IDidResolver,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
@@ -32,9 +31,7 @@ import { getFullDidUri, parseDidUri } from '../Did.utils.js'
  * @param did The subject's DID.
  * @returns The details associated with the DID subject.
  */
-export async function resolveDoc(
-  did: DidUri
-): Promise<DidResolvedDetails | null> {
+export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
   const { address, type } = parseDidUri(did)
   const fullDidUri = getFullDidUri(did)
 
@@ -139,7 +136,7 @@ export async function resolveKey(
       }
     }
     case 'light': {
-      const resolvedDetails = await resolveDoc(didUri)
+      const resolvedDetails = await resolve(didUri)
       if (!resolvedDetails) {
         throw new SDKErrors.InvalidDidFormatError(didUri)
       }
@@ -191,7 +188,7 @@ export async function resolveServiceEndpoint(
       }
     }
     case 'light': {
-      const resolvedDetails = await resolveDoc(did)
+      const resolvedDetails = await resolve(did)
       if (!resolvedDetails) {
         throw new SDKErrors.InvalidDidFormatError(serviceUri)
       }
@@ -214,34 +211,4 @@ export async function resolveServiceEndpoint(
     default:
       throw new SDKErrors.UnsupportedDidError(did)
   }
-}
-
-/**
- * Resolve a DID URI (including a key ID or a service ID).
- *
- * @param didUri The DID URI to resolve.
- * @returns The DID, key details or service details depending on the input URI. Null otherwise.
- */
-export async function resolve(
-  didUri: DidUri | DidResourceUri
-): Promise<
-  DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
-> {
-  const { fragment, did } = parseDidUri(didUri)
-
-  if (fragment) {
-    return (
-      (await resolveKey(didUri as DidResourceUri)) ||
-      (await resolveServiceEndpoint(didUri as DidResourceUri)) ||
-      null
-    )
-  }
-  return resolveDoc(did)
-}
-
-export const DidResolver: IDidResolver = {
-  resolveDoc,
-  resolveKey,
-  resolve,
-  resolveServiceEndpoint,
 }

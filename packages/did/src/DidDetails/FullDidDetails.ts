@@ -38,7 +38,7 @@ import {
 } from './FullDidDetails.utils.js'
 
 /**
- * Fetches [[DidDetails]] from the blockchain. [[DidResolver]] provides more detailed output.
+ * Fetches [[DidDetails]] from the blockchain. [[resolve]] provides more detailed output.
  * Private keys are assumed to already live in another storage, as only the public keys are retrieved from the blockchain.
  *
  * @param didUri The URI of the DID to fetch.

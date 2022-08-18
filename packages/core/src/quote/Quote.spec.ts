@@ -20,7 +20,6 @@ import type {
   IClaim,
   ICostBreakdown,
   ICType,
-  IDidResolver,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
@@ -58,25 +57,20 @@ describe('Quote', () => {
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
 
-  const mockResolver = (() => {
-    async function resolve(didUri: string): Promise<DidResolvedDetails | null> {
-      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const didWithoutFragment = didUri.split('#')[0]
-      switch (didWithoutFragment) {
-        case claimerIdentity?.uri:
-          return { details: claimerIdentity, metadata: { deactivated: false } }
-        case attesterIdentity?.uri:
-          return { details: attesterIdentity, metadata: { deactivated: false } }
-        default:
-          return null
-      }
+  async function mockResolve(
+    didUri: string
+  ): Promise<DidResolvedDetails | null> {
+    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+    const didWithoutFragment = didUri.split('#')[0]
+    switch (didWithoutFragment) {
+      case claimerIdentity?.uri:
+        return { details: claimerIdentity, metadata: { deactivated: false } }
+      case attesterIdentity?.uri:
+        return { details: attesterIdentity, metadata: { deactivated: false } }
+      default:
+        return null
     }
-
-    return {
-      resolve,
-      resolveDoc: resolve,
-    } as IDidResolver
-  })()
+  }
 
   beforeAll(async () => {
     claimerIdentity = await createLocalDemoFullDidFromKeypair(claimer.keypair)
@@ -155,7 +149,7 @@ describe('Quote', () => {
       claimerIdentity,
       claimer.sign,
       {
-        resolver: mockResolver,
+        resolve: mockResolve,
       }
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
@@ -195,7 +189,7 @@ describe('Quote', () => {
       )
     ).toBe(true)
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-      resolver: mockResolver,
+      resolve: mockResolve,
     })
     expect(
       await Quote.createAttesterSignedQuote(
@@ -228,25 +222,20 @@ describe('Quote compression', () => {
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
-  const mockResolver = (() => {
-    async function resolve(didUri: string): Promise<DidResolvedDetails | null> {
-      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const didWithoutFragment = didUri.split('#')[0]
-      switch (didWithoutFragment) {
-        case claimerIdentity?.uri:
-          return { details: claimerIdentity, metadata: { deactivated: false } }
-        case attesterIdentity?.uri:
-          return { details: attesterIdentity, metadata: { deactivated: false } }
-        default:
-          return null
-      }
+  async function mockResolve(
+    didUri: string
+  ): Promise<DidResolvedDetails | null> {
+    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+    const didWithoutFragment = didUri.split('#')[0]
+    switch (didWithoutFragment) {
+      case claimerIdentity?.uri:
+        return { details: claimerIdentity, metadata: { deactivated: false } }
+      case attesterIdentity?.uri:
+        return { details: attesterIdentity, metadata: { deactivated: false } }
+      default:
+        return null
     }
-
-    return {
-      resolve,
-      resolveDoc: resolve,
-    } as IDidResolver
-  })()
+  }
 
   beforeAll(async () => {
     const claimer = makeSigningKeyTool('ed25519')
@@ -300,7 +289,7 @@ describe('Quote compression', () => {
       claimerIdentity,
       claimer.sign,
       {
-        resolver: mockResolver,
+        resolve: mockResolve,
       }
     )
 

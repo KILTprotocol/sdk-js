@@ -15,14 +15,12 @@ import type {
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
-  IDidResolver,
   IEncryptedMessage,
   IQuote,
   IRequestAttestation,
   ISubmitAttestation,
   ISubmitCredential,
   ResolvedDidKey,
-  ResolvedDidServiceEndpoint,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Quote, Credential } from '@kiltprotocol/core'
@@ -49,7 +47,7 @@ let bobFullDid: DidDetails
 let bobSign: SignCallback
 const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
-const resolveDoc = async (did: DidUri): Promise<DidResolvedDetails | null> => {
+async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
   if (did.startsWith(aliceLightDidWithDetails.uri)) {
     return {
       details: aliceLightDidWithDetails,
@@ -82,11 +80,12 @@ const resolveDoc = async (did: DidUri): Promise<DidResolvedDetails | null> => {
   }
   return null
 }
-const resolveKey = async (
+
+async function resolveKey(
   keyUri: DidResourceUri
-): Promise<ResolvedDidKey | null> => {
+): Promise<ResolvedDidKey | null> {
   const { fragment, did } = Did.Utils.parseDidUri(keyUri)
-  const { details } = (await resolveDoc(did as DidUri)) as DidResolvedDetails
+  const { details } = (await resolve(did as DidUri)) as DidResolvedDetails
   if (!details) throw new Error('Could not resolve details')
   const key = Did.getKey(details, fragment!) as DidKey
   return {
@@ -96,18 +95,6 @@ const resolveKey = async (
     type: key.type,
   }
 }
-
-const mockResolver = {
-  resolveDoc,
-  resolveKey,
-  resolve: async (
-    didUri: string
-  ): Promise<
-    DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
-  > =>
-    (await resolveKey(didUri as DidResourceUri)) ||
-    resolveDoc(didUri as DidUri),
-} as IDidResolver
 
 beforeAll(async () => {
   const aliceAuthKey = makeSigningKeyTool('ed25519')
@@ -154,18 +141,14 @@ describe('Messaging', () => {
       aliceLightDid,
       aliceEncKey.encrypt,
       `${bobLightDid.uri}#encryption`,
-      {
-        resolver: mockResolver,
-      }
+      { resolveKey }
     )
 
     const decryptedMessage = await Message.decrypt(
       encryptedMessage,
       bobEncKey.decrypt,
       bobLightDid,
-      {
-        resolver: mockResolver,
-      }
+      { resolveKey }
     )
     expect(JSON.stringify(message.body)).toEqual(
       JSON.stringify(decryptedMessage.body)
@@ -185,9 +168,7 @@ describe('Messaging', () => {
         encryptedMessageWrongContent,
         bobEncKey.decrypt,
         bobLightDid,
-        {
-          resolver: mockResolver,
-        }
+        { resolveKey }
       )
     ).rejects.toThrowError(SDKErrors.DecodingMessageError)
 
@@ -208,9 +189,7 @@ describe('Messaging', () => {
         encryptedMessageWrongBody,
         bobEncKey.decrypt,
         bobLightDid,
-        {
-          resolver: mockResolver,
-        }
+        { resolveKey }
       )
     ).rejects.toThrowError(SDKErrors.ParsingMessageError)
   })
@@ -246,9 +225,7 @@ describe('Messaging', () => {
       bobFullDid.uri,
       aliceFullDid,
       aliceSign,
-      {
-        resolver: mockResolver,
-      }
+      { resolve }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -377,9 +354,7 @@ describe('Messaging', () => {
       bobLightDid.uri,
       aliceLightDid,
       aliceSign,
-      {
-        resolver: mockResolver,
-      }
+      { resolve }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -420,9 +395,7 @@ describe('Messaging', () => {
       bobLightDidWithDetails.uri,
       aliceLightDidWithDetails,
       aliceSign,
-      {
-        resolver: mockResolver,
-      }
+      { resolve }
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
       content: {

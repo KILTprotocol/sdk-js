@@ -23,7 +23,6 @@ import type {
   IClaimContents,
   ICredential,
   ICType,
-  IDidResolver,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
@@ -393,41 +392,36 @@ describe('Credential', () => {
   let migratedAndDeletedLightDid: DidDetails
   let migratedAndDeletedFullDid: DidDetails
 
-  const mockResolver = (() => {
-    async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
-      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const { did } = Did.Utils.parseDidUri(didUri)
-      switch (did) {
-        case identityAlice?.uri:
-          return { details: identityAlice, metadata: { deactivated: false } }
-        case identityBob?.uri:
-          return { details: identityBob, metadata: { deactivated: false } }
-        case identityCharlie?.uri:
-          return { details: identityCharlie, metadata: { deactivated: false } }
-        case identityDave?.uri:
-          return { details: identityDave, metadata: { deactivated: false } }
-        case migratedAndDeletedLightDid?.uri:
-          return {
-            metadata: {
-              deactivated: true,
-            },
-          }
-        case migratedAndDeletedFullDid?.uri:
-          return {
-            metadata: {
-              deactivated: true,
-            },
-          }
-        default:
-          return null
-      }
+  async function mockResolve(
+    didUri: DidUri
+  ): Promise<DidResolvedDetails | null> {
+    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+    const { did } = Did.Utils.parseDidUri(didUri)
+    switch (did) {
+      case identityAlice?.uri:
+        return { details: identityAlice, metadata: { deactivated: false } }
+      case identityBob?.uri:
+        return { details: identityBob, metadata: { deactivated: false } }
+      case identityCharlie?.uri:
+        return { details: identityCharlie, metadata: { deactivated: false } }
+      case identityDave?.uri:
+        return { details: identityDave, metadata: { deactivated: false } }
+      case migratedAndDeletedLightDid?.uri:
+        return {
+          metadata: {
+            deactivated: true,
+          },
+        }
+      case migratedAndDeletedFullDid?.uri:
+        return {
+          metadata: {
+            deactivated: true,
+          },
+        }
+      default:
+        return null
     }
-
-    return {
-      resolve,
-      resolveDoc: resolve,
-    } as IDidResolver
-  })()
+  }
 
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
   async function buildCredential2(
@@ -523,7 +517,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await Credential.verify(credential, {
-      resolver: mockResolver,
+      resolve: mockResolve,
     })
   })
   it('verify credentials signed by a light DID', async () => {
@@ -547,7 +541,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await Credential.verify(credential, {
-      resolver: mockResolver,
+      resolve: mockResolve,
     })
   })
 
@@ -578,7 +572,7 @@ describe('Credential', () => {
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await expect(
       Credential.verify(credential, {
-        resolver: mockResolver,
+        resolve: mockResolve,
       })
     ).rejects.toThrowError()
   })
@@ -677,53 +671,48 @@ describe('create presentation', () => {
     }
   }
 
-  const mockResolver: IDidResolver = (() => {
-    async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
-      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const { did } = Did.Utils.parseDidUri(didUri)
-      switch (did) {
-        case migratedClaimerLightDid?.uri:
-          return {
-            details: migratedClaimerLightDid,
-            metadata: {
-              canonicalId: migratedClaimerFullDid.uri,
-              deactivated: false,
-            },
-          }
-        case migratedThenDeletedClaimerLightDid?.uri:
-          return {
-            metadata: {
-              deactivated: true,
-            },
-          }
-        case migratedThenDeletedClaimerFullDid?.uri:
-          return {
-            metadata: {
-              deactivated: true,
-            },
-          }
-        case unmigratedClaimerLightDid?.uri:
-          return {
-            details: unmigratedClaimerLightDid,
-            metadata: { deactivated: false },
-          }
-        case migratedClaimerFullDid?.uri:
-          return {
-            details: migratedClaimerFullDid,
-            metadata: { deactivated: false },
-          }
-        case attester?.uri:
-          return { details: attester, metadata: { deactivated: false } }
-        default:
-          return null
-      }
+  async function mockResolve(
+    didUri: DidUri
+  ): Promise<DidResolvedDetails | null> {
+    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+    const { did } = Did.Utils.parseDidUri(didUri)
+    switch (did) {
+      case migratedClaimerLightDid?.uri:
+        return {
+          details: migratedClaimerLightDid,
+          metadata: {
+            canonicalId: migratedClaimerFullDid.uri,
+            deactivated: false,
+          },
+        }
+      case migratedThenDeletedClaimerLightDid?.uri:
+        return {
+          metadata: {
+            deactivated: true,
+          },
+        }
+      case migratedThenDeletedClaimerFullDid?.uri:
+        return {
+          metadata: {
+            deactivated: true,
+          },
+        }
+      case unmigratedClaimerLightDid?.uri:
+        return {
+          details: unmigratedClaimerLightDid,
+          metadata: { deactivated: false },
+        }
+      case migratedClaimerFullDid?.uri:
+        return {
+          details: migratedClaimerFullDid,
+          metadata: { deactivated: false },
+        }
+      case attester?.uri:
+        return { details: attester, metadata: { deactivated: false } }
+      default:
+        return null
     }
-
-    return {
-      resolve,
-      resolveDoc: resolve,
-    } as IDidResolver
-  })()
+  }
 
   beforeAll(async () => {
     const { keypair } = makeSigningKeyTool()
@@ -780,7 +769,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verify(presentation, {
-      resolver: mockResolver,
+      resolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -808,7 +797,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verify(presentation, {
-      resolver: mockResolver,
+      resolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -838,7 +827,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verify(presentation, {
-      resolver: mockResolver,
+      resolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -870,7 +859,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verify(att, {
-        resolver: mockResolver,
+        resolve: mockResolve,
       })
     ).rejects.toThrow()
   })
@@ -902,7 +891,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verify(presentation, {
-        resolver: mockResolver,
+        resolve: mockResolve,
       })
     ).rejects.toThrow()
   })
