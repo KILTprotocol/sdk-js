@@ -16,7 +16,6 @@ import type {
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import {
   createFullDidFromSeed,
   KeyTool,
@@ -80,7 +79,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       bobbyBroke.address
     )
 
-    const p = submitExtrinsic(authorizedTx, bobbyBroke, Blockchain.IS_IN_BLOCK)
+    const p = submitExtrinsic(authorizedTx, bobbyBroke)
 
     await expect(p).rejects.toThrowError('Inability to pay some fees')
   }, 30_000)
@@ -94,7 +93,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       paymentAccount.address
     )
 
-    await submitExtrinsic(authorizedTx, paymentAccount, Blockchain.IS_IN_BLOCK)
+    await submitExtrinsic(authorizedTx, paymentAccount)
   }, 30_000)
 
   it('should be possible to lookup the DID identifier with the given nick', async () => {
@@ -128,11 +127,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       paymentAccount.address
     )
 
-    const p = submitExtrinsic(
-      authorizedTx,
-      paymentAccount,
-      Blockchain.IS_IN_BLOCK
-    )
+    const p = submitExtrinsic(authorizedTx, paymentAccount)
 
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
@@ -149,11 +144,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       paymentAccount.address
     )
 
-    const p = submitExtrinsic(
-      authorizedTx,
-      paymentAccount,
-      Blockchain.IS_IN_BLOCK
-    )
+    const p = submitExtrinsic(authorizedTx, paymentAccount)
 
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
@@ -163,7 +154,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to remove a w3n by another payment account', async () => {
     const tx = await Web3Names.getReclaimDepositTx(nick)
-    const p = submitExtrinsic(tx, otherPaymentAccount, Blockchain.IS_IN_BLOCK)
+    const p = submitExtrinsic(tx, otherPaymentAccount)
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
       name: 'NotAuthorized',
@@ -172,7 +163,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to remove a w3n by the payment account', async () => {
     const tx = await Web3Names.getReclaimDepositTx(nick)
-    await submitExtrinsic(tx, paymentAccount, Blockchain.IS_IN_BLOCK)
+    await submitExtrinsic(tx, paymentAccount)
   }, 30_000)
 
   it('should be possible to remove a w3n by the owner did', async () => {
@@ -184,11 +175,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       w3nCreatorKey.sign,
       paymentAccount.address
     )
-    await submitExtrinsic(
-      prepareAuthorizedTx,
-      paymentAccount,
-      Blockchain.IS_IN_BLOCK
-    )
+    await submitExtrinsic(prepareAuthorizedTx, paymentAccount)
 
     const tx = await Web3Names.getReleaseByOwnerTx()
     const authorizedTx = await Did.authorizeExtrinsic(
@@ -197,7 +184,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
       w3nCreatorKey.sign,
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedTx, paymentAccount, Blockchain.IS_IN_BLOCK)
+    await submitExtrinsic(authorizedTx, paymentAccount)
   }, 40_000)
 })
 

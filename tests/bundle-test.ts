@@ -21,7 +21,6 @@ import type {
   SignCallback,
   SigningAlgorithms,
   SigningData,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 
@@ -39,13 +38,7 @@ const {
   BalanceUtils,
 } = kilt
 
-function getDefaultMigrationHandler(submitter: KeyringPair) {
-  return async (e: SubmittableExtrinsic) => {
-    await Blockchain.signAndSubmitTx(e, submitter, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
-  }
-}
+const resolveOn = Blockchain.IS_IN_BLOCK
 
 function makeSignCallback(keypair: KeyringPair): SignCallback {
   return async function sign<A extends SigningAlgorithms>({
@@ -142,8 +135,8 @@ async function createFullDidFromKeypair(
   const sign = makeSignCallback(keypair)
 
   const creationTx = await Did.Chain.getStoreTx(lightDid, payer.address, sign)
+  await Blockchain.signAndSubmitTx(creationTx, payer, { resolveOn })
 
-  await getDefaultMigrationHandler(payer)(creationTx)
   const fullDid = await Did.query(Did.Utils.getFullDidUri(lightDid.uri))
   if (!fullDid) throw new Error('Cannot query created DID')
 
@@ -158,9 +151,7 @@ async function createFullDidFromKeypair(
     sign,
     submitter: payer.address,
   })
-  await Blockchain.signAndSubmitTx(extrinsic, payer, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
+  await Blockchain.signAndSubmitTx(extrinsic, payer, { resolveOn })
 
   const updatedFullDid = await Did.query(fullDid.uri)
   if (!updatedFullDid) throw new Error('Could not update DID keys')
@@ -236,9 +227,7 @@ async function runAll() {
     devFaucet.address,
     sign
   )
-  await Blockchain.signAndSubmitTx(createTx, devFaucet, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
+  await Blockchain.signAndSubmitTx(createTx, devFaucet, { resolveOn })
   const fullDid = await Did.query(
     Did.Utils.getFullDidUriFromKey(authentication[0])
   )
@@ -266,9 +255,7 @@ async function runAll() {
     devFaucet.address
   )
 
-  await Blockchain.signAndSubmitTx(deleteTx, devFaucet, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
+  await Blockchain.signAndSubmitTx(deleteTx, devFaucet, { resolveOn })
 
   const resolvedAgain = await Did.resolveDoc(fullDid.uri)
   if (resolvedAgain?.metadata.deactivated) {
@@ -302,9 +289,7 @@ async function runAll() {
     devFaucet.address
   )
 
-  await Blockchain.signAndSubmitTx(authorizedTx, devFaucet, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
+  await Blockchain.signAndSubmitTx(authorizedTx, devFaucet, { resolveOn })
 
   const stored = await CType.verifyStored(DriversLicense)
   if (stored) {
@@ -385,9 +370,7 @@ async function runAll() {
     aliceSign,
     devFaucet.address
   )
-  await Blockchain.signAndSubmitTx(authorizedAttTx, devFaucet, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
+  await Blockchain.signAndSubmitTx(authorizedAttTx, devFaucet, { resolveOn })
   if (await Attestation.checkValidity(credential.rootHash)) {
     console.info('Attestation verified with chain')
   } else {
