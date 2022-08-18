@@ -48,9 +48,6 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
 
-export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
-  Promise.resolve(keys[0] || null)
-
 function isKiltAddress(input: string): input is KiltAddress {
   return checkAddress(input, ss58Format)[0]
 }
