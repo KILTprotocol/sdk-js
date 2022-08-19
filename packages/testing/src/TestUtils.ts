@@ -241,10 +241,8 @@ export async function createLocalDemoFullDidFromKeypair(
 ): Promise<DidDetails> {
   const authKey = makeDidKeyFromKeypair(keypair)
   const uri = Did.Utils.getFullDidUriFromKey(authKey)
-  const { identifier } = Did.Utils.parseDidUri(uri)
 
   const result: DidDetails = {
-    identifier,
     uri,
     authentication: [authKey],
     service: endpoints,
@@ -281,11 +279,10 @@ export async function createLocalDemoFullDidFromKeypair(
 export async function createLocalDemoFullDidFromLightDid(
   lightDid: DidDetails
 ): Promise<DidDetails> {
-  const { identifier, uri, authentication } = lightDid
+  const { uri, authentication } = lightDid
 
   return {
     uri: Did.Utils.getFullDidUri(uri),
-    identifier,
     authentication,
     assertionMethod: authentication,
     capabilityDelegation: authentication,

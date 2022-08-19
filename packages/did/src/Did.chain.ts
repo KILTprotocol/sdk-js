@@ -15,7 +15,6 @@ import type {
   Deposit,
   DidDetails,
   DidEncryptionKey,
-  DidIdentifier,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
@@ -27,6 +26,7 @@ import type {
   SubmittableExtrinsic,
   NewDidVerificationKey,
   NewDidEncryptionKey,
+  DidUri,
 } from '@kiltprotocol/types'
 import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
@@ -47,10 +47,11 @@ import {
   EncodedKey,
   EncodedSignature,
   EncodedVerificationKey,
-  getAddressFromIdentifier,
   getAddressByKey,
+  getFullDidUri,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
+  parseDidUri,
   stripFragment,
 } from './Did.utils.js'
 
@@ -63,13 +64,15 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 // ### RAW QUERYING (lowest layer)
 
-// Query a full DID given the identifier (a KILT address for v1).
+export function encodeDid(did: DidUri): KiltAddress {
+  return parseDidUri(did).address
+}
+
+// Query a full DID.
 // Interacts with the Did storage map.
-async function queryDidEncoded(
-  didIdentifier: DidIdentifier
-): Promise<Option<DidDidDetails>> {
+async function queryDidEncoded(did: DidUri): Promise<Option<DidDidDetails>> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.did(didIdentifier)
+  return api.query.did.did(encodeDid(did))
 }
 
 // Query ALL deleted DIDs, which can be very time-consuming if the number of deleted DIDs gets large.
@@ -77,38 +80,39 @@ async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
   const entries = await api.query.did.didBlacklist.keys()
-  return entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
+  return entries.map(({ args: [encodedAddresses] }) => encodedAddresses)
 }
 
 // Query a DID service given the DID identifier and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryServiceEncoded(
-  didIdentifier: DidIdentifier,
+  did: DidUri,
   serviceId: DidServiceEndpoint['id']
 ): Promise<Option<DidServiceEndpointsDidEndpoint>> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.serviceEndpoints(didIdentifier, stripFragment(serviceId))
+  return api.query.did.serviceEndpoints(
+    encodeDid(did),
+    stripFragment(serviceId)
+  )
 }
 
 // Query all services for a DID given the DID identifier.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryAllServicesEncoded(
-  didIdentifier: DidIdentifier
+  did: DidUri
 ): Promise<DidServiceEndpointsDidEndpoint[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedEndpoints = await api.query.did.serviceEndpoints.entries(
-    didIdentifier
+    encodeDid(did)
   )
   return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
 }
 
 // Query the # of services stored under a DID without fetching all the services.
 // Interacts with the DidEndpointsCount storage map.
-async function queryEndpointsCountsEncoded(
-  didIdentifier: DidIdentifier
-): Promise<u32> {
+async function queryEndpointsCountsEncoded(did: DidUri): Promise<u32> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.didEndpointsCount(didIdentifier)
+  return api.query.did.didEndpointsCount(encodeDid(did))
 }
 
 async function queryDepositAmountEncoded(): Promise<u128> {
@@ -202,13 +206,13 @@ function decodeDidChainRecord({
 /**
  * Query data associated with a FullDid from the KILT blockchain.
  *
- * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param did The Full DID.
  * @returns Data associated with this Did or null if the Did has not been claimed or has been deleted.
  */
 export async function queryDetails(
-  didIdentifier: DidIdentifier
+  did: DidUri
 ): Promise<IDidChainRecord | null> {
-  const result = await queryDidEncoded(didIdentifier)
+  const result = await queryDidEncoded(did)
   if (result.isNone) {
     return null
   }
@@ -260,28 +264,28 @@ function decodeServiceChainRecord({
 /**
  * Query service endpoint records associated with a FullDid from the KILT blockchain.
  *
- * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param did Full DID.
  * @returns An array of service endpoint data or an empty array if the FullDid does not exist or has no service endpoints associated with it.
  */
 export async function queryServiceEndpoints(
-  didIdentifier: DidIdentifier
+  did: DidUri
 ): Promise<DidServiceEndpoint[]> {
-  const encoded = await queryAllServicesEncoded(didIdentifier)
+  const encoded = await queryAllServicesEncoded(did)
   return encoded.map((e) => decodeServiceChainRecord(e))
 }
 
 /**
  * Query a service endpoint record associated with a FullDid from the KILT blockchain.
  *
- * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param did Full DID.
  * @param serviceId Identifier of the requested service endpoint (not the full endpoint uri).
  * @returns Service endpoint data or null if the requested endpoint is not found on this FullDid, or if the FullDid does not exist.
  */
 export async function queryServiceEndpoint(
-  didIdentifier: DidIdentifier,
+  did: DidUri,
   serviceId: DidServiceEndpoint['id']
 ): Promise<DidServiceEndpoint | null> {
-  const serviceEncoded = await queryServiceEncoded(didIdentifier, serviceId)
+  const serviceEncoded = await queryServiceEncoded(did, serviceId)
   if (serviceEncoded.isNone) return null
 
   return decodeServiceChainRecord(serviceEncoded.unwrap())
@@ -290,40 +294,36 @@ export async function queryServiceEndpoint(
 /**
  * Gets the total number of service endpoints associated with a given FullDid.
  *
- * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param did Full DID.
  * @returns Number of endpoints.
  */
-export async function queryEndpointsCounts(
-  didIdentifier: DidIdentifier
-): Promise<BN> {
-  const endpointsCountEncoded = await queryEndpointsCountsEncoded(didIdentifier)
+export async function queryEndpointsCounts(did: DidUri): Promise<BN> {
+  const endpointsCountEncoded = await queryEndpointsCountsEncoded(did)
   return endpointsCountEncoded.toBn()
 }
 
 /**
  * Gets the state of a FullDid's transaction counter which is bumped with each transaction authorized by that DID for replay protection purposes.
  *
- * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param did Full DID.
  * @returns Current state of the transaction counter which must be increased by one to yield the next transaction's nonce.
  */
-export async function queryNonce(didIdentifier: DidIdentifier): Promise<BN> {
-  const encoded = await queryDidEncoded(didIdentifier)
+export async function queryNonce(did: DidUri): Promise<BN> {
+  const encoded = await queryDidEncoded(did)
   return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
 }
 
 /**
  * Checks whether a FullDid with a given identifier had previously been deleted, resulting in it being blocked from (re)creation.
  *
- * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
- * @returns Whether or not the didIdentifier is listed in the block list.
+ * @param did Full DID.
+ * @returns Whether or not the DID is listed in the block list.
  */
-export async function queryDidDeletionStatus(
-  didIdentifier: DidIdentifier
-): Promise<boolean> {
+export async function queryDidDeletionStatus(did: DidUri): Promise<boolean> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   // The following function returns something different from 0x00 if there is an entry for the provided key, 0x00 otherwise.
   const encodedStorageHash = await api.query.did.didBlacklist.hash(
-    didIdentifier
+    encodeDid(did)
   )
   // isEmpty returns true if there is no entry for the given key -> the function should return false.
   return !encodedStorageHash.isEmpty
@@ -344,15 +344,17 @@ export async function queryDepositAmount(): Promise<BN> {
  *
  * @returns An array of DID identifiers that have been deleted.
  */
-export async function queryDeletedDidIdentifiers(): Promise<DidIdentifier[]> {
+export async function queryDeletedDids(): Promise<DidUri[]> {
   const encodedIdentifiers = await queryDeletedDidsEncoded()
-  return encodedIdentifiers.map((id) => id.toHuman() as KiltAddress)
+  return encodedIdentifiers.map((id) =>
+    getFullDidUri(id.toHuman() as KiltAddress)
+  )
 }
 
 // ### EXTRINSICS types
 
 export type AuthorizeCallInput = {
-  didIdentifier: DidIdentifier
+  did: DidUri
   txCounter: AnyNumber
   call: Extrinsic
   submitter: KiltAddress
@@ -390,8 +392,6 @@ function checkServiceEndpointInput(
 }
 
 interface GetStoreTxInput {
-  identifier?: DidIdentifier
-
   authentication: [NewDidVerificationKey]
   assertionMethod?: [NewDidVerificationKey]
   capabilityDelegation?: [NewDidVerificationKey]
@@ -425,7 +425,6 @@ export async function getStoreTx(
   const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   const {
-    identifier,
     authentication,
     assertionMethod,
     capabilityDelegation,
@@ -473,9 +472,7 @@ export async function getStoreTx(
   })
 
   const [authenticationKey] = authentication
-  const did = identifier
-    ? getAddressFromIdentifier(identifier)
-    : getAddressByKey(authenticationKey)
+  const did = getAddressByKey(authenticationKey)
   const newAttestationKey =
     assertionMethod?.[0] && encodePublicKey(assertionMethod[0])
   const newDelegationKey =
@@ -663,16 +660,16 @@ export async function getDeleteDidExtrinsic(
 /**
  * Produces an extrinsic to reclaim a deposit paid for storing a FullDid record on the KILT blockchain, resulting in the deletion of that Did.
  *
- * @param didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param did Full DID.
  * @param endpointsCount The current number of service endpoints associated with the FullDid to be deleted, which is important for the precalculation of the deletion fee.
  * @returns An extrinsic that is to be signed by the payment account owning the deposit, without prior DID authorization.
  */
 export async function getReclaimDepositExtrinsic(
-  didIdentifier: DidIdentifier,
+  did: DidUri,
   endpointsCount: BN
 ): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)
+  return api.tx.did.reclaimDeposit(encodeDid(did), endpointsCount)
 }
 
 /**
@@ -680,7 +677,7 @@ export async function getReclaimDepositExtrinsic(
  * Such extrinsics can be produced using this function.
  *
  * @param params Object wrapping all input to the function.
- * @param params.didIdentifier Unique identifier of the FullDid (i.e. Minus the prefix kilt:did:).
+ * @param params.did Full DID.
  * @param params.signingPublicKey Public key of the keypair to be used for authorization as hex string or Uint8Array.
  * @param params.alg Identifier of the cryptographic signing algorithm to be used.
  * @param params.sign The callback to interface with the key store managing the private key to be used.
@@ -691,7 +688,7 @@ export async function getReclaimDepositExtrinsic(
  * @returns A DID authenticated extrinsic that, after signing with the payment account mentioned in the params, is ready for submission.
  */
 export async function generateDidAuthenticatedTx({
-  didIdentifier,
+  did,
   signingPublicKey,
   alg,
   sign,
@@ -706,7 +703,7 @@ export async function generateDidAuthenticatedTx({
       api.tx.did.submitDidCall.meta.args[0].type.toString(),
       {
         txCounter,
-        did: didIdentifier,
+        did: encodeDid(did),
         call,
         submitter,
         blockNumber: blockNumber || (await api.query.system.number()),

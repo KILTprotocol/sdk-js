@@ -96,18 +96,6 @@ describe('When there is an Web3NameCreator and a payer', () => {
     await submitExtrinsic(authorizedTx, paymentAccount)
   }, 30_000)
 
-  it('should be possible to lookup the DID identifier with the given nick', async () => {
-    const didId = await Web3Names.queryDidAddressForWeb3Name(nick)
-    expect(didId).toBe(w3nCreator.identifier)
-  }, 30_000)
-
-  it('should be possible to lookup the nick with the given DID identifier', async () => {
-    const resolved = await Web3Names.queryWeb3NameForDidIdentifier(
-      w3nCreator.identifier
-    )
-    expect(resolved).toBe(nick)
-  }, 30_000)
-
   it('should be possible to lookup the DID uri with the given nick', async () => {
     const did = await Web3Names.queryDidForWeb3Name(nick)
     expect(did).toBe(w3nCreator.uri)

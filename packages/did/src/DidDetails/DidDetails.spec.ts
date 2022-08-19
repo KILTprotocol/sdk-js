@@ -9,9 +9,12 @@ import { DidDetails, DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
 
 import { getEndpoint, getKey, getKeys } from './DidDetails'
 
+/**
+ * @group unit/did
+ */
+
 const minimalDid: DidDetails = {
   uri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-  identifier: '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
   authentication: [
     {
       id: '#authentication',
@@ -23,7 +26,6 @@ const minimalDid: DidDetails = {
 
 const maximalDid: DidDetails = {
   uri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-  identifier: '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
   authentication: [
     {
       id: '#authentication',

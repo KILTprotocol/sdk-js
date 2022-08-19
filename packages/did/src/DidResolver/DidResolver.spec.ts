@@ -11,7 +11,6 @@ import Keyring from '@polkadot/keyring'
 
 import type {
   DidEncryptionKey,
-  DidIdentifier,
   DidKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
@@ -27,7 +26,7 @@ import { ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 
 import type { IDidChainRecord } from '../Did.chain'
-import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
+import { getFullDidUriFromKey, parseDidUri, stripFragment } from '../Did.utils'
 
 import { resolve, resolveKey, resolveServiceEndpoint } from './index.js'
 import * as Did from '../index.js'
@@ -39,10 +38,9 @@ import * as Did from '../index.js'
 const identifierWithAuthenticationKey =
   '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 const didWithAuthenticationKey: DidUri = `did:kilt:${identifierWithAuthenticationKey}`
-const identifierWithAllKeys = '4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp'
+const identifierWithAllKeys = `4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp`
 const didWithAllKeys: DidUri = `did:kilt:${identifierWithAllKeys}`
-const identifierWithServiceEndpoints =
-  '4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN'
+const identifierWithServiceEndpoints = `4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN`
 const didWithServiceEndpoints: DidUri = `did:kilt:${identifierWithServiceEndpoints}`
 const deletedIdentifier = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
 const deletedDid: DidUri = `did:kilt:${deletedIdentifier}`
@@ -95,20 +93,21 @@ function generateServiceEndpointDetails(
 
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<IDidChainRecord | null> => {
+    async (did: DidUri): Promise<IDidChainRecord | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
       const attKey = generateAttestationKeyDetails()
       const delKey = generateDelegationKeyDetails()
+      const { address: didAddress } = parseDidUri(did)
 
-      switch (didIdentifier) {
+      switch (didAddress) {
         case identifierWithAuthenticationKey:
           return {
             authentication: [authKey],
             lastTxCounter: new BN(0),
             deposit: {
               amount: new BN(2),
-              owner: didIdentifier,
+              owner: didAddress,
             },
           }
         case identifierWithAllKeys:
@@ -120,7 +119,7 @@ jest.mock('../Did.chain', () => {
             lastTxCounter: new BN(0),
             deposit: {
               amount: new BN(2),
-              owner: didIdentifier,
+              owner: didAddress,
             },
           }
         case identifierWithServiceEndpoints:
@@ -129,7 +128,7 @@ jest.mock('../Did.chain', () => {
             lastTxCounter: new BN(0),
             deposit: {
               amount: new BN(2),
-              owner: didIdentifier,
+              owner: didAddress,
             },
           }
         default:
@@ -139,10 +138,10 @@ jest.mock('../Did.chain', () => {
   )
   const queryServiceEndpoint = jest.fn(
     async (
-      didIdentifier: DidIdentifier,
+      did: DidUri,
       serviceId: DidServiceEndpoint['id']
     ): Promise<DidServiceEndpoint | null> => {
-      switch (didIdentifier) {
+      switch (parseDidUri(did).address) {
         case identifierWithServiceEndpoints:
           return generateServiceEndpointDetails(serviceId)
         default:
@@ -151,18 +150,12 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-      switch (didIdentifier) {
+    async (did: DidUri): Promise<DidServiceEndpoint[]> => {
+      switch (parseDidUri(did).address) {
         case identifierWithServiceEndpoints:
           return [
-            (await queryServiceEndpoint(
-              didIdentifier,
-              '#id-1'
-            )) as DidServiceEndpoint,
-            (await queryServiceEndpoint(
-              didIdentifier,
-              '#id-2'
-            )) as DidServiceEndpoint,
+            (await queryServiceEndpoint(did, '#id-1')) as DidServiceEndpoint,
+            (await queryServiceEndpoint(did, '#id-2')) as DidServiceEndpoint,
           ]
         default:
           return []
@@ -170,8 +163,8 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryDidDeletionStatus = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<boolean> =>
-      didIdentifier === deletedIdentifier
+    async (did: DidUri): Promise<boolean> =>
+      parseDidUri(did).address === deletedIdentifier
   )
   return {
     queryDetails,

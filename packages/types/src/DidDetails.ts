@@ -14,13 +14,6 @@ type AuthenticationKeyType = '00' | '01'
 type DidUriVersion = '' | `v${string}:`
 type LightDidEncodedData = '' | `:${string}`
 
-/**
- * A KILT DID identifier, e.g., 4nvZhWv71x8reD9gq7BUGYQQVvTiThnLpTTanyru9XckaeWa.
- */
-export type DidIdentifier =
-  | KiltAddress
-  | `${AuthenticationKeyType}${KiltAddress}`
-
 // NOTICE: The following string pattern types must be kept in sync with regex patterns @kiltprotocol/did/Utils
 
 /**
@@ -165,7 +158,6 @@ export type DidSignature = {
 }
 
 export interface DidDetails {
-  identifier: DidIdentifier
   uri: DidUri
 
   authentication: [DidVerificationKey]

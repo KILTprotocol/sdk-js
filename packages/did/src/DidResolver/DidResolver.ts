@@ -32,7 +32,7 @@ import { getFullDidUri, parseDidUri } from '../Did.utils.js'
  * @returns The details associated with the DID subject.
  */
 export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
-  const { address, type } = parseDidUri(did)
+  const { type } = parseDidUri(did)
   const fullDidUri = getFullDidUri(did)
 
   switch (type) {
@@ -48,7 +48,7 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
         }
       }
       // If not, check whether the DID has been deleted or simply does not exist.
-      const isDeactivated = await queryDidDeletionStatus(address)
+      const isDeactivated = await queryDidDeletionStatus(did)
       if (isDeactivated) {
         return {
           metadata: {
@@ -68,7 +68,7 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
         })
       }
 
-      const fullDidDetails = await queryDetails(address)
+      const fullDidDetails = await queryDetails(did)
       // If a full DID with same identifier is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
         return {
@@ -80,7 +80,7 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
         }
       }
       // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
-      const isFullDidDeleted = await queryDidDeletionStatus(address)
+      const isFullDidDeleted = await queryDidDeletionStatus(did)
       if (isFullDidDeleted) {
         return {
           // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
@@ -112,7 +112,7 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
 export async function resolveKey(
   didUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
-  const { did, identifier, fragment: keyId, type } = parseDidUri(didUri)
+  const { did, fragment: keyId, type } = parseDidUri(didUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
@@ -121,7 +121,7 @@ export async function resolveKey(
 
   switch (type) {
     case 'full': {
-      const details = await queryDetails(identifier)
+      const details = await queryDetails(didUri)
       const key = details && Did.getKey(details, keyId)
       if (!key) {
         return null
@@ -168,7 +168,7 @@ export async function resolveKey(
 export async function resolveServiceEndpoint(
   serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint | null> {
-  const { identifier, fragment: serviceId, type, did } = parseDidUri(serviceUri)
+  const { fragment: serviceId, type, did } = parseDidUri(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
@@ -177,7 +177,7 @@ export async function resolveServiceEndpoint(
 
   switch (type) {
     case 'full': {
-      const serviceEndpoint = await queryServiceEndpoint(identifier, serviceId)
+      const serviceEndpoint = await queryServiceEndpoint(serviceUri, serviceId)
       if (!serviceEndpoint) {
         return null
       }

@@ -10,7 +10,6 @@ import { randomAsHex } from '@polkadot/util-crypto'
 
 import {
   DidDetails,
-  DidIdentifier,
   DidServiceEndpoint,
   DidUri,
   KiltKeyringPair,
@@ -36,8 +35,7 @@ const mockApi = ApiMocks.createAugmentedApi()
 
 const existingIdentifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
 const existingDid: DidUri = `did:kilt:${existingIdentifier}`
-const nonExistingIdentifier = '4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM'
-const nonExistingDid: DidUri = `did:kilt:${nonExistingIdentifier}`
+const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
 
 const existingDidDetails: IDidChainRecord = {
   authentication: [
@@ -100,16 +98,16 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
 
 jest.mock('../Did.chain.ts', () => ({
   queryDetails: jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<IDidChainRecord | null> => {
-      if (didIdentifier === existingIdentifier) {
+    async (did: DidUri): Promise<IDidChainRecord | null> => {
+      if (did === existingDid) {
         return existingDidDetails
       }
       return null
     }
   ),
   queryServiceEndpoints: jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-      if (didIdentifier === existingIdentifier) {
+    async (did: DidUri): Promise<DidServiceEndpoint[]> => {
+      if (did === existingDid) {
         return existingServiceEndpoints
       }
       return []
@@ -135,7 +133,6 @@ describe('When creating an instance from the chain', () => {
     if (!fullDidDetails) throw new Error('Cannot load created DID')
 
     expect(fullDidDetails).toEqual(<DidDetails>{
-      identifier: '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
       uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
       authentication: [
         {
@@ -242,7 +239,6 @@ describe('When creating an instance from the chain', () => {
         // Full DID with only an authentication key.
         const newFullDid: DidDetails = {
           uri: fullDid.uri,
-          identifier: fullDid.identifier,
           authentication: [fullDid.authentication[0]],
         }
         const extrinsic = await mockApi.tx.ctype.add('test-ctype')
