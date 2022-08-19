@@ -558,10 +558,7 @@ describe('Credential', () => {
     })
     migratedAndDeletedFullDid = {
       identifier: migratedAndDeletedLightDid.identifier,
-      uri: Did.Utils.getKiltDidFromIdentifier(
-        migratedAndDeletedLightDid.identifier,
-        'full'
-      ),
+      uri: Did.Utils.getFullDidUri(migratedAndDeletedLightDid.uri),
       authentication: [migratedAndDeletedLightDid.authentication[0]],
     }
 
@@ -670,10 +667,7 @@ describe('create presentation', () => {
     lightDidForId: DidDetails,
     newAuthenticationKey?: DidVerificationKey
   ): DidDetails {
-    const uri = Did.Utils.getKiltDidFromIdentifier(
-      lightDidForId.identifier,
-      'full'
-    )
+    const uri = Did.Utils.getFullDidUri(lightDidForId.uri)
     const authKey = newAuthenticationKey || lightDidForId.authentication[0]
 
     return {

@@ -15,18 +15,19 @@ import {
   DidVerificationKey,
   DidEncryptionKey,
   UriFragment,
+  DidUri,
 } from '@kiltprotocol/types'
 
 import type { IDidChainRecord } from '../Did.chain.js'
 import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
-import { getKiltDidFromIdentifier, stripFragment } from '../Did.utils'
+import { stripFragment } from '../Did.utils'
 
 /**
  * @group unit/did
  */
 
-const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+const did: DidUri = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
 function generateAuthenticationKeyDetails(): DidVerificationKey {
   return {
@@ -126,9 +127,7 @@ jest.mock('../Did.chain', () => {
 
 describe('When exporting a DID Document from a full DID', () => {
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await Did.query(
-      getKiltDidFromIdentifier(identifier, 'full')
-    )) as DidDetails
+    const fullDidDetails = (await Did.query(did)) as DidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
 
@@ -184,9 +183,7 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await Did.query(
-      getKiltDidFromIdentifier(identifier, 'full')
-    )) as DidDetails
+    const fullDidDetails = (await Did.query(did)) as DidDetails
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
 
@@ -243,9 +240,7 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('fails to export to an unsupported mimetype', async () => {
-    const fullDidDetails = (await Did.query(
-      getKiltDidFromIdentifier(identifier, 'full')
-    )) as DidDetails
+    const fullDidDetails = (await Did.query(did)) as DidDetails
 
     expect(() =>
       // @ts-ignore

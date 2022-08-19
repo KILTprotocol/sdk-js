@@ -106,9 +106,8 @@ function decode(
     const attestation: IAttestation = {
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toHex(),
-      owner: DidUtils.getKiltDidFromIdentifier(
-        chainAttestation.attester.toString() as KiltAddress,
-        'full'
+      owner: DidUtils.getFullDidUri(
+        chainAttestation.attester.toString() as KiltAddress
       ),
       delegationId: delegationId || null,
       revoked: chainAttestation.revoked.valueOf(),

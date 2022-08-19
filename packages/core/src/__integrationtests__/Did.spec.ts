@@ -11,7 +11,6 @@
 
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
-import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import * as Did from '@kiltprotocol/did'
 import { resolveDoc, Web3Names } from '@kiltprotocol/did'
@@ -33,7 +32,7 @@ import {
   NewLightDidVerificationKey,
   Permission,
 } from '@kiltprotocol/types'
-import { ss58Format, UUID } from '@kiltprotocol/utils'
+import { UUID } from '@kiltprotocol/utils'
 
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -111,7 +110,7 @@ describe('write and didDeleteTx', () => {
     await submitExtrinsic(tx, paymentAccount)
 
     const fullDid = (await Did.query(
-      Did.Utils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
+      Did.Utils.getFullDidUri(newDetails.uri)
     )) as DidDetails
 
     const address = Did.Utils.getAddressFromIdentifier(newDetails.identifier)
@@ -160,7 +159,7 @@ describe('write and didDeleteTx', () => {
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     // We verify that the DID to delete is on chain.
     const fullDid = (await Did.query(
-      Did.Utils.getKiltDidFromIdentifier(details.identifier, 'full')
+      Did.Utils.getFullDidUri(details.uri)
     )) as DidDetails
     expect(fullDid).not.toBeNull()
 
@@ -203,7 +202,7 @@ describe('write and didDeleteTx', () => {
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
     const fullDid = (await Did.query(
-      Did.Utils.getKiltDidFromIdentifier(details.identifier, 'full')
+      Did.Utils.getFullDidUri(details.uri)
     )) as DidDetails
     expect(fullDid).not.toBeNull()
 
@@ -255,7 +254,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDetails = (await Did.query(
-    Did.Utils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
+    Did.Utils.getFullDidUri(newDetails.uri)
   )) as DidDetails
 
   const newKey = makeSigningKeyTool()
@@ -275,7 +274,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // Authentication key changed, so details must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   fullDetails = (await Did.query(
-    Did.Utils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
+    Did.Utils.getFullDidUri(newDetails.uri)
   )) as DidDetails
 
   // Add a new service endpoint
@@ -355,7 +354,7 @@ describe('DID migration', () => {
 
     await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDid = await Did.query(
-      Did.Utils.getFullDidUriByKey(authentication[0])
+      Did.Utils.getFullDidUri(lightDidDetails.uri)
     )
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
@@ -405,7 +404,7 @@ describe('DID migration', () => {
 
     await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDid = await Did.query(
-      Did.Utils.getFullDidUriByKey(authentication[0])
+      Did.Utils.getFullDidUri(lightDidDetails.uri)
     )
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
@@ -461,7 +460,7 @@ describe('DID migration', () => {
 
     await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDid = await Did.query(
-      Did.Utils.getFullDidUriByKey(authentication[0])
+      Did.Utils.getFullDidUri(lightDidDetails.uri)
     )
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
@@ -724,10 +723,6 @@ describe('DID management batching', () => {
         publicKey: keypair.publicKey,
         type: 'ecdsa',
       }
-      const encodedEcdsaAddress = encodeAddress(
-        blake2AsU8a(keypair.publicKey),
-        ss58Format
-      )
 
       const extrinsic = await Did.Chain.getStoreTx(
         { authentication: [didAuthKey] },
@@ -736,9 +731,7 @@ describe('DID management batching', () => {
       )
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const fullDid = await Did.query(
-        Did.Utils.getKiltDidFromIdentifier(encodedEcdsaAddress, 'full')
-      )
+      const fullDid = await Did.query(Did.Utils.getFullDidUriByKey(didAuthKey))
 
       expect(fullDid).not.toBeNull()
       expect(fullDid?.authentication).toMatchObject<NewDidVerificationKey[]>([
@@ -1126,11 +1119,11 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(tx, paymentAccount)
 
     // Test for correct creation and deletion
-    expect(await Web3Names.queryDidIdentifierForWeb3Name('test-1')).toBeNull()
+    expect(await Web3Names.queryDidAddressForWeb3Name('test-1')).toBeNull()
     // Test for correct creation of second web3 name
-    expect(
-      await Web3Names.queryDidIdentifierForWeb3Name('test-2')
-    ).toStrictEqual(fullDid.identifier)
+    expect(await Web3Names.queryDidAddressForWeb3Name('test-2')).toStrictEqual(
+      fullDid.identifier
+    )
   }, 30_000)
 
   it('can batch extrinsics for different required key types', async () => {
@@ -1184,9 +1177,9 @@ describe('DID extrinsics batching', () => {
 
     // Test correct use of authentication keys
     expect(await Web3Names.queryDidForWeb3Name('test')).toBeNull()
-    expect(
-      await Web3Names.queryDidIdentifierForWeb3Name('test-2')
-    ).toStrictEqual(fullDid.identifier)
+    expect(await Web3Names.queryDidAddressForWeb3Name('test-2')).toStrictEqual(
+      fullDid.identifier
+    )
 
     // Test correct use of attestation keys
     expect(await CType.verifyStored(ctype1)).toBe(true)

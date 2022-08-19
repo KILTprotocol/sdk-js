@@ -123,7 +123,7 @@ interface SerializableStructure {
 export function serializeAndEncodeAdditionalLightDidDetails({
   keyAgreement,
   service,
-}: Pick<CreateDetailsInput, 'keyAgreement' | 'service'>): string | null {
+}: Pick<CreateDetailsInput, 'keyAgreement' | 'service'>): string | undefined {
   const objectToSerialize: SerializableStructure = {}
   if (keyAgreement) {
     const key = keyAgreement[0]
@@ -137,7 +137,7 @@ export function serializeAndEncodeAdditionalLightDidDetails({
   }
 
   if (Object.keys(objectToSerialize).length === 0) {
-    return null
+    return undefined
   }
 
   const serializationFlag = 0x0

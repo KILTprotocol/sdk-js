@@ -12,6 +12,7 @@ import {
   DidDetails,
   DidIdentifier,
   DidServiceEndpoint,
+  DidUri,
   KiltKeyringPair,
   SignCallback,
 } from '@kiltprotocol/types'
@@ -22,7 +23,6 @@ import {
 } from '@kiltprotocol/testing'
 
 import type { IDidChainRecord } from '../Did.chain'
-import { getKiltDidFromIdentifier } from '../Did.utils'
 
 import * as Did from './index.js'
 
@@ -35,7 +35,9 @@ import * as Did from './index.js'
 const mockApi = ApiMocks.createAugmentedApi()
 
 const existingIdentifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
+const existingDid: DidUri = `did:kilt:${existingIdentifier}`
 const nonExistingIdentifier = '4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM'
+const nonExistingDid: DidUri = `did:kilt:${nonExistingIdentifier}`
 
 const existingDidDetails: IDidChainRecord = {
   authentication: [
@@ -127,20 +129,14 @@ jest.mock('../Did.chain.ts', () => ({
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDidDetails = await Did.query(
-      getKiltDidFromIdentifier(existingIdentifier, 'full')
-    )
+    const fullDidDetails = await Did.query(existingDid)
 
     expect(fullDidDetails).not.toBeNull()
     if (!fullDidDetails) throw new Error('Cannot load created DID')
 
-    expect(fullDidDetails.identifier).toStrictEqual(existingIdentifier)
-
-    const expectedDid = getKiltDidFromIdentifier(existingIdentifier, 'full')
-    expect(fullDidDetails.uri).toStrictEqual(expectedDid)
-
     expect(fullDidDetails).toEqual(<DidDetails>{
       identifier: '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+      uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
       authentication: [
         {
           id: '#auth1',
@@ -191,14 +187,11 @@ describe('When creating an instance from the chain', () => {
           serviceEndpoint: ['url-2'],
         },
       ],
-      uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
     })
   })
 
   it('returns null if the identifier does not exist', async () => {
-    const fullDidDetails = await Did.query(
-      getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
-    )
+    const fullDidDetails = await Did.query(nonExistingDid)
     expect(fullDidDetails).toBeNull()
   })
 

@@ -49,7 +49,7 @@ import {
   EncodedSignature,
   EncodedVerificationKey,
   getAddressFromIdentifier,
-  getIdentifierByKey,
+  getAddressByKey,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
   isEncryptionKey,
@@ -465,7 +465,7 @@ export async function getStoreTx(
   const [authenticationKey] = authentication
   const did = identifier
     ? getAddressFromIdentifier(identifier)
-    : getIdentifierByKey(authenticationKey)
+    : getAddressByKey(authenticationKey)
   const newAttestationKey =
     assertionMethod?.[0] && encodePublicKey(assertionMethod[0])
   const newDelegationKey =

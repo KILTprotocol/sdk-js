@@ -106,9 +106,9 @@ export async function queryWeb3NameForDidIdentifier(
  * @param name Web3Name that should be resolved to a DID.
  * @returns The DID identifier for this web3name if any.
  */
-export async function queryDidIdentifierForWeb3Name(
+export async function queryDidAddressForWeb3Name(
   name: Web3Name
-): Promise<DidIdentifier | null> {
+): Promise<KiltAddress | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await api.query.web3Names.owner(name)
   DecoderUtils.assertCodecIsType(encoded, [
@@ -142,11 +142,11 @@ export async function queryWeb3NameForDid(
 export async function queryDidForWeb3Name(
   name: Web3Name
 ): Promise<DidUri | null> {
-  const identifier = await queryDidIdentifierForWeb3Name(name)
-  if (identifier === null) {
+  const address = await queryDidAddressForWeb3Name(name)
+  if (address === null) {
     return null
   }
-  return DidUtils.getKiltDidFromIdentifier(identifier, 'full')
+  return DidUtils.getFullDidUri(address)
 }
 
 /**

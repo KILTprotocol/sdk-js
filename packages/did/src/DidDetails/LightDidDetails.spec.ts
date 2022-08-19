@@ -15,10 +15,8 @@ import {
 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 
-import { getKiltDidFromIdentifier } from '../Did.utils'
 import {
   CreateDetailsInput,
-  serializeAndEncodeAdditionalLightDidDetails,
   verificationKeyTypeToLightDidEncoding,
 } from './LightDidDetails.utils'
 
@@ -70,19 +68,6 @@ describe('When creating an instance from the details', () => {
 
     const expectedIdentifier = (authKeyEncoding(lightDidDetails) +
       authKey.address) as DidIdentifier
-    expect(lightDidDetails.identifier).toStrictEqual(expectedIdentifier)
-
-    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
-      keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
-      service,
-    })!
-    const expectedDid = getKiltDidFromIdentifier(
-      expectedIdentifier,
-      'light',
-      undefined,
-      encodedDetails
-    )
-    expect(lightDidDetails.uri).toStrictEqual(expectedDid)
 
     expect(lightDidDetails).toEqual(<DidDetails>{
       identifier: expectedIdentifier,
@@ -131,17 +116,6 @@ describe('When creating an instance from the details', () => {
     const expectedIdentifier = (authKeyEncoding(lightDidDetails) +
       authKey.address) as DidIdentifier
     expect(lightDidDetails.identifier).toStrictEqual(expectedIdentifier)
-
-    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
-      keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
-    })!
-    const expectedDid = getKiltDidFromIdentifier(
-      expectedIdentifier,
-      'light',
-      undefined,
-      encodedDetails
-    )
-    expect(lightDidDetails.uri).toStrictEqual(expectedDid)
 
     expect(lightDidDetails).toEqual({
       identifier: '014rezrXBuAKCVosthpmy8ZYVAZHei3voBTiWUp6gYmjsxcr4J',

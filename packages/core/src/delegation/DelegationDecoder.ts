@@ -98,9 +98,8 @@ export function decodeDelegationNode(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children].map((id) => id.toHex()),
-    account: DidUtils.getKiltDidFromIdentifier(
-      delegationNode.details.owner.toString() as KiltAddress,
-      'full'
+    account: DidUtils.getFullDidUri(
+      delegationNode.details.owner.toString() as KiltAddress
     ),
     permissions: decodePermissions(
       delegationNode.details.permissions.bits.toNumber()

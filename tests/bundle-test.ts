@@ -144,9 +144,7 @@ async function createFullDidFromKeypair(
   const creationTx = await Did.Chain.getStoreTx(lightDid, payer.address, sign)
 
   await getDefaultMigrationHandler(payer)(creationTx)
-  const fullDid = await Did.query(
-    Did.Utils.getFullDidUriByKey(lightDid.authentication[0])
-  )
+  const fullDid = await Did.query(Did.Utils.getFullDidUri(lightDid.uri))
   if (!fullDid) throw new Error('Cannot query created DID')
 
   const encodedKey = Did.Chain.encodePublicKey(fullDid.authentication[0])
@@ -233,9 +231,8 @@ async function runAll() {
   const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
 
   const authentication = [keypair] as [NewDidVerificationKey]
-  const identifier = Did.Utils.getIdentifierByKey(authentication[0])
   const createTx = await Did.Chain.getStoreTx(
-    { identifier, authentication },
+    { authentication },
     devFaucet.address,
     sign
   )

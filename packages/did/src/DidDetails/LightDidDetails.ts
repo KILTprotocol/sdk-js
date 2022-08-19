@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
+import { decodeAddress } from '@polkadot/util-crypto'
 
 import type {
   DidDetails,
@@ -16,11 +16,7 @@ import type {
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import {
-  getKiltDidFromIdentifier,
-  LIGHT_DID_LATEST_VERSION,
-  parseDidUri,
-} from '../Did.utils.js'
+import { getAddressByKey, KILT_DID_PREFIX, parseDidUri } from '../Did.utils.js'
 
 import {
   validateCreateDetailsInput,
@@ -63,20 +59,14 @@ export function createDetails({
   // Validity is checked in checkLightDidCreationDetails
   const authenticationKeyTypeEncoding =
     verificationKeyTypeToLightDidEncoding[authentication[0].type]
-
-  const address = encodeAddress(authentication[0].publicKey, ss58Format)
+  const address = getAddressByKey(authentication[0])
   // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
   const identifier =
     `${authenticationKeyTypeEncoding}${address}` as DidIdentifier
 
-  let uri = getKiltDidFromIdentifier(
-    identifier,
-    'light',
-    LIGHT_DID_LATEST_VERSION
-  )
-  if (encodedDetails) {
-    uri = `${uri}:${encodedDetails}`
-  }
+  const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
+  const uri =
+    `${KILT_DID_PREFIX}light:${identifier}${encodedDetailsString}` as DidUri
 
   const details: DidDetails = {
     identifier,

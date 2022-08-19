@@ -249,14 +249,8 @@ describe('Messaging Utilities', () => {
     const resolveKey = async (
       keyUri: DidResourceUri
     ): Promise<ResolvedDidKey | null> => {
-      const { identifier, type, version, fragment, encodedDetails } =
-        Did.Utils.parseDidUri(keyUri)
-      const didSubject = Did.Utils.getKiltDidFromIdentifier(
-        identifier,
-        type,
-        version,
-        encodedDetails
-      )
+      const { fragment } = Did.Utils.parseDidUri(keyUri)
+      const didSubject = keyUri.replace(fragment!, '')
       if (didSubject === identityAlice.uri) {
         const aliceKey = Did.getKey(identityAlice, fragment!)
         if (aliceKey) {

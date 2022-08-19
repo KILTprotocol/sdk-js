@@ -37,7 +37,7 @@ export const LIGHT_DID_LATEST_VERSION = 1
 /// The latest version for KILT full DIDs.
 export const FULL_DID_LATEST_VERSION = 1
 
-const KILT_DID_PREFIX = 'did:kilt:'
+export const KILT_DID_PREFIX = 'did:kilt:'
 
 // NOTICE: The following regex patterns must be kept in sync with DidUri type in @kiltprotocol/types
 
@@ -58,6 +58,10 @@ const LIGHT_KILT_DID_REGEX =
 export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
   Promise.resolve(keys[0] || null)
 
+function isKiltAddress(input: string): input is KiltAddress {
+  return checkAddress(input, ss58Format)[0]
+}
+
 /**
  * Extracts the KILT address from the DID identifier, even if it is the light DID.
  *
@@ -67,47 +71,9 @@ export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
 export function getAddressFromIdentifier(
   identifier: DidIdentifier
 ): KiltAddress {
-  const isAddress = checkAddress(identifier, ss58Format)[0]
+  const isAddress = isKiltAddress(identifier)
   const address = isAddress ? identifier : identifier.substring(2)
   return address as KiltAddress
-}
-
-/**
- * Compiles a KILT DID uri for a full or light DID from a unique identifier and associated data.
- *
- * @param identifier A ss58 encoded address valid on the KILT network.
- * @param type 'full' to produce a FullDid's uri, 'light' for a LightDid.
- * @param version KILT DID specification version number.
- * @param encodedDetails When compiling a LightDid uri, encoded DidDetails can be appended to the end of the uri.
- * @returns A DID uri as a string.
- */
-export function getKiltDidFromIdentifier(
-  identifier: DidIdentifier,
-  type: 'full' | 'light',
-  version?: number,
-  encodedDetails?: string
-): DidUri {
-  const isFull = type === 'full'
-  const typeString = isFull ? '' : `light:`
-  let versionValue = version
-  // If no version is specified, take the default one depending on the requested DID type.
-  if (!versionValue) {
-    versionValue = isFull ? FULL_DID_LATEST_VERSION : LIGHT_DID_LATEST_VERSION
-  }
-  const versionString = versionValue === 1 ? '' : `v${version}:`
-
-  const isAddress = checkAddress(identifier, ss58Format)[0]
-  if (isAddress && !isFull) {
-    throw new SDKErrors.DidError(
-      'Cannot create a light DID from a full DID identifier'
-    )
-  }
-  const newIdentifier = isFull
-    ? getAddressFromIdentifier(identifier)
-    : identifier
-
-  const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
-  return `${KILT_DID_PREFIX}${typeString}${versionString}${newIdentifier}${encodedDetailsString}` as DidUri
 }
 
 export type IDidParsingResult = {
@@ -138,7 +104,7 @@ export function parseDidUri(
       ? parseInt(versionString, 10)
       : FULL_DID_LATEST_VERSION
     return {
-      did: getKiltDidFromIdentifier(address, 'full', version),
+      did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'full',
       identifier: address,
@@ -162,12 +128,7 @@ export function parseDidUri(
       : LIGHT_DID_LATEST_VERSION
     const identifier = `${authKeyType}${address}` as DidIdentifier
     return {
-      did: getKiltDidFromIdentifier(
-        identifier,
-        'light',
-        version,
-        encodedDetails
-      ),
+      did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'light',
       identifier,
@@ -323,7 +284,7 @@ export function validateKiltDidUri(
   if (!allowFragment && fragment) {
     throw new SDKErrors.InvalidDidFormatError(input)
   }
-  if (!checkAddress(address, ss58Format)[0]) {
+  if (!isKiltAddress(address)) {
     throw new SDKErrors.AddressInvalidError(address, 'DID identifier')
   }
 
@@ -483,10 +444,10 @@ export function checkServiceEndpointSizeConstraints(
   return errors.length ? [false, errors] : [true, undefined]
 }
 
-export function getIdentifierByKey({
+export function getAddressByKey({
   publicKey,
   type,
-}: Pick<DidVerificationKey, 'publicKey' | 'type'>): DidIdentifier {
+}: Pick<DidVerificationKey, 'publicKey' | 'type'>): KiltAddress {
   switch (type) {
     case 'ed25519':
     case 'sr25519':
@@ -501,9 +462,27 @@ export function getIdentifierByKey({
   }
 }
 
+/**
+ * Builds the URI a light DID will have after it’s stored on the blockchain.
+ *
+ * @param didOrAddress The URI of the light DID.
+ * @param version The version of the DID URI to use.
+ * @returns The expected full DID URI.
+ */
+export function getFullDidUri(
+  didOrAddress: DidUri | KiltAddress,
+  version = FULL_DID_LATEST_VERSION
+): DidUri {
+  const address = isKiltAddress(didOrAddress)
+    ? didOrAddress
+    : parseDidUri(didOrAddress as DidUri).address
+  const versionString = version === 1 ? '' : `v${version}`
+  return `${KILT_DID_PREFIX}${versionString}${address}` as DidUri
+}
+
 export function getFullDidUriByKey(
   key: Pick<DidVerificationKey, 'publicKey' | 'type'>
 ): DidUri {
-  const identifier = getIdentifierByKey(key)
-  return getKiltDidFromIdentifier(identifier, 'full')
+  const address = getAddressByKey(key)
+  return getFullDidUri(address)
 }

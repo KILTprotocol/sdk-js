@@ -12,7 +12,7 @@ import {
   randomAsHex,
 } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
-import { encodeAddress, Keyring } from '@polkadot/keyring'
+import { Keyring } from '@polkadot/keyring'
 
 import {
   DecryptCallback,
@@ -239,13 +239,9 @@ export async function createLocalDemoFullDidFromKeypair(
     endpoints?: DidServiceEndpoint[]
   } = {}
 ): Promise<DidDetails> {
-  const identifier = encodeAddress(
-    blake2AsU8a(keypair.address, 256),
-    ss58Format
-  )
-  const uri = Did.Utils.getKiltDidFromIdentifier(identifier, 'full')
-
   const authKey = makeDidKeyFromKeypair(keypair)
+  const uri = Did.Utils.getFullDidUriByKey(authKey)
+  const { identifier } = Did.Utils.parseDidUri(uri)
 
   const result: DidDetails = {
     identifier,
@@ -285,16 +281,15 @@ export async function createLocalDemoFullDidFromKeypair(
 export async function createLocalDemoFullDidFromLightDid(
   lightDid: DidDetails
 ): Promise<DidDetails> {
-  const { identifier } = lightDid
-  const [authKey] = lightDid.authentication
+  const { identifier, uri, authentication } = lightDid
 
   return {
-    uri: Did.Utils.getKiltDidFromIdentifier(identifier, 'full'),
-    authentication: [authKey],
-    keyAgreement: lightDid.keyAgreement,
-    assertionMethod: [authKey],
-    capabilityDelegation: [authKey],
+    uri: Did.Utils.getFullDidUri(uri),
     identifier,
+    authentication,
+    assertionMethod: authentication,
+    capabilityDelegation: authentication,
+    keyAgreement: lightDid.keyAgreement,
   }
 }
 
@@ -304,7 +299,7 @@ export async function createFullDidFromLightDid(
   lightDidForId: DidDetails,
   sign: SignCallback
 ): Promise<DidDetails> {
-  const { authentication } = lightDidForId
+  const { authentication, uri } = lightDidForId
   const tx = await Did.Chain.getStoreTx(
     {
       authentication,
@@ -319,9 +314,7 @@ export async function createFullDidFromLightDid(
   await Blockchain.signAndSubmitTx(tx, payer, {
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
-  const fullDid = await Did.query(
-    Did.Utils.getFullDidUriByKey(authentication[0])
-  )
+  const fullDid = await Did.query(Did.Utils.getFullDidUri(uri))
   if (!fullDid) throw new Error('Could not fetch created DID details')
   return fullDid
 }

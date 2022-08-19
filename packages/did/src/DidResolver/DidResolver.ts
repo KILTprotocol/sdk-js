@@ -23,7 +23,7 @@ import {
   queryDidDeletionStatus,
   queryServiceEndpoint,
 } from '../Did.chain.js'
-import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
+import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
 /**
  * Resolve a DID URI to the details of the DID subject.
@@ -36,12 +36,12 @@ import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
 export async function resolveDoc(
   did: DidUri
 ): Promise<DidResolvedDetails | null> {
-  const { address, identifier, type } = parseDidUri(did)
+  const { address, type } = parseDidUri(did)
+  const fullDidUri = getFullDidUri(did)
 
   switch (type) {
     case 'full': {
-      const uriWithoutFragment = getKiltDidFromIdentifier(identifier, 'full')
-      const details = await Did.query(uriWithoutFragment)
+      const details = await Did.query(fullDidUri)
       // If the details are found, return those details.
       if (details) {
         return {
@@ -52,7 +52,7 @@ export async function resolveDoc(
         }
       }
       // If not, check whether the DID has been deleted or simply does not exist.
-      const isDeactivated = await queryDidDeletionStatus(identifier)
+      const isDeactivated = await queryDidDeletionStatus(address)
       if (isDeactivated) {
         return {
           metadata: {
@@ -75,7 +75,6 @@ export async function resolveDoc(
       const fullDidDetails = await queryDetails(address)
       // If a full DID with same identifier is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
-        const fullDidUri = getKiltDidFromIdentifier(details.identifier, 'full')
         return {
           details,
           metadata: {

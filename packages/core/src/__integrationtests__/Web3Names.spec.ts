@@ -98,7 +98,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to lookup the DID identifier with the given nick', async () => {
-    const didId = await Web3Names.queryDidIdentifierForWeb3Name(nick)
+    const didId = await Web3Names.queryDidAddressForWeb3Name(nick)
     expect(didId).toBe(w3nCreator.identifier)
   }, 30_000)
 

@@ -41,10 +41,7 @@ export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
 function decode(encoded: Option<AccountId>): DidUri | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
-    ? DidUtils.getKiltDidFromIdentifier(
-        encoded.unwrap().toString() as KiltAddress,
-        'full'
-      )
+    ? DidUtils.getFullDidUri(encoded.unwrap().toString() as KiltAddress)
     : null
 }
 

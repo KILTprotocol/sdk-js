@@ -430,7 +430,7 @@ describe('When there is an on-chain DID', () => {
 
       // Check that the Web3 name has been linked to the DID
       expect(
-        await Web3Names.queryDidIdentifierForWeb3Name('test-name')
+        await Web3Names.queryDidAddressForWeb3Name('test-name')
       ).toStrictEqual(did.identifier)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
       expect(
