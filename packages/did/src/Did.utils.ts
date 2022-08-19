@@ -483,26 +483,6 @@ export function checkServiceEndpointSizeConstraints(
   return errors.length ? [false, errors] : [true, undefined]
 }
 
-/**
- * Compute the full key URI (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
- *
- * @param did The DID URI, with no trailing fragment (i.e., no "#" symbol).
- * @param keyId The key ID, without the leading subject's DID prefix.
- *
- * @returns The full public key URI, which includes the subject's DID and the provided key ID.
- */
-export function assembleKeyUri(
-  did: DidUri,
-  keyId: DidKey['id']
-): DidResourceUri {
-  if (parseDidUri(did).fragment) {
-    throw new SDKErrors.DidError(
-      `Cannot assemble key URI from a DID that already has a fragment: "${did}"`
-    )
-  }
-  return `${did}#${keyId}`
-}
-
 export function getIdentifierByKey({
   publicKey,
   type,
