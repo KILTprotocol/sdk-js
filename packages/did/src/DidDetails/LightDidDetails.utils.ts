@@ -140,9 +140,9 @@ export function serializeAndEncodeAdditionalLightDidDetails({
     return undefined
   }
 
-  const serializationFlag = 0x0
+  const serializationVersion = 0x0
   const serialized = cborEncode(objectToSerialize)
-  return base58Encode([serializationFlag, ...serialized], true)
+  return base58Encode([serializationVersion, ...serialized], true)
 }
 
 export function decodeAndDeserializeAdditionalLightDidDetails(
@@ -154,10 +154,10 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   }
 
   const decoded = base58Decode(rawInput, true)
-  const serializationFlag = decoded[0]
+  const serializationVersion = decoded[0]
   const serialized = decoded.slice(1)
 
-  if (serializationFlag !== 0x0) {
+  if (serializationVersion !== 0x0) {
     throw new SDKErrors.DidError('Serialization algorithm not supported')
   }
   const deserialized: SerializableStructure = cborDecode(serialized)
