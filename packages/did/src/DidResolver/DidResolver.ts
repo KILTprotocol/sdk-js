@@ -7,7 +7,6 @@
 
 import {
   DidDetails,
-  DidPublicServiceEndpoint,
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
@@ -170,7 +169,7 @@ export async function resolveKey(
  * @returns The details associated with the service endpoint.
  */
 export async function resolveServiceEndpoint(
-  serviceUri: DidPublicServiceEndpoint['id']
+  serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint | null> {
   const { identifier, fragment: serviceId, type, did } = parseDidUri(serviceUri)
 
@@ -224,7 +223,7 @@ export async function resolveServiceEndpoint(
  * @returns The DID, key details or service details depending on the input URI. Null otherwise.
  */
 export async function resolve(
-  didUri: DidUri
+  didUri: DidUri | DidResourceUri
 ): Promise<
   DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
 > {

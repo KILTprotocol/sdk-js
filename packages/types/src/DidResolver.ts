@@ -55,7 +55,7 @@ export interface IDidResolver {
    * @returns A promise of a [[DidResolvedDetails]] object if the didUri contains no fragment, [[ResolvedDidKey]] or [[ResolvedDidServiceEndpoint]] otherwise. Null if a resource cannot be resolved.
    */
   resolve: (
-    didUri: DidUri | DidResourceUri | DidPublicServiceEndpoint['id']
+    didUri: DidUri | DidResourceUri
   ) => Promise<
     DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
   >
