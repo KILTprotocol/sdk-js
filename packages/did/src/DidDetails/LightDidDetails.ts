@@ -42,7 +42,7 @@ const encryptionKeyId = '#encryption'
  *
  * @returns The resulting [[DidDetails]].
  */
-export function createDetails({
+export function createLightDidDetails({
   authentication,
   keyAgreement = undefined,
   service,
@@ -142,11 +142,11 @@ export function parseDetailsFromLightDid(
     { publicKey, type: keyType },
   ]
   if (!encodedDetails) {
-    return createDetails({ authentication })
+    return createLightDidDetails({ authentication })
   }
   const { keyAgreement, service } =
     decodeAndDeserializeAdditionalLightDidDetails(encodedDetails, version)
-  return createDetails({
+  return createLightDidDetails({
     authentication,
     keyAgreement,
     service,

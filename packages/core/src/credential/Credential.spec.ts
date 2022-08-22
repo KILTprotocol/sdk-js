@@ -528,7 +528,7 @@ describe('Credential', () => {
   })
   it('verify credentials signed by a light DID', async () => {
     const { sign, authentication } = makeSigningKeyTool('ed25519')
-    identityDave = await Did.createDetails({
+    identityDave = await Did.createLightDidDetails({
       authentication,
     })
 
@@ -553,7 +553,7 @@ describe('Credential', () => {
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
     const migratedAndDeleted = makeSigningKeyTool('ed25519')
-    migratedAndDeletedLightDid = Did.createDetails({
+    migratedAndDeletedLightDid = Did.createLightDidDetails({
       authentication: migratedAndDeleted.authentication,
     })
     migratedAndDeletedFullDid = {
@@ -730,11 +730,11 @@ describe('create presentation', () => {
     attester = await createLocalDemoFullDidFromKeypair(keypair)
 
     unmigratedClaimerKey = makeSigningKeyTool()
-    unmigratedClaimerLightDid = Did.createDetails({
+    unmigratedClaimerLightDid = Did.createLightDidDetails({
       authentication: unmigratedClaimerKey.authentication,
     })
     const migratedClaimerKey = makeSigningKeyTool()
-    migratedClaimerLightDid = Did.createDetails({
+    migratedClaimerLightDid = Did.createLightDidDetails({
       authentication: migratedClaimerKey.authentication,
     })
     // Change also the authentication key of the full DID to properly verify signature verification,
@@ -748,7 +748,7 @@ describe('create presentation', () => {
       }
     )
     migratedThenDeletedKey = makeSigningKeyTool('ed25519')
-    migratedThenDeletedClaimerLightDid = Did.createDetails({
+    migratedThenDeletedClaimerLightDid = Did.createLightDidDetails({
       authentication: migratedThenDeletedKey.authentication,
     })
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(

@@ -256,7 +256,7 @@ describe('When exporting a DID Document from a light DID', () => {
     generateServiceEndpointDetails('#id-1'),
     generateServiceEndpointDetails('#id-2'),
   ]
-  const lightDidDetails = Did.createDetails({
+  const lightDidDetails = Did.createLightDidDetails({
     authentication: [{ publicKey: authKey.publicKey, type: 'ed25519' }],
     keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
     service,

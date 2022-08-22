@@ -134,7 +134,7 @@ async function createFullDidFromKeypair(
   api: ApiPromise
 ) {
   const type = keypair.type as LightDidSupportedVerificationKeyType
-  const lightDid = Did.createDetails({
+  const lightDid = Did.createLightDidDetails({
     authentication: [{ publicKey: keypair.publicKey, type }],
     keyAgreement: [encryptionKey],
   })
@@ -215,7 +215,7 @@ async function runAll() {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const address = Crypto.encodeAddress(authPublicKey, ss58Format)
-  const testDid = Did.createDetails({
+  const testDid = Did.createLightDidDetails({
     authentication: [{ publicKey: authPublicKey, type: 'ed25519' }],
     keyAgreement: [{ publicKey: encPublicKey, type: 'x25519' }],
   })

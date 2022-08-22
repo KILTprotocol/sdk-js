@@ -190,7 +190,7 @@ export async function createMinimalLightDidFromKeypair(
   keypair: KeyringPair
 ): Promise<DidDetails> {
   const type = keypair.type as LightDidSupportedVerificationKeyType
-  return Did.createDetails({
+  return Did.createLightDidDetails({
     authentication: [{ publicKey: keypair.publicKey, type }],
     keyAgreement: makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
       .keyAgreement,

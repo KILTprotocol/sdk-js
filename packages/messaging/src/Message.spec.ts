@@ -112,11 +112,11 @@ const mockResolver = {
 beforeAll(async () => {
   const aliceAuthKey = makeSigningKeyTool('ed25519')
   aliceSign = aliceAuthKey.sign
-  aliceLightDid = Did.createDetails({
+  aliceLightDid = Did.createLightDidDetails({
     authentication: aliceAuthKey.authentication,
     keyAgreement: aliceEncKey.keyAgreement,
   })
-  aliceLightDidWithDetails = Did.createDetails({
+  aliceLightDidWithDetails = Did.createLightDidDetails({
     authentication: aliceAuthKey.authentication,
     keyAgreement: aliceEncKey.keyAgreement,
     service: [{ id: '#id-1', type: ['type-1'], serviceEndpoint: ['x:url-1'] }],
@@ -125,11 +125,11 @@ beforeAll(async () => {
 
   const bobAuthKey = makeSigningKeyTool('ed25519')
   bobSign = bobAuthKey.sign
-  bobLightDid = Did.createDetails({
+  bobLightDid = Did.createLightDidDetails({
     authentication: bobAuthKey.authentication,
     keyAgreement: bobEncKey.keyAgreement,
   })
-  bobLightDidWithDetails = Did.createDetails({
+  bobLightDidWithDetails = Did.createLightDidDetails({
     authentication: bobAuthKey.authentication,
     keyAgreement: bobEncKey.keyAgreement,
     service: [{ id: '#id-1', type: ['type-1'], serviceEndpoint: ['x:url-1'] }],

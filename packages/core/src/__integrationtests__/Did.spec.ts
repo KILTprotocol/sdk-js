@@ -85,7 +85,7 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
-    const newDetails = Did.createDetails({
+    const newDetails = Did.createLightDidDetails({
       authentication: details.authentication as [NewLightDidVerificationKey],
       service: [
         {
@@ -341,7 +341,7 @@ describe('DID migration', () => {
     const { keyAgreement } = makeEncryptionKeyTool(
       '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
     )
-    const lightDidDetails = Did.createDetails({
+    const lightDidDetails = Did.createLightDidDetails({
       authentication,
       keyAgreement,
     })
@@ -392,7 +392,7 @@ describe('DID migration', () => {
 
   it('migrates light DID with sr25519 auth key', async () => {
     const { authentication, sign } = makeSigningKeyTool()
-    const lightDidDetails = Did.createDetails({
+    const lightDidDetails = Did.createLightDidDetails({
       authentication,
     })
 
@@ -446,7 +446,7 @@ describe('DID migration', () => {
         serviceEndpoint: ['x:url-1'],
       },
     ]
-    const lightDidDetails = Did.createDetails({
+    const lightDidDetails = Did.createLightDidDetails({
       authentication,
       keyAgreement,
       service,

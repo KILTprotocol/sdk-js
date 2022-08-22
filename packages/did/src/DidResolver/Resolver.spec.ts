@@ -376,7 +376,7 @@ describe('When resolving a light DID', () => {
   const encryptionKey = keyring.addFromMnemonic('enc')
 
   it('correctly resolves the details with an authentication key', async () => {
-    const lightDidWithAuthenticationKey = Did.createDetails({
+    const lightDidWithAuthenticationKey = Did.createLightDidDetails({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
     })
     const { details, metadata } = (await DidResolver.resolve(
@@ -399,7 +399,7 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves the details with authentication key, encryption key, and two service endpoints', async () => {
-    const lightDid = Did.createDetails({
+    const lightDid = Did.createLightDidDetails({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
       keyAgreement: [{ publicKey: encryptionKey.publicKey, type: 'x25519' }],
       service: [
@@ -479,7 +479,7 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves DID details given a fragment', async () => {
-    const lightDid = Did.createDetails({
+    const lightDid = Did.createLightDidDetails({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
     })
     const keyIdUri: DidUri = `${lightDid.uri}#auth`

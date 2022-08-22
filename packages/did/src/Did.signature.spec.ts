@@ -43,7 +43,7 @@ describe('light DID', () => {
     const keyTool = makeSigningKeyTool()
     keypair = keyTool.keypair
     sign = keyTool.sign
-    details = Did.createDetails({
+    details = Did.createLightDidDetails({
       authentication: keyTool.authentication,
     })
   })

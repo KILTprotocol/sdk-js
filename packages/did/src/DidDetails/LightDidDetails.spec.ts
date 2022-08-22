@@ -64,7 +64,7 @@ describe('When creating an instance from the details', () => {
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
       service,
     }
-    const lightDidDetails = Did.createDetails(validInput)
+    const lightDidDetails = Did.createLightDidDetails(validInput)
 
     const expectedIdentifier = (authKeyEncoding(lightDidDetails) +
       authKey.address) as DidIdentifier
@@ -111,7 +111,7 @@ describe('When creating an instance from the details', () => {
       authentication: [{ publicKey: authKey.publicKey, type: 'ed25519' }],
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
     }
-    const lightDidDetails = Did.createDetails(validInput)
+    const lightDidDetails = Did.createLightDidDetails(validInput)
 
     const expectedIdentifier = (authKeyEncoding(lightDidDetails) +
       authKey.address) as DidIdentifier
@@ -147,7 +147,7 @@ describe('When creating an instance from the details', () => {
       authentication: [{ publicKey: authKey.publicKey, type: 'ecdsa' }],
     }
     expect(() =>
-      Did.createDetails(invalidInput as CreateDetailsInput)
+      Did.createLightDidDetails(invalidInput as CreateDetailsInput)
     ).toThrowError()
   })
 
@@ -163,7 +163,7 @@ describe('When creating an instance from the details', () => {
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'bls' }],
     }
     expect(() =>
-      Did.createDetails(invalidInput as CreateDetailsInput)
+      Did.createLightDidDetails(invalidInput as CreateDetailsInput)
     ).toThrowError()
   })
 })
@@ -193,7 +193,7 @@ describe('When creating an instance from a URI', () => {
       service: endpoints,
     }
     // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = Did.createDetails(creationInput)
+    const expectedLightDidDetails = Did.createLightDidDetails(creationInput)
 
     const builtLightDidDetails = Did.parseDetailsFromLightDid(
       expectedLightDidDetails.uri
@@ -256,7 +256,7 @@ describe('When creating an instance from a URI', () => {
       service,
     }
     // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = Did.createDetails(creationInput)
+    const expectedLightDidDetails = Did.createLightDidDetails(creationInput)
 
     const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
 
