@@ -11,22 +11,15 @@ import { ApiPromise } from '@polkadot/api'
 
 import {
   DidIdentifier,
-  DidKey,
   DidResourceUri,
-  NewDidVerificationKey,
   DidServiceEndpoint,
   DidUri,
   DidVerificationKey,
   EncryptionAlgorithms,
   EncryptionKeyType,
-  encryptionKeyTypes,
-  NewDidKey,
   SigningAlgorithms,
   UriFragment,
   VerificationKeyType,
-  verificationKeyTypes,
-  NewDidEncryptionKey,
-  DidEncryptionKey,
   KiltAddress,
 } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -229,30 +222,6 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
   encryptionAlg: EncryptionAlgorithms
 ): EncryptionKeyType {
   return keyTypeForEncryptionAlg[encryptionAlg]
-}
-
-/**
- * Checks whether a DidKey is a verification key.
- *
- * @param key Representation of a DID key.
- * @returns True if the key is a verification key, false otherwise.
- */
-export function isVerificationKey(
-  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
-): key is NewDidVerificationKey | DidVerificationKey {
-  return verificationKeyTypes.some((kt) => kt === key.type)
-}
-
-/**
- * Checks whether a DidKey is an encryption key.
- *
- * @param key Representation of a DID key.
- * @returns True if the key is an encryption key, false otherwise.
- */
-export function isEncryptionKey(
-  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
-): key is NewDidEncryptionKey | DidEncryptionKey {
-  return encryptionKeyTypes.some((kt) => kt === key.type)
 }
 
 export type EncodedVerificationKey =

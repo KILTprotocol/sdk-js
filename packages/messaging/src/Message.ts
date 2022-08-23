@@ -13,6 +13,7 @@ import {
   DidResourceUri,
   EncryptCallback,
   EncryptionKeyType,
+  encryptionKeyTypes,
   ICType,
   IDidResolver,
   IEncryptedMessage,
@@ -120,7 +121,10 @@ export class Message implements IMessage {
       )
     }
     const receiverKeyDetails = Did.getKey(receiverDetails, fragment)
-    if (!receiverKeyDetails || !Did.Utils.isEncryptionKey(receiverKeyDetails)) {
+    if (
+      !receiverKeyDetails ||
+      !encryptionKeyTypes.includes(receiverKeyDetails.type)
+    ) {
       throw new SDKErrors.DidError(
         `Could not resolve receiver encryption key "${receiverKeyUri}"`
       )
@@ -264,7 +268,7 @@ export class Message implements IMessage {
       throw new SDKErrors.IdentityMismatchError('sender public key', 'sender')
     }
     const senderKey = Did.getKey(senderDetails, senderKeyId)
-    if (!senderKey || !Did.Utils.isEncryptionKey(senderKey)) {
+    if (!senderKey || !encryptionKeyTypes.includes(senderKey.type)) {
       throw new SDKErrors.DidError(
         `Cannot find key with ID "${senderKeyId}" for the sender DID`
       )

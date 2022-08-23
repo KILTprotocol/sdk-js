@@ -33,13 +33,14 @@ export type DidUri =
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
  */
-export const keyRelationships = [
+const keyRelationshipsC = [
   'authentication',
   'capabilityDelegation',
   'assertionMethod',
   'keyAgreement',
 ] as const
-export type KeyRelationship = typeof keyRelationships[number]
+export const keyRelationships = keyRelationshipsC as unknown as string[]
+export type KeyRelationship = typeof keyRelationshipsC[number]
 
 /**
  * Subset of key relationships which pertain to signing/verification keys.
@@ -52,8 +53,10 @@ export type VerificationKeyRelationship = Extract<
 /**
  * Possible types for a DID verification key.
  */
-export const verificationKeyTypes = ['sr25519', 'ed25519', 'ecdsa'] as const
-export type VerificationKeyType = typeof verificationKeyTypes[number]
+const verificationKeyTypesC = ['sr25519', 'ed25519', 'ecdsa'] as const
+export const verificationKeyTypes = verificationKeyTypesC as unknown as string[]
+export type VerificationKeyType = typeof verificationKeyTypesC[number]
+// `as unknown as string[]` is a workaround for https://github.com/microsoft/TypeScript/issues/26255
 
 /**
  * Currently, a light DID does not support the use of an ECDSA key as its authentication key.
@@ -71,8 +74,9 @@ export type EncryptionKeyRelationship = Extract<KeyRelationship, 'keyAgreement'>
 /**
  * Possible types for a DID encryption key.
  */
-export const encryptionKeyTypes = ['x25519'] as const
-export type EncryptionKeyType = typeof encryptionKeyTypes[number]
+const encryptionKeyTypesC = ['x25519'] as const
+export const encryptionKeyTypes = encryptionKeyTypesC as unknown as string[]
+export type EncryptionKeyType = typeof encryptionKeyTypesC[number]
 
 /**
  * Type of a new key material to add under a DID.

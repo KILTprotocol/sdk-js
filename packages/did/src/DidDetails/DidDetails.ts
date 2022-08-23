@@ -17,12 +17,10 @@ import type {
   SignCallback,
   VerificationKeyType,
 } from '@kiltprotocol/types'
+import { verificationKeyTypes } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import {
-  getSigningAlgorithmForVerificationKeyType,
-  isVerificationKey,
-} from '../Did.utils.js'
+import { getSigningAlgorithmForVerificationKeyType } from '../Did.utils.js'
 
 /**
  * Gets all public keys associated with this Did.
@@ -86,7 +84,7 @@ export async function signPayload(
   keyId: DidVerificationKey['id']
 ): Promise<DidSignature> {
   const key = getKey(did, keyId)
-  if (!key || !isVerificationKey(key)) {
+  if (!key || !verificationKeyTypes.includes(key.type)) {
     throw new SDKErrors.DidError(
       `Failed to find verification key with ID "${keyId}" on DID "${did.uri}"`
     )

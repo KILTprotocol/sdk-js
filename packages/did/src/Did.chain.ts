@@ -30,6 +30,7 @@ import type {
   NewDidEncryptionKey,
   DidCreationDetails,
 } from '@kiltprotocol/types'
+import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -52,8 +53,6 @@ import {
   getAddressByKey,
   getSigningAlgorithmForVerificationKeyType,
   getVerificationKeyTypeForSigningAlgorithm,
-  isEncryptionKey,
-  isVerificationKey,
   stripFragment,
 } from './Did.utils.js'
 
@@ -508,7 +507,7 @@ export async function getSetKeyExtrinsic(
   keyRelationship: KeyRelationship,
   key: NewDidVerificationKey
 ): Promise<Extrinsic> {
-  if (!isVerificationKey(key)) {
+  if (!verificationKeyTypes.includes(key.type)) {
     throw new SDKErrors.DidError(
       `Unacceptable key type for key with role ${keyRelationship}: ${
         (key as any).type
@@ -583,11 +582,9 @@ export async function getAddKeyExtrinsic(
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   if (keyRelationship === 'keyAgreement') {
-    if (!isEncryptionKey(key))
+    if (!encryptionKeyTypes.includes(key.type))
       throw new SDKErrors.DidError(
-        `Unacceptable key type for key with role ${keyRelationship}: ${
-          (key as any).type
-        }`
+        `Unacceptable key type for key with role ${keyRelationship}: ${key.type}`
       )
     const keyAsEnum = encodePublicKey(key)
     return api.tx.did.addKeyAgreementKey(keyAsEnum)
@@ -735,11 +732,9 @@ export function encodeDidSignature(
   key: DidVerificationKey,
   signature: Pick<DidSignature, 'signature'>
 ): EncodedSignature {
-  if (!isVerificationKey(key)) {
+  if (!verificationKeyTypes.includes(key.type)) {
     throw new SDKErrors.DidError(
-      `encodedDidSignature requires a verification key. A key of type "${
-        (key as any).type
-      }" was used instead`
+      `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead`
     )
   }
 
