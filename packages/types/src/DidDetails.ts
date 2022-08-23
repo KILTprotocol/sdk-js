@@ -102,10 +102,6 @@ export type NewLightDidVerificationKey = NewDidVerificationKey & {
  * Type of a new encryption key to add under a DID.
  */
 export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
-/**
- * Type of a new key (verification or encryption) to add under a DID.
- */
-export type NewDidKey = NewDidVerificationKey | NewDidEncryptionKey
 
 /**
  * The SDK-specific base details of a DID key.
@@ -118,7 +114,7 @@ export type BaseDidKey = {
   /**
    * The public key material.
    */
-  publicKey: NewDidKey['publicKey']
+  publicKey: Uint8Array
   /**
    * The inclusion block of the key, if stored on chain.
    */
@@ -176,17 +172,6 @@ export interface DidDetails {
   assertionMethod?: [DidVerificationKey]
   capabilityDelegation?: [DidVerificationKey]
   keyAgreement?: DidEncryptionKey[]
-
-  service?: DidServiceEndpoint[]
-}
-
-export interface DidCreationDetails {
-  identifier?: DidIdentifier
-
-  authentication: [NewDidVerificationKey]
-  assertionMethod?: [NewDidVerificationKey]
-  capabilityDelegation?: [NewDidVerificationKey]
-  keyAgreement?: NewDidEncryptionKey[]
 
   service?: DidServiceEndpoint[]
 }
