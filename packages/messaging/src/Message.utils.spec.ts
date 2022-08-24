@@ -90,7 +90,7 @@ import {
 } from '@kiltprotocol/testing'
 
 import * as MessageUtils from './Message.utils'
-import { Message } from './Message'
+import * as Message from './Message'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildCredential(
@@ -865,73 +865,73 @@ describe('Messaging Utilities', () => {
   })
 
   beforeAll(async () => {
-    messageRequestTerms = new Message(
+    messageRequestTerms = Message.fromBody(
       requestTermsBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageSubmitTerms = new Message(
+    messageSubmitTerms = Message.fromBody(
       submitTermsBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageRejectTerms = new Message(
+    messageRejectTerms = Message.fromBody(
       rejectTermsBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageRequestAttestationForClaim = new Message(
+    messageRequestAttestationForClaim = Message.fromBody(
       requestAttestationBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageSubmitAttestationForClaim = new Message(
+    messageSubmitAttestationForClaim = Message.fromBody(
       submitAttestationBody,
       identityAlice.uri,
       identityBob.uri
     )
 
-    messageRejectAttestationForClaim = new Message(
+    messageRejectAttestationForClaim = Message.fromBody(
       rejectAttestationForClaimBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageRequestCredential = new Message(
+    messageRequestCredential = Message.fromBody(
       requestCredentialBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageSubmitCredential = new Message(
+    messageSubmitCredential = Message.fromBody(
       submitCredentialBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageAcceptCredential = new Message(
+    messageAcceptCredential = Message.fromBody(
       acceptCredentialBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageRejectCredential = new Message(
+    messageRejectCredential = Message.fromBody(
       rejectCredentialBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageRequestAcceptDelegation = new Message(
+    messageRequestAcceptDelegation = Message.fromBody(
       requestAcceptDelegationBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageSubmitAcceptDelegation = new Message(
+    messageSubmitAcceptDelegation = Message.fromBody(
       submitAcceptDelegationBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageRejectAcceptDelegation = new Message(
+    messageRejectAcceptDelegation = Message.fromBody(
       rejectAcceptDelegationBody,
       identityAlice.uri,
       identityBob.uri
     )
-    messageInformCreateDelegation = new Message(
+    messageInformCreateDelegation = Message.fromBody(
       informCreateDelegationBody,
       identityAlice.uri,
       identityBob.uri

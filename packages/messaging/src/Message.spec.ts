@@ -35,7 +35,7 @@ import {
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { Message } from './Message'
+import * as Message from './Message'
 
 let aliceLightDid: DidDetails
 let aliceLightDidWithDetails: DidDetails
@@ -139,7 +139,7 @@ beforeAll(async () => {
 
 describe('Messaging', () => {
   it('verify message encryption and signing', async () => {
-    const message = new Message(
+    const message = Message.fromBody(
       {
         type: 'request-credential',
         content: {
@@ -149,7 +149,8 @@ describe('Messaging', () => {
       aliceLightDid.uri,
       bobLightDid.uri
     )
-    const encryptedMessage = await message.encrypt(
+    const encryptedMessage = await Message.encrypt(
+      message,
       '#encryption',
       aliceLightDid,
       aliceEncKey.encrypt,
@@ -261,7 +262,11 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceFullDid.uri, bobFullDid.uri)
+        Message.fromBody(
+          requestAttestationBody,
+          aliceFullDid.uri,
+          bobFullDid.uri
+        )
       )
     ).not.toThrow()
 
@@ -269,14 +274,22 @@ describe('Messaging', () => {
     // This is technically not to be allowed but message verification is not concerned with that.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceLightDid.uri, bobFullDid.uri)
+        Message.fromBody(
+          requestAttestationBody,
+          aliceLightDid.uri,
+          bobFullDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, bobFullDid.uri, aliceFullDid.uri)
+        Message.fromBody(
+          requestAttestationBody,
+          bobFullDid.uri,
+          aliceFullDid.uri
+        )
       )
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
@@ -298,7 +311,11 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobFullDid.uri, aliceFullDid.uri)
+        Message.fromBody(
+          submitAttestationBody,
+          bobFullDid.uri,
+          aliceFullDid.uri
+        )
       )
     ).not.toThrow()
 
@@ -306,14 +323,22 @@ describe('Messaging', () => {
     // This is technically not to be allowed but message verification is not concerned with that.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobLightDid.uri, aliceFullDid.uri)
+        Message.fromBody(
+          submitAttestationBody,
+          bobLightDid.uri,
+          aliceFullDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, aliceFullDid.uri, bobFullDid.uri)
+        Message.fromBody(
+          submitAttestationBody,
+          aliceFullDid.uri,
+          bobFullDid.uri
+        )
       )
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
@@ -325,7 +350,11 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, aliceFullDid.uri, bobFullDid.uri)
+        Message.fromBody(
+          submitClaimsForCTypeBody,
+          aliceFullDid.uri,
+          bobFullDid.uri
+        )
       )
     ).not.toThrow()
 
@@ -333,14 +362,22 @@ describe('Messaging', () => {
     // This is technically not to be allowed but message verification is not concerned with that.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, aliceLightDid.uri, bobFullDid.uri)
+        Message.fromBody(
+          submitClaimsForCTypeBody,
+          aliceLightDid.uri,
+          bobFullDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, bobFullDid.uri, aliceFullDid.uri)
+        Message.fromBody(
+          submitClaimsForCTypeBody,
+          bobFullDid.uri,
+          aliceFullDid.uri
+        )
       )
     ).toThrowError(SDKErrors.IdentityMismatchError)
   })
@@ -435,14 +472,18 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceLightDid.uri, bobLightDid.uri)
+        Message.fromBody(
+          requestAttestationBody,
+          aliceLightDid.uri,
+          bobLightDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should not throw if the owner has no additional details and the sender does.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           requestAttestationBodyWithEncodedDetails,
           aliceLightDidWithDetails.uri,
           bobLightDid.uri
@@ -453,7 +494,7 @@ describe('Messaging', () => {
     // Should not throw if the owner has additional details and the sender does not.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           requestAttestationBodyWithEncodedDetails,
           aliceLightDid.uri,
           bobLightDid.uri
@@ -464,14 +505,22 @@ describe('Messaging', () => {
     // Should not throw if the sender is the full DID version of the owner.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, aliceFullDid.uri, bobLightDid.uri)
+        Message.fromBody(
+          requestAttestationBody,
+          aliceFullDid.uri,
+          bobLightDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(requestAttestationBody, bobLightDid.uri, aliceLightDid.uri)
+        Message.fromBody(
+          requestAttestationBody,
+          bobLightDid.uri,
+          aliceLightDid.uri
+        )
       )
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
@@ -508,14 +557,18 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobLightDid.uri, aliceLightDid.uri)
+        Message.fromBody(
+          submitAttestationBody,
+          bobLightDid.uri,
+          aliceLightDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should not throw if the owner has no additional details and the sender does.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           submitAttestationBody,
           bobLightDidWithDetails.uri,
           aliceLightDid.uri
@@ -526,7 +579,7 @@ describe('Messaging', () => {
     // Should not throw if the owner has additional details and the sender does not.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           submitAttestationBodyWithEncodedDetails,
           bobLightDid.uri,
           aliceLightDid.uri
@@ -537,14 +590,22 @@ describe('Messaging', () => {
     // Should not throw if the sender is the full DID version of the owner.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, bobFullDid.uri, aliceLightDid.uri)
+        Message.fromBody(
+          submitAttestationBody,
+          bobFullDid.uri,
+          aliceLightDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitAttestationBody, aliceLightDid.uri, bobLightDid.uri)
+        Message.fromBody(
+          submitAttestationBody,
+          aliceLightDid.uri,
+          bobLightDid.uri
+        )
       )
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
@@ -561,7 +622,7 @@ describe('Messaging', () => {
     // Should not throw if the owner and sender DID is the same.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           submitClaimsForCTypeBody,
           aliceLightDid.uri,
           bobLightDid.uri
@@ -572,7 +633,7 @@ describe('Messaging', () => {
     // Should not throw if the owner has no additional details and the sender does.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           submitClaimsForCTypeBody,
           aliceLightDidWithDetails.uri,
           bobLightDid.uri
@@ -583,7 +644,7 @@ describe('Messaging', () => {
     // Should not throw if the owner has additional details and the sender does not.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           submitClaimsForCTypeBodyWithEncodedDetails,
           aliceLightDid.uri,
           bobLightDid.uri
@@ -594,14 +655,18 @@ describe('Messaging', () => {
     // Should not throw if the sender is the full DID version of the owner.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(submitClaimsForCTypeBody, aliceFullDid.uri, bobLightDid.uri)
+        Message.fromBody(
+          submitClaimsForCTypeBody,
+          aliceFullDid.uri,
+          bobLightDid.uri
+        )
       )
     ).not.toThrow()
 
     // Should throw if the sender and the owner are two different entities.
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
+        Message.fromBody(
           submitClaimsForCTypeBody,
           bobLightDid.uri,
           aliceLightDid.uri
