@@ -517,7 +517,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await Credential.verify(credential, {
-      resolve: mockResolve,
+      didResolve: mockResolve,
     })
   })
   it('verify credentials signed by a light DID', async () => {
@@ -541,7 +541,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await Credential.verify(credential, {
-      resolve: mockResolve,
+      didResolve: mockResolve,
     })
   })
 
@@ -572,7 +572,7 @@ describe('Credential', () => {
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await expect(
       Credential.verify(credential, {
-        resolve: mockResolve,
+        didResolve: mockResolve,
       })
     ).rejects.toThrowError()
   })
@@ -769,7 +769,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verify(presentation, {
-      resolve: mockResolve,
+      didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -797,7 +797,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verify(presentation, {
-      resolve: mockResolve,
+      didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -827,7 +827,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verify(presentation, {
-      resolve: mockResolve,
+      didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -859,7 +859,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verify(att, {
-        resolve: mockResolve,
+        didResolve: mockResolve,
       })
     ).rejects.toThrow()
   })
@@ -891,7 +891,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verify(presentation, {
-        resolve: mockResolve,
+        didResolve: mockResolve,
       })
     ).rejects.toThrow()
   })

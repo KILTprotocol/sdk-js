@@ -18,7 +18,7 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { resolve as didResolve } from './DidResolver/index.js'
+import { resolve } from './DidResolver/index.js'
 import { parseDidUri, validateKiltDidUri } from './Did.utils.js'
 import * as Did from './index.js'
 
@@ -85,7 +85,7 @@ export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: DidSignature
   expectedVerificationMethod?: VerificationKeyRelationship
-  resolve?: DidResolve
+  didResolve?: DidResolve
 }
 
 /**
@@ -96,14 +96,14 @@ export type DidSignatureVerificationInput = {
  * @param input.message The message that was signed.
  * @param input.signature An object containing signature and signer key.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
- * @param input.resolve Allows specifying a custom DID resolve. Defaults to the built-in [[resolve]].
+ * @param input.didResolve Allows specifying a custom DID resolve. Defaults to the built-in [[resolve]].
  * @returns Object indicating verification result and optionally reason for failure.
  */
 export async function verifyDidSignature({
   message,
   signature,
   expectedVerificationMethod,
-  resolve = didResolve,
+  didResolve = resolve,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
   let keyId: UriFragment
   let keyUri: DidResourceUri
@@ -122,7 +122,7 @@ export async function verifyDidSignature({
       reason: `Signature key URI "${signature.keyUri}" invalid`,
     }
   }
-  const resolutionDetails = await resolve(keyUri)
+  const resolutionDetails = await didResolve(keyUri)
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
     return {
@@ -147,7 +147,7 @@ export async function verifyDidSignature({
   // Otherwise, the details used are either the migrated full DID details or the light DID details.
   const details = (
     resolutionDetails.metadata.canonicalId
-      ? (await resolve(resolutionDetails.metadata.canonicalId))?.details
+      ? (await didResolve(resolutionDetails.metadata.canonicalId))?.details
       : resolutionDetails.details
   ) as DidDetails
 

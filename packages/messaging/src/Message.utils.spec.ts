@@ -220,7 +220,9 @@ describe('Messaging Utilities', () => {
       name: 'Bob',
     }
 
-    async function resolve(didUri: DidUri): Promise<DidResolvedDetails | null> {
+    async function didResolve(
+      didUri: DidUri
+    ): Promise<DidResolvedDetails | null> {
       if (didUri === identityAlice.uri) {
         return {
           metadata: {
@@ -338,7 +340,7 @@ describe('Messaging Utilities', () => {
       identityAlice.uri,
       identityBob,
       keyBob.sign,
-      { resolve }
+      { didResolve }
     )
     // Compressed Quote Agreement
     compressedQuoteAgreement = [

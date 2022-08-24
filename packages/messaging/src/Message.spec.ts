@@ -47,7 +47,7 @@ let bobFullDid: DidDetails
 let bobSign: SignCallback
 const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
-async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
+async function didResolve(did: DidUri): Promise<DidResolvedDetails | null> {
   if (did.startsWith(aliceLightDidWithDetails.uri)) {
     return {
       details: aliceLightDidWithDetails,
@@ -85,7 +85,7 @@ async function resolveKey(
   keyUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
   const { fragment, did } = Did.Utils.parseDidUri(keyUri)
-  const { details } = (await resolve(did as DidUri)) as DidResolvedDetails
+  const { details } = (await didResolve(did as DidUri)) as DidResolvedDetails
   if (!details) throw new Error('Could not resolve details')
   const key = Did.getKey(details, fragment!) as DidKey
   return {
@@ -225,7 +225,7 @@ describe('Messaging', () => {
       bobFullDid.uri,
       aliceFullDid,
       aliceSign,
-      { resolve }
+      { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -354,7 +354,7 @@ describe('Messaging', () => {
       bobLightDid.uri,
       aliceLightDid,
       aliceSign,
-      { resolve }
+      { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -395,7 +395,7 @@ describe('Messaging', () => {
       bobLightDidWithDetails.uri,
       aliceLightDidWithDetails,
       aliceSign,
-      { resolve }
+      { didResolve }
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
       content: {

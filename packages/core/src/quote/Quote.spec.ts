@@ -149,7 +149,7 @@ describe('Quote', () => {
       claimerIdentity,
       claimer.sign,
       {
-        resolve: mockResolve,
+        didResolve: mockResolve,
       }
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
@@ -189,7 +189,7 @@ describe('Quote', () => {
       )
     ).toBe(true)
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-      resolve: mockResolve,
+      didResolve: mockResolve,
     })
     expect(
       await Quote.createAttesterSignedQuote(
@@ -289,7 +289,7 @@ describe('Quote compression', () => {
       claimerIdentity,
       claimer.sign,
       {
-        resolve: mockResolve,
+        didResolve: mockResolve,
       }
     )
 
