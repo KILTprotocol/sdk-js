@@ -11,8 +11,7 @@ import type {
   IQuoteAttesterSigned,
   CompressedQuoteAttesterSigned,
 } from './Quote'
-import type { CompressedPartialClaim } from './Message'
-import type { PartialClaim } from './Claim'
+import type { PartialClaim, CompressedPartialClaim } from './Claim'
 import type { CompressedCredential, ICredential } from './Credential'
 
 export interface ITerms {

@@ -10,31 +10,6 @@
  */
 
 import type {
-  CompressedAttestation,
-  CompressedDelegationData,
-  CompressedInformCreateDelegation,
-  CompressedInformDelegationCreation,
-  CompressedMessageBody,
-  CompressedPartialClaim,
-  CompressedQuoteAgreed,
-  CompressedQuoteAttesterSigned,
-  CompressedRejectAcceptDelegation,
-  CompressedRejectedTerms,
-  CompressedRejectTerms,
-  CompressedRequestAcceptDelegation,
-  CompressedRequestAttestation,
-  CompressedRequestAttestationContent,
-  CompressedRequestCredentialContent,
-  CompressedRequestCredentials,
-  CompressedRequestDelegationApproval,
-  CompressedCredential,
-  CompressedRequestTerms,
-  CompressedSubmitAcceptDelegation,
-  CompressedSubmitAttestation,
-  CompressedSubmitCredentials,
-  CompressedSubmitDelegationApproval,
-  CompressedSubmitTerms,
-  CompressedTerms,
   DidDetails,
   DidResolvedDetails,
   DidResourceUri,
@@ -144,60 +119,35 @@ describe('Messaging Utilities', () => {
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
-  let compressedLegitimation: CompressedCredential
-  let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let legitimation: ICredential
-  let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: PartialClaim
-  let compressedRequestTermsBody: CompressedRequestTerms
-  let compressedRequestTermsContent: CompressedPartialClaim
   let submitTermsBody: ISubmitTerms
   let submitTermsContent: ITerms
-  let compressedSubmitTermsBody: CompressedSubmitTerms
-  let compressedSubmitTermsContent: CompressedTerms
   let rejectTermsBody: IRejectTerms
   let rejectTermsContent: Pick<
     ITerms,
     'claim' | 'legitimations' | 'delegationId'
   >
-  let compressedRejectTermsBody: CompressedRejectTerms
-  let compressedRejectTermsContent: CompressedRejectedTerms
   let requestAttestationBody: IRequestAttestation
   let requestAttestationContent: IRequestAttestationContent
-  let compressedRequestAttestationBody: CompressedRequestAttestation
-  let compressedRequestAttestationContent: CompressedRequestAttestationContent
   let submitAttestationContent: ISubmitAttestationContent
   let submitAttestationBody: ISubmitAttestation
-  let compressedSubmitAttestationContent: CompressedAttestation
-  let compressedSubmitAttestationBody: CompressedSubmitAttestation
   let rejectAttestationForClaimBody: IRejectAttestation
   let requestCredentialBody: IRequestCredential
   let requestCredentialContent: IRequestCredentialContent
-  let compressedRequestCredentialBody: CompressedRequestCredentials
-  let compressedRequestCredentialContent: CompressedRequestCredentialContent
   let submitCredentialBody: ISubmitCredential
   let submitCredentialContent: ICredential[]
   let acceptCredentialBody: IAcceptCredential
-  let compressedSubmitCredentialBody: CompressedSubmitCredentials
-  let compressedSubmitCredentialContent: CompressedCredential[]
   let rejectCredentialBody: IRejectCredential
   let requestAcceptDelegationBody: IRequestAcceptDelegation
   let requestAcceptDelegationContent: IRequestDelegationApproval
-  let compressedRequestAcceptDelegationBody: CompressedRequestAcceptDelegation
-  let compressedRequestAcceptDelegationContent: CompressedRequestDelegationApproval
   let submitAcceptDelegationBody: ISubmitAcceptDelegation
   let submitAcceptDelegationContent: ISubmitDelegationApproval
-  let compressedSubmitAcceptDelegationBody: CompressedSubmitAcceptDelegation
-  let compressedSubmitAcceptDelegationContent: CompressedSubmitDelegationApproval
   let rejectAcceptDelegationBody: IRejectAcceptDelegation
   let rejectAcceptDelegationContent: IDelegationData
-  let compressedRejectAcceptDelegationBody: CompressedRejectAcceptDelegation
-  let compressedRejectAcceptDelegationContent: CompressedDelegationData
   let informCreateDelegationBody: IInformCreateDelegation
   let informCreateDelegationContent: IInformDelegationCreation
-  let compressedInformCreateDelegationBody: CompressedInformCreateDelegation
-  let compressedInformCreateDelegationContent: CompressedInformDelegationCreation
   let messageRequestTerms: IMessage
   let messageSubmitTerms: IMessage
   let messageRejectTerms: IMessage
@@ -326,20 +276,6 @@ describe('Messaging Utilities', () => {
       {},
       []
     )
-    // Compressed Legitimation
-    compressedLegitimation = [
-      [
-        legitimation.claim.cTypeHash,
-        legitimation.claim.owner,
-        legitimation.claim.contents,
-      ],
-      legitimation.claimNonceMap,
-      legitimation.claimerSignature,
-      legitimation.claimHashes,
-      legitimation.rootHash,
-      [],
-      legitimation.delegationId,
-    ]
     // Quote Data
     quoteData = {
       attesterDid: identityAlice.uri,
@@ -359,23 +295,6 @@ describe('Messaging Utilities', () => {
       identityAlice,
       keyAlice.sign
     )
-    // Compressed Quote Attester Signed quote
-    compressedResultAttesterSignedQuote = [
-      quoteAttesterSigned.attesterDid,
-      quoteAttesterSigned.cTypeHash,
-      [
-        quoteAttesterSigned.cost.gross,
-        quoteAttesterSigned.cost.net,
-        quoteAttesterSigned.cost.tax,
-      ],
-      quoteAttesterSigned.currency,
-      quoteAttesterSigned.termsAndConditions,
-      quoteAttesterSigned.timeframe,
-      [
-        quoteAttesterSigned.attesterSignature.signature,
-        quoteAttesterSigned.attesterSignature.keyUri,
-      ],
-    ]
     // Quote agreement
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
@@ -387,30 +306,10 @@ describe('Messaging Utilities', () => {
         resolver: mockResolver,
       }
     )
-    // Compressed Quote Agreement
-    compressedQuoteAgreement = [
-      bothSigned.attesterDid,
-      bothSigned.cTypeHash,
-      [bothSigned.cost.gross, bothSigned.cost.net, bothSigned.cost.tax],
-      bothSigned.currency,
-      bothSigned.termsAndConditions,
-      bothSigned.timeframe,
-      [
-        bothSigned.attesterSignature.signature,
-        bothSigned.attesterSignature.keyUri,
-      ],
-      [
-        bothSigned.claimerSignature.signature,
-        bothSigned.claimerSignature.keyUri,
-      ],
-      bothSigned.rootHash,
-    ]
     // Request Terms content
     requestTermsContent = {
       cTypeHash: claim.cTypeHash,
     }
-    // Compressed Request terms content
-    compressedRequestTermsContent = [claim.cTypeHash, undefined, undefined]
     // Submit Terms content
     submitTermsContent = {
       claim: {
@@ -421,14 +320,6 @@ describe('Messaging Utilities', () => {
       quote: quoteAttesterSigned,
       cTypes: undefined,
     }
-    // Compressed Submit Terms Contents
-    compressedSubmitTermsContent = [
-      compressedRequestTermsContent,
-      [compressedLegitimation],
-      undefined,
-      compressedResultAttesterSignedQuote,
-      undefined,
-    ]
     // Reject terms Content
     rejectTermsContent = {
       claim: {
@@ -436,36 +327,12 @@ describe('Messaging Utilities', () => {
       },
       legitimations: [legitimation],
     }
-    // Compressed Reject terms content
-    compressedRejectTermsContent = [
-      compressedRequestTermsContent,
-      [compressedLegitimation],
-      undefined,
-    ]
 
     // Request Attestation Content
     requestAttestationContent = {
       credential: legitimation,
       quote: bothSigned,
     }
-
-    // Compressed Request attestation content
-    compressedRequestAttestationContent = [
-      [
-        [
-          legitimation.claim.cTypeHash,
-          legitimation.claim.owner,
-          legitimation.claim.contents,
-        ],
-        legitimation.claimNonceMap,
-        legitimation.claimerSignature,
-        legitimation.claimHashes,
-        legitimation.rootHash,
-        [],
-        legitimation.delegationId,
-      ],
-      compressedQuoteAgreement,
-    ]
 
     // Submit Attestation content
     submitAttestationContent = {
@@ -478,14 +345,6 @@ describe('Messaging Utilities', () => {
       },
     }
 
-    // Compressed Submit Attestation content
-    compressedSubmitAttestationContent = [
-      submitAttestationContent.attestation.claimHash,
-      submitAttestationContent.attestation.cTypeHash,
-      submitAttestationContent.attestation.owner,
-      submitAttestationContent.attestation.revoked,
-      submitAttestationContent.attestation.delegationId,
-    ]
     // Request Credential content
     requestCredentialContent = {
       cTypes: [
@@ -497,15 +356,8 @@ describe('Messaging Utilities', () => {
       ],
       challenge: '1234',
     }
-    // Compressed Request Credential content
-    compressedRequestCredentialContent = [
-      [[claim.cTypeHash, [identityAlice.uri], ['id', 'name']]],
-      '1234',
-    ]
     // Submit Credential content
     submitCredentialContent = [legitimation]
-    // Compressed Submit Credential content
-    compressedSubmitCredentialContent = [compressedLegitimation]
     // Request Accept delegation content
     requestAcceptDelegationContent = {
       delegationData: {
@@ -525,21 +377,6 @@ describe('Messaging Utilities', () => {
         ),
       },
     }
-    // Compressed Request accept delegation content
-    compressedRequestAcceptDelegationContent = [
-      [
-        requestAcceptDelegationContent.delegationData.account,
-        requestAcceptDelegationContent.delegationData.id,
-        requestAcceptDelegationContent.delegationData.parentId,
-        requestAcceptDelegationContent.delegationData.permissions,
-        requestAcceptDelegationContent.delegationData.isPCR,
-      ],
-      [
-        requestAcceptDelegationContent.signatures.inviter.signature,
-        requestAcceptDelegationContent.signatures.inviter.keyUri,
-      ],
-      requestAcceptDelegationContent.metaData,
-    ]
     // Submit Accept delegation content
     submitAcceptDelegationContent = {
       delegationData: {
@@ -564,24 +401,6 @@ describe('Messaging Utilities', () => {
         ),
       },
     }
-    // Compressed Submit accept delegation content
-    compressedSubmitAcceptDelegationContent = [
-      [
-        submitAcceptDelegationContent.delegationData.account,
-        submitAcceptDelegationContent.delegationData.id,
-        submitAcceptDelegationContent.delegationData.parentId,
-        submitAcceptDelegationContent.delegationData.permissions,
-        submitAcceptDelegationContent.delegationData.isPCR,
-      ],
-      [
-        submitAcceptDelegationContent.signatures.inviter.signature,
-        submitAcceptDelegationContent.signatures.inviter.keyUri,
-      ],
-      [
-        submitAcceptDelegationContent.signatures.invitee.signature,
-        submitAcceptDelegationContent.signatures.invitee.keyUri,
-      ],
-    ]
     // Reject Accept Delegation content
     rejectAcceptDelegationContent = {
       account: identityAlice.uri,
@@ -590,68 +409,36 @@ describe('Messaging Utilities', () => {
       permissions: [1],
       isPCR: false,
     }
-    // Compressed Reject accept delegation content
-    compressedRejectAcceptDelegationContent = [
-      rejectAcceptDelegationContent.account,
-      rejectAcceptDelegationContent.id,
-      rejectAcceptDelegationContent.parentId,
-      rejectAcceptDelegationContent.permissions,
-      rejectAcceptDelegationContent.isPCR,
-    ]
 
     informCreateDelegationContent = {
       delegationId: Crypto.hashStr('0x12345678'),
       isPCR: false,
     }
 
-    compressedInformCreateDelegationContent = [
-      informCreateDelegationContent.delegationId,
-      informCreateDelegationContent.isPCR,
-    ]
-
     requestTermsBody = {
       content: requestTermsContent,
       type: 'request-terms',
     }
-
-    compressedRequestTermsBody = [
-      'request-terms',
-      compressedRequestTermsContent,
-    ]
 
     submitTermsBody = {
       content: submitTermsContent,
       type: 'submit-terms',
     }
 
-    compressedSubmitTermsBody = ['submit-terms', compressedSubmitTermsContent]
-
     rejectTermsBody = {
       content: rejectTermsContent,
       type: 'reject-terms',
     }
-
-    compressedRejectTermsBody = ['reject-terms', compressedRejectTermsContent]
 
     requestAttestationBody = {
       content: requestAttestationContent,
       type: 'request-attestation',
     }
 
-    compressedRequestAttestationBody = [
-      'request-attestation',
-      compressedRequestAttestationContent,
-    ]
-
     submitAttestationBody = {
       content: submitAttestationContent,
       type: 'submit-attestation',
     }
-
-    compressedSubmitAttestationBody = [
-      'submit-attestation',
-      compressedSubmitAttestationContent,
-    ]
 
     rejectAttestationForClaimBody = {
       content: requestAttestationContent.credential.rootHash,
@@ -662,20 +449,10 @@ describe('Messaging Utilities', () => {
       type: 'request-credential',
     }
 
-    compressedRequestCredentialBody = [
-      'request-credential',
-      compressedRequestCredentialContent,
-    ]
-
     submitCredentialBody = {
       content: submitCredentialContent,
       type: 'submit-credential',
     }
-
-    compressedSubmitCredentialBody = [
-      'submit-credential',
-      compressedSubmitCredentialContent,
-    ]
 
     acceptCredentialBody = {
       content: [claim.cTypeHash],
@@ -692,158 +469,22 @@ describe('Messaging Utilities', () => {
       type: 'request-accept-delegation',
     }
 
-    compressedRequestAcceptDelegationBody = [
-      'request-accept-delegation',
-      compressedRequestAcceptDelegationContent,
-    ]
-
     submitAcceptDelegationBody = {
       content: submitAcceptDelegationContent,
       type: 'submit-accept-delegation',
     }
-
-    compressedSubmitAcceptDelegationBody = [
-      'submit-accept-delegation',
-      compressedSubmitAcceptDelegationContent,
-    ]
 
     rejectAcceptDelegationBody = {
       content: rejectAcceptDelegationContent,
       type: 'reject-accept-delegation',
     }
 
-    compressedRejectAcceptDelegationBody = [
-      'reject-accept-delegation',
-      compressedRejectAcceptDelegationContent,
-    ]
-
     informCreateDelegationBody = {
       content: informCreateDelegationContent,
       type: 'inform-create-delegation',
     }
-
-    compressedInformCreateDelegationBody = [
-      'inform-create-delegation',
-      compressedInformCreateDelegationContent,
-    ]
   })
 
-  it('Checking message compression and decompression Terms', async () => {
-    // Request compression of terms body
-    expect(MessageUtils.compressMessage(requestTermsBody)).toEqual(
-      compressedRequestTermsBody
-    )
-    // Request decompression of terms body
-    expect(MessageUtils.decompressMessage(compressedRequestTermsBody)).toEqual(
-      requestTermsBody
-    )
-    // Submit compression of terms body
-    expect(MessageUtils.compressMessage(submitTermsBody)).toEqual(
-      compressedSubmitTermsBody
-    )
-    // Submit decompression of terms body
-    expect(MessageUtils.decompressMessage(compressedSubmitTermsBody)).toEqual(
-      submitTermsBody
-    )
-    // Reject compression of terms body
-    expect(MessageUtils.compressMessage(rejectTermsBody)).toEqual(
-      compressedRejectTermsBody
-    )
-    // Reject decompression of terms body
-    expect(MessageUtils.decompressMessage(compressedRejectTermsBody)).toEqual(
-      rejectTermsBody
-    )
-  })
-  it('Checking message compression and decompression Attestation', async () => {
-    // Request compression of attestation body
-    expect(MessageUtils.compressMessage(requestAttestationBody)).toEqual(
-      compressedRequestAttestationBody
-    )
-    // Request decompression of attestation body
-    expect(
-      MessageUtils.decompressMessage(compressedRequestAttestationBody)
-    ).toEqual(requestAttestationBody)
-    // Submit compression of attestation body
-
-    expect(MessageUtils.compressMessage(submitAttestationBody)).toEqual(
-      compressedSubmitAttestationBody
-    )
-    // Submit decompression of attestation body
-    expect(
-      MessageUtils.decompressMessage(compressedSubmitAttestationBody)
-    ).toEqual(submitAttestationBody)
-  })
-
-  it('Checking message compression and decompression Request Credential', async () => {
-    // Request compression of credential body
-    expect(MessageUtils.compressMessage(requestCredentialBody)).toEqual(
-      compressedRequestCredentialBody
-    )
-    // Request decompression of credential body
-    expect(
-      MessageUtils.decompressMessage(compressedRequestCredentialBody)
-    ).toEqual(requestCredentialBody)
-    // Submit compression of credential body
-    expect(MessageUtils.compressMessage(submitCredentialBody)).toEqual(
-      compressedSubmitCredentialBody
-    )
-    // Submit decompression of credential body
-    expect(
-      MessageUtils.decompressMessage(compressedSubmitCredentialBody)
-    ).toEqual(submitCredentialBody)
-  })
-  it('Checking message compression and decompression delegation', async () => {
-    // Request compression of delegation body
-    expect(MessageUtils.compressMessage(requestAcceptDelegationBody)).toEqual(
-      compressedRequestAcceptDelegationBody
-    )
-    // Request decompression of delegation body
-    expect(
-      MessageUtils.decompressMessage(compressedRequestAcceptDelegationBody)
-    ).toEqual(requestAcceptDelegationBody)
-    // Submit compression of delegation body
-    expect(MessageUtils.compressMessage(submitAcceptDelegationBody)).toEqual(
-      compressedSubmitAcceptDelegationBody
-    )
-    // Submit decompression of delegation body
-    expect(
-      MessageUtils.decompressMessage(compressedSubmitAcceptDelegationBody)
-    ).toEqual(submitAcceptDelegationBody)
-    // Reject compression of delegation body
-    expect(MessageUtils.compressMessage(rejectAcceptDelegationBody)).toEqual(
-      compressedRejectAcceptDelegationBody
-    )
-    // Reject decompression of delegation body
-    expect(
-      MessageUtils.decompressMessage(compressedRejectAcceptDelegationBody)
-    ).toEqual(rejectAcceptDelegationBody)
-  })
-  it('Checking message compression and decompression Inform create delegation', async () => {
-    // Inform compression of the create delegation
-    expect(MessageUtils.compressMessage(informCreateDelegationBody)).toEqual(
-      compressedInformCreateDelegationBody
-    )
-    // Inform decompression of the create delegation
-    expect(
-      MessageUtils.decompressMessage(compressedInformCreateDelegationBody)
-    ).toEqual(informCreateDelegationBody)
-  })
-  it('Checks the MessageBody Types through the compress and decompress switch function', async () => {
-    const compressedMalformed = ['', []] as unknown as CompressedMessageBody
-
-    expect(() =>
-      MessageUtils.decompressMessage(compressedMalformed)
-    ).toThrowError(SDKErrors.UnknownMessageBodyTypeError)
-
-    const malformed = {
-      content: '',
-      type: 'MessageBodyType',
-    } as unknown as MessageBody
-
-    expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
-      SDKErrors.UnknownMessageBodyTypeError
-    )
-  })
   it('Checking required properties for given CType', () => {
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(['id', 'name'], testCType)

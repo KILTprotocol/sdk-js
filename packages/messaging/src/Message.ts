@@ -6,7 +6,6 @@
  */
 
 import {
-  CompressedMessageBody,
   DecryptCallback,
   DidDetails,
   DidEncryptionKey,
@@ -24,16 +23,9 @@ import { SDKErrors, UUID } from '@kiltprotocol/utils'
 import { DidResolver } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
-import {
-  decompressMessage,
-  errorCheckMessage,
-  errorCheckMessageBody,
-} from './Message.utils.js'
+import { errorCheckMessage, errorCheckMessageBody } from './Message.utils.js'
 
-export {
-  verifyRequiredCTypeProperties,
-  compressMessage as compress,
-} from './Message.utils.js'
+export { verifyRequiredCTypeProperties } from './Message.utils.js'
 
 /**
  * Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
@@ -210,19 +202,12 @@ export async function decrypt(
  * @returns The message created.
  */
 export function fromBody(
-  body: MessageBody | CompressedMessageBody,
+  body: MessageBody,
   sender: IMessage['sender'],
   receiver: IMessage['receiver']
 ): IMessage {
-  let decompressedBody: MessageBody
-  if (Array.isArray(body)) {
-    decompressedBody = decompressMessage(body)
-  } else {
-    decompressedBody = body
-  }
-
   return {
-    body: decompressedBody,
+    body,
     createdAt: Date.now(),
     receiver,
     sender,
