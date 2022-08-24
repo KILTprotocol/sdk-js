@@ -7,9 +7,7 @@
 
 import type {
   DidDetails,
-  DidKeySelectionCallback,
   DidUri,
-  DidVerificationKey,
   IAttestation,
   ICType,
   IDelegationHierarchyDetails,
@@ -262,33 +260,22 @@ export class DelegationNode implements IDelegationNode {
    *
    * @param delegateDid The DID of the delegate.
    * @param sign The callback to sign the delegation creation details for the delegate.
-   * @param options The additional signing options.
-   * @param options.keySelection The logic to select the right key to sign for the delegate. It defaults to picking the first key from the set of valid keys.
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegateSign(
     delegateDid: DidDetails,
-    sign: SignCallback,
-    {
-      keySelection = Did.Utils.defaultKeySelectionCallback,
-    }: {
-      keySelection?: DidKeySelectionCallback<DidVerificationKey>
-    } = {}
+    sign: SignCallback
   ): Promise<Did.Utils.EncodedSignature> {
-    // TODO: do we need keySelection for the single authentication key here and elsewhere?
-    const authenticationKey = await keySelection(delegateDid.authentication)
-    if (!authenticationKey) {
-      throw new SDKErrors.DidError(
-        `Delegate "${delegateDid.uri}" does not have any authentication key`
-      )
-    }
     const delegateSignature = await Did.signPayload(
       delegateDid,
       this.generateHash(),
       sign,
-      authenticationKey.id
+      delegateDid.authentication[0].id
     )
-    return Did.Chain.encodeDidSignature(authenticationKey, delegateSignature)
+    return Did.Chain.encodeDidSignature(
+      delegateDid.authentication[0],
+      delegateSignature
+    )
   }
 
   /**

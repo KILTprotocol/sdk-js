@@ -28,7 +28,6 @@ import {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { BN } from '@polkadot/util'
 import {
   devFaucet,
@@ -68,7 +67,7 @@ async function checkDeleteFullDid(
   const didResult = await Did.Chain.queryDetails(fullDid.identifier)
   const didDeposit = didResult!.deposit
 
-  await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(tx, identity)
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
@@ -94,7 +93,7 @@ async function checkReclaimFullDid(
   const didResult = await Did.Chain.queryDetails(fullDid.identifier)
   const didDeposit = didResult!.deposit
 
-  await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(tx, identity)
 
   const balanceAfterRevoking = await Balance.getBalances(identity.address)
 
@@ -119,7 +118,7 @@ async function checkRemoveFullDidAttestation(
     identity.address
   )
 
-  await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(authorizedTx, identity)
 
   const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
@@ -141,7 +140,7 @@ async function checkRemoveFullDidAttestation(
     identity.address
   )
 
-  await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(authorizedTx, identity)
 
   const balanceAfterRemoving = await Balance.getBalances(identity.address)
 
@@ -166,7 +165,7 @@ async function checkReclaimFullDidAttestation(
     identity.address
   )
 
-  await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(authorizedTx, identity)
 
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
@@ -182,7 +181,7 @@ async function checkReclaimFullDidAttestation(
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
-  await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(tx, identity)
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
@@ -207,7 +206,7 @@ async function checkDeletedDidReclaimAttestation(
     identity.address
   )
 
-  await submitExtrinsic(authorizedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(authorizedTx, identity)
 
   storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
     fullDid.identifier
@@ -218,11 +217,11 @@ async function checkDeletedDidReclaimAttestation(
   const deleteDid = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
   tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
-  await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(tx, identity)
 
   tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
-  await submitExtrinsic(tx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(tx, identity)
 }
 
 async function checkWeb3Deposit(
@@ -241,7 +240,7 @@ async function checkWeb3Deposit(
     sign,
     identity.address
   )
-  await submitExtrinsic(didAuthorizedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(didAuthorizedTx, identity)
   const balanceAfterClaiming = await Balance.getBalances(identity.address)
   if (
     !balanceAfterClaiming.reserved
@@ -258,7 +257,7 @@ async function checkWeb3Deposit(
     sign,
     identity.address
   )
-  await submitExtrinsic(didAuthorizedTx, identity, Blockchain.IS_FINALIZED)
+  await submitExtrinsic(didAuthorizedTx, identity)
   const balanceAfterReleasing = await Balance.getBalances(identity.address)
 
   if (!balanceAfterReleasing.reserved.eq(balanceBeforeClaiming.reserved)) {
@@ -298,7 +297,7 @@ beforeAll(async () => {
       attesterKey.sign,
       devFaucet.address
     )
-    await submitExtrinsic(extrinsic, devFaucet, Blockchain.IS_IN_BLOCK)
+    await submitExtrinsic(extrinsic, devFaucet)
   }
 
   const rawClaim = {

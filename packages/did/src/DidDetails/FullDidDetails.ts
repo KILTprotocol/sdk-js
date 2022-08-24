@@ -11,7 +11,6 @@ import { BN } from '@polkadot/util'
 
 import type {
   DidDetails,
-  DidKeySelectionCallback,
   DidUri,
   DidVerificationKey,
   KiltAddress,
@@ -29,7 +28,6 @@ import {
   queryServiceEndpoints,
 } from '../Did.chain.js'
 import {
-  defaultKeySelectionCallback,
   getSigningAlgorithmForVerificationKeyType,
   parseDidUri,
 } from '../Did.utils.js'
@@ -114,7 +112,6 @@ export async function getNextNonce(did: DidDetails): Promise<BN> {
  * @param sign The callback to sign the operation.
  * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
  * @param signingOptions The signing options.
- * @param signingOptions.keySelection The optional key selection logic, to choose the key among the set of allowed keys. By default it takes the first key from the set of valid keys.
  * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
  * @returns The DID-signed submittable extrinsic.
  */
@@ -124,10 +121,8 @@ export async function authorizeExtrinsic(
   sign: SignCallback,
   submitterAccount: KiltAddress,
   {
-    keySelection = defaultKeySelectionCallback,
     txCounter,
   }: {
-    keySelection?: DidKeySelectionCallback<DidVerificationKey>
     txCounter?: BN
   } = {}
 ): Promise<SubmittableExtrinsic> {
@@ -138,7 +133,7 @@ export async function authorizeExtrinsic(
     )
   }
 
-  const signingKey = await keySelection(getKeysForExtrinsic(did, extrinsic))
+  const [signingKey] = getKeysForExtrinsic(did, extrinsic)
   if (!signingKey) {
     throw new SDKErrors.DidError(
       `The details for DID "${uri}" do not contain the required keys for this operation`
@@ -154,14 +149,6 @@ export async function authorizeExtrinsic(
     submitter: submitterAccount,
   })
 }
-
-/**
- * Type of a callback used to select one of the key candidates for a DID to sign a given batch of extrinsics.
- */
-type SelectKeyCallback = (
-  keys: DidVerificationKey[],
-  batch: Extrinsic[]
-) => Promise<DidVerificationKey>
 
 type GroupedExtrinsics = Array<{
   extrinsics: Extrinsic[]
@@ -213,7 +200,6 @@ function groupExtrinsicsByKeyRelationship(
  * @param input.extrinsics The array of unsigned extrinsics to sign.
  * @param input.sign The callback to sign the operation.
  * @param input.submitter The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
- * @param input.selectKey The optional key selection logic, to choose the key among the set of allowed keys. By default, it takes the first key from the set of valid keys.
  * @param input.nonce The optional nonce to use for the first batch, next batches will use incremented value.
  * @returns The DID-signed submittable extrinsic.
  */
@@ -222,7 +208,6 @@ export async function authorizeBatch({
   did,
   extrinsics,
   nonce,
-  selectKey = async ([first]) => first,
   sign,
   submitter,
 }: {
@@ -230,7 +215,6 @@ export async function authorizeBatch({
   did: DidDetails
   extrinsics: Extrinsic[]
   nonce?: BN
-  selectKey?: SelectKeyCallback
   sign: SignCallback
   submitter: KiltAddress
 }): Promise<SubmittableExtrinsic> {
@@ -249,7 +233,6 @@ export async function authorizeBatch({
 
   if (extrinsics.length === 1) {
     return authorizeExtrinsic(did, extrinsics[0], sign, submitter, {
-      keySelection: (keys) => selectKey(keys, extrinsics),
       txCounter: nonce,
     })
   }
@@ -263,8 +246,7 @@ export async function authorizeBatch({
     const txCounter = increaseNonce(firstNonce, batchIndex)
 
     const { keyRelationship } = group
-    const keys = did[keyRelationship]
-    const signingKey = keys && (await selectKey(keys, list))
+    const [signingKey] = did[keyRelationship] || []
     if (!signingKey) {
       throw new SDKErrors.DidBuilderError(
         `Found no key for relationship "${keyRelationship}"`

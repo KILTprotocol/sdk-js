@@ -12,6 +12,7 @@ import type { KeyringPair } from './index.js'
 
 export interface KiltKeyringPair extends KeyringPair {
   address: `4${string}`
+  type: Exclude<KeyringPair['type'], 'ethereum'>
 }
 
 /// A KILT-chain specific address, encoded with the KILT 38 network prefix.
