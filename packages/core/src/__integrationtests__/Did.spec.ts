@@ -13,7 +13,7 @@ import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import * as Did from '@kiltprotocol/did'
-import { resolveDoc, Web3Names } from '@kiltprotocol/did'
+import { resolve, Web3Names } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
@@ -382,7 +382,7 @@ describe('DID migration', () => {
       await Did.Chain.queryDetails(migratedFullDid.identifier)
     ).not.toBeNull()
 
-    const { metadata } = (await resolveDoc(
+    const { metadata } = (await resolve(
       lightDidDetails.uri
     )) as DidResolvedDetails
 
@@ -426,7 +426,7 @@ describe('DID migration', () => {
       await Did.Chain.queryDetails(migratedFullDid.identifier)
     ).not.toBeNull()
 
-    const { metadata } = (await resolveDoc(
+    const { metadata } = (await resolve(
       lightDidDetails.uri
     )) as DidResolvedDetails
 
@@ -495,7 +495,7 @@ describe('DID migration', () => {
       await Did.Chain.queryDetails(migratedFullDid.identifier)
     ).not.toBeNull()
 
-    const { metadata } = (await resolveDoc(
+    const { metadata } = (await resolve(
       lightDidDetails.uri
     )) as DidResolvedDetails
 

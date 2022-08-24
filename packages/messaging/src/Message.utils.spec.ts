@@ -37,14 +37,12 @@ import type {
   CompressedTerms,
   DidDetails,
   DidResolvedDetails,
-  DidResourceUri,
   DidUri,
   IAcceptCredential,
   IAttestation,
   IClaim,
   ICType,
   IDelegationData,
-  IDidResolver,
   IInformCreateDelegation,
   IInformDelegationCreation,
   IMessage,
@@ -72,7 +70,6 @@ import type {
   ITerms,
   MessageBody,
   PartialClaim,
-  ResolvedDidKey,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import {
@@ -133,7 +130,6 @@ describe('Messaging Utilities', () => {
   let identityBob: DidDetails
   let keyBob: KeyTool
 
-  let mockResolver: IDidResolver
   let date: string
   let rawCType: ICType['schema']
   let rawCTypeWithMultipleProperties: ICType['schema']
@@ -224,9 +220,9 @@ describe('Messaging Utilities', () => {
       name: 'Bob',
     }
 
-    const resolveDoc = async (
+    async function didResolve(
       didUri: DidUri
-    ): Promise<DidResolvedDetails | null> => {
+    ): Promise<DidResolvedDetails | null> {
       if (didUri === identityAlice.uri) {
         return {
           metadata: {
@@ -245,45 +241,6 @@ describe('Messaging Utilities', () => {
       }
       return null
     }
-
-    const resolveKey = async (
-      keyUri: DidResourceUri
-    ): Promise<ResolvedDidKey | null> => {
-      const { fragment } = Did.Utils.parseDidUri(keyUri)
-      const didSubject = keyUri.replace(fragment!, '')
-      if (didSubject === identityAlice.uri) {
-        const aliceKey = Did.getKey(identityAlice, fragment!)
-        if (aliceKey) {
-          return {
-            id: keyUri,
-            controller: didSubject,
-            publicKey: aliceKey.publicKey,
-            type: aliceKey.type,
-          }
-        }
-        return null
-      }
-      if (didSubject === identityBob.uri) {
-        const bobKey = Did.getKey(identityBob, fragment!)
-        if (bobKey) {
-          return {
-            id: keyUri,
-            controller: didSubject,
-            publicKey: bobKey.publicKey,
-            type: bobKey.type,
-          }
-        }
-        return null
-      }
-      return null
-    }
-
-    mockResolver = {
-      resolveDoc,
-      resolveKey,
-      resolve: async (did: string) =>
-        (await resolveKey(did as DidResourceUri)) || resolveDoc(did as DidUri),
-    } as IDidResolver
 
     rawCTypeWithMultipleProperties = {
       $id: Crypto.hashStr('kilt:ctype:0x2'),
@@ -383,9 +340,7 @@ describe('Messaging Utilities', () => {
       identityAlice.uri,
       identityBob,
       keyBob.sign,
-      {
-        resolver: mockResolver,
-      }
+      { didResolve }
     )
     // Compressed Quote Agreement
     compressedQuoteAgreement = [

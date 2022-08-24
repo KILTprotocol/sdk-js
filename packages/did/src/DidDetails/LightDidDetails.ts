@@ -95,7 +95,7 @@ export function createLightDidDetails({
 /**
  * Create [[DidDetails]] of a light DID by parsing the provided input URI.
  * Only use for DIDs you control, when you are certain they have not been upgraded to on-chain full DIDs.
- * For the DIDs you have received from external sources use methods of [[DidResolver]].
+ * For the DIDs you have received from external sources use [[resolve]] etc.
  *
  * Parsing is possible because of the self-describing and self-containing nature of light DIDs.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
