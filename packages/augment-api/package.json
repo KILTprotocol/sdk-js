@@ -10,11 +10,6 @@
       "types": "./lib/cjs/index.d.ts",
       "import": "./lib/esm/index.js",
       "require": "./lib/cjs/index.js"
-    },
-    "./augment": {
-      "types": "./lib/cjs/augment.d.ts",
-      "import": "./lib/esm/augment.js",
-      "require": "./lib/cjs/augment.js"
     }
   },
   "files": [
