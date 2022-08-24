@@ -310,7 +310,7 @@ async function runAll() {
   }
 
   console.log('Test Messaging with encryption + decryption')
-  const message = new Message(
+  const message = Message.fromBody(
     {
       content: {
         credential,
@@ -320,7 +320,8 @@ async function runAll() {
     bob.uri,
     alice.uri
   )
-  const encryptedMessage = await message.encrypt(
+  const encryptedMessage = await Message.encrypt(
+    message,
     bob.keyAgreement[0].id,
     bob,
     bobEncryptCallback,
