@@ -194,6 +194,8 @@ describe('Messaging', () => {
       JSON.stringify(decryptedMessage.body)
     )
 
+    expect(() => Message.verify(decryptedMessage)).not.toThrow()
+
     const encryptedMessageWrongContent = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage

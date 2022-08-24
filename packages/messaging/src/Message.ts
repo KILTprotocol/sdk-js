@@ -313,8 +313,6 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
 /**
  * Symmetrically decrypts the result of [[Message.encrypt]].
  *
- * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
- *
  * @param encrypted The encrypted message.
  * @param decryptCallback The callback to decrypt with the secret key.
  * @param receiverDetails The DID details of the receiver.
@@ -410,20 +408,27 @@ export async function decrypt(
       throw new SDKErrors.IdentityMismatchError('Encryption key', 'Sender')
     }
 
-    // checks the message body
-    errorCheckMessageBody(decrypted.body)
-
-    // checks the message structure
-    errorCheckMessage(decrypted)
-    // make sure the sender is the owner of the identity
-    ensureOwnerIsSender(decrypted)
-
     return decrypted
   } catch (cause) {
     throw new SDKErrors.ParsingMessageError(undefined, {
       cause: cause as Error,
     })
   }
+}
+
+/**
+ * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
+ * Throws, if a check fails.
+ *
+ * @param decryptedMessage The decrypted message to check.
+ */
+export function verify(decryptedMessage: IMessage): void {
+  // checks the message body
+  errorCheckMessageBody(decryptedMessage.body)
+  // checks the message structure
+  errorCheckMessage(decryptedMessage)
+  // make sure the sender is the owner of the identity
+  ensureOwnerIsSender(decryptedMessage)
 }
 
 /**
