@@ -240,7 +240,7 @@ async function runAll() {
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
   const fullDid = await Did.query(
-    Did.Utils.getFullDidUriByKey(authentication[0])
+    Did.Utils.getFullDidUriFromKey(authentication[0])
   )
   if (!fullDid) throw new Error('Could not fetch created DID details')
 

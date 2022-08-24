@@ -240,7 +240,7 @@ export async function createLocalDemoFullDidFromKeypair(
   } = {}
 ): Promise<DidDetails> {
   const authKey = makeDidKeyFromKeypair(keypair)
-  const uri = Did.Utils.getFullDidUriByKey(authKey)
+  const uri = Did.Utils.getFullDidUriFromKey(authKey)
   const { identifier } = Did.Utils.parseDidUri(uri)
 
   const result: DidDetails = {

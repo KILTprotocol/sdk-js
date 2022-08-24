@@ -539,7 +539,7 @@ describe('DID authorization', () => {
     )
     await submitExtrinsic(createTx, paymentAccount)
     const optional = await Did.query(
-      Did.Utils.getFullDidUriByKey(authentication[0])
+      Did.Utils.getFullDidUriFromKey(authentication[0])
     )
     if (!optional) throw new Error('Cannot query created DID')
     didDetails = optional
@@ -658,7 +658,7 @@ describe('DID management batching', () => {
       await submitExtrinsic(extrinsic, paymentAccount)
 
       const fullDid = await Did.query(
-        Did.Utils.getFullDidUriByKey(authentication[0])
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
 
       expect(fullDid).not.toBeNull()
@@ -731,7 +731,9 @@ describe('DID management batching', () => {
       )
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const fullDid = await Did.query(Did.Utils.getFullDidUriByKey(didAuthKey))
+      const fullDid = await Did.query(
+        Did.Utils.getFullDidUriFromKey(didAuthKey)
+      )
 
       expect(fullDid).not.toBeNull()
       expect(fullDid?.authentication).toMatchObject<NewDidVerificationKey[]>([
@@ -791,7 +793,7 @@ describe('DID management batching', () => {
       await submitExtrinsic(createTx, paymentAccount)
 
       const initialFullDid = await Did.query(
-        Did.Utils.getFullDidUriByKey(authentication[0])
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!initialFullDid) throw new Error('Cannot query created DID')
 
@@ -849,7 +851,7 @@ describe('DID management batching', () => {
       await submitExtrinsic(createTx, paymentAccount)
 
       const initialFullDid = await Did.query(
-        Did.Utils.getFullDidUriByKey(authentication[0])
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!initialFullDid) throw new Error('Cannot query created DID')
 
@@ -906,7 +908,7 @@ describe('DID management batching', () => {
       // Create the full DID with a service endpoint
       await submitExtrinsic(tx, paymentAccount)
       const fullDid = await Did.query(
-        Did.Utils.getFullDidUriByKey(authentication[0])
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!fullDid) throw new Error('Cannot query created DID')
 
@@ -966,7 +968,7 @@ describe('DID management batching', () => {
       )
       await submitExtrinsic(createTx, paymentAccount)
       const fullDid = await Did.query(
-        Did.Utils.getFullDidUriByKey(authentication[0])
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!fullDid) throw new Error('Cannot query created DID')
 

@@ -27,7 +27,7 @@ import { ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 
 import type { IDidChainRecord } from '../Did.chain'
-import { getFullDidUriByKey, stripFragment } from '../Did.utils'
+import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
 
 import { DidResolver } from './index.js'
 import * as Did from '../index.js'
@@ -341,7 +341,9 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves a non-existing DID', async () => {
-    const randomDid = getFullDidUriByKey(makeSigningKeyTool().authentication[0])
+    const randomDid = getFullDidUriFromKey(
+      makeSigningKeyTool().authentication[0]
+    )
     expect(await DidResolver.resolveDoc(randomDid)).toBeNull()
   })
 

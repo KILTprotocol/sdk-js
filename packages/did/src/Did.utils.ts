@@ -465,7 +465,7 @@ export function getAddressByKey({
 /**
  * Builds the URI a light DID will have after it’s stored on the blockchain.
  *
- * @param didOrAddress The URI of the light DID.
+ * @param didOrAddress The URI of the light DID. Internally it’s used with the DID "address" as well.
  * @param version The version of the DID URI to use.
  * @returns The expected full DID URI.
  */
@@ -480,7 +480,13 @@ export function getFullDidUri(
   return `${KILT_DID_PREFIX}${versionString}${address}` as DidUri
 }
 
-export function getFullDidUriByKey(
+/**
+ * Builds the URI of a full DID if it is created with the authentication key provided.
+ *
+ * @param key The key that will be used as DID authentication key.
+ * @returns The expected full DID URI.
+ */
+export function getFullDidUriFromKey(
   key: Pick<DidVerificationKey, 'publicKey' | 'type'>
 ): DidUri {
   const address = getAddressByKey(key)
