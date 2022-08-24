@@ -10,13 +10,17 @@
  */
 
 import { BN } from '@polkadot/util'
-import type { IAttestation, KeyringPair } from '@kiltprotocol/types'
+import type {
+  DidDetails,
+  IAttestation,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 import {
   createFullDidFromSeed,
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { FullDidDetails } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { Attestation } from '../index'
 import { getTransferTx } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
@@ -27,8 +31,8 @@ import {
   submitExtrinsic,
 } from './utils'
 
-let paymentAccount: KeyringPair
-let someDid: FullDidDetails
+let paymentAccount: KiltKeyringPair
+let someDid: DidDetails
 let key: KeyTool
 
 beforeAll(async () => {
@@ -59,7 +63,8 @@ it('records an extrinsic error when ctype does not exist', async () => {
     revoked: false,
   }
   const storeTx = await Attestation.getStoreTx(attestation)
-  const tx = await someDid.authorizeExtrinsic(
+  const tx = await Did.authorizeExtrinsic(
+    someDid,
     storeTx,
     key.sign,
     paymentAccount.address

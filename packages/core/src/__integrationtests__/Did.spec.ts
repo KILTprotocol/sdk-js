@@ -11,19 +11,9 @@
 
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
-import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
-import {
-  Chain as DidChain,
-  didAuthorizeExtrinsics,
-  DidDetails,
-  FullDidDetails,
-  LightDidDetails,
-  NewLightDidAuthenticationKey,
-  resolveDoc,
-  Utils as DidUtils,
-  Web3Names,
-} from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
+import { resolveDoc, Web3Names } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
@@ -33,14 +23,16 @@ import {
 } from '@kiltprotocol/testing'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
+  DidDetails,
   DidResolvedDetails,
   DidServiceEndpoint,
-  KeyringPair,
+  KiltKeyringPair,
   NewDidEncryptionKey,
   NewDidVerificationKey,
+  NewLightDidVerificationKey,
   Permission,
 } from '@kiltprotocol/types'
-import { ss58Format, UUID } from '@kiltprotocol/utils'
+import { UUID } from '@kiltprotocol/utils'
 
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -48,13 +40,12 @@ import {
   addressFromRandom,
   createEndowedTestAccount,
   devBob,
-  getDefaultMigrationCallback,
   initializeApi,
   submitExtrinsic,
 } from './utils'
 import { DelegationNode } from '../delegation'
 
-let paymentAccount: KeyringPair
+let paymentAccount: KiltKeyringPair
 let api: ApiPromise
 
 beforeAll(async () => {
@@ -67,7 +58,7 @@ beforeAll(async () => {
 }, 30_000)
 
 it('fetches the correct deposit amount', async () => {
-  const depositAmount = await DidChain.queryDepositAmount()
+  const depositAmount = await Did.Chain.queryDepositAmount()
   expect(depositAmount.toString()).toMatchInlineSnapshot('"2007900000000000"')
 })
 
@@ -82,7 +73,7 @@ describe('write and didDeleteTx', () => {
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
     const otherAccount = devBob
-    const tx = await DidChain.generateCreateTxFromDidDetails(
+    const tx = await Did.Chain.getStoreTx(
       details,
       otherAccount.address,
       key.sign
@@ -94,24 +85,23 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
-    const newDetails = LightDidDetails.fromDetails({
-      authenticationKey:
-        details.authenticationKey as NewLightDidAuthenticationKey,
-      serviceEndpoints: [
+    const newDetails = Did.createLightDidDetails({
+      authentication: details.authentication as [NewLightDidVerificationKey],
+      service: [
         {
-          id: 'test-id-1',
-          types: ['test-type-1'],
-          uris: ['x:test-url-1'],
+          id: '#test-id-1',
+          type: ['test-type-1'],
+          serviceEndpoint: ['x:test-url-1'],
         },
         {
-          id: 'test-id-2',
-          types: ['test-type-2'],
-          uris: ['x:test-url-2'],
+          id: '#test-id-2',
+          type: ['test-type-2'],
+          serviceEndpoint: ['x:test-url-2'],
         },
       ],
     })
 
-    const tx = await DidChain.generateCreateTxFromDidDetails(
+    const tx = await Did.Chain.getStoreTx(
       newDetails,
       paymentAccount.address,
       key.sign
@@ -119,62 +109,67 @@ describe('write and didDeleteTx', () => {
 
     await submitExtrinsic(tx, paymentAccount)
 
-    details = (await FullDidDetails.fromChainInfo(
-      DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
-    )) as FullDidDetails
+    const fullDid = (await Did.query(
+      Did.Utils.getFullDidUri(newDetails.uri)
+    )) as DidDetails
 
-    // details and newDetails have the same identifier as the former is a resolved version of the latter.
-    expect(details.identifier === newDetails.identifier)
-    // The ID changes as on chain is the has of the public key, so we can't compare for key ID equality.
-    expect(
-      details?.authenticationKey.publicKey ===
-        newDetails.authenticationKey.publicKey
-    )
-    expect(
-      details?.authenticationKey.type === newDetails.authenticationKey.type
-    )
-
-    expect(details?.encryptionKey).toBeUndefined()
-    expect(details?.attestationKey).toBeUndefined()
-    expect(details?.delegationKey).toBeUndefined()
-
-    expect(details?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>([
-      {
-        id: 'test-id-1',
-        types: ['test-type-1'],
-        uris: ['x:test-url-1'],
-      },
-      {
-        id: 'test-id-2',
-        types: ['test-type-2'],
-        uris: ['x:test-url-2'],
-      },
-    ])
-
-    const emptyAccount = addressFromRandom()
-
-    // Should be defined and have 0 elements
-    expect(await DidChain.queryServiceEndpoints(emptyAccount)).toBeDefined()
-    expect(await DidChain.queryServiceEndpoints(emptyAccount)).toHaveLength(0)
-    // Should return null
-    expect(
-      await DidChain.queryServiceEndpoint(
-        emptyAccount,
-        'non-existing-service-id'
-      )
-    ).toBeNull()
-    // Should return 0
-    const endpointsCount = await DidChain.queryEndpointsCounts(emptyAccount)
-    expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
+    const address = Did.Utils.getAddressFromIdentifier(newDetails.identifier)
+    expect(fullDid).toMatchObject<DidDetails>({
+      identifier: address,
+      uri: `did:kilt:${address}`,
+      authentication: [
+        expect.objectContaining({
+          // We cannot match the ID of the key because it will be defined by the blockchain while saving
+          publicKey: newDetails.authentication[0].publicKey,
+          type: 'sr25519',
+        }),
+      ],
+      service: [
+        {
+          id: '#test-id-1',
+          serviceEndpoint: ['x:test-url-1'],
+          type: ['test-type-1'],
+        },
+        {
+          id: '#test-id-2',
+          serviceEndpoint: ['x:test-url-2'],
+          type: ['test-type-2'],
+        },
+      ],
+    })
   }, 60_000)
 
+  it('should return no results for empty accounts', async () => {
+    const emptyAccount = addressFromRandom()
+
+    expect(await Did.Chain.queryServiceEndpoints(emptyAccount)).toBeDefined()
+    expect(await Did.Chain.queryServiceEndpoints(emptyAccount)).toHaveLength(0)
+
+    expect(
+      await Did.Chain.queryServiceEndpoint(
+        emptyAccount,
+        '#non-existing-service-id'
+      )
+    ).toBeNull()
+
+    const endpointsCount = await Did.Chain.queryEndpointsCounts(emptyAccount)
+    expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
+  })
+
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
+    // We verify that the DID to delete is on chain.
+    const fullDid = (await Did.query(
+      Did.Utils.getFullDidUri(details.uri)
+    )) as DidDetails
+    expect(fullDid).not.toBeNull()
+
     const otherAccount = devBob
 
     // 10 is an example value. It is not used here since we are testing another error
-    let call = await DidChain.getDeleteDidExtrinsic(new BN(10))
+    let call = await Did.Chain.getDeleteDidExtrinsic(new BN(10))
 
-    let submittable = await (details as FullDidDetails).authorizeExtrinsic(
+    let submittable = await Did.authorizeExtrinsic(
+      fullDid,
       call,
       key.sign,
       // Use a different account than the submitter one
@@ -186,9 +181,10 @@ describe('write and didDeleteTx', () => {
     ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
-    call = await DidChain.getDeleteDidExtrinsic(new BN(1))
+    call = await Did.Chain.getDeleteDidExtrinsic(new BN(1))
 
-    submittable = await (details as FullDidDetails).authorizeExtrinsic(
+    submittable = await Did.authorizeExtrinsic(
+      fullDid,
       call,
       key.sign,
       paymentAccount.address
@@ -205,36 +201,42 @@ describe('write and didDeleteTx', () => {
 
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
-    expect(await DidChain.queryDetails(details.identifier)).not.toBeNull()
+    const fullDid = (await Did.query(
+      Did.Utils.getFullDidUri(details.uri)
+    )) as DidDetails
+    expect(fullDid).not.toBeNull()
 
-    const storedEndpointsCount = await DidChain.queryEndpointsCounts(
-      details.identifier
+    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
+      fullDid.identifier
     )
-    const call = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
+    const call = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
 
-    const submittable = await (details as FullDidDetails).authorizeExtrinsic(
+    const submittable = await Did.authorizeExtrinsic(
+      fullDid,
       call,
       key.sign,
       paymentAccount.address
     )
 
     // Check that DID is not blacklisted.
-    expect(await DidChain.queryDeletedDidIdentifiers()).not.toContain(
-      details.identifier
+    expect(await Did.Chain.queryDeletedDidIdentifiers()).not.toContain(
+      fullDid.identifier
     )
-    expect(await DidChain.queryDidDeletionStatus(details.identifier)).toBe(
+    expect(await Did.Chain.queryDidDeletionStatus(fullDid.identifier)).toBe(
       false
     )
 
     await submitExtrinsic(submittable, paymentAccount)
 
-    expect(await DidChain.queryDetails(details.identifier)).toBeNull()
+    expect(await Did.Chain.queryDetails(fullDid.identifier)).toBeNull()
 
     // Check that DID is now blacklisted.
-    expect(await DidChain.queryDeletedDidIdentifiers()).toContain(
-      details.identifier
+    expect(await Did.Chain.queryDeletedDidIdentifiers()).toContain(
+      fullDid.identifier
     )
-    expect(await DidChain.queryDidDeletionStatus(details.identifier)).toBe(true)
+    expect(await Did.Chain.queryDidDeletionStatus(fullDid.identifier)).toBe(
+      true
+    )
   }, 60_000)
 })
 
@@ -242,7 +244,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { keypair, sign } = makeSigningKeyTool()
   const newDetails = await createMinimalLightDidFromKeypair(keypair)
 
-  const tx = await DidChain.generateCreateTxFromDidDetails(
+  const tx = await Did.Chain.getStoreTx(
     newDetails,
     paymentAccount.address,
     sign
@@ -251,17 +253,18 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitExtrinsic(tx, paymentAccount)
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  let fullDetails = (await FullDidDetails.fromChainInfo(
-    DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
-  )) as FullDidDetails
+  let fullDetails = (await Did.query(
+    Did.Utils.getFullDidUri(newDetails.uri)
+  )) as DidDetails
 
   const newKey = makeSigningKeyTool()
 
-  const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
+  const updateAuthenticationKeyCall = await Did.Chain.getSetKeyExtrinsic(
     'authentication',
-    newKey.authenticationKey
+    newKey.authentication[0]
   )
-  const tx2 = await fullDetails.authorizeExtrinsic(
+  const tx2 = await Did.authorizeExtrinsic(
+    fullDetails,
     updateAuthenticationKeyCall,
     sign,
     paymentAccount.address
@@ -270,33 +273,37 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // Authentication key changed, so details must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  fullDetails = (await FullDidDetails.fromChainInfo(
-    DidUtils.getKiltDidFromIdentifier(newDetails.identifier, 'full')
-  )) as FullDidDetails
+  fullDetails = (await Did.query(
+    Did.Utils.getFullDidUri(newDetails.uri)
+  )) as DidDetails
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
-    id: 'new-endpoint',
-    types: ['new-type'],
-    uris: ['x:new-url'],
+    id: '#new-endpoint',
+    type: ['new-type'],
+    serviceEndpoint: ['x:new-url'],
   }
-  const updateEndpointCall = await DidChain.getAddEndpointExtrinsic(newEndpoint)
+  const updateEndpointCall = await Did.Chain.getAddEndpointExtrinsic(
+    newEndpoint
+  )
 
-  const tx3 = await fullDetails.authorizeExtrinsic(
+  const tx3 = await Did.authorizeExtrinsic(
+    fullDetails,
     updateEndpointCall,
     newKey.sign,
     paymentAccount.address
   )
   await submitExtrinsic(tx3, paymentAccount)
   expect(
-    await DidChain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
+    await Did.Chain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
   ).toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
-  const removeEndpointCall = await DidChain.getRemoveEndpointExtrinsic(
+  const removeEndpointCall = await Did.Chain.getRemoveEndpointExtrinsic(
     newEndpoint.id
   )
-  const tx4 = await fullDetails.authorizeExtrinsic(
+  const tx4 = await Did.authorizeExtrinsic(
+    fullDetails,
     removeEndpointCall,
     newKey.sign,
     paymentAccount.address
@@ -305,24 +312,24 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   expect(
-    await DidChain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
+    await Did.Chain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
   ).toBeNull()
 
   // Claim the deposit back
-  const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+  const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
     fullDetails.identifier
   )
-  const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
+  const reclaimDepositTx = await Did.Chain.getReclaimDepositExtrinsic(
     fullDetails.identifier,
     storedEndpointsCount
   )
   await submitExtrinsic(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
-  expect(await DidChain.queryDetails(fullDetails.identifier)).toBeNull()
+  expect(await Did.Chain.queryDetails(fullDetails.identifier)).toBeNull()
   expect(
-    await DidChain.queryServiceEndpoints(fullDetails.identifier)
+    await Did.Chain.queryServiceEndpoints(fullDetails.identifier)
   ).toHaveLength(0)
-  const newEndpointsCount = await DidChain.queryEndpointsCounts(
+  const newEndpointsCount = await Did.Chain.queryEndpointsCounts(
     fullDetails.identifier
   )
   expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
@@ -330,40 +337,49 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
 describe('DID migration', () => {
   it('migrates light DID with ed25519 auth key and encryption key', async () => {
-    const { sign, authenticationKey } = makeSigningKeyTool('ed25519')
-    const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey,
-      encryptionKey: makeEncryptionKeyTool(
-        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-      ).keypair,
+    const { sign, authentication } = makeSigningKeyTool('ed25519')
+    const { keyAgreement } = makeEncryptionKeyTool(
+      '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+    )
+    const lightDidDetails = Did.createLightDidDetails({
+      authentication,
+      keyAgreement,
     })
 
-    const migratedFullDid = await lightDidDetails.migrate(
+    const storeTx = await Did.Chain.getStoreTx(
+      lightDidDetails,
       paymentAccount.address,
-      sign,
-      getDefaultMigrationCallback(paymentAccount)
+      sign
     )
 
-    // The key id for the authentication and encryption keys are overwritten when a light
-    // DID is migrated, so we only need to check that the public key value is the same.
-    // We  use a set because keys might be returned in a different order.
-    const migratedDidKeys = new Set(
-      migratedFullDid.getKeys().map((k) => k.publicKey)
+    await submitExtrinsic(storeTx, paymentAccount)
+    const migratedFullDid = await Did.query(
+      Did.Utils.getFullDidUri(lightDidDetails.uri)
     )
-    const lightDidKeys = new Set(
-      lightDidDetails.getKeys().map((k) => k.publicKey)
+    if (!migratedFullDid) throw new Error('Cannot query created DID')
+
+    const address = Did.Utils.getAddressFromIdentifier(
+      lightDidDetails.identifier
     )
-    expect(migratedDidKeys).toStrictEqual(lightDidKeys)
-    // The same thing does NOT apply to service endpoints, so here we can simply check for
-    // equality.
-    expect(migratedFullDid.getEndpoints()).toStrictEqual(
-      lightDidDetails.getEndpoints()
-    )
-    // The main identifier should be left untouched
-    expect(migratedFullDid.identifier).toStrictEqual(lightDidDetails.identifier)
+    expect(migratedFullDid).toMatchObject<DidDetails>({
+      identifier: address,
+      uri: `did:kilt:${address}`,
+      authentication: [
+        expect.objectContaining({
+          publicKey: lightDidDetails.authentication[0].publicKey,
+          type: 'ed25519',
+        }),
+      ],
+      keyAgreement: [
+        expect.objectContaining({
+          publicKey: lightDidDetails.keyAgreement?.[0].publicKey,
+          type: 'x25519',
+        }),
+      ],
+    })
 
     expect(
-      await DidChain.queryDetails(migratedFullDid.identifier)
+      await Did.Chain.queryDetails(migratedFullDid.identifier)
     ).not.toBeNull()
 
     const { metadata } = (await resolveDoc(
@@ -375,37 +391,39 @@ describe('DID migration', () => {
   })
 
   it('migrates light DID with sr25519 auth key', async () => {
-    const { authenticationKey, sign } = makeSigningKeyTool()
-    const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey,
+    const { authentication, sign } = makeSigningKeyTool()
+    const lightDidDetails = Did.createLightDidDetails({
+      authentication,
     })
 
-    const migratedFullDid = await lightDidDetails.migrate(
+    const storeTx = await Did.Chain.getStoreTx(
+      lightDidDetails,
       paymentAccount.address,
-      sign,
-      getDefaultMigrationCallback(paymentAccount)
+      sign
     )
 
-    // The key id for the authentication and encryption keys are overwritten when a light
-    // DID is migrated, so we only need to check that the public key value is the same.
-    // We  use a set because keys might be returned in a different order.
-    const migratedDidKeys = new Set(
-      migratedFullDid.getKeys().map((k) => k.publicKey)
+    await submitExtrinsic(storeTx, paymentAccount)
+    const migratedFullDid = await Did.query(
+      Did.Utils.getFullDidUri(lightDidDetails.uri)
     )
-    const lightDidKeys = new Set(
-      lightDidDetails.getKeys().map((k) => k.publicKey)
+    if (!migratedFullDid) throw new Error('Cannot query created DID')
+
+    const address = Did.Utils.getAddressFromIdentifier(
+      lightDidDetails.identifier
     )
-    expect(migratedDidKeys).toStrictEqual(lightDidKeys)
-    // The same thing does NOT apply to service endpoints, so here we can simply check for
-    // equality.
-    expect(migratedFullDid.getEndpoints()).toStrictEqual(
-      lightDidDetails.getEndpoints()
-    )
-    // The main identifier should be left untouched
-    expect(migratedFullDid.identifier).toStrictEqual(lightDidDetails.identifier)
+    expect(migratedFullDid).toMatchObject<DidDetails>({
+      identifier: address,
+      uri: `did:kilt:${address}`,
+      authentication: [
+        expect.objectContaining({
+          publicKey: lightDidDetails.authentication[0].publicKey,
+          type: 'sr25519',
+        }),
+      ],
+    })
 
     expect(
-      await DidChain.queryDetails(migratedFullDid.identifier)
+      await Did.Chain.queryDetails(migratedFullDid.identifier)
     ).not.toBeNull()
 
     const { metadata } = (await resolveDoc(
@@ -417,49 +435,64 @@ describe('DID migration', () => {
   })
 
   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
-    const { sign, authenticationKey } = makeSigningKeyTool('ed25519')
-    const serviceEndpoints: DidServiceEndpoint[] = [
+    const { sign, authentication } = makeSigningKeyTool('ed25519')
+    const { keyAgreement } = makeEncryptionKeyTool(
+      '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+    )
+    const service: DidServiceEndpoint[] = [
       {
-        id: 'id-1',
-        types: ['type-1'],
-        uris: ['x:url-1'],
+        id: '#id-1',
+        type: ['type-1'],
+        serviceEndpoint: ['x:url-1'],
       },
     ]
-    const lightDidDetails = LightDidDetails.fromDetails({
-      authenticationKey,
-      encryptionKey: makeEncryptionKeyTool(
-        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
-      ).keypair,
-      serviceEndpoints,
+    const lightDidDetails = Did.createLightDidDetails({
+      authentication,
+      keyAgreement,
+      service,
     })
 
-    const migratedFullDid = await lightDidDetails.migrate(
+    const storeTx = await Did.Chain.getStoreTx(
+      lightDidDetails,
       paymentAccount.address,
-      sign,
-      getDefaultMigrationCallback(paymentAccount),
-      { withServiceEndpoints: true, withEncryptionKey: true }
+      sign
     )
 
-    // The key id for the authentication and encryption keys are overwritten when a light
-    // DID is migrated, so we only need to check that the public key value is the same.
-    // We  use a set because keys might be returned in a different order.
-    const migratedDidKeys = new Set(
-      migratedFullDid.getKeys().map((k) => k.publicKey)
+    await submitExtrinsic(storeTx, paymentAccount)
+    const migratedFullDid = await Did.query(
+      Did.Utils.getFullDidUri(lightDidDetails.uri)
     )
-    const lightDidKeys = new Set(
-      lightDidDetails.getKeys().map((k) => k.publicKey)
+    if (!migratedFullDid) throw new Error('Cannot query created DID')
+
+    const address = Did.Utils.getAddressFromIdentifier(
+      lightDidDetails.identifier
     )
-    expect(migratedDidKeys).toStrictEqual(lightDidKeys)
-    // The same thing does NOT apply to service endpoints, so here we can simply check for
-    // equality.
-    expect(migratedFullDid.getEndpoints()).toStrictEqual(
-      lightDidDetails.getEndpoints()
-    )
-    // The main identifier should be left untouched
-    expect(migratedFullDid.identifier).toStrictEqual(lightDidDetails.identifier)
+    expect(migratedFullDid).toMatchObject<DidDetails>({
+      identifier: address,
+      uri: `did:kilt:${address}`,
+      authentication: [
+        expect.objectContaining({
+          publicKey: lightDidDetails.authentication[0].publicKey,
+          type: 'ed25519',
+        }),
+      ],
+      keyAgreement: [
+        expect.objectContaining({
+          publicKey: lightDidDetails.keyAgreement?.[0].publicKey,
+          type: 'x25519',
+        }),
+      ],
+      service: [
+        {
+          id: '#id-1',
+          type: ['type-1'],
+          serviceEndpoint: ['x:url-1'],
+        },
+      ],
+    })
 
     expect(
-      await DidChain.queryDetails(migratedFullDid.identifier)
+      await Did.Chain.queryDetails(migratedFullDid.identifier)
     ).not.toBeNull()
 
     const { metadata } = (await resolveDoc(
@@ -470,44 +503,43 @@ describe('DID migration', () => {
     expect(metadata.deactivated).toBe(false)
 
     // Remove and claim the deposit back
-    const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
       migratedFullDid.identifier
     )
-    const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
+    const reclaimDepositTx = await Did.Chain.getReclaimDepositExtrinsic(
       migratedFullDid.identifier,
       storedEndpointsCount
     )
     await submitExtrinsic(reclaimDepositTx, paymentAccount)
 
-    expect(await DidChain.queryDetails(migratedFullDid.identifier)).toBeNull()
+    expect(await Did.Chain.queryDetails(migratedFullDid.identifier)).toBeNull()
     expect(
-      await DidChain.queryServiceEndpoints(migratedFullDid.identifier)
+      await Did.Chain.queryServiceEndpoints(migratedFullDid.identifier)
     ).toStrictEqual([])
     expect(
-      await DidChain.queryDidDeletionStatus(migratedFullDid.identifier)
+      await Did.Chain.queryDidDeletionStatus(migratedFullDid.identifier)
     ).toBe(true)
   }, 60_000)
 })
 
 describe('DID authorization', () => {
-  // Light DIDs cannot authorise extrinsics
-  let didDetails: FullDidDetails
-  const { sign, authenticationKey } = makeSigningKeyTool('ed25519')
+  // Light DIDs cannot authorize extrinsics
+  let didDetails: DidDetails
+  const { sign, authentication } = makeSigningKeyTool('ed25519')
 
   beforeAll(async () => {
-    const createTx = await DidChain.generateCreateTxFromCreationDetails(
+    const createTx = await Did.Chain.getStoreTx(
       {
-        identifier: DidUtils.getIdentifierByKey(authenticationKey),
-        authenticationKey,
-        assertionKey: authenticationKey,
-        delegationKey: authenticationKey,
+        authentication,
+        assertionMethod: authentication,
+        capabilityDelegation: authentication,
       },
       paymentAccount.address,
       sign
     )
     await submitExtrinsic(createTx, paymentAccount)
-    const optional = await FullDidDetails.fromChainInfo(
-      DidUtils.getFullDidUriByKey(authenticationKey)
+    const optional = await Did.query(
+      Did.Utils.getFullDidUriFromKey(authentication[0])
     )
     if (!optional) throw new Error('Cannot query created DID')
     didDetails = optional
@@ -521,7 +553,8 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await CType.getStoreTx(ctype)
-    const tx = await didDetails.authorizeExtrinsic(
+    const tx = await Did.authorizeExtrinsic(
+      didDetails,
       call,
       sign,
       paymentAccount.address
@@ -532,13 +565,14 @@ describe('DID authorization', () => {
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
-    const storedEndpointsCount = await DidChain.queryEndpointsCounts(
+    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
       didDetails.identifier
     )
-    const deleteCall = await DidChain.getDeleteDidExtrinsic(
+    const deleteCall = await Did.Chain.getDeleteDidExtrinsic(
       storedEndpointsCount
     )
-    const tx = await didDetails.authorizeExtrinsic(
+    const tx = await Did.authorizeExtrinsic(
+      didDetails,
       deleteCall,
       sign,
       paymentAccount.address
@@ -552,7 +586,8 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await CType.getStoreTx(ctype)
-    const tx2 = await didDetails.authorizeExtrinsic(
+    const tx2 = await Did.authorizeExtrinsic(
+      didDetails,
       call,
       sign,
       paymentAccount.address
@@ -569,48 +604,51 @@ describe('DID authorization', () => {
 describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build a complete full DID', async () => {
-      const { keypair, sign, authenticationKey } = makeSigningKeyTool()
-      const extrinsic = await DidChain.generateCreateTxFromCreationDetails(
+      const { keypair, sign, authentication } = makeSigningKeyTool()
+      const extrinsic = await Did.Chain.getStoreTx(
         {
-          identifier: DidUtils.getIdentifierByKey(authenticationKey),
-          authenticationKey,
-          assertionKey: {
-            publicKey: Uint8Array.from(Array(32).fill(1)),
-            type: 'sr25519',
-          },
-          delegationKey: {
-            publicKey: Uint8Array.from(Array(33).fill(1)),
-            type: 'ecdsa',
-          },
-          keyAgreementKeys: [
+          authentication,
+          assertionMethod: [
             {
-              publicKey: Uint8Array.from(Array(32).fill(1)),
+              publicKey: new Uint8Array(32).fill(1),
+              type: 'sr25519',
+            },
+          ],
+          capabilityDelegation: [
+            {
+              publicKey: new Uint8Array(33).fill(1),
+              type: 'ecdsa',
+            },
+          ],
+          keyAgreement: [
+            {
+              publicKey: new Uint8Array(32).fill(1),
               type: 'x25519',
             },
             {
-              publicKey: Uint8Array.from(Array(32).fill(2)),
+              publicKey: new Uint8Array(32).fill(2),
               type: 'x25519',
             },
             {
-              publicKey: Uint8Array.from(Array(32).fill(3)),
+              publicKey: new Uint8Array(32).fill(3),
               type: 'x25519',
             },
           ],
-          serviceEndpoints: [
+          service: [
             {
-              id: 'id-1',
-              types: ['type-1'],
-              uris: ['x:url-1'],
+              id: '#id-1',
+              type: ['type-1'],
+              serviceEndpoint: ['x:url-1'],
             },
             {
-              id: 'id-2',
-              types: ['type-2'],
-              uris: ['x:url-2'],
+              id: '#id-2',
+              type: ['type-2'],
+              serviceEndpoint: ['x:url-2'],
             },
             {
-              id: 'id-3',
-              types: ['type-3'],
-              uris: ['x:url-3'],
+              id: '#id-3',
+              type: ['type-3'],
+              serviceEndpoint: ['x:url-3'],
             },
           ],
         },
@@ -619,59 +657,64 @@ describe('DID management batching', () => {
       )
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const fullDid = await FullDidDetails.fromChainInfo(
-        DidUtils.getFullDidUriByKey(authenticationKey)
+      const fullDid = await Did.query(
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
 
       expect(fullDid).not.toBeNull()
       if (!fullDid) throw new Error('Cannot query created DID')
 
-      const authenticationKeys = fullDid.getVerificationKeys('authentication')
-      expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
-        {
-          publicKey: keypair.publicKey,
-          type: 'sr25519',
-        },
-      ])
-
-      const encryptionKeys = fullDid.getEncryptionKeys('keyAgreement')
-      expect(encryptionKeys).toHaveLength(3)
-
-      const assertionKeys = fullDid.getVerificationKeys('assertionMethod')
-      expect(assertionKeys).toMatchObject<NewDidVerificationKey[]>([
-        {
-          publicKey: Uint8Array.from(Array(32).fill(1)),
-          type: 'sr25519',
-        },
-      ])
-
-      const delegationKeys = fullDid.getVerificationKeys('capabilityDelegation')
-      expect(delegationKeys).toMatchObject<NewDidVerificationKey[]>([
-        {
-          publicKey: Uint8Array.from(Array(33).fill(1)),
-          type: 'ecdsa',
-        },
-      ])
-
-      const serviceEndpoints = fullDid.getEndpoints()
-      expect(serviceEndpoints).toHaveLength(3)
-      expect(serviceEndpoints).toMatchObject<DidServiceEndpoint[]>([
-        {
-          id: 'id-3',
-          types: ['type-3'],
-          uris: ['x:url-3'],
-        },
-        {
-          id: 'id-1',
-          types: ['type-1'],
-          uris: ['x:url-1'],
-        },
-        {
-          id: 'id-2',
-          types: ['type-2'],
-          uris: ['x:url-2'],
-        },
-      ])
+      expect(fullDid).toMatchObject({
+        authentication: [
+          expect.objectContaining({
+            publicKey: keypair.publicKey,
+            type: 'sr25519',
+          }),
+        ],
+        assertionMethod: [
+          expect.objectContaining({
+            publicKey: new Uint8Array(32).fill(1),
+            type: 'sr25519',
+          }),
+        ],
+        capabilityDelegation: [
+          expect.objectContaining({
+            publicKey: new Uint8Array(33).fill(1),
+            type: 'ecdsa',
+          }),
+        ],
+        keyAgreement: [
+          expect.objectContaining({
+            publicKey: new Uint8Array(32).fill(3),
+            type: 'x25519',
+          }),
+          expect.objectContaining({
+            publicKey: new Uint8Array(32).fill(2),
+            type: 'x25519',
+          }),
+          expect.objectContaining({
+            publicKey: new Uint8Array(32).fill(1),
+            type: 'x25519',
+          }),
+        ],
+        service: [
+          {
+            id: '#id-3',
+            type: ['type-3'],
+            serviceEndpoint: ['x:url-3'],
+          },
+          {
+            id: '#id-1',
+            type: ['type-1'],
+            serviceEndpoint: ['x:url-1'],
+          },
+          {
+            id: '#id-2',
+            type: ['type-2'],
+            serviceEndpoint: ['x:url-2'],
+          },
+        ],
+      })
     })
 
     it('Build a minimal full DID with an Ecdsa key', async () => {
@@ -680,30 +723,20 @@ describe('DID management batching', () => {
         publicKey: keypair.publicKey,
         type: 'ecdsa',
       }
-      const encodedEcdsaAddress = encodeAddress(
-        blake2AsU8a(keypair.publicKey),
-        ss58Format
-      )
 
-      const extrinsic = await DidChain.generateCreateTxFromCreationDetails(
-        {
-          identifier: DidUtils.getIdentifierByKey(didAuthKey),
-          authenticationKey: didAuthKey,
-        },
+      const extrinsic = await Did.Chain.getStoreTx(
+        { authentication: [didAuthKey] },
         paymentAccount.address,
         sign
       )
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const fullDid = await FullDidDetails.fromChainInfo(
-        DidUtils.getKiltDidFromIdentifier(encodedEcdsaAddress, 'full')
+      const fullDid = await Did.query(
+        Did.Utils.getFullDidUriFromKey(didAuthKey)
       )
 
       expect(fullDid).not.toBeNull()
-      if (!fullDid) throw new Error('Cannot query created DID')
-
-      const authenticationKeys = fullDid.getVerificationKeys('authentication')
-      expect(authenticationKeys).toMatchObject<NewDidVerificationKey[]>([
+      expect(fullDid?.authentication).toMatchObject<NewDidVerificationKey[]>([
         {
           publicKey: keypair.publicKey,
           type: 'ecdsa',
@@ -714,40 +747,43 @@ describe('DID management batching', () => {
 
   describe('FullDidUpdateBuilder', () => {
     it('Build from a complete full DID and remove everything but the authentication key', async () => {
-      const { keypair, sign, authenticationKey } = makeSigningKeyTool()
+      const { keypair, sign, authentication } = makeSigningKeyTool()
 
-      const createTx = await DidChain.generateCreateTxFromCreationDetails(
+      const createTx = await Did.Chain.getStoreTx(
         {
-          identifier: DidUtils.getIdentifierByKey(authenticationKey),
-          authenticationKey,
-          keyAgreementKeys: [
+          authentication,
+          keyAgreement: [
             {
-              publicKey: Uint8Array.from(Array(32).fill(1)),
+              publicKey: new Uint8Array(32).fill(1),
               type: 'x25519',
             },
             {
-              publicKey: Uint8Array.from(Array(32).fill(2)),
+              publicKey: new Uint8Array(32).fill(2),
               type: 'x25519',
             },
           ],
-          assertionKey: {
-            publicKey: Uint8Array.from(Array(32).fill(1)),
-            type: 'sr25519',
-          },
-          delegationKey: {
-            publicKey: Uint8Array.from(Array(33).fill(1)),
-            type: 'ecdsa',
-          },
-          serviceEndpoints: [
+          assertionMethod: [
             {
-              id: 'id-1',
-              types: ['type-1'],
-              uris: ['x:url-1'],
+              publicKey: new Uint8Array(32).fill(1),
+              type: 'sr25519',
+            },
+          ],
+          capabilityDelegation: [
+            {
+              publicKey: new Uint8Array(33).fill(1),
+              type: 'ecdsa',
+            },
+          ],
+          service: [
+            {
+              id: '#id-1',
+              type: ['type-1'],
+              serviceEndpoint: ['x:url-1'],
             },
             {
-              id: 'id-2',
-              types: ['type-2'],
-              uris: ['x:url-2'],
+              id: '#id-2',
+              type: ['type-2'],
+              serviceEndpoint: ['x:url-2'],
             },
           ],
         },
@@ -756,18 +792,24 @@ describe('DID management batching', () => {
       )
       await submitExtrinsic(createTx, paymentAccount)
 
-      const initialFullDid = await FullDidDetails.fromChainInfo(
-        DidUtils.getFullDidUriByKey(authenticationKey)
+      const initialFullDid = await Did.query(
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!initialFullDid) throw new Error('Cannot query created DID')
 
-      const encryptionKeys = initialFullDid.getEncryptionKeys('keyAgreement')
-      const extrinsic = await didAuthorizeExtrinsics({
+      const encryptionKeys = initialFullDid.keyAgreement
+      if (!encryptionKeys) throw new Error('No key agreement keys')
+
+      const extrinsic = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batchAll,
         did: initialFullDid,
         extrinsics: [
-          await api.tx.did.removeKeyAgreementKey(encryptionKeys[0].id),
-          await api.tx.did.removeKeyAgreementKey(encryptionKeys[1].id),
+          await api.tx.did.removeKeyAgreementKey(
+            Did.Utils.stripFragment(encryptionKeys[0].id)
+          ),
+          await api.tx.did.removeKeyAgreementKey(
+            Did.Utils.stripFragment(encryptionKeys[1].id)
+          ),
           await api.tx.did.removeAttestationKey(),
           await api.tx.did.removeDelegationKey(),
           await api.tx.did.removeServiceEndpoint('id-1'),
@@ -778,58 +820,55 @@ describe('DID management batching', () => {
       })
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const finalFullDid = (await FullDidDetails.fromChainInfo(
-        initialFullDid.uri
-      )) as FullDidDetails
+      const finalFullDid = (await Did.query(initialFullDid.uri)) as DidDetails
 
       expect(finalFullDid).not.toBeNull()
 
       expect(
-        finalFullDid.authenticationKey
+        finalFullDid.authentication[0]
       ).toMatchObject<NewDidVerificationKey>({
         publicKey: keypair.publicKey,
         type: 'sr25519',
       })
 
-      expect(finalFullDid.encryptionKey).toBeUndefined()
-      expect(finalFullDid.attestationKey).toBeUndefined()
-      expect(finalFullDid.delegationKey).toBeUndefined()
-      expect(finalFullDid.getEndpoints()).toHaveLength(0)
+      expect(finalFullDid.keyAgreement).toBeUndefined()
+      expect(finalFullDid.assertionMethod).toBeUndefined()
+      expect(finalFullDid.capabilityDelegation).toBeUndefined()
+      expect(finalFullDid.service).toBeUndefined()
     }, 40_000)
 
     it('Correctly handles rotation of the authentication key', async () => {
-      const { authenticationKey, sign } = makeSigningKeyTool()
-      const { authenticationKey: newAuthKey } = makeSigningKeyTool('ed25519')
+      const { authentication, sign } = makeSigningKeyTool()
+      const {
+        authentication: [newAuthKey],
+      } = makeSigningKeyTool('ed25519')
 
-      const createTx = await DidChain.generateCreateTxFromCreationDetails(
-        {
-          identifier: DidUtils.getIdentifierByKey(authenticationKey),
-          authenticationKey,
-        },
+      const createTx = await Did.Chain.getStoreTx(
+        { authentication },
         paymentAccount.address,
         sign
       )
       await submitExtrinsic(createTx, paymentAccount)
 
-      const initialFullDid = await FullDidDetails.fromChainInfo(
-        DidUtils.getFullDidUriByKey(authenticationKey)
+      const initialFullDid = await Did.query(
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!initialFullDid) throw new Error('Cannot query created DID')
 
-      const extrinsic = await didAuthorizeExtrinsics({
+      const extrinsic = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batchAll,
         did: initialFullDid,
         extrinsics: [
-          await DidChain.getAddEndpointExtrinsic({
-            id: 'id-1',
-            types: ['type-1'],
-            uris: ['x:url-1'],
+          await Did.Chain.getAddEndpointExtrinsic({
+            id: '#id-1',
+            type: ['type-1'],
+            serviceEndpoint: ['x:url-1'],
           }),
-          await DidChain.getSetKeyExtrinsic('authentication', newAuthKey),
-          await DidChain.getAddEndpointExtrinsic({
-            id: 'id-2',
-            types: ['type-2'],
-            uris: ['x:url-2'],
+          await Did.Chain.getSetKeyExtrinsic('authentication', newAuthKey),
+          await Did.Chain.getAddEndpointExtrinsic({
+            id: '#id-2',
+            type: ['type-2'],
+            serviceEndpoint: ['x:url-2'],
           }),
         ],
         sign,
@@ -838,31 +877,28 @@ describe('DID management batching', () => {
 
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const finalFullDid = (await FullDidDetails.fromChainInfo(
-        initialFullDid.uri
-      )) as FullDidDetails
+      const finalFullDid = (await Did.query(initialFullDid.uri)) as DidDetails
 
       expect(finalFullDid).not.toBeNull()
 
-      expect(finalFullDid.authenticationKey).toMatchObject(newAuthKey)
+      expect(finalFullDid.authentication[0]).toMatchObject(newAuthKey)
 
-      expect(finalFullDid.encryptionKey).toBeUndefined()
-      expect(finalFullDid.attestationKey).toBeUndefined()
-      expect(finalFullDid.delegationKey).toBeUndefined()
-      expect(finalFullDid.getEndpoints()).toHaveLength(2)
+      expect(finalFullDid.keyAgreement).toBeUndefined()
+      expect(finalFullDid.assertionMethod).toBeUndefined()
+      expect(finalFullDid.capabilityDelegation).toBeUndefined()
+      expect(finalFullDid.service).toHaveLength(2)
     }, 40_000)
 
     it('simple `batch` succeeds despite failures of some extrinsics', async () => {
-      const { authenticationKey, sign } = makeSigningKeyTool()
-      const tx = await DidChain.generateCreateTxFromCreationDetails(
+      const { authentication, sign } = makeSigningKeyTool()
+      const tx = await Did.Chain.getStoreTx(
         {
-          identifier: DidUtils.getIdentifierByKey(authenticationKey),
-          authenticationKey,
-          serviceEndpoints: [
+          authentication,
+          service: [
             {
-              id: 'id-1',
-              types: ['type-1'],
-              uris: ['x:url-1'],
+              id: '#id-1',
+              type: ['type-1'],
+              serviceEndpoint: ['x:url-1'],
             },
           ],
         },
@@ -871,26 +907,26 @@ describe('DID management batching', () => {
       )
       // Create the full DID with a service endpoint
       await submitExtrinsic(tx, paymentAccount)
-      const fullDid = await FullDidDetails.fromChainInfo(
-        DidUtils.getFullDidUriByKey(authenticationKey)
+      const fullDid = await Did.query(
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!fullDid) throw new Error('Cannot query created DID')
 
-      expect(fullDid.attestationKey).toBeUndefined()
+      expect(fullDid.assertionMethod).toBeUndefined()
 
       // Try to set a new attestation key and a duplicate service endpoint
-      const updateTx = await didAuthorizeExtrinsics({
+      const updateTx = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batch,
         did: fullDid,
         extrinsics: [
-          await DidChain.getSetKeyExtrinsic(
+          await Did.Chain.getSetKeyExtrinsic(
             'assertionMethod',
-            authenticationKey
+            authentication[0]
           ),
-          await DidChain.getAddEndpointExtrinsic({
-            id: 'id-1',
-            types: ['type-2'],
-            uris: ['x:url-2'],
+          await Did.Chain.getAddEndpointExtrinsic({
+            id: '#id-1',
+            type: ['type-2'],
+            serviceEndpoint: ['x:url-2'],
           }),
         ],
         sign,
@@ -899,32 +935,31 @@ describe('DID management batching', () => {
       // Now the second operation fails but the batch succeeds
       await submitExtrinsic(updateTx, paymentAccount)
 
-      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
+      const updatedFullDid = await Did.query(fullDid.uri)
       if (!updatedFullDid) throw new Error('Cannot query created DID')
 
       // .setAttestationKey() extrinsic went through in the batch
-      expect(updatedFullDid.attestationKey).toBeDefined()
+      expect(updatedFullDid.assertionMethod?.[0]).toBeDefined()
       // The service endpoint will match the one manually added, and not the one set in the batch
       expect(
-        updatedFullDid.getEndpoint('id-1')
+        Did.getEndpoint(updatedFullDid, '#id-1')
       ).toStrictEqual<DidServiceEndpoint>({
-        id: 'id-1',
-        types: ['type-1'],
-        uris: ['x:url-1'],
+        id: '#id-1',
+        type: ['type-1'],
+        serviceEndpoint: ['x:url-1'],
       })
     }, 60_000)
 
     it('batchAll fails if any extrinsics fails', async () => {
-      const { authenticationKey, sign } = makeSigningKeyTool()
-      const createTx = await DidChain.generateCreateTxFromCreationDetails(
+      const { authentication, sign } = makeSigningKeyTool()
+      const createTx = await Did.Chain.getStoreTx(
         {
-          identifier: DidUtils.getIdentifierByKey(authenticationKey),
-          authenticationKey,
-          serviceEndpoints: [
+          authentication,
+          service: [
             {
-              id: 'id-1',
-              types: ['type-1'],
-              uris: ['x:url-1'],
+              id: '#id-1',
+              type: ['type-1'],
+              serviceEndpoint: ['x:url-1'],
             },
           ],
         },
@@ -932,26 +967,26 @@ describe('DID management batching', () => {
         sign
       )
       await submitExtrinsic(createTx, paymentAccount)
-      const fullDid = await FullDidDetails.fromChainInfo(
-        DidUtils.getFullDidUriByKey(authenticationKey)
+      const fullDid = await Did.query(
+        Did.Utils.getFullDidUriFromKey(authentication[0])
       )
       if (!fullDid) throw new Error('Cannot query created DID')
 
-      expect(fullDid.attestationKey).toBeUndefined()
+      expect(fullDid.assertionMethod).toBeUndefined()
 
       // Use batchAll to set a new attestation key and a duplicate service endpoint
-      const updateTx = await didAuthorizeExtrinsics({
+      const updateTx = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batchAll,
         did: fullDid,
         extrinsics: [
-          await DidChain.getSetKeyExtrinsic(
+          await Did.Chain.getSetKeyExtrinsic(
             'assertionMethod',
-            authenticationKey
+            authentication[0]
           ),
-          await DidChain.getAddEndpointExtrinsic({
-            id: 'id-1',
-            types: ['type-2'],
-            uris: ['x:url-2'],
+          await Did.Chain.getAddEndpointExtrinsic({
+            id: '#id-1',
+            type: ['type-2'],
+            serviceEndpoint: ['x:url-2'],
           }),
         ],
         sign,
@@ -966,24 +1001,24 @@ describe('DID management batching', () => {
         name: 'ServiceAlreadyPresent',
       })
 
-      const updatedFullDid = await FullDidDetails.fromChainInfo(fullDid.uri)
+      const updatedFullDid = await Did.query(fullDid.uri)
       if (!updatedFullDid) throw new Error('Cannot query created DID')
       // .setAttestationKey() extrinsic went through but it was then reverted
-      expect(updatedFullDid.attestationKey).toBeUndefined()
+      expect(updatedFullDid.assertionMethod).toBeUndefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.
       expect(
-        updatedFullDid.getEndpoint('id-1')
+        Did.getEndpoint(updatedFullDid, '#id-1')
       ).toStrictEqual<DidServiceEndpoint>({
-        id: 'id-1',
-        types: ['type-1'],
-        uris: ['x:url-1'],
+        id: '#id-1',
+        type: ['type-1'],
+        serviceEndpoint: ['x:url-1'],
       })
     }, 60_000)
   })
 })
 
 describe('DID extrinsics batching', () => {
-  let fullDid: FullDidDetails
+  let fullDid: DidDetails
   let key: KeyTool
 
   beforeAll(async () => {
@@ -998,22 +1033,22 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await CType.getStoreTx(ctype)
+    const ctypeStoreTx = await CType.getStoreTx(ctype)
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
-    const delegationCreationTx = await rootNode.getStoreTx()
+    const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
-    const tx = await didAuthorizeExtrinsics({
+    const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
       did: fullDid,
       extrinsics: [
-        ctypeCreationTx,
+        ctypeStoreTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
-        delegationCreationTx,
+        delegationStoreTx,
       ],
       sign: key.sign,
       submitter: paymentAccount.address,
@@ -1033,22 +1068,22 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeCreationTx = await CType.getStoreTx(ctype)
+    const ctypeStoreTx = await CType.getStoreTx(ctype)
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
       cTypeHash: ctype.hash,
     })
-    const delegationCreationTx = await rootNode.getStoreTx()
+    const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
-    const tx = await didAuthorizeExtrinsics({
+    const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batchAll,
       did: fullDid,
       extrinsics: [
-        ctypeCreationTx,
+        ctypeStoreTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
-        delegationCreationTx,
+        delegationStoreTx,
       ],
       sign: key.sign,
       submitter: paymentAccount.address,
@@ -1066,16 +1101,17 @@ describe('DID extrinsics batching', () => {
 
   it('can batch extrinsics for the same required key type', async () => {
     const web3NameClaimTx = await Web3Names.getClaimTx('test-1')
-    const authorisedTx = await fullDid.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeExtrinsic(
+      fullDid,
       web3NameClaimTx,
       key.sign,
       paymentAccount.address
     )
-    await submitExtrinsic(authorisedTx, paymentAccount)
+    await submitExtrinsic(authorizedTx, paymentAccount)
 
     const web3Name1ReleaseExt = await Web3Names.getReleaseByOwnerTx()
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
-    const tx = await didAuthorizeExtrinsics({
+    const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
       did: fullDid,
       extrinsics: [web3Name1ReleaseExt, web3Name2ClaimExt],
@@ -1085,11 +1121,11 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(tx, paymentAccount)
 
     // Test for correct creation and deletion
-    expect(await Web3Names.queryDidIdentifierForWeb3Name('test-1')).toBeNull()
+    expect(await Web3Names.queryDidAddressForWeb3Name('test-1')).toBeNull()
     // Test for correct creation of second web3 name
-    expect(
-      await Web3Names.queryDidIdentifierForWeb3Name('test-2')
-    ).toStrictEqual(fullDid.identifier)
+    expect(await Web3Names.queryDidAddressForWeb3Name('test-2')).toStrictEqual(
+      fullDid.identifier
+    )
   }, 30_000)
 
   it('can batch extrinsics for different required key types', async () => {
@@ -1124,7 +1160,7 @@ describe('DID extrinsics batching', () => {
     // Delegation key
     const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)
 
-    const batchedExtrinsics = await didAuthorizeExtrinsics({
+    const batchedExtrinsics = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batchAll,
       did: fullDid,
       extrinsics: [
@@ -1143,9 +1179,9 @@ describe('DID extrinsics batching', () => {
 
     // Test correct use of authentication keys
     expect(await Web3Names.queryDidForWeb3Name('test')).toBeNull()
-    expect(
-      await Web3Names.queryDidIdentifierForWeb3Name('test-2')
-    ).toStrictEqual(fullDid.identifier)
+    expect(await Web3Names.queryDidAddressForWeb3Name('test-2')).toStrictEqual(
+      fullDid.identifier
+    )
 
     // Test correct use of attestation keys
     expect(await CType.verifyStored(ctype1)).toBe(true)
@@ -1176,11 +1212,10 @@ describe('Runtime constraints', () => {
           type: 'x25519',
         })
       )
-      await DidChain.generateCreateTxFromCreationDetails(
+      await Did.Chain.getStoreTx(
         {
-          authenticationKey: testAuthKey,
-          identifier: encodeAddress(testAuthKey.publicKey),
-          keyAgreementKeys: newKeyAgreementKeys,
+          authentication: [testAuthKey],
+          keyAgreement: newKeyAgreementKeys,
         },
         paymentAccount.address,
         sign
@@ -1191,11 +1226,10 @@ describe('Runtime constraints', () => {
         type: 'x25519',
       })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
+        Did.Chain.getStoreTx(
           {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            keyAgreementKeys: newKeyAgreementKeys,
+            authentication: [testAuthKey],
+            keyAgreement: newKeyAgreementKeys,
           },
 
           paymentAccount.address,
@@ -1210,32 +1244,30 @@ describe('Runtime constraints', () => {
       // Maximum is 25
       const newServiceEndpoints = Array(25).map(
         (_, index): DidServiceEndpoint => ({
-          id: `service-${index}`,
-          types: [`type-${index}`],
-          uris: [`x:url-${index}`],
+          id: `#service-${index}`,
+          type: [`type-${index}`],
+          serviceEndpoint: [`x:url-${index}`],
         })
       )
-      await DidChain.generateCreateTxFromCreationDetails(
+      await Did.Chain.getStoreTx(
         {
-          authenticationKey: testAuthKey,
-          identifier: encodeAddress(testAuthKey.publicKey),
-          serviceEndpoints: newServiceEndpoints,
+          authentication: [testAuthKey],
+          service: newServiceEndpoints,
         },
         paymentAccount.address,
         sign
       )
       // One more than the maximum
       newServiceEndpoints.push({
-        id: 'service-100',
-        types: ['type-100'],
-        uris: ['x:url-100'],
+        id: '#service-100',
+        type: ['type-100'],
+        serviceEndpoint: ['x:url-100'],
       })
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
+        Did.Chain.getStoreTx(
           {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: newServiceEndpoints,
+            authentication: [testAuthKey],
+            service: newServiceEndpoints,
           },
 
           paymentAccount.address,
@@ -1247,16 +1279,15 @@ describe('Runtime constraints', () => {
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that is too long', async () => {
-      await DidChain.generateCreateTxFromCreationDetails(
+      await Did.Chain.getStoreTx(
         {
-          authenticationKey: testAuthKey,
-          identifier: encodeAddress(testAuthKey.publicKey),
-          serviceEndpoints: [
+          authentication: [testAuthKey],
+          service: [
             {
               // Maximum is 50
-              id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-              types: ['type-a'],
-              uris: ['x:url-a'],
+              id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              type: ['type-a'],
+              serviceEndpoint: ['x:url-a'],
             },
           ],
         },
@@ -1264,16 +1295,15 @@ describe('Runtime constraints', () => {
         sign
       )
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
+        Did.Chain.getStoreTx(
           {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
+            authentication: [testAuthKey],
+            service: [
               {
                 // One more than the maximum
-                id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                types: ['type-a'],
-                uris: ['x:url-a'],
+                id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                type: ['type-a'],
+                serviceEndpoint: ['x:url-a'],
               },
             ],
           },
@@ -1282,89 +1312,83 @@ describe('Runtime constraints', () => {
           sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
+        `"The service ID \\"#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
       )
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that has too many types', async () => {
       const newEndpoint: DidServiceEndpoint = {
-        id: 'id-1',
+        id: '#id-1',
         // Maximum is 1
-        types: Array(1).map((_, index): string => `type-${index}`),
-        uris: ['x:url-1'],
+        type: Array(1).map((_, index): string => `type-${index}`),
+        serviceEndpoint: ['x:url-1'],
       }
-      await DidChain.generateCreateTxFromCreationDetails(
+      await Did.Chain.getStoreTx(
         {
-          authenticationKey: testAuthKey,
-          identifier: encodeAddress(testAuthKey.publicKey),
-          serviceEndpoints: [newEndpoint],
+          authentication: [testAuthKey],
+          service: [newEndpoint],
         },
         paymentAccount.address,
         sign
       )
       // One more than the maximum
-      newEndpoint.types.push('new-type')
+      newEndpoint.type.push('new-type')
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
+        Did.Chain.getStoreTx(
           {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [newEndpoint],
+            authentication: [testAuthKey],
+            service: [newEndpoint],
           },
-
           paymentAccount.address,
           sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has too many types (2). Max number of types allowed per service is 1."`
+        `"The service with ID \\"#id-1\\" has too many types (2). Max number of types allowed per service is 1."`
       )
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that has too many URIs', async () => {
       const newEndpoint: DidServiceEndpoint = {
-        id: 'id-1',
+        id: '#id-1',
         // Maximum is 1
-        types: ['type-1'],
-        uris: Array(1).map((_, index): string => `x:url-${index}`),
+        type: ['type-1'],
+        serviceEndpoint: Array(1).map((_, index): string => `x:url-${index}`),
       }
-      await DidChain.generateCreateTxFromCreationDetails(
+      await Did.Chain.getStoreTx(
         {
-          authenticationKey: testAuthKey,
-          identifier: encodeAddress(testAuthKey.publicKey),
-          serviceEndpoints: [newEndpoint],
+          authentication: [testAuthKey],
+          service: [newEndpoint],
         },
         paymentAccount.address,
         sign
       )
       // One more than the maximum
-      newEndpoint.uris.push('x:new-url')
+      newEndpoint.serviceEndpoint.push('x:new-url')
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
+        Did.Chain.getStoreTx(
           {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [newEndpoint],
+            authentication: [testAuthKey],
+            service: [newEndpoint],
           },
 
           paymentAccount.address,
           sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
+        `"The service with ID \\"#id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
       )
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that has a type that is too long', async () => {
-      await DidChain.generateCreateTxFromCreationDetails(
+      await Did.Chain.getStoreTx(
         {
-          authenticationKey: testAuthKey,
-          identifier: encodeAddress(testAuthKey.publicKey),
-          serviceEndpoints: [
+          authentication: [testAuthKey],
+          service: [
             {
-              id: 'id-1',
+              id: '#id-1',
               // Maximum is 50
-              types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-              uris: ['x:url-1'],
+              type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+              serviceEndpoint: ['x:url-1'],
             },
           ],
         },
@@ -1372,16 +1396,15 @@ describe('Runtime constraints', () => {
         sign
       )
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
+        Did.Chain.getStoreTx(
           {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
+            authentication: [testAuthKey],
+            service: [
               {
-                id: 'id-1',
+                id: '#id-1',
                 // One more than the maximum
-                types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-                uris: ['x:url-1'],
+                type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+                serviceEndpoint: ['x:url-1'],
               },
             ],
           },
@@ -1390,21 +1413,20 @@ describe('Runtime constraints', () => {
           sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
+        `"The service with ID \\"#id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
       )
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that has a URI that is too long', async () => {
-      await DidChain.generateCreateTxFromCreationDetails(
+      await Did.Chain.getStoreTx(
         {
-          authenticationKey: testAuthKey,
-          identifier: encodeAddress(testAuthKey.publicKey),
-          serviceEndpoints: [
+          authentication: [testAuthKey],
+          service: [
             {
-              id: 'id-1',
-              types: ['type-1'],
+              id: '#id-1',
+              type: ['type-1'],
               // Maximum is 200
-              uris: [
+              serviceEndpoint: [
                 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
               ],
             },
@@ -1414,16 +1436,15 @@ describe('Runtime constraints', () => {
         sign
       )
       await expect(
-        DidChain.generateCreateTxFromCreationDetails(
+        Did.Chain.getStoreTx(
           {
-            authenticationKey: testAuthKey,
-            identifier: encodeAddress(testAuthKey.publicKey),
-            serviceEndpoints: [
+            authentication: [testAuthKey],
+            service: [
               {
-                id: 'id-1',
-                types: ['type-1'],
+                id: '#id-1',
+                type: ['type-1'],
                 // One more than the maximum
-                uris: [
+                serviceEndpoint: [
                   'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                 ],
               },
@@ -1434,104 +1455,104 @@ describe('Runtime constraints', () => {
           sign
         )
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (202 bytes). Max number of bytes allowed for a service URI is 200."`
+        `"The service with ID \\"#id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (202 bytes). Max number of bytes allowed for a service URI is 200."`
       )
     }, 30_000)
   })
 
   describe('Service endpoint addition', () => {
     it('should not be possible to add a service endpoint that is too long', async () => {
-      await DidChain.getAddEndpointExtrinsic({
+      await Did.Chain.getAddEndpointExtrinsic({
         // Maximum is 50
-        id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        types: ['type-a'],
-        uris: ['x:url-a'],
+        id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        type: ['type-a'],
+        serviceEndpoint: ['x:url-a'],
       })
       await expect(
-        DidChain.getAddEndpointExtrinsic({
+        Did.Chain.getAddEndpointExtrinsic({
           // One more than maximum
-          id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          types: ['type-a'],
-          uris: ['x:url-a'],
+          id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          type: ['type-a'],
+          serviceEndpoint: ['x:url-a'],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service ID \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
+        `"The service ID \\"#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
       )
     }, 30_000)
 
     it('should not be possible to add a service endpoint that has too many types', async () => {
       const newEndpoint: DidServiceEndpoint = {
-        id: 'id-1',
+        id: '#id-1',
         // Maximum is 1
-        types: Array(1).map((_, index): string => `type-${index}`),
-        uris: ['x:url-1'],
+        type: Array(1).map((_, index): string => `type-${index}`),
+        serviceEndpoint: ['x:url-1'],
       }
-      await DidChain.getAddEndpointExtrinsic(newEndpoint)
+      await Did.Chain.getAddEndpointExtrinsic(newEndpoint)
       // One more than the maximum
-      newEndpoint.types.push('new-type')
+      newEndpoint.type.push('new-type')
       await expect(
-        DidChain.getAddEndpointExtrinsic(newEndpoint)
+        Did.Chain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has too many types (2). Max number of types allowed per service is 1."`
+        `"The service with ID \\"#id-1\\" has too many types (2). Max number of types allowed per service is 1."`
       )
     }, 30_000)
 
     it('should not be possible to add a service endpoint that has too many URIs', async () => {
       const newEndpoint: DidServiceEndpoint = {
-        id: 'id-1',
+        id: '#id-1',
         // Maximum is 1
-        types: ['type-1'],
-        uris: Array(1).map((_, index): string => `x:url-${index}`),
+        type: ['type-1'],
+        serviceEndpoint: Array(1).map((_, index): string => `x:url-${index}`),
       }
-      await DidChain.getAddEndpointExtrinsic(newEndpoint)
+      await Did.Chain.getAddEndpointExtrinsic(newEndpoint)
       // One more than the maximum
-      newEndpoint.uris.push('x:new-url')
+      newEndpoint.serviceEndpoint.push('x:new-url')
       await expect(
-        DidChain.getAddEndpointExtrinsic(newEndpoint)
+        Did.Chain.getAddEndpointExtrinsic(newEndpoint)
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
+        `"The service with ID \\"#id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
       )
     }, 30_000)
 
     it('should not be possible to add a service endpoint that has a type that is too long', async () => {
-      await DidChain.getAddEndpointExtrinsic({
-        id: 'id-1',
+      await Did.Chain.getAddEndpointExtrinsic({
+        id: '#id-1',
         // Maximum is 50
-        types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-        uris: ['x:url-1'],
+        type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+        serviceEndpoint: ['x:url-1'],
       })
       await expect(
-        DidChain.getAddEndpointExtrinsic({
-          id: 'id-1',
+        Did.Chain.getAddEndpointExtrinsic({
+          id: '#id-1',
           // One more than the maximum
-          types: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-          uris: ['x:url-1'],
+          type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+          serviceEndpoint: ['x:url-1'],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
+        `"The service with ID \\"#id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
       )
     }, 30_000)
 
     it('should not be possible to add a service endpoint that has a URI that is too long', async () => {
-      await DidChain.getAddEndpointExtrinsic({
-        id: 'id-1',
-        types: ['type-1'],
+      await Did.Chain.getAddEndpointExtrinsic({
+        id: '#id-1',
+        type: ['type-1'],
         // Maximum is 200
-        uris: [
+        serviceEndpoint: [
           'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         ],
       })
       await expect(
-        DidChain.getAddEndpointExtrinsic({
-          id: 'id-1',
-          types: ['type-1'],
+        Did.Chain.getAddEndpointExtrinsic({
+          id: '#id-1',
+          type: ['type-1'],
           // One more than the maximum
-          uris: [
+          serviceEndpoint: [
             'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           ],
         })
       ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (201 bytes). Max number of bytes allowed for a service URI is 200."`
+        `"The service with ID \\"#id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (201 bytes). Max number of bytes allowed for a service URI is 200."`
       )
     }, 30_000)
   })

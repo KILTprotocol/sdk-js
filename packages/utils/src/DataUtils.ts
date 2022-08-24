@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IIdentity } from '@kiltprotocol/types'
+import type { KiltAddress } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import * as SDKErrors from './SDKErrors.js'
 import { verify } from './Crypto.js'
@@ -18,10 +18,7 @@ import { ss58Format } from './ss58Format.js'
  * @param name Contextual name of the address, e.g. "claim owner".
  * @returns Boolean whether the given address string checks out against the Format.
  */
-export function validateAddress(
-  address: IIdentity['address'],
-  name: string
-): boolean {
+export function validateAddress(address: KiltAddress, name: string): boolean {
   if (typeof address !== 'string') {
     throw new SDKErrors.AddressTypeError()
   }
@@ -60,7 +57,7 @@ export function validateHash(hash: string, name: string): boolean {
 export function validateSignature(
   data: string,
   signature: string,
-  signer: IIdentity['address']
+  signer: KiltAddress
 ): boolean {
   if (
     typeof data !== 'string' ||

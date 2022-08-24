@@ -9,14 +9,19 @@
  * @group integration/accountLinking
  */
 
-import { AccountLinks, FullDidDetails, Web3Names } from '@kiltprotocol/did'
+import { AccountLinks, Web3Names } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import { ss58Format } from '@kiltprotocol/utils'
-import type { KeyringPair } from '@kiltprotocol/types'
+import type {
+  DidDetails,
+  KeyringPair,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
 import { BN, u8aToHex } from '@polkadot/util'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
@@ -31,7 +36,7 @@ import {
 } from './utils'
 import { disconnect } from '../kilt'
 
-let paymentAccount: KeyringPair
+let paymentAccount: KiltKeyringPair
 let linkDeposit: BN
 let keyring: Keyring
 let signingCallback: AccountLinks.LinkingSignerCallback
@@ -45,9 +50,9 @@ beforeAll(async () => {
 }, 40_000)
 
 describe('When there is an on-chain DID', () => {
-  let did: FullDidDetails
+  let did: DidDetails
   let didKey: KeyTool
-  let newDid: FullDidDetails
+  let newDid: DidDetails
   let newDidKey: KeyTool
 
   describe('and a tx sender willing to link its account', () => {
@@ -73,7 +78,8 @@ describe('When there is an on-chain DID', () => {
       ).toBe(false)
 
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
-      const signedTx = await did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeExtrinsic(
+        did,
         associateSenderTx,
         didKey.sign,
         paymentAccount.address
@@ -109,7 +115,8 @@ describe('When there is an on-chain DID', () => {
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
-      const signedTx = await newDid.authorizeExtrinsic(
+      const signedTx = await Did.authorizeExtrinsic(
+        newDid,
         associateSenderTx,
         newDidKey.sign,
         paymentAccount.address
@@ -195,14 +202,15 @@ describe('When there is an on-chain DID', () => {
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
-        const linkAuthorisation =
+        const linkAuthorization =
           await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
             keypair.address,
             did.identifier,
             signingCallback
           )
-        const signedTx = await did.authorizeExtrinsic(
-          linkAuthorisation,
+        const signedTx = await Did.authorizeExtrinsic(
+          did,
+          linkAuthorization,
           didKey.sign,
           paymentAccount.address
         )
@@ -241,14 +249,15 @@ describe('When there is an on-chain DID', () => {
         ).toBe(true)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
-        const linkAuthorisation =
+        const linkAuthorization =
           await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
             keypair.address,
             newDid.identifier,
             signingCallback
           )
-        const signedTx = await newDid.authorizeExtrinsic(
-          linkAuthorisation,
+        const signedTx = await Did.authorizeExtrinsic(
+          newDid,
+          linkAuthorization,
           newDidKey.sign,
           paymentAccount.address
         )
@@ -302,7 +311,8 @@ describe('When there is an on-chain DID', () => {
         const removeLinkTx = await AccountLinks.getLinkRemovalByDidExtrinsic(
           keypair.address
         )
-        const signedTx = await newDid.authorizeExtrinsic(
+        const signedTx = await Did.authorizeExtrinsic(
+          newDid,
           removeLinkTx,
           newDidKey.sign,
           paymentAccount.address
@@ -360,14 +370,15 @@ describe('When there is an on-chain DID', () => {
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
-      const linkAuthorisation =
+      const linkAuthorization =
         await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
           genericAccount.address,
           did.identifier,
           signingCallback
         )
-      const signedTx = await did.authorizeExtrinsic(
-        linkAuthorisation,
+      const signedTx = await Did.authorizeExtrinsic(
+        did,
+        linkAuthorization,
         didKey.sign,
         paymentAccount.address
       )
@@ -409,7 +420,8 @@ describe('When there is an on-chain DID', () => {
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
       const web3NameClaimTx = await Web3Names.getClaimTx('test-name')
-      const signedTx = await did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeExtrinsic(
+        did,
         web3NameClaimTx,
         didKey.sign,
         paymentAccount.address
@@ -418,7 +430,7 @@ describe('When there is an on-chain DID', () => {
 
       // Check that the Web3 name has been linked to the DID
       expect(
-        await Web3Names.queryDidIdentifierForWeb3Name('test-name')
+        await Web3Names.queryDidAddressForWeb3Name('test-name')
       ).toStrictEqual(did.identifier)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
       expect(

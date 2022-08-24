@@ -6,11 +6,12 @@
  */
 
 import {
-  IDidDetails,
   DidServiceEndpoint,
   VerificationKeyType,
   EncryptionKeyType,
   DidUri,
+  DidVerificationKey,
+  DidEncryptionKey,
 } from './DidDetails.js'
 
 export type DidDocumentPublicKeyType =
@@ -38,9 +39,14 @@ export const EncryptionKeyTypesMap: Record<
 }
 
 /**
+ * The fragment part of the DID URI including the `#` character.
+ */
+export type UriFragment = `#${string}`
+
+/**
  * URI for DID resources like public keys or service endpoints.
  */
-export type DidResourceUri = `${DidUri}#${string}`
+export type DidResourceUri = `${DidUri}${UriFragment}`
 
 /**
  * A spec-compliant description of a DID key.
@@ -49,7 +55,7 @@ export type DidPublicKey = {
   /**
    * The full key URI, in the form of <did_subject>#<key_identifier>.
    */
-  uri: DidResourceUri
+  id: DidResourceUri
   /**
    * The key controller, in the form of <did_subject>.
    */
@@ -67,19 +73,11 @@ export type DidPublicKey = {
 /**
  * A spec-compliant description of a DID endpoint.
  */
-export type DidPublicServiceEndpoint = {
+export type DidPublicServiceEndpoint = Omit<DidServiceEndpoint, 'id'> & {
   /**
    * The full service URI, in the form of <did_subject>#<service_identifier>.
    */
-  uri: DidResourceUri
-  /**
-   * The set of types for this endpoint.
-   */
-  type: DidServiceEndpoint['types']
-  /**
-   * The set of services exposed by this endpoint.
-   */
-  serviceEndpoint: DidServiceEndpoint['uris']
+  id: DidResourceUri
 }
 
 /**
@@ -88,10 +86,10 @@ export type DidPublicServiceEndpoint = {
 export type DidDocument = {
   id: DidUri
   verificationMethod: DidPublicKey[]
-  authentication: DidResourceUri
-  assertionMethod?: DidResourceUri
-  keyAgreement?: DidResourceUri
-  capabilityDelegation?: DidResourceUri
+  authentication: [DidVerificationKey['id']]
+  assertionMethod?: [DidVerificationKey['id']]
+  keyAgreement?: [DidEncryptionKey['id']]
+  capabilityDelegation?: [DidVerificationKey['id']]
   service?: DidPublicServiceEndpoint[]
 }
 
@@ -99,12 +97,3 @@ export type DidDocument = {
  * A JSON+LD DID Document that extends a traditional DID Document with additional semantic information.
  */
 export type JsonLDDidDocument = DidDocument & { '@context': string[] }
-
-/**
- * An interface for any DID Document exporter to implement.
- *
- * It is purposefully general with regard to the mime types supported, so that multiple exporters might support different encoding types.
- */
-export interface IDidDocumentExporter {
-  exportToDidDocument: (details: IDidDetails, mimeType: string) => DidDocument
-}

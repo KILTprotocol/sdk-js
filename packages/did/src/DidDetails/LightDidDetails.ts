@@ -5,262 +5,150 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
+import { decodeAddress } from '@polkadot/util-crypto'
 
 import type {
+  DidDetails,
   DidIdentifier,
   DidUri,
-  IIdentity,
-  LightDidSupportedVerificationKeyType,
-  SignCallback,
+  NewLightDidVerificationKey,
 } from '@kiltprotocol/types'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import type {
-  DidConstructorDetails,
-  MapKeysToRelationship,
-  NewLightDidAuthenticationKey,
-  PublicKeys,
-} from '../types.js'
-import {
-  getIdentifierByKey,
-  getKiltDidFromIdentifier,
-  LIGHT_DID_LATEST_VERSION,
-  parseDidUri,
-} from '../Did.utils.js'
+import { getAddressByKey, KILT_DID_PREFIX, parseDidUri } from '../Did.utils.js'
 
-import { DidDetails } from './DidDetails.js'
 import {
-  checkLightDidCreationDetails,
+  validateCreateDetailsInput,
   decodeAndDeserializeAdditionalLightDidDetails,
-  DidMigrationCallback,
-  getEncodingForVerificationKeyType,
-  getVerificationKeyTypeForEncoding,
-  LightDidCreationDetails,
+  CreateDetailsInput,
   serializeAndEncodeAdditionalLightDidDetails,
+  verificationKeyTypeToLightDidEncoding,
+  lightDidEncodingToVerificationKeyType,
 } from './LightDidDetails.utils.js'
-import { FullDidDetails } from './FullDidDetails.js'
-import { generateCreateTxFromCreationDetails } from '../Did.chain.js'
 
-const authenticationKeyId = 'authentication'
-const encryptionKeyId = 'encryption'
+const authenticationKeyId = '#authentication'
+const encryptionKeyId = '#encryption'
 
-export class LightDidDetails extends DidDetails {
-  public readonly identifier: DidIdentifier
+/**
+ * Create [[DidDetails]] of a light DID using the provided keys and endpoints.
+ * Sets proper key IDs, builds light DID URI and identifier.
+ * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
+ *
+ * @param input The input.
+ * @param input.authentication The array containing light DID authentication key.
+ * @param input.keyAgreement The optional array containing light DID encryption key.
+ * @param input.service The optional light DID service endpoints.
+ *
+ * @returns The resulting [[DidDetails]].
+ */
+export function createLightDidDetails({
+  authentication,
+  keyAgreement = undefined,
+  service,
+}: CreateDetailsInput): DidDetails {
+  validateCreateDetailsInput({
+    authentication,
+    keyAgreement,
+    service,
+  })
+  const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
+    keyAgreement,
+    service,
+  })
+  // Validity is checked in checkLightDidCreationDetails
+  const authenticationKeyTypeEncoding =
+    verificationKeyTypeToLightDidEncoding[authentication[0].type]
+  const address = getAddressByKey(authentication[0])
+  // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
+  const identifier =
+    `${authenticationKeyTypeEncoding}${address}` as DidIdentifier
 
-  private constructor(
-    identifier: DidIdentifier,
-    {
-      uri,
-      keys,
-      keyRelationships,
-      serviceEndpoints = {},
-    }: DidConstructorDetails
-  ) {
-    super({ uri, keys, keyRelationships, serviceEndpoints })
+  const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
+  const uri =
+    `${KILT_DID_PREFIX}light:${identifier}${encodedDetailsString}` as DidUri
 
-    this.identifier = identifier
-  }
-
-  /**
-   * Authentication key type of this LightDid.
-   *
-   * @returns Authentication key type.
-   */
-  public get authKeyEncoding(): string {
-    return getEncodingForVerificationKeyType(
-      this.authenticationKey.type
-    ) as string
-  }
-
-  /**
-   * Create a new instance of [[LightDidDetails]] from the provided details.
-   * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
-   *
-   * @param details The DID creation details.
-   * @param details.authenticationKey The light DID authentication key.
-   * @param details.encryptionKey The optional light DID encryption key.
-   * @param details.serviceEndpoints The optional light DID service endpoints.
-   *
-   * @returns The resulting [[LightDidDetails]].
-   */
-  public static fromDetails({
-    authenticationKey,
-    encryptionKey = undefined,
-    serviceEndpoints = [],
-  }: LightDidCreationDetails): LightDidDetails {
-    checkLightDidCreationDetails({
-      authenticationKey,
-      encryptionKey,
-      serviceEndpoints,
-    })
-    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
-      encryptionKey,
-      serviceEndpoints,
-    })
-    // Validity is checked in checkLightDidCreationDetails
-    const authenticationKeyTypeEncoding = getEncodingForVerificationKeyType(
-      authenticationKey.type
-    ) as string
-
-    // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
-    const id = authenticationKeyTypeEncoding.concat(
-      encodeAddress(authenticationKey.publicKey, ss58Format)
-    )
-
-    let uri = getKiltDidFromIdentifier(id, 'light', LIGHT_DID_LATEST_VERSION)
-    if (encodedDetails) {
-      uri = uri.concat(':', encodedDetails) as DidUri
-    }
-
-    // Authentication key always has the #authentication ID.
-    const keys: PublicKeys = {
-      [authenticationKeyId]: { ...authenticationKey },
-    }
-    const keyRelationships: MapKeysToRelationship = {
-      authentication: new Set([authenticationKeyId]),
-    }
-
-    // Encryption key always has the #encryption ID.
-    if (encryptionKey) {
-      keys[encryptionKeyId] = encryptionKey
-      keyRelationships.keyAgreement = new Set([encryptionKeyId])
-    }
-
-    const endpoints = serviceEndpoints.reduce((res, service) => {
-      res[service.id] = service
-      return res
-    }, {})
-
-    return new LightDidDetails(id.substring(2), {
-      uri,
-      keys,
-      keyRelationships,
-      serviceEndpoints: endpoints,
-    })
-  }
-
-  /**
-   * Create a new instance of [[LightDidDetails]] by parsing the provided input URI.
-   * This is possible because of the self-describing and self-containing nature of light DIDs.
-   * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
-   *
-   * @param uri The DID URI to parse.
-   * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
-   *
-   * @returns The resulting [[LightDidDetails]].
-   */
-  public static fromUri(
-    uri: DidUri,
-    failIfFragmentPresent = true
-  ): LightDidDetails {
-    const { identifier, version, encodedDetails, fragment, type } =
-      parseDidUri(uri)
-
-    if (type !== 'light') {
-      throw new SDKErrors.DidError(
-        `Cannot build a light DID from the provided URI "${uri}" because it does not refer to a light DID`
-      )
-    }
-    if (fragment && failIfFragmentPresent) {
-      throw new SDKErrors.DidError(
-        `Cannot build a light DID from the provided URI "${uri}" because it has a fragment`
-      )
-    }
-    const authKeyTypeEncoding = identifier.substring(0, 2)
-    const decodedAuthKeyType =
-      getVerificationKeyTypeForEncoding(authKeyTypeEncoding)
-    if (!decodedAuthKeyType) {
-      throw new SDKErrors.DidError(
-        `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type`
-      )
-    }
-    const authenticationKey: NewLightDidAuthenticationKey = {
-      publicKey: decodeAddress(identifier.substring(2), false, ss58Format),
-      type: decodedAuthKeyType,
-    }
-    if (!encodedDetails) {
-      return LightDidDetails.fromDetails({ authenticationKey })
-    }
-    const { encryptionKey, serviceEndpoints } =
-      decodeAndDeserializeAdditionalLightDidDetails(encodedDetails, version)
-    return LightDidDetails.fromDetails({
-      authenticationKey,
-      encryptionKey,
-      serviceEndpoints,
-    })
-  }
-
-  /**
-   * Create a new instance of [[LightDidDetails]] from the provided KILT address.
-   * The resulting DID will only have an authentication key, and no encryption key nor service endpoints.
-   *
-   * @param identifier The KILT address to generate the DID from.
-   * @param keyType One of the [[LightDidSupportedVerificationKeyType]]s to set the type of the authentication key derived from the provided address. It defaults to Sr25519.
-   *
-   * @returns The resulting [[LightDidDetails]].
-   */
-  public static fromIdentifier(
-    identifier: DidIdentifier,
-    keyType: LightDidSupportedVerificationKeyType = 'sr25519'
-  ): LightDidDetails {
-    const authenticationKey: NewLightDidAuthenticationKey = {
-      publicKey: decodeAddress(identifier, false, ss58Format),
-      type: keyType,
-    }
-    return LightDidDetails.fromDetails({
-      authenticationKey,
-    })
-  }
-
-  /**
-   * Migrate a light DID to a full DID, while maintaining the same keys and service endpoints.
-   *
-   * @param submitterAddress The KILT address to bind the DID creation operation to. It is the same address that will have to submit the operation and pay for the deposit.
-   * @param sign The callback to sign the operation.
-   * @param migrationCallback A user-provided callback to handle the packed and ready-to-be-signed extrinsic representing the DID creation operation.
-   * @param upgradeOptions Optional.
-   * @param upgradeOptions.withEncryptionKey When set to true (default) the LightDID's encryption key is added to the on-chain DID.
-   * @param upgradeOptions.withServiceEndpoints When set to true the LightDID's ServiceEndpoints are added to the on-chain DID. This is strictly opt-in as there are more restrictive size limits for on-chain service records.
-   * @returns The migrated [[FullDidDetails]] if the user-provided callback successfully writes the full DID on the chain. It throws an error otherwise.
-   */
-  public async migrate(
-    submitterAddress: IIdentity['address'],
-    sign: SignCallback,
-    migrationCallback: DidMigrationCallback,
-    { withEncryptionKey = true, withServiceEndpoints = false } = {}
-  ): Promise<FullDidDetails> {
-    const creationTx = await generateCreateTxFromCreationDetails(
+  const details: DidDetails = {
+    identifier,
+    uri,
+    authentication: [
       {
-        identifier: getIdentifierByKey(this.authenticationKey),
-        authenticationKey: this.authenticationKey,
-        ...(withEncryptionKey &&
-          this.encryptionKey && {
-            keyAgreementKeys: [this.encryptionKey],
-          }),
-        ...(withServiceEndpoints &&
-          this.serviceEndpoints.size > 0 && {
-            serviceEndpoints: [...this.serviceEndpoints.entries()].map(
-              ([id, service]) => ({
-                id,
-                ...service,
-              })
-            ),
-          }),
+        id: authenticationKeyId, // Authentication key always has the #authentication ID.
+        ...authentication[0],
       },
-      submitterAddress,
-      sign
-    )
-
-    await migrationCallback(creationTx)
-
-    const fullDidDetails = await FullDidDetails.fromChainInfo(
-      getKiltDidFromIdentifier(this.identifier, 'full')
-    )
-    if (!fullDidDetails) {
-      throw new SDKErrors.DidError('Something went wrong during the migration')
-    }
-    return fullDidDetails
+    ],
+    service,
   }
+
+  if (keyAgreement) {
+    details.keyAgreement = [
+      {
+        id: encryptionKeyId, // Encryption key always has the #encryption ID.
+        ...keyAgreement[0],
+      },
+    ]
+  }
+
+  return details
+}
+
+/**
+ * Create [[DidDetails]] of a light DID by parsing the provided input URI.
+ * Only use for DIDs you control, when you are certain they have not been upgraded to on-chain full DIDs.
+ * For the DIDs you have received from external sources use methods of [[DidResolver]].
+ *
+ * Parsing is possible because of the self-describing and self-containing nature of light DIDs.
+ * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
+ *
+ * @param uri The DID URI to parse.
+ * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
+ *
+ * @returns The resulting [[DidDetails]].
+ */
+export function parseDetailsFromLightDid(
+  uri: DidUri,
+  failIfFragmentPresent = true
+): DidDetails {
+  const {
+    address,
+    version,
+    encodedDetails,
+    fragment,
+    type,
+    authKeyTypeEncoding,
+  } = parseDidUri(uri)
+
+  if (type !== 'light') {
+    throw new SDKErrors.DidError(
+      `Cannot build a light DID from the provided URI "${uri}" because it does not refer to a light DID`
+    )
+  }
+  if (fragment && failIfFragmentPresent) {
+    throw new SDKErrors.DidError(
+      `Cannot build a light DID from the provided URI "${uri}" because it has a fragment`
+    )
+  }
+  const keyType =
+    authKeyTypeEncoding &&
+    lightDidEncodingToVerificationKeyType[authKeyTypeEncoding]
+
+  if (!keyType) {
+    throw new SDKErrors.DidError(
+      `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type`
+    )
+  }
+  const publicKey = decodeAddress(address, false, ss58Format)
+  const authentication: [NewLightDidVerificationKey] = [
+    { publicKey, type: keyType },
+  ]
+  if (!encodedDetails) {
+    return createLightDidDetails({ authentication })
+  }
+  const { keyAgreement, service } =
+    decodeAndDeserializeAdditionalLightDidDetails(encodedDetails, version)
+  return createLightDidDetails({
+    authentication,
+    keyAgreement,
+    service,
+  })
 }

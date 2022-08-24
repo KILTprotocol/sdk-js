@@ -8,97 +8,74 @@
 import { base58Encode } from '@polkadot/util-crypto'
 
 import type {
+  DidDetails,
   DidDocument,
-  IDidDetails,
-  IDidDocumentExporter,
+  DidResourceUri,
   JsonLDDidDocument,
 } from '@kiltprotocol/types'
 import {
-  VerificationKeyTypesMap,
   EncryptionKeyTypesMap,
+  VerificationKeyTypesMap,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-function exportToJsonDidDocument(details: IDidDetails): DidDocument {
-  const result: any = {}
+function exportToJsonDidDocument(details: DidDetails): DidDocument {
+  const {
+    uri: controller,
+    authentication,
+    assertionMethod = [],
+    capabilityDelegation = [],
+    keyAgreement = [],
+    service = [],
+  } = details
 
-  result.id = details.uri
-  result.verificationMethod = new Array<string>()
-
-  // Populate the `verificationMethod` array and then sets the `authentication` array with the key IDs (or undefined if no auth key is present - which should never happen)
-  const authenticationKeysIds = details
-    .getVerificationKeys('authentication')
-    .map((authKey) => {
-      result.verificationMethod.push({
-        id: `${details.uri}#${authKey.id}`,
-        controller: details.uri,
-        type: VerificationKeyTypesMap[authKey.type],
-        publicKeyBase58: base58Encode(authKey.publicKey),
-      })
-      return `${details.uri}#${authKey.id}`
-    })
-  if (authenticationKeysIds.length) {
-    result.authentication = authenticationKeysIds
-  }
-
-  const keyAgreementKeysIds = details
-    .getEncryptionKeys('keyAgreement')
-    .map((keyAgrKey) => {
-      result.verificationMethod.push({
-        id: `${details.uri}#${keyAgrKey.id}`,
-        controller: details.uri,
-        type: EncryptionKeyTypesMap[keyAgrKey.type],
-        publicKeyBase58: base58Encode(keyAgrKey.publicKey),
-      })
-      return `${details.uri}#${keyAgrKey.id}`
-    })
-  if (keyAgreementKeysIds.length) {
-    result.keyAgreement = keyAgreementKeysIds
-  }
-
-  const assertionKeysIds = details
-    .getVerificationKeys('assertionMethod')
-    .map((assKey) => {
-      result.verificationMethod.push({
-        id: `${details.uri}#${assKey.id}`,
-        controller: details.uri,
-        type: VerificationKeyTypesMap[assKey.type],
-        publicKeyBase58: base58Encode(assKey.publicKey),
-      })
-      return `${details.uri}#${assKey.id}`
-    })
-  if (assertionKeysIds.length) {
-    result.assertionMethod = assertionKeysIds
-  }
-
-  const delegationKeyIds = details
-    .getVerificationKeys('capabilityDelegation')
-    .map((delKey) => {
-      result.verificationMethod.push({
-        id: `${details.uri}#${delKey.id}`,
-        controller: details.uri,
-        type: VerificationKeyTypesMap[delKey.type],
-        publicKeyBase58: base58Encode(delKey.publicKey),
-      })
-      return `${details.uri}#${delKey.id}`
-    })
-  if (delegationKeyIds.length) {
-    result.capabilityDelegation = delegationKeyIds
-  }
-
-  const serviceEndpoints = details.getEndpoints()
-  if (serviceEndpoints.length) {
-    result.service = serviceEndpoints.map((service) => ({
-      id: `${details.uri}#${service.id}`,
-      type: service.types,
-      serviceEndpoint: service.uris,
+  const verificationMethod: DidDocument['verificationMethod'] = [
+    ...authentication,
+    ...assertionMethod,
+    ...capabilityDelegation,
+  ]
+    .map((key) => ({ ...key, type: VerificationKeyTypesMap[key.type] }))
+    .concat(
+      keyAgreement.map((key) => ({
+        ...key,
+        type: EncryptionKeyTypesMap[key.type],
+      }))
+    )
+    .map(({ id, type, publicKey }) => ({
+      id: `${controller}${id}` as DidResourceUri,
+      controller,
+      type,
+      publicKeyBase58: base58Encode(publicKey),
     }))
-  }
+    .filter(
+      // remove duplicates
+      ({ id }, index, array) =>
+        index === array.findIndex((key) => key.id === id)
+    )
 
-  return result as DidDocument
+  return {
+    id: controller,
+    verificationMethod,
+    authentication: [authentication[0].id],
+    ...(assertionMethod[0] && {
+      assertionMethod: [assertionMethod[0].id],
+    }),
+    ...(capabilityDelegation[0] && {
+      capabilityDelegation: [capabilityDelegation[0].id],
+    }),
+    ...(keyAgreement[0] && {
+      keyAgreement: [keyAgreement[0].id],
+    }),
+    ...(service.length > 0 && {
+      service: service.map((endpoint) => ({
+        ...endpoint,
+        id: `${controller}${endpoint.id}`,
+      })),
+    }),
+  }
 }
 
-function exportToJsonLdDidDocument(details: IDidDetails): JsonLDDidDocument {
+function exportToJsonLdDidDocument(details: DidDetails): JsonLDDidDocument {
   const document = exportToJsonDidDocument(details)
   document['@context'] = ['https://www.w3.org/ns/did/v1']
   return document as JsonLDDidDocument
@@ -112,8 +89,8 @@ function exportToJsonLdDidDocument(details: IDidDetails): JsonLDDidDocument {
  * @returns The DID Document formatted according to the mime type provided, or an error if the format specified is not supported.
  */
 export function exportToDidDocument(
-  details: IDidDetails,
-  mimeType: string
+  details: DidDetails,
+  mimeType: 'application/json' | 'application/ld+json'
 ): DidDocument {
   switch (mimeType) {
     case 'application/json':
@@ -126,5 +103,3 @@ export function exportToDidDocument(
       )
   }
 }
-
-export const DidDocumentExporter: IDidDocumentExporter = { exportToDidDocument }

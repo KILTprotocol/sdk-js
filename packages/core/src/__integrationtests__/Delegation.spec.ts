@@ -10,9 +10,10 @@
  */
 
 import type {
+  DidDetails,
   ICType,
   IDelegationNode,
-  KeyringPair,
+  KiltKeyringPair,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Permission, PermissionType } from '@kiltprotocol/types'
@@ -21,7 +22,7 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { FullDidDetails } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
@@ -42,18 +43,18 @@ import {
   getRevokeTx,
 } from '../delegation/DelegationNode.chain'
 
-let paymentAccount: KeyringPair
-let root: FullDidDetails
+let paymentAccount: KiltKeyringPair
+let root: DidDetails
 let rootKey: KeyTool
 
-let claimer: FullDidDetails
+let claimer: DidDetails
 let claimerKey: KeyTool
 
-let attester: FullDidDetails
+let attester: DidDetails
 let attesterKey: KeyTool
 
 async function writeHierarchy(
-  delegator: FullDidDetails,
+  delegator: DidDetails,
   ctypeHash: ICType['hash'],
   sign: SignCallback
 ): Promise<DelegationNode> {
@@ -64,7 +65,8 @@ async function writeHierarchy(
   })
 
   const storeTx = await rootNode.getStoreTx()
-  const authorizedStoreTx = await delegator.authorizeExtrinsic(
+  const authorizedStoreTx = await Did.authorizeExtrinsic(
+    delegator,
     storeTx,
     sign,
     paymentAccount.address
@@ -77,8 +79,8 @@ async function writeHierarchy(
 async function addDelegation(
   hierarchyId: IDelegationNode['id'],
   parentId: DelegationNode['id'],
-  delegator: FullDidDetails,
-  delegate: FullDidDetails,
+  delegator: DidDetails,
+  delegate: DidDetails,
   delegatorSign: SignCallback,
   delegateSign: SignCallback,
   permissions: PermissionType[] = [Permission.ATTEST, Permission.DELEGATE]
@@ -91,7 +93,8 @@ async function addDelegation(
   })
   const signature = await delegationNode.delegateSign(delegate, delegateSign)
   const storeTx = await delegationNode.getStoreTx(signature)
-  const authorizedStoreTx = await delegator.authorizeExtrinsic(
+  const authorizedStoreTx = await Did.authorizeExtrinsic(
+    delegator,
     storeTx,
     delegatorSign,
     paymentAccount.address
@@ -116,7 +119,8 @@ beforeAll(async () => {
   if (await isCtypeOnChain(driversLicenseCType)) return
 
   const storeTx = await CType.getStoreTx(driversLicenseCType)
-  const authorizedStoreTx = await attester.authorizeExtrinsic(
+  const authorizedStoreTx = await Did.authorizeExtrinsic(
+    attester,
     storeTx,
     attesterKey.sign,
     paymentAccount.address
@@ -187,7 +191,7 @@ describe('and attestation rights have been delegated', () => {
       credential,
       claimerKey.sign,
       claimer,
-      claimer.authenticationKey.id
+      claimer.authentication[0].id
     )
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     expect(await Credential.verifySignature(credential)).toBe(true)
@@ -198,7 +202,8 @@ describe('and attestation rights have been delegated', () => {
       attester.uri
     )
     const storeTx = await Attestation.getStoreTx(attestation)
-    const authorizedStoreTx = await attester.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeExtrinsic(
+      attester,
       storeTx,
       attesterKey.sign,
       paymentAccount.address
@@ -209,7 +214,8 @@ describe('and attestation rights have been delegated', () => {
 
     // revoke attestation through root
     const revokeTx = await Attestation.getRevokeTx(attestation.claimHash, 1)
-    const authorizedStoreTx2 = await root.authorizeExtrinsic(
+    const authorizedStoreTx2 = await Did.authorizeExtrinsic(
+      root,
       revokeTx,
       rootKey.sign,
       paymentAccount.address
@@ -220,11 +226,11 @@ describe('and attestation rights have been delegated', () => {
 })
 
 describe('revocation', () => {
-  let delegator: FullDidDetails
+  let delegator: DidDetails
   let delegatorSign: SignCallback
-  let firstDelegate: FullDidDetails
+  let firstDelegate: DidDetails
   let firstDelegateSign: SignCallback
-  let secondDelegate: FullDidDetails
+  let secondDelegate: DidDetails
   let secondDelegateSign: SignCallback
 
   beforeAll(() => {
@@ -253,7 +259,8 @@ describe('revocation', () => {
 
     // Test revocation
     const revokeTx = await delegationA.getRevokeTx(delegator.uri)
-    const authorizedRevokeTx = await delegator.authorizeExtrinsic(
+    const authorizedRevokeTx = await Did.authorizeExtrinsic(
+      delegator,
       revokeTx,
       delegatorSign,
       paymentAccount.address
@@ -265,7 +272,8 @@ describe('revocation', () => {
     // or the deposit owner as a regular signed call.
     // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
     const removeTx = await delegationA.getRemoveTx()
-    const authorizedRemoveTx = await delegator.authorizeExtrinsic(
+    const authorizedRemoveTx = await Did.authorizeExtrinsic(
+      delegator,
       removeTx,
       delegatorSign,
       paymentAccount.address
@@ -297,7 +305,8 @@ describe('revocation', () => {
       firstDelegateSign
     )
     const revokeTx = await getRevokeTx(delegationRoot.id, 1, 1)
-    const authorizedRevokeTx = await firstDelegate.authorizeExtrinsic(
+    const authorizedRevokeTx = await Did.authorizeExtrinsic(
+      firstDelegate,
       revokeTx,
       firstDelegateSign,
       paymentAccount.address
@@ -311,7 +320,8 @@ describe('revocation', () => {
     expect(await delegationRoot.verify()).toBe(true)
 
     const revokeTx2 = await delegationA.getRevokeTx(firstDelegate.uri)
-    const authorizedRevokeTx2 = await firstDelegate.authorizeExtrinsic(
+    const authorizedRevokeTx2 = await Did.authorizeExtrinsic(
+      firstDelegate,
       revokeTx2,
       firstDelegateSign,
       paymentAccount.address
@@ -344,7 +354,8 @@ describe('revocation', () => {
     )
     delegationRoot = await delegationRoot.getLatestState()
     const revokeTx = await delegationRoot.getRevokeTx(delegator.uri)
-    const authorizedRevokeTx = await delegator.authorizeExtrinsic(
+    const authorizedRevokeTx = await Did.authorizeExtrinsic(
+      delegator,
       revokeTx,
       delegatorSign,
       paymentAccount.address

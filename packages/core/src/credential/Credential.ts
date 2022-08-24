@@ -17,28 +17,29 @@
  * @packageDocumentation
  */
 
+import {
+  DidResolver,
+  isDidSignature,
+  Utils as DidUtils,
+  verifyDidSignature,
+  signPayload,
+} from '@kiltprotocol/did'
 import type {
   CompressedCredential,
+  DidDetails,
+  DidKeySelectionCallback,
   DidResourceUri,
   DidVerificationKey,
   Hash,
   IAttestation,
   IClaim,
+  ICredential,
   ICType,
   IDelegationNode,
   IDidResolver,
-  ICredential,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import {
-  DidDetails,
-  DidResolver,
-  isDidSignature,
-  verifyDidSignature,
-  Utils as DidUtils,
-  DidKeySelectionCallback,
-} from '@kiltprotocol/did'
 import * as Claim from '../claim/index.js'
 import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
@@ -170,7 +171,8 @@ export async function sign(
     challenge?: string
   } = {}
 ): Promise<void> {
-  const { signature, keyUri: signatureKeyId } = await didDetails.signPayload(
+  const { signature, keyUri: signatureKeyId } = await signPayload(
+    didDetails,
     makeSigningData(credential, challenge),
     signCallback,
     keyId
@@ -494,7 +496,7 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const keys = claimerDid.getVerificationKeys('authentication')
+  const keys = claimerDid.authentication
   const selectedKeyId = (await keySelection(keys))?.id
 
   if (!selectedKeyId) {

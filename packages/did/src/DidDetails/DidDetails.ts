@@ -7,248 +7,98 @@
 
 import { u8aToHex } from '@polkadot/util'
 
-import {
-  DidEncryptionKey,
-  DidIdentifier,
+import type {
+  DidDetails,
   DidKey,
   DidResourceUri,
   DidServiceEndpoint,
   DidSignature,
-  DidUri,
   DidVerificationKey,
-  EncryptionKeyRelationship,
-  IDidDetails,
   SignCallback,
-  VerificationKeyRelationship,
   VerificationKeyType,
 } from '@kiltprotocol/types'
+import { verificationKeyTypes } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import type { DidConstructorDetails, MapKeysToRelationship } from '../types.js'
-import {
-  assembleKeyUri,
-  getSigningAlgorithmForVerificationKeyType,
-  isVerificationKey,
-} from '../Did.utils.js'
+import { getSigningAlgorithmForVerificationKeyType } from '../Did.utils.js'
 
-import { checkDidCreationDetails } from './DidDetails.utils.js'
+/**
+ * Gets all public keys associated with this Did.
+ *
+ * @param did The DID data.
+ * @returns Array of public keys.
+ */
+export function getKeys(
+  did: Partial<DidDetails> & Pick<DidDetails, 'authentication'>
+): DidKey[] {
+  return [
+    ...did.authentication,
+    ...(did.assertionMethod || []),
+    ...(did.capabilityDelegation || []),
+    ...(did.keyAgreement || []),
+  ]
+}
 
-type PublicKeysInner = Map<DidKey['id'], Omit<DidKey, 'id'>>
-type ServiceEndpointsInner = Map<
-  DidServiceEndpoint['id'],
-  Omit<DidServiceEndpoint, 'id'>
->
+/**
+ * Returns a key with a given id, if associated with this Did.
+ *
+ * @param did The DID data.
+ * @param id Key id (not the full key uri).
+ * @returns The respective public key data or undefined.
+ */
+export function getKey(
+  did: Partial<DidDetails> & Pick<DidDetails, 'authentication'>,
+  id: DidKey['id']
+): DidKey | undefined {
+  return getKeys(did).find((key) => key.id === id)
+}
 
-export abstract class DidDetails implements IDidDetails {
-  public readonly uri: DidUri
+/**
+ * Returns a service endpoint with a given id, if associated with this Did.
+ *
+ * @param did The DID data.
+ * @param id Endpoint id (not the full endpoint uri).
+ * @returns The respective endpoint data or undefined.
+ */
+export function getEndpoint(
+  did: Pick<DidDetails, 'service'>,
+  id: DidServiceEndpoint['id']
+): DidServiceEndpoint | undefined {
+  return did.service?.find((endpoint) => endpoint.id === id)
+}
 
-  // { key ID -> key details} - key ID does not include the DID subject
-  protected publicKeys: PublicKeysInner
-
-  // { key relationship -> set of key IDs}
-  protected keyRelationships: MapKeysToRelationship
-
-  // { service ID -> service details} - service ID does not include the DID subject
-  protected serviceEndpoints: ServiceEndpointsInner
-
-  protected constructor({
-    uri,
-    keys,
-    keyRelationships,
-    serviceEndpoints = {},
-  }: DidConstructorDetails) {
-    checkDidCreationDetails({
-      uri,
-      keys,
-      keyRelationships,
-      serviceEndpoints,
-    })
-
-    this.uri = uri
-    this.publicKeys = new Map(Object.entries(keys))
-    this.keyRelationships = keyRelationships
-    this.serviceEndpoints = new Map(Object.entries(serviceEndpoints))
-  }
-
-  public abstract get identifier(): DidIdentifier
-
-  /**
-   * Returns the first authentication key of the DID.
-   *
-   * @returns The first authentication key, in the order they are stored internally, of the given DID.
-   */
-  public get authenticationKey(): DidVerificationKey {
-    const firstAuthenticationKey = this.getVerificationKeys('authentication')[0]
-    if (!firstAuthenticationKey) {
-      throw new SDKErrors.DidError(
-        'Unexpected error. Any DID should always have at least one authentication key'
-      )
-    }
-    return firstAuthenticationKey
-  }
-
-  /**
-   * Returns the first encryption key of the DID, if any.
-   *
-   * @returns The first encryption key, in the order they are stored internally, of the given DID.
-   */
-  public get encryptionKey(): DidEncryptionKey | undefined {
-    return this.getEncryptionKeys('keyAgreement')[0]
-  }
-
-  /**
-   * Returns the first attestation key of the DID, if any.
-   *
-   * @returns The first attestation key, in the order they are stored internally, of the given DID.
-   */
-  public get attestationKey(): DidVerificationKey | undefined {
-    return this.getVerificationKeys('assertionMethod')[0]
-  }
-
-  /**
-   * Returns the first delegation key of the DID, if any.
-   *
-   * @returns The first delegation key, in the order they are stored internally, of the given DID.
-   */
-  public get delegationKey(): DidVerificationKey | undefined {
-    return this.getVerificationKeys('capabilityDelegation')[0]
-  }
-
-  /**
-   * Returns a key with a given id, if associated with this Did.
-   *
-   * @param id Key id (not the full key uri).
-   * @returns The respective public key data or undefined.
-   */
-  public getKey(id: DidKey['id']): DidKey | undefined {
-    const keyDetails = this.publicKeys.get(id)
-    if (!keyDetails) {
-      return undefined
-    }
-    return {
-      id,
-      ...keyDetails,
-    }
-  }
-
-  /**
-   * Gets all verification public keys for this Did with a given verification relationship.
-   *
-   * @param relationship The verification relationship.
-   * @returns Array of keys matching this verification relationship.
-   */
-  public getVerificationKeys(
-    relationship: VerificationKeyRelationship
-  ): DidVerificationKey[] {
-    const keyIds = this.keyRelationships[relationship] || []
-    return [...keyIds].map((keyId) => this.getKey(keyId) as DidVerificationKey)
-  }
-
-  /**
-   * Gets all key agreement public keys for this Did with a given relationship.
-   *
-   * @param relationship The public key's relationship to the DID.
-   * @returns Array of keys matching this relationship.
-   */
-  public getEncryptionKeys(
-    relationship: EncryptionKeyRelationship
-  ): DidEncryptionKey[] {
-    const keyIds = this.keyRelationships[relationship] || []
-    return [...keyIds].map((keyId) => this.getKey(keyId) as DidEncryptionKey)
-  }
-
-  /**
-   * Gets all public keys associated with this Did.
-   *
-   * @returns Array of public keys.
-   */
-  public getKeys(): DidKey[] {
-    const keyIds = this.publicKeys.keys()
-    return [...keyIds].map((keyId) => this.getKey(keyId) as DidKey)
-  }
-
-  /**
-   * Returns a service endpoint with a given id, if associated with this Did.
-   *
-   * @param id Endpoint id (not the full endpoint uri).
-   * @returns The respective endpoint data or undefined.
-   */
-  public getEndpoint(
-    id: DidServiceEndpoint['id']
-  ): DidServiceEndpoint | undefined {
-    const endpointDetails = this.serviceEndpoints.get(id)
-    if (!endpointDetails) {
-      return undefined
-    }
-    return {
-      id,
-      ...endpointDetails,
-    }
-  }
-
-  /**
-   * Gets all service endpoints associated with this Did, optionally filtered by endpoint type.
-   *
-   * @param type Optionally pass type by which to filter endpoints.
-   * @returns Array of service endpoints.
-   */
-  public getEndpoints(type?: string): DidServiceEndpoint[] {
-    const serviceEndpointsEntries = type
-      ? [...this.serviceEndpoints.entries()].filter(([, details]) =>
-          details.types.includes(type)
-        )
-      : [...this.serviceEndpoints.entries()]
-
-    return serviceEndpointsEntries.map(([id, details]) => ({ id, ...details }))
-  }
-
-  /**
-   * Compute the full URI (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
-   *
-   * @param keyId The key ID, without the leading subject's DID prefix.
-   *
-   * @returns The full public key URI, which includes the subject's DID and the provided key ID.
-   */
-  public assembleKeyUri(keyId: DidKey['id']): DidResourceUri {
-    return assembleKeyUri(this.uri, keyId)
-  }
-
-  /**
-   * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
-   *
-   * @param payload The byte array or HEX-encoded payload to sign.
-   * @param sign The sign callback to use for the signing operation.
-   * @param keyId The key ID to use to generate the signature.
-   *
-   * @returns The resulting [[DidSignature]].
-   */
-  public async signPayload(
-    payload: Uint8Array | string,
-    sign: SignCallback,
-    keyId: DidVerificationKey['id']
-  ): Promise<DidSignature> {
-    const key = this.getKey(keyId)
-    if (!key || !isVerificationKey(key)) {
-      throw new SDKErrors.DidError(
-        `Failed to find verification key with ID "${keyId}" on DID "${this.uri}"`
-      )
-    }
-    const alg = getSigningAlgorithmForVerificationKeyType(
-      key.type as VerificationKeyType
+/**
+ * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
+ *
+ * @param did The DID data.
+ * @param payload The byte array or HEX-encoded payload to sign.
+ * @param sign The sign callback to use for the signing operation.
+ * @param keyId The key ID to use to generate the signature.
+ *
+ * @returns The resulting [[DidSignature]].
+ */
+export async function signPayload(
+  did: Partial<DidDetails> & Pick<DidDetails, 'authentication' | 'uri'>,
+  payload: Uint8Array | string,
+  sign: SignCallback,
+  keyId: DidVerificationKey['id']
+): Promise<DidSignature> {
+  const key = getKey(did, keyId)
+  if (!key || !verificationKeyTypes.includes(key.type)) {
+    throw new SDKErrors.DidError(
+      `Failed to find verification key with ID "${keyId}" on DID "${did.uri}"`
     )
-    if (!alg) {
-      throw new SDKErrors.DidError(
-        `No algorithm found for key type "${key.type}"`
-      )
-    }
-    const { data: signature } = await sign({
-      publicKey: key.publicKey,
-      alg,
-      data: Crypto.coToUInt8(payload),
-    })
-    return {
-      keyUri: this.assembleKeyUri(key.id),
-      signature: u8aToHex(signature),
-    }
+  }
+  const alg = getSigningAlgorithmForVerificationKeyType(
+    key.type as VerificationKeyType
+  )
+  const { data: signature } = await sign({
+    publicKey: key.publicKey,
+    alg,
+    data: Crypto.coToUInt8(payload),
+  })
+  return {
+    keyUri: `${did.uri}${key.id}` as DidResourceUri,
+    signature: u8aToHex(signature),
   }
 }

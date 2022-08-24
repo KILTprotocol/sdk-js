@@ -18,6 +18,7 @@
 import type {
   IDelegationNode,
   IDelegationHierarchyDetails,
+  KiltAddress,
 } from '@kiltprotocol/types'
 import { Permission, PermissionType } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
@@ -97,9 +98,8 @@ export function decodeDelegationNode(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children].map((id) => id.toHex()),
-    account: DidUtils.getKiltDidFromIdentifier(
-      delegationNode.details.owner.toString(),
-      'full'
+    account: DidUtils.getFullDidUri(
+      delegationNode.details.owner.toString() as KiltAddress
     ),
     permissions: decodePermissions(
       delegationNode.details.permissions.bits.toNumber()

@@ -17,8 +17,8 @@ import {
 
 import type { IDidDocument, IJsonLDDidDocument } from '@kiltprotocol/types'
 
-// Create an instance of `LightDidDetails` with the required information
-const lightDidDetails = new LightDidDetails({...})
+// Create `DidDetails` with the required information
+const lightDidDetails: DidDetails = Did.createDetails({ ... })
 
 const lightDidDocument: IDidDocument = exportToDidDocument(lightDidDetails, 'application/json')
 
@@ -40,9 +40,9 @@ console.log(lightDidDocument.capabilityDelegation)
 // Will print all the external services referenced inside the `IDidDetails` instance.
 console.log(lightDidDocument.service)
 
-// Let's export an instance of `FullDidDetails` using the `application/ld+json` format.
+// Let's export `DidDetails` using the `application/ld+json` format.
 
-const fullDidDetails = new FullDidDetails({...})
+const fullDidDetails = await Did.query('...')
 
 // The document type will be a `IJsonLDDidDocument`, which extends the simpler `IDidDocument`.
 const fullDidDocument: IJsonLDDidDocument = exportToDidDocument(fullDidDetails, 'application/ld+json')

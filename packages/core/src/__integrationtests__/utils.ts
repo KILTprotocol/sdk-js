@@ -12,16 +12,16 @@ import { BN } from '@polkadot/util'
 
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import { DidMigrationCallback } from '@kiltprotocol/did'
 import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
 import type {
   ICType,
-  IIdentity,
   ISubmittableResult,
   KeyringPair,
+  KiltAddress,
+  KiltKeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
@@ -85,12 +85,12 @@ const faucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 // endowed accounts on development chain spec
 // ids are ed25519 because the endowed accounts are
-export const devFaucet = keyring.createFromUri(faucetSeed)
-export const devAlice = keyring.createFromUri('//Alice')
-export const devBob = keyring.createFromUri('//Bob')
-export const devCharlie = keyring.createFromUri('//Charlie')
+export const devFaucet = keyring.createFromUri(faucetSeed) as KiltKeyringPair
+export const devAlice = keyring.createFromUri('//Alice') as KiltKeyringPair
+export const devBob = keyring.createFromUri('//Bob') as KiltKeyringPair
+export const devCharlie = keyring.createFromUri('//Charlie') as KiltKeyringPair
 
-export function addressFromRandom(): IIdentity['address'] {
+export function addressFromRandom(): KiltAddress {
   return makeSigningKeyTool('ed25519').keypair.address
 }
 
@@ -163,28 +163,8 @@ export async function fundAccount(
 
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
-): Promise<KeyringPair> {
+): Promise<KiltKeyringPair> {
   const { keypair } = makeSigningKeyTool()
   await fundAccount(keypair.address, amount)
   return keypair
-}
-
-export function getDefaultMigrationCallback(
-  submitter: KeyringPair
-): DidMigrationCallback {
-  return async (e) => {
-    await Blockchain.signAndSubmitTx(e, submitter, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
-  }
-}
-
-export function getDefaultSubmitCallback(
-  submitter: KeyringPair
-): DidMigrationCallback {
-  return async (e) => {
-    await Blockchain.signAndSubmitTx(e, submitter, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
-  }
 }

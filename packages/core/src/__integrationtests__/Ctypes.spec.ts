@@ -9,8 +9,8 @@
  * @group integration/ctype
  */
 
-import { ICType, KeyringPair } from '@kiltprotocol/types'
-import { FullDidDetails } from '@kiltprotocol/did'
+import { DidDetails, ICType, KiltKeyringPair } from '@kiltprotocol/types'
+import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   KeyTool,
@@ -31,8 +31,8 @@ beforeAll(async () => {
 }, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {
-  let ctypeCreator: FullDidDetails
-  let paymentAccount: KeyringPair
+  let ctypeCreator: DidDetails
+  let paymentAccount: KiltKeyringPair
   let ctypeCounter = 0
   let key: KeyTool
 
@@ -59,7 +59,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const { keypair, sign } = makeSigningKeyTool()
     const storeTx = await CType.getStoreTx(ctype)
-    const authorizedStoreTx = await ctypeCreator.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeExtrinsic(
+      ctypeCreator,
       storeTx,
       sign,
       keypair.address
@@ -73,7 +74,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
     const storeTx = await CType.getStoreTx(ctype)
-    const authorizedStoreTx = await ctypeCreator.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeExtrinsic(
+      ctypeCreator,
       storeTx,
       key.sign,
       paymentAccount.address
@@ -90,7 +92,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
     const storeTx = await CType.getStoreTx(ctype)
-    const authorizedStoreTx = await ctypeCreator.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeExtrinsic(
+      ctypeCreator,
       storeTx,
       key.sign,
       paymentAccount.address
@@ -98,7 +101,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
     const storeTx2 = await CType.getStoreTx(ctype)
-    const authorizedStoreTx2 = await ctypeCreator.authorizeExtrinsic(
+    const authorizedStoreTx2 = await Did.authorizeExtrinsic(
+      ctypeCreator,
       storeTx2,
       key.sign,
       paymentAccount.address

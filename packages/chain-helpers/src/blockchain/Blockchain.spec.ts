@@ -10,8 +10,8 @@
  */
 
 /* eslint-disable dot-notation */
+import type { KeyringPair } from '@polkadot/keyring/types'
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
-import type { IIdentity } from '@kiltprotocol/types'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { setConnection } from '../blockchainApiConnection/BlockchainApiConnection'
 import {
@@ -30,30 +30,22 @@ beforeAll(() => {
 
 describe('Blockchain', () => {
   describe('submitSignedTx', () => {
-    let alice: IIdentity
-    let bob: IIdentity
+    let alice: KeyringPair
+    let bob: KeyringPair
 
     beforeAll(async () => {
       const keyring = new Keyring({
         type: 'ed25519',
         ss58Format,
       })
-      const alicePair = keyring.createFromUri('//Alice')
-      alice = {
-        signKeyringPair: alicePair,
-        address: alicePair.address,
-      } as IIdentity
-      const bobPair = keyring.createFromUri('//Bob')
-      bob = {
-        signKeyringPair: bobPair,
-        address: bobPair.address,
-      } as IIdentity
+      alice = keyring.createFromUri('//Alice')
+      bob = keyring.createFromUri('//Bob')
     })
 
     it('catches ERROR_TRANSACTION_USURPED and discovers as recoverable', async () => {
       api.__setDefaultResult({ isUsurped: true })
       const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
+      tx.signAsync(alice)
       const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
         (e) => e
       )
@@ -63,7 +55,7 @@ describe('Blockchain', () => {
     it('catches priority error and discovers as recoverable', async () => {
       api.__setDefaultResult()
       const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
+      tx.signAsync(alice)
       tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
       const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
         (e) => e
@@ -74,7 +66,7 @@ describe('Blockchain', () => {
     it('catches Already Imported error and discovers as recoverable', async () => {
       api.__setDefaultResult()
       const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
+      tx.signAsync(alice)
       tx.send = jest
         .fn()
         .mockRejectedValue(Error('Transaction Already Imported'))
@@ -87,7 +79,7 @@ describe('Blockchain', () => {
     it('catches Outdated/Stale Tx error and discovers as recoverable', async () => {
       api.__setDefaultResult()
       const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
+      tx.signAsync(alice)
       tx.send = jest
         .fn()
         .mockRejectedValue(

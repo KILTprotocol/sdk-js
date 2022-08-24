@@ -10,7 +10,7 @@ import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import type {
   Deposit,
   DidIdentifier,
-  IIdentity,
+  KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
@@ -21,10 +21,11 @@ import {
   ethereumEncode,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import type { bool, Enum, Option, u128, u64, U8aFixed } from '@polkadot/types'
+import type { bool, Enum, Option, u64, U8aFixed } from '@polkadot/types'
 import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
+import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
 import {
   assert,
@@ -47,11 +48,8 @@ import { ApiPromise } from '@polkadot/api'
 import { EncodedSignature } from '../Did.utils.js'
 import { queryWeb3NameForDidIdentifier, Web3Name } from './Web3Names.chain.js'
 
-// TODO: update with string pattern types once available
-/// A KILT-chain specific address, encoded with the KILT 38 network prefix.
-export type KiltAddress = IIdentity['address']
 /// A chain-agnostic address, which can be encoded using any network prefix.
-export type SubstrateAddress = IIdentity['address']
+export type SubstrateAddress = KeyringPair['address']
 
 export type EthereumAddress = HexString
 
@@ -64,7 +62,7 @@ export type Address = KiltAddress | SubstrateAddress | EthereumAddress
  */
 export type LinkingSignerCallback = (
   encodedLinkingDetails: HexString,
-  address: KiltAddress
+  address: SubstrateAddress
 ) => Promise<HexString>
 
 type EncodedMultiAddress =
@@ -202,7 +200,9 @@ export async function queryConnectedDidForAccount(
   linkedAccount: Address
 ): Promise<DidIdentifier | null> {
   const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isNone ? null : connectedDid.unwrap().did.toString()
+  return connectedDid.isNone
+    ? null
+    : (connectedDid.unwrap().did.toString() as KiltAddress)
 }
 
 function isLinkableAccountId(
@@ -292,7 +292,7 @@ export async function queryIsConnected(
  */
 export async function queryDepositAmount(): Promise<BN> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return (api.consts.didLookup.deposit as u128).toBn()
+  return api.consts.didLookup.deposit.toBn()
 }
 
 /* ### EXTRINSICS ### */

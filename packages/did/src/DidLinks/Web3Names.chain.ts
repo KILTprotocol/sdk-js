@@ -9,11 +9,11 @@ import type {
   SubmittableExtrinsic,
   DidIdentifier,
   DidUri,
+  KiltAddress,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
-import type { u128, u32 } from '@polkadot/types'
 import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
@@ -29,8 +29,8 @@ function checkWeb3NameInputConstraints(
   web3Name: Web3Name
 ): void {
   const [minLength, maxLength] = [
-    (api.consts.web3Names.minNameLength as u32).toNumber(),
-    (api.consts.web3Names.maxNameLength as u32).toNumber(),
+    api.consts.web3Names.minNameLength.toNumber(),
+    api.consts.web3Names.maxNameLength.toNumber(),
   ]
 
   if (web3Name.length < minLength) {
@@ -106,16 +106,18 @@ export async function queryWeb3NameForDidIdentifier(
  * @param name Web3Name that should be resolved to a DID.
  * @returns The DID identifier for this web3name if any.
  */
-export async function queryDidIdentifierForWeb3Name(
+export async function queryDidAddressForWeb3Name(
   name: Web3Name
-): Promise<DidIdentifier | null> {
+): Promise<KiltAddress | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await api.query.web3Names.owner(name)
   DecoderUtils.assertCodecIsType(encoded, [
     'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
   ])
 
-  return encoded.isSome ? encoded.unwrap().owner.toString() : null
+  return encoded.isSome
+    ? (encoded.unwrap().owner.toString() as KiltAddress)
+    : null
 }
 
 /**
@@ -140,11 +142,11 @@ export async function queryWeb3NameForDid(
 export async function queryDidForWeb3Name(
   name: Web3Name
 ): Promise<DidUri | null> {
-  const identifier = await queryDidIdentifierForWeb3Name(name)
-  if (identifier === null) {
+  const address = await queryDidAddressForWeb3Name(name)
+  if (address === null) {
     return null
   }
-  return DidUtils.getKiltDidFromIdentifier(identifier, 'full')
+  return DidUtils.getFullDidUri(address)
 }
 
 /**
@@ -154,5 +156,5 @@ export async function queryDidForWeb3Name(
  */
 export async function queryDepositAmount(): Promise<BN> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return (api.consts.web3Names.deposit as u128).toBn()
+  return api.consts.web3Names.deposit.toBn()
 }

@@ -99,7 +99,7 @@ export async function query(
  * Generate the extrinsic to revoke a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
  *
  * @param delegationId The identifier of the delegation node to revoke.
- * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
+ * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorization of the caller to perform the revocation.
  * @param maxRevocations The max number of children nodes that will be revoked as part of the revocation operation. This value does not include the node itself being removed.
  * @returns The SubmittableExtrinsic for the `revokeDelegation` call.
  */

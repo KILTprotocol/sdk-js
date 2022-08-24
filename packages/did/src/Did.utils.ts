@@ -8,25 +8,19 @@
 import { blake2AsU8a, checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { stringToU8a } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
-import { u32 } from '@polkadot/types'
 
 import {
   DidIdentifier,
-  DidKey,
   DidResourceUri,
-  NewDidVerificationKey,
   DidServiceEndpoint,
   DidUri,
   DidVerificationKey,
   EncryptionAlgorithms,
   EncryptionKeyType,
-  encryptionKeyTypes,
-  NewDidKey,
   SigningAlgorithms,
+  UriFragment,
   VerificationKeyType,
-  verificationKeyTypes,
-  NewDidEncryptionKey,
-  DidEncryptionKey,
+  KiltAddress,
 } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -36,7 +30,7 @@ export const LIGHT_DID_LATEST_VERSION = 1
 /// The latest version for KILT full DIDs.
 export const FULL_DID_LATEST_VERSION = 1
 
-const KILT_DID_PREFIX = 'did:kilt:'
+export const KILT_DID_PREFIX = 'did:kilt:'
 
 // NOTICE: The following regex patterns must be kept in sync with DidUri type in @kiltprotocol/types
 
@@ -44,7 +38,7 @@ const KILT_DID_PREFIX = 'did:kilt:'
 // - did:kilt:<kilt_address>
 // - did:kilt:<kilt_address>#<fragment>
 const FULL_KILT_DID_REGEX =
-  /^did:kilt:(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47})(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:(?<address>4[1-9a-km-zA-HJ-NP-Z]{47})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
 // - did:kilt:light:00<kilt_address>
@@ -52,36 +46,27 @@ const FULL_KILT_DID_REGEX =
 // - did:kilt:light:10<kilt_address>#<fragment>
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
 const LIGHT_KILT_DID_REGEX =
-  /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>4[1-9a-km-zA-HJ-NP-Z]{47,48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
+  /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
 
 export const defaultKeySelectionCallback = <T>(keys: T[]): Promise<T | null> =>
   Promise.resolve(keys[0] || null)
 
+function isKiltAddress(input: string): input is KiltAddress {
+  return checkAddress(input, ss58Format)[0]
+}
+
 /**
- * Compiles a KILT DID uri for a full or light DID from a unique identifier and associated data.
+ * Extracts the KILT address from the DID identifier, even if it is the light DID.
  *
- * @param identifier A ss58 encoded address valid on the KILT network.
- * @param didType 'full' to produce a FullDid's uri, 'light' for a LightDid.
- * @param version KILT DID specification version number.
- * @param encodedDetails When compiling a LightDid uri, encoded DidDetails can be appended to the end of the uri.
- * @returns A DID uri as a string.
+ * @param identifier The identifier of light or full DID.
+ * @returns The KILT address.
  */
-export function getKiltDidFromIdentifier(
-  identifier: DidIdentifier,
-  didType: 'full' | 'light',
-  version?: number,
-  encodedDetails?: string
-): DidUri {
-  const typeString = didType === 'full' ? '' : `light:`
-  let versionValue = version
-  // If no version is specified, take the default one depending on the requested DID type.
-  if (!versionValue) {
-    versionValue =
-      didType === 'full' ? FULL_DID_LATEST_VERSION : LIGHT_DID_LATEST_VERSION
-  }
-  const versionString = versionValue === 1 ? '' : `v${version}:`
-  const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
-  return `${KILT_DID_PREFIX}${typeString}${versionString}${identifier}${encodedDetailsString}`
+export function getAddressFromIdentifier(
+  identifier: DidIdentifier
+): KiltAddress {
+  const isAddress = isKiltAddress(identifier)
+  const address = isAddress ? identifier : identifier.substring(2)
+  return address as KiltAddress
 }
 
 export type IDidParsingResult = {
@@ -89,7 +74,8 @@ export type IDidParsingResult = {
   version: number
   type: 'light' | 'full'
   identifier: DidIdentifier
-  fragment?: string
+  address: KiltAddress
+  fragment?: UriFragment
   authKeyTypeEncoding?: string
   encodedDetails?: string
 }
@@ -104,37 +90,45 @@ export function parseDidUri(
   didUri: DidUri | DidResourceUri
 ): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
-  if (matches && matches.identifier) {
-    const version = matches.version
-      ? parseInt(matches.version, 10)
+  if (matches) {
+    const { version: versionString, fragment } = matches
+    const address = matches.address as KiltAddress
+    const version = versionString
+      ? parseInt(versionString, 10)
       : FULL_DID_LATEST_VERSION
     return {
-      did: getKiltDidFromIdentifier(matches.identifier, 'full', version),
+      did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'full',
-      identifier: matches.identifier,
-      fragment: matches.fragment?.substring(1),
+      identifier: address,
+      address,
+      fragment: fragment === '#' ? undefined : (fragment as UriFragment),
     }
   }
 
   // If it fails to parse full DID, try with light DID
   matches = LIGHT_KILT_DID_REGEX.exec(didUri)?.groups
-  if (matches && matches.identifier && matches.auth_key_type) {
-    const version = matches.version ? parseInt(matches.version, 10) : 1
-    const lightDidIdentifier = matches.auth_key_type.concat(matches.identifier)
-    const encodedDetails = matches.encoded_details?.substring(1)
+  if (matches) {
+    const {
+      authKeyType,
+      version: versionString,
+      encodedDetails,
+      fragment,
+    } = matches
+    const address = matches.address as KiltAddress
+    const version = versionString
+      ? parseInt(versionString, 10)
+      : LIGHT_DID_LATEST_VERSION
+    const identifier = `${authKeyType}${address}` as DidIdentifier
     return {
-      did: getKiltDidFromIdentifier(
-        lightDidIdentifier,
-        'light',
-        version,
-        encodedDetails
-      ),
+      did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'light',
-      identifier: matches.auth_key_type.concat(matches.identifier),
-      fragment: matches.fragment?.substring(1),
+      identifier,
+      address,
+      fragment: fragment === '#' ? undefined : (fragment as UriFragment),
       encodedDetails,
+      authKeyTypeEncoding: authKeyType,
     }
   }
 
@@ -159,18 +153,7 @@ export function getIdentifierFromKiltDid(didUri: DidUri): DidIdentifier {
  * @returns Whether didA and didB refer to the same DID subject.
  */
 export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
-  // eslint-disable-next-line prefer-const
-  let { identifier: identifierA, type: typeA } = parseDidUri(didA)
-  // eslint-disable-next-line prefer-const
-  let { identifier: identifierB, type: typeB } = parseDidUri(didB)
-  // Skip key encoding part
-  if (typeA === 'light') {
-    identifierA = identifierA.substring(2)
-  }
-  if (typeB === 'light') {
-    identifierB = identifierB.substring(2)
-  }
-  return identifierA === identifierB
+  return parseDidUri(didA).address === parseDidUri(didB).address
 }
 
 const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
@@ -241,30 +224,6 @@ export function getEncryptionKeyTypeForEncryptionAlgorithm(
   return keyTypeForEncryptionAlg[encryptionAlg]
 }
 
-/**
- * Checks whether a DidKey is a verification key.
- *
- * @param key Representation of a DID key.
- * @returns True if the key is a verification key, false otherwise.
- */
-export function isVerificationKey(
-  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
-): key is NewDidVerificationKey | DidVerificationKey {
-  return verificationKeyTypes.some((kt) => kt === key.type)
-}
-
-/**
- * Checks whether a DidKey is an encryption key.
- *
- * @param key Representation of a DID key.
- * @returns True if the key is an encryption key, false otherwise.
- */
-export function isEncryptionKey(
-  key: Partial<NewDidKey | DidKey> & Pick<NewDidKey | DidKey, 'type'>
-): key is NewDidEncryptionKey | DidEncryptionKey {
-  return encryptionKeyTypes.some((kt) => kt === key.type)
-}
-
 export type EncodedVerificationKey =
   | { sr25519: Uint8Array }
   | { ed25519: Uint8Array }
@@ -290,26 +249,14 @@ export function validateKiltDidUri(
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, type, fragment } = parseDidUri(input as DidUri)
+  const { address, fragment } = parseDidUri(input as DidUri)
   if (!allowFragment && fragment) {
     throw new SDKErrors.InvalidDidFormatError(input)
   }
-
-  switch (type) {
-    case 'full':
-      if (!checkAddress(identifier, ss58Format)[0]) {
-        throw new SDKErrors.AddressInvalidError(identifier, 'DID identifier')
-      }
-      break
-    case 'light':
-      // Identifier includes the first two characters for the key type encoding
-      if (!checkAddress(identifier.substring(2), ss58Format)[0]) {
-        throw new SDKErrors.AddressInvalidError(identifier, 'DID identifier')
-      }
-      break
-    default:
-      throw new SDKErrors.UnsupportedDidError(input)
+  if (!isKiltAddress(address)) {
+    throw new SDKErrors.AddressInvalidError(address, 'DID identifier')
   }
+
   return true
 }
 
@@ -345,6 +292,16 @@ export function isUriFragment(str: string): boolean {
 }
 
 /**
+ * Remove the `#` prefix from the UriFragment string, typically an ID.
+ *
+ * @param id The input ID to strip.
+ * @returns The string without the prefix.
+ */
+export function stripFragment(id: UriFragment): string {
+  return id.replace(/^#/, '')
+}
+
+/**
  * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
  *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
  *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
@@ -363,14 +320,14 @@ export function checkServiceEndpointSyntax(
       )
     )
   }
-  if (!isUriFragment(endpoint.id)) {
+  if (!isUriFragment(stripFragment(endpoint.id))) {
     errors.push(
       new SDKErrors.DidError(
         `The service ID must be valid as a URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
       )
     )
   }
-  endpoint.uris.forEach((uri) => {
+  endpoint.serviceEndpoint.forEach((uri) => {
     if (!isUri(uri)) {
       errors.push(
         new SDKErrors.DidError(
@@ -403,15 +360,15 @@ export function checkServiceEndpointSizeConstraints(
     maxServiceTypeLength,
     maxServiceUrlLength,
   ] = [
-    (api.consts.did.maxServiceIdLength as u32).toNumber(),
-    (api.consts.did.maxNumberOfTypesPerService as u32).toNumber(),
-    (api.consts.did.maxNumberOfUrlsPerService as u32).toNumber(),
-    (api.consts.did.maxServiceTypeLength as u32).toNumber(),
-    (api.consts.did.maxServiceUrlLength as u32).toNumber(),
+    api.consts.did.maxServiceIdLength.toNumber(),
+    api.consts.did.maxNumberOfTypesPerService.toNumber(),
+    api.consts.did.maxNumberOfUrlsPerService.toNumber(),
+    api.consts.did.maxServiceTypeLength.toNumber(),
+    api.consts.did.maxServiceUrlLength.toNumber(),
   ]
   const errors: Error[] = []
 
-  const idEncodedLength = stringToU8a(endpoint.id).length
+  const idEncodedLength = stringToU8a(stripFragment(endpoint.id)).length
   if (idEncodedLength > maxServiceIdLength) {
     errors.push(
       new SDKErrors.DidError(
@@ -419,21 +376,21 @@ export function checkServiceEndpointSizeConstraints(
       )
     )
   }
-  if (endpoint.types.length > maxNumberOfTypesPerService) {
+  if (endpoint.type.length > maxNumberOfTypesPerService) {
     errors.push(
       new SDKErrors.DidError(
-        `The service with ID "${endpoint.id}" has too many types (${endpoint.types.length}). Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
+        `The service with ID "${endpoint.id}" has too many types (${endpoint.type.length}). Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
       )
     )
   }
-  if (endpoint.uris.length > maxNumberOfUrlsPerService) {
+  if (endpoint.serviceEndpoint.length > maxNumberOfUrlsPerService) {
     errors.push(
       new SDKErrors.DidError(
-        `The service with ID "${endpoint.id}" has too many URIs (${endpoint.uris.length}). Max number of URIs allowed per service is ${maxNumberOfUrlsPerService}.`
+        `The service with ID "${endpoint.id}" has too many URIs (${endpoint.serviceEndpoint.length}). Max number of URIs allowed per service is ${maxNumberOfUrlsPerService}.`
       )
     )
   }
-  endpoint.types.forEach((type) => {
+  endpoint.type.forEach((type) => {
     const typeEncodedLength = stringToU8a(type).length
     if (typeEncodedLength > maxServiceTypeLength) {
       errors.push(
@@ -443,7 +400,7 @@ export function checkServiceEndpointSizeConstraints(
       )
     }
   })
-  endpoint.uris.forEach((uri) => {
+  endpoint.serviceEndpoint.forEach((uri) => {
     const uriEncodedLength = stringToU8a(uri).length
     if (uriEncodedLength > maxServiceUrlLength) {
       errors.push(
@@ -456,30 +413,10 @@ export function checkServiceEndpointSizeConstraints(
   return errors.length ? [false, errors] : [true, undefined]
 }
 
-/**
- * Compute the full key URI (did:kilt:<identifier>#<key_id> for a given DID key <key_id>.
- *
- * @param did The DID URI, with no trailing fragment (i.e., no "#" symbol).
- * @param keyId The key ID, without the leading subject's DID prefix.
- *
- * @returns The full public key URI, which includes the subject's DID and the provided key ID.
- */
-export function assembleKeyUri(
-  did: DidUri,
-  keyId: DidKey['id']
-): DidResourceUri {
-  if (parseDidUri(did).fragment) {
-    throw new SDKErrors.DidError(
-      `Cannot assemble key URI from a DID that already has a fragment: "${did}"`
-    )
-  }
-  return `${did}#${keyId}`
-}
-
-export function getIdentifierByKey({
+export function getAddressByKey({
   publicKey,
   type,
-}: Pick<DidVerificationKey, 'publicKey' | 'type'>): DidIdentifier {
+}: Pick<DidVerificationKey, 'publicKey' | 'type'>): KiltAddress {
   switch (type) {
     case 'ed25519':
     case 'sr25519':
@@ -494,9 +431,33 @@ export function getIdentifierByKey({
   }
 }
 
-export function getFullDidUriByKey(
+/**
+ * Builds the URI a light DID will have after it’s stored on the blockchain.
+ *
+ * @param didOrAddress The URI of the light DID. Internally it’s used with the DID "address" as well.
+ * @param version The version of the DID URI to use.
+ * @returns The expected full DID URI.
+ */
+export function getFullDidUri(
+  didOrAddress: DidUri | KiltAddress,
+  version = FULL_DID_LATEST_VERSION
+): DidUri {
+  const address = isKiltAddress(didOrAddress)
+    ? didOrAddress
+    : parseDidUri(didOrAddress as DidUri).address
+  const versionString = version === 1 ? '' : `v${version}`
+  return `${KILT_DID_PREFIX}${versionString}${address}` as DidUri
+}
+
+/**
+ * Builds the URI of a full DID if it is created with the authentication key provided.
+ *
+ * @param key The key that will be used as DID authentication key.
+ * @returns The expected full DID URI.
+ */
+export function getFullDidUriFromKey(
   key: Pick<DidVerificationKey, 'publicKey' | 'type'>
 ): DidUri {
-  const identifier = getIdentifierByKey(key)
-  return getKiltDidFromIdentifier(identifier, 'full')
+  const address = getAddressByKey(key)
+  return getFullDidUri(address)
 }

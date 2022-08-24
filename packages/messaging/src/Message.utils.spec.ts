@@ -35,6 +35,7 @@ import type {
   CompressedSubmitDelegationApproval,
   CompressedSubmitTerms,
   CompressedTerms,
+  DidDetails,
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
@@ -81,7 +82,7 @@ import {
   CType,
   Quote,
 } from '@kiltprotocol/core'
-import { DidDetails, Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
   KeyTool,
@@ -248,19 +249,13 @@ describe('Messaging Utilities', () => {
     const resolveKey = async (
       keyUri: DidResourceUri
     ): Promise<ResolvedDidKey | null> => {
-      const { identifier, type, version, fragment, encodedDetails } =
-        DidUtils.parseDidUri(keyUri)
-      const didSubject = DidUtils.getKiltDidFromIdentifier(
-        identifier,
-        type,
-        version,
-        encodedDetails
-      )
+      const { fragment } = Did.Utils.parseDidUri(keyUri)
+      const didSubject = keyUri.replace(fragment!, '')
       if (didSubject === identityAlice.uri) {
-        const aliceKey = identityAlice.getKey(fragment!)
+        const aliceKey = Did.getKey(identityAlice, fragment!)
         if (aliceKey) {
           return {
-            uri: keyUri,
+            id: keyUri,
             controller: didSubject,
             publicKey: aliceKey.publicKey,
             type: aliceKey.type,
@@ -269,10 +264,10 @@ describe('Messaging Utilities', () => {
         return null
       }
       if (didSubject === identityBob.uri) {
-        const bobKey = identityBob.getKey(fragment!)
+        const bobKey = Did.getKey(identityBob, fragment!)
         if (bobKey) {
           return {
-            uri: keyUri,
+            id: keyUri,
             controller: didSubject,
             publicKey: bobKey.publicKey,
             type: bobKey.type,
@@ -522,10 +517,11 @@ describe('Messaging Utilities', () => {
       },
       metaData: {},
       signatures: {
-        inviter: await identityAlice.signPayload(
+        inviter: await Did.signPayload(
+          identityAlice,
           'signature',
           keyAlice.sign,
-          identityAlice.authenticationKey.id
+          identityAlice.authentication[0].id
         ),
       },
     }
@@ -554,15 +550,17 @@ describe('Messaging Utilities', () => {
         isPCR: false,
       },
       signatures: {
-        inviter: await identityAlice.signPayload(
+        inviter: await Did.signPayload(
+          identityAlice,
           'signature',
           keyAlice.sign,
-          identityAlice.authenticationKey.id
+          identityAlice.authentication[0].id
         ),
-        invitee: await identityBob.signPayload(
+        invitee: await Did.signPayload(
+          identityBob,
           'signature',
           keyBob.sign,
-          identityBob.authenticationKey.id
+          identityBob.authentication[0].id
         ),
       },
     }
@@ -1028,7 +1026,8 @@ describe('Messaging Utilities', () => {
     ).not.toThrowError()
   })
   it('error check should throw errors on message', () => {
-    messageRequestTerms.receiver = 'did:kilt:thisisnotareceiveraddress'
+    messageRequestTerms.receiver =
+      'did:kilt:thisisnotareceiveraddress' as DidUri
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
     ).toThrowError(SDKErrors.InvalidDidFormatError)

@@ -8,7 +8,12 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
-import type { DidUri, ICType, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  DidUri,
+  ICType,
+  KiltAddress,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -36,7 +41,7 @@ export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
 function decode(encoded: Option<AccountId>): DidUri | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
-    ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
+    ? DidUtils.getFullDidUri(encoded.unwrap().toString() as KiltAddress)
     : null
 }
 

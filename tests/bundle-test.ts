@@ -13,6 +13,7 @@ import type {
   EncryptCallback,
   EncryptionKeyType,
   KeyringPair,
+  KiltKeyringPair,
   LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
   NewDidVerificationKey,
@@ -127,29 +128,27 @@ function makeDecryptCallback({
 }
 
 async function createFullDidFromKeypair(
-  payer: KeyringPair,
+  payer: KiltKeyringPair,
   keypair: KeyringPair,
   encryptionKey: NewDidEncryptionKey,
   api: ApiPromise
 ) {
-  const lightDid = Did.LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: keypair.publicKey,
-      type: keypair.type as LightDidSupportedVerificationKeyType,
-    },
-    encryptionKey,
+  const type = keypair.type as LightDidSupportedVerificationKeyType
+  const lightDid = Did.createLightDidDetails({
+    authentication: [{ publicKey: keypair.publicKey, type }],
+    keyAgreement: [encryptionKey],
   })
 
   const sign = makeSignCallback(keypair)
 
-  const fullDid = await lightDid.migrate(
-    payer.address,
-    sign,
-    getDefaultMigrationHandler(payer)
-  )
+  const creationTx = await Did.Chain.getStoreTx(lightDid, payer.address, sign)
 
-  const encodedKey = Did.Chain.encodePublicKey(fullDid.authenticationKey)
-  const extrinsic = await Did.didAuthorizeExtrinsics({
+  await getDefaultMigrationHandler(payer)(creationTx)
+  const fullDid = await Did.query(Did.Utils.getFullDidUri(lightDid.uri))
+  if (!fullDid) throw new Error('Cannot query created DID')
+
+  const encodedKey = Did.Chain.encodePublicKey(fullDid.authentication[0])
+  const extrinsic = await Did.authorizeBatch({
     did: fullDid,
     batchFunction: api.tx.utility.batchAll,
     extrinsics: [
@@ -163,7 +162,7 @@ async function createFullDidFromKeypair(
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
 
-  const updatedFullDid = await Did.FullDidDetails.fromChainInfo(fullDid.uri)
+  const updatedFullDid = await Did.query(fullDid.uri)
   if (!updatedFullDid) throw new Error('Could not update DID keys')
   return updatedFullDid
 }
@@ -179,7 +178,7 @@ async function runAll() {
   console.log('Account setup started')
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const devFaucet = keyring.createFromUri(FaucetSeed)
+  const devFaucet = keyring.createFromUri(FaucetSeed) as KiltKeyringPair
 
   const { keypair: aliceKeypair, sign: aliceSign } =
     makeSigningKeypair('//Alice')
@@ -191,7 +190,7 @@ async function runAll() {
     aliceEncryptionKey,
     api
   )
-  if (!alice.encryptionKey)
+  if (!alice.keyAgreement?.[0])
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
@@ -204,7 +203,7 @@ async function runAll() {
     bobEncryptionKey,
     api
   )
-  if (!bob.encryptionKey)
+  if (!bob.keyAgreement?.[0])
     throw new Error('Impossible: bob has no encryptionKey')
   console.log('bob setup done')
 
@@ -216,15 +215,9 @@ async function runAll() {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const address = Crypto.encodeAddress(authPublicKey, ss58Format)
-  const testDid = Did.LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: authPublicKey,
-      type: 'ed25519',
-    },
-    encryptionKey: {
-      publicKey: encPublicKey,
-      type: 'x25519',
-    },
+  const testDid = Did.createLightDidDetails({
+    authentication: [{ publicKey: authPublicKey, type: 'ed25519' }],
+    keyAgreement: [{ publicKey: encPublicKey, type: 'x25519' }],
   })
   if (
     testDid.uri !==
@@ -237,18 +230,17 @@ async function runAll() {
   console.log('DID workflow started')
   const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
 
-  const authenticationKey = keypair as NewDidVerificationKey
-  const identifier = Did.Utils.getIdentifierByKey(authenticationKey)
-  const createTx = await Did.Chain.generateCreateTxFromCreationDetails(
-    { identifier, authenticationKey },
+  const authentication = [keypair] as [NewDidVerificationKey]
+  const createTx = await Did.Chain.getStoreTx(
+    { authentication },
     devFaucet.address,
     sign
   )
   await Blockchain.signAndSubmitTx(createTx, devFaucet, {
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
-  const fullDid = await Did.FullDidDetails.fromChainInfo(
-    Did.Utils.getFullDidUriByKey(authenticationKey)
+  const fullDid = await Did.query(
+    Did.Utils.getFullDidUriFromKey(authentication[0])
   )
   if (!fullDid) throw new Error('Could not fetch created DID details')
 
@@ -267,7 +259,8 @@ async function runAll() {
   const extrinsic = await Did.Chain.getDeleteDidExtrinsic(
     BalanceUtils.toFemtoKilt(0)
   )
-  const deleteTx = await fullDid.authorizeExtrinsic(
+  const deleteTx = await Did.authorizeExtrinsic(
+    fullDid,
     extrinsic,
     sign,
     devFaucet.address
@@ -302,7 +295,8 @@ async function runAll() {
   })
 
   const tx = await CType.getStoreTx(DriversLicense)
-  const authorizedTx = await alice.authorizeExtrinsic(
+  const authorizedTx = await Did.authorizeExtrinsic(
+    alice,
     tx,
     aliceSign,
     devFaucet.address
@@ -338,7 +332,7 @@ async function runAll() {
     bob.uri
   )
   const credential = Credential.fromClaim(claim)
-  await Credential.sign(credential, bobSign, bob, bob.authenticationKey.id)
+  await Credential.sign(credential, bobSign, bob, bob.authentication[0].id)
   if (!Credential.isICredential(credential))
     throw new Error('Not a valid Credential')
   else {
@@ -364,10 +358,10 @@ async function runAll() {
     alice.uri
   )
   const encryptedMessage = await message.encrypt(
-    bob.encryptionKey.id,
+    bob.keyAgreement[0].id,
     bob,
     bobEncryptCallback,
-    `${alice.uri}#${alice.encryptionKey.id}`
+    `${alice.uri}${alice.keyAgreement[0].id}`
   )
 
   const decryptedMessage = await Message.decrypt(
@@ -385,7 +379,8 @@ async function runAll() {
   else throw new Error('Attestation Claim data not verifiable')
 
   const txAtt = await Attestation.getStoreTx(attestation)
-  const authorizedAttTx = await alice.authorizeExtrinsic(
+  const authorizedAttTx = await Did.authorizeExtrinsic(
+    alice,
     txAtt,
     aliceSign,
     devFaucet.address

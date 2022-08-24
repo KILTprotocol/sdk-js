@@ -32,10 +32,8 @@ module.exports = {
     '!augment-api/**',
     // TODO: write tests for these files and remove here
     '!**/*.chain.ts',
-    '!did/src/index.types.ts',
     '!did/src/Did.chain.ts',
     '!did/src/Did.utils.ts',
-    '!did/src/DidDetails/DidDetails.utils.ts',
     '!did/src/DidDetails/LightDidDetails.utils.ts',
     '!did/src/DidDetails/FullDidDetails.utils.ts',
   ],
