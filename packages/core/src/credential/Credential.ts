@@ -20,14 +20,12 @@
 import {
   DidResolver,
   isDidSignature,
-  Utils as DidUtils,
   verifyDidSignature,
   signPayload,
 } from '@kiltprotocol/did'
 import type {
   CompressedCredential,
   DidDetails,
-  DidKeySelectionCallback,
   DidResourceUri,
   DidVerificationKey,
   Hash,
@@ -465,7 +463,6 @@ function getAttributes(credential: ICredential): Set<string> {
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
  * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
- * @param presentationOptions.keySelection The logic to select the right key to sign for the delegate. It defaults to picking the first key from the set of valid keys.
  * @returns A deep copy of the Credential with all but `publicAttributes` removed.
  */
 export async function createPresentation({
@@ -474,14 +471,12 @@ export async function createPresentation({
   signCallback,
   challenge,
   claimerDid,
-  keySelection = DidUtils.defaultKeySelectionCallback,
 }: {
   credential: ICredential
   selectedAttributes?: string[]
   signCallback: SignCallback
   challenge?: string
   claimerDid: DidDetails
-  keySelection?: DidKeySelectionCallback<DidVerificationKey>
 }): Promise<ICredential> {
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
@@ -496,12 +491,7 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const keys = claimerDid.authentication
-  const selectedKeyId = (await keySelection(keys))?.id
-
-  if (!selectedKeyId) {
-    throw new SDKErrors.UnsupportedKeyError('authentication')
-  }
+  const selectedKeyId = claimerDid.authentication[0].id
 
   await sign(presentation, signCallback, claimerDid, selectedKeyId, {
     challenge,

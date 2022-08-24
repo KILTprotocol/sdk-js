@@ -175,5 +175,3 @@ export interface DidDetails {
 
   service?: DidServiceEndpoint[]
 }
-
-export type DidKeySelectionCallback<T> = (keys: T[]) => Promise<T | null>

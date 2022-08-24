@@ -21,11 +21,9 @@ import type {
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
   DidDetails,
-  DidKeySelectionCallback,
   DidResourceUri,
   DidSignature,
   DidUri,
-  DidVerificationKey,
   ICostBreakdown,
   IDidResolver,
   IQuote,
@@ -74,40 +72,28 @@ export function validateQuoteSchema(
  * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity The DID used to sign the object.
  * @param sign The callback to sign with the private key.
- * @param options Optional settings.
- * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @returns A signed [[Quote]] object.
  */
 export async function createAttesterSignedQuote(
   quoteInput: IQuote,
   attesterIdentity: DidDetails,
-  sign: SignCallback,
-  {
-    keySelection = Did.Utils.defaultKeySelectionCallback,
-  }: {
-    keySelection?: DidKeySelectionCallback<DidVerificationKey>
-  } = {}
+  sign: SignCallback
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
     throw new SDKErrors.QuoteUnverifiableError()
   }
 
-  const authenticationKey = await keySelection(attesterIdentity.authentication)
-  if (!authenticationKey) {
-    throw new SDKErrors.DidError(
-      `The attester "${attesterIdentity.uri}" does not have a valid authentication key`
-    )
-  }
+  const authenticationKeyId = attesterIdentity.authentication[0].id
   const signature = await Did.signPayload(
     attesterIdentity,
     Crypto.hashObjectAsStr(quoteInput),
     sign,
-    authenticationKey.id
+    authenticationKeyId
   )
   return {
     ...quoteInput,
     attesterSignature: {
-      keyUri: `${attesterIdentity.uri}${authenticationKey.id}`,
+      keyUri: `${attesterIdentity.uri}${authenticationKeyId}`,
       signature: signature.signature,
     },
   }
@@ -156,7 +142,6 @@ export async function verifyAttesterSignedQuote(
  * @param claimerIdentity The DID of the Claimer in order to sign.
  * @param sign The callback to sign with the private key.
  * @param options Optional settings.
- * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
  * @param options.resolver DidResolver used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
@@ -167,10 +152,8 @@ export async function createQuoteAgreement(
   claimerIdentity: DidDetails,
   sign: SignCallback,
   {
-    keySelection = Did.Utils.defaultKeySelectionCallback,
     resolver = DidResolver,
   }: {
-    keySelection?: DidKeySelectionCallback<DidVerificationKey>
     resolver?: IDidResolver
   } = {}
 ): Promise<IQuoteAgreement> {
@@ -189,20 +172,11 @@ export async function createQuoteAgreement(
     resolver,
   })
 
-  const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.authentication
-  )
-  if (!claimerAuthenticationKey) {
-    throw new SDKErrors.DidError(
-      `Claimer DID "${claimerIdentity.uri}" does not have an authentication key`
-    )
-  }
-
   const signature = await Did.signPayload(
     claimerIdentity,
     Crypto.hashObjectAsStr(attesterSignedQuote),
     sign,
-    claimerAuthenticationKey.id
+    claimerIdentity.authentication[0].id
   )
 
   return {
