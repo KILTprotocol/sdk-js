@@ -7,18 +7,10 @@
 
 import { Keyring } from '@polkadot/api'
 
-import {
-  DidDetails,
-  DidIdentifier,
-  DidServiceEndpoint,
-  DidUri,
-} from '@kiltprotocol/types'
+import { DidDetails, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 
-import {
-  CreateDetailsInput,
-  verificationKeyTypeToLightDidEncoding,
-} from './LightDidDetails.utils'
+import { CreateDetailsInput } from './LightDidDetails.utils'
 
 import * as Did from '../index.js'
 
@@ -35,10 +27,6 @@ import * as Did from '../index.js'
  * - getKeysForExtrinsic
  * - authorizeExtrinsic
  */
-
-function authKeyEncoding(did: DidDetails): string {
-  return verificationKeyTypeToLightDidEncoding[did.authentication[0].type]
-}
 
 describe('When creating an instance from the details', () => {
   it('correctly assign the right ed25519 authentication key, x25519 encryption key, and service endpoints', () => {
@@ -66,11 +54,7 @@ describe('When creating an instance from the details', () => {
     }
     const lightDidDetails = Did.createLightDidDetails(validInput)
 
-    const expectedIdentifier = (authKeyEncoding(lightDidDetails) +
-      authKey.address) as DidIdentifier
-
     expect(lightDidDetails).toEqual(<DidDetails>{
-      identifier: expectedIdentifier,
       uri: `did:kilt:light:00${authKey.address}:z1Dzpgq4F3EVKSe4X1Gm3GZJBkQGrXB2cbXGsPabPWK861QXnJLRaCHjr1EGYAMF7hDJi6ikYBoyNu7qMiMfixZYWfgPL1TL7GcHSq9PkoTckt7YpUoeGPyjYwVFgwuvUEDvBMT8NqstfC39hTM1FkDCgHFXaeVY4HCHThKMyXw4r3k1rmXUEm52sCs7yqWxjLUuR1g7sbBo79EQjDRbLzUZq4Vs22PaYUfxdKzboNF5UVvw8ChzAaVk56dFQ2ivmbP`,
       authentication: [
         {
@@ -113,12 +97,11 @@ describe('When creating an instance from the details', () => {
     }
     const lightDidDetails = Did.createLightDidDetails(validInput)
 
-    const expectedIdentifier = (authKeyEncoding(lightDidDetails) +
-      authKey.address) as DidIdentifier
-    expect(lightDidDetails.identifier).toStrictEqual(expectedIdentifier)
+    expect(Did.Utils.parseDidUri(lightDidDetails.uri).address).toStrictEqual(
+      authKey.address
+    )
 
     expect(lightDidDetails).toEqual({
-      identifier: '014rezrXBuAKCVosthpmy8ZYVAZHei3voBTiWUp6gYmjsxcr4J',
       uri: `did:kilt:light:01${authKey.address}:z1Ac9CMtYCTRWjetJfJqJoV7FcP9zdFudqUaupQkBCERoCQcnu2SUS5CGHdCXhWoxbihovMVymRperWSPpRc7mJ`,
       authentication: [
         {
@@ -195,14 +178,14 @@ describe('When creating an instance from a URI', () => {
     // We are sure this is correct because of the described case above
     const expectedLightDidDetails = Did.createLightDidDetails(creationInput)
 
+    const { address } = Did.Utils.parseDidUri(expectedLightDidDetails.uri)
     const builtLightDidDetails = Did.parseDetailsFromLightDid(
       expectedLightDidDetails.uri
     )
 
     expect(builtLightDidDetails).toStrictEqual(expectedLightDidDetails)
     expect(builtLightDidDetails).toStrictEqual(<DidDetails>{
-      identifier: expectedLightDidDetails.identifier,
-      uri: `did:kilt:light:${expectedLightDidDetails.identifier}:z1Dzpgq4F3EVKSe4X1Gm3GZJBkQGrXB2cbXGsPabPWK861QXnJLRaCHjr1EGYAMF7hDJi6ikYBoyNu7qMiMfixZYWfgPL1TL7GcHSq9PkoTckt7YpUoeGPyjYwVFgwuvUEDvBMT8NqstfC39hTM1FkDCgHFXaeVY4HCHThKMyXw4r3k1rmXUEm52sCs7yqWxjLUuR1g7sbBo79EQjDRbLzUZq4Vs22PaYUfxdKzboNF5UVvw8ChzAaVk56dFQ2ivmbP`,
+      uri: `did:kilt:light:00${address}:z1Dzpgq4F3EVKSe4X1Gm3GZJBkQGrXB2cbXGsPabPWK861QXnJLRaCHjr1EGYAMF7hDJi6ikYBoyNu7qMiMfixZYWfgPL1TL7GcHSq9PkoTckt7YpUoeGPyjYwVFgwuvUEDvBMT8NqstfC39hTM1FkDCgHFXaeVY4HCHThKMyXw4r3k1rmXUEm52sCs7yqWxjLUuR1g7sbBo79EQjDRbLzUZq4Vs22PaYUfxdKzboNF5UVvw8ChzAaVk56dFQ2ivmbP` as DidUri,
       authentication: [
         {
           id: '#authentication',

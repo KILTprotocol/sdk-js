@@ -217,7 +217,7 @@ async function runAll() {
   const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
   if (!fullDid) throw new Error('Could not fetch created DID details')
 
-  const resolved = await Did.resolveDoc(fullDid.uri)
+  const resolved = await Did.resolve(fullDid.uri)
 
   if (
     resolved &&
@@ -237,7 +237,7 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(deleteTx, payer, { resolveOn })
 
-  const resolvedAgain = await Did.resolveDoc(fullDid.uri)
+  const resolvedAgain = await Did.resolve(fullDid.uri)
   if (resolvedAgain?.metadata.deactivated) {
     console.info('DID successfully deleted')
   } else {

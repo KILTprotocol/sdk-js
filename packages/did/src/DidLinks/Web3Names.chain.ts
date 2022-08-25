@@ -7,7 +7,6 @@
 
 import type {
   SubmittableExtrinsic,
-  DidIdentifier,
   DidUri,
   KiltAddress,
 } from '@kiltprotocol/types'
@@ -18,6 +17,7 @@ import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
 import * as DidUtils from '../Did.utils.js'
+import { encodeDid } from '../Did.chain.js'
 
 /**
  * Web3Name is the type of a nickname for a DID.
@@ -86,41 +86,6 @@ export async function getReclaimDepositTx(
 }
 
 /**
- * Retrieve the Web3Name for a specific did identifier.
- *
- * @param didIdentifier DID identifier of the web3name owner, i.e. '4abc...'.
- * @returns The registered web3name for this DID if any.
- */
-export async function queryWeb3NameForDidIdentifier(
-  didIdentifier: DidIdentifier
-): Promise<Web3Name | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.web3Names.names(didIdentifier)
-  DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
-  return encoded.isSome ? encoded.unwrap().toUtf8() : null
-}
-
-/**
- * Retrieve the did identifier for a specific web3name.
- *
- * @param name Web3Name that should be resolved to a DID.
- * @returns The DID identifier for this web3name if any.
- */
-export async function queryDidAddressForWeb3Name(
-  name: Web3Name
-): Promise<KiltAddress | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.web3Names.owner(name)
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
-  ])
-
-  return encoded.isSome
-    ? (encoded.unwrap().owner.toString() as KiltAddress)
-    : null
-}
-
-/**
  * Retrieve the Web3Name for a specific did uri.
  *
  * @param did DID of the web3name owner, i.e. 'did:kilt:4abc...'.
@@ -129,8 +94,10 @@ export async function queryDidAddressForWeb3Name(
 export async function queryWeb3NameForDid(
   did: DidUri
 ): Promise<Web3Name | null> {
-  const details = DidUtils.parseDidUri(did)
-  return queryWeb3NameForDidIdentifier(details.identifier)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.web3Names.names(encodeDid(did))
+  DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
+  return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
 
 /**
@@ -142,7 +109,15 @@ export async function queryWeb3NameForDid(
 export async function queryDidForWeb3Name(
   name: Web3Name
 ): Promise<DidUri | null> {
-  const address = await queryDidAddressForWeb3Name(name)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.web3Names.owner(name)
+  DecoderUtils.assertCodecIsType(encoded, [
+    'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
+  ])
+
+  const address = encoded.isSome
+    ? (encoded.unwrap().owner.toString() as KiltAddress)
+    : null
   if (address === null) {
     return null
   }

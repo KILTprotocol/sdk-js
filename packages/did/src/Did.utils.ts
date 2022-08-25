@@ -10,7 +10,6 @@ import { stringToU8a } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
 
 import {
-  DidIdentifier,
   DidResourceUri,
   DidServiceEndpoint,
   DidUri,
@@ -52,25 +51,10 @@ function isKiltAddress(input: string): input is KiltAddress {
   return checkAddress(input, ss58Format)[0]
 }
 
-/**
- * Extracts the KILT address from the DID identifier, even if it is the light DID.
- *
- * @param identifier The identifier of light or full DID.
- * @returns The KILT address.
- */
-export function getAddressFromIdentifier(
-  identifier: DidIdentifier
-): KiltAddress {
-  const isAddress = isKiltAddress(identifier)
-  const address = isAddress ? identifier : identifier.substring(2)
-  return address as KiltAddress
-}
-
 export type IDidParsingResult = {
   did: DidUri
   version: number
   type: 'light' | 'full'
-  identifier: DidIdentifier
   address: KiltAddress
   fragment?: UriFragment
   authKeyTypeEncoding?: string
@@ -97,7 +81,6 @@ export function parseDidUri(
       did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'full',
-      identifier: address,
       address,
       fragment: fragment === '#' ? undefined : (fragment as UriFragment),
     }
@@ -116,12 +99,10 @@ export function parseDidUri(
     const version = versionString
       ? parseInt(versionString, 10)
       : LIGHT_DID_LATEST_VERSION
-    const identifier = `${authKeyType}${address}` as DidIdentifier
     return {
       did: didUri.replace(fragment || '', '') as DidUri,
       version,
       type: 'light',
-      identifier,
       address,
       fragment: fragment === '#' ? undefined : (fragment as UriFragment),
       encodedDetails,
@@ -130,16 +111,6 @@ export function parseDidUri(
   }
 
   throw new SDKErrors.InvalidDidFormatError(didUri)
-}
-
-/**
- * Parses a KILT DID uri and returns its unique identifier.
- *
- * @param didUri A KILT DID uri as a string.
- * @returns The identifier contained within the DID uri.
- */
-export function getIdentifierFromKiltDid(didUri: DidUri): DidIdentifier {
-  return parseDidUri(didUri).identifier
 }
 
 /**
@@ -251,7 +222,7 @@ export function validateKiltDidUri(
     throw new SDKErrors.InvalidDidFormatError(input)
   }
   if (!isKiltAddress(address)) {
-    throw new SDKErrors.AddressInvalidError(address, 'DID identifier')
+    throw new SDKErrors.AddressInvalidError(address, 'DID')
   }
 
   return true

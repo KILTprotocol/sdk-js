@@ -9,18 +9,17 @@ import {
   DecryptCallback,
   DidDetails,
   DidEncryptionKey,
+  DidResolveKey,
   DidResourceUri,
   EncryptCallback,
   EncryptionKeyType,
   encryptionKeyTypes,
-  IDidResolver,
   IEncryptedMessage,
   IEncryptedMessageContents,
   IMessage,
   MessageBody,
 } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DidResolver } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import { errorCheckMessage, errorCheckMessageBody } from './Message.utils.js'
@@ -85,7 +84,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
  * @param decryptCallback The callback to decrypt with the secret key.
  * @param receiverDetails The DID details of the receiver.
  * @param decryptionOptions Options to perform the decryption operation.
- * @param decryptionOptions.resolver The DID resolver to use.
+ * @param decryptionOptions.resolveKey The DID key resolver to use.
  * @returns The original [[Message]].
  */
 export async function decrypt(
@@ -93,15 +92,15 @@ export async function decrypt(
   decryptCallback: DecryptCallback,
   receiverDetails: DidDetails,
   {
-    resolver = DidResolver,
+    resolveKey = Did.resolveKey,
   }: {
-    resolver?: IDidResolver
+    resolveKey?: DidResolveKey
   } = {}
 ): Promise<IMessage> {
   const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
     encrypted
 
-  const senderKeyDetails = await resolver.resolveKey(senderKeyUri)
+  const senderKeyDetails = await resolveKey(senderKeyUri)
   if (!senderKeyDetails) {
     throw new SDKErrors.DidError(
       `Could not resolve sender encryption key "${senderKeyUri}"`
@@ -235,12 +234,12 @@ export async function encrypt(
   encryptCallback: EncryptCallback,
   receiverKeyUri: DidResourceUri,
   {
-    resolver = DidResolver,
+    resolveKey = Did.resolveKey,
   }: {
-    resolver?: IDidResolver
+    resolveKey?: DidResolveKey
   } = {}
 ): Promise<IEncryptedMessage> {
-  const receiverKey = await resolver.resolveKey(receiverKeyUri)
+  const receiverKey = await resolveKey(receiverKeyUri)
   if (!receiverKey) {
     throw new SDKErrors.DidError(`Cannot resolve key "${receiverKeyUri}"`)
   }

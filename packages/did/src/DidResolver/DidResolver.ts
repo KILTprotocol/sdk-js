@@ -10,7 +10,6 @@ import {
   DidResolvedDetails,
   DidResourceUri,
   DidUri,
-  IDidResolver,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
@@ -32,10 +31,8 @@ import { getFullDidUri, parseDidUri } from '../Did.utils.js'
  * @param did The subject's DID.
  * @returns The details associated with the DID subject.
  */
-export async function resolveDoc(
-  did: DidUri
-): Promise<DidResolvedDetails | null> {
-  const { address, type } = parseDidUri(did)
+export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
+  const { type } = parseDidUri(did)
   const fullDidUri = getFullDidUri(did)
 
   switch (type) {
@@ -51,7 +48,7 @@ export async function resolveDoc(
         }
       }
       // If not, check whether the DID has been deleted or simply does not exist.
-      const isDeactivated = await queryDidDeletionStatus(address)
+      const isDeactivated = await queryDidDeletionStatus(did)
       if (isDeactivated) {
         return {
           metadata: {
@@ -71,8 +68,8 @@ export async function resolveDoc(
         })
       }
 
-      const fullDidDetails = await queryDetails(address)
-      // If a full DID with same identifier is present, return the resolution metadata accordingly.
+      const fullDidDetails = await queryDetails(did)
+      // If a full DID with same subject is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
         return {
           details,
@@ -83,7 +80,7 @@ export async function resolveDoc(
         }
       }
       // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
-      const isFullDidDeleted = await queryDidDeletionStatus(address)
+      const isFullDidDeleted = await queryDidDeletionStatus(did)
       if (isFullDidDeleted) {
         return {
           // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
@@ -115,7 +112,7 @@ export async function resolveDoc(
 export async function resolveKey(
   didUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
-  const { did, identifier, fragment: keyId, type } = parseDidUri(didUri)
+  const { did, fragment: keyId, type } = parseDidUri(didUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
@@ -124,7 +121,7 @@ export async function resolveKey(
 
   switch (type) {
     case 'full': {
-      const details = await queryDetails(identifier)
+      const details = await queryDetails(didUri)
       const key = details && Did.getKey(details, keyId)
       if (!key) {
         return null
@@ -139,7 +136,7 @@ export async function resolveKey(
       }
     }
     case 'light': {
-      const resolvedDetails = await resolveDoc(didUri)
+      const resolvedDetails = await resolve(didUri)
       if (!resolvedDetails) {
         throw new SDKErrors.InvalidDidFormatError(didUri)
       }
@@ -171,7 +168,7 @@ export async function resolveKey(
 export async function resolveServiceEndpoint(
   serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint | null> {
-  const { identifier, fragment: serviceId, type, did } = parseDidUri(serviceUri)
+  const { fragment: serviceId, type, did } = parseDidUri(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
@@ -180,7 +177,7 @@ export async function resolveServiceEndpoint(
 
   switch (type) {
     case 'full': {
-      const serviceEndpoint = await queryServiceEndpoint(identifier, serviceId)
+      const serviceEndpoint = await queryServiceEndpoint(serviceUri, serviceId)
       if (!serviceEndpoint) {
         return null
       }
@@ -191,7 +188,7 @@ export async function resolveServiceEndpoint(
       }
     }
     case 'light': {
-      const resolvedDetails = await resolveDoc(did)
+      const resolvedDetails = await resolve(did)
       if (!resolvedDetails) {
         throw new SDKErrors.InvalidDidFormatError(serviceUri)
       }
@@ -214,34 +211,4 @@ export async function resolveServiceEndpoint(
     default:
       throw new SDKErrors.UnsupportedDidError(did)
   }
-}
-
-/**
- * Resolve a DID URI (including a key ID or a service ID).
- *
- * @param didUri The DID URI to resolve.
- * @returns The DID, key details or service details depending on the input URI. Null otherwise.
- */
-export async function resolve(
-  didUri: DidUri | DidResourceUri
-): Promise<
-  DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
-> {
-  const { fragment, did } = parseDidUri(didUri)
-
-  if (fragment) {
-    return (
-      (await resolveKey(didUri as DidResourceUri)) ||
-      (await resolveServiceEndpoint(didUri as DidResourceUri)) ||
-      null
-    )
-  }
-  return resolveDoc(did)
-}
-
-export const DidResolver: IDidResolver = {
-  resolveDoc,
-  resolveKey,
-  resolve,
-  resolveServiceEndpoint,
 }

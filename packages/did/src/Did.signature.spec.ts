@@ -31,7 +31,7 @@ import {
   verifyDidSignature,
   isDidSignature,
 } from './Did.signature'
-import { resolveDoc } from './DidResolver'
+import { resolve } from './DidResolver'
 
 jest.mock('./DidResolver')
 
@@ -50,7 +50,7 @@ describe('light DID', () => {
 
   beforeEach(() => {
     jest
-      .mocked(resolveDoc)
+      .mocked(resolve)
       .mockReset()
       .mockImplementation(async (did) =>
         did.includes(keypair.address)
@@ -222,7 +222,7 @@ describe('light DID', () => {
   })
 
   it('does not verify if migrated to Full DID', async () => {
-    jest.mocked(resolveDoc).mockResolvedValue({
+    jest.mocked(resolve).mockResolvedValue({
       details,
       metadata: {
         canonicalId: Did.Utils.getFullDidUri(details.uri),
@@ -266,7 +266,6 @@ describe('full DID', () => {
       mnemonicGenerate()
     ) as KiltKeyringPair
     details = {
-      identifier: keypair.address,
       uri: `did:kilt:${keypair.address}`,
       authentication: [
         {
@@ -281,7 +280,7 @@ describe('full DID', () => {
 
   beforeEach(() => {
     jest
-      .mocked(resolveDoc)
+      .mocked(resolve)
       .mockReset()
       .mockImplementation(async (did) =>
         did.includes(keypair.address)
@@ -338,7 +337,7 @@ describe('full DID', () => {
   })
 
   it('does not verify if deactivated', async () => {
-    jest.mocked(resolveDoc).mockResolvedValue({
+    jest.mocked(resolve).mockResolvedValue({
       details: undefined,
       metadata: {
         deactivated: true,
@@ -364,7 +363,7 @@ describe('full DID', () => {
   })
 
   it('does not verify if not on chain', async () => {
-    jest.mocked(resolveDoc).mockResolvedValue(null)
+    jest.mocked(resolve).mockResolvedValue(null)
     const SIGNED_STRING = 'signed string'
     const signature = await Did.signPayload(
       details,

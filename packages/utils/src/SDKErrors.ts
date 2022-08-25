@@ -114,10 +114,10 @@ export class UnknownMessageBodyTypeError extends SDKError {}
 
 export class SignatureMalformedError extends SDKError {}
 
-export class DidIdentifierMismatchError extends SDKError {
-  constructor(identifier: string, id: string) {
+export class DidSubjectMismatchError extends SDKError {
+  constructor(actual: string, expected: string) {
     super(
-      `The identifier "${identifier}" doesn't match the DID Document's identifier "${id}"`
+      `The DID "${actual}" doesn't match the DID Document's URI "${expected}"`
     )
   }
 }
@@ -129,8 +129,8 @@ export class HierarchyQueryError extends SDKError {
 }
 
 export class InvalidDidFormatError extends SDKError {
-  constructor(identifier: string, options?: ErrorOptions) {
-    super(`Not a valid KILT DID "${identifier}"`, options)
+  constructor(did: string, options?: ErrorOptions) {
+    super(`Not a valid KILT DID "${did}"`, options)
   }
 }
 

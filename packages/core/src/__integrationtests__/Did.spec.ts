@@ -13,7 +13,7 @@ import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import * as Did from '@kiltprotocol/did'
-import { resolveDoc, Web3Names } from '@kiltprotocol/did'
+import { resolve, Web3Names } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
@@ -37,7 +37,6 @@ import { UUID } from '@kiltprotocol/utils'
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
 import {
-  addressFromRandom,
   createEndowedTestAccount,
   devBob,
   initializeApi,
@@ -109,14 +108,11 @@ describe('write and didDeleteTx', () => {
 
     await submitExtrinsic(tx, paymentAccount)
 
-    const fullDid = (await Did.query(
-      Did.Utils.getFullDidUri(newDetails.uri)
-    )) as DidDetails
+    const fullDidUri = Did.Utils.getFullDidUri(newDetails.uri)
+    const fullDid = (await Did.query(fullDidUri)) as DidDetails
 
-    const address = Did.Utils.getAddressFromIdentifier(newDetails.identifier)
-    expect(fullDid).toMatchObject<DidDetails>({
-      identifier: address,
-      uri: `did:kilt:${address}`,
+    expect(fullDid).toMatchObject(<DidDetails>{
+      uri: fullDidUri,
       authentication: [
         expect.objectContaining({
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
@@ -140,19 +136,18 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 
   it('should return no results for empty accounts', async () => {
-    const emptyAccount = addressFromRandom()
+    const emptyDid = Did.Utils.getFullDidUriFromKey(
+      makeSigningKeyTool().authentication[0]
+    )
 
-    expect(await Did.Chain.queryServiceEndpoints(emptyAccount)).toBeDefined()
-    expect(await Did.Chain.queryServiceEndpoints(emptyAccount)).toHaveLength(0)
+    expect(await Did.Chain.queryServiceEndpoints(emptyDid)).toBeDefined()
+    expect(await Did.Chain.queryServiceEndpoints(emptyDid)).toHaveLength(0)
 
     expect(
-      await Did.Chain.queryServiceEndpoint(
-        emptyAccount,
-        '#non-existing-service-id'
-      )
+      await Did.Chain.queryServiceEndpoint(emptyDid, '#non-existing-service-id')
     ).toBeNull()
 
-    const endpointsCount = await Did.Chain.queryEndpointsCounts(emptyAccount)
+    const endpointsCount = await Did.Chain.queryEndpointsCounts(emptyDid)
     expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
   })
 
@@ -207,7 +202,7 @@ describe('write and didDeleteTx', () => {
     expect(fullDid).not.toBeNull()
 
     const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-      fullDid.identifier
+      fullDid.uri
     )
     const call = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
 
@@ -219,24 +214,16 @@ describe('write and didDeleteTx', () => {
     )
 
     // Check that DID is not blacklisted.
-    expect(await Did.Chain.queryDeletedDidIdentifiers()).not.toContain(
-      fullDid.identifier
-    )
-    expect(await Did.Chain.queryDidDeletionStatus(fullDid.identifier)).toBe(
-      false
-    )
+    expect(await Did.Chain.queryDeletedDids()).not.toContain(fullDid.uri)
+    expect(await Did.Chain.queryDidDeletionStatus(fullDid.uri)).toBe(false)
 
     await submitExtrinsic(submittable, paymentAccount)
 
-    expect(await Did.Chain.queryDetails(fullDid.identifier)).toBeNull()
+    expect(await Did.Chain.queryDetails(fullDid.uri)).toBeNull()
 
     // Check that DID is now blacklisted.
-    expect(await Did.Chain.queryDeletedDidIdentifiers()).toContain(
-      fullDid.identifier
-    )
-    expect(await Did.Chain.queryDidDeletionStatus(fullDid.identifier)).toBe(
-      true
-    )
+    expect(await Did.Chain.queryDeletedDids()).toContain(fullDid.uri)
+    expect(await Did.Chain.queryDidDeletionStatus(fullDid.uri)).toBe(true)
   }, 60_000)
 })
 
@@ -295,7 +282,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
   await submitExtrinsic(tx3, paymentAccount)
   expect(
-    await Did.Chain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
+    await Did.Chain.queryServiceEndpoint(fullDetails.uri, newEndpoint.id)
   ).toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
@@ -312,25 +299,23 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   expect(
-    await Did.Chain.queryServiceEndpoint(fullDetails.identifier, newEndpoint.id)
+    await Did.Chain.queryServiceEndpoint(fullDetails.uri, newEndpoint.id)
   ).toBeNull()
 
   // Claim the deposit back
   const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-    fullDetails.identifier
+    fullDetails.uri
   )
   const reclaimDepositTx = await Did.Chain.getReclaimDepositExtrinsic(
-    fullDetails.identifier,
+    fullDetails.uri,
     storedEndpointsCount
   )
   await submitExtrinsic(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
-  expect(await Did.Chain.queryDetails(fullDetails.identifier)).toBeNull()
-  expect(
-    await Did.Chain.queryServiceEndpoints(fullDetails.identifier)
-  ).toHaveLength(0)
+  expect(await Did.Chain.queryDetails(fullDetails.uri)).toBeNull()
+  expect(await Did.Chain.queryServiceEndpoints(fullDetails.uri)).toHaveLength(0)
   const newEndpointsCount = await Did.Chain.queryEndpointsCounts(
-    fullDetails.identifier
+    fullDetails.uri
   )
   expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
 }, 80_000)
@@ -353,17 +338,12 @@ describe('DID migration', () => {
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDid = await Did.query(
-      Did.Utils.getFullDidUri(lightDidDetails.uri)
-    )
+    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDidDetails.uri)
+    const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
-    const address = Did.Utils.getAddressFromIdentifier(
-      lightDidDetails.identifier
-    )
-    expect(migratedFullDid).toMatchObject<DidDetails>({
-      identifier: address,
-      uri: `did:kilt:${address}`,
+    expect(migratedFullDid).toMatchObject(<DidDetails>{
+      uri: migratedFullDidUri,
       authentication: [
         expect.objectContaining({
           publicKey: lightDidDetails.authentication[0].publicKey,
@@ -378,11 +358,9 @@ describe('DID migration', () => {
       ],
     })
 
-    expect(
-      await Did.Chain.queryDetails(migratedFullDid.identifier)
-    ).not.toBeNull()
+    expect(await Did.Chain.queryDetails(migratedFullDid.uri)).not.toBeNull()
 
-    const { metadata } = (await resolveDoc(
+    const { metadata } = (await resolve(
       lightDidDetails.uri
     )) as DidResolvedDetails
 
@@ -403,17 +381,12 @@ describe('DID migration', () => {
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDid = await Did.query(
-      Did.Utils.getFullDidUri(lightDidDetails.uri)
-    )
+    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDidDetails.uri)
+    const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
-    const address = Did.Utils.getAddressFromIdentifier(
-      lightDidDetails.identifier
-    )
-    expect(migratedFullDid).toMatchObject<DidDetails>({
-      identifier: address,
-      uri: `did:kilt:${address}`,
+    expect(migratedFullDid).toMatchObject(<DidDetails>{
+      uri: migratedFullDidUri,
       authentication: [
         expect.objectContaining({
           publicKey: lightDidDetails.authentication[0].publicKey,
@@ -422,11 +395,9 @@ describe('DID migration', () => {
       ],
     })
 
-    expect(
-      await Did.Chain.queryDetails(migratedFullDid.identifier)
-    ).not.toBeNull()
+    expect(await Did.Chain.queryDetails(migratedFullDid.uri)).not.toBeNull()
 
-    const { metadata } = (await resolveDoc(
+    const { metadata } = (await resolve(
       lightDidDetails.uri
     )) as DidResolvedDetails
 
@@ -459,17 +430,12 @@ describe('DID migration', () => {
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDid = await Did.query(
-      Did.Utils.getFullDidUri(lightDidDetails.uri)
-    )
+    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDidDetails.uri)
+    const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
-    const address = Did.Utils.getAddressFromIdentifier(
-      lightDidDetails.identifier
-    )
-    expect(migratedFullDid).toMatchObject<DidDetails>({
-      identifier: address,
-      uri: `did:kilt:${address}`,
+    expect(migratedFullDid).toMatchObject(<DidDetails>{
+      uri: migratedFullDidUri,
       authentication: [
         expect.objectContaining({
           publicKey: lightDidDetails.authentication[0].publicKey,
@@ -491,11 +457,9 @@ describe('DID migration', () => {
       ],
     })
 
-    expect(
-      await Did.Chain.queryDetails(migratedFullDid.identifier)
-    ).not.toBeNull()
+    expect(await Did.Chain.queryDetails(migratedFullDid.uri)).not.toBeNull()
 
-    const { metadata } = (await resolveDoc(
+    const { metadata } = (await resolve(
       lightDidDetails.uri
     )) as DidResolvedDetails
 
@@ -504,21 +468,21 @@ describe('DID migration', () => {
 
     // Remove and claim the deposit back
     const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-      migratedFullDid.identifier
+      migratedFullDid.uri
     )
     const reclaimDepositTx = await Did.Chain.getReclaimDepositExtrinsic(
-      migratedFullDid.identifier,
+      migratedFullDid.uri,
       storedEndpointsCount
     )
     await submitExtrinsic(reclaimDepositTx, paymentAccount)
 
-    expect(await Did.Chain.queryDetails(migratedFullDid.identifier)).toBeNull()
+    expect(await Did.Chain.queryDetails(migratedFullDid.uri)).toBeNull()
     expect(
-      await Did.Chain.queryServiceEndpoints(migratedFullDid.identifier)
+      await Did.Chain.queryServiceEndpoints(migratedFullDid.uri)
     ).toStrictEqual([])
-    expect(
-      await Did.Chain.queryDidDeletionStatus(migratedFullDid.identifier)
-    ).toBe(true)
+    expect(await Did.Chain.queryDidDeletionStatus(migratedFullDid.uri)).toBe(
+      true
+    )
   }, 60_000)
 })
 
@@ -566,7 +530,7 @@ describe('DID authorization', () => {
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-      didDetails.identifier
+      didDetails.uri
     )
     const deleteCall = await Did.Chain.getDeleteDidExtrinsic(
       storedEndpointsCount
@@ -1121,10 +1085,10 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(tx, paymentAccount)
 
     // Test for correct creation and deletion
-    expect(await Web3Names.queryDidAddressForWeb3Name('test-1')).toBeNull()
+    expect(await Web3Names.queryDidForWeb3Name('test-1')).toBeNull()
     // Test for correct creation of second web3 name
-    expect(await Web3Names.queryDidAddressForWeb3Name('test-2')).toStrictEqual(
-      fullDid.identifier
+    expect(await Web3Names.queryDidForWeb3Name('test-2')).toStrictEqual(
+      fullDid.uri
     )
   }, 30_000)
 
@@ -1179,8 +1143,8 @@ describe('DID extrinsics batching', () => {
 
     // Test correct use of authentication keys
     expect(await Web3Names.queryDidForWeb3Name('test')).toBeNull()
-    expect(await Web3Names.queryDidAddressForWeb3Name('test-2')).toStrictEqual(
-      fullDid.identifier
+    expect(await Web3Names.queryDidForWeb3Name('test-2')).toStrictEqual(
+      fullDid.uri
     )
 
     // Test correct use of attestation keys

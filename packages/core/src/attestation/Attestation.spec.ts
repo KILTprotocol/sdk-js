@@ -73,10 +73,10 @@ describe('Attestation', () => {
     mockedApi.query.attestation.attestations.mockReturnValue(
       ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
-        DidUtils.getIdentifierFromKiltDid(identityAlice),
+        DidUtils.parseDidUri(identityAlice).address,
         null,
         false,
-        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
+        [DidUtils.parseDidUri(identityAlice).address, 10],
       ])
     )
 
@@ -106,10 +106,10 @@ describe('Attestation', () => {
     mockedApi.query.attestation.attestations.mockReturnValue(
       ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
-        DidUtils.getIdentifierFromKiltDid(identityAlice),
+        DidUtils.parseDidUri(identityAlice).address,
         null,
         true,
-        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
+        [DidUtils.parseDidUri(identityAlice).address, 10],
       ])
     )
 
