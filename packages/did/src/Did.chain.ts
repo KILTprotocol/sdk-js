@@ -78,12 +78,12 @@ async function queryDidEncoded(did: DidUri): Promise<Option<DidDidDetails>> {
 // Query ALL deleted DIDs, which can be very time-consuming if the number of deleted DIDs gets large.
 async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
+  // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID address.
   const entries = await api.query.did.didBlacklist.keys()
   return entries.map(({ args: [encodedAddresses] }) => encodedAddresses)
 }
 
-// Query a DID service given the DID identifier and the service ID.
+// Query a DID service given the DID and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryServiceEncoded(
   did: DidUri,
@@ -96,7 +96,7 @@ async function queryServiceEncoded(
   )
 }
 
-// Query all services for a DID given the DID identifier.
+// Query all services for a DID given the DID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryAllServicesEncoded(
   did: DidUri
@@ -278,7 +278,7 @@ export async function queryServiceEndpoints(
  * Query a service endpoint record associated with a FullDid from the KILT blockchain.
  *
  * @param did Full DID.
- * @param serviceId Identifier of the requested service endpoint (not the full endpoint uri).
+ * @param serviceId ID of the requested service endpoint (not the full endpoint uri).
  * @returns Service endpoint data or null if the requested endpoint is not found on this FullDid, or if the FullDid does not exist.
  */
 export async function queryServiceEndpoint(
@@ -314,7 +314,7 @@ export async function queryNonce(did: DidUri): Promise<BN> {
 }
 
 /**
- * Checks whether a FullDid with a given identifier had previously been deleted, resulting in it being blocked from (re)creation.
+ * Checks whether this full DID had previously been deleted, resulting in it being blocked from (re)creation.
  *
  * @param did Full DID.
  * @returns Whether or not the DID is listed in the block list.
@@ -342,11 +342,11 @@ export async function queryDepositAmount(): Promise<BN> {
 /**
  * Queries the full list of FullDids that have previously been deleted, resulting in them being blocked from (re)creation.
  *
- * @returns An array of DID identifiers that have been deleted.
+ * @returns An array of DID addresses that have been deleted.
  */
 export async function queryDeletedDids(): Promise<DidUri[]> {
-  const encodedIdentifiers = await queryDeletedDidsEncoded()
-  return encodedIdentifiers.map((id) =>
+  const encodedAddresses = await queryDeletedDidsEncoded()
+  return encodedAddresses.map((id) =>
     getFullDidUri(id.toHuman() as KiltAddress)
   )
 }
@@ -679,13 +679,13 @@ export async function getReclaimDepositExtrinsic(
  * @param params Object wrapping all input to the function.
  * @param params.did Full DID.
  * @param params.signingPublicKey Public key of the keypair to be used for authorization as hex string or Uint8Array.
- * @param params.alg Identifier of the cryptographic signing algorithm to be used.
+ * @param params.alg The cryptographic signing algorithm to be used.
  * @param params.sign The callback to interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
  * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing FullDid.
  * @param params.submitter Payment account allowed to submit this extrinsic and cover its fees, which will end up owning any deposit associated with newly created records.
  * @param params.blockNumber Block number for determining the validity period of this authorization. If omitted, the current block number will be fetched from chain.
- * @returns A DID authenticated extrinsic that, after signing with the payment account mentioned in the params, is ready for submission.
+ * @returns A DID authorized extrinsic that, after signing with the payment account mentioned in the params, is ready for submission.
  */
 export async function generateDidAuthenticatedTx({
   did,

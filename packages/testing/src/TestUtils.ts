@@ -216,7 +216,7 @@ function makeDidKeyFromKeypair({
 }
 
 /**
- * Creates [[DidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.
+ * Creates [[DidDetails]] for local use, e.g., in testing. Will not work on-chain because key IDs are generated ad-hoc.
  *
  * @param keypair The KeyringPair for authentication key, other keys derived from it.
  * @param generationOptions The additional options for generation.

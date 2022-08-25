@@ -43,7 +43,7 @@ import {
  *
  * @param didUri The URI of the DID to fetch.
  *
- * @returns The fetched [[DidDetails]], or null if not DID with the provided identifier exists.
+ * @returns The fetched [[DidDetails]], or null if DID does not exist.
  */
 export async function query(didUri: DidUri): Promise<DidDetails | null> {
   const { fragment, type } = parseDidUri(didUri)

@@ -31,7 +31,7 @@ const encryptionKeyId = '#encryption'
 
 /**
  * Create [[DidDetails]] of a light DID using the provided keys and endpoints.
- * Sets proper key IDs, builds light DID URI and identifier.
+ * Sets proper key IDs, builds light DID URI.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
  *
  * @param input The input.

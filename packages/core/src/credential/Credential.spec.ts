@@ -655,7 +655,7 @@ describe('create presentation', () => {
   let ctype: ICType
   let credential: ICredential
 
-  // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
+  // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
     lightDidForId: DidDetails,
     newAuthenticationKey?: DidVerificationKey

@@ -192,7 +192,7 @@ export async function queryAccountLinkDepositInfo(
 }
 
 /**
- * Return the identifier of the DID linked to the provided account, if present.
+ * Return the addresses of the DID linked to the provided account, if present.
  *
  * @param linkedAccount The account to use for the lookup.
  * @returns The linked DID if present, or null otherwise.
@@ -213,7 +213,7 @@ function isLinkableAccountId(
 }
 
 /**
- * Return all the accounts linked to the provided DID identifier.
+ * Return all the accounts linked to the provided DID.
  *
  * @param linkedDid The DID to use for the lookup.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
@@ -313,7 +313,7 @@ export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
 /**
  * Signing (authorizing) this extrinsic with a FullDid and submitting it with any Account
  * will link Account to FullDid and remove any pre-existing links of Account.
- * Account must give permission by signing a Scale-encoded tuple consisting of the FullDid identifier
+ * Account must give permission by signing a Scale-encoded tuple consisting of the FullDid address
  * and a block number representing the expiration block of the signature (after which it cannot be submitted anymore).
  * Account does not need to hold balance. The submitting account will pay and own the deposit for the link.
  *
@@ -425,7 +425,7 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
  * @param did Full DID to be linked.
  * @param signingCallback The signature generation callback that generates the account signature over the encoded (DidAddress, BlockNumber) tuple.
  * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
- * @returns An Extrinsic that must be did-authorized by the FullDid whose identifier was used.
+ * @returns An Extrinsic that must be did-authorized by the full DID used.
  */
 export async function getAuthorizeLinkWithAccountExtrinsic(
   accountAddress: Address,

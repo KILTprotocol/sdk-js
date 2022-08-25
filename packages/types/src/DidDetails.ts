@@ -101,7 +101,7 @@ export type NewDidEncryptionKey = BaseNewDidKey & { type: EncryptionKeyType }
  */
 export type BaseDidKey = {
   /**
-   * Key id without the leading did:kilt:<did_identifier> prefix.
+   * Relative key URI: `#` sign followed by fragment part of URI.
    */
   id: UriFragment
   /**
@@ -136,7 +136,7 @@ export type DidKey = DidVerificationKey | DidEncryptionKey
  */
 export type DidServiceEndpoint = {
   /**
-   * The identifier of the endpoint, without the leading did:kilt:<did_identifier> prefix.
+   * Relative endpoint URI: `#` sign followed by fragment part of URI.
    */
   id: UriFragment
   /**

@@ -33,8 +33,8 @@ import * as Did from './index.js'
 
 const mockApi = ApiMocks.createAugmentedApi()
 
-const existingIdentifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
-const existingDid: DidUri = `did:kilt:${existingIdentifier}`
+const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
+const existingDid: DidUri = `did:kilt:${existingAddress}`
 const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
 
 const existingDidDetails: IDidChainRecord = {
@@ -79,7 +79,7 @@ const existingDidDetails: IDidChainRecord = {
   lastTxCounter: new BN('1'),
   deposit: {
     amount: new BN(2),
-    owner: existingIdentifier,
+    owner: existingAddress,
   },
 }
 
@@ -187,7 +187,7 @@ describe('When creating an instance from the chain', () => {
     })
   })
 
-  it('returns null if the identifier does not exist', async () => {
+  it('returns null if the DID does not exist', async () => {
     const fullDidDetails = await Did.query(nonExistingDid)
     expect(fullDidDetails).toBeNull()
   })

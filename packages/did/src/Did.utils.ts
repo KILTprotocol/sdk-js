@@ -222,7 +222,7 @@ export function validateKiltDidUri(
     throw new SDKErrors.InvalidDidFormatError(input)
   }
   if (!isKiltAddress(address)) {
-    throw new SDKErrors.AddressInvalidError(address, 'DID identifier')
+    throw new SDKErrors.AddressInvalidError(address, 'DID')
   }
 
   return true

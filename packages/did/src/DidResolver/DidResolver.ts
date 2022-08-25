@@ -69,7 +69,7 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
       }
 
       const fullDidDetails = await queryDetails(did)
-      // If a full DID with same identifier is present, return the resolution metadata accordingly.
+      // If a full DID with same subject is present, return the resolution metadata accordingly.
       if (fullDidDetails) {
         return {
           details,
