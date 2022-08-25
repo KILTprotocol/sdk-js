@@ -40,7 +40,7 @@ import {
   createEndowedTestAccount,
   devBob,
   initializeApi,
-  submitExtrinsic,
+  submitTx,
 } from './utils'
 import { DelegationNode } from '../delegation'
 
@@ -79,7 +79,7 @@ describe('write and didDeleteTx', () => {
       key.storeDidCallback
     )
 
-    await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
+    await expect(submitTx(tx, paymentAccount)).rejects.toMatchObject({
       isBadOrigin: true,
     })
   }, 60_000)
@@ -107,7 +107,7 @@ describe('write and didDeleteTx', () => {
       key.storeDidCallback
     )
 
-    await submitExtrinsic(tx, paymentAccount)
+    await submitTx(tx, paymentAccount)
 
     const fullDidUri = Did.getFullDidUri(newDid.uri)
     const fullDid = (await Did.fetch(fullDidUri)) as DidDocument
@@ -166,7 +166,7 @@ describe('write and didDeleteTx', () => {
     // 10 is an example value. It is not used here since we are testing another error
     let call = api.tx.did.delete(new BN(10))
 
-    let submittable = await Did.authorizeExtrinsic(
+    let submittable = await Did.authorizeTx(
       fullDid.uri,
       call,
       signCallback,
@@ -174,14 +174,15 @@ describe('write and didDeleteTx', () => {
       otherAccount.address
     )
 
-    await expect(
-      submitExtrinsic(submittable, paymentAccount)
-    ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
+    await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
+      section: 'did',
+      name: 'BadDidOrigin',
+    })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
     call = api.tx.did.delete(new BN(1))
 
-    submittable = await Did.authorizeExtrinsic(
+    submittable = await Did.authorizeTx(
       fullDid.uri,
       call,
       signCallback,
@@ -189,9 +190,7 @@ describe('write and didDeleteTx', () => {
     )
 
     // Will fail because count provided is too low
-    await expect(
-      submitExtrinsic(submittable, paymentAccount)
-    ).rejects.toMatchObject({
+    await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
       section: 'did',
       name: 'StoredEndpointsCountTooLarge',
     })
@@ -208,7 +207,7 @@ describe('write and didDeleteTx', () => {
     )
     const call = api.tx.did.delete(storedEndpointsCount)
 
-    const submittable = await Did.authorizeExtrinsic(
+    const submittable = await Did.authorizeTx(
       fullDid.uri,
       call,
       signCallback,
@@ -218,7 +217,7 @@ describe('write and didDeleteTx', () => {
     // Check that DID is not blacklisted.
     expect((await api.query.did.didBlacklist(encodedDid)).isNone).toBe(true)
 
-    await submitExtrinsic(submittable, paymentAccount)
+    await submitTx(submittable, paymentAccount)
 
     expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
 
@@ -237,7 +236,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     storeDidCallback
   )
 
-  await submitExtrinsic(tx, paymentAccount)
+  await submitTx(tx, paymentAccount)
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDid = (await Did.fetch(Did.getFullDidUri(newDid.uri))) as DidDocument
@@ -247,13 +246,13 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const updateAuthenticationKeyCall = api.tx.did.setAuthenticationKey(
     Did.publicKeyToChain(newKey.authentication[0])
   )
-  const tx2 = await Did.authorizeExtrinsic(
+  const tx2 = await Did.authorizeTx(
     fullDid.uri,
     updateAuthenticationKeyCall,
     getSignCallback(fullDid),
     paymentAccount.address
   )
-  await submitExtrinsic(tx2, paymentAccount)
+  await submitTx(tx2, paymentAccount)
 
   // Authentication key changed, so did must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
@@ -269,13 +268,13 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     Did.serviceToChain(newEndpoint)
   )
 
-  const tx3 = await Did.authorizeExtrinsic(
+  const tx3 = await Did.authorizeTx(
     fullDid.uri,
     updateEndpointCall,
     newKey.getSignCallback(fullDid),
     paymentAccount.address
   )
-  await submitExtrinsic(tx3, paymentAccount)
+  await submitTx(tx3, paymentAccount)
 
   const encodedDid = Did.toChain(fullDid.uri)
   const encoded = await api.query.did.serviceEndpoints(
@@ -288,13 +287,13 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
     Did.resourceIdToChain(newEndpoint.id)
   )
-  const tx4 = await Did.authorizeExtrinsic(
+  const tx4 = await Did.authorizeTx(
     fullDid.uri,
     removeEndpointCall,
     newKey.getSignCallback(fullDid),
     paymentAccount.address
   )
-  await submitExtrinsic(tx4, paymentAccount)
+  await submitTx(tx4, paymentAccount)
 
   // There should not be any endpoint with the given ID now.
   const encoded2 = await api.query.did.serviceEndpoints(
@@ -309,7 +308,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     encodedDid,
     storedEndpointsCount
   )
-  await submitExtrinsic(reclaimDepositTx, paymentAccount)
+  await submitTx(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
   expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
   expect(await api.query.did.serviceEndpoints.entries(encodedDid)).toHaveLength(
@@ -336,7 +335,7 @@ describe('DID migration', () => {
       storeDidCallback
     )
 
-    await submitExtrinsic(storeTx, paymentAccount)
+    await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.fetch(migratedFullDidUri)
 
@@ -378,7 +377,7 @@ describe('DID migration', () => {
       storeDidCallback
     )
 
-    await submitExtrinsic(storeTx, paymentAccount)
+    await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.fetch(migratedFullDidUri)
 
@@ -426,7 +425,7 @@ describe('DID migration', () => {
       storeDidCallback
     )
 
-    await submitExtrinsic(storeTx, paymentAccount)
+    await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.fetch(migratedFullDidUri)
 
@@ -469,7 +468,7 @@ describe('DID migration', () => {
       encodedDid,
       storedEndpointsCount
     )
-    await submitExtrinsic(reclaimDepositTx, paymentAccount)
+    await submitTx(reclaimDepositTx, paymentAccount)
 
     expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
     expect(
@@ -495,7 +494,7 @@ describe('DID authorization', () => {
       paymentAccount.address,
       storeDidCallback
     )
-    await submitExtrinsic(createTx, paymentAccount)
+    await submitTx(createTx, paymentAccount)
     did = await Did.fetch(Did.getFullDidUriFromKey(authentication[0]))
   }, 60_000)
 
@@ -507,13 +506,13 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = api.tx.ctype.add(CType.toChain(ctype))
-    const tx = await Did.authorizeExtrinsic(
+    const tx = await Did.authorizeTx(
       did.uri,
       call,
       getSignCallback(did),
       paymentAccount.address
     )
-    await submitExtrinsic(tx, paymentAccount)
+    await submitTx(tx, paymentAccount)
 
     await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 60_000)
@@ -523,13 +522,13 @@ describe('DID authorization', () => {
       Did.toChain(did.uri)
     )
     const deleteCall = api.tx.did.delete(storedEndpointsCount)
-    const tx = await Did.authorizeExtrinsic(
+    const tx = await Did.authorizeTx(
       did.uri,
       deleteCall,
       getSignCallback(did),
       paymentAccount.address
     )
-    await submitExtrinsic(tx, paymentAccount)
+    await submitTx(tx, paymentAccount)
 
     const ctype = CType.fromSchema({
       title: UUID.generate(),
@@ -538,13 +537,13 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = api.tx.ctype.add(CType.toChain(ctype))
-    const tx2 = await Did.authorizeExtrinsic(
+    const tx2 = await Did.authorizeTx(
       did.uri,
       call,
       getSignCallback(did),
       paymentAccount.address
     )
-    await expect(submitExtrinsic(tx2, paymentAccount)).rejects.toMatchObject({
+    await expect(submitTx(tx2, paymentAccount)).rejects.toMatchObject({
       section: 'did',
       name: 'DidNotPresent',
     })
@@ -607,7 +606,7 @@ describe('DID management batching', () => {
         paymentAccount.address,
         storeDidCallback
       )
-      await submitExtrinsic(extrinsic, paymentAccount)
+      await submitTx(extrinsic, paymentAccount)
 
       const fullDid = await Did.fetch(
         Did.getFullDidUriFromKey(authentication[0])
@@ -679,7 +678,7 @@ describe('DID management batching', () => {
         paymentAccount.address,
         storeDidCallback
       )
-      await submitExtrinsic(extrinsic, paymentAccount)
+      await submitTx(extrinsic, paymentAccount)
 
       const fullDid = await Did.fetch(Did.getFullDidUriFromKey(didAuthKey))
 
@@ -739,7 +738,7 @@ describe('DID management batching', () => {
         paymentAccount.address,
         storeDidCallback
       )
-      await submitExtrinsic(createTx, paymentAccount)
+      await submitTx(createTx, paymentAccount)
 
       const initialFullDid = await Did.fetch(
         Did.getFullDidUriFromKey(authentication[0])
@@ -766,7 +765,7 @@ describe('DID management batching', () => {
         sign: getSignCallback(initialFullDid),
         submitter: paymentAccount.address,
       })
-      await submitExtrinsic(extrinsic, paymentAccount)
+      await submitTx(extrinsic, paymentAccount)
 
       const finalFullDid = (await Did.fetch(initialFullDid.uri)) as DidDocument
 
@@ -797,7 +796,7 @@ describe('DID management batching', () => {
         paymentAccount.address,
         storeDidCallback
       )
-      await submitExtrinsic(createTx, paymentAccount)
+      await submitTx(createTx, paymentAccount)
 
       const initialFullDid = await Did.fetch(
         Did.getFullDidUriFromKey(authentication[0])
@@ -827,7 +826,7 @@ describe('DID management batching', () => {
         submitter: paymentAccount.address,
       })
 
-      await submitExtrinsic(extrinsic, paymentAccount)
+      await submitTx(extrinsic, paymentAccount)
 
       const finalFullDid = (await Did.fetch(initialFullDid.uri)) as DidDocument
 
@@ -862,7 +861,7 @@ describe('DID management batching', () => {
         storeDidCallback
       )
       // Create the full DID with a service endpoint
-      await submitExtrinsic(tx, paymentAccount)
+      await submitTx(tx, paymentAccount)
       const fullDid = await Did.fetch(
         Did.getFullDidUriFromKey(authentication[0])
       )
@@ -887,7 +886,7 @@ describe('DID management batching', () => {
         submitter: paymentAccount.address,
       })
       // Now the second operation fails but the batch succeeds
-      await submitExtrinsic(updateTx, paymentAccount)
+      await submitTx(updateTx, paymentAccount)
 
       const updatedFullDid = await Did.fetch(fullDid.uri)
 
@@ -920,7 +919,7 @@ describe('DID management batching', () => {
         paymentAccount.address,
         storeDidCallback
       )
-      await submitExtrinsic(createTx, paymentAccount)
+      await submitTx(createTx, paymentAccount)
       const fullDid = await Did.fetch(
         Did.getFullDidUriFromKey(authentication[0])
       )
@@ -946,9 +945,7 @@ describe('DID management batching', () => {
       })
 
       // Now, submitting will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
-      await expect(
-        submitExtrinsic(updateTx, paymentAccount)
-      ).rejects.toMatchObject({
+      await expect(submitTx(updateTx, paymentAccount)).rejects.toMatchObject({
         section: 'did',
         name: 'ServiceAlreadyPresent',
       })
@@ -1006,7 +1003,7 @@ describe('DID extrinsics batching', () => {
     })
 
     // The entire submission promise is resolves and does not throw
-    await submitExtrinsic(tx, paymentAccount)
+    await submitTx(tx, paymentAccount)
 
     // The ctype has been created, even though the delegation operations failed.
     await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
@@ -1041,7 +1038,7 @@ describe('DID extrinsics batching', () => {
     })
 
     // The entire submission promise is rejected and throws.
-    await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
+    await expect(submitTx(tx, paymentAccount)).rejects.toMatchObject({
       section: 'delegation',
       name: 'DelegationNotFound',
     })
@@ -1052,13 +1049,13 @@ describe('DID extrinsics batching', () => {
 
   it('can batch extrinsics for the same required key type', async () => {
     const web3NameClaimTx = api.tx.web3Names.claim('test-1')
-    const authorizedTx = await Did.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeTx(
       fullDid.uri,
       web3NameClaimTx,
       key.getSignCallback(fullDid),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedTx, paymentAccount)
+    await submitTx(authorizedTx, paymentAccount)
 
     const web3Name1ReleaseExt = api.tx.web3Names.releaseByOwner()
     const web3Name2ClaimExt = api.tx.web3Names.claim('test-2')
@@ -1069,7 +1066,7 @@ describe('DID extrinsics batching', () => {
       sign: key.getSignCallback(fullDid),
       submitter: paymentAccount.address,
     })
-    await submitExtrinsic(tx, paymentAccount)
+    await submitTx(tx, paymentAccount)
 
     // Test for correct creation and deletion
     const encoded1 = await api.query.web3Names.owner('test-1')
@@ -1128,7 +1125,7 @@ describe('DID extrinsics batching', () => {
       submitter: paymentAccount.address,
     })
 
-    await submitExtrinsic(batchedExtrinsics, paymentAccount)
+    await submitTx(batchedExtrinsics, paymentAccount)
 
     // Test correct use of authentication keys
     const encoded = await api.query.web3Names.owner('test')
