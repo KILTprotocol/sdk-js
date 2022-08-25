@@ -11,7 +11,6 @@ import Keyring from '@polkadot/keyring'
 
 import type {
   DidEncryptionKey,
-  DidIdentifier,
   DidKey,
   DidResolutionDocumentMetadata,
   DidResolvedDetails,
@@ -27,7 +26,7 @@ import { ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 
 import type { IDidChainRecord } from '../Did.chain'
-import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
+import { getFullDidUriFromKey, parseDidUri, stripFragment } from '../Did.utils'
 
 import { resolve, resolveKey, resolveServiceEndpoint } from './index.js'
 import * as Did from '../index.js'
@@ -36,16 +35,15 @@ import * as Did from '../index.js'
  * @group unit/did
  */
 
-const identifierWithAuthenticationKey =
+const addressWithAuthenticationKey =
   '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-const didWithAuthenticationKey: DidUri = `did:kilt:${identifierWithAuthenticationKey}`
-const identifierWithAllKeys = '4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp'
-const didWithAllKeys: DidUri = `did:kilt:${identifierWithAllKeys}`
-const identifierWithServiceEndpoints =
-  '4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN'
-const didWithServiceEndpoints: DidUri = `did:kilt:${identifierWithServiceEndpoints}`
-const deletedIdentifier = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
-const deletedDid: DidUri = `did:kilt:${deletedIdentifier}`
+const didWithAuthenticationKey: DidUri = `did:kilt:${addressWithAuthenticationKey}`
+const addressWithAllKeys = `4sDxAgw86PFvC6TQbvZzo19WoYF6T4HcLd2i9wzvojkLXLvp`
+const didWithAllKeys: DidUri = `did:kilt:${addressWithAllKeys}`
+const addressWithServiceEndpoints = `4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73dQLrkN`
+const didWithServiceEndpoints: DidUri = `did:kilt:${addressWithServiceEndpoints}`
+const deletedAddress = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
+const deletedDid: DidUri = `did:kilt:${deletedAddress}`
 
 function generateAuthenticationKeyDetails(): DidVerificationKey {
   return {
@@ -95,23 +93,24 @@ function generateServiceEndpointDetails(
 
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<IDidChainRecord | null> => {
+    async (did: DidUri): Promise<IDidChainRecord | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
       const attKey = generateAttestationKeyDetails()
       const delKey = generateDelegationKeyDetails()
+      const { address: didAddress } = parseDidUri(did)
 
-      switch (didIdentifier) {
-        case identifierWithAuthenticationKey:
+      switch (didAddress) {
+        case addressWithAuthenticationKey:
           return {
             authentication: [authKey],
             lastTxCounter: new BN(0),
             deposit: {
               amount: new BN(2),
-              owner: didIdentifier,
+              owner: didAddress,
             },
           }
-        case identifierWithAllKeys:
+        case addressWithAllKeys:
           return {
             authentication: [authKey],
             keyAgreement: [encKey],
@@ -120,16 +119,16 @@ jest.mock('../Did.chain', () => {
             lastTxCounter: new BN(0),
             deposit: {
               amount: new BN(2),
-              owner: didIdentifier,
+              owner: didAddress,
             },
           }
-        case identifierWithServiceEndpoints:
+        case addressWithServiceEndpoints:
           return {
             authentication: [authKey],
             lastTxCounter: new BN(0),
             deposit: {
               amount: new BN(2),
-              owner: didIdentifier,
+              owner: didAddress,
             },
           }
         default:
@@ -139,11 +138,11 @@ jest.mock('../Did.chain', () => {
   )
   const queryServiceEndpoint = jest.fn(
     async (
-      didIdentifier: DidIdentifier,
+      did: DidUri,
       serviceId: DidServiceEndpoint['id']
     ): Promise<DidServiceEndpoint | null> => {
-      switch (didIdentifier) {
-        case identifierWithServiceEndpoints:
+      switch (parseDidUri(did).address) {
+        case addressWithServiceEndpoints:
           return generateServiceEndpointDetails(serviceId)
         default:
           return null
@@ -151,18 +150,12 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-      switch (didIdentifier) {
-        case identifierWithServiceEndpoints:
+    async (did: DidUri): Promise<DidServiceEndpoint[]> => {
+      switch (parseDidUri(did).address) {
+        case addressWithServiceEndpoints:
           return [
-            (await queryServiceEndpoint(
-              didIdentifier,
-              '#id-1'
-            )) as DidServiceEndpoint,
-            (await queryServiceEndpoint(
-              didIdentifier,
-              '#id-2'
-            )) as DidServiceEndpoint,
+            (await queryServiceEndpoint(did, '#id-1')) as DidServiceEndpoint,
+            (await queryServiceEndpoint(did, '#id-2')) as DidServiceEndpoint,
           ]
         default:
           return []
@@ -170,8 +163,8 @@ jest.mock('../Did.chain', () => {
     }
   )
   const queryDidDeletionStatus = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<boolean> =>
-      didIdentifier === deletedIdentifier
+    async (did: DidUri): Promise<boolean> =>
+      parseDidUri(did).address === deletedAddress
   )
   return {
     queryDetails,
@@ -440,7 +433,7 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves a migrated and not deleted DID', async () => {
-    const migratedDid: DidUri = `did:kilt:light:00${identifierWithAuthenticationKey}`
+    const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
     const { details, metadata } = (await resolve(
       migratedDid
     )) as DidResolvedDetails
@@ -456,7 +449,7 @@ describe('When resolving a light DID', () => {
         id: '#authentication',
         type: 'sr25519',
         publicKey: decodeAddress(
-          identifierWithAuthenticationKey,
+          addressWithAuthenticationKey,
           false,
           ss58Format
         ),
@@ -465,7 +458,7 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {
-    const migratedDid: DidUri = `did:kilt:light:00${deletedIdentifier}`
+    const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
     const { details, metadata } = (await resolve(
       migratedDid
     )) as DidResolvedDetails

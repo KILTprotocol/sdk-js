@@ -9,7 +9,6 @@ import { BN } from '@polkadot/util'
 
 import {
   DidServiceEndpoint,
-  DidIdentifier,
   NewDidVerificationKey,
   DidDetails,
   DidVerificationKey,
@@ -21,7 +20,7 @@ import {
 import type { IDidChainRecord } from '../Did.chain.js'
 import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
-import { stripFragment } from '../Did.utils'
+import { parseDidUri, stripFragment } from '../Did.utils'
 
 /**
  * @group unit/did
@@ -77,10 +76,7 @@ function generateServiceEndpointDetails(
 
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
-    async (
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      didIdentifier: DidIdentifier
-    ): Promise<IDidChainRecord | null> => {
+    async (didUri: DidUri): Promise<IDidChainRecord | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
       const attKey = generateAttestationKeyDetails()
@@ -94,28 +90,22 @@ jest.mock('../Did.chain', () => {
         lastTxCounter: new BN(0),
         deposit: {
           amount: new BN(2),
-          owner: Did.Utils.getAddressFromIdentifier(didIdentifier),
+          owner: parseDidUri(didUri).address,
         },
       }
     }
   )
   const queryServiceEndpoint = jest.fn(
     async (
-      didIdentifier: DidIdentifier,
+      didUri: DidUri,
       serviceId: DidServiceEndpoint['id']
     ): Promise<DidServiceEndpoint | null> =>
       generateServiceEndpointDetails(serviceId)
   )
   const queryServiceEndpoints = jest.fn(
-    async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => [
-      (await queryServiceEndpoint(
-        didIdentifier,
-        '#id-1'
-      )) as DidServiceEndpoint,
-      (await queryServiceEndpoint(
-        didIdentifier,
-        '#id-2'
-      )) as DidServiceEndpoint,
+    async (didUri: DidUri): Promise<DidServiceEndpoint[]> => [
+      (await queryServiceEndpoint(didUri, '#id-1')) as DidServiceEndpoint,
+      (await queryServiceEndpoint(didUri, '#id-2')) as DidServiceEndpoint,
     ]
   )
   return {

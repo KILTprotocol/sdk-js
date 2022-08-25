@@ -67,7 +67,7 @@ export async function getStoreAsDelegationTx(
   return api.tx.delegation.addDelegation(
     delegation.id,
     delegation.parentId || '',
-    DidUtils.getIdentifierFromKiltDid(delegation.account),
+    DidUtils.parseDidUri(delegation.account).address,
     permissionsAsBitset(delegation),
     signature
   )

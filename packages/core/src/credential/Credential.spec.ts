@@ -551,7 +551,6 @@ describe('Credential', () => {
       authentication: migratedAndDeleted.authentication,
     })
     migratedAndDeletedFullDid = {
-      identifier: migratedAndDeletedLightDid.identifier,
       uri: Did.Utils.getFullDidUri(migratedAndDeletedLightDid.uri),
       authentication: [migratedAndDeletedLightDid.authentication[0]],
     }
@@ -656,7 +655,7 @@ describe('create presentation', () => {
   let ctype: ICType
   let credential: ICredential
 
-  // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
+  // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
     lightDidForId: DidDetails,
     newAuthenticationKey?: DidVerificationKey
@@ -665,7 +664,6 @@ describe('create presentation', () => {
     const authKey = newAuthenticationKey || lightDidForId.authentication[0]
 
     return {
-      identifier: lightDidForId.identifier,
       uri,
       authentication: [authKey],
     }

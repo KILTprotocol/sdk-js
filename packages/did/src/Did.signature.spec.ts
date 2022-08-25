@@ -266,7 +266,6 @@ describe('full DID', () => {
       mnemonicGenerate()
     ) as KiltKeyringPair
     details = {
-      identifier: keypair.address,
       uri: `did:kilt:${keypair.address}`,
       authentication: [
         {

@@ -53,7 +53,7 @@ export type DidResourceUri = `${DidUri}${UriFragment}`
  */
 export type DidPublicKey = {
   /**
-   * The full key URI, in the form of <did_subject>#<key_identifier>.
+   * The full key URI, in the form of <did>#<key_id>.
    */
   id: DidResourceUri
   /**
@@ -75,7 +75,7 @@ export type DidPublicKey = {
  */
 export type DidPublicServiceEndpoint = Omit<DidServiceEndpoint, 'id'> & {
   /**
-   * The full service URI, in the form of <did_subject>#<service_identifier>.
+   * The full service URI, in the form of <did>#<service_id>.
    */
   id: DidResourceUri
 }

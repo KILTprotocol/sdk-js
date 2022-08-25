@@ -9,7 +9,6 @@ import { decodeAddress } from '@polkadot/util-crypto'
 
 import type {
   DidDetails,
-  DidIdentifier,
   DidUri,
   NewLightDidVerificationKey,
 } from '@kiltprotocol/types'
@@ -32,7 +31,7 @@ const encryptionKeyId = '#encryption'
 
 /**
  * Create [[DidDetails]] of a light DID using the provided keys and endpoints.
- * Sets proper key IDs, builds light DID URI and identifier.
+ * Sets proper key IDs, builds light DID URI.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
  *
  * @param input The input.
@@ -60,16 +59,12 @@ export function createLightDidDetails({
   const authenticationKeyTypeEncoding =
     verificationKeyTypeToLightDidEncoding[authentication[0].type]
   const address = getAddressByKey(authentication[0])
-  // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
-  const identifier =
-    `${authenticationKeyTypeEncoding}${address}` as DidIdentifier
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   const uri =
-    `${KILT_DID_PREFIX}light:${identifier}${encodedDetailsString}` as DidUri
+    `${KILT_DID_PREFIX}light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
 
   const details: DidDetails = {
-    identifier,
     uri,
     authentication: [
       {

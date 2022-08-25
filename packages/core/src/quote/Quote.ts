@@ -160,7 +160,7 @@ export async function createQuoteAgreement(
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   if (attesterIdentity !== attesterSignedQuote.attesterDid)
-    throw new SDKErrors.DidIdentifierMismatchError(
+    throw new SDKErrors.DidSubjectMismatchError(
       attesterIdentity,
       attesterSignedQuote.attesterDid
     )

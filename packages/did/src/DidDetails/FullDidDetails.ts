@@ -43,10 +43,10 @@ import {
  *
  * @param didUri The URI of the DID to fetch.
  *
- * @returns The fetched [[DidDetails]], or null if not DID with the provided identifier exists.
+ * @returns The fetched [[DidDetails]], or null if DID does not exist.
  */
 export async function query(didUri: DidUri): Promise<DidDetails | null> {
-  const { identifier, fragment, type } = parseDidUri(didUri)
+  const { fragment, type } = parseDidUri(didUri)
   if (fragment) {
     throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)
   }
@@ -55,11 +55,10 @@ export async function query(didUri: DidUri): Promise<DidDetails | null> {
       `DID URI "${didUri}" does not refer to a full DID`
     )
   }
-  const didRec = await queryDetails(identifier)
+  const didRec = await queryDetails(didUri)
   if (!didRec) return null
 
   const details: DidDetails = {
-    identifier,
     uri: didUri,
     authentication: didRec.authentication,
     assertionMethod: didRec.assertionMethod,
@@ -67,7 +66,7 @@ export async function query(didUri: DidUri): Promise<DidDetails | null> {
     keyAgreement: didRec.keyAgreement,
   }
 
-  const service = await queryServiceEndpoints(identifier)
+  const service = await queryServiceEndpoints(didUri)
   if (service.length > 0) {
     details.service = service
   }
@@ -100,7 +99,7 @@ export function getKeysForExtrinsic(
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
 export async function getNextNonce(did: DidDetails): Promise<BN> {
-  const currentNonce = await queryNonce(did.identifier)
+  const currentNonce = await queryNonce(did.uri)
   return increaseNonce(currentNonce)
 }
 
@@ -140,7 +139,7 @@ export async function authorizeExtrinsic(
     )
   }
   return generateDidAuthenticatedTx({
-    didIdentifier: did.identifier,
+    did: did.uri,
     signingPublicKey: signingKey.publicKey,
     alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
     sign,
@@ -254,7 +253,7 @@ export async function authorizeBatch({
     }
 
     return generateDidAuthenticatedTx({
-      didIdentifier: did.identifier,
+      did: did.uri,
       signingPublicKey: signingKey.publicKey,
       alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
       sign,
