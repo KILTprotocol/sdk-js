@@ -27,10 +27,7 @@ import {
   queryNonce,
   queryServiceEndpoints,
 } from '../Did.chain.js'
-import {
-  getSigningAlgorithmForVerificationKeyType,
-  parseDidUri,
-} from '../Did.utils.js'
+import { parseDidUri, signatureAlgForKeyType } from '../Did.utils.js'
 
 import {
   getKeyRelationshipForExtrinsic,
@@ -141,7 +138,7 @@ export async function authorizeExtrinsic(
   return generateDidAuthenticatedTx({
     did: did.uri,
     signingPublicKey: signingKey.publicKey,
-    alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
+    alg: signatureAlgForKeyType[signingKey.type],
     sign,
     call: extrinsic,
     txCounter: txCounter || (await getNextNonce(did)),
@@ -255,7 +252,7 @@ export async function authorizeBatch({
     return generateDidAuthenticatedTx({
       did: did.uri,
       signingPublicKey: signingKey.publicKey,
-      alg: getSigningAlgorithmForVerificationKeyType(signingKey.type),
+      alg: signatureAlgForKeyType[signingKey.type],
       sign,
       call,
       txCounter,

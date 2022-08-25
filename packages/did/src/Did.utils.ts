@@ -124,72 +124,34 @@ export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
   return parseDidUri(didA).address === parseDidUri(didB).address
 }
 
-const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
+export const signatureAlgForKeyType: Record<
+  VerificationKeyType,
+  SigningAlgorithms
+> = {
   ed25519: 'ed25519',
   sr25519: 'sr25519',
   ecdsa: 'ecdsa-secp256k1',
 }
-const keyTypeForSignatureAlg = Object.entries(signatureAlgForKeyType).reduce(
-  (obj, [key, value]) => ({ ...obj, [value]: key }),
-  {}
-) as Record<SigningAlgorithms, VerificationKeyType>
 
-/**
- * Given the identifier of a key type, returns the identifier of the signature algorithm for which it is used.
- *
- * @param keyType Key type identifier.
- * @returns Signing algorithm identifier.
- */
-export function getSigningAlgorithmForVerificationKeyType(
-  keyType: VerificationKeyType
-): SigningAlgorithms {
-  return signatureAlgForKeyType[keyType]
+export const keyTypeForSignatureAlg = Object.entries(
+  signatureAlgForKeyType
+).reduce((obj, [key, value]) => ({ ...obj, [value]: key }), {}) as Record<
+  SigningAlgorithms,
+  VerificationKeyType
+>
+
+export const encryptionAlgForKeyType: Record<
+  EncryptionKeyType,
+  EncryptionAlgorithms
+> = {
+  x25519: 'x25519-xsalsa20-poly1305',
 }
 
-/**
- * Given the identifier of a signature algorithm, returns the identifier of the key type required for it.
- *
- * @param signatureAlg Signature algorithm identifier.
- * @returns Key type identifier.
- */
-export function getVerificationKeyTypeForSigningAlgorithm(
-  signatureAlg: SigningAlgorithms
-): VerificationKeyType {
-  return keyTypeForSignatureAlg[signatureAlg]
-}
-
-const encryptionAlgForKeyType: Record<EncryptionKeyType, EncryptionAlgorithms> =
-  {
-    x25519: 'x25519-xsalsa20-poly1305',
-  }
-
-/**
- * Given the identifier of a key type, returns the identifier of the encryption algorithm for which it is used.
- *
- * @param keyType Key type identifier.
- * @returns Encryption algorithm identifier.
- */
-export function getEncryptionAlgorithmForEncryptionKeyType(
-  keyType: EncryptionKeyType
-): EncryptionAlgorithms {
-  return encryptionAlgForKeyType[keyType]
-}
-
-const keyTypeForEncryptionAlg: Record<EncryptionAlgorithms, EncryptionKeyType> =
-  {
-    'x25519-xsalsa20-poly1305': 'x25519',
-  }
-
-/**
- * Given the identifier of an encryption algorithm, returns the identifier of the key type required for it.
- *
- * @param encryptionAlg Encryption algorithm identifier.
- * @returns Key type identifier.
- */
-export function getEncryptionKeyTypeForEncryptionAlgorithm(
-  encryptionAlg: EncryptionAlgorithms
-): EncryptionKeyType {
-  return keyTypeForEncryptionAlg[encryptionAlg]
+export const keyTypeForEncryptionAlg: Record<
+  EncryptionAlgorithms,
+  EncryptionKeyType
+> = {
+  'x25519-xsalsa20-poly1305': 'x25519',
 }
 
 export type EncodedVerificationKey =
