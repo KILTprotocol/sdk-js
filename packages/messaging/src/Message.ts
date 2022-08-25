@@ -223,7 +223,7 @@ export function fromBody(
  * @param encryptCallback The callback to encrypt with the secret key.
  * @param receiverKeyUri The key URI of the receiver.
  * @param encryptionOptions Options to perform the encryption operation.
- * @param encryptionOptions.resolver The DID resolver to use.
+ * @param encryptionOptions.resolveKey The DID key resolver to use.
  *
  * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
  */
