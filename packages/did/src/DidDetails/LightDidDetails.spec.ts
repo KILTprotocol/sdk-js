@@ -255,7 +255,7 @@ describe('When creating an instance from a URI', () => {
     )
     const incorrectURIs = [
       'did:kilt:light:sdasdsadas',
-      // @ts-ignore not a valid did uri
+      // @ts-ignore not a valid DID uri
       'random-uri',
       'did:kilt:light',
       'did:kilt:light:',
