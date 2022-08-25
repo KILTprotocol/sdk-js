@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidUri } from './DidDetails'
+import type { DidUri } from './DidDocument'
 import type { ICType } from './CType'
 
 export type IClaimContents = Record<

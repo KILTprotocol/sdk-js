@@ -10,7 +10,7 @@ import { BN } from '@polkadot/util'
 import {
   DidServiceEndpoint,
   NewDidVerificationKey,
-  DidDetails,
+  DidDocument,
   DidVerificationKey,
   DidEncryptionKey,
   UriFragment,
@@ -28,7 +28,7 @@ import { parseDidUri, stripFragment } from '../Did.utils'
 
 const did: DidUri = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
-function generateAuthenticationKeyDetails(): DidVerificationKey {
+function generateAuthenticationKey(): DidVerificationKey {
   return {
     id: '#auth',
     type: 'ed25519',
@@ -36,7 +36,7 @@ function generateAuthenticationKeyDetails(): DidVerificationKey {
   }
 }
 
-function generateEncryptionKeyDetails(): DidEncryptionKey {
+function generateEncryptionKey(): DidEncryptionKey {
   return {
     id: '#enc',
     type: 'x25519',
@@ -45,7 +45,7 @@ function generateEncryptionKeyDetails(): DidEncryptionKey {
   }
 }
 
-function generateAttestationKeyDetails(): DidVerificationKey {
+function generateAttestationKey(): DidVerificationKey {
   return {
     id: '#att',
     type: 'sr25519',
@@ -54,7 +54,7 @@ function generateAttestationKeyDetails(): DidVerificationKey {
   }
 }
 
-function generateDelegationKeyDetails(): DidVerificationKey {
+function generateDelegationKey(): DidVerificationKey {
   return {
     id: '#del',
     type: 'ecdsa',
@@ -63,9 +63,7 @@ function generateDelegationKeyDetails(): DidVerificationKey {
   }
 }
 
-function generateServiceEndpointDetails(
-  serviceId: UriFragment
-): DidServiceEndpoint {
+function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
   const fragment = stripFragment(serviceId)
   return {
     id: serviceId,
@@ -77,10 +75,10 @@ function generateServiceEndpointDetails(
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
     async (didUri: DidUri): Promise<EncodedDid | null> => {
-      const authKey = generateAuthenticationKeyDetails()
-      const encKey = generateEncryptionKeyDetails()
-      const attKey = generateAttestationKeyDetails()
-      const delKey = generateDelegationKeyDetails()
+      const authKey = generateAuthenticationKey()
+      const encKey = generateEncryptionKey()
+      const attKey = generateAttestationKey()
+      const delKey = generateDelegationKey()
 
       return {
         authentication: [authKey],
@@ -99,8 +97,7 @@ jest.mock('../Did.chain', () => {
     async (
       didUri: DidUri,
       serviceId: DidServiceEndpoint['id']
-    ): Promise<DidServiceEndpoint | null> =>
-      generateServiceEndpointDetails(serviceId)
+    ): Promise<DidServiceEndpoint | null> => generateServiceEndpoint(serviceId)
   )
   const queryServiceEndpoints = jest.fn(
     async (didUri: DidUri): Promise<DidServiceEndpoint[]> => [
@@ -117,9 +114,9 @@ jest.mock('../Did.chain', () => {
 
 describe('When exporting a DID Document from a full DID', () => {
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await Did.query(did)) as DidDetails
+    const fullDid = (await Did.query(did)) as DidDocument
 
-    const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
+    const didDoc = exportToDidDocument(fullDid, 'application/json')
 
     expect(didDoc).toStrictEqual({
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
@@ -173,9 +170,9 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await Did.query(did)) as DidDetails
+    const fullDid = (await Did.query(did)) as DidDocument
 
-    const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
+    const didDoc = exportToDidDocument(fullDid, 'application/ld+json')
 
     expect(didDoc).toStrictEqual({
       '@context': ['https://www.w3.org/ns/did/v1'],
@@ -230,30 +227,30 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('fails to export to an unsupported mimetype', async () => {
-    const fullDidDetails = (await Did.query(did)) as DidDetails
+    const fullDid = (await Did.query(did)) as DidDocument
 
     expect(() =>
       // @ts-ignore
-      exportToDidDocument(fullDidDetails, 'random-mime-type')
+      exportToDidDocument(fullDid, 'random-mime-type')
     ).toThrow()
   })
 })
 
 describe('When exporting a DID Document from a light DID', () => {
-  const authKey = generateAuthenticationKeyDetails() as NewDidVerificationKey
-  const encKey = generateEncryptionKeyDetails()
+  const authKey = generateAuthenticationKey() as NewDidVerificationKey
+  const encKey = generateEncryptionKey()
   const service = [
-    generateServiceEndpointDetails('#id-1'),
-    generateServiceEndpointDetails('#id-2'),
+    generateServiceEndpoint('#id-1'),
+    generateServiceEndpoint('#id-2'),
   ]
-  const lightDidDetails = Did.createLightDidDetails({
+  const lightDid = Did.createLightDidDocument({
     authentication: [{ publicKey: authKey.publicKey, type: 'ed25519' }],
     keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
     service,
   })
 
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, and two service endpoints', async () => {
-    const didDoc = exportToDidDocument(lightDidDetails, 'application/json')
+    const didDoc = exportToDidDocument(lightDid, 'application/json')
 
     expect(didDoc).toMatchInlineSnapshot(`
       Object {
@@ -303,7 +300,7 @@ describe('When exporting a DID Document from a light DID', () => {
   })
 
   it('exports the expected application/json+ld W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, and two service endpoints', async () => {
-    const didDoc = exportToDidDocument(lightDidDetails, 'application/ld+json')
+    const didDoc = exportToDidDocument(lightDid, 'application/ld+json')
 
     expect(didDoc).toMatchInlineSnapshot(`
       Object {
@@ -358,7 +355,7 @@ describe('When exporting a DID Document from a light DID', () => {
   it('fails to export to an unsupported mimetype', async () => {
     expect(() =>
       // @ts-ignore
-      exportToDidDocument(lightDidDetails, 'random-mime-type')
+      exportToDidDocument(lightDid, 'random-mime-type')
     ).toThrow()
   })
 })

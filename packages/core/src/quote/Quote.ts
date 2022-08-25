@@ -20,7 +20,7 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
-  DidDetails,
+  DidDocument,
   DidResourceUri,
   DidSignature,
   DidUri,
@@ -76,7 +76,7 @@ export function validateQuoteSchema(
  */
 export async function createAttesterSignedQuote(
   quoteInput: IQuote,
-  attesterIdentity: DidDetails,
+  attesterIdentity: DidDocument,
   sign: SignCallback
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
@@ -149,7 +149,7 @@ export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   credentialRootHash: ICredential['rootHash'],
   attesterIdentity: DidUri,
-  claimerIdentity: DidDetails,
+  claimerIdentity: DidDocument,
   sign: SignCallback,
   {
     didResolve = resolve,
