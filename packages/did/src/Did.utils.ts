@@ -124,7 +124,10 @@ export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
   return parseDidUri(didA).address === parseDidUri(didB).address
 }
 
-const signatureAlgForKeyType: Record<VerificationKeyType, SigningAlgorithms> = {
+export const signatureAlgForKeyType: Record<
+  VerificationKeyType,
+  SigningAlgorithms
+> = {
   ed25519: 'ed25519',
   sr25519: 'sr25519',
   ecdsa: 'ecdsa-secp256k1',
