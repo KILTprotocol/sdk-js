@@ -422,7 +422,7 @@ export function makeLinkingSignCallback(
  * @param accountAddress Address of the account to be linked.
  * @param did Full DID to be linked.
  * @param sign The sign callback that generates the account signature over the encoded (DidAddress, BlockNumber) tuple.
- * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
+ * @param nBlocksValid The link request will be rejected if submitted later than (current block number + nBlocksValid)?
  * @returns An Extrinsic that must be did-authorized by the full DID used.
  */
 export async function getAuthorizeLinkWithAccountExtrinsic(
