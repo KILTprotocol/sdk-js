@@ -26,9 +26,8 @@ import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
-import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import {
-  assert,
   BN,
   stringToU8a,
   u8aConcatStrict,
@@ -414,6 +413,36 @@ export function makeLinkingSignCallback(
   }
 }
 
+function getUnprefixedSignature(
+  message: HexString,
+  signature: Uint8Array,
+  address: Address
+): { signature: Uint8Array; type: KeypairType } {
+  try {
+    // try to verify the signature without the prefix first
+    const unprefixed = signature.subarray(1)
+    const { crypto, isValid } = signatureVerify(message, unprefixed, address)
+    if (isValid) {
+      return {
+        signature: unprefixed,
+        type: crypto as KeypairType,
+      }
+    }
+  } catch {
+    // if it fails, maybe the signature prefix caused that, so we try to verify the whole signature
+  }
+
+  const { crypto, isValid } = signatureVerify(message, signature, address)
+  if (isValid) {
+    return {
+      signature,
+      type: crypto as KeypairType,
+    }
+  }
+
+  throw new SDKErrors.SignatureUnverifiableError()
+}
+
 /**
  * Builds an extrinsic to link `account` to a `did` where the fees and deposit are covered by some third account.
  * This extrinsic must be authorized using the same full DID.
@@ -432,59 +461,44 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   nBlocksValid = 10
 ): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
+
   const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)
+
   // Gets the current definition of BlockNumber (second tx argument) from the metadata.
-  const blockNumberType =
+  const BlockNumber =
     api.tx.didLookup.associateAccount.meta.args[1].type.toString()
   // This is some magic on the polkadot types internals to get the DidAddress definition from the metadata.
   // We get it from the connectedAccounts storage, which is a double map from (DidAddress, Account) -> Null.
-  const didAddressType = (
+  const DidAddress = (
     api.registry.lookup.getTypeDef(
       // gets the type id of the keys on the connectedAccounts storage (which is a double map).
       api.query.didLookup.connectedAccounts.creator.meta.type.asMap.key
     ).sub as TypeDef[]
   )[0].type // get the type of the first key, which is the DidAddress
-  const encodedDetails = api
-    .createType(`(${didAddressType}, ${blockNumberType})`, [
-      encodeDid(did),
-      validTill,
-    ])
-    .toU8a()
-  const paddedDetails = u8aToHex(
-    decodeAddress(accountAddress).length > 20
-      ? u8aWrapBytes(encodedDetails)
-      : u8aConcatStrict([
-          U8A_WRAP_ETHEREUM,
-          stringToU8a(`${encodedDetails.length}`),
-          encodedDetails,
-        ])
-  )
-  // The signature may be prefixed; so we try to verify the signature without the prefix first.
-  // If it fails, we try the same with the prefix and return the result of the second operation.
-  let signature = await sign(paddedDetails)
-  let result: VerifyResult
-  try {
-    result = signatureVerify(
-      paddedDetails,
-      signature.subarray(1),
-      accountAddress
-    )
-    // We discard this error message, as the error is caught in the catch block
-    assert(result.isValid, '')
-    // Remove type from signature if did not fail to verify
-    signature = signature.subarray(1)
-  } catch {
-    // Otherwise, try to verify the whole signature
-    result = signatureVerify(paddedDetails, signature, accountAddress)
-    assert(result.isValid, 'signature not valid')
-  }
 
-  const sigType = result.crypto as KeypairType
+  const encoded = api
+    .createType(`(${DidAddress}, ${BlockNumber})`, [encodeDid(did), validTill])
+    .toU8a()
+
+  const isAccountId32 = decodeAddress(accountAddress).length > 20
+  const length = stringToU8a(String(encoded.length))
+  const paddedDetails = u8aToHex(
+    isAccountId32
+      ? u8aWrapBytes(encoded)
+      : u8aConcatStrict([U8A_WRAP_ETHEREUM, length, encoded])
+  )
+
+  const { signature, type } = getUnprefixedSignature(
+    paddedDetails,
+    await sign(paddedDetails),
+    accountAddress
+  )
+
   return getAccountSignedAssociationExtrinsic(
     accountAddress,
     validTill,
     signature,
-    sigType
+    type
   )
 }
