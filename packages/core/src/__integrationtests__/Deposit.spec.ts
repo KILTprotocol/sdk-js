@@ -27,7 +27,6 @@ import {
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { DecoderUtils } from '@kiltprotocol/utils'
 import { BN } from '@polkadot/util'
 import {
   devFaucet,
@@ -117,10 +116,6 @@ async function checkRemoveFullDidAttestation(
   await submitExtrinsic(authorizedTx, identity)
 
   const attestationResult = await queryRaw(attestation.claimHash)
-  DecoderUtils.assertCodecIsType(attestationResult, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
@@ -169,10 +164,6 @@ async function checkReclaimFullDidAttestation(
   tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
   const attestationResult = await queryRaw(attestation.claimHash)
-  DecoderUtils.assertCodecIsType(attestationResult, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)

@@ -11,7 +11,7 @@ import type {
   KiltAddress,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
@@ -96,7 +96,6 @@ export async function queryWeb3NameForDid(
 ): Promise<Web3Name | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await api.query.web3Names.names(encodeDid(did))
-  DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
   return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
 
@@ -111,9 +110,6 @@ export async function queryDidForWeb3Name(
 ): Promise<DidUri | null> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await api.query.web3Names.owner(name)
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
-  ])
 
   const address = encoded.isSome
     ? (encoded.unwrap().owner.toString() as KiltAddress)
