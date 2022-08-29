@@ -5,33 +5,31 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Option, GenericAccountId, u128, u32 } from '@polkadot/types'
+import type { GenericAccountId, Option, u128, u32 } from '@polkadot/types'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import { BN, hexToString, hexToU8a } from '@polkadot/util'
+import { BN, hexToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 
 import type {
-  Deposit,
   DidDetails,
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
   DidSignature,
+  DidUri,
   DidVerificationKey,
   KeyRelationship,
   KiltAddress,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
   SignCallback,
   SigningOptions,
   SubmittableExtrinsic,
-  NewDidVerificationKey,
-  NewDidEncryptionKey,
-  DidUri,
 } from '@kiltprotocol/types'
 import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
 import type {
   DidDidDetails,
@@ -54,8 +52,6 @@ import {
   parseDidUri,
   stripFragment,
 } from './Did.utils.js'
-
-const log = ConfigService.LoggingFactory.getLogger('Did')
 
 // ### Chain type definitions
 
@@ -122,27 +118,18 @@ async function queryDepositAmountEncoded(): Promise<u128> {
 
 // ### DECODED QUERYING types
 
-export type IChainDeposit = {
-  owner: KiltAddress
-  amount: BN
-}
-
-export type IDidChainRecord = Pick<
+export type EncodedDid = Pick<
   DidDetails,
   'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
 > & {
   lastTxCounter: BN
-  deposit: IChainDeposit
+  deposit: {
+    owner: KiltAddress
+    amount: BN
+  }
 }
 
 // ### DECODED QUERYING (builds on top of raw querying)
-
-function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
-  return {
-    amount: new BN(encodedDeposit.amount.toString()),
-    owner: encodedDeposit.owner.toString() as KiltAddress,
-  }
-}
 
 function decodeDidPublicKeyDetails(
   keyId: Hash,
@@ -155,11 +142,10 @@ function decodeDidPublicKeyDetails(
     id: `#${keyId.toHex()}`,
     type: key.type.toLowerCase() as DidKey['type'],
     publicKey: key.value.toU8a(),
-    includedAt: keyDetails.blockNumber.toBn(),
   }
 }
 
-function decodeDidChainRecord({
+function decodeDid({
   publicKeys,
   authenticationKey,
   attestationKey,
@@ -167,7 +153,7 @@ function decodeDidChainRecord({
   keyAgreementKeys,
   lastTxCounter,
   deposit,
-}: DidDidDetails): IDidChainRecord {
+}: DidDidDetails): EncodedDid {
   const keys: Record<string, DidKey> = [...publicKeys.entries()]
     .map(([keyId, keyDetails]) => decodeDidPublicKeyDetails(keyId, keyDetails))
     .reduce((res, key) => {
@@ -177,10 +163,13 @@ function decodeDidChainRecord({
 
   const authentication = keys[authenticationKey.toHex()] as DidVerificationKey
 
-  const didRecord: IDidChainRecord = {
+  const didRecord: EncodedDid = {
     authentication: [authentication],
     lastTxCounter: lastTxCounter.toBn(),
-    deposit: decodeDidDeposit(deposit),
+    deposit: {
+      amount: deposit.amount.toBn(),
+      owner: deposit.owner.toString() as KiltAddress,
+    },
   }
   if (attestationKey.isSome) {
     const key = keys[attestationKey.unwrap().toHex()] as DidVerificationKey
@@ -209,14 +198,12 @@ function decodeDidChainRecord({
  * @param did The Full DID.
  * @returns Data associated with this Did or null if the Did has not been claimed or has been deleted.
  */
-export async function queryDetails(
-  did: DidUri
-): Promise<IDidChainRecord | null> {
+export async function queryDetails(did: DidUri): Promise<EncodedDid | null> {
   const result = await queryDidEncoded(did)
   if (result.isNone) {
     return null
   }
-  return decodeDidChainRecord(result.unwrap())
+  return decodeDid(result.unwrap())
 }
 
 interface BlockchainEndpoint {
@@ -249,15 +236,15 @@ function blockchainEndpointToEndpoint({
   }
 }
 
-function decodeServiceChainRecord({
+function decodeService({
   id,
   serviceTypes,
   urls,
 }: DidServiceEndpointsDidEndpoint): DidServiceEndpoint {
   return blockchainEndpointToEndpoint({
-    id: hexToString(id.toString()),
-    serviceTypes: serviceTypes.map((type) => hexToString(type.toString())),
-    urls: urls.map((url) => hexToString(url.toString())),
+    id: id.toUtf8(),
+    serviceTypes: serviceTypes.map((type) => type.toUtf8()),
+    urls: urls.map((url) => url.toUtf8()),
   })
 }
 
@@ -271,7 +258,7 @@ export async function queryServiceEndpoints(
   did: DidUri
 ): Promise<DidServiceEndpoint[]> {
   const encoded = await queryAllServicesEncoded(did)
-  return encoded.map((e) => decodeServiceChainRecord(e))
+  return encoded.map((e) => decodeService(e))
 }
 
 /**
@@ -288,7 +275,7 @@ export async function queryServiceEndpoint(
   const serviceEncoded = await queryServiceEncoded(did, serviceId)
   if (serviceEncoded.isNone) return null
 
-  return decodeServiceChainRecord(serviceEncoded.unwrap())
+  return decodeService(serviceEncoded.unwrap())
 }
 
 /**
@@ -440,15 +427,15 @@ export async function getStoreTx(
 
   // For now, it only takes the first attestation key, if present.
   if (assertionMethod && assertionMethod.length > 1) {
-    log.warn(
-      `More than one attestation key (${assertionMethod.length}) specified. Only the first will be stored on the chain.`
+    throw new SDKErrors.DidError(
+      `More than one attestation key (${assertionMethod.length}) specified. The chain can only store one.`
     )
   }
 
   // For now, it only takes the first delegation key, if present.
   if (capabilityDelegation && capabilityDelegation.length > 1) {
-    log.warn(
-      `More than one delegation key (${capabilityDelegation.length}) specified. Only the first will be stored on the chain.`
+    throw new SDKErrors.DidError(
+      `More than one delegation key (${capabilityDelegation.length}) specified. The chain can only store one.`
     )
   }
 
@@ -493,14 +480,14 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
+  const { publicKey, type } = authenticationKey
   const signature = await sign({
     data: encoded,
     meta: {},
-    publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
-    alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
+    publicKey,
+    alg: getSigningAlgorithmForVerificationKeyType(type),
   })
-  const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
-  const encodedSignature = { [keyType]: signature.data } as EncodedSignature
+  const encodedSignature = { [type]: signature.data } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
 
@@ -711,6 +698,8 @@ export async function generateDidAuthenticatedTx({
     )
   const signature = await sign({
     data: signableCall.toU8a(),
+    publicKey: Crypto.coToUInt8(signingPublicKey),
+    alg,
     meta: {
       method: call.method.toHex(),
       version: call.version,
@@ -718,10 +707,8 @@ export async function generateDidAuthenticatedTx({
       transactionVersion: api.runtimeVersion.transactionVersion.toString(),
       genesisHash: api.genesisHash.toHex(),
       nonce: signableCall.txCounter.toHex(),
-      address: Crypto.encodeAddress(signableCall.did),
+      address: Crypto.encodeAddress(signableCall.did, ss58Format),
     },
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
   })
   const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
   const encodedSignature = { [keyType]: signature.data } as EncodedSignature

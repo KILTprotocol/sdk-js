@@ -21,7 +21,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 
-import type { IDidChainRecord } from '../Did.chain'
+import type { EncodedDid } from '../Did.chain'
 
 import * as Did from './index.js'
 
@@ -37,7 +37,7 @@ const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
 const existingDid: DidUri = `did:kilt:${existingAddress}`
 const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
 
-const existingDidDetails: IDidChainRecord = {
+const existingDidDetails: EncodedDid = {
   authentication: [
     {
       id: '#auth1',
@@ -97,14 +97,12 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
 ]
 
 jest.mock('../Did.chain.ts', () => ({
-  queryDetails: jest.fn(
-    async (did: DidUri): Promise<IDidChainRecord | null> => {
-      if (did === existingDid) {
-        return existingDidDetails
-      }
-      return null
+  queryDetails: jest.fn(async (did: DidUri): Promise<EncodedDid | null> => {
+    if (did === existingDid) {
+      return existingDidDetails
     }
-  ),
+    return null
+  }),
   queryServiceEndpoints: jest.fn(
     async (did: DidUri): Promise<DidServiceEndpoint[]> => {
       if (did === existingDid) {
