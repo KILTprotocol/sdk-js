@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Option, GenericAccountId, u128, u32 } from '@polkadot/types'
+import type { GenericAccountId, Option, u128, u32 } from '@polkadot/types'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
@@ -18,15 +18,15 @@ import type {
   DidKey,
   DidServiceEndpoint,
   DidSignature,
+  DidUri,
   DidVerificationKey,
   KeyRelationship,
   KiltAddress,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
   SignCallback,
   SigningOptions,
   SubmittableExtrinsic,
-  NewDidVerificationKey,
-  NewDidEncryptionKey,
-  DidUri,
 } from '@kiltprotocol/types'
 import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
@@ -49,9 +49,9 @@ import {
   EncodedVerificationKey,
   getAddressByKey,
   getFullDidUri,
-  getSigningAlgorithmForVerificationKeyType,
-  getVerificationKeyTypeForSigningAlgorithm,
+  keyTypeForSignatureAlg,
   parseDidUri,
+  signatureAlgForKeyType,
   stripFragment,
 } from './Did.utils.js'
 
@@ -497,9 +497,9 @@ export async function getStoreTx(
     data: encoded,
     meta: {},
     publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
-    alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
+    alg: signatureAlgForKeyType[authenticationKey.type],
   })
-  const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
+  const keyType = keyTypeForSignatureAlg[signature.alg]
   const encodedSignature = { [keyType]: signature.data } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
@@ -723,7 +723,7 @@ export async function generateDidAuthenticatedTx({
     publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
-  const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
+  const keyType = keyTypeForSignatureAlg[signature.alg]
   const encodedSignature = { [keyType]: signature.data } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }

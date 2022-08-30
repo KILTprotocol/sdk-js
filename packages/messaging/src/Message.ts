@@ -129,9 +129,9 @@ export class Message implements IMessage {
       )
     }
     const receiverKeyAlgType =
-      Did.Utils.getEncryptionAlgorithmForEncryptionKeyType(
+      Did.Utils.encryptionAlgForKeyType[
         receiverKeyDetails.type as EncryptionKeyType
-      )
+      ]
     if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
       throw new SDKErrors.EncryptionError(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
@@ -273,9 +273,7 @@ export class Message implements IMessage {
       )
     }
     const senderKeyAlgType =
-      Did.Utils.getEncryptionAlgorithmForEncryptionKeyType(
-        senderKey.type as EncryptionKeyType
-      )
+      Did.Utils.encryptionAlgForKeyType[senderKey.type as EncryptionKeyType]
     if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
       throw new SDKErrors.EncryptionError(
         'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
