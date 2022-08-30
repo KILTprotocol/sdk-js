@@ -270,11 +270,11 @@ export async function createLocalDemoFullDidFromKeypair(
 }
 
 /**
- * Creates a FullDid from a LightDid where the verification keypair is enabled for all verification purposes (authentication, assertionMethod, capabilityDelegation).
+ * Creates a full DID from a light DID where the verification keypair is enabled for all verification purposes (authentication, assertionMethod, capabilityDelegation).
  * This is not recommended, use for demo purposes only!
  *
- * @param lightDid The LightDid whose keys will be used on the FullDid.
- * @returns A FullDid instance that is not yet written to the blockchain.
+ * @param lightDid The light DID whose keys will be used on the full DID.
+ * @returns A full DID instance that is not yet written to the blockchain.
  */
 export async function createLocalDemoFullDidFromLightDid(
   lightDid: DidDetails
