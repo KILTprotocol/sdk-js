@@ -127,32 +127,32 @@ export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
 export const signatureAlgForKeyType: Record<
   VerificationKeyType,
   SigningAlgorithms
-> = {
+> = Object.freeze({
   ed25519: 'ed25519',
   sr25519: 'sr25519',
   ecdsa: 'ecdsa-secp256k1',
-}
+})
 
-export const keyTypeForSignatureAlg = Object.entries(
-  signatureAlgForKeyType
-).reduce((obj, [key, value]) => ({ ...obj, [value]: key }), {}) as Record<
-  SigningAlgorithms,
-  VerificationKeyType
->
+export const keyTypeForSignatureAlg = Object.freeze(
+  Object.entries(signatureAlgForKeyType).reduce(
+    (obj, [key, value]) => ({ ...obj, [value]: key }),
+    {}
+  )
+) as Record<SigningAlgorithms, VerificationKeyType>
 
 export const encryptionAlgForKeyType: Record<
   EncryptionKeyType,
   EncryptionAlgorithms
-> = {
+> = Object.freeze({
   x25519: 'x25519-xsalsa20-poly1305',
-}
+})
 
 export const keyTypeForEncryptionAlg: Record<
   EncryptionAlgorithms,
   EncryptionKeyType
-> = {
+> = Object.freeze({
   'x25519-xsalsa20-poly1305': 'x25519',
-}
+})
 
 export type EncodedVerificationKey =
   | { sr25519: Uint8Array }
