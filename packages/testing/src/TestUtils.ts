@@ -209,9 +209,7 @@ function makeDidKeyFromKeypair({
   return {
     id: computeKeyId(publicKey),
     publicKey,
-    type: Did.Utils.getVerificationKeyTypeForSigningAlgorithm(
-      type as SigningAlgorithms
-    ),
+    type: Did.Utils.keyTypeForSignatureAlg[type as SigningAlgorithms],
   }
 }
 
