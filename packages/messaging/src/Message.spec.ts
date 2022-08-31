@@ -233,7 +233,7 @@ describe('Messaging', () => {
         bobLightDid,
         { resolveKey }
       )
-    ).rejects.toThrowError(SDKErrors.ParsingMessageError)
+    ).rejects.toThrowError(SyntaxError)
   })
 
   it('verifies the message with sender is the owner (as full DID)', async () => {
