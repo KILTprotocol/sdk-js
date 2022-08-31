@@ -25,7 +25,7 @@ import type {
 import { ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 
-import type { IDidChainRecord } from '../Did.chain'
+import type { EncodedDid } from '../Did.chain'
 import { getFullDidUriFromKey, parseDidUri, stripFragment } from '../Did.utils'
 
 import { resolve, resolveKey, resolveServiceEndpoint } from './index.js'
@@ -93,7 +93,7 @@ function generateServiceEndpointDetails(
 
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
-    async (did: DidUri): Promise<IDidChainRecord | null> => {
+    async (did: DidUri): Promise<EncodedDid | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
       const attKey = generateAttestationKeyDetails()

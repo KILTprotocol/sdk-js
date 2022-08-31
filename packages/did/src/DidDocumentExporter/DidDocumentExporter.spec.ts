@@ -17,7 +17,7 @@ import {
   DidUri,
 } from '@kiltprotocol/types'
 
-import type { IDidChainRecord } from '../Did.chain.js'
+import type { EncodedDid } from '../Did.chain.js'
 import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
 import { parseDidUri, stripFragment } from '../Did.utils'
@@ -76,7 +76,7 @@ function generateServiceEndpointDetails(
 
 jest.mock('../Did.chain', () => {
   const queryDetails = jest.fn(
-    async (didUri: DidUri): Promise<IDidChainRecord | null> => {
+    async (didUri: DidUri): Promise<EncodedDid | null> => {
       const authKey = generateAuthenticationKeyDetails()
       const encKey = generateEncryptionKeyDetails()
       const attKey = generateAttestationKeyDetails()
