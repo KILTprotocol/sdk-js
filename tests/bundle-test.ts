@@ -184,7 +184,7 @@ async function runAll() {
     throw new Error('Impossible: bob has no encryptionKey')
   console.log('bob setup done')
 
-  // Light Did Account creation workflow
+  // Light DID Account creation workflow
   const authPublicKey = Crypto.coToUInt8(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   )
@@ -203,7 +203,7 @@ async function runAll() {
     throw new Error('DID Test Unsuccessful')
   } else console.info(`light DID successfully created`)
 
-  // Chain Did workflow -> creation & deletion
+  // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
   const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
 

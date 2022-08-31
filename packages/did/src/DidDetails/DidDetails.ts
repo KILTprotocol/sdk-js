@@ -20,10 +20,10 @@ import type {
 import { verificationKeyTypes } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { getSigningAlgorithmForVerificationKeyType } from '../Did.utils.js'
+import { signatureAlgForKeyType } from '../Did.utils.js'
 
 /**
- * Gets all public keys associated with this Did.
+ * Gets all public keys associated with this DID.
  *
  * @param did The DID data.
  * @returns Array of public keys.
@@ -40,7 +40,7 @@ export function getKeys(
 }
 
 /**
- * Returns a key with a given id, if associated with this Did.
+ * Returns a key with a given id, if associated with this DID.
  *
  * @param did The DID data.
  * @param id Key id (not the full key uri).
@@ -54,7 +54,7 @@ export function getKey(
 }
 
 /**
- * Returns a service endpoint with a given id, if associated with this Did.
+ * Returns a service endpoint with a given id, if associated with this DID.
  *
  * @param did The DID data.
  * @param id Endpoint id (not the full endpoint uri).
@@ -89,9 +89,7 @@ export async function signPayload(
       `Failed to find verification key with ID "${keyId}" on DID "${did.uri}"`
     )
   }
-  const alg = getSigningAlgorithmForVerificationKeyType(
-    key.type as VerificationKeyType
-  )
+  const alg = signatureAlgForKeyType[key.type as VerificationKeyType]
   const { data: signature } = await sign({
     publicKey: key.publicKey,
     alg,

@@ -79,7 +79,7 @@ export async function verifySelfSignedProof(
       throw new Error('Proof type mismatch')
     if (!proof.signature) throw new ProofMalformedError('signature missing')
     let { verificationMethod } = proof
-    // we always fetch the verification method to make sure the key is in fact associated with the did
+    // we always fetch the verification method to make sure the key is in fact associated with the DID
     if (typeof verificationMethod !== 'string') {
       verificationMethod = verificationMethod.id
     }
