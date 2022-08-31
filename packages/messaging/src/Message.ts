@@ -238,7 +238,6 @@ export function errorCheckMessage(message: IMessage): void {
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }
-  errorCheckMessageBody(body)
 }
 
 /**
