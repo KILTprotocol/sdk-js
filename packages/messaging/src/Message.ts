@@ -88,7 +88,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
     }
     case 'submit-terms': {
       Claim.verifyDataStructure(body.content.claim)
-      body.content.legitimations.map((credential) =>
+      body.content.legitimations.forEach((credential) =>
         Credential.verifyDataStructure(credential)
       )
       if (body.content.delegationId) {
@@ -101,7 +101,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
       }
       if (body.content.cTypes) {
-        body.content.cTypes.map((val) => CType.verifyDataStructure(val))
+        body.content.cTypes.forEach((val) => CType.verifyDataStructure(val))
       }
       break
     }
@@ -113,7 +113,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
           'Reject terms delegation id hash'
         )
       }
-      body.content.legitimations.map((val) =>
+      body.content.legitimations.forEach((val) =>
         Credential.verifyDataStructure(val)
       )
       break
@@ -142,7 +142,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
             cTypeHash,
             'request credential cTypeHash invalid'
           )
-          trustedAttesters?.map((did) => Did.Utils.validateKiltDidUri(did))
+          trustedAttesters?.forEach((did) => Did.Utils.validateKiltDidUri(did))
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
@@ -154,13 +154,13 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case 'submit-credential': {
-      body.content.map((credential) =>
+      body.content.forEach((credential) =>
         Credential.verifyDataStructure(credential)
       )
       break
     }
     case 'accept-credential': {
-      body.content.map((cTypeHash) =>
+      body.content.forEach((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
           'accept credential message ctype hash invalid'
@@ -169,7 +169,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case 'reject-credential': {
-      body.content.map((cTypeHash) =>
+      body.content.forEach((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
           'rejected credential ctype hashes invalid'
