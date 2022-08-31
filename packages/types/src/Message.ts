@@ -7,14 +7,14 @@
 
 import type { AnyJson } from '@polkadot/types/types/codec'
 import type { DidSignature, DidUri } from './DidDetails.js'
-import type { CompressedAttestation, IAttestation } from './Attestation.js'
-import type { IClaim, PartialClaim } from './Claim.js'
+import type { IAttestation } from './Attestation.js'
+import type { PartialClaim } from './Claim.js'
 import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
-import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote.js'
-import type { CompressedCredential, ICredential } from './Credential.js'
-import type { CompressedTerms, ITerms } from './Terms.js'
-import type { DidResourceUri, IClaimContents } from './index.js'
+import type { IQuoteAgreement } from './Quote.js'
+import type { ICredential } from './Credential.js'
+import type { ITerms } from './Terms.js'
+import type { DidResourceUri } from './index.js'
 
 export type MessageBodyType =
   | 'error'
@@ -35,14 +35,6 @@ export type MessageBodyType =
   | 'submit-accept-delegation'
   | 'reject-accept-delegation'
   | 'inform-create-delegation'
-
-export type CompressedDelegationData = [
-  IDelegationNode['account'],
-  IDelegationNode['id'],
-  IDelegationNode['id'],
-  IDelegationNode['permissions'],
-  boolean
-]
 
 interface IMessageBodyBase {
   content: any
@@ -102,33 +94,6 @@ export interface IRejectCredential extends IMessageBodyBase {
   content: Array<ICType['hash']>
   type: 'reject-credential'
 }
-
-export type CompressedSubmitTerms = ['submit-terms', CompressedTerms]
-
-export type CompressedSubmitAttestation = [
-  'submit-attestation',
-  CompressedAttestation
-]
-export type CompressedRejectAttestation = [
-  'reject-attestation',
-  ICredential['rootHash']
-]
-export type CompressedSubmitCredentials = [
-  'submit-credential',
-  CompressedCredential[]
-]
-export type CompressedAcceptCredential = [
-  'accept-credential',
-  Array<ICType['hash']>
-]
-export type CompressedRejectCredential = [
-  'reject-credential',
-  Array<ICType['hash']>
-]
-export type CompressedRejectAcceptDelegation = [
-  'reject-accept-delegation',
-  CompressedDelegationData
-]
 
 export interface IRequestAttestationContent {
   credential: ICredential
@@ -241,70 +206,6 @@ export interface IInformCreateDelegation extends IMessageBodyBase {
   type: 'inform-create-delegation'
 }
 
-export type CompressedInformDelegationCreation = [
-  IInformDelegationCreation['delegationId'],
-  IInformDelegationCreation['isPCR']
-]
-
-export type CompressedInformCreateDelegation = [
-  'inform-create-delegation',
-  CompressedInformDelegationCreation
-]
-
-export type CompressedPartialClaim = [
-  IClaim['cTypeHash'],
-  IClaim['owner'] | undefined,
-  IClaimContents | undefined
-]
-export type CompressedRequestTerms = ['request-terms', CompressedPartialClaim]
-
-export type CompressedRejectedTerms = [
-  CompressedPartialClaim,
-  CompressedCredential[],
-  IDelegationNode['id'] | undefined
-]
-export type CompressedRejectTerms = ['reject-terms', CompressedRejectedTerms]
-
-export type CompressedRequestCredentialContent = [
-  Array<[ICType['hash'], DidUri[] | undefined, string[] | undefined]>,
-  string?
-]
-
-export type CompressedRequestCredentials = [
-  'request-credential',
-  CompressedRequestCredentialContent
-]
-
-export type CompressedRequestAttestationContent = [
-  CompressedCredential,
-  CompressedQuoteAgreed | undefined
-]
-
-export type CompressedRequestAttestation = [
-  'request-attestation',
-  CompressedRequestAttestationContent
-]
-
-export type CompressedRequestDelegationApproval = [
-  CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyUri']],
-  AnyJson
-]
-export type CompressedRequestAcceptDelegation = [
-  'request-accept-delegation',
-  CompressedRequestDelegationApproval
-]
-
-export type CompressedSubmitDelegationApproval = [
-  CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyUri']],
-  [DidSignature['signature'], DidSignature['keyUri']]
-]
-export type CompressedSubmitAcceptDelegation = [
-  'submit-accept-delegation',
-  CompressedSubmitDelegationApproval
-]
-
 export type MessageBody =
   | IError
   | IReject
@@ -326,25 +227,6 @@ export type MessageBody =
   | ISubmitAcceptDelegation
   | IRejectAcceptDelegation
   | IInformCreateDelegation
-
-export type CompressedMessageBody =
-  | CompressedRequestTerms
-  | CompressedSubmitTerms
-  | CompressedRejectTerms
-  //
-  | CompressedRequestAttestation
-  | CompressedSubmitAttestation
-  | CompressedRejectAttestation
-  //
-  | CompressedRequestCredentials
-  | CompressedSubmitCredentials
-  | CompressedAcceptCredential
-  | CompressedRejectCredential
-  //
-  | CompressedRequestAcceptDelegation
-  | CompressedSubmitAcceptDelegation
-  | CompressedRejectAcceptDelegation
-  | CompressedInformCreateDelegation
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].

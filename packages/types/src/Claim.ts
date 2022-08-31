@@ -28,3 +28,9 @@ export type CompressedClaim = [
   IClaim['owner'],
   IClaimContents
 ]
+
+export type CompressedPartialClaim = [
+  IClaim['cTypeHash'],
+  IClaim['owner'] | undefined,
+  IClaimContents | undefined
+]
