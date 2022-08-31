@@ -44,7 +44,7 @@ import {
  *
  * @param delegationData Delegation data to check.
  */
-export function errorCheckDelegationData(
+export function verifyDelegationStructure(
   delegationData: IDelegationData
 ): void {
   const { permissions, id, parentId, isPCR, account } = delegationData
@@ -80,7 +80,7 @@ export function errorCheckDelegationData(
  *
  * @param body The message body.
  */
-export function errorCheckMessageBody(body: MessageBody): void {
+export function verifyMessageBody(body: MessageBody): void {
   switch (body.type) {
     case 'request-terms': {
       Claim.verifyDataStructure(body.content)
@@ -178,7 +178,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case 'request-accept-delegation': {
-      errorCheckDelegationData(body.content.delegationData)
+      verifyDelegationStructure(body.content.delegationData)
       Did.isDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
         throw new SDKErrors.ObjectUnverifiableError()
@@ -186,14 +186,14 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case 'submit-accept-delegation': {
-      errorCheckDelegationData(body.content.delegationData)
+      verifyDelegationStructure(body.content.delegationData)
       Did.isDidSignature(body.content.signatures.inviter)
       Did.isDidSignature(body.content.signatures.invitee)
       break
     }
 
     case 'reject-accept-delegation': {
-      errorCheckDelegationData(body.content)
+      verifyDelegationStructure(body.content)
       break
     }
     case 'inform-create-delegation': {
@@ -214,16 +214,9 @@ export function errorCheckMessageBody(body: MessageBody): void {
  *
  * @param message The message object.
  */
-export function errorCheckMessage(message: IMessage): void {
-  const {
-    body,
-    messageId,
-    createdAt,
-    receiver,
-    sender,
-    receivedAt,
-    inReplyTo,
-  } = message
+export function verifyMessageEnvelope(message: IMessage): void {
+  const { messageId, createdAt, receiver, sender, receivedAt, inReplyTo } =
+    message
   if (messageId && typeof messageId !== 'string') {
     throw new TypeError('Message id is expected to be a string')
   }
@@ -416,11 +409,8 @@ export async function decrypt(
  * @param decryptedMessage The decrypted message to check.
  */
 export function verify(decryptedMessage: IMessage): void {
-  // checks the message body
-  errorCheckMessageBody(decryptedMessage.body)
-  // checks the message structure
-  errorCheckMessage(decryptedMessage)
-  // make sure the sender is the owner of the identity
+  verifyMessageBody(decryptedMessage.body)
+  verifyMessageEnvelope(decryptedMessage)
   ensureOwnerIsSender(decryptedMessage)
 }
 

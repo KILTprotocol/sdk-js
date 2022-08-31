@@ -1164,128 +1164,122 @@ describe('Error checking / Verification', () => {
     )
   })
   it('error check should not throw errors on faulty bodies', () => {
+    expect(() => Message.verifyMessageBody(requestTermsBody)).not.toThrowError()
+    expect(() => Message.verifyMessageBody(submitTermsBody)).not.toThrowError()
+    expect(() => Message.verifyMessageBody(rejectTermsBody)).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(requestTermsBody)
+      Message.verifyMessageBody(requestAttestationBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(submitTermsBody)
+      Message.verifyMessageBody(submitAttestationBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(rejectTermsBody)
+      Message.verifyMessageBody(rejectAttestationForClaimBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(requestAttestationBody)
+      Message.verifyMessageBody(requestCredentialBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(submitAttestationBody)
+      Message.verifyMessageBody(submitCredentialBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(rejectAttestationForClaimBody)
+      Message.verifyMessageBody(acceptCredentialBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(requestCredentialBody)
+      Message.verifyMessageBody(rejectCredentialBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(submitCredentialBody)
+      Message.verifyMessageBody(requestAcceptDelegationBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(acceptCredentialBody)
+      Message.verifyMessageBody(submitAcceptDelegationBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(rejectCredentialBody)
+      Message.verifyMessageBody(rejectAcceptDelegationBody)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).not.toThrowError()
-    expect(() =>
-      Message.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).not.toThrowError()
-    expect(() =>
-      Message.errorCheckMessageBody(rejectAcceptDelegationBody)
-    ).not.toThrowError()
-    expect(() =>
-      Message.errorCheckMessageBody(informCreateDelegationBody)
+      Message.verifyMessageBody(informCreateDelegationBody)
     ).not.toThrowError()
   })
   it('error check should not throw errors on message', () => {
     expect(() =>
-      Message.errorCheckMessage(messageRequestTerms)
+      Message.verifyMessageEnvelope(messageRequestTerms)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageSubmitTerms)
+      Message.verifyMessageEnvelope(messageSubmitTerms)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageRejectTerms)
+      Message.verifyMessageEnvelope(messageRejectTerms)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageRequestAttestationForClaim)
+      Message.verifyMessageEnvelope(messageRequestAttestationForClaim)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageSubmitAttestationForClaim)
+      Message.verifyMessageEnvelope(messageSubmitAttestationForClaim)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageRejectAttestationForClaim)
+      Message.verifyMessageEnvelope(messageRejectAttestationForClaim)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageRequestCredential)
+      Message.verifyMessageEnvelope(messageRequestCredential)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageSubmitCredential)
+      Message.verifyMessageEnvelope(messageSubmitCredential)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageAcceptCredential)
+      Message.verifyMessageEnvelope(messageAcceptCredential)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageRejectCredential)
+      Message.verifyMessageEnvelope(messageRejectCredential)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageRequestAcceptDelegation)
+      Message.verifyMessageEnvelope(messageRequestAcceptDelegation)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageSubmitAcceptDelegation)
+      Message.verifyMessageEnvelope(messageSubmitAcceptDelegation)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageRejectAcceptDelegation)
+      Message.verifyMessageEnvelope(messageRejectAcceptDelegation)
     ).not.toThrowError()
     expect(() =>
-      Message.errorCheckMessage(messageInformCreateDelegation)
+      Message.verifyMessageEnvelope(messageInformCreateDelegation)
     ).not.toThrowError()
   })
   it('error check should throw errors on message', () => {
     messageRequestTerms.receiver =
       'did:kilt:thisisnotareceiveraddress' as DidUri
-    expect(() => Message.errorCheckMessage(messageRequestTerms)).toThrowError(
-      SDKErrors.InvalidDidFormatError
-    )
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRequestTerms)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
     // @ts-ignore
     messageSubmitTerms.sender = 'this is not a sender did'
-    expect(() => Message.errorCheckMessage(messageSubmitTerms)).toThrowError(
-      SDKErrors.InvalidDidFormatError
-    )
+    expect(() =>
+      Message.verifyMessageEnvelope(messageSubmitTerms)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
     // @ts-ignore
     messageRejectTerms.sender = 'this is not a sender address'
-    expect(() => Message.errorCheckMessage(messageRejectTerms)).toThrowError(
-      SDKErrors.InvalidDidFormatError
-    )
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRejectTerms)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
   })
   it('error check should throw errors on faulty bodies', () => {
     // @ts-ignore
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
-    expect(() => Message.errorCheckMessageBody(requestTermsBody)).toThrowError(
+    expect(() => Message.verifyMessageBody(requestTermsBody)).toThrowError(
       SDKErrors.HashMalformedError
     )
     submitTermsBody.content.delegationId = 'this is not a delegation id'
-    expect(() => Message.errorCheckMessageBody(submitTermsBody)).toThrowError(
+    expect(() => Message.verifyMessageBody(submitTermsBody)).toThrowError(
       SDKErrors.HashMalformedError
     )
 
     rejectTermsBody.content.delegationId = 'this is not a delegation id'
-    expect(() => Message.errorCheckMessageBody(rejectTermsBody)).toThrowError(
+    expect(() => Message.verifyMessageBody(rejectTermsBody)).toThrowError(
       SDKErrors.HashMalformedError
     )
     // @ts-expect-error
     delete rejectTermsBody.content.claim.cTypeHash
-    expect(() => Message.errorCheckMessageBody(rejectTermsBody)).toThrowError(
+    expect(() => Message.verifyMessageBody(rejectTermsBody)).toThrowError(
       SDKErrors.CTypeHashMissingError
     )
     requestAttestationBody.content.credential.claimerSignature = {
@@ -1294,66 +1288,66 @@ describe('Error checking / Verification', () => {
       keyUri: 'this is not a key id',
     }
     expect(() =>
-      Message.errorCheckMessageBody(requestAttestationBody)
+      Message.verifyMessageBody(requestAttestationBody)
     ).toThrowError()
     // @ts-ignore
     submitAttestationBody.content.attestation.claimHash =
       'this is not the claim hash'
-    expect(() =>
-      Message.errorCheckMessageBody(submitAttestationBody)
-    ).toThrowError(SDKErrors.HashMalformedError)
+    expect(() => Message.verifyMessageBody(submitAttestationBody)).toThrowError(
+      SDKErrors.HashMalformedError
+    )
     // @ts-ignore
     rejectAttestationForClaimBody.content = 'this is not the root hash'
     expect(() =>
-      Message.errorCheckMessageBody(rejectAttestationForClaimBody)
+      Message.verifyMessageBody(rejectAttestationForClaimBody)
     ).toThrowError(SDKErrors.HashMalformedError)
     // @ts-ignore
     requestCredentialBody.content.cTypes[0].cTypeHash =
       'this is not a cTypeHash'
-    expect(() =>
-      Message.errorCheckMessageBody(requestCredentialBody)
-    ).toThrowError(SDKErrors.HashMalformedError)
+    expect(() => Message.verifyMessageBody(requestCredentialBody)).toThrowError(
+      SDKErrors.HashMalformedError
+    )
     // @ts-ignore
     acceptCredentialBody.content[0] = 'this is not a cTypeHash'
-    expect(() =>
-      Message.errorCheckMessageBody(acceptCredentialBody)
-    ).toThrowError(SDKErrors.HashMalformedError)
+    expect(() => Message.verifyMessageBody(acceptCredentialBody)).toThrowError(
+      SDKErrors.HashMalformedError
+    )
     // @ts-ignore
     rejectCredentialBody.content[0] = 'this is not a cTypeHash'
-    expect(() =>
-      Message.errorCheckMessageBody(rejectCredentialBody)
-    ).toThrowError(SDKErrors.HashMalformedError)
+    expect(() => Message.verifyMessageBody(rejectCredentialBody)).toThrowError(
+      SDKErrors.HashMalformedError
+    )
     delete requestAcceptDelegationBody.content.metaData
     expect(() =>
-      Message.errorCheckMessageBody(requestAcceptDelegationBody)
+      Message.verifyMessageBody(requestAcceptDelegationBody)
     ).toThrowError(SDKErrors.ObjectUnverifiableError)
     requestAcceptDelegationBody.content.signatures.inviter.signature =
       'this is not a signature'
     expect(() =>
-      Message.errorCheckMessageBody(requestAcceptDelegationBody)
+      Message.verifyMessageBody(requestAcceptDelegationBody)
     ).toThrowError(SDKErrors.SignatureMalformedError)
     // @ts-ignore
     submitAcceptDelegationBody.content.signatures.invitee.keyUri =
       'this is not a key id'
     expect(() =>
-      Message.errorCheckMessageBody(submitAcceptDelegationBody)
+      Message.verifyMessageBody(submitAcceptDelegationBody)
     ).toThrowError(SDKErrors.SignatureMalformedError)
     submitAcceptDelegationBody.content.delegationData.parentId =
       'this is not a parent id hash'
     expect(() =>
-      Message.errorCheckMessageBody(submitAcceptDelegationBody)
+      Message.verifyMessageBody(submitAcceptDelegationBody)
     ).toThrowError(SDKErrors.DelegationIdTypeError)
     // @ts-expect-error
     delete rejectAcceptDelegationBody.content.account
     expect(() =>
-      Message.errorCheckMessageBody(rejectAcceptDelegationBody)
+      Message.verifyMessageBody(rejectAcceptDelegationBody)
     ).toThrowError(SDKErrors.OwnerMissingError)
     informCreateDelegationBody.content.delegationId =
       'this is not a delegation id'
     expect(() =>
-      Message.errorCheckMessageBody(informCreateDelegationBody)
+      Message.verifyMessageBody(informCreateDelegationBody)
     ).toThrowError(SDKErrors.HashMalformedError)
-    expect(() => Message.errorCheckMessageBody({} as MessageBody)).toThrowError(
+    expect(() => Message.verifyMessageBody({} as MessageBody)).toThrowError(
       SDKErrors.UnknownMessageBodyTypeError
     )
   })
@@ -1361,27 +1355,27 @@ describe('Error checking / Verification', () => {
     // @ts-expect-error
     delete requestAcceptDelegationBody.content.delegationData.isPCR
     expect(() =>
-      Message.errorCheckDelegationData(
+      Message.verifyDelegationStructure(
         requestAcceptDelegationBody.content.delegationData
       )
     ).toThrowError(TypeError('isPCR is expected to be a boolean'))
     requestAcceptDelegationBody.content.delegationData.id =
       'this is not a delegation id'
     expect(() =>
-      Message.errorCheckDelegationData(
+      Message.verifyDelegationStructure(
         requestAcceptDelegationBody.content.delegationData
       )
     ).toThrowError(SDKErrors.DelegationIdTypeError)
     submitAcceptDelegationBody.content.delegationData.permissions = []
     expect(() =>
-      Message.errorCheckDelegationData(
+      Message.verifyDelegationStructure(
         submitAcceptDelegationBody.content.delegationData
       )
     ).toThrowError(SDKErrors.UnauthorizedError)
     // @ts-expect-error
     delete submitAcceptDelegationBody.content.delegationData.id
     expect(() =>
-      Message.errorCheckDelegationData(
+      Message.verifyDelegationStructure(
         submitAcceptDelegationBody.content.delegationData
       )
     ).toThrowError(SDKErrors.DelegationIdMissingError)
