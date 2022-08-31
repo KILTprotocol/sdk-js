@@ -299,11 +299,11 @@ export async function queryDepositAmount(): Promise<BN> {
 /* ### EXTRINSICS ### */
 
 /**
- * Signing (authorizing) this extrinsic with a FullDid and submitting it with an Account
- * will link Account to FullDid and remove any pre-existing links of Account.
+ * Signing (authorizing) this extrinsic with a full DID and submitting it with an Account
+ * will link Account to full DID and remove any pre-existing links of Account.
  * Account must hold balance to cover for submission fees and storage deposit.
  *
- * @returns An extrinsic that must be did-authorized.
+ * @returns An extrinsic that must be DID-authorized.
  */
 export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
@@ -311,17 +311,17 @@ export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
 }
 
 /**
- * Signing (authorizing) this extrinsic with a FullDid and submitting it with any Account
- * will link Account to FullDid and remove any pre-existing links of Account.
- * Account must give permission by signing a Scale-encoded tuple consisting of the FullDid address
+ * Signing (authorizing) this extrinsic with a full DID and submitting it with any Account
+ * will link Account to full DID and remove any pre-existing links of Account.
+ * Account must give permission by signing a Scale-encoded tuple consisting of the full DID address
  * and a block number representing the expiration block of the signature (after which it cannot be submitted anymore).
  * Account does not need to hold balance. The submitting account will pay and own the deposit for the link.
  *
- * @param account The account to link to the authorizing FullDid.
+ * @param account The account to link to the authorizing full DID.
  * @param signatureValidUntilBlock The link request will be rejected if submitted later than this block number.
  * @param signature Account's signature over `(DidAddress, BlockNumber).toU8a()`.
  * @param sigType The type of key/substrate account which produced the `signature`.
- * @returns An extrinsic that must be did-authorized.
+ * @returns An extrinsic that must be DID-authorized.
  */
 export async function getAccountSignedAssociationExtrinsic(
   account: Address,
@@ -372,8 +372,8 @@ export async function getReclaimDepositTx(
 }
 
 /**
- * Allows the submitting account to unilaterally remove its link to a Did.
- * This is not did-authorized, but directly submitted by the linked account.
+ * Allows the submitting account to unilaterally remove its link to a DID.
+ * This is not DID-authorized, but directly submitted by the linked account.
  *
  * @returns A SubmittableExtrinsic that must be signed by the linked account.
  */
@@ -383,11 +383,11 @@ export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic>
 }
 
 /**
- * Allows the authorizing FullDid to unilaterally remove its link to a given account.
- * This must be did-authorized, but can be submitted by any account.
+ * Allows the authorizing full DID to unilaterally remove its link to a given account.
+ * This must be DID-authorized, but can be submitted by any account.
  *
- * @param linkedAccount An account linked to the FullDid which should be unlinked.
- * @returns An Extrinsic that must be did-authorized by the FullDid linked to `linkedAccount`.
+ * @param linkedAccount An account linked to the full DID which should be unlinked.
+ * @returns An Extrinsic that must be DID-authorized by the full DID linked to `linkedAccount`.
  */
 export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
@@ -419,13 +419,13 @@ export function defaultSignerCallback(keyring: Keyring): LinkingSignerCallback {
 /**
  * Builds an extrinsic to link `account` to a `did` where the fees and deposit are covered by some third account.
  * This extrinsic must be authorized using the same full DID.
- * Note that in addition to the signing account and did used here, the submitting account will also be able to dissolve the link via reclaiming its deposit!
+ * Note that in addition to the signing account and DID used here, the submitting account will also be able to dissolve the link via reclaiming its deposit!
  *
  * @param accountAddress Address of the account to be linked.
  * @param did Full DID to be linked.
  * @param signingCallback The signature generation callback that generates the account signature over the encoded (DidAddress, BlockNumber) tuple.
  * @param nBlocksValid How many blocks into the future should the account-signed proof be considered valid?
- * @returns An Extrinsic that must be did-authorized by the full DID used.
+ * @returns An Extrinsic that must be DID-authorized by the full DID used.
  */
 export async function getAuthorizeLinkWithAccountExtrinsic(
   accountAddress: Address,
@@ -474,7 +474,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
     )
     // We discard this error message, as the error is caught in the catch block
     assert(result.isValid, '')
-    // Remove type from signature if did not fail to verify
+    // Remove type from signature if DID not fail to verify
     signature = signature.subarray(1)
   } catch {
     // Otherwise, try to verify the whole signature

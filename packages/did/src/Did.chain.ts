@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Option, GenericAccountId, u128, u32 } from '@polkadot/types'
+import type { GenericAccountId, Option, u128, u32 } from '@polkadot/types'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToString, hexToU8a } from '@polkadot/util'
@@ -18,15 +18,15 @@ import type {
   DidKey,
   DidServiceEndpoint,
   DidSignature,
+  DidUri,
   DidVerificationKey,
   KeyRelationship,
   KiltAddress,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
   SignCallback,
   SigningOptions,
   SubmittableExtrinsic,
-  NewDidVerificationKey,
-  NewDidEncryptionKey,
-  DidUri,
 } from '@kiltprotocol/types'
 import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
@@ -49,9 +49,9 @@ import {
   EncodedVerificationKey,
   getAddressByKey,
   getFullDidUri,
-  getSigningAlgorithmForVerificationKeyType,
-  getVerificationKeyTypeForSigningAlgorithm,
+  keyTypeForSignatureAlg,
   parseDidUri,
+  signatureAlgForKeyType,
   stripFragment,
 } from './Did.utils.js'
 
@@ -69,7 +69,7 @@ export function encodeDid(did: DidUri): KiltAddress {
 }
 
 // Query a full DID.
-// Interacts with the Did storage map.
+// Interacts with the DID storage map.
 async function queryDidEncoded(did: DidUri): Promise<Option<DidDidDetails>> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.did(encodeDid(did))
@@ -204,10 +204,10 @@ function decodeDidChainRecord({
 }
 
 /**
- * Query data associated with a FullDid from the KILT blockchain.
+ * Query data associated with the full DID from the KILT blockchain.
  *
  * @param did The Full DID.
- * @returns Data associated with this Did or null if the Did has not been claimed or has been deleted.
+ * @returns Data associated with this DID or null if the DID has not been claimed or has been deleted.
  */
 export async function queryDetails(
   did: DidUri
@@ -262,10 +262,10 @@ function decodeServiceChainRecord({
 }
 
 /**
- * Query service endpoint records associated with a FullDid from the KILT blockchain.
+ * Query service endpoint records associated with the full DID from the KILT blockchain.
  *
  * @param did Full DID.
- * @returns An array of service endpoint data or an empty array if the FullDid does not exist or has no service endpoints associated with it.
+ * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
  */
 export async function queryServiceEndpoints(
   did: DidUri
@@ -275,11 +275,11 @@ export async function queryServiceEndpoints(
 }
 
 /**
- * Query a service endpoint record associated with a FullDid from the KILT blockchain.
+ * Query a service endpoint record associated with the full DID from the KILT blockchain.
  *
  * @param did Full DID.
  * @param serviceId ID of the requested service endpoint (not the full endpoint uri).
- * @returns Service endpoint data or null if the requested endpoint is not found on this FullDid, or if the FullDid does not exist.
+ * @returns Service endpoint data or null if the requested endpoint is not found on this full DID, or if the full DID does not exist.
  */
 export async function queryServiceEndpoint(
   did: DidUri,
@@ -292,7 +292,7 @@ export async function queryServiceEndpoint(
 }
 
 /**
- * Gets the total number of service endpoints associated with a given FullDid.
+ * Gets the total number of service endpoints associated with the given full DID.
  *
  * @param did Full DID.
  * @returns Number of endpoints.
@@ -303,7 +303,7 @@ export async function queryEndpointsCounts(did: DidUri): Promise<BN> {
 }
 
 /**
- * Gets the state of a FullDid's transaction counter which is bumped with each transaction authorized by that DID for replay protection purposes.
+ * Gets the state of the full DID’s transaction counter which is bumped with each transaction authorized by that DID for replay protection purposes.
  *
  * @param did Full DID.
  * @returns Current state of the transaction counter which must be increased by one to yield the next transaction's nonce.
@@ -330,7 +330,7 @@ export async function queryDidDeletionStatus(did: DidUri): Promise<boolean> {
 }
 
 /**
- * Gets the current deposit amount due for the creation of new FullDids.
+ * Gets the current deposit amount due for the creation of new full DIDs.
  *
  * @returns Deposit amount in Femto Kilt as a BigNumber.
  */
@@ -340,7 +340,7 @@ export async function queryDepositAmount(): Promise<BN> {
 }
 
 /**
- * Queries the full list of FullDids that have previously been deleted, resulting in them being blocked from (re)creation.
+ * Queries the full list of full DIDs that have previously been deleted, resulting in them being blocked from (re)creation.
  *
  * @returns An array of DID addresses that have been deleted.
  */
@@ -497,9 +497,9 @@ export async function getStoreTx(
     data: encoded,
     meta: {},
     publicKey: Crypto.coToUInt8(authenticationKey.publicKey),
-    alg: getSigningAlgorithmForVerificationKeyType(authenticationKey.type),
+    alg: signatureAlgForKeyType[authenticationKey.type],
   })
-  const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
+  const keyType = keyTypeForSignatureAlg[signature.alg]
   const encodedSignature = { [keyType]: signature.data } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
@@ -509,7 +509,7 @@ export async function getStoreTx(
  *
  * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (e.g. Authentication, assertionMethod, capabilityDelegation...).
  * @param key Data describing the public key.
- * @returns An extrinsic that must be authorized (signed) by the FullDid whose keys should be changed.
+ * @returns An extrinsic that must be authorized (signed) by the full DID whose keys should be changed.
  */
 export async function getSetKeyExtrinsic(
   keyRelationship: KeyRelationship,
@@ -547,7 +547,7 @@ export async function getSetKeyExtrinsic(
  *
  * @param keyRelationship The key's role or relationship according to the DID specifications (e.g. Authentication, assertionMethod, capabilityDelegation, keyAgreement...).
  * @param keyId Where a verification relationship allows multiple keys in the same role, you will need to identify the key to be removed with its id (not the full key uri).
- * @returns An extrinsic that must be authorized (signed) by the FullDid whose keys should be changed.
+ * @returns An extrinsic that must be authorized (signed) by the full DID whose keys should be changed.
  */
 export async function getRemoveKeyExtrinsic(
   keyRelationship: KeyRelationship,
@@ -582,7 +582,7 @@ export async function getRemoveKeyExtrinsic(
  *
  * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (currently only keyAgreement allows multiple keys).
  * @param key Data describing the public key.
- * @returns An extrinsic that must be authorized (signed) by the FullDid whose keys should be changed.
+ * @returns An extrinsic that must be authorized (signed) by the full DID whose keys should be changed.
  */
 export async function getAddKeyExtrinsic(
   keyRelationship: KeyRelationship,
@@ -612,7 +612,7 @@ export async function getAddKeyExtrinsic(
  *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
  *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
  *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
- * @returns An extrinsic that must be authorized (signed) by the FullDid with which the service endpoint should be associated.
+ * @returns An extrinsic that must be authorized (signed) by the full DID with which the service endpoint should be associated.
  */
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
@@ -627,7 +627,7 @@ export async function getAddEndpointExtrinsic(
  *
  * @param endpointId The ID of the service endpoint to include in the extrinsic.
  * The ID must be at most 50 ASCII characters long.
- * @returns An extrinsic that must be authorized (signed) by the FullDid associated with the service endpoint to be removed.
+ * @returns An extrinsic that must be authorized (signed) by the full DID associated with the service endpoint to be removed.
  */
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
@@ -645,10 +645,10 @@ export async function getRemoveEndpointExtrinsic(
 }
 
 /**
- * Produces an extrinsic to remove the signing FullDid from the KILT blockchain.
+ * Produces an extrinsic to remove the signing full DID from the KILT blockchain.
  *
- * @param endpointsCount The current number of service endpoints associated with the FullDid to be deleted, which is important for the precalculation of the deletion fee.
- * @returns An extrinsic that must be authorized (signed) by the FullDid to be deleted.
+ * @param endpointsCount The current number of service endpoints associated with the full DID to be deleted, which is important for the precalculation of the deletion fee.
+ * @returns An extrinsic that must be authorized (signed) by the full DID to be deleted.
  */
 export async function getDeleteDidExtrinsic(
   endpointsCount: BN
@@ -658,10 +658,10 @@ export async function getDeleteDidExtrinsic(
 }
 
 /**
- * Produces an extrinsic to reclaim a deposit paid for storing a FullDid record on the KILT blockchain, resulting in the deletion of that Did.
+ * Produces an extrinsic to reclaim a deposit paid for storing a full DID record on the KILT blockchain, resulting in the deletion of that DID.
  *
  * @param did Full DID.
- * @param endpointsCount The current number of service endpoints associated with the FullDid to be deleted, which is important for the precalculation of the deletion fee.
+ * @param endpointsCount The current number of service endpoints associated with the full DID to be deleted, which is important for the precalculation of the deletion fee.
  * @returns An extrinsic that is to be signed by the payment account owning the deposit, without prior DID authorization.
  */
 export async function getReclaimDepositExtrinsic(
@@ -673,7 +673,7 @@ export async function getReclaimDepositExtrinsic(
 }
 
 /**
- * DID related operations on the KILT blockchain require authorization by a FullDid. This is realized by requiring that relevant extrinsics are signed with a key featured by a FullDid as a verification method.
+ * DID related operations on the KILT blockchain require authorization by a full DID. This is realized by requiring that relevant extrinsics are signed with a key featured by a full DID as a verification method.
  * Such extrinsics can be produced using this function.
  *
  * @param params Object wrapping all input to the function.
@@ -682,7 +682,7 @@ export async function getReclaimDepositExtrinsic(
  * @param params.alg The cryptographic signing algorithm to be used.
  * @param params.sign The callback to interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
- * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing FullDid.
+ * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing full DID.
  * @param params.submitter Payment account allowed to submit this extrinsic and cover its fees, which will end up owning any deposit associated with newly created records.
  * @param params.blockNumber Block number for determining the validity period of this authorization. If omitted, the current block number will be fetched from chain.
  * @returns A DID authorized extrinsic that, after signing with the payment account mentioned in the params, is ready for submission.
@@ -723,17 +723,17 @@ export async function generateDidAuthenticatedTx({
     publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
-  const keyType = getVerificationKeyTypeForSigningAlgorithm(signature.alg)
+  const keyType = keyTypeForSignatureAlg[signature.alg]
   const encodedSignature = { [keyType]: signature.data } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
 
 // ### Chain utils
 /**
- * Compiles an enum-type key-value pair representation of a signature created with a FullDid verification method. Required for creating FullDid signed extrinsics.
+ * Compiles an enum-type key-value pair representation of a signature created with a full DID verification method. Required for creating full DID signed extrinsics.
  *
  * @param key Object describing data associated with a public key.
- * @param signature Object containing a signature generated with a FullDid associated public key.
+ * @param signature Object containing a signature generated with a full DID associated public key.
  * @returns Data restructured to allow SCALE encoding by polkadot api.
  */
 export function encodeDidSignature(
