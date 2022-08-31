@@ -383,37 +383,31 @@ export async function decrypt(
 
   const decoded = u8aToString(data)
 
-  try {
-    const {
-      body,
-      createdAt,
-      messageId,
-      inReplyTo,
-      references,
-      sender,
-      receiver,
-    } = JSON.parse(decoded) as IEncryptedMessageContents
-    const decrypted: IMessage = {
-      receiver,
-      sender,
-      createdAt,
-      body,
-      messageId,
-      receivedAt,
-      inReplyTo,
-      references,
-    }
-
-    if (sender !== senderKeyDetails.controller) {
-      throw new SDKErrors.IdentityMismatchError('Encryption key', 'Sender')
-    }
-
-    return decrypted
-  } catch (cause) {
-    throw new SDKErrors.ParsingMessageError(undefined, {
-      cause: cause as Error,
-    })
+  const {
+    body,
+    createdAt,
+    messageId,
+    inReplyTo,
+    references,
+    sender,
+    receiver,
+  } = JSON.parse(decoded) as IEncryptedMessageContents
+  const decrypted: IMessage = {
+    receiver,
+    sender,
+    createdAt,
+    body,
+    messageId,
+    receivedAt,
+    inReplyTo,
+    references,
   }
+
+  if (sender !== senderKeyDetails.controller) {
+    throw new SDKErrors.IdentityMismatchError('Encryption key', 'Sender')
+  }
+
+  return decrypted
 }
 
 /**
