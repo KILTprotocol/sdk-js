@@ -7,9 +7,7 @@
 
 import type { DidUri, KiltAddress } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-
-import type { ApiPromise } from '@polkadot/api'
+import { DecoderUtils } from '@kiltprotocol/utils'
 
 import * as DidUtils from '../Did.utils.js'
 import { encodeDid } from '../Did.chain.js'
@@ -18,27 +16,6 @@ import { encodeDid } from '../Did.chain.js'
  * Web3Name is the type of a nickname for a DID.
  */
 export type Web3Name = string
-
-function checkWeb3NameInputConstraints(
-  api: ApiPromise,
-  web3Name: Web3Name
-): void {
-  const [minLength, maxLength] = [
-    api.consts.web3Names.minNameLength.toNumber(),
-    api.consts.web3Names.maxNameLength.toNumber(),
-  ]
-
-  if (web3Name.length < minLength) {
-    throw new SDKErrors.Web3NameError(
-      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}`
-    )
-  }
-  if (web3Name.length > maxLength) {
-    throw new SDKErrors.Web3NameError(
-      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}`
-    )
-  }
-}
 
 /**
  * Retrieve the Web3Name for a specific DID uri.

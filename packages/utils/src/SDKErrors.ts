@@ -50,8 +50,6 @@ export class DidExporterError extends SDKError {}
 // TODO: rename me
 export class DidBuilderError extends SDKError {}
 
-export class Web3NameError extends SDKError {}
-
 export class ClaimHashMissingError extends SDKError {}
 
 export class RevokedTypeError extends SDKError {}
