@@ -23,6 +23,7 @@ import type {
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { BN, u8aToHex } from '@polkadot/util'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 import type { KeypairType } from '@polkadot/util-crypto/types'
@@ -377,7 +378,8 @@ describe('When there is an on-chain DID', () => {
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
-      const web3NameClaimTx = await Web3Names.getClaimTx('test-name')
+      const api = await BlockchainApiConnection.getConnectionOrConnect()
+      const web3NameClaimTx = await api.tx.web3Names.claim('test-name')
       const signedTx = await Did.authorizeExtrinsic(
         did,
         web3NameClaimTx,

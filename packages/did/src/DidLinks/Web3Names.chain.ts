@@ -46,21 +46,6 @@ function checkWeb3NameInputConstraints(
 }
 
 /**
- * Returns an extrinsic to claim a new web3name.
- *
- * @param name Web3Name that should be claimed.
- * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The SubmittableExtrinsic for the `claim` call.
- */
-export async function getClaimTx(
-  name: Web3Name
-): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  checkWeb3NameInputConstraints(api, name)
-  return api.tx.web3Names.claim(name)
-}
-
-/**
  * Returns an extrinsic to release a web3name by its owner.
  *
  * @returns The SubmittableExtrinsic for the `releaseByOwner` call.

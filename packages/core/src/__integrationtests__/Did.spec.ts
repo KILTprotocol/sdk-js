@@ -1064,7 +1064,7 @@ describe('DID extrinsics batching', () => {
   })
 
   it('can batch extrinsics for the same required key type', async () => {
-    const web3NameClaimTx = await Web3Names.getClaimTx('test-1')
+    const web3NameClaimTx = await api.tx.web3Names.claim('test-1')
     const authorizedTx = await Did.authorizeExtrinsic(
       fullDid,
       web3NameClaimTx,
@@ -1074,7 +1074,7 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(authorizedTx, paymentAccount)
 
     const web3Name1ReleaseExt = await Web3Names.getReleaseByOwnerTx()
-    const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
+    const web3Name2ClaimExt = await api.tx.web3Names.claim('test-2')
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
       did: fullDid,
@@ -1112,7 +1112,7 @@ describe('DID extrinsics batching', () => {
     const delegationHierarchyCreation = await rootNode.getStoreTx()
 
     // Authentication key
-    const web3NameNewClaimExt = await Web3Names.getClaimTx('test-2')
+    const web3NameNewClaimExt = await api.tx.web3Names.claim('test-2')
     // Attestation key
     const ctype2 = CType.fromSchema({
       title: UUID.generate(),

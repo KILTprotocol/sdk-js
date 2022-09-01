@@ -44,6 +44,7 @@ import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 import * as CType from '../ctype'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
@@ -227,7 +228,8 @@ async function checkWeb3Deposit(
   const balanceBeforeClaiming = await Balance.getBalances(identity.address)
   const depositAmount = await Web3Names.queryDepositAmount()
 
-  const claimTx = await Web3Names.getClaimTx(web3Name)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const claimTx = await api.tx.web3Names.claim(web3Name)
   let didAuthorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     claimTx,
