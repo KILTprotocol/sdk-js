@@ -146,7 +146,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should not be possible to remove a w3n by another payment account', async () => {
-    const tx = await Web3Names.getReclaimDepositTx(nick)
+    const tx = await api.tx.web3Names.reclaimDeposit(nick)
     const p = submitExtrinsic(tx, otherPaymentAccount)
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
@@ -155,7 +155,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to remove a w3n by the payment account', async () => {
-    const tx = await Web3Names.getReclaimDepositTx(nick)
+    const tx = await api.tx.web3Names.reclaimDeposit(nick)
     await submitExtrinsic(tx, paymentAccount)
   }, 30_000)
 
@@ -182,35 +182,13 @@ describe('When there is an Web3NameCreator and a payer', () => {
 })
 
 describe('Runtime constraints', () => {
-  it('should not be possible to create a web3 name that is too short', async () => {
+  it('should not be possible to use a web3 name that is too short', async () => {
     expect(api.consts.web3Names.minNameLength.toNumber()).toEqual(2)
   })
 
-  it('should not be possible to create a web3 name that is too long', async () => {
+  it('should not be possible to use a web3 name that is too long', async () => {
     expect(api.consts.web3Names.maxNameLength.toNumber()).toEqual(32)
   })
-
-  it('should not be possible to claim deposit for a web3 name that is too short', async () => {
-    // Minimum is 3
-    await Web3Names.getReclaimDepositTx('aaa')
-    // One less than the minimum
-    await expect(
-      Web3Names.getReclaimDepositTx('aa')
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3"`
-    )
-  }, 30_000)
-
-  it('should not be possible to claim deposit for a web3 name that is too long', async () => {
-    // Maximum is 32
-    await Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    // One more than the maximum
-    await expect(
-      Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32"`
-    )
-  }, 30_000)
 })
 
 afterAll(async () => {

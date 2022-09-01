@@ -5,11 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  SubmittableExtrinsic,
-  DidUri,
-  KiltAddress,
-} from '@kiltprotocol/types'
+import type { DidUri, KiltAddress } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
@@ -42,21 +38,6 @@ function checkWeb3NameInputConstraints(
       `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}`
     )
   }
-}
-
-/**
- * Returns an extrinsic to release a web3name by the account that owns the deposit.
- *
- * @param name Web3Name that should be released.
- * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The SubmittableExtrinsic for the `reclaimDeposit` call.
- */
-export async function getReclaimDepositTx(
-  name: Web3Name
-): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  checkWeb3NameInputConstraints(api, name)
-  return api.tx.web3Names.reclaimDeposit(name)
 }
 
 /**
