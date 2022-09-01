@@ -1087,7 +1087,7 @@ describe('DID extrinsics batching', () => {
     const encoded1 = await api.query.web3Names.owner('test-1')
     expect(encoded1.isSome).toBe(false)
     // Test for correct creation of second web3 name
-    const encoded2 = await api.query.web3Names.owner('test-1')
+    const encoded2 = await api.query.web3Names.owner('test-2')
     expect(Web3Names.decodeWeb3NameOwner(encoded2).owner).toStrictEqual(
       fullDid.uri
     )
