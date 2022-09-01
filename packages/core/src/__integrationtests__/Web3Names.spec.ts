@@ -23,7 +23,7 @@ import {
 } from '@kiltprotocol/testing'
 import { Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { disconnect } from '../kilt'
 import {

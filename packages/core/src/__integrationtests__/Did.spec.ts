@@ -9,7 +9,7 @@
  * @group integration/did
  */
 
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import * as Did from '@kiltprotocol/did'

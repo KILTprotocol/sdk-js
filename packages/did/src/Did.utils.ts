@@ -7,7 +7,7 @@
 
 import { blake2AsU8a, checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { stringToU8a } from '@polkadot/util'
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 
 import {
   DidResourceUri,

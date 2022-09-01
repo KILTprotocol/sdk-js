@@ -11,7 +11,7 @@
 
 import { BN } from '@polkadot/util'
 import type { KeyringPair } from '@kiltprotocol/types'
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { getTransferTx } from '../balance/Balance.chain'

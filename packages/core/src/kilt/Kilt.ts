@@ -15,7 +15,7 @@
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 
 /**
  * Connects to the KILT Blockchain and caches the connection.
