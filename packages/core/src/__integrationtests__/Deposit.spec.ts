@@ -27,6 +27,7 @@ import {
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { BN } from '@polkadot/util'
 import {
@@ -44,7 +45,6 @@ import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 import * as CType from '../ctype'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
@@ -246,7 +246,7 @@ async function checkWeb3Deposit(
     return false
   }
 
-  const releaseTx = await Web3Names.getReleaseByOwnerTx()
+  const releaseTx = await api.tx.web3Names.releaseByOwner()
   didAuthorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     releaseTx,

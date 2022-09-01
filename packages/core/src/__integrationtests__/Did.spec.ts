@@ -1073,7 +1073,7 @@ describe('DID extrinsics batching', () => {
     )
     await submitExtrinsic(authorizedTx, paymentAccount)
 
-    const web3Name1ReleaseExt = await Web3Names.getReleaseByOwnerTx()
+    const web3Name1ReleaseExt = await api.tx.web3Names.releaseByOwner()
     const web3Name2ClaimExt = await api.tx.web3Names.claim('test-2')
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
@@ -1094,7 +1094,7 @@ describe('DID extrinsics batching', () => {
 
   it('can batch extrinsics for different required key types', async () => {
     // Authentication key
-    const web3NameReleaseExt = await Web3Names.getReleaseByOwnerTx()
+    const web3NameReleaseExt = await api.tx.web3Names.releaseByOwner()
     // Attestation key
     const ctype1 = CType.fromSchema({
       title: UUID.generate(),

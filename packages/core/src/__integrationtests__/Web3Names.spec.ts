@@ -170,7 +170,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     )
     await submitExtrinsic(prepareAuthorizedTx, paymentAccount)
 
-    const tx = await Web3Names.getReleaseByOwnerTx()
+    const tx = await api.tx.web3Names.releaseByOwner()
     const authorizedTx = await Did.authorizeExtrinsic(
       w3nCreator,
       tx,

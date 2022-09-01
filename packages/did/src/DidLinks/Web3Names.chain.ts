@@ -46,16 +46,6 @@ function checkWeb3NameInputConstraints(
 }
 
 /**
- * Returns an extrinsic to release a web3name by its owner.
- *
- * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
- */
-export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.web3Names.releaseByOwner()
-}
-
-/**
  * Returns an extrinsic to release a web3name by the account that owns the deposit.
  *
  * @param name Web3Name that should be released.
