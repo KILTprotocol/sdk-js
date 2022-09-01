@@ -1085,11 +1085,11 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(tx, paymentAccount)
 
     // Test for correct creation and deletion
-    expect(await Web3Names.queryDidForWeb3Name('test-1')).toBeNull()
+    const encoded1 = await api.query.web3Names.owner('test-1')
+    expect(encoded1.isSome).toBe(false)
     // Test for correct creation of second web3 name
-    expect(await Web3Names.queryDidForWeb3Name('test-2')).toStrictEqual(
-      fullDid.uri
-    )
+    const encoded2 = await api.query.web3Names.owner('test-1')
+    expect(Web3Names.decodeWeb3NameOwner(encoded2).owner).toStrictEqual(fullDid.uri)
   }, 30_000)
 
   it('can batch extrinsics for different required key types', async () => {
@@ -1142,10 +1142,11 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(batchedExtrinsics, paymentAccount)
 
     // Test correct use of authentication keys
-    expect(await Web3Names.queryDidForWeb3Name('test')).toBeNull()
-    expect(await Web3Names.queryDidForWeb3Name('test-2')).toStrictEqual(
-      fullDid.uri
-    )
+    const encoded = await api.query.web3Names.owner('test')
+    expect(encoded.isSome).toBe(false)
+
+    const encoded2 = await api.query.web3Names.owner('test-2')
+    expect(Web3Names.decodeWeb3NameOwner(encoded2).owner).toStrictEqual(fullDid.uri)
 
     // Test correct use of attestation keys
     expect(await CType.verifyStored(ctype1)).toBe(true)

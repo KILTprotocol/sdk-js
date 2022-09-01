@@ -5,9 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
+import { Option } from '@polkadot/types-codec'
 import type { DidUri, KiltAddress } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
+import type { BN } from '@polkadot/util'
 
 import * as DidUtils from '../Did.utils.js'
 import { encodeDid } from '../Did.chain.js'
@@ -33,25 +36,28 @@ export async function queryWeb3NameForDid(
 }
 
 /**
- * Retrieve the DID uri for a specific web3 name.
+ * Decodes the DID of the owner of web3name.
  *
- * @param name Web3 name that should be looked up.
+ * @param encoded The value returned by `api.query.web3Names.owner()`.
  * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
  */
-export async function queryDidForWeb3Name(
-  name: Web3Name
-): Promise<DidUri | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.web3Names.owner(name)
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>',
-  ])
-
-  const address = encoded.isSome
-    ? (encoded.unwrap().owner.toString() as KiltAddress)
-    : null
-  if (address === null) {
-    return null
+export function decodeWeb3NameOwner(
+  encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
+): {
+  owner: DidUri
+  deposit: {
+    owner: KiltAddress
+    amount: BN
   }
-  return DidUtils.getFullDidUri(address)
+  claimedAt: BN
+} {
+  const { owner, deposit, claimedAt } = encoded.unwrap()
+  return {
+    owner: DidUtils.getFullDidUri(owner.toString() as KiltAddress),
+    deposit: {
+      owner: deposit.owner.toString() as KiltAddress,
+      amount: deposit.amount.toBn(),
+    },
+    claimedAt: claimedAt.toBn(),
+  }
 }

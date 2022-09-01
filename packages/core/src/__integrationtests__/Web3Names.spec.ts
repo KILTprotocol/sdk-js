@@ -102,7 +102,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to lookup the DID uri with the given nick', async () => {
-    const did = await Web3Names.queryDidForWeb3Name(nick)
+    const did = Web3Names.decodeWeb3NameOwner(
+      await api.query.web3Names.owner(nick)
+    ).owner
     expect(did).toBe(w3nCreator.uri)
   }, 30_000)
 
