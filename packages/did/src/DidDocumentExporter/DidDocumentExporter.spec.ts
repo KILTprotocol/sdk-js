@@ -7,7 +7,7 @@
 
 import { BN } from '@polkadot/util'
 
-import {
+import type {
   DidServiceEndpoint,
   NewDidVerificationKey,
   DidDetails,
@@ -17,10 +17,9 @@ import {
   DidUri,
 } from '@kiltprotocol/types'
 
-import type { EncodedDid } from '../Did.chain.js'
 import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
-import { parseDidUri, stripFragment } from '../Did.utils'
+import { stripFragment } from '../Did.utils'
 
 /**
  * @group unit/did
@@ -74,51 +73,20 @@ function generateServiceEndpointDetails(
   }
 }
 
-jest.mock('../Did.chain', () => {
-  const queryDetails = jest.fn(
-    async (didUri: DidUri): Promise<EncodedDid | null> => {
-      const authKey = generateAuthenticationKeyDetails()
-      const encKey = generateEncryptionKeyDetails()
-      const attKey = generateAttestationKeyDetails()
-      const delKey = generateDelegationKeyDetails()
-
-      return {
-        authentication: [authKey],
-        keyAgreement: [encKey],
-        assertionMethod: [attKey],
-        capabilityDelegation: [delKey],
-        lastTxCounter: new BN(0),
-        deposit: {
-          amount: new BN(2),
-          owner: parseDidUri(didUri).address,
-        },
-      }
-    }
-  )
-  const queryServiceEndpoint = jest.fn(
-    async (
-      didUri: DidUri,
-      serviceId: DidServiceEndpoint['id']
-    ): Promise<DidServiceEndpoint | null> =>
-      generateServiceEndpointDetails(serviceId)
-  )
-  const queryServiceEndpoints = jest.fn(
-    async (didUri: DidUri): Promise<DidServiceEndpoint[]> => [
-      (await queryServiceEndpoint(didUri, '#id-1')) as DidServiceEndpoint,
-      (await queryServiceEndpoint(didUri, '#id-2')) as DidServiceEndpoint,
-    ]
-  )
-  return {
-    queryDetails,
-    queryServiceEndpoint,
-    queryServiceEndpoints,
-  }
-})
+const fullDidDetails: DidDetails = {
+  uri: did,
+  authentication: [generateAuthenticationKeyDetails()],
+  keyAgreement: [generateEncryptionKeyDetails()],
+  assertionMethod: [generateAttestationKeyDetails()],
+  capabilityDelegation: [generateDelegationKeyDetails()],
+  service: [
+    generateServiceEndpointDetails('#id-1'),
+    generateServiceEndpointDetails('#id-2'),
+  ],
+}
 
 describe('When exporting a DID Document from a full DID', () => {
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, one x25519 encryption key, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await Did.query(did)) as DidDetails
-
     const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
 
     expect(didDoc).toStrictEqual({
@@ -173,8 +141,6 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', async () => {
-    const fullDidDetails = (await Did.query(did)) as DidDetails
-
     const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
 
     expect(didDoc).toStrictEqual({
@@ -230,8 +196,6 @@ describe('When exporting a DID Document from a full DID', () => {
   })
 
   it('fails to export to an unsupported mimetype', async () => {
-    const fullDidDetails = (await Did.query(did)) as DidDetails
-
     expect(() =>
       // @ts-ignore
       exportToDidDocument(fullDidDetails, 'random-mime-type')
