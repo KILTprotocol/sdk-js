@@ -492,44 +492,6 @@ export async function getStoreTx(
 }
 
 /**
- * Builds an extrinsic to set a new public key for a given verification relationship, replacing any keys that occupied this role previously.
- *
- * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (e.g. Authentication, assertionMethod, capabilityDelegation...).
- * @param key Data describing the public key.
- * @returns An extrinsic that must be authorized (signed) by the full DID whose keys should be changed.
- */
-export async function getSetKeyExtrinsic(
-  keyRelationship: KeyRelationship,
-  key: NewDidVerificationKey
-): Promise<Extrinsic> {
-  if (!verificationKeyTypes.includes(key.type)) {
-    throw new SDKErrors.DidError(
-      `Unacceptable key type for key with role ${keyRelationship}: ${
-        (key as any).type
-      }`
-    )
-  }
-  const typedKey = encodePublicKey(key)
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  switch (keyRelationship) {
-    case 'authentication':
-      return api.tx.did.setAuthenticationKey(typedKey)
-    case 'capabilityDelegation':
-      return api.tx.did.setDelegationKey(typedKey)
-    case 'assertionMethod':
-      return api.tx.did.setAttestationKey(typedKey)
-    default:
-      throw new SDKErrors.DidError(
-        `Setting a key is only allowed for the following key types: ${[
-          'authentication',
-          'capabilityDelegation',
-          'assertionMethod',
-        ]}`
-      )
-  }
-}
-
-/**
  * Builds an extrinsic to remove a public key for a given verification relationship.
  *
  * @param keyRelationship The key's role or relationship according to the DID specifications (e.g. Authentication, assertionMethod, capabilityDelegation, keyAgreement...).

@@ -246,9 +246,8 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   const newKey = makeSigningKeyTool()
 
-  const updateAuthenticationKeyCall = await Did.Chain.getSetKeyExtrinsic(
-    'authentication',
-    newKey.authentication[0]
+  const updateAuthenticationKeyCall = api.tx.did.setAuthenticationKey(
+    Did.Chain.encodePublicKey(newKey.authentication[0])
   )
   const tx2 = await Did.authorizeExtrinsic(
     fullDetails,
@@ -828,7 +827,9 @@ describe('DID management batching', () => {
             type: ['type-1'],
             serviceEndpoint: ['x:url-1'],
           }),
-          await Did.Chain.getSetKeyExtrinsic('authentication', newAuthKey),
+          api.tx.did.setAuthenticationKey(
+            Did.Chain.encodePublicKey(newAuthKey)
+          ),
           await Did.Chain.getAddEndpointExtrinsic({
             id: '#id-2',
             type: ['type-2'],
@@ -883,9 +884,8 @@ describe('DID management batching', () => {
         batchFunction: api.tx.utility.batch,
         did: fullDid,
         extrinsics: [
-          await Did.Chain.getSetKeyExtrinsic(
-            'assertionMethod',
-            authentication[0]
+          api.tx.did.setAttestationKey(
+            Did.Chain.encodePublicKey(authentication[0])
           ),
           await Did.Chain.getAddEndpointExtrinsic({
             id: '#id-1',
@@ -943,9 +943,8 @@ describe('DID management batching', () => {
         batchFunction: api.tx.utility.batchAll,
         did: fullDid,
         extrinsics: [
-          await Did.Chain.getSetKeyExtrinsic(
-            'assertionMethod',
-            authentication[0]
+          api.tx.did.setAttestationKey(
+            Did.Chain.encodePublicKey(authentication[0])
           ),
           await Did.Chain.getAddEndpointExtrinsic({
             id: '#id-1',
