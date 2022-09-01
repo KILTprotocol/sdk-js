@@ -513,19 +513,6 @@ export async function getAddEndpointExtrinsic(
 }
 
 /**
- * Produces an extrinsic to remove the signing full DID from the KILT blockchain.
- *
- * @param endpointsCount The current number of service endpoints associated with the full DID to be deleted, which is important for the precalculation of the deletion fee.
- * @returns An extrinsic that must be authorized (signed) by the full DID to be deleted.
- */
-export async function getDeleteDidExtrinsic(
-  endpointsCount: BN
-): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.delete(endpointsCount)
-}
-
-/**
  * Produces an extrinsic to reclaim a deposit paid for storing a full DID record on the KILT blockchain, resulting in the deletion of that DID.
  *
  * @param did Full DID.

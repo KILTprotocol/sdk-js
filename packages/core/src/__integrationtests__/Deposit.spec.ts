@@ -28,6 +28,7 @@ import {
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils } from '@kiltprotocol/utils'
+import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import {
   devFaucet,
@@ -45,6 +46,7 @@ import { disconnect } from '../kilt'
 import { queryRaw } from '../attestation/Attestation.chain'
 import * as CType from '../ctype'
 
+let api: ApiPromise
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
 let attestation: IAttestation
@@ -56,7 +58,7 @@ async function checkDeleteFullDid(
   sign: SignCallback
 ): Promise<boolean> {
   storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
-  const deleteDid = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
+  const deleteDid = await api.tx.did.delete(storedEndpointsCount)
 
   tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
@@ -208,7 +210,7 @@ async function checkDeletedDidReclaimAttestation(
 
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  const deleteDid = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
+  const deleteDid = await api.tx.did.delete(storedEndpointsCount)
   tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
   await submitExtrinsic(tx, identity)
@@ -225,7 +227,6 @@ async function checkWeb3Deposit(
 ): Promise<boolean> {
   const web3Name = 'test-web3name'
   const balanceBeforeClaiming = await Balance.getBalances(identity.address)
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   const depositAmount = api.consts.web3Names.deposit.toBn()
   const claimTx = await api.tx.web3Names.claim(web3Name)
@@ -267,6 +268,7 @@ let credential: ICredential
 
 beforeAll(async () => {
   await initializeApi()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 beforeAll(async () => {

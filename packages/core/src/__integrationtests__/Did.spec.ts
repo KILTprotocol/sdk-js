@@ -161,7 +161,7 @@ describe('write and didDeleteTx', () => {
     const otherAccount = devBob
 
     // 10 is an example value. It is not used here since we are testing another error
-    let call = await Did.Chain.getDeleteDidExtrinsic(new BN(10))
+    let call = await api.tx.did.delete(new BN(10))
 
     let submittable = await Did.authorizeExtrinsic(
       fullDid,
@@ -176,7 +176,7 @@ describe('write and didDeleteTx', () => {
     ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
-    call = await Did.Chain.getDeleteDidExtrinsic(new BN(1))
+    call = await api.tx.did.delete(new BN(1))
 
     submittable = await Did.authorizeExtrinsic(
       fullDid,
@@ -204,7 +204,7 @@ describe('write and didDeleteTx', () => {
     const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
       fullDid.uri
     )
-    const call = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
+    const call = await api.tx.did.delete(storedEndpointsCount)
 
     const submittable = await Did.authorizeExtrinsic(
       fullDid,
@@ -531,9 +531,7 @@ describe('DID authorization', () => {
     const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
       didDetails.uri
     )
-    const deleteCall = await Did.Chain.getDeleteDidExtrinsic(
-      storedEndpointsCount
-    )
+    const deleteCall = await api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeExtrinsic(
       didDetails,
       deleteCall,

@@ -231,7 +231,7 @@ async function runAll() {
 
   const deleteTx = await Did.authorizeExtrinsic(
     fullDid,
-    await Did.Chain.getDeleteDidExtrinsic(BalanceUtils.toFemtoKilt(0)),
+    await api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
     sign,
     payer.address
   )
