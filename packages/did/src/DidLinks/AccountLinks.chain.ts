@@ -29,7 +29,6 @@ import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType, VerifyResult } from '@polkadot/util-crypto/types'
 import {
   assert,
-  BN,
   stringToU8a,
   u8aConcatStrict,
   u8aToHex,
@@ -285,16 +284,6 @@ export async function queryIsConnected(
   return !(
     await api.query.didLookup.connectedAccounts.hash(encodeDid(did), account)
   ).isEmpty
-}
-
-/**
- * Retrieves the deposit amount to link an account to a DID as currently stored in the runtime.
- *
- * @returns The deposit amount. The value is indicated in femto KILTs.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.didLookup.deposit.toBn()
 }
 
 /* ### EXTRINSICS ### */

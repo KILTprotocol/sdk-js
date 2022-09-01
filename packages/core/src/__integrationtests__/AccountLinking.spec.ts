@@ -44,8 +44,9 @@ let signingCallback: AccountLinks.LinkingSignerCallback
 
 beforeAll(async () => {
   await initializeApi()
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
   paymentAccount = await createEndowedTestAccount()
-  linkDeposit = await AccountLinks.queryDepositAmount()
+  linkDeposit = await api.consts.didLookup.deposit.toBn()
   keyring = new Keyring({ ss58Format })
   signingCallback = AccountLinks.defaultSignerCallback(keyring)
 }, 40_000)
