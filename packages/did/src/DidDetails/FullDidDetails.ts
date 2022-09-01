@@ -24,7 +24,6 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import {
   generateDidAuthenticatedTx,
   queryDetails,
-  queryNonce,
   queryServiceEndpoints,
 } from '../Did.chain.js'
 import { parseDidUri, signatureAlgForKeyType } from '../Did.utils.js'
@@ -96,7 +95,8 @@ export function getKeysForExtrinsic(
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
 export async function getNextNonce(did: DidDetails): Promise<BN> {
-  const currentNonce = await queryNonce(did.uri)
+  const queried = await queryDetails(did.uri)
+  const currentNonce = queried ? queried.lastTxCounter : new BN(0)
   return increaseNonce(currentNonce)
 }
 

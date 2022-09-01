@@ -270,17 +270,6 @@ export async function queryServiceEndpoint(
 }
 
 /**
- * Gets the state of the full DID’s transaction counter which is bumped with each transaction authorized by that DID for replay protection purposes.
- *
- * @param did Full DID.
- * @returns Current state of the transaction counter which must be increased by one to yield the next transaction's nonce.
- */
-export async function queryNonce(did: DidUri): Promise<BN> {
-  const encoded = await queryDidEncoded(did)
-  return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
-}
-
-/**
  * Checks whether this full DID had previously been deleted, resulting in it being blocked from (re)creation.
  *
  * @param did Full DID.
