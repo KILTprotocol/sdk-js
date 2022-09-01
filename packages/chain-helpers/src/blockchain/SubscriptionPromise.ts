@@ -39,7 +39,8 @@ export function makeSubscriptionPromise<SubscriptionType>(
   const subscription: (value: SubscriptionType) => void =
     typeof rejectOn === 'function'
       ? (value) => {
-          if (rejectOn(value) === true) reject(value)
+          // eslint-disable-next-line no-extra-boolean-cast
+          if (Boolean(rejectOn(value))) reject(value)
           if (resolveOn(value) === true) resolve(value)
         }
       : (value) => {
