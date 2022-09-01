@@ -285,8 +285,8 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   ).toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
-  const removeEndpointCall = await Did.Chain.getRemoveEndpointExtrinsic(
-    newEndpoint.id
+  const removeEndpointCall = await api.tx.did.removeServiceEndpoint(
+    Did.Chain.encodeResourceId(newEndpoint.id)
   )
   const tx4 = await Did.authorizeExtrinsic(
     fullDetails,

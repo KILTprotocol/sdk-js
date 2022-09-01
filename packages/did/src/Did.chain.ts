@@ -513,28 +513,6 @@ export async function getAddEndpointExtrinsic(
 }
 
 /**
- * Generate an extrinsic to remove the service endpoint with the provided ID from to the state of the authorizing DID.
- *
- * @param endpointId The ID of the service endpoint to include in the extrinsic.
- * The ID must be at most 50 ASCII characters long.
- * @returns An extrinsic that must be authorized (signed) by the full DID associated with the service endpoint to be removed.
- */
-export async function getRemoveEndpointExtrinsic(
-  endpointId: DidServiceEndpoint['id']
-): Promise<Extrinsic> {
-  const strippedId = encodeResourceId(endpointId)
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const maxServiceIdLength = api.consts.did.maxServiceIdLength.toNumber()
-  if (strippedId.length > maxServiceIdLength) {
-    throw new SDKErrors.DidError(
-      `The service ID "${endpointId}" has is too long. Max number of characters allowed for a service ID is ${maxServiceIdLength}.`
-    )
-  }
-
-  return api.tx.did.removeServiceEndpoint(strippedId)
-}
-
-/**
  * Produces an extrinsic to remove the signing full DID from the KILT blockchain.
  *
  * @param endpointsCount The current number of service endpoints associated with the full DID to be deleted, which is important for the precalculation of the deletion fee.
