@@ -26,7 +26,7 @@ import type {
   SigningOptions,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { verificationKeyTypes } from '@kiltprotocol/types'
+import { UriFragment, verificationKeyTypes } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -63,6 +63,10 @@ export function encodeDid(did: DidUri): KiltAddress {
   return parseDidUri(did).address
 }
 
+export function encodeResourceId(id: UriFragment): string {
+  return stripFragment(id)
+}
+
 // Query a full DID.
 // Interacts with the DID storage map.
 async function queryDidEncoded(did: DidUri): Promise<Option<DidDidDetails>> {
@@ -87,7 +91,7 @@ async function queryServiceEncoded(
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.serviceEndpoints(
     encodeDid(did),
-    stripFragment(serviceId)
+    encodeResourceId(serviceId)
   )
 }
 
@@ -156,7 +160,7 @@ function decodeDid({
   const keys: Record<string, DidKey> = [...publicKeys.entries()]
     .map(([keyId, keyDetails]) => decodeDidPublicKeyDetails(keyId, keyDetails))
     .reduce((res, key) => {
-      res[stripFragment(key.id)] = key
+      res[encodeResourceId(key.id)] = key
       return res
     }, {})
 
@@ -217,7 +221,7 @@ function endpointToBlockchainEndpoint({
   serviceEndpoint,
 }: DidServiceEndpoint): BlockchainEndpoint {
   return {
-    id: stripFragment(id),
+    id: encodeResourceId(id),
     serviceTypes: type,
     urls: serviceEndpoint,
   }
@@ -518,7 +522,7 @@ export async function getAddEndpointExtrinsic(
 export async function getRemoveEndpointExtrinsic(
   endpointId: DidServiceEndpoint['id']
 ): Promise<Extrinsic> {
-  const strippedId = stripFragment(endpointId)
+  const strippedId = encodeResourceId(endpointId)
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const maxServiceIdLength = api.consts.did.maxServiceIdLength.toNumber()
   if (strippedId.length > maxServiceIdLength) {
