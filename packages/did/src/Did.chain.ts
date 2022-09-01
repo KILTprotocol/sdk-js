@@ -492,41 +492,6 @@ export async function getStoreTx(
 }
 
 /**
- * Builds an extrinsic to remove a public key for a given verification relationship.
- *
- * @param keyRelationship The key's role or relationship according to the DID specifications (e.g. Authentication, assertionMethod, capabilityDelegation, keyAgreement...).
- * @param keyId Where a verification relationship allows multiple keys in the same role, you will need to identify the key to be removed with its id (not the full key uri).
- * @returns An extrinsic that must be authorized (signed) by the full DID whose keys should be changed.
- */
-export async function getRemoveKeyExtrinsic(
-  keyRelationship: KeyRelationship,
-  keyId?: DidKey['id']
-): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  switch (keyRelationship) {
-    case 'capabilityDelegation':
-      return api.tx.did.removeDelegationKey()
-    case 'assertionMethod':
-      return api.tx.did.removeAttestationKey()
-    case 'keyAgreement':
-      if (!keyId) {
-        throw new SDKErrors.DidError(
-          'When removing a keyAgreement key it is required to specify the id of the key to be removed'
-        )
-      }
-      return api.tx.did.removeKeyAgreementKey(keyId)
-    default:
-      throw new SDKErrors.DidError(
-        `Key removal is only allowed for the following key types: ${[
-          'keyAgreement',
-          'capabilityDelegation',
-          'assertionMethod',
-        ]}`
-      )
-  }
-}
-
-/**
  * Builds an extrinsic to add another public key for a given verification relationship if this allows multiple keys in the same role.
  *
  * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (currently only keyAgreement allows multiple keys).
