@@ -57,7 +57,7 @@ beforeAll(async () => {
 }, 30_000)
 
 it('fetches the correct deposit amount', async () => {
-  const depositAmount = await Did.Chain.queryDepositAmount()
+  const depositAmount = api.consts.did.deposit.toBn()
   expect(depositAmount.toString()).toMatchInlineSnapshot('"2007900000000000"')
 })
 

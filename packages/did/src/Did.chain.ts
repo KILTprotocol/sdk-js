@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { GenericAccountId, Option, u128, u32 } from '@polkadot/types'
+import type { GenericAccountId, Option, u32 } from '@polkadot/types'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToU8a } from '@polkadot/util'
@@ -112,11 +112,6 @@ async function queryAllServicesEncoded(
 async function queryEndpointsCountsEncoded(did: DidUri): Promise<u32> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.didEndpointsCount(encodeDid(did))
-}
-
-async function queryDepositAmountEncoded(): Promise<u128> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.did.deposit
 }
 
 // ### DECODED QUERYING types
@@ -317,16 +312,6 @@ export async function queryDidDeletionStatus(did: DidUri): Promise<boolean> {
   )
   // isEmpty returns true if there is no entry for the given key -> the function should return false.
   return !encodedStorageHash.isEmpty
-}
-
-/**
- * Gets the current deposit amount due for the creation of new full DIDs.
- *
- * @returns Deposit amount in Femto Kilt as a BigNumber.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const encodedDeposit = await queryDepositAmountEncoded()
-  return encodedDeposit.toBn()
 }
 
 /**
