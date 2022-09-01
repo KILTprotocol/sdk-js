@@ -109,7 +109,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
-    const resolved = await Web3Names.queryWeb3NameForDid(w3nCreator.uri)
+    const resolved = Web3Names.decodeWeb3Name(
+      await api.query.web3Names.names(Did.Chain.encodeDid(w3nCreator.uri))
+    )
     expect(resolved).toBe(nick)
   }, 30_000)
 

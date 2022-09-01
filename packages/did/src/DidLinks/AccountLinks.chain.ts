@@ -46,7 +46,7 @@ import type {
 } from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
 import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
-import { queryWeb3NameForDid, Web3Name } from './Web3Names.chain.js'
+import { decodeWeb3Name, Web3Name } from './Web3Names.chain.js'
 import { encodeDid } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
@@ -256,7 +256,8 @@ export async function queryWeb3Name(
   if (!linkedDid) {
     return null
   }
-  return queryWeb3NameForDid(linkedDid)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  return decodeWeb3Name(await api.query.web3Names.names(encodeDid(linkedDid)))
 }
 
 /**

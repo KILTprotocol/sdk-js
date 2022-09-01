@@ -6,14 +6,11 @@
  */
 
 import { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
-import { Option } from '@polkadot/types-codec'
+import { Bytes, Option } from '@polkadot/types-codec'
 import type { DidUri, KiltAddress } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DecoderUtils } from '@kiltprotocol/utils'
 import type { BN } from '@polkadot/util'
 
 import * as DidUtils from '../Did.utils.js'
-import { encodeDid } from '../Did.chain.js'
 
 /**
  * Web3Name is the type of a nickname for a DID.
@@ -21,18 +18,13 @@ import { encodeDid } from '../Did.chain.js'
 export type Web3Name = string
 
 /**
- * Retrieve the Web3Name for a specific DID uri.
+ * Decodes the web3name of a DID.
  *
- * @param did DID of the web3name owner, i.e. 'did:kilt:4abc...'.
+ * @param encoded The value returned by `api.query.web3Names.names()`.
  * @returns The registered web3name for this DID if any.
  */
-export async function queryWeb3NameForDid(
-  did: DidUri
-): Promise<Web3Name | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.web3Names.names(encodeDid(did))
-  DecoderUtils.assertCodecIsType(encoded, ['Option<Bytes>'])
-  return encoded.isSome ? encoded.unwrap().toUtf8() : null
+export function decodeWeb3Name(encoded: Option<Bytes>): Web3Name {
+  return encoded.unwrap().toUtf8()
 }
 
 /**
