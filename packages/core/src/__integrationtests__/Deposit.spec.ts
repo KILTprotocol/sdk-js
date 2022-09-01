@@ -81,8 +81,8 @@ async function checkReclaimFullDid(
   fullDid: DidDetails
 ): Promise<boolean> {
   storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
-  tx = await Did.Chain.getReclaimDepositExtrinsic(
-    fullDid.uri,
+  tx = await api.tx.did.reclaimDeposit(
+    Did.Chain.encodeDid(fullDid.uri),
     storedEndpointsCount
   )
 

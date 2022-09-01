@@ -513,21 +513,6 @@ export async function getAddEndpointExtrinsic(
 }
 
 /**
- * Produces an extrinsic to reclaim a deposit paid for storing a full DID record on the KILT blockchain, resulting in the deletion of that DID.
- *
- * @param did Full DID.
- * @param endpointsCount The current number of service endpoints associated with the full DID to be deleted, which is important for the precalculation of the deletion fee.
- * @returns An extrinsic that is to be signed by the payment account owning the deposit, without prior DID authorization.
- */
-export async function getReclaimDepositExtrinsic(
-  did: DidUri,
-  endpointsCount: BN
-): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.reclaimDeposit(encodeDid(did), endpointsCount)
-}
-
-/**
  * DID related operations on the KILT blockchain require authorization by a full DID. This is realized by requiring that relevant extrinsics are signed with a key featured by a full DID as a verification method.
  * Such extrinsics can be produced using this function.
  *

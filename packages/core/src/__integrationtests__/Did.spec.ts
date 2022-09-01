@@ -305,8 +305,8 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
     fullDetails.uri
   )
-  const reclaimDepositTx = await Did.Chain.getReclaimDepositExtrinsic(
-    fullDetails.uri,
+  const reclaimDepositTx = await api.tx.did.reclaimDeposit(
+    Did.Chain.encodeDid(fullDetails.uri),
     storedEndpointsCount
   )
   await submitExtrinsic(reclaimDepositTx, paymentAccount)
@@ -469,8 +469,8 @@ describe('DID migration', () => {
     const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
       migratedFullDid.uri
     )
-    const reclaimDepositTx = await Did.Chain.getReclaimDepositExtrinsic(
-      migratedFullDid.uri,
+    const reclaimDepositTx = await api.tx.did.reclaimDeposit(
+      Did.Chain.encodeDid(migratedFullDid.uri),
       storedEndpointsCount
     )
     await submitExtrinsic(reclaimDepositTx, paymentAccount)
