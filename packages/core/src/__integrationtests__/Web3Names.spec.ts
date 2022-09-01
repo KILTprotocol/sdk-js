@@ -187,11 +187,15 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
 describe('Runtime constraints', () => {
   it('should not be possible to use a web3 name that is too short', async () => {
-    expect(api.consts.web3Names.minNameLength.toNumber()).toEqual(2)
+    const minNameLength = api.consts.web3Names.minNameLength.toNumber()
+    const shortName = 'aa'
+    expect(shortName.length).toBeLessThan(minNameLength)
   })
 
   it('should not be possible to use a web3 name that is too long', async () => {
-    expect(api.consts.web3Names.maxNameLength.toNumber()).toEqual(32)
+    const maxNameLength = api.consts.web3Names.maxNameLength.toNumber()
+    const longName = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    expect(longName.length).toBeGreaterThan(maxNameLength)
   })
 })
 
