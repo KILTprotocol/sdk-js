@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
+import type {
   DidDetails,
   DidResolvedDetails,
   DidResourceUri,
@@ -14,13 +14,10 @@ import {
   ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
 import * as Did from '../index.js'
-import {
-  queryDetails,
-  queryDidDeletionStatus,
-  queryServiceEndpoint,
-} from '../Did.chain.js'
+import { queryDidDeletionStatus, queryServiceEndpoint } from '../Did.chain.js'
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
 /**
@@ -34,6 +31,7 @@ import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
   const { type } = parseDidUri(did)
   const fullDidUri = getFullDidUri(did)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   switch (type) {
     case 'full': {
@@ -68,9 +66,9 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
         })
       }
 
-      const fullDidDetails = await queryDetails(did)
+      const fullDidDetails = await api.query.did.did(did)
       // If a full DID with same subject is present, return the resolution metadata accordingly.
-      if (fullDidDetails) {
+      if (fullDidDetails.isSome) {
         return {
           details,
           metadata: {
@@ -118,11 +116,13 @@ export async function resolveKey(
   if (!keyId) {
     throw new SDKErrors.InvalidDidFormatError(didUri)
   }
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   switch (type) {
     case 'full': {
-      const details = await queryDetails(didUri)
-      const key = details && Did.getKey(details, keyId)
+      const encoded = await api.query.did.did(didUri)
+      const key =
+        encoded.isSome && Did.getKey(Did.Chain.decodeDid(encoded), keyId)
       if (!key) {
         return null
       }

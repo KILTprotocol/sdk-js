@@ -66,8 +66,10 @@ async function checkDeleteFullDid(
 
   const balanceBeforeDeleting = await Balance.getBalances(identity.address)
 
-  const didResult = await Did.Chain.queryDetails(fullDid.uri)
-  const didDeposit = didResult!.deposit
+  const didResult = Did.Chain.decodeDid(
+    await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))
+  )
+  const didDeposit = didResult.deposit
 
   await submitExtrinsic(tx, identity)
 
@@ -92,8 +94,10 @@ async function checkReclaimFullDid(
 
   const balanceBeforeRevoking = await Balance.getBalances(identity.address)
 
-  const didResult = await Did.Chain.queryDetails(fullDid.uri)
-  const didDeposit = didResult!.deposit
+  const didResult = Did.Chain.decodeDid(
+    await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))
+  )
+  const didDeposit = didResult.deposit
 
   await submitExtrinsic(tx, identity)
 

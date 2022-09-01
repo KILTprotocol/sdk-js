@@ -67,13 +67,6 @@ export function encodeResourceId(id: UriFragment): string {
   return stripFragment(id)
 }
 
-// Query a full DID.
-// Interacts with the DID storage map.
-async function queryDidEncoded(did: DidUri): Promise<Option<DidDidDetails>> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.did(encodeDid(did))
-}
-
 // Query ALL deleted DIDs, which can be very time-consuming if the number of deleted DIDs gets large.
 async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
@@ -136,15 +129,17 @@ function decodeDidPublicKeyDetails(
   }
 }
 
-function decodeDid({
-  publicKeys,
-  authenticationKey,
-  attestationKey,
-  delegationKey,
-  keyAgreementKeys,
-  lastTxCounter,
-  deposit,
-}: DidDidDetails): EncodedDid {
+export function decodeDid(encoded: Option<DidDidDetails>): EncodedDid {
+  const {
+    publicKeys,
+    authenticationKey,
+    attestationKey,
+    delegationKey,
+    keyAgreementKeys,
+    lastTxCounter,
+    deposit,
+  } = encoded.unwrap()
+
   const keys: Record<string, DidKey> = [...publicKeys.entries()]
     .map(([keyId, keyDetails]) => decodeDidPublicKeyDetails(keyId, keyDetails))
     .reduce((res, key) => {
@@ -181,20 +176,6 @@ function decodeDid({
   }
 
   return didRecord
-}
-
-/**
- * Query data associated with the full DID from the KILT blockchain.
- *
- * @param did The Full DID.
- * @returns Data associated with this DID or null if the DID has not been claimed or has been deleted.
- */
-export async function queryDetails(did: DidUri): Promise<EncodedDid | null> {
-  const result = await queryDidEncoded(did)
-  if (result.isNone) {
-    return null
-  }
-  return decodeDid(result.unwrap())
 }
 
 interface BlockchainEndpoint {

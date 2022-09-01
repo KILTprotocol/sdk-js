@@ -20,10 +20,12 @@ import type {
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
 import {
+  decodeDid,
+  encodeDid,
   generateDidAuthenticatedTx,
-  queryDetails,
   queryServiceEndpoints,
 } from '../Did.chain.js'
 import { parseDidUri, signatureAlgForKeyType } from '../Did.utils.js'
@@ -51,8 +53,11 @@ export async function query(didUri: DidUri): Promise<DidDetails | null> {
       `DID URI "${didUri}" does not refer to a full DID`
     )
   }
-  const didRec = await queryDetails(didUri)
-  if (!didRec) return null
+
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.did.did(encodeDid(didUri))
+  if (encoded.isNone) return null
+  const didRec = decodeDid(encoded)
 
   const details: DidDetails = {
     uri: didUri,
@@ -95,8 +100,11 @@ export function getKeysForExtrinsic(
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
 export async function getNextNonce(did: DidDetails): Promise<BN> {
-  const queried = await queryDetails(did.uri)
-  const currentNonce = queried ? queried.lastTxCounter : new BN(0)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const queried = await api.query.did.did(did.uri)
+  const currentNonce = queried.isSome
+    ? decodeDid(queried).lastTxCounter
+    : new BN(0)
   return increaseNonce(currentNonce)
 }
 
