@@ -25,6 +25,7 @@ import type {
 import { Keyring } from '@polkadot/keyring'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { BN, u8aToHex } from '@polkadot/util'
+import type { ApiPromise } from '@polkadot/api'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import { Balance } from '../balance'
@@ -41,10 +42,11 @@ let paymentAccount: KiltKeyringPair
 let linkDeposit: BN
 let keyring: Keyring
 let signingCallback: AccountLinks.LinkingSignerCallback
+let api: ApiPromise
 
 beforeAll(async () => {
   await initializeApi()
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
   paymentAccount = await createEndowedTestAccount()
   linkDeposit = await api.consts.didLookup.deposit.toBn()
   keyring = new Keyring({ ss58Format })
@@ -76,7 +78,7 @@ describe('When there is an on-chain DID', () => {
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
       ).toBe(false)
 
-      const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
+      const associateSenderTx = await api.tx.didLookup.associateSender()
       const signedTx = await Did.authorizeExtrinsic(
         did,
         associateSenderTx,
@@ -107,7 +109,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
-      const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
+      const associateSenderTx = await api.tx.didLookup.associateSender()
       const signedTx = await Did.authorizeExtrinsic(
         newDid,
         associateSenderTx,
@@ -379,7 +381,6 @@ describe('When there is an on-chain DID', () => {
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
-      const api = await BlockchainApiConnection.getConnectionOrConnect()
       const web3NameClaimTx = await api.tx.web3Names.claim('test-name')
       const signedTx = await Did.authorizeExtrinsic(
         did,

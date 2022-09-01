@@ -289,18 +289,6 @@ export async function queryIsConnected(
 /* ### EXTRINSICS ### */
 
 /**
- * Signing (authorizing) this extrinsic with a full DID and submitting it with an Account
- * will link Account to full DID and remove any pre-existing links of Account.
- * Account must hold balance to cover for submission fees and storage deposit.
- *
- * @returns An extrinsic that must be DID-authorized.
- */
-export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.didLookup.associateSender()
-}
-
-/**
  * Signing (authorizing) this extrinsic with a full DID and submitting it with any Account
  * will link Account to full DID and remove any pre-existing links of Account.
  * Account must give permission by signing a Scale-encoded tuple consisting of the full DID address
