@@ -9,7 +9,6 @@
  * @group integration/deposit
  */
 
-import { Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromLightDid,
@@ -226,9 +225,9 @@ async function checkWeb3Deposit(
 ): Promise<boolean> {
   const web3Name = 'test-web3name'
   const balanceBeforeClaiming = await Balance.getBalances(identity.address)
-  const depositAmount = await Web3Names.queryDepositAmount()
-
   const api = await BlockchainApiConnection.getConnectionOrConnect()
+
+  const depositAmount = api.consts.web3Names.deposit.toBn()
   const claimTx = await api.tx.web3Names.claim(web3Name)
   let didAuthorizedTx = await Did.authorizeExtrinsic(
     fullDid,

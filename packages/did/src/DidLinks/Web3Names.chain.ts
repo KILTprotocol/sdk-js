@@ -14,7 +14,6 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 
 import type { ApiPromise } from '@polkadot/api'
-import type { BN } from '@polkadot/util'
 
 import * as DidUtils from '../Did.utils.js'
 import { encodeDid } from '../Did.chain.js'
@@ -97,14 +96,4 @@ export async function queryDidForWeb3Name(
     return null
   }
   return DidUtils.getFullDidUri(address)
-}
-
-/**
- * Retrieves the deposit amount to claim a web3 name as currently stored in the runtime.
- *
- * @returns The deposit amount. The value is indicated in femto KILTs.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.web3Names.deposit.toBn()
 }
