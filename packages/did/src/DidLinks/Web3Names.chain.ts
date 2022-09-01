@@ -6,7 +6,7 @@
  */
 
 import { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
-import { Bytes, Option } from '@polkadot/types-codec'
+import type { Bytes, Option } from '@polkadot/types-codec'
 import type { DidUri, KiltAddress } from '@kiltprotocol/types'
 import type { BN } from '@polkadot/util'
 
