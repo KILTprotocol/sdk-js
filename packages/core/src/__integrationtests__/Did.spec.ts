@@ -147,7 +147,9 @@ describe('write and didDeleteTx', () => {
       await Did.Chain.queryServiceEndpoint(emptyDid, '#non-existing-service-id')
     ).toBeNull()
 
-    const endpointsCount = await Did.Chain.queryEndpointsCounts(emptyDid)
+    const endpointsCount = await api.query.did.didEndpointsCount(
+      Did.Chain.encodeDid(emptyDid)
+    )
     expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
   })
 
@@ -201,8 +203,8 @@ describe('write and didDeleteTx', () => {
     )) as DidDetails
     expect(fullDid).not.toBeNull()
 
-    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-      fullDid.uri
+    const storedEndpointsCount = await api.query.did.didEndpointsCount(
+      Did.Chain.encodeDid(fullDid.uri)
     )
     const call = await api.tx.did.delete(storedEndpointsCount)
 
@@ -302,8 +304,8 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   ).toBeNull()
 
   // Claim the deposit back
-  const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-    fullDetails.uri
+  const storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.Chain.encodeDid(fullDetails.uri)
   )
   const reclaimDepositTx = await api.tx.did.reclaimDeposit(
     Did.Chain.encodeDid(fullDetails.uri),
@@ -313,8 +315,8 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // Verify that the DID has been deleted
   expect(await Did.Chain.queryDetails(fullDetails.uri)).toBeNull()
   expect(await Did.Chain.queryServiceEndpoints(fullDetails.uri)).toHaveLength(0)
-  const newEndpointsCount = await Did.Chain.queryEndpointsCounts(
-    fullDetails.uri
+  const newEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.Chain.encodeDid(fullDetails.uri)
   )
   expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
 }, 80_000)
@@ -466,8 +468,8 @@ describe('DID migration', () => {
     expect(metadata.deactivated).toBe(false)
 
     // Remove and claim the deposit back
-    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-      migratedFullDid.uri
+    const storedEndpointsCount = await api.query.did.didEndpointsCount(
+      Did.Chain.encodeDid(migratedFullDid.uri)
     )
     const reclaimDepositTx = await api.tx.did.reclaimDeposit(
       Did.Chain.encodeDid(migratedFullDid.uri),
@@ -528,8 +530,8 @@ describe('DID authorization', () => {
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
-    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-      didDetails.uri
+    const storedEndpointsCount = await api.query.did.didEndpointsCount(
+      Did.Chain.encodeDid(didDetails.uri)
     )
     const deleteCall = await api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeExtrinsic(

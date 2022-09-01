@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { GenericAccountId, Option, u32 } from '@polkadot/types'
+import type { GenericAccountId, Option } from '@polkadot/types'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToU8a } from '@polkadot/util'
@@ -105,13 +105,6 @@ async function queryAllServicesEncoded(
     encodeDid(did)
   )
   return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
-}
-
-// Query the # of services stored under a DID without fetching all the services.
-// Interacts with the DidEndpointsCount storage map.
-async function queryEndpointsCountsEncoded(did: DidUri): Promise<u32> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.didEndpointsCount(encodeDid(did))
 }
 
 // ### DECODED QUERYING types
@@ -274,17 +267,6 @@ export async function queryServiceEndpoint(
   if (serviceEncoded.isNone) return null
 
   return decodeService(serviceEncoded.unwrap())
-}
-
-/**
- * Gets the total number of service endpoints associated with the given full DID.
- *
- * @param did Full DID.
- * @returns Number of endpoints.
- */
-export async function queryEndpointsCounts(did: DidUri): Promise<BN> {
-  const endpointsCountEncoded = await queryEndpointsCountsEncoded(did)
-  return endpointsCountEncoded.toBn()
 }
 
 /**

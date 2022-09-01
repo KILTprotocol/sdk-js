@@ -57,7 +57,9 @@ async function checkDeleteFullDid(
   fullDid: DidDetails,
   sign: SignCallback
 ): Promise<boolean> {
-  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.Chain.encodeDid(fullDid.uri)
+  )
   const deleteDid = await api.tx.did.delete(storedEndpointsCount)
 
   tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
@@ -80,7 +82,9 @@ async function checkReclaimFullDid(
   identity: KeyringPair,
   fullDid: DidDetails
 ): Promise<boolean> {
-  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.Chain.encodeDid(fullDid.uri)
+  )
   tx = await api.tx.did.reclaimDeposit(
     Did.Chain.encodeDid(fullDid.uri),
     storedEndpointsCount
@@ -206,7 +210,9 @@ async function checkDeletedDidReclaimAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.Chain.encodeDid(fullDid.uri)
+  )
 
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
