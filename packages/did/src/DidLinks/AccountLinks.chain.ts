@@ -336,17 +336,6 @@ export async function getAccountSignedAssociationExtrinsic(
 }
 
 /**
- * Allows the submitting account to unilaterally remove its link to a DID.
- * This is not DID-authorized, but directly submitted by the linked account.
- *
- * @returns A SubmittableExtrinsic that must be signed by the linked account.
- */
-export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.didLookup.removeSenderAssociation()
-}
-
-/**
  * Allows the authorizing full DID to unilaterally remove its link to a given account.
  * This must be DID-authorized, but can be submitted by any account.
  *

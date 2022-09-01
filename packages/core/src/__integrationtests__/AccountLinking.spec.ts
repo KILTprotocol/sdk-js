@@ -144,7 +144,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
-      const removeSenderTx = await AccountLinks.getLinkRemovalByAccountTx()
+      const removeSenderTx = await api.tx.didLookup.removeSenderAssociation()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
       await submitExtrinsic(removeSenderTx, paymentAccount)
 
@@ -403,7 +403,7 @@ describe('When there is an on-chain DID', () => {
 
     it('should be possible for the sender to remove the link', async () => {
       // No need for DID-authorizing this.
-      const reclaimDepositTx = await AccountLinks.getLinkRemovalByAccountTx()
+      const reclaimDepositTx = await api.tx.didLookup.removeSenderAssociation()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
       await submitExtrinsic(reclaimDepositTx, genericAccount)
 
