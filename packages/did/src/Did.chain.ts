@@ -19,7 +19,6 @@ import type {
   DidSignature,
   DidUri,
   DidVerificationKey,
-  KeyRelationship,
   KiltAddress,
   NewDidEncryptionKey,
   NewDidVerificationKey,
@@ -27,7 +26,7 @@ import type {
   SigningOptions,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
+import { verificationKeyTypes } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -489,33 +488,6 @@ export async function getStoreTx(
   })
   const encodedSignature = { [type]: signature.data } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
-}
-
-/**
- * Builds an extrinsic to add another public key for a given verification relationship if this allows multiple keys in the same role.
- *
- * @param keyRelationship The role or relationship which the new key should have according to the DID specifications (currently only keyAgreement allows multiple keys).
- * @param key Data describing the public key.
- * @returns An extrinsic that must be authorized (signed) by the full DID whose keys should be changed.
- */
-export async function getAddKeyExtrinsic(
-  keyRelationship: KeyRelationship,
-  key: NewDidEncryptionKey
-): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  if (keyRelationship === 'keyAgreement') {
-    if (!encryptionKeyTypes.includes(key.type))
-      throw new SDKErrors.DidError(
-        `Unacceptable key type for key with role ${keyRelationship}: ${key.type}`
-      )
-    const keyAsEnum = encodePublicKey(key)
-    return api.tx.did.addKeyAgreementKey(keyAsEnum)
-  }
-  throw new SDKErrors.DidError(
-    `Adding to the key set is only allowed for the following key types: ${[
-      'keyAgreement',
-    ]}`
-  )
 }
 
 /**
