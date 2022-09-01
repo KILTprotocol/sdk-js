@@ -336,20 +336,6 @@ export async function getAccountSignedAssociationExtrinsic(
 }
 
 /**
- * Returns an extrinsic to release an account link by the account that owns the deposit.
- * Must be signed and submitted by the deposit owner account.
- *
- * @param linkedAccount Account whose link should be released (not the deposit owner).
- * @returns The a submittable extrinsic for the `reclaimDeposit` call.
- */
-export async function getReclaimDepositTx(
-  linkedAccount: Address
-): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.didLookup.reclaimDeposit(linkedAccount)
-}
-
-/**
  * Allows the submitting account to unilaterally remove its link to a DID.
  * This is not DID-authorized, but directly submitted by the linked account.
  *
