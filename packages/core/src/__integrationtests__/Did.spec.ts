@@ -1089,7 +1089,9 @@ describe('DID extrinsics batching', () => {
     expect(encoded1.isSome).toBe(false)
     // Test for correct creation of second web3 name
     const encoded2 = await api.query.web3Names.owner('test-1')
-    expect(Web3Names.decodeWeb3NameOwner(encoded2).owner).toStrictEqual(fullDid.uri)
+    expect(Web3Names.decodeWeb3NameOwner(encoded2).owner).toStrictEqual(
+      fullDid.uri
+    )
   }, 30_000)
 
   it('can batch extrinsics for different required key types', async () => {
@@ -1145,8 +1147,10 @@ describe('DID extrinsics batching', () => {
     const encoded = await api.query.web3Names.owner('test')
     expect(encoded.isSome).toBe(false)
 
-    const encoded2 = await api.query.web3Names.owner('test-2')
-    expect(Web3Names.decodeWeb3NameOwner(encoded2).owner).toStrictEqual(fullDid.uri)
+    const { owner } = Web3Names.decodeWeb3NameOwner(
+      await api.query.web3Names.owner('test-2')
+    )
+    expect(owner).toStrictEqual(fullDid.uri)
 
     // Test correct use of attestation keys
     expect(await CType.verifyStored(ctype1)).toBe(true)

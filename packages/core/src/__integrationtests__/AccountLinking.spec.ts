@@ -389,10 +389,10 @@ describe('When there is an on-chain DID', () => {
       await submitExtrinsic(signedTx, paymentAccount)
 
       // Check that the Web3 name has been linked to the DID
-      const encoded = await api.query.web3Names.owner('test-name')
-      expect(Web3Names.decodeWeb3NameOwner(encoded).owner).toStrictEqual(
-        did.uri
+      const { owner } = Web3Names.decodeWeb3NameOwner(
+        await api.query.web3Names.owner('test-name')
       )
+      expect(owner).toStrictEqual(did.uri)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
       expect(
         await AccountLinks.queryWeb3Name(genericAccount.address)
