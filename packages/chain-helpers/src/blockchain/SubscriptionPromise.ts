@@ -28,7 +28,7 @@ export function makeSubscriptionPromise<SubscriptionType>(
   promise: Promise<SubscriptionType>
   subscription: (value: SubscriptionType) => void
 } {
-  const { resolveOn, rejectOn, timeout } = { ...terminationOptions }
+  const { resolveOn, rejectOn, timeout = 0 } = { ...terminationOptions }
   let resolve: (value: SubscriptionType) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reject: (reason: any) => void
@@ -39,13 +39,13 @@ export function makeSubscriptionPromise<SubscriptionType>(
   const subscription: (value: SubscriptionType) => void =
     typeof rejectOn === 'function'
       ? (value) => {
-          if (rejectOn(value)) reject(value)
-          if (resolveOn(value)) resolve(value)
+          if (rejectOn(value) === true) reject(value)
+          if (resolveOn(value) === true) resolve(value)
         }
       : (value) => {
-          if (resolveOn(value)) resolve(value)
+          if (resolveOn(value) === true) resolve(value)
         }
-  if (timeout)
+  if (timeout > 0)
     setTimeout(() => {
       reject(new SDKErrors.TimeoutError())
     }, timeout)

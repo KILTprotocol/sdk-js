@@ -419,7 +419,7 @@ export async function getStoreTx(
     service = [],
   } = input
 
-  if (!authentication?.[0]) {
+  if (!('authentication' in input) || typeof authentication[0] !== 'object') {
     throw new SDKErrors.DidError(
       `The provided DID does not have an authentication key to sign the creation operation`
     )
@@ -693,7 +693,7 @@ export async function generateDidAuthenticatedTx({
         did: encodeDid(did),
         call,
         submitter,
-        blockNumber: blockNumber || (await api.query.system.number()),
+        blockNumber: blockNumber ?? (await api.query.system.number()),
       }
     )
   const signature = await sign({

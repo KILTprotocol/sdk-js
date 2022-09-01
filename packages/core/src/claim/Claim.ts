@@ -289,7 +289,8 @@ export function fromCTypeAndClaimContents(
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  if (ctypeInput.schema) {
+  // TODO: is schema really optional? Yes = fix type. No = use isICType here.
+  if ('schema' in ctypeInput) {
     if (!verifyAgainstCType(claimContents, ctypeInput.schema)) {
       throw new SDKErrors.ClaimUnverifiableError()
     }

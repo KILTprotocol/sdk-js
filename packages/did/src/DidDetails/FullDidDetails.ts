@@ -130,7 +130,7 @@ export async function authorizeExtrinsic(
   }
 
   const [signingKey] = getKeysForExtrinsic(did, extrinsic)
-  if (!signingKey) {
+  if (signingKey === undefined) {
     throw new SDKErrors.DidError(
       `The details for DID "${uri}" do not contain the required keys for this operation`
     )

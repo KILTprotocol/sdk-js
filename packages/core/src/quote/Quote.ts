@@ -195,7 +195,7 @@ export async function createQuoteAgreement(
  * @returns An ordered array of a cost.
  */
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
-  if (!cost.gross || !cost.net || !cost.tax) {
+  if (!('gross' in cost && 'net' in cost && 'tax' in cost)) {
     throw new SDKErrors.CompressObjectError(cost, 'Cost Breakdown')
   }
   return [cost.gross, cost.net, cost.tax]
@@ -224,7 +224,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
   if (
     !quote.attesterDid ||
     !quote.cTypeHash ||
-    !quote.cost ||
+    !('cost' in quote) ||
     !quote.currency ||
     !quote.termsAndConditions ||
     !quote.timeframe
@@ -290,7 +290,7 @@ export function compressAttesterSignedQuote(
   if (
     !attesterDid ||
     !cTypeHash ||
-    !cost ||
+    typeof cost !== 'object' ||
     !currency ||
     !termsAndConditions ||
     !timeframe ||
@@ -348,11 +348,11 @@ export function compressQuoteAgreement(
   if (
     !quoteAgreement.attesterDid ||
     !quoteAgreement.cTypeHash ||
-    !quoteAgreement.cost ||
+    !('cost' in quoteAgreement) ||
     !quoteAgreement.currency ||
     !quoteAgreement.termsAndConditions ||
     !quoteAgreement.timeframe ||
-    !quoteAgreement.attesterSignature
+    !('attesterSignature' in quoteAgreement)
   ) {
     throw new SDKErrors.CompressObjectError(quoteAgreement, 'Quote Agreement')
   }

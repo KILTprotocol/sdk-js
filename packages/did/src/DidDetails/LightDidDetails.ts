@@ -127,7 +127,7 @@ export function parseDetailsFromLightDid(
     authKeyTypeEncoding &&
     lightDidEncodingToVerificationKeyType[authKeyTypeEncoding]
 
-  if (!keyType) {
+  if (keyType === undefined) {
     throw new SDKErrors.DidError(
       `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type`
     )

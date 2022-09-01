@@ -215,7 +215,7 @@ export async function getAttestationHashes(
       return claimHash.toHex()
     })
   }
-  if (api.query.attestation.delegatedAttestations) {
+  if ('delegatedAttestations' in api.query.attestation) {
     // Delegated attestations are stored as a simple map from delegationId -> Vec<claimHashes>
     const claimHashes = await api.query.attestation.delegatedAttestations<
       Option<Vec<Hash>>

@@ -81,7 +81,7 @@ export function makeDecryptCallback({
       peerPublicKey,
       secretKey
     )
-    if (!decrypted) throw new Error('Decryption failed')
+    if (decrypted === false) throw new Error('Decryption failed')
     return { data: decrypted, alg }
   }
 }

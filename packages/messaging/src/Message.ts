@@ -227,10 +227,10 @@ export function errorCheckMessage(message: IMessage): void {
   if (messageId && typeof messageId !== 'string') {
     throw new TypeError('Message id is expected to be a string')
   }
-  if (createdAt && typeof createdAt !== 'number') {
+  if ('createdAt' in message && typeof createdAt !== 'number') {
     throw new TypeError('Created at is expected to be a number')
   }
-  if (receivedAt && typeof receivedAt !== 'number') {
+  if ('receivedAt' in message && typeof receivedAt !== 'number') {
     throw new TypeError('Received at is expected to be a number')
   }
   Did.Utils.validateKiltDidUri(receiver)

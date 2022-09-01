@@ -146,7 +146,7 @@ export async function verifyDidSignature({
   }
   // Otherwise, the details used are either the migrated full DID details or the light DID details.
   const details = (
-    resolutionDetails.metadata.canonicalId
+    resolutionDetails.metadata.canonicalId !== undefined
       ? (await didResolve(resolutionDetails.metadata.canonicalId))?.details
       : resolutionDetails.details
   ) as DidDetails
@@ -178,13 +178,8 @@ export function isDidSignature(
 ): input is DidSignature | OldDidSignature {
   const signature = input as DidSignature | OldDidSignature
   try {
-    if (
-      !isHex(signature.signature) ||
-      !validateKiltDidUri(
-        (signature as any).keyUri || (signature as any).keyId,
-        true
-      )
-    ) {
+    const keyUri = 'keyUri' in signature ? signature.keyUri : signature.keyId
+    if (!isHex(signature.signature) || !validateKiltDidUri(keyUri, true)) {
       throw new SDKErrors.SignatureMalformedError()
     }
     return true

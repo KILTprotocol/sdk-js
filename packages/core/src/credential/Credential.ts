@@ -49,8 +49,8 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 function getHashLeaves(
   claimHashes: Hash[],
-  legitimations: ICredential[],
-  delegationId: IDelegationNode['id'] | null
+  legitimations?: ICredential[],
+  delegationId?: IDelegationNode['id'] | null
 ): Uint8Array[] {
   const result = claimHashes.map((item) => Crypto.coToUInt8(item))
   if (legitimations) {
@@ -201,13 +201,13 @@ export function verifyDataIntegrity(input: ICredential): boolean {
   }
 
   // verify properties against selective disclosure proof
-  const verificationResult = Claim.verifyDisclosedAttributes(input.claim, {
+  const { errors, verified } = Claim.verifyDisclosedAttributes(input.claim, {
     nonces: input.claimNonceMap,
     hashes: input.claimHashes,
   })
   // TODO: how do we want to deal with multiple errors during claim verification?
-  if (!verificationResult.verified)
-    throw verificationResult.errors[0] || new SDKErrors.ClaimUnverifiableError()
+  if (!verified)
+    throw errors.length > 0 ? errors[0] : new SDKErrors.ClaimUnverifiableError()
 
   // check legitimations
   input.legitimations.forEach((legitimation) => {
@@ -227,7 +227,7 @@ export function verifyDataIntegrity(input: ICredential): boolean {
  *
  */
 export function verifyDataStructure(input: ICredential): void {
-  if (!input.claim) {
+  if (!('claim' in input)) {
     throw new SDKErrors.ClaimMissingError()
   } else {
     Claim.verifyDataStructure(input.claim)
@@ -235,11 +235,11 @@ export function verifyDataStructure(input: ICredential): void {
   if (!input.claim.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  if (!input.legitimations && !Array.isArray(input.legitimations)) {
+  if (!Array.isArray(input.legitimations)) {
     throw new SDKErrors.LegitimationsMissingError()
   }
 
-  if (!input.claimNonceMap) {
+  if (!('claimNonceMap' in input)) {
     throw new SDKErrors.ClaimNonceMapMissingError()
   }
   if (
@@ -255,11 +255,11 @@ export function verifyDataStructure(input: ICredential): void {
     throw new SDKErrors.ClaimNonceMapMalformedError()
   }
 
-  if (!input.claimHashes) {
+  if (!('claimHashes' in input)) {
     throw new SDKErrors.DataStructureError('claim hashes not provided')
   }
 
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+  if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
   }
   if (input.claimerSignature) isDidSignature(input.claimerSignature)

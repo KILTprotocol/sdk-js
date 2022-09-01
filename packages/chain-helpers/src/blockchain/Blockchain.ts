@@ -139,11 +139,9 @@ export async function submitSignedTx(
 
   function handleDisconnect(): void {
     const result = new SubmittableResult({
-      events: latestResult.events || [],
+      events: latestResult.events,
       internalError: new Error('connection error'),
-      status:
-        latestResult.status ||
-        api.registry.createType('ExtrinsicStatus', 'future'),
+      status: latestResult.status,
       txHash: api.registry.createType('Hash'),
     })
     subscription(result)
@@ -180,11 +178,7 @@ export function isRecoverableTxError(
       false
     )
   }
-  if (
-    reason &&
-    typeof reason === 'object' &&
-    typeof reason.status === 'object'
-  ) {
+  if (typeof reason === 'object' && typeof reason.status === 'object') {
     const { status } = reason as ISubmittableResult
     if (status.isUsurped) return true
   }

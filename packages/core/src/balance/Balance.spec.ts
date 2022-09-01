@@ -53,7 +53,7 @@ describe('Balance', () => {
 
   mockedApi.query.system.account = jest.fn(
     (accountAddress, cb): AccountInfo => {
-      if (cb) {
+      if (typeof cb === 'function') {
         setTimeout(() => {
           cb(accountInfo(BALANCE))
         }, 1)

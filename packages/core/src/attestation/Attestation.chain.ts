@@ -169,7 +169,7 @@ export async function getRevokeTx(
       // uses generalized attestation authorization
       return api.tx.attestation.revoke(
         claimHash,
-        maxParentChecks
+        maxParentChecks > 0
           ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
           : undefined
       )
@@ -204,7 +204,7 @@ export async function getRemoveTx(
       // uses generalized attestation authorization
       return api.tx.attestation.remove(
         claimHash,
-        maxParentChecks
+        maxParentChecks > 0
           ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
           : undefined
       )
