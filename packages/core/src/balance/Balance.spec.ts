@@ -21,12 +21,7 @@ import {
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
-import {
-  getBalances,
-  listenToBalanceChanges,
-  getTransferTx,
-} from './Balance.chain'
-import * as BalanceUtils from './Balance.utils'
+import { getBalances, listenToBalanceChanges } from './Balance.chain'
 
 const mockedApi: any = ApiMocks.getMockedApi()
 BlockchainApiConnection.setConnection(mockedApi)
@@ -86,24 +81,9 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const transferTx = await getTransferTx(bob.address, new BN(100))
+    const api = await BlockchainApiConnection.getConnectionOrConnect()
+    const transferTx = await api.tx.balances.transfer(bob.address, new BN(100))
     const status = await Blockchain.signAndSubmitTx(transferTx, alice)
-    expect(status).toBeInstanceOf(SubmittableResult)
-    expect(status.isFinalized).toBe(true)
-  })
-  it('should make transfer of amount with arbitrary exponent', async () => {
-    const amount = new BN(10)
-    const exponent = -6.312513431
-    const expectedAmount = BalanceUtils.convertToTxUnit(
-      amount,
-      (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
-    )
-    const transferTx = await getTransferTx(bob.address, amount, exponent)
-    const status = await Blockchain.signAndSubmitTx(transferTx, alice)
-    expect(mockedApi.tx.balances.transfer).toHaveBeenCalledWith(
-      bob.address,
-      expectedAmount
-    )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBe(true)
   })

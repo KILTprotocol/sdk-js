@@ -27,7 +27,6 @@ import type {
 } from '@kiltprotocol/types'
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 import * as CType from '../ctype'
-import { Balance } from '../balance'
 import { connect, init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
@@ -147,7 +146,7 @@ export async function endowAccounts(
 ): Promise<void> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const transactions = await Promise.all(
-    addresses.map((address) => Balance.getTransferTx(address, ENDOWMENT))
+    addresses.map((address) => api.tx.balances.transfer(address, ENDOWMENT))
   )
   const batch = api.tx.utility.batchAll(transactions)
   await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
@@ -157,7 +156,8 @@ export async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
-  const transferTx = await Balance.getTransferTx(address, amount)
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const transferTx = await api.tx.balances.transfer(address, amount)
   await submitExtrinsic(transferTx, devFaucet)
 }
 

@@ -10,6 +10,7 @@
  */
 
 import { BN } from '@polkadot/util'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type {
   DidDetails,
   IAttestation,
@@ -22,7 +23,6 @@ import {
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
 import { Attestation } from '../index'
-import { getTransferTx } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
@@ -46,7 +46,11 @@ beforeAll(async () => {
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const transferTx = await getTransferTx(addressFromRandom(), new BN(1))
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const transferTx = await api.tx.balances.transfer(
+    addressFromRandom(),
+    new BN(1)
+  )
   await expect(
     submitExtrinsic(transferTx, paymentAccount)
   ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })

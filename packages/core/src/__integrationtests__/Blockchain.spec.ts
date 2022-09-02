@@ -14,7 +14,6 @@ import type { KeyringPair } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import { getTransferTx } from '../balance/Balance.chain'
 import { devCharlie, devFaucet, initializeApi, submitExtrinsic } from './utils'
 import { connect, disconnect } from '../kilt'
 
@@ -34,10 +33,9 @@ describe('Chain returns specific errors, that we check for', () => {
     testIdentity = makeSigningKeyTool().keypair
     charlie = devCharlie
 
-    const transferTx = await getTransferTx(
+    const transferTx = await api.tx.balances.transfer(
       testIdentity.address,
-      new BN(10000),
-      0
+      new BN(10000)
     )
     await submitExtrinsic(transferTx, faucet)
   }, 40000)

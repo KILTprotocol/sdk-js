@@ -9,15 +9,12 @@
  * @group integration/balance
  */
 
+import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import {
-  getBalances,
-  getTransferTx,
-  listenToBalanceChanges,
-} from '../balance/Balance.chain'
+import { getBalances, listenToBalanceChanges } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
@@ -29,8 +26,10 @@ import {
   submitExtrinsic,
 } from './utils'
 
+let api: ApiPromise
 beforeAll(async () => {
   await initializeApi()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 describe('when there is a dev chain with a faucet', () => {
@@ -72,7 +71,10 @@ describe('when there is a dev chain with a faucet', () => {
     const spy = jest.fn()
     listenToBalanceChanges(address, spy)
     const balanceBefore = await getBalances(faucet.address)
-    const transferTx = await getTransferTx(address, EXISTENTIAL_DEPOSIT)
+    const transferTx = await api.tx.balances.transfer(
+      address,
+      EXISTENTIAL_DEPOSIT
+    )
     await submitExtrinsic(transferTx, faucet)
     const balanceAfter = await getBalances(faucet.address)
     const balanceIdent = await getBalances(address)
@@ -99,7 +101,10 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    const transferTx = await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT)
+    const transferTx = await api.tx.balances.transfer(
+      stormyD.address,
+      EXISTENTIAL_DEPOSIT
+    )
     await submitExtrinsic(transferTx, richieRich)
     const balanceTo = await getBalances(stormyD.address)
     expect(balanceTo.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
@@ -107,7 +112,10 @@ describe('When there are haves and have-nots', () => {
 
   it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = await getBalances(stormyD.address)
-    const transferTx = await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT)
+    const transferTx = await api.tx.balances.transfer(
+      stormyD.address,
+      EXISTENTIAL_DEPOSIT
+    )
     await expect(submitExtrinsic(transferTx, bobbyBroke)).rejects.toThrowError(
       '1010: Invalid Transaction'
     )
@@ -120,7 +128,7 @@ describe('When there are haves and have-nots', () => {
 
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalances(richieRich.address)
-    const transferTx = await getTransferTx(
+    const transferTx = await api.tx.balances.transfer(
       bobbyBroke.address,
       RichieBalance.free
     )
@@ -136,12 +144,12 @@ describe('When there are haves and have-nots', () => {
     const spy = jest.fn()
     listenToBalanceChanges(faucet.address, spy)
 
-    const transferTx1 = await getTransferTx(
+    const transferTx1 = await api.tx.balances.transfer(
       richieRich.address,
       EXISTENTIAL_DEPOSIT
     )
     await submitExtrinsic(transferTx1, faucet)
-    const transferTx2 = await getTransferTx(
+    const transferTx2 = await api.tx.balances.transfer(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
@@ -159,10 +167,9 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
 
-    const api = await BlockchainApiConnection.getConnectionOrConnect()
     const batch = api.tx.utility.batchAll([
-      await getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT),
-      await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT),
+      await api.tx.balances.transfer(richieRich.address, EXISTENTIAL_DEPOSIT),
+      await api.tx.balances.transfer(stormyD.address, EXISTENTIAL_DEPOSIT),
     ])
     await submitExtrinsic(batch, faucet)
 

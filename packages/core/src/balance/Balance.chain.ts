@@ -16,13 +16,8 @@
 
 import type { UnsubscribePromise } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
-import type {
-  Balances,
-  KeyringPair,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { Balances, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import * as BalanceUtils from './Balance.utils.js'
 
 /**
  * Fetches the current balances of the account with [accountAddress].
@@ -78,30 +73,5 @@ export async function listenToBalanceChanges(
 
       listener(accountAddress, current, balancesChange)
     }
-  )
-}
-
-/**
- * Transfer Kilt [amount] tokens to [toAccountAddress].
- * <B>Note that the value of the transferred currency and the balance amount reported by the chain is in Femto-Kilt (1e-15), and must be translated to Kilt-Coin</B>.
- *
- * @param accountAddressTo Address of the receiver account.
- * @param amount Amount of Units to transfer.
- * @param exponent Magnitude of the amount. Default magnitude of -15 represents Femto-Kilt. Use 0 for KILT.
- * @returns Promise containing unsigned SubmittableExtrinsic.
- */
-export async function getTransferTx(
-  accountAddressTo: KeyringPair['address'],
-  amount: BN,
-  exponent = -15
-): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const cleanExponent =
-    (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
-  return api.tx.balances.transfer(
-    accountAddressTo,
-    cleanExponent === -15
-      ? amount
-      : BalanceUtils.convertToTxUnit(amount, cleanExponent)
   )
 }
