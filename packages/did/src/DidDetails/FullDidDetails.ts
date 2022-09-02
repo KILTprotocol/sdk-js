@@ -101,7 +101,7 @@ export function getKeysForExtrinsic(
  */
 export async function getNextNonce(did: DidDetails): Promise<BN> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const queried = await api.query.did.did(did.uri)
+  const queried = await api.query.did.did(encodeDid(did.uri))
   const currentNonce = queried.isSome
     ? decodeDid(queried).lastTxCounter
     : new BN(0)
