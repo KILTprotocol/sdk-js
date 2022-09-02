@@ -20,7 +20,7 @@ type ChainQueryTypes = {
   attestation: 'attestations' | 'delegatedAttestations'
   ctype: 'cTYPEs'
   delegation: 'hierarchies' | 'delegations'
-  did: 'dIDs'
+  did: 'did' | 'serviceEndpoints' | 'didBlacklist'
   portablegabi: 'accumulatorList' | 'accumulatorCount' | 'accountState'
 }
 
@@ -59,7 +59,11 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: TYPE_REGISTRY.getOrUnknown('DidDidDetails'),
+    did: TYPE_REGISTRY.getOrUnknown('DidDidDetails'),
+    serviceEndpoints: TYPE_REGISTRY.getOrUnknown(
+      'DidServiceEndpointsDidEndpoint'
+    ),
+    didBlacklist: TYPE_REGISTRY.getOrUnknown('Bool'),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
@@ -110,10 +114,12 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
       mockValue as Constructor[]
     )
   }
+
   // helper function to wrap values into an option
   function wrapInOption(): Option<Codec> {
     return new Option(TYPE_REGISTRY, chainQueryReturnTuple, mockValue)
   }
+
   // check cases
   switch (outerQuery) {
     case 'attestation': {

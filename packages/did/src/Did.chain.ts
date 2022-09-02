@@ -75,19 +75,6 @@ async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   return entries.map(({ args: [encodedAddresses] }) => encodedAddresses)
 }
 
-// Query a DID service given the DID and the service ID.
-// Interacts with the ServiceEndpoints storage double map.
-async function queryServiceEncoded(
-  did: DidUri,
-  serviceId: DidServiceEndpoint['id']
-): Promise<Option<DidServiceEndpointsDidEndpoint>> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.serviceEndpoints(
-    encodeDid(did),
-    encodeResourceId(serviceId)
-  )
-}
-
 // Query all services for a DID given the DID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryAllServicesEncoded(
@@ -208,7 +195,7 @@ function blockchainEndpointToEndpoint({
   }
 }
 
-function decodeService({
+export function decodeServiceEndpoint({
   id,
   serviceTypes,
   urls,
@@ -230,24 +217,7 @@ export async function queryServiceEndpoints(
   did: DidUri
 ): Promise<DidServiceEndpoint[]> {
   const encoded = await queryAllServicesEncoded(did)
-  return encoded.map((e) => decodeService(e))
-}
-
-/**
- * Query a service endpoint record associated with the full DID from the KILT blockchain.
- *
- * @param did Full DID.
- * @param serviceId ID of the requested service endpoint (not the full endpoint uri).
- * @returns Service endpoint data or null if the requested endpoint is not found on this full DID, or if the full DID does not exist.
- */
-export async function queryServiceEndpoint(
-  did: DidUri,
-  serviceId: DidServiceEndpoint['id']
-): Promise<DidServiceEndpoint | null> {
-  const serviceEncoded = await queryServiceEncoded(did, serviceId)
-  if (serviceEncoded.isNone) return null
-
-  return decodeService(serviceEncoded.unwrap())
+  return encoded.map((e) => decodeServiceEndpoint(e))
 }
 
 /**

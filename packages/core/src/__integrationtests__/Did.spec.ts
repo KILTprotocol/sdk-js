@@ -143,9 +143,11 @@ describe('write and didDeleteTx', () => {
     expect(await Did.Chain.queryServiceEndpoints(emptyDid)).toBeDefined()
     expect(await Did.Chain.queryServiceEndpoints(emptyDid)).toHaveLength(0)
 
-    expect(
-      await Did.Chain.queryServiceEndpoint(emptyDid, '#non-existing-service-id')
-    ).toBeNull()
+    const encoded = await api.query.did.serviceEndpoints(
+      Did.Chain.encodeDid(emptyDid),
+      Did.Chain.encodeResourceId('#non-existing-service-id')
+    )
+    expect(encoded.isNone).toBe(true)
 
     const endpointsCount = await api.query.did.didEndpointsCount(
       Did.Chain.encodeDid(emptyDid)
@@ -284,9 +286,14 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     paymentAccount.address
   )
   await submitExtrinsic(tx3, paymentAccount)
-  expect(
-    await Did.Chain.queryServiceEndpoint(fullDetails.uri, newEndpoint.id)
-  ).toStrictEqual(newEndpoint)
+
+  const encoded = await api.query.did.serviceEndpoints(
+    Did.Chain.encodeDid(fullDetails.uri),
+    Did.Chain.encodeResourceId(newEndpoint.id)
+  )
+  expect(Did.Chain.decodeServiceEndpoint(encoded.unwrap())).toStrictEqual(
+    newEndpoint
+  )
 
   // Delete the added service endpoint
   const removeEndpointCall = await api.tx.did.removeServiceEndpoint(
@@ -301,9 +308,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitExtrinsic(tx4, paymentAccount)
 
   // There should not be any endpoint with the given ID now.
-  expect(
-    await Did.Chain.queryServiceEndpoint(fullDetails.uri, newEndpoint.id)
-  ).toBeNull()
+  const encoded2 = await api.query.did.serviceEndpoints(
+    Did.Chain.encodeDid(fullDetails.uri),
+    Did.Chain.encodeResourceId(newEndpoint.id)
+  )
+  expect(encoded2.isNone).toBe(true)
 
   // Claim the deposit back
   const storedEndpointsCount = await api.query.did.didEndpointsCount(

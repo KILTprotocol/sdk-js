@@ -23,10 +23,16 @@ import type {
   UriFragment,
 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
+import { ApiMocks, makeSigningKeyTool } from '@kiltprotocol/testing'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
-import type { EncodedDid } from '../Did.chain'
-import { getFullDidUriFromKey, parseDidUri, stripFragment } from '../Did.utils'
+import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
+import {
+  decodeDid,
+  decodeServiceEndpoint,
+  queryDidDeletionStatus,
+  queryServiceEndpoints,
+} from '../Did.chain.js'
 
 import { resolve, resolveKey, resolveServiceEndpoint } from './index.js'
 import * as Did from '../index.js'
@@ -44,6 +50,36 @@ const addressWithServiceEndpoints = `4q4DHavMdesaSMH3g32xH3fhxYPt5pmoP9oSwgTr73d
 const didWithServiceEndpoints: DidUri = `did:kilt:${addressWithServiceEndpoints}`
 const deletedAddress = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
 const deletedDid: DidUri = `did:kilt:${deletedAddress}`
+
+const didNotFound = ApiMocks.mockChainQueryReturn('did', 'did')
+const encodedDidWithAuthenticationKey = ApiMocks.mockChainQueryReturn(
+  'did',
+  'did',
+  [
+    '01234567890123456789012345678901',
+    [],
+    undefined,
+    undefined,
+    [],
+    '123',
+    [addressWithAuthenticationKey, '0'],
+  ]
+)
+
+let mockedApi: any
+beforeAll(() => {
+  mockedApi = ApiMocks.getMockedApi()
+  BlockchainApiConnection.setConnection(mockedApi)
+
+  mockedApi.query.did.did.mockReturnValue(encodedDidWithAuthenticationKey)
+  mockedApi.query.did.serviceEndpoints.mockReturnValue(
+    ApiMocks.mockChainQueryReturn('did', 'serviceEndpoints', [
+      'foo',
+      ['type-service-1'],
+      ['x:url-service-1'],
+    ])
+  )
+})
 
 function generateAuthenticationKeyDetails(): DidVerificationKey {
   return {
@@ -91,88 +127,23 @@ function generateServiceEndpointDetails(
   }
 }
 
-jest.mock('../Did.chain', () => {
-  const queryDetails = jest.fn(
-    async (did: DidUri): Promise<EncodedDid | null> => {
-      const authKey = generateAuthenticationKeyDetails()
-      const encKey = generateEncryptionKeyDetails()
-      const attKey = generateAttestationKeyDetails()
-      const delKey = generateDelegationKeyDetails()
-      const { address: didAddress } = parseDidUri(did)
+jest.mock('../Did.chain.js')
 
-      switch (didAddress) {
-        case addressWithAuthenticationKey:
-          return {
-            authentication: [authKey],
-            lastTxCounter: new BN(0),
-            deposit: {
-              amount: new BN(2),
-              owner: didAddress,
-            },
-          }
-        case addressWithAllKeys:
-          return {
-            authentication: [authKey],
-            keyAgreement: [encKey],
-            assertionMethod: [attKey],
-            capabilityDelegation: [delKey],
-            lastTxCounter: new BN(0),
-            deposit: {
-              amount: new BN(2),
-              owner: didAddress,
-            },
-          }
-        case addressWithServiceEndpoints:
-          return {
-            authentication: [authKey],
-            lastTxCounter: new BN(0),
-            deposit: {
-              amount: new BN(2),
-              owner: didAddress,
-            },
-          }
-        default:
-          return null
-      }
-    }
-  )
-  const queryServiceEndpoint = jest.fn(
-    async (
-      did: DidUri,
-      serviceId: DidServiceEndpoint['id']
-    ): Promise<DidServiceEndpoint | null> => {
-      switch (parseDidUri(did).address) {
-        case addressWithServiceEndpoints:
-          return generateServiceEndpointDetails(serviceId)
-        default:
-          return null
-      }
-    }
-  )
-  const queryServiceEndpoints = jest.fn(
-    async (did: DidUri): Promise<DidServiceEndpoint[]> => {
-      switch (parseDidUri(did).address) {
-        case addressWithServiceEndpoints:
-          return [
-            (await queryServiceEndpoint(did, '#id-1')) as DidServiceEndpoint,
-            (await queryServiceEndpoint(did, '#id-2')) as DidServiceEndpoint,
-          ]
-        default:
-          return []
-      }
-    }
-  )
-  const queryDidDeletionStatus = jest.fn(
-    async (did: DidUri): Promise<boolean> =>
-      parseDidUri(did).address === deletedAddress
-  )
-  return {
-    queryDetails,
-    queryServiceEndpoint,
-    queryServiceEndpoints,
-    queryDidDeletionStatus,
-  }
+jest.mocked(queryDidDeletionStatus).mockResolvedValue(false)
+jest.mocked(decodeDid).mockReturnValue({
+  authentication: [generateAuthenticationKeyDetails()],
+  lastTxCounter: new BN(0),
+  deposit: {
+    amount: new BN(0),
+    owner: addressWithAuthenticationKey,
+  },
 })
+jest
+  .mocked(decodeServiceEndpoint)
+  .mockReturnValue(generateServiceEndpointDetails('#service-1'))
+jest
+  .mocked(queryServiceEndpoints)
+  .mockResolvedValue([generateServiceEndpointDetails('#service-1')])
 
 describe('When resolving a key', () => {
   it('correctly resolves it for a full DID if both the DID and the key exist', async () => {
@@ -224,6 +195,13 @@ describe('When resolving a service endpoint', () => {
   })
 
   it('returns null if either the DID or the service do not exist', async () => {
+    mockedApi.query.did.serviceEndpoints.mockReturnValueOnce(
+      ApiMocks.mockChainQueryReturn('did', 'serviceEndpoints')
+    )
+    mockedApi.query.did.serviceEndpoints.mockReturnValueOnce(
+      ApiMocks.mockChainQueryReturn('did', 'serviceEndpoints')
+    )
+
     let serviceIdUri: DidResourceUri = `${deletedDid}#service-1`
 
     expect(await resolveServiceEndpoint(serviceIdUri)).toBeNull()
@@ -267,6 +245,18 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves the details with all keys', async () => {
+    jest.mocked(decodeDid).mockReturnValueOnce({
+      authentication: [generateAuthenticationKeyDetails()],
+      keyAgreement: [generateEncryptionKeyDetails()],
+      assertionMethod: [generateAttestationKeyDetails()],
+      capabilityDelegation: [generateDelegationKeyDetails()],
+      lastTxCounter: new BN(0),
+      deposit: {
+        amount: new BN(0),
+        owner: addressWithAuthenticationKey,
+      },
+    })
+
     const fullDidWithAllKeys = didWithAllKeys
     const { details, metadata } = (await resolve(
       fullDidWithAllKeys
@@ -305,6 +295,13 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves the details with service endpoints', async () => {
+    jest
+      .mocked(queryServiceEndpoints)
+      .mockResolvedValue([
+        generateServiceEndpointDetails('#id-1'),
+        generateServiceEndpointDetails('#id-2'),
+      ])
+
     const fullDidWithServiceEndpoints = didWithServiceEndpoints
     const { details, metadata } = (await resolve(
       fullDidWithServiceEndpoints
@@ -330,6 +327,7 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves a non-existing DID', async () => {
+    mockedApi.query.did.did.mockReturnValueOnce(didNotFound)
     const randomDid = getFullDidUriFromKey(
       makeSigningKeyTool().authentication[0]
     )
@@ -337,6 +335,9 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves a deleted DID', async () => {
+    mockedApi.query.did.did.mockReturnValueOnce(didNotFound)
+    jest.mocked(queryDidDeletionStatus).mockResolvedValueOnce(true)
+
     const { details, metadata } = (await resolve(
       deletedDid
     )) as DidResolvedDetails
@@ -365,6 +366,10 @@ describe('When resolving a light DID', () => {
   const keyring = new Keyring({ ss58Format })
   const authKey = keyring.addFromMnemonic('auth')
   const encryptionKey = keyring.addFromMnemonic('enc')
+
+  beforeEach(() => {
+    mockedApi.query.did.did.mockReturnValue(didNotFound)
+  })
 
   it('correctly resolves the details with an authentication key', async () => {
     const lightDidWithAuthenticationKey = Did.createLightDidDetails({
@@ -433,6 +438,8 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves a migrated and not deleted DID', async () => {
+    mockedApi.query.did.did.mockReturnValueOnce(encodedDidWithAuthenticationKey)
+
     const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
     const { details, metadata } = (await resolve(
       migratedDid
@@ -458,6 +465,8 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {
+    jest.mocked(queryDidDeletionStatus).mockResolvedValueOnce(true)
+
     const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
     const { details, metadata } = (await resolve(
       migratedDid

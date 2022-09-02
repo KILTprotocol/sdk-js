@@ -17,7 +17,13 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
 import * as Did from '../index.js'
-import { queryDidDeletionStatus, queryServiceEndpoint } from '../Did.chain.js'
+import {
+  queryDidDeletionStatus,
+  decodeServiceEndpoint,
+  encodeDid,
+  encodeResourceId,
+  decodeDid,
+} from '../Did.chain.js'
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
 /**
@@ -121,8 +127,7 @@ export async function resolveKey(
   switch (type) {
     case 'full': {
       const encoded = await api.query.did.did(didUri)
-      const key =
-        encoded.isSome && Did.getKey(Did.Chain.decodeDid(encoded), keyId)
+      const key = encoded.isSome && Did.getKey(decodeDid(encoded), keyId)
       if (!key) {
         return null
       }
@@ -174,13 +179,18 @@ export async function resolveServiceEndpoint(
   if (!serviceId) {
     throw new SDKErrors.InvalidDidFormatError(serviceUri)
   }
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   switch (type) {
     case 'full': {
-      const serviceEndpoint = await queryServiceEndpoint(serviceUri, serviceId)
-      if (!serviceEndpoint) {
+      const encoded = await api.query.did.serviceEndpoints(
+        encodeDid(serviceUri),
+        encodeResourceId(serviceId)
+      )
+      if (encoded.isNone) {
         return null
       }
+      const serviceEndpoint = decodeServiceEndpoint(encoded.unwrap())
       return {
         id: serviceUri,
         type: serviceEndpoint.type,
