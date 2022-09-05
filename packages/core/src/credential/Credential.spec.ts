@@ -21,6 +21,7 @@ import type {
   IClaim,
   IClaimContents,
   ICredential,
+  ICredentialPresentation,
   ICType,
   SignCallback,
 } from '@kiltprotocol/types'
@@ -93,9 +94,8 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     const testCType = CType.fromSchema(rawCType)
-    await Credential.verify(credential, {
+    await Credential.verifyCredential(credential, {
       ctype: testCType,
-      allowUnsigned: true,
     })
 
     // just deleting a field will result in a wrong proof
@@ -117,9 +117,8 @@ describe('Credential', () => {
     )
     const testCType = CType.fromSchema(rawCType)
     await expect(
-      Credential.verify(credential, {
+      Credential.verifyCredential(credential, {
         ctype: testCType,
-        allowUnsigned: false,
       })
     ).rejects.toThrow()
   })
@@ -235,7 +234,7 @@ describe('Credential', () => {
         },
         []
       ),
-    } as ICredential
+    } as ICredentialPresentation
     builtCredentialMalformedSignature.claimerSignature = {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
@@ -329,7 +328,7 @@ describe('Credential', () => {
   let identityAlice: DidDocument
   let identityBob: DidDocument
   let identityCharlie: DidDocument
-  let legitimation: ICredential
+  let legitimation: ICredentialPresentation
   let identityDave: DidDocument
   let migratedAndDeletedLightDid: DidDocument
   let migratedAndDeletedFullDid: DidDocument
@@ -366,13 +365,13 @@ describe('Credential', () => {
   }
 
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
-  async function buildCredential2(
+  async function buildPresentation(
     claimer: DidDocument,
     attesterDid: DidUri,
     contents: IClaim['contents'],
     legitimations: ICredential[],
     sign: SignCallback
-  ): Promise<[ICredential, IAttestation]> {
+  ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
 
     const rawCType2: ICType['schema'] = {
@@ -396,7 +395,7 @@ describe('Credential', () => {
     const credential = Credential.fromClaim(claim, {
       legitimations,
     })
-    await Credential.sign(
+    const presentation = await Credential.sign(
       credential,
       sign,
       claimer,
@@ -407,7 +406,7 @@ describe('Credential', () => {
       credential,
       attesterDid
     )
-    return [credential, testAttestation]
+    return [presentation, testAttestation]
   }
 
   beforeAll(async () => {
@@ -421,7 +420,7 @@ describe('Credential', () => {
     identityCharlie = await createLocalDemoFullDidFromKeypair(
       keyCharlie.keypair
     )
-    ;[legitimation] = await buildCredential2(
+    ;[legitimation] = await buildPresentation(
       identityAlice,
       identityBob.uri,
       {},
@@ -431,7 +430,7 @@ describe('Credential', () => {
   })
 
   it('verify credentials signed by a full DID', async () => {
-    const [credential] = await buildCredential2(
+    const [credential] = await buildPresentation(
       identityCharlie,
       identityAlice.uri,
       {
@@ -445,7 +444,7 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    await Credential.verify(credential, {
+    await Credential.verifyPresentation(credential, {
       didResolve: mockResolve,
     })
   })
@@ -455,7 +454,7 @@ describe('Credential', () => {
       authentication,
     })
 
-    const [credential] = await buildCredential2(
+    const [credential] = await buildPresentation(
       identityDave,
       identityAlice.uri,
       {
@@ -469,7 +468,7 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    await Credential.verify(credential, {
+    await Credential.verifyPresentation(credential, {
       didResolve: mockResolve,
     })
   })
@@ -484,7 +483,7 @@ describe('Credential', () => {
       authentication: [migratedAndDeletedLightDid.authentication[0]],
     }
 
-    const [credential] = await buildCredential2(
+    const [credential] = await buildPresentation(
       migratedAndDeletedLightDid,
       identityAlice.uri,
       {
@@ -499,14 +498,14 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     await expect(
-      Credential.verify(credential, {
+      Credential.verifyPresentation(credential, {
         didResolve: mockResolve,
       })
     ).rejects.toThrowError()
   })
 
   it('Typeguard should return true on complete Credentials', async () => {
-    const [credential] = await buildCredential2(
+    const [credential] = await buildPresentation(
       identityAlice,
       identityBob.uri,
       {},
@@ -520,7 +519,7 @@ describe('Credential', () => {
     expect(Credential.isICredential(credential)).toBe(false)
   })
   it('Should throw error when attestation is from different credential', async () => {
-    const [credential, attestation] = await buildCredential2(
+    const [credential, attestation] = await buildPresentation(
       identityAlice,
       identityBob.uri,
       {},
@@ -542,7 +541,7 @@ describe('Credential', () => {
     )
   })
   it('returns Claim Hash of the attestation', async () => {
-    const [credential, attestation] = await buildCredential2(
+    const [credential, attestation] = await buildPresentation(
       identityAlice,
       identityBob.uri,
       {},
@@ -677,7 +676,7 @@ describe('create presentation', () => {
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -705,7 +704,7 @@ describe('create presentation', () => {
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -735,7 +734,7 @@ describe('create presentation', () => {
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -767,7 +766,7 @@ describe('create presentation', () => {
       challenge,
     })
     await expect(
-      Credential.verify(att, {
+      Credential.verifyPresentation(att, {
         didResolve: mockResolve,
       })
     ).rejects.toThrow()
@@ -799,7 +798,7 @@ describe('create presentation', () => {
       challenge,
     })
     await expect(
-      Credential.verify(presentation, {
+      Credential.verifyPresentation(presentation, {
         didResolve: mockResolve,
       })
     ).rejects.toThrow()
