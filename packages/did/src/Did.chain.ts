@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { GenericAccountId, Option } from '@polkadot/types'
-import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { StorageKey, Option } from '@polkadot/types'
+import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
@@ -67,12 +67,12 @@ export function encodeResourceId(id: UriFragment): string {
   return stripFragment(id)
 }
 
-// Query ALL deleted DIDs, which can be very time-consuming if the number of deleted DIDs gets large.
-async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID address.
-  const entries = await api.query.did.didBlacklist.keys()
-  return entries.map(({ args: [encodedAddresses] }) => encodedAddresses)
+export function decodeDeletedDids(
+  encoded: Array<StorageKey<[AccountId32]>>
+): DidUri[] {
+  return encoded.map(({ args: [address] }) =>
+    getFullDidUri(address.toHuman() as KiltAddress)
+  )
 }
 
 // Query all services for a DID given the DID.
@@ -234,18 +234,6 @@ export async function queryDidDeletionStatus(did: DidUri): Promise<boolean> {
   )
   // isEmpty returns true if there is no entry for the given key -> the function should return false.
   return !encodedStorageHash.isEmpty
-}
-
-/**
- * Queries the full list of full DIDs that have previously been deleted, resulting in them being blocked from (re)creation.
- *
- * @returns An array of DID addresses that have been deleted.
- */
-export async function queryDeletedDids(): Promise<DidUri[]> {
-  const encodedAddresses = await queryDeletedDidsEncoded()
-  return encodedAddresses.map((id) =>
-    getFullDidUri(id.toHuman() as KiltAddress)
-  )
 }
 
 // ### EXTRINSICS types

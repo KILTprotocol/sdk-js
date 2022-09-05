@@ -218,7 +218,9 @@ describe('write and didDeleteTx', () => {
     )
 
     // Check that DID is not blacklisted.
-    expect(await Did.Chain.queryDeletedDids()).not.toContain(fullDid.uri)
+    expect(
+      Did.Chain.decodeDeletedDids(await api.query.did.didBlacklist.keys())
+    ).not.toContain(fullDid.uri)
     expect(await Did.Chain.queryDidDeletionStatus(fullDid.uri)).toBe(false)
 
     await submitExtrinsic(submittable, paymentAccount)
@@ -228,7 +230,9 @@ describe('write and didDeleteTx', () => {
     ).toBe(true)
 
     // Check that DID is now blacklisted.
-    expect(await Did.Chain.queryDeletedDids()).toContain(fullDid.uri)
+    expect(
+      await Did.Chain.decodeDeletedDids(await api.query.did.didBlacklist.keys())
+    ).toContain(fullDid.uri)
     expect(await Did.Chain.queryDidDeletionStatus(fullDid.uri)).toBe(true)
   }, 60_000)
 })
