@@ -205,8 +205,9 @@ describe('write and didDeleteTx', () => {
     )) as DidDetails
     expect(fullDid).not.toBeNull()
 
+    const encodedDid = Did.Chain.encodeDid(fullDid.uri)
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      Did.Chain.encodeDid(fullDid.uri)
+      encodedDid
     )
     const call = await api.tx.did.delete(storedEndpointsCount)
 
@@ -221,19 +222,21 @@ describe('write and didDeleteTx', () => {
     expect(
       Did.Chain.decodeDeletedDids(await api.query.did.didBlacklist.keys())
     ).not.toContain(fullDid.uri)
-    expect(await Did.Chain.queryDidDeletionStatus(fullDid.uri)).toBe(false)
+    expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
+      true
+    )
 
     await submitExtrinsic(submittable, paymentAccount)
 
-    expect(
-      (await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))).isNone
-    ).toBe(true)
+    expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
 
     // Check that DID is now blacklisted.
     expect(
       await Did.Chain.decodeDeletedDids(await api.query.did.didBlacklist.keys())
     ).toContain(fullDid.uri)
-    expect(await Did.Chain.queryDidDeletionStatus(fullDid.uri)).toBe(true)
+    expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
+      false
+    )
   }, 60_000)
 })
 
@@ -479,9 +482,8 @@ describe('DID migration', () => {
       ],
     })
 
-    expect(
-      (await api.query.did.did(Did.Chain.encodeDid(migratedFullDid.uri))).isSome
-    ).toBe(true)
+    const encodedDid = Did.Chain.encodeDid(migratedFullDid.uri)
+    expect((await api.query.did.did(encodedDid)).isSome).toBe(true)
 
     const { metadata } = (await resolve(
       lightDidDetails.uri
@@ -492,22 +494,20 @@ describe('DID migration', () => {
 
     // Remove and claim the deposit back
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      Did.Chain.encodeDid(migratedFullDid.uri)
+      encodedDid
     )
     const reclaimDepositTx = await api.tx.did.reclaimDeposit(
-      Did.Chain.encodeDid(migratedFullDid.uri),
+      encodedDid,
       storedEndpointsCount
     )
     await submitExtrinsic(reclaimDepositTx, paymentAccount)
 
-    expect(
-      (await api.query.did.did(Did.Chain.encodeDid(migratedFullDid.uri))).isNone
-    ).toBe(true)
+    expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
     expect(
       await Did.Chain.queryServiceEndpoints(migratedFullDid.uri)
     ).toStrictEqual([])
-    expect(await Did.Chain.queryDidDeletionStatus(migratedFullDid.uri)).toBe(
-      true
+    expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
+      false
     )
   }, 60_000)
 })

@@ -30,7 +30,6 @@ import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
 import {
   decodeDid,
   decodeServiceEndpoint,
-  queryDidDeletionStatus,
   queryServiceEndpoints,
 } from '../Did.chain.js'
 
@@ -64,6 +63,11 @@ const encodedDidWithAuthenticationKey = ApiMocks.mockChainQueryReturn(
     '123',
     [addressWithAuthenticationKey, '0'],
   ]
+)
+const didIsBlacklisted = ApiMocks.mockChainQueryReturn(
+  'did',
+  'didBlacklist',
+  'true'
 )
 
 let mockedApi: any
@@ -129,7 +133,6 @@ function generateServiceEndpointDetails(
 
 jest.mock('../Did.chain.js')
 
-jest.mocked(queryDidDeletionStatus).mockResolvedValue(false)
 jest.mocked(decodeDid).mockReturnValue({
   authentication: [generateAuthenticationKeyDetails()],
   lastTxCounter: new BN(0),
@@ -336,7 +339,7 @@ describe('When resolving a full DID', () => {
 
   it('correctly resolves a deleted DID', async () => {
     mockedApi.query.did.did.mockReturnValueOnce(didNotFound)
-    jest.mocked(queryDidDeletionStatus).mockResolvedValueOnce(true)
+    mockedApi.query.did.didBlacklist.hash.mockReturnValueOnce(didIsBlacklisted)
 
     const { details, metadata } = (await resolve(
       deletedDid
@@ -465,7 +468,7 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {
-    jest.mocked(queryDidDeletionStatus).mockResolvedValueOnce(true)
+    mockedApi.query.did.didBlacklist.hash.mockReturnValueOnce(didIsBlacklisted)
 
     const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
     const { details, metadata } = (await resolve(

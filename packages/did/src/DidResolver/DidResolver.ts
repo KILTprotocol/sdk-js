@@ -18,7 +18,6 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
 import * as Did from '../index.js'
 import {
-  queryDidDeletionStatus,
   decodeServiceEndpoint,
   encodeDid,
   encodeResourceId,
@@ -52,7 +51,10 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
         }
       }
       // If not, check whether the DID has been deleted or simply does not exist.
-      const isDeactivated = await queryDidDeletionStatus(did)
+      const isDeactivated = !(
+        await api.query.did.didBlacklist.hash(encodeDid(did))
+      ).isEmpty
+
       if (isDeactivated) {
         return {
           metadata: {
@@ -84,7 +86,9 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
         }
       }
       // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
-      const isFullDidDeleted = await queryDidDeletionStatus(did)
+      const isFullDidDeleted = !(
+        await api.query.did.didBlacklist.hash(encodeDid(did))
+      ).isEmpty
       if (isFullDidDeleted) {
         return {
           // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
