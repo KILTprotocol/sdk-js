@@ -14,7 +14,7 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { H256, Hash } from '@polkadot/types/interfaces'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { BN } from '@polkadot/util'
 import type { AugmentedQueryDoubleMap } from '@polkadot/api/types'
@@ -209,18 +209,13 @@ export async function getAttestationHashes(
       delegation: id,
     })
     // extract claimHash from double map key & decode
-    return entries.map((keys) => {
-      const claimHash = keys.args[1]
-      DecoderUtils.assertCodecIsType(claimHash, ['H256'])
-      return claimHash.toHex()
-    })
+    return entries.map((keys) => keys.args[1].toHex())
   }
   if ('delegatedAttestations' in api.query.attestation) {
     // Delegated attestations are stored as a simple map from delegationId -> Vec<claimHashes>
     const claimHashes = await api.query.attestation.delegatedAttestations<
       Option<Vec<Hash>>
     >(id)
-    DecoderUtils.assertCodecIsType(claimHashes, ['Option<Vec<H256>>'])
     return claimHashes.unwrapOrDefault().map((hash) => hash.toHex())
   }
   throw new SDKErrors.CodecMismatchError(

@@ -44,7 +44,7 @@ import {
  *
  * @param delegationData Delegation data to check.
  */
-export function errorCheckDelegationData(
+export function verifyDelegationStructure(
   delegationData: IDelegationData
 ): void {
   const { permissions, id, parentId, isPCR, account } = delegationData
@@ -80,7 +80,7 @@ export function errorCheckDelegationData(
  *
  * @param body The message body.
  */
-export function errorCheckMessageBody(body: MessageBody): void {
+export function verifyMessageBody(body: MessageBody): void {
   switch (body.type) {
     case 'request-terms': {
       Claim.verifyDataStructure(body.content)
@@ -178,7 +178,7 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case 'request-accept-delegation': {
-      errorCheckDelegationData(body.content.delegationData)
+      verifyDelegationStructure(body.content.delegationData)
       Did.isDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
         throw new SDKErrors.ObjectUnverifiableError()
@@ -186,14 +186,14 @@ export function errorCheckMessageBody(body: MessageBody): void {
       break
     }
     case 'submit-accept-delegation': {
-      errorCheckDelegationData(body.content.delegationData)
+      verifyDelegationStructure(body.content.delegationData)
       Did.isDidSignature(body.content.signatures.inviter)
       Did.isDidSignature(body.content.signatures.invitee)
       break
     }
 
     case 'reject-accept-delegation': {
-      errorCheckDelegationData(body.content)
+      verifyDelegationStructure(body.content)
       break
     }
     case 'inform-create-delegation': {
@@ -214,16 +214,9 @@ export function errorCheckMessageBody(body: MessageBody): void {
  *
  * @param message The message object.
  */
-export function errorCheckMessage(message: IMessage): void {
-  const {
-    body,
-    messageId,
-    createdAt,
-    receiver,
-    sender,
-    receivedAt,
-    inReplyTo,
-  } = message
+export function verifyMessageEnvelope(message: IMessage): void {
+  const { messageId, createdAt, receiver, sender, receivedAt, inReplyTo } =
+    message
   if (messageId !== undefined && typeof messageId !== 'string') {
     throw new TypeError('Message id is expected to be a string')
   }
@@ -238,7 +231,6 @@ export function errorCheckMessage(message: IMessage): void {
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }
-  errorCheckMessageBody(body)
 }
 
 /**
@@ -313,8 +305,6 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
 /**
  * Symmetrically decrypts the result of [[Message.encrypt]].
  *
- * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
- *
  * @param encrypted The encrypted message.
  * @param decryptCallback The callback to decrypt with the secret key.
  * @param receiverDetails The DID details of the receiver.
@@ -385,45 +375,43 @@ export async function decrypt(
 
   const decoded = u8aToString(data)
 
-  try {
-    const {
-      body,
-      createdAt,
-      messageId,
-      inReplyTo,
-      references,
-      sender,
-      receiver,
-    } = JSON.parse(decoded) as IEncryptedMessageContents
-    const decrypted: IMessage = {
-      receiver,
-      sender,
-      createdAt,
-      body,
-      messageId,
-      receivedAt,
-      inReplyTo,
-      references,
-    }
-
-    if (sender !== senderKeyDetails.controller) {
-      throw new SDKErrors.IdentityMismatchError('Encryption key', 'Sender')
-    }
-
-    // checks the message body
-    errorCheckMessageBody(decrypted.body)
-
-    // checks the message structure
-    errorCheckMessage(decrypted)
-    // make sure the sender is the owner of the identity
-    ensureOwnerIsSender(decrypted)
-
-    return decrypted
-  } catch (cause) {
-    throw new SDKErrors.ParsingMessageError(undefined, {
-      cause: cause as Error,
-    })
+  const {
+    body,
+    createdAt,
+    messageId,
+    inReplyTo,
+    references,
+    sender,
+    receiver,
+  } = JSON.parse(decoded) as IEncryptedMessageContents
+  const decrypted: IMessage = {
+    receiver,
+    sender,
+    createdAt,
+    body,
+    messageId,
+    receivedAt,
+    inReplyTo,
+    references,
   }
+
+  if (sender !== senderKeyDetails.controller) {
+    throw new SDKErrors.IdentityMismatchError('Encryption key', 'Sender')
+  }
+
+  return decrypted
+}
+
+/**
+ * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
+ * Throws, if a check fails.
+ *
+ * @param decryptedMessage The decrypted message to check.
+ */
+export function verify(decryptedMessage: IMessage): void {
+  verifyMessageBody(decryptedMessage.body)
+  verifyMessageEnvelope(decryptedMessage)
+  ensureOwnerIsSender(decryptedMessage)
 }
 
 /**

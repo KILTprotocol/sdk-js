@@ -13,7 +13,7 @@ import type {
   KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors } from '@kiltprotocol/utils'
 import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -86,9 +86,6 @@ function decode(
   encoded: Option<AttestationDetailsV1 | AttestationDetailsV2>,
   claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): IAttestation | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
     let delegationId: HexString | undefined
