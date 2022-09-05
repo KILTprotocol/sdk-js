@@ -263,7 +263,7 @@ async function runAll() {
 
   const cTypeStoreTx = await Did.authorizeExtrinsic(
     alice,
-    await CType.getStoreTx(DriversLicense),
+    api.tx.ctype.add(CType.encodeCType(DriversLicense)),
     aliceSign,
     payer.address
   )

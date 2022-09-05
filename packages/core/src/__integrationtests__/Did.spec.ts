@@ -538,7 +538,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await CType.getStoreTx(ctype)
+    const call = api.tx.ctype.add(CType.encodeCType(ctype))
     const tx = await Did.authorizeExtrinsic(
       didDetails,
       call,
@@ -569,7 +569,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = await CType.getStoreTx(ctype)
+    const call = api.tx.ctype.add(CType.encodeCType(ctype))
     const tx2 = await Did.authorizeExtrinsic(
       didDetails,
       call,
@@ -1017,7 +1017,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeStoreTx = await CType.getStoreTx(ctype)
+    const ctypeStoreTx = api.tx.ctype.add(CType.encodeCType(ctype))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
@@ -1052,7 +1052,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeStoreTx = await CType.getStoreTx(ctype)
+    const ctypeStoreTx = api.tx.ctype.add(CType.encodeCType(ctype))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
@@ -1124,7 +1124,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype1Creation = await CType.getStoreTx(ctype1)
+    const ctype1Creation = api.tx.ctype.add(CType.encodeCType(ctype1))
     // Delegation key
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
@@ -1142,7 +1142,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype2Creation = await CType.getStoreTx(ctype2)
+    const ctype2Creation = api.tx.ctype.add(CType.encodeCType(ctype2))
     // Delegation key
     const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)
 

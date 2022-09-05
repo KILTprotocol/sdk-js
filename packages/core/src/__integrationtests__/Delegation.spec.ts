@@ -23,6 +23,8 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
@@ -42,6 +44,8 @@ import {
   getAttestationHashes,
   getRevokeTx,
 } from '../delegation/DelegationNode.chain'
+
+let api: ApiPromise
 
 let paymentAccount: KiltKeyringPair
 let root: DidDetails
@@ -105,6 +109,7 @@ async function addDelegation(
 
 beforeAll(async () => {
   await initializeApi()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 beforeAll(async () => {
@@ -118,7 +123,7 @@ beforeAll(async () => {
 
   if (await isCtypeOnChain(driversLicenseCType)) return
 
-  const storeTx = await CType.getStoreTx(driversLicenseCType)
+  const storeTx = api.tx.ctype.add(CType.encodeCType(driversLicenseCType))
   const authorizedStoreTx = await Did.authorizeExtrinsic(
     attester,
     storeTx,

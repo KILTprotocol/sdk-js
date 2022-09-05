@@ -8,34 +8,19 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
-import type {
-  DidUri,
-  ICType,
-  KiltAddress,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
-import { ConfigService } from '@kiltprotocol/config'
+import type { DidUri, ICType, KiltAddress } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { getSchemaPropertiesForHash } from './CType.js'
 
-const log = ConfigService.LoggingFactory.getLogger('CType')
-
 /**
- * Generate the extrinsic to store the provided [[ICtype]].
- *
- * If present, the CType schema id is stripped out before submission, as the same is computed on chain.
+ * Encodes the provided CType for use in `api.tx.ctype.add()`.
  *
  * @param ctype The CType to write on the blockchain.
- * @returns The SubmittableExtrinsic for the `add` call.
+ * @returns Encoded CType.
  */
-export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  log.debug(() => `Create tx for 'ctype.add'`)
-  const preparedSchema = Crypto.encodeObjectAsStr(
-    getSchemaPropertiesForHash(ctype.schema)
-  )
-  return api.tx.ctype.add(preparedSchema)
+export function encodeCType(ctype: ICType): string {
+  return Crypto.encodeObjectAsStr(getSchemaPropertiesForHash(ctype.schema))
 }
 
 function decode(encoded: Option<AccountId>): DidUri | null {

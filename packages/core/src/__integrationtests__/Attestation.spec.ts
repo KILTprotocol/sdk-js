@@ -22,6 +22,8 @@ import {
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ApiPromise } from '@polkadot/api'
 import * as Attestation from '../attestation'
 import { getRemoveTx, getRevokeTx } from '../attestation/Attestation.chain'
 import * as Credential from '../credential'
@@ -46,8 +48,10 @@ let anotherAttesterKey: KeyTool
 let claimer: DidDetails
 let claimerKey: KeyTool
 
+let api: ApiPromise
 beforeAll(async () => {
   await initializeApi()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 beforeAll(async () => {
@@ -115,7 +119,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     if (ctypeExists) return
     const tx = await Did.authorizeExtrinsic(
       attester,
-      await CType.getStoreTx(driversLicenseCType),
+      api.tx.ctype.add(CType.encodeCType(driversLicenseCType)),
       attesterKey.sign,
       tokenHolder.address
     )
@@ -396,7 +400,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     beforeAll(async () => {
       if (await isCtypeOnChain(officialLicenseAuthorityCType)) return
 
-      const storeTx = await CType.getStoreTx(officialLicenseAuthorityCType)
+      const storeTx = api.tx.ctype.add(
+        CType.encodeCType(officialLicenseAuthorityCType)
+      )
       const authorizedStoreTx = await Did.authorizeExtrinsic(
         attester,
         storeTx,

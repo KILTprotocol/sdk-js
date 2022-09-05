@@ -9,7 +9,7 @@
  * @group integration/ctype
  */
 
-import { DidDetails, ICType, KiltKeyringPair } from '@kiltprotocol/types'
+import type { DidDetails, ICType, KiltKeyringPair } from '@kiltprotocol/types'
 import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
@@ -17,6 +17,8 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import { Crypto } from '@kiltprotocol/utils'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ApiPromise } from '@polkadot/api'
 import * as CType from '../ctype'
 import { getOwner } from '../ctype/CType.chain'
 import { disconnect } from '../kilt'
@@ -26,8 +28,10 @@ import {
   submitExtrinsic,
 } from './utils'
 
+let api: ApiPromise
 beforeAll(async () => {
   await initializeApi()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {
@@ -58,7 +62,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
     const { keypair, sign } = makeSigningKeyTool()
-    const storeTx = await CType.getStoreTx(ctype)
+    const storeTx = api.tx.ctype.add(CType.encodeCType(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -73,7 +77,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    const storeTx = await CType.getStoreTx(ctype)
+    const storeTx = api.tx.ctype.add(CType.encodeCType(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -91,7 +95,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    const storeTx = await CType.getStoreTx(ctype)
+    const storeTx = api.tx.ctype.add(CType.encodeCType(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -100,7 +104,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    const storeTx2 = await CType.getStoreTx(ctype)
+    const storeTx2 = api.tx.ctype.add(CType.encodeCType(ctype))
     const authorizedStoreTx2 = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx2,
