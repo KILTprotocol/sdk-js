@@ -12,7 +12,6 @@
 /* eslint-disable dot-notation */
 
 import type {
-  CompressedCredential,
   DidDocument,
   DidResolutionResult,
   DidSignature,
@@ -139,62 +138,6 @@ describe('Credential', () => {
     credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]] = '1234'
     expect(() => {
       Credential.verifyDataIntegrity(credential)
-    }).toThrow()
-  })
-
-  it('compresses and decompresses the credential object', async () => {
-    const credential = buildCredential(
-      identityBob,
-      {
-        a: 'a',
-        b: 'b',
-        c: 'c',
-      },
-      [legitimation]
-    )
-
-    const compressedLegitimation: CompressedCredential = [
-      [
-        legitimation.claim.cTypeHash,
-        legitimation.claim.owner,
-        legitimation.claim.contents,
-      ],
-      legitimation.claimNonceMap,
-      legitimation.claimerSignature,
-      legitimation.claimHashes,
-      legitimation.rootHash,
-      [],
-      legitimation.delegationId,
-    ]
-
-    const compressedCredential: CompressedCredential = [
-      [
-        credential.claim.cTypeHash,
-        credential.claim.owner,
-        credential.claim.contents,
-      ],
-      credential.claimNonceMap,
-      credential.claimerSignature,
-      credential.claimHashes,
-      credential.rootHash,
-      [compressedLegitimation],
-      credential.delegationId,
-    ]
-
-    expect(Credential.compress(credential)).toEqual(compressedCredential)
-
-    expect(Credential.decompress(compressedCredential)).toEqual(credential)
-
-    compressedCredential.pop()
-    // @ts-expect-error
-    delete credential.claim.owner
-
-    expect(() => {
-      Credential.compress(credential)
-    }).toThrow()
-
-    expect(() => {
-      Credential.decompress(compressedCredential)
     }).toThrow()
   })
 
@@ -387,7 +330,6 @@ describe('Credential', () => {
   let identityBob: DidDocument
   let identityCharlie: DidDocument
   let legitimation: ICredential
-  let compressedLegitimation: CompressedCredential
   let identityDave: DidDocument
   let migratedAndDeletedLightDid: DidDocument
   let migratedAndDeletedFullDid: DidDocument
@@ -486,19 +428,6 @@ describe('Credential', () => {
       [],
       keyAlice.sign
     )
-    compressedLegitimation = [
-      [
-        legitimation.claim.cTypeHash,
-        legitimation.claim.owner,
-        legitimation.claim.contents,
-      ],
-      legitimation.claimNonceMap,
-      legitimation.claimerSignature,
-      legitimation.claimHashes,
-      legitimation.rootHash,
-      [],
-      legitimation.delegationId,
-    ]
   })
 
   it('verify credentials signed by a full DID', async () => {
@@ -576,24 +505,6 @@ describe('Credential', () => {
     ).rejects.toThrowError()
   })
 
-  it('compresses and decompresses the credentials object', () => {
-    expect(Credential.compress(legitimation)).toEqual(compressedLegitimation)
-    expect(Credential.decompress(compressedLegitimation)).toEqual(legitimation)
-  })
-
-  it('Negative test for compresses and decompresses the credentials object', () => {
-    compressedLegitimation.pop()
-    // @ts-expect-error
-    delete legitimation.claimHashes
-
-    expect(() => {
-      Credential.compress(legitimation)
-    }).toThrow()
-
-    expect(() => {
-      Credential.decompress(compressedLegitimation)
-    }).toThrow()
-  })
   it('Typeguard should return true on complete Credentials', async () => {
     const [credential] = await buildCredential2(
       identityAlice,

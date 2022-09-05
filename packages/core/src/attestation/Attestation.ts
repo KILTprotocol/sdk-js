@@ -9,7 +9,6 @@ import type {
   IAttestation,
   IDelegationHierarchyDetails,
   ICredential,
-  CompressedAttestation,
   DidUri,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
@@ -161,42 +160,4 @@ export function verifyAgainstCredential(
     credential.rootHash === attestation.claimHash &&
     Credential.verifyDataIntegrity(credential)
   )
-}
-
-/**
- * Compresses an [[Attestation]] object into an array for storage and/or messaging.
- *
- * @param attestation An [[Attestation]] object that will be sorted and stripped for messaging or storage.
- * @returns An ordered array of an [[Attestation]].
- */
-export function compress(attestation: IAttestation): CompressedAttestation {
-  verifyDataStructure(attestation)
-  return [
-    attestation.claimHash,
-    attestation.cTypeHash,
-    attestation.owner,
-    attestation.revoked,
-    attestation.delegationId,
-  ]
-}
-
-/**
- * Decompresses an [[Attestation]] from storage and/or message into an object.
- *
- * @param attestation A compressed [[Attestation]] array that is decompressed back into an object.
- * @returns An object that has the same properties as an [[Attestation]].
- */
-export function decompress(attestation: CompressedAttestation): IAttestation {
-  if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw new SDKErrors.DecompressionArrayError('Attestation')
-  }
-  const decompressedAttestation = {
-    claimHash: attestation[0],
-    cTypeHash: attestation[1],
-    owner: attestation[2],
-    revoked: attestation[3],
-    delegationId: attestation[4],
-  }
-  verifyDataStructure(decompressedAttestation)
-  return decompressedAttestation
 }
