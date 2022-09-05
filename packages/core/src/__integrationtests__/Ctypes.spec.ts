@@ -20,7 +20,6 @@ import { Crypto } from '@kiltprotocol/utils'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { ApiPromise } from '@polkadot/api'
 import * as CType from '../ctype'
-import { getOwner } from '../ctype/CType.chain'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -62,7 +61,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
     const { keypair, sign } = makeSigningKeyTool()
-    const storeTx = api.tx.ctype.add(CType.encodeCType(ctype))
+    const storeTx = api.tx.ctype.add(CType.encode(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -77,7 +76,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    const storeTx = api.tx.ctype.add(CType.encodeCType(ctype))
+    const storeTx = api.tx.ctype.add(CType.encode(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -86,7 +85,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    expect(await getOwner(ctype.hash)).toBe(ctypeCreator.uri)
+    expect(CType.decode(await api.query.ctype.ctypes(ctype.hash))).toBe(
+      ctypeCreator.uri
+    )
     expect(await CType.verifyStored(ctype)).toBe(true)
 
     ctype.owner = ctypeCreator.uri
@@ -95,7 +96,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    const storeTx = api.tx.ctype.add(CType.encodeCType(ctype))
+    const storeTx = api.tx.ctype.add(CType.encode(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -104,7 +105,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    const storeTx2 = api.tx.ctype.add(CType.encodeCType(ctype))
+    const storeTx2 = api.tx.ctype.add(CType.encode(ctype))
     const authorizedStoreTx2 = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx2,
@@ -115,7 +116,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
       submitExtrinsic(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
-    expect(await getOwner(ctype.hash)).toBe(ctypeCreator.uri)
+    expect(CType.decode(await api.query.ctype.ctypes(ctype.hash))).toBe(
+      ctypeCreator.uri
+    )
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -143,8 +146,11 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
 
     expect(await CType.verifyStored(iAmNotThere)).toBe(false)
-    expect(await getOwner(iAmNotThere.hash)).toBeNull()
-    expect(await getOwner(Crypto.hashStr('abcdefg'))).toBeNull()
+    expect((await api.query.ctype.ctypes(iAmNotThere.hash)).isNone).toBe(true)
+
+    const fakeHash = Crypto.hashStr('abcdefg')
+    expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
+
     expect(await CType.verifyStored(iAmNotThereWithOwner)).toBe(false)
   })
 })

@@ -123,7 +123,7 @@ beforeAll(async () => {
 
   if (await isCtypeOnChain(driversLicenseCType)) return
 
-  const storeTx = api.tx.ctype.add(CType.encodeCType(driversLicenseCType))
+  const storeTx = api.tx.ctype.add(CType.encode(driversLicenseCType))
   const authorizedStoreTx = await Did.authorizeExtrinsic(
     attester,
     storeTx,

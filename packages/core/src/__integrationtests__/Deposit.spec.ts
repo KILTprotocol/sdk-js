@@ -300,7 +300,7 @@ beforeAll(async () => {
   if (!ctypeExists) {
     const extrinsic = await Did.authorizeExtrinsic(
       attester,
-      api.tx.ctype.add(CType.encodeCType(driversLicenseCType)),
+      api.tx.ctype.add(CType.encode(driversLicenseCType)),
       attesterKey.sign,
       devFaucet.address
     )

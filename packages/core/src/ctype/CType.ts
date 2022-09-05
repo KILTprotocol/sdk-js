@@ -27,7 +27,7 @@ import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { HexString } from '@polkadot/util/types'
-import { getOwner } from './CType.chain.js'
+import { decode } from './CType.chain.js'
 import {
   CTypeModel,
   CTypeWrapperModel,
@@ -156,8 +156,9 @@ export async function verifyStored(ctype: ICType): Promise<boolean> {
  * @returns Whether or not the CType is registered on-chain to `ctype.owner`.
  */
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
-  const owner = await getOwner(ctype.hash)
-  return owner ? owner === ctype.owner : false
+  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await api.query.ctype.ctypes(ctype.hash)
+  return encoded.isSome ? decode(encoded) === ctype.owner : false
 }
 
 /**

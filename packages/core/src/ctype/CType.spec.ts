@@ -22,18 +22,21 @@ import type {
 } from '@kiltprotocol/types'
 import * as Claim from '../claim'
 import * as Credential from '../credential'
-import { getOwner } from './CType.chain'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CType.schemas'
 
-jest.mock('./CType.chain')
 const mockedApi: any = ApiMocks.getMockedApi()
 BlockchainApiConnection.setConnection(mockedApi)
 
-const encodedDid = ApiMocks.mockChainQueryReturn(
+const encodedAliceDid = ApiMocks.mockChainQueryReturn(
   'ctype',
   'cTYPEs',
   '4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+)
+const encodedBobDid = ApiMocks.mockChainQueryReturn(
+  'ctype',
+  'cTYPEs',
+  '4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 )
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
@@ -196,16 +199,17 @@ describe('CType', () => {
   it('verifies whether a ctype is registered on chain ', async () => {
     expect(await CType.verifyStored(claimCtype)).toBe(false)
 
-    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedDid)
+    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedAliceDid)
     expect(await CType.verifyStored(claimCtype)).toBe(true)
   })
 
   it('verifies ctype owner on chain', async () => {
-    jest.mocked(getOwner).mockResolvedValue(didBob)
     expect(await CType.verifyOwner(claimCtype)).toBe(false)
-    jest.mocked(getOwner).mockResolvedValue(claimCtype.owner)
+
+    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedAliceDid)
     expect(await CType.verifyOwner(claimCtype)).toBe(true)
-    jest.mocked(getOwner).mockResolvedValue(null)
+
+    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedBobDid)
     expect(await CType.verifyOwner(claimCtype)).toBe(false)
   })
 })
@@ -332,10 +336,6 @@ describe('CType registration verification', () => {
   } as ICType['schema']
 
   describe('when CType is not registered', () => {
-    beforeAll(() => {
-      jest.mocked(getOwner).mockResolvedValue(null)
-    })
-
     it('does not verify registration when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
       expect(await CType.verifyStored(ctype)).toBe(false)
@@ -349,8 +349,7 @@ describe('CType registration verification', () => {
 
   describe('when CType is registered', () => {
     beforeAll(() => {
-      jest.mocked(getOwner).mockResolvedValue(didAlice)
-      mockedApi.query.ctype.ctypes.mockResolvedValue(encodedDid)
+      mockedApi.query.ctype.ctypes.mockResolvedValue(encodedAliceDid)
     })
 
     it('verifies registration when owner not set', async () => {
