@@ -7,7 +7,7 @@
 
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
-import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import type {
   DidUri,
   ICType,
@@ -39,7 +39,6 @@ export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
 }
 
 function decode(encoded: Option<AccountId>): DidUri | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return encoded.isSome
     ? DidUtils.getFullDidUri(encoded.unwrap().toString() as KiltAddress)
     : null
