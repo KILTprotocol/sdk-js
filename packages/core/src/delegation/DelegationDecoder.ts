@@ -23,7 +23,6 @@ import type {
 import { Permission, PermissionType } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { Hash } from '@polkadot/types/interfaces/runtime'
-import { DecoderUtils } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type {
   DelegationDelegationHierarchyDelegationHierarchyDetails,
@@ -45,9 +44,6 @@ export type CtypeHash = Hash
 export function decodeDelegationHierarchyDetails(
   encoded: Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
 ): DelegationHierarchyDetailsRecord | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<DelegationDelegationHierarchyDelegationHierarchyDetails>',
-  ])
   if (encoded.isNone) {
     return null
   }
@@ -84,9 +80,6 @@ export type DelegationNodeId = Hash
 export function decodeDelegationNode(
   encoded: Option<DelegationDelegationHierarchyDelegationNode>
 ): DelegationNodeRecord | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<DelegationDelegationHierarchyDelegationNode>',
-  ])
   if (encoded.isNone) {
     return null
   }

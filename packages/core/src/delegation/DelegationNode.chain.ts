@@ -13,7 +13,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { BN } from '@polkadot/util'
 import { decodeDelegationNode } from './DelegationDecoder.js'
@@ -182,11 +182,7 @@ export async function getAttestationHashes(
     Delegation: id,
   })
   // extract claimHash from double map key & decode
-  return entries.map((keys) => {
-    const claimHash = keys.args[1]
-    DecoderUtils.assertCodecIsType(claimHash, ['H256'])
-    return claimHash.toHex()
-  })
+  return entries.map((keys) => keys.args[1].toHex())
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
