@@ -72,7 +72,7 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
         })
       }
 
-      const fullDidDetails = await api.query.did.did(did)
+      const fullDidDetails = await api.query.did.did(encodeDid(did))
       // If a full DID with same subject is present, return the resolution metadata accordingly.
       if (fullDidDetails.isSome) {
         return {
@@ -126,7 +126,7 @@ export async function resolveKey(
 
   switch (type) {
     case 'full': {
-      const encoded = await api.query.did.did(didUri)
+      const encoded = await api.query.did.did(encodeDid(didUri))
       const key = encoded.isSome && Did.getKey(decodeDid(encoded), keyId)
       if (!key) {
         return null
