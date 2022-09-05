@@ -130,14 +130,14 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.uri
     )
     const credential = Credential.fromClaim(claim)
-    await Credential.sign(
+    const presentation = await Credential.sign(
       credential,
       claimerKey.sign,
       claimer,
       claimer.authentication[0].id
     )
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    expect(await Credential.verifySignature(credential)).toBe(true)
+    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    expect(await Credential.verifySignature(presentation)).toBe(true)
     expect(credential.claim.contents).toMatchObject(content)
   })
 
@@ -152,17 +152,17 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const credential = Credential.fromClaim(claim)
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
 
-    await Credential.sign(
+    const presentation = await Credential.sign(
       credential,
       claimerKey.sign,
       claimer,
       claimer.authentication[0].id
     )
-    expect(await Credential.verifySignature(credential)).toBe(true)
-    await Credential.verify(credential)
+    expect(await Credential.verifySignature(presentation)).toBe(true)
+    await Credential.verifyPresentation(presentation)
 
     const attestation = Attestation.fromCredentialAndDid(
-      credential,
+      presentation,
       attester.uri
     )
     const storeTx = await Attestation.getStoreTx(attestation)
@@ -197,16 +197,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const credential = Credential.fromClaim(claim)
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
 
-    await Credential.sign(
+    const presentation = await Credential.sign(
       credential,
       claimerKey.sign,
       claimer,
       claimer.authentication[0].id
     )
-    expect(await Credential.verifySignature(credential)).toBe(true)
+    expect(await Credential.verifySignature(presentation)).toBe(true)
 
     const attestation = Attestation.fromCredentialAndDid(
-      credential,
+      presentation,
       attester.uri
     )
     const { keypair, sign } = makeSigningKeyTool()
@@ -279,7 +279,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer.uri
       )
       credential = Credential.fromClaim(claim)
-      await Credential.sign(
+      const presentation = await Credential.sign(
         credential,
         claimerKey.sign,
         claimer,
@@ -295,7 +295,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await submitExtrinsic(authorizedStoreTx, tokenHolder)
 
-      await Credential.verify(credential)
+      await Credential.verifyPresentation(presentation)
       expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
     }, 60_000)
 

@@ -8,7 +8,11 @@
 import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
 import { Claim } from '@kiltprotocol/core'
-import type { ICredential, ICType, IAttestation } from '@kiltprotocol/types'
+import type {
+  ICType,
+  IAttestation,
+  CredentialOrPresentation,
+} from '@kiltprotocol/types'
 import type { HexString } from '@polkadot/util/types'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
@@ -71,7 +75,7 @@ export function toCredentialIRI(rootHash: string): string {
  * @returns The VC representation of the KILT credential and optionally its CType.
  */
 export function fromCredentialAndAttestation(
-  input: ICredential,
+  input: CredentialOrPresentation,
   attestation: IAttestation,
   ctype?: ICType
 ): VerifiableCredential {
