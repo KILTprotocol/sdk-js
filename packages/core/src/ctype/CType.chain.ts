@@ -43,15 +43,3 @@ export async function getOwner(
   const encoded = await api.query.ctype.ctypes(ctypeHash)
   return decode(encoded)
 }
-
-/**
- * Queries the blockchain and returns whether a CType with the provided hash exists.
- *
- * @param ctypeHash The has of the CType to check.
- * @returns True if a CType with the provided hash exists, false otherwise.
- */
-export async function isStored(ctypeHash: ICType['hash']): Promise<boolean> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await api.query.ctype.ctypes(ctypeHash)
-  return encoded.isSome
-}

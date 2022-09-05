@@ -10,6 +10,8 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ApiMocks } from '@kiltprotocol/testing'
 import type {
   ICType,
   CompressedCType,
@@ -20,12 +22,19 @@ import type {
 } from '@kiltprotocol/types'
 import * as Claim from '../claim'
 import * as Credential from '../credential'
-import { getOwner, isStored } from './CType.chain'
+import { getOwner } from './CType.chain'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CType.schemas'
 
 jest.mock('./CType.chain')
+const mockedApi: any = ApiMocks.getMockedApi()
+BlockchainApiConnection.setConnection(mockedApi)
 
+const encodedDid = ApiMocks.mockChainQueryReturn(
+  'ctype',
+  'cTYPEs',
+  '4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+)
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 
@@ -185,9 +194,9 @@ describe('CType', () => {
   })
 
   it('verifies whether a ctype is registered on chain ', async () => {
-    jest.mocked(isStored).mockResolvedValue(false)
     expect(await CType.verifyStored(claimCtype)).toBe(false)
-    jest.mocked(isStored).mockResolvedValue(true)
+
+    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedDid)
     expect(await CType.verifyStored(claimCtype)).toBe(true)
   })
 
@@ -325,7 +334,6 @@ describe('CType registration verification', () => {
   describe('when CType is not registered', () => {
     beforeAll(() => {
       jest.mocked(getOwner).mockResolvedValue(null)
-      jest.mocked(isStored).mockResolvedValue(false)
     })
 
     it('does not verify registration when not registered', async () => {
@@ -342,7 +350,7 @@ describe('CType registration verification', () => {
   describe('when CType is registered', () => {
     beforeAll(() => {
       jest.mocked(getOwner).mockResolvedValue(didAlice)
-      jest.mocked(isStored).mockResolvedValue(true)
+      mockedApi.query.ctype.ctypes.mockResolvedValue(encodedDid)
     })
 
     it('verifies registration when owner not set', async () => {
