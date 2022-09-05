@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Enum, Option, U128 } from '@polkadot/types'
+import type { Option, U128 } from '@polkadot/types'
 import type {
   IAttestation,
   ICredential,
@@ -13,7 +13,6 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import type { H256 } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -43,12 +42,6 @@ export async function getStoreTx(
       ? { Delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
       : null
   )
-}
-
-export interface AuthorizationId extends Enum {
-  readonly isDelegation: boolean
-  readonly asDelegation: H256
-  readonly type: 'Delegation'
 }
 
 function decode(
