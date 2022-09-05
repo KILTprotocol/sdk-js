@@ -5,16 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { bool, Enum, Option, Struct, U128 } from '@polkadot/types'
+import type { Enum, Option, U128 } from '@polkadot/types'
 import type {
-  Deposit,
   IAttestation,
   ICredential,
   KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
+import type { H256 } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -41,8 +40,8 @@ export async function getStoreTx(
     claimHash,
     cTypeHash,
     delegationId
-      ? ({ delegation: { subjectNodeId: delegationId } } as any) // maxChecks parameter is unused on the chain side and therefore omitted
-      : undefined
+      ? { Delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+      : null
   )
 }
 
@@ -52,16 +51,8 @@ export interface AuthorizationId extends Enum {
   readonly type: 'Delegation'
 }
 
-interface AttestationDetails extends Struct {
-  readonly ctypeHash: Hash
-  readonly attester: AccountId
-  readonly revoked: bool
-  readonly deposit: Deposit
-  readonly authorizationId: Option<AuthorizationId>
-}
-
 function decode(
-  encoded: Option<AttestationDetails>,
+  encoded: Option<AttestationAttestationsAttestationDetails>,
   claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): IAttestation | null {
   DecoderUtils.assertCodecIsType(encoded, [
@@ -131,8 +122,8 @@ export async function getRevokeTx(
   return api.tx.attestation.revoke(
     claimHash,
     maxParentChecks
-      ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
-      : undefined
+      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : null
   )
 }
 
@@ -153,8 +144,8 @@ export async function getRemoveTx(
   return api.tx.attestation.remove(
     claimHash,
     maxParentChecks
-      ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
-      : undefined
+      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : null
   )
 }
 
