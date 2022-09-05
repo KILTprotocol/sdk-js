@@ -31,26 +31,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CTypeMismatch: AugmentedError<ApiType>;
       /**
-       * The delegation node has already been revoked.
-       * Only when the revoker is not the original attester.
-       **/
-      DelegationRevoked: AugmentedError<ApiType>;
-      /**
-       * The delegation node does not include the permission to create new
-       * attestations. Only when the revoker is not the original attester.
-       **/
-      DelegationUnauthorizedToAttest: AugmentedError<ApiType>;
-      /**
        * The maximum number of delegated attestations has already been
        * reached for the corresponding delegation id such that another one
        * cannot be added.
        **/
       MaxDelegatedAttestationsExceeded: AugmentedError<ApiType>;
-      /**
-       * The delegation node owner is different than the attester.
-       * Only when the revoker is not the original attester.
-       **/
-      NotDelegatedToAttester: AugmentedError<ApiType>;
       /**
        * The call origin is not authorized to change the attestation.
        **/
@@ -176,7 +161,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnableToPayFees: AugmentedError<ApiType>;
     };
+    cumulusXcm: {
+    };
     delegation: {
+      /**
+       * The operation wasn't allowed because of insufficient rights.
+       **/
+      AccessDenied: AugmentedError<ApiType>;
       /**
        * No delegate with the given ID stored on chain.
        **/
@@ -524,6 +515,16 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       OutdatedProof: AugmentedError<ApiType>;
     };
+    dmpQueue: {
+      /**
+       * The amount of weight given is possibly not enough for executing the message.
+       **/
+      OverLimit: AugmentedError<ApiType>;
+      /**
+       * The message index given is unknown.
+       **/
+      Unknown: AugmentedError<ApiType>;
+    };
     indices: {
       /**
        * The index was not available.
@@ -545,65 +546,6 @@ declare module '@polkadot/api-base/types/errors' {
        * The index is permanent and may not be freed/changed.
        **/
       Permanent: AugmentedError<ApiType>;
-    };
-    kiltLaunch: {
-      /**
-       * The source address does not have KILT balance lock which is
-       * required for `locked_transfer`.
-       **/
-      BalanceLockNotFound: AugmentedError<ApiType>;
-      /**
-       * The source and destination address have limits for their custom KILT
-       * balance lock and thus cannot be merged. Should never be thrown.
-       **/
-      ConflictingLockingBlocks: AugmentedError<ApiType>;
-      /**
-       * The source and destination address differ in their vesting starting
-       * blocks and thus cannot be merged. Should never be thrown.
-       **/
-      ConflictingVestingStarts: AugmentedError<ApiType>;
-      /**
-       * The source address does not have any balance lock at all which is
-       * required for `locked_transfer`.
-       **/
-      ExpectedLocks: AugmentedError<ApiType>;
-      /**
-       * The source address has less balance available than the locked amount
-       * which should be transferred in `locked_transfer`.
-       **/
-      InsufficientBalance: AugmentedError<ApiType>;
-      /**
-       * The source address has less locked balance than the amount which
-       * should be transferred in `locked_transfer`.
-       **/
-      InsufficientLockedBalance: AugmentedError<ApiType>;
-      /**
-       * When migrating multiple accounts to the same target, the size of the
-       * list of source addresses should never exceed `MaxClaims`.
-       **/
-      MaxClaimsExceeded: AugmentedError<ApiType>;
-      /**
-       * The source address has more than one vesting scheme which should
-       * only be a theoretical issue.
-       **/
-      MultipleVestingSchemes: AugmentedError<ApiType>;
-      /**
-       * The source address is not a valid address which was set up as an
-       * unowned account in the genesis build.
-       **/
-      NotUnownedAccount: AugmentedError<ApiType>;
-      /**
-       * The target address should not be the source address.
-       **/
-      SameDestination: AugmentedError<ApiType>;
-      /**
-       * The signing account is not the transfer account.
-       **/
-      Unauthorized: AugmentedError<ApiType>;
-      /**
-       * The source address has a balance lock and thus cannot be migrated.
-       **/
-      UnexpectedLocks: AugmentedError<ApiType>;
     };
     parachainStaking: {
       /**
@@ -789,6 +731,63 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ValidationDataNotAvailable: AugmentedError<ApiType>;
     };
+    polkadotXcm: {
+      /**
+       * The location is invalid since it already has a subscription from us.
+       **/
+      AlreadySubscribed: AugmentedError<ApiType>;
+      /**
+       * The given location could not be used (e.g. because it cannot be expressed in the
+       * desired version of XCM).
+       **/
+      BadLocation: AugmentedError<ApiType>;
+      /**
+       * The version of the `Versioned` value used is not able to be interpreted.
+       **/
+      BadVersion: AugmentedError<ApiType>;
+      /**
+       * Could not re-anchor the assets to declare the fees for the destination chain.
+       **/
+      CannotReanchor: AugmentedError<ApiType>;
+      /**
+       * The destination `MultiLocation` provided cannot be inverted.
+       **/
+      DestinationNotInvertible: AugmentedError<ApiType>;
+      /**
+       * The assets to be sent are empty.
+       **/
+      Empty: AugmentedError<ApiType>;
+      /**
+       * The message execution fails the filter.
+       **/
+      Filtered: AugmentedError<ApiType>;
+      /**
+       * Origin is invalid for sending.
+       **/
+      InvalidOrigin: AugmentedError<ApiType>;
+      /**
+       * The referenced subscription could not be found.
+       **/
+      NoSubscription: AugmentedError<ApiType>;
+      /**
+       * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
+       * a lack of space for buffering the message.
+       **/
+      SendFailure: AugmentedError<ApiType>;
+      /**
+       * Too many assets have been attempted for transfer.
+       **/
+      TooManyAssets: AugmentedError<ApiType>;
+      /**
+       * The desired destination was unreachable, generally because there is a no way of routing
+       * to it.
+       **/
+      Unreachable: AugmentedError<ApiType>;
+      /**
+       * The message's weight could not be determined.
+       **/
+      UnweighableMessage: AugmentedError<ApiType>;
+    };
     preimage: {
       /**
        * Preimage has already been noted on-chain.
@@ -971,6 +970,42 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotMember: AugmentedError<ApiType>;
     };
+    tips: {
+      /**
+       * The tip was already found/started.
+       **/
+      AlreadyKnown: AugmentedError<ApiType>;
+      /**
+       * The account attempting to retract the tip is not the finder of the tip.
+       **/
+      NotFinder: AugmentedError<ApiType>;
+      /**
+       * The tip cannot be claimed/closed because it's still in the countdown period.
+       **/
+      Premature: AugmentedError<ApiType>;
+      /**
+       * The reason given is just too big.
+       **/
+      ReasonTooBig: AugmentedError<ApiType>;
+      /**
+       * The tip cannot be claimed/closed because there are not enough tippers yet.
+       **/
+      StillOpen: AugmentedError<ApiType>;
+      /**
+       * The tip hash is unknown.
+       **/
+      UnknownTip: AugmentedError<ApiType>;
+    };
+    tipsMembership: {
+      /**
+       * Already a member.
+       **/
+      AlreadyMember: AugmentedError<ApiType>;
+      /**
+       * Not a member.
+       **/
+      NotMember: AugmentedError<ApiType>;
+    };
     treasury: {
       /**
        * Proposer's balance is too low.
@@ -980,6 +1015,10 @@ declare module '@polkadot/api-base/types/errors' {
        * No proposal or bounty at that index.
        **/
       InvalidIndex: AugmentedError<ApiType>;
+      /**
+       * Proposal has not been approved.
+       **/
+      ProposalNotApproved: AugmentedError<ApiType>;
       /**
        * Too many approvals in the queue.
        **/
@@ -1064,6 +1103,28 @@ declare module '@polkadot/api-base/types/errors' {
        * A name that is too short is being claimed.
        **/
       Web3NameTooShort: AugmentedError<ApiType>;
+    };
+    xcmpQueue: {
+      /**
+       * Bad overweight index.
+       **/
+      BadOverweightIndex: AugmentedError<ApiType>;
+      /**
+       * Bad XCM data.
+       **/
+      BadXcm: AugmentedError<ApiType>;
+      /**
+       * Bad XCM origin.
+       **/
+      BadXcmOrigin: AugmentedError<ApiType>;
+      /**
+       * Failed to send XCM message.
+       **/
+      FailedToSend: AugmentedError<ApiType>;
+      /**
+       * Provided weight is possibly not enough to execute the message.
+       **/
+      WeightOverLimit: AugmentedError<ApiType>;
     };
   } // AugmentedErrors
 } // declare module
