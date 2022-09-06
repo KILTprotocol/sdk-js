@@ -10,7 +10,7 @@
  */
 
 /* eslint-disable dot-notation */
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, WsProvider } from '@polkadot/api'
 import { LogLevel, Logger } from 'typescript-logging'
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -53,7 +53,8 @@ describe('Configuration Service', () => {
   })
   describe('set function for api instance, logLevel and any custom configuration prop', () => {
     it('api instance', () => {
-      const api = new ApiPromise()
+      const provider = new WsProvider(undefined, false)
+      const api = new ApiPromise({ provider })
       ConfigService.set({ api })
       expect(ConfigService.get('api')).toEqual(api)
     })
@@ -72,7 +73,6 @@ describe('Configuration Service', () => {
       expect(() => ConfigService.get('api')).toThrowError(
         SDKErrors.FullnodeConnectionNotSetError
       )
-      expect(() => ConfigService.set({ api: undefined })).toThrowError()
     })
     it('returns logLevel property', () => {
       ConfigService.set({ logLevel: LogLevel.Info })

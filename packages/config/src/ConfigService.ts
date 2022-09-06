@@ -90,8 +90,6 @@ function setLogLevel(logLevel: LogLevel | undefined): void {
  * @param opts Object of configurations as key-value pairs.
  */
 export function set<K extends Partial<configOpts>>(opts: K): void {
-  if (opts.api && !(opts.api instanceof ApiPromise))
-    throw new Error('api must be an instance of ApiPromise')
   configuration = { ...configuration, ...opts }
   setLogLevel(configuration.logLevel)
 }
