@@ -110,7 +110,7 @@ export async function getRevokeTx(
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   return api.tx.attestation.revoke(
     claimHash,
-    maxParentChecks
+    maxParentChecks > 0
       ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
       : null
   )
@@ -132,7 +132,7 @@ export async function getRemoveTx(
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   return api.tx.attestation.remove(
     claimHash,
-    maxParentChecks
+    maxParentChecks > 0
       ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
       : null
   )

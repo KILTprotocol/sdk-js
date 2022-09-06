@@ -26,9 +26,9 @@ let nodes: Record<string, DelegationNode> = {}
 
 jest.mock('./DelegationNode.chain', () => ({
   getChildren: jest.fn(async (node: DelegationNode) =>
-    node.childrenIds.map((id) => nodes[id] || null)
+    node.childrenIds.map((id) => (id in nodes ? nodes[id] : null))
   ),
-  query: jest.fn(async (id: string) => nodes[id] || null),
+  query: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
   getStoreAsRootTx: jest.fn(async (node: DelegationNode) => {
     nodes[node.id] = node
     hierarchiesDetails[node.id] = {
@@ -54,7 +54,9 @@ jest.mock('./DelegationNode.chain', () => ({
 }))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
-  query: jest.fn(async (id: string) => hierarchiesDetails[id] || null),
+  query: jest.fn(async (id: string) =>
+    id in hierarchiesDetails ? hierarchiesDetails[id] : null
+  ),
 }))
 
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'

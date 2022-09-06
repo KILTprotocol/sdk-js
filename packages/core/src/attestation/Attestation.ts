@@ -44,7 +44,7 @@ export function verifyDataStructure(input: IAttestation): void {
   }
   DataUtils.validateHash(input.claimHash, 'Claim')
 
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+  if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
   }
 
@@ -89,7 +89,7 @@ export function fromCredentialAndDid(
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation
 ): Promise<IDelegationHierarchyDetails | null> {
-  if (!input) {
+  if (input === null) {
     return null
   }
 

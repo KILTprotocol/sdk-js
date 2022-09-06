@@ -116,7 +116,7 @@ function makeDecryptCallback({
       peerPublicKey,
       secretKey
     )
-    if (!decrypted) throw new Error('Decryption failed')
+    if (decrypted === false) throw new Error('Decryption failed')
     return { data: decrypted, alg }
   }
 }
@@ -148,8 +148,7 @@ async function createFullDidFromKeypair(
 async function runAll() {
   // init sdk kilt config and connect to chain
   await kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const api = await kilt.connect()
-  if (!api) throw new Error('No blockchain connection established')
+  await kilt.connect()
 
   // Accounts
   console.log('Account setup started')
@@ -238,7 +237,7 @@ async function runAll() {
   await Blockchain.signAndSubmitTx(deleteTx, payer, { resolveOn })
 
   const resolvedAgain = await Did.resolve(fullDid.uri)
-  if (resolvedAgain?.metadata.deactivated) {
+  if (!resolvedAgain || resolvedAgain.metadata.deactivated) {
     console.info('DID successfully deleted')
   } else {
     throw new Error('DID was not deleted')

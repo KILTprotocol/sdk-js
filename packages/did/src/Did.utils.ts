@@ -266,7 +266,7 @@ export function checkServiceEndpointSyntax(
       )
     }
   })
-  return errors.length ? [false, errors] : [true, undefined]
+  return errors.length > 0 ? [false, errors] : [true, undefined]
 }
 
 /**
@@ -340,7 +340,7 @@ export function checkServiceEndpointSizeConstraints(
       )
     }
   })
-  return errors.length ? [false, errors] : [true, undefined]
+  return errors.length > 0 ? [false, errors] : [true, undefined]
 }
 
 export function getAddressByKey({
