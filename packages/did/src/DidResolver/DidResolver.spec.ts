@@ -13,7 +13,7 @@ import type {
   DidEncryptionKey,
   DidKey,
   DidResolutionDocumentMetadata,
-  DidResolvedDetails,
+  DidResolutionResult,
   DidResourceUri,
   DidServiceEndpoint,
   DidUri,
@@ -85,7 +85,7 @@ beforeAll(() => {
   )
 })
 
-function generateAuthenticationKeyDetails(): DidVerificationKey {
+function generateAuthenticationKey(): DidVerificationKey {
   return {
     id: '#auth',
     type: 'ed25519',
@@ -93,7 +93,7 @@ function generateAuthenticationKeyDetails(): DidVerificationKey {
   }
 }
 
-function generateEncryptionKeyDetails(): DidEncryptionKey {
+function generateEncryptionKey(): DidEncryptionKey {
   return {
     id: '#enc',
     type: 'x25519',
@@ -102,7 +102,7 @@ function generateEncryptionKeyDetails(): DidEncryptionKey {
   }
 }
 
-function generateAttestationKeyDetails(): DidVerificationKey {
+function generateAttestationKey(): DidVerificationKey {
   return {
     id: '#att',
     type: 'sr25519',
@@ -111,7 +111,7 @@ function generateAttestationKeyDetails(): DidVerificationKey {
   }
 }
 
-function generateDelegationKeyDetails(): DidVerificationKey {
+function generateDelegationKey(): DidVerificationKey {
   return {
     id: '#del',
     type: 'ecdsa',
@@ -120,9 +120,7 @@ function generateDelegationKeyDetails(): DidVerificationKey {
   }
 }
 
-function generateServiceEndpointDetails(
-  serviceId: UriFragment
-): DidServiceEndpoint {
+function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
   const fragment = stripFragment(serviceId)
   return {
     id: serviceId,
@@ -134,7 +132,7 @@ function generateServiceEndpointDetails(
 jest.mock('../Did.chain.js')
 
 jest.mocked(decodeDid).mockReturnValue({
-  authentication: [generateAuthenticationKeyDetails()],
+  authentication: [generateAuthenticationKey()],
   lastTxCounter: new BN(0),
   deposit: {
     amount: new BN(0),
@@ -143,10 +141,10 @@ jest.mocked(decodeDid).mockReturnValue({
 })
 jest
   .mocked(decodeServiceEndpoint)
-  .mockReturnValue(generateServiceEndpointDetails('#service-1'))
+  .mockReturnValue(generateServiceEndpoint('#service-1'))
 jest
   .mocked(queryServiceEndpoints)
-  .mockResolvedValue([generateServiceEndpointDetails('#service-1')])
+  .mockResolvedValue([generateServiceEndpoint('#service-1')])
 
 describe('When resolving a key', () => {
   it('correctly resolves it for a full DID if both the DID and the key exist', async () => {
@@ -227,18 +225,18 @@ describe('When resolving a service endpoint', () => {
 })
 
 describe('When resolving a full DID', () => {
-  it('correctly resolves the details with an authentication key', async () => {
+  it('correctly resolves the document with an authentication key', async () => {
     const fullDidWithAuthenticationKey = didWithAuthenticationKey
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       fullDidWithAuthenticationKey
-    )) as DidResolvedDetails
-    if (!details) throw new Error('Details unresolved')
+    )) as DidResolutionResult
+    if (!document) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
-    expect(Did.getKeys(details)).toStrictEqual<DidKey[]>([
+    expect(document.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
+    expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
       {
         id: '#auth',
         type: 'ed25519',
@@ -247,30 +245,29 @@ describe('When resolving a full DID', () => {
     ])
   })
 
-  it('correctly resolves the details with all keys', async () => {
+  it('correctly resolves the document with all keys', async () => {
     jest.mocked(decodeDid).mockReturnValueOnce({
-      authentication: [generateAuthenticationKeyDetails()],
-      keyAgreement: [generateEncryptionKeyDetails()],
-      assertionMethod: [generateAttestationKeyDetails()],
-      capabilityDelegation: [generateDelegationKeyDetails()],
+      authentication: [generateAuthenticationKey()],
+      keyAgreement: [generateEncryptionKey()],
+      assertionMethod: [generateAttestationKey()],
+      capabilityDelegation: [generateDelegationKey()],
       lastTxCounter: new BN(0),
       deposit: {
         amount: new BN(0),
         owner: addressWithAuthenticationKey,
       },
     })
-
     const fullDidWithAllKeys = didWithAllKeys
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       fullDidWithAllKeys
-    )) as DidResolvedDetails
-    if (!details) throw new Error('Details unresolved')
+    )) as DidResolutionResult
+    if (!document) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details.uri).toStrictEqual<DidUri>(fullDidWithAllKeys)
-    expect(Did.getKeys(details)).toStrictEqual<DidKey[]>([
+    expect(document.uri).toStrictEqual<DidUri>(fullDidWithAllKeys)
+    expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
       {
         id: '#auth',
         type: 'ed25519',
@@ -297,25 +294,24 @@ describe('When resolving a full DID', () => {
     ])
   })
 
-  it('correctly resolves the details with service endpoints', async () => {
+  it('correctly resolves the document with service endpoints', async () => {
     jest
       .mocked(queryServiceEndpoints)
       .mockResolvedValue([
-        generateServiceEndpointDetails('#id-1'),
-        generateServiceEndpointDetails('#id-2'),
+        generateServiceEndpoint('#id-1'),
+        generateServiceEndpoint('#id-2'),
       ])
-
     const fullDidWithServiceEndpoints = didWithServiceEndpoints
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       fullDidWithServiceEndpoints
-    )) as DidResolvedDetails
-    if (!details) throw new Error('Details unresolved')
+    )) as DidResolutionResult
+    if (!document) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details.uri).toStrictEqual<DidUri>(fullDidWithServiceEndpoints)
-    expect(details.service).toStrictEqual<DidServiceEndpoint[]>([
+    expect(document.uri).toStrictEqual<DidUri>(fullDidWithServiceEndpoints)
+    expect(document.service).toStrictEqual<DidServiceEndpoint[]>([
       {
         id: '#id-1',
         type: ['type-id-1'],
@@ -341,27 +337,27 @@ describe('When resolving a full DID', () => {
     mockedApi.query.did.did.mockReturnValueOnce(didNotFound)
     mockedApi.query.did.didBlacklist.hash.mockReturnValueOnce(didIsBlacklisted)
 
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       deletedDid
-    )) as DidResolvedDetails
+    )) as DidResolutionResult
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: true,
     })
-    expect(details).toBeUndefined()
+    expect(document).toBeUndefined()
   })
 
-  it('correctly resolves DID details given a fragment', async () => {
+  it('correctly resolves DID document given a fragment', async () => {
     const fullDidWithAuthenticationKey = didWithAuthenticationKey
     const keyIdUri: DidUri = `${fullDidWithAuthenticationKey}#auth`
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       keyIdUri
-    )) as DidResolvedDetails
+    )) as DidResolutionResult
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
+    expect(document?.uri).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
   })
 })
 
@@ -374,18 +370,18 @@ describe('When resolving a light DID', () => {
     mockedApi.query.did.did.mockReturnValue(didNotFound)
   })
 
-  it('correctly resolves the details with an authentication key', async () => {
-    const lightDidWithAuthenticationKey = Did.createLightDidDetails({
+  it('correctly resolves the document with an authentication key', async () => {
+    const lightDidWithAuthenticationKey = Did.createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
     })
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       lightDidWithAuthenticationKey.uri
-    )) as DidResolvedDetails
+    )) as DidResolutionResult
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<DidUri>(
+    expect(document?.uri).toStrictEqual<DidUri>(
       lightDidWithAuthenticationKey.uri
     )
     expect(Did.getKeys(lightDidWithAuthenticationKey)).toStrictEqual<DidKey[]>([
@@ -397,23 +393,23 @@ describe('When resolving a light DID', () => {
     ])
   })
 
-  it('correctly resolves the details with authentication key, encryption key, and two service endpoints', async () => {
-    const lightDid = Did.createLightDidDetails({
+  it('correctly resolves the document with authentication key, encryption key, and two service endpoints', async () => {
+    const lightDid = Did.createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
       keyAgreement: [{ publicKey: encryptionKey.publicKey, type: 'x25519' }],
       service: [
-        generateServiceEndpointDetails('#service-1'),
-        generateServiceEndpointDetails('#service-2'),
+        generateServiceEndpoint('#service-1'),
+        generateServiceEndpoint('#service-2'),
       ],
     })
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       lightDid.uri
-    )) as DidResolvedDetails
+    )) as DidResolutionResult
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<DidUri>(lightDid.uri)
+    expect(document?.uri).toStrictEqual<DidUri>(lightDid.uri)
     expect(Did.getKeys(lightDid)).toStrictEqual<DidKey[]>([
       {
         id: '#authentication',
@@ -444,17 +440,17 @@ describe('When resolving a light DID', () => {
     mockedApi.query.did.did.mockReturnValueOnce(encodedDidWithAuthenticationKey)
 
     const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       migratedDid
-    )) as DidResolvedDetails
-    if (!details) throw new Error('Details unresolved')
+    )) as DidResolutionResult
+    if (!document) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
       canonicalId: didWithAuthenticationKey,
     })
-    expect(details?.uri).toStrictEqual<DidUri>(migratedDid)
-    expect(Did.getKeys(details)).toStrictEqual<DidKey[]>([
+    expect(document?.uri).toStrictEqual<DidUri>(migratedDid)
+    expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
       {
         id: '#authentication',
         type: 'sr25519',
@@ -471,28 +467,28 @@ describe('When resolving a light DID', () => {
     mockedApi.query.did.didBlacklist.hash.mockReturnValueOnce(didIsBlacklisted)
 
     const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       migratedDid
-    )) as DidResolvedDetails
+    )) as DidResolutionResult
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: true,
     })
-    expect(details).toBeUndefined()
+    expect(document).toBeUndefined()
   })
 
-  it('correctly resolves DID details given a fragment', async () => {
-    const lightDid = Did.createLightDidDetails({
+  it('correctly resolves DID document given a fragment', async () => {
+    const lightDid = Did.createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
     })
     const keyIdUri: DidUri = `${lightDid.uri}#auth`
-    const { details, metadata } = (await resolve(
+    const { document, metadata } = (await resolve(
       keyIdUri
-    )) as DidResolvedDetails
+    )) as DidResolutionResult
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
     })
-    expect(details?.uri).toStrictEqual<DidUri>(lightDid.uri)
+    expect(document?.uri).toStrictEqual<DidUri>(lightDid.uri)
   })
 })

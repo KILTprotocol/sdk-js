@@ -10,7 +10,7 @@
  */
 
 import type {
-  DidDetails,
+  DidDocument,
   IAttestation,
   ICredential,
   KiltKeyringPair,
@@ -39,13 +39,13 @@ import {
 } from './utils'
 
 let tokenHolder: KiltKeyringPair
-let attester: DidDetails
+let attester: DidDocument
 let attesterKey: KeyTool
 
-let anotherAttester: DidDetails
+let anotherAttester: DidDocument
 let anotherAttesterKey: KeyTool
 
-let claimer: DidDetails
+let claimer: DidDocument
 let claimerKey: KeyTool
 
 let api: ApiPromise

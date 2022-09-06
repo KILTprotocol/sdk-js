@@ -9,7 +9,7 @@ import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import type {
-  DidDetails,
+  DidDocument,
   DidServiceEndpoint,
   DidUri,
   KiltKeyringPair,
@@ -46,7 +46,7 @@ const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
 const existingDid: DidUri = `did:kilt:${existingAddress}`
 const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
 
-const existingDidDetails: EncodedDid = {
+const existingDidRecord: EncodedDid = {
   authentication: [
     {
       id: '#auth1',
@@ -106,7 +106,7 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
 ]
 
 jest.mock('../Did.chain')
-jest.mocked(decodeDid).mockReturnValue(existingDidDetails)
+jest.mocked(decodeDid).mockReturnValue(existingDidRecord)
 jest.mocked(queryServiceEndpoints).mockResolvedValue(existingServiceEndpoints)
 jest
   .mocked(generateDidAuthenticatedTx)
@@ -135,12 +135,12 @@ mockedApi.query.did.did.mockReturnValue(
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDidDetails = await Did.query(existingDid)
+    const fullDid = await Did.query(existingDid)
 
-    expect(fullDidDetails).not.toBeNull()
-    if (!fullDidDetails) throw new Error('Cannot load created DID')
+    expect(fullDid).not.toBeNull()
+    if (!fullDid) throw new Error('Cannot load created DID')
 
-    expect(fullDidDetails).toEqual(<DidDetails>{
+    expect(fullDid).toEqual(<DidDocument>{
       uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
       authentication: [
         {
@@ -200,14 +200,14 @@ describe('When creating an instance from the chain', () => {
       ApiMocks.mockChainQueryReturn('did', 'did')
     )
 
-    const fullDidDetails = await Did.query(nonExistingDid)
-    expect(fullDidDetails).toBeNull()
+    const fullDid = await Did.query(nonExistingDid)
+    expect(fullDid).toBeNull()
   })
 
   describe('authorizeBatch', () => {
     let keypair: KiltKeyringPair
     let sign: SignCallback
-    let fullDid: DidDetails
+    let fullDid: DidDocument
 
     beforeAll(async () => {
       ;({ keypair, sign } = makeSigningKeyTool())
@@ -249,7 +249,7 @@ describe('When creating an instance from the chain', () => {
 
       it('fails if the DID does not have any key required to sign the batch', async () => {
         // Full DID with only an authentication key.
-        const newFullDid: DidDetails = {
+        const newFullDid: DidDocument = {
           uri: fullDid.uri,
           authentication: [fullDid.authentication[0]],
         }

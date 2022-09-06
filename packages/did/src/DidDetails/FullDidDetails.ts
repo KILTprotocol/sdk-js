@@ -10,7 +10,7 @@ import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidDetails,
+  DidDocument,
   DidUri,
   DidVerificationKey,
   KiltAddress,
@@ -36,14 +36,14 @@ import {
 } from './FullDidDetails.utils.js'
 
 /**
- * Fetches [[DidDetails]] from the blockchain. [[resolve]] provides more detailed output.
+ * Fetches [[DidDocument]] from the blockchain. [[resolve]] provides more detailed output.
  * Private keys are assumed to already live in another storage, as only the public keys are retrieved from the blockchain.
  *
  * @param didUri The URI of the DID to fetch.
  *
- * @returns The fetched [[DidDetails]], or null if DID does not exist.
+ * @returns The fetched [[DidDocument]], or null if DID does not exist.
  */
-export async function query(didUri: DidUri): Promise<DidDetails | null> {
+export async function query(didUri: DidUri): Promise<DidDocument | null> {
   const { fragment, type } = parseDidUri(didUri)
   if (fragment) {
     throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)
@@ -59,7 +59,7 @@ export async function query(didUri: DidUri): Promise<DidDetails | null> {
   if (encoded.isNone) return null
   const didRec = decodeDid(encoded)
 
-  const details: DidDetails = {
+  const did: DidDocument = {
     uri: didUri,
     authentication: didRec.authentication,
     assertionMethod: didRec.assertionMethod,
@@ -69,10 +69,10 @@ export async function query(didUri: DidUri): Promise<DidDetails | null> {
 
   const service = await queryServiceEndpoints(didUri)
   if (service.length > 0) {
-    details.service = service
+    did.service = service
   }
 
-  return details
+  return did
 }
 
 /**
@@ -85,7 +85,7 @@ export async function query(didUri: DidUri): Promise<DidDetails | null> {
  * @returns All the keys under the full DID that could be used to generate valid signatures to submit the provided extrinsic.
  */
 export function getKeysForExtrinsic(
-  did: DidDetails,
+  did: DidDocument,
   extrinsic: Extrinsic
 ): DidVerificationKey[] {
   const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
@@ -99,7 +99,7 @@ export function getKeysForExtrinsic(
  * @param did The DID data.
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
-export async function getNextNonce(did: DidDetails): Promise<BN> {
+export async function getNextNonce(did: DidDocument): Promise<BN> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const queried = await api.query.did.did(encodeDid(did.uri))
   const currentNonce = queried.isSome
@@ -120,7 +120,7 @@ export async function getNextNonce(did: DidDetails): Promise<BN> {
  * @returns The DID-signed submittable extrinsic.
  */
 export async function authorizeExtrinsic(
-  did: DidDetails,
+  did: DidDocument,
   extrinsic: Extrinsic,
   sign: SignCallback,
   submitterAccount: KiltAddress,
@@ -200,7 +200,7 @@ function groupExtrinsicsByKeyRelationship(
  *
  * @param input The object with named parameters.
  * @param input.batchFunction The batch function to use, for example `api.tx.utility.batchAll`.
- * @param input.did The DID details.
+ * @param input.did The DID document.
  * @param input.extrinsics The array of unsigned extrinsics to sign.
  * @param input.sign The callback to sign the operation.
  * @param input.submitter The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
@@ -216,7 +216,7 @@ export async function authorizeBatch({
   submitter,
 }: {
   batchFunction: SubmittableExtrinsicFunction<'promise'>
-  did: DidDetails
+  did: DidDocument
   extrinsics: Extrinsic[]
   nonce?: BN
   sign: SignCallback

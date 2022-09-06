@@ -6,8 +6,8 @@
  */
 
 import type {
-  DidDetails,
-  DidResolvedDetails,
+  DidDocument,
+  DidResolutionResult,
   DidResourceUri,
   DidUri,
   ResolvedDidKey,
@@ -26,25 +26,27 @@ import {
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
 /**
- * Resolve a DID URI to the details of the DID subject.
+ * Resolve a DID URI to the DID document and its metadata.
  *
  * The URI can also identify a key or a service, but it will be ignored during resolution.
  *
  * @param did The subject's DID.
  * @returns The details associated with the DID subject.
  */
-export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
+export async function resolve(
+  did: DidUri
+): Promise<DidResolutionResult | null> {
   const { type } = parseDidUri(did)
   const fullDidUri = getFullDidUri(did)
   const api = await BlockchainApiConnection.getConnectionOrConnect()
 
   switch (type) {
     case 'full': {
-      const details = await Did.query(fullDidUri)
-      // If the details are found, return those details.
-      if (details) {
+      const document = await Did.query(fullDidUri)
+      // If the document is found, return it.
+      if (document) {
         return {
-          details,
+          document,
           metadata: {
             deactivated: false,
           },
@@ -65,42 +67,42 @@ export async function resolve(did: DidUri): Promise<DidResolvedDetails | null> {
       return null
     }
     case 'light': {
-      let details: DidDetails
+      let document: DidDocument
       try {
-        details = Did.parseDetailsFromLightDid(did, false)
+        document = Did.parseDocumentFromLightDid(did, false)
       } catch (cause) {
         throw new SDKErrors.InvalidDidFormatError(did, {
           cause: cause as Error,
         })
       }
 
-      const fullDidDetails = await api.query.did.did(encodeDid(did))
+      const fullDid = await api.query.did.did(encodeDid(did))
       // If a full DID with same subject is present, return the resolution metadata accordingly.
-      if (fullDidDetails.isSome) {
+      if (fullDid.isSome) {
         return {
-          details,
+          document,
           metadata: {
             canonicalId: fullDidUri,
             deactivated: false,
           },
         }
       }
-      // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
+      // If no full DID document is found but the full DID has been deleted, return the info in the resolution metadata.
       const isFullDidDeleted = !(
         await api.query.did.didBlacklist.hash(encodeDid(did))
       ).isEmpty
       if (isFullDidDeleted) {
         return {
-          // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
+          // No canonicalId and no document are returned as we consider this DID deactivated/deleted.
           metadata: {
             deactivated: true,
           },
         }
       }
-      // If no full DID details nor deletion info is found, the light DID is un-migrated.
+      // If no full DID document nor deletion info is found, the light DID is un-migrated.
       // Metadata will simply contain `deactivated: false`.
       return {
-        details,
+        document,
         metadata: {
           deactivated: false,
         },
@@ -149,10 +151,10 @@ export async function resolveKey(
       if (!resolvedDetails) {
         throw new SDKErrors.InvalidDidFormatError(didUri)
       }
-      if (!resolvedDetails.details) {
+      if (!resolvedDetails.document) {
         return null
       }
-      const key = Did.getKey(resolvedDetails.details, keyId)
+      const key = Did.getKey(resolvedDetails.document, keyId)
       if (!key) {
         return null
       }
@@ -206,11 +208,11 @@ export async function resolveServiceEndpoint(
       if (!resolvedDetails) {
         throw new SDKErrors.InvalidDidFormatError(serviceUri)
       }
-      if (!resolvedDetails.details) {
+      if (!resolvedDetails.document) {
         return null
       }
       const serviceEndpoint = Did.getEndpoint(
-        resolvedDetails.details,
+        resolvedDetails.document,
         serviceId
       )
       if (!serviceEndpoint) {

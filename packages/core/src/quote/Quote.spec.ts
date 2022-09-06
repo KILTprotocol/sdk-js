@@ -15,8 +15,8 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
-  DidDetails,
-  DidResolvedDetails,
+  DidDocument,
+  DidResolutionResult,
   IClaim,
   ICostBreakdown,
   ICType,
@@ -37,10 +37,10 @@ import * as Quote from './Quote'
 import { QuoteSchema } from './QuoteSchema'
 
 describe('Quote', () => {
-  let claimerIdentity: DidDetails
+  let claimerIdentity: DidDocument
   const claimer = makeSigningKeyTool('ed25519')
 
-  let attesterIdentity: DidDetails
+  let attesterIdentity: DidDocument
   const attester = makeSigningKeyTool('ed25519')
 
   let invalidCost: ICostBreakdown
@@ -59,14 +59,14 @@ describe('Quote', () => {
 
   async function mockResolve(
     didUri: string
-  ): Promise<DidResolvedDetails | null> {
+  ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
     const didWithoutFragment = didUri.split('#')[0]
     switch (didWithoutFragment) {
       case claimerIdentity?.uri:
-        return { details: claimerIdentity, metadata: { deactivated: false } }
+        return { document: claimerIdentity, metadata: { deactivated: false } }
       case attesterIdentity?.uri:
-        return { details: attesterIdentity, metadata: { deactivated: false } }
+        return { document: attesterIdentity, metadata: { deactivated: false } }
       default:
         return null
     }
@@ -209,8 +209,8 @@ describe('Quote', () => {
 })
 
 describe('Quote compression', () => {
-  let claimerIdentity: DidDetails
-  let attesterIdentity: DidDetails
+  let claimerIdentity: DidDocument
+  let attesterIdentity: DidDocument
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
@@ -224,14 +224,14 @@ describe('Quote compression', () => {
 
   async function mockResolve(
     didUri: string
-  ): Promise<DidResolvedDetails | null> {
+  ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
     const didWithoutFragment = didUri.split('#')[0]
     switch (didWithoutFragment) {
       case claimerIdentity?.uri:
-        return { details: claimerIdentity, metadata: { deactivated: false } }
+        return { document: claimerIdentity, metadata: { deactivated: false } }
       case attesterIdentity?.uri:
-        return { details: attesterIdentity, metadata: { deactivated: false } }
+        return { document: attesterIdentity, metadata: { deactivated: false } }
       default:
         return null
     }

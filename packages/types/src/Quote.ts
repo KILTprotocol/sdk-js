@@ -6,7 +6,7 @@
  */
 
 import type { ICType } from './CType'
-import type { DidSignature, DidUri } from './DidDetails'
+import type { DidSignature, DidUri } from './DidDocument'
 import type { ICredential } from './Credential'
 
 export interface ICostBreakdown {

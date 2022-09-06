@@ -10,7 +10,7 @@
  */
 
 import type {
-  DidDetails,
+  DidDocument,
   ICType,
   IDelegationNode,
   KiltKeyringPair,
@@ -48,17 +48,17 @@ import {
 let api: ApiPromise
 
 let paymentAccount: KiltKeyringPair
-let root: DidDetails
+let root: DidDocument
 let rootKey: KeyTool
 
-let claimer: DidDetails
+let claimer: DidDocument
 let claimerKey: KeyTool
 
-let attester: DidDetails
+let attester: DidDocument
 let attesterKey: KeyTool
 
 async function writeHierarchy(
-  delegator: DidDetails,
+  delegator: DidDocument,
   ctypeHash: ICType['hash'],
   sign: SignCallback
 ): Promise<DelegationNode> {
@@ -83,8 +83,8 @@ async function writeHierarchy(
 async function addDelegation(
   hierarchyId: IDelegationNode['id'],
   parentId: DelegationNode['id'],
-  delegator: DidDetails,
-  delegate: DidDetails,
+  delegator: DidDocument,
+  delegate: DidDocument,
   delegatorSign: SignCallback,
   delegateSign: SignCallback,
   permissions: PermissionType[] = [Permission.ATTEST, Permission.DELEGATE]
@@ -231,11 +231,11 @@ describe('and attestation rights have been delegated', () => {
 })
 
 describe('revocation', () => {
-  let delegator: DidDetails
+  let delegator: DidDocument
   let delegatorSign: SignCallback
-  let firstDelegate: DidDetails
+  let firstDelegate: DidDocument
   let firstDelegateSign: SignCallback
-  let secondDelegate: DidDetails
+  let secondDelegate: DidDocument
   let secondDelegateSign: SignCallback
 
   beforeAll(() => {

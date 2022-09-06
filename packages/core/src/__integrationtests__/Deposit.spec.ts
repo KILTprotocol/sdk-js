@@ -18,7 +18,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import type {
-  DidDetails,
+  DidDocument,
   IAttestation,
   ICredential,
   KeyringPair,
@@ -52,7 +52,7 @@ let storedEndpointsCount: BN
 
 async function checkDeleteFullDid(
   identity: KiltKeyringPair,
-  fullDid: DidDetails,
+  fullDid: DidDocument,
   sign: SignCallback
 ): Promise<boolean> {
   storedEndpointsCount = await api.query.did.didEndpointsCount(
@@ -80,7 +80,7 @@ async function checkDeleteFullDid(
 
 async function checkReclaimFullDid(
   identity: KeyringPair,
-  fullDid: DidDetails
+  fullDid: DidDocument
 ): Promise<boolean> {
   storedEndpointsCount = await api.query.did.didEndpointsCount(
     Did.Chain.encodeDid(fullDid.uri)
@@ -108,7 +108,7 @@ async function checkReclaimFullDid(
 
 async function checkRemoveFullDidAttestation(
   identity: KiltKeyringPair,
-  fullDid: DidDetails,
+  fullDid: DidDocument,
   sign: SignCallback,
   credential: ICredential
 ): Promise<boolean> {
@@ -153,7 +153,7 @@ async function checkRemoveFullDidAttestation(
 
 async function checkReclaimFullDidAttestation(
   identity: KiltKeyringPair,
-  fullDid: DidDetails,
+  fullDid: DidDocument,
   sign: SignCallback,
   credential: ICredential
 ): Promise<boolean> {
@@ -192,7 +192,7 @@ async function checkReclaimFullDidAttestation(
 
 async function checkDeletedDidReclaimAttestation(
   identity: KiltKeyringPair,
-  fullDid: DidDetails,
+  fullDid: DidDocument,
   sign: SignCallback,
   credential: ICredential
 ): Promise<void> {
@@ -226,7 +226,7 @@ async function checkDeletedDidReclaimAttestation(
 
 async function checkWeb3Deposit(
   identity: KiltKeyringPair,
-  fullDid: DidDetails,
+  fullDid: DidDocument,
   sign: SignCallback
 ): Promise<boolean> {
   const web3Name = 'test-web3name'
@@ -322,16 +322,16 @@ beforeAll(async () => {
 }, 120_000)
 
 describe('Different deposits scenarios', () => {
-  let testFullDidOne: DidDetails
-  let testFullDidTwo: DidDetails
-  let testFullDidThree: DidDetails
-  let testFullDidFour: DidDetails
-  let testFullDidFive: DidDetails
-  let testFullDidSix: DidDetails
-  let testFullDidSeven: DidDetails
-  let testFullDidEight: DidDetails
-  let testFullDidNine: DidDetails
-  let testFullDidTen: DidDetails
+  let testFullDidOne: DidDocument
+  let testFullDidTwo: DidDocument
+  let testFullDidThree: DidDocument
+  let testFullDidFour: DidDocument
+  let testFullDidFive: DidDocument
+  let testFullDidSix: DidDocument
+  let testFullDidSeven: DidDocument
+  let testFullDidEight: DidDocument
+  let testFullDidNine: DidDocument
+  let testFullDidTen: DidDocument
 
   beforeAll(async () => {
     const testDidFive = await createMinimalLightDidFromKeypair(keys[4].keypair)

@@ -18,7 +18,7 @@ import {
 } from '@kiltprotocol/testing'
 import { ss58Format } from '@kiltprotocol/utils'
 import type {
-  DidDetails,
+  DidDocument,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
@@ -50,9 +50,9 @@ beforeAll(async () => {
 }, 40_000)
 
 describe('When there is an on-chain DID', () => {
-  let did: DidDetails
+  let did: DidDocument
   let didKey: KeyTool
-  let newDid: DidDetails
+  let newDid: DidDocument
   let newDidKey: KeyTool
 
   describe('and a tx sender willing to link its account', () => {
