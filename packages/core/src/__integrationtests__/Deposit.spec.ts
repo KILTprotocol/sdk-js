@@ -18,7 +18,7 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import {
+import type {
   DidDetails,
   IAttestation,
   ICredential,
@@ -27,6 +27,8 @@ import {
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import {
   devFaucet,
@@ -41,9 +43,9 @@ import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as Credential from '../credential'
 import { disconnect } from '../kilt'
-import { queryRaw } from '../attestation/Attestation.chain'
 import * as CType from '../ctype'
 
+let api: ApiPromise
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
 let attestation: IAttestation
@@ -115,7 +117,9 @@ async function checkRemoveFullDidAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  const attestationResult = await queryRaw(attestation.claimHash)
+  const attestationResult = await api.query.attestation.attestations(
+    attestation.claimHash
+  )
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
@@ -163,7 +167,9 @@ async function checkReclaimFullDidAttestation(
 
   tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
-  const attestationResult = await queryRaw(attestation.claimHash)
+  const attestationResult = await api.query.attestation.attestations(
+    attestation.claimHash
+  )
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
@@ -257,6 +263,7 @@ let credential: ICredential
 
 beforeAll(async () => {
   await initializeApi()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 beforeAll(async () => {

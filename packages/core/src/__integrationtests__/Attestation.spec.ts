@@ -22,6 +22,8 @@ import {
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
+import { ApiPromise } from '@polkadot/api'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import * as Attestation from '../attestation'
 import { getRemoveTx, getRevokeTx } from '../attestation/Attestation.chain'
 import * as Credential from '../credential'
@@ -36,6 +38,7 @@ import {
   submitExtrinsic,
 } from './utils'
 
+let api: ApiPromise
 let tokenHolder: KiltKeyringPair
 let attester: DidDetails
 let attesterKey: KeyTool
@@ -48,6 +51,7 @@ let claimerKey: KeyTool
 
 beforeAll(async () => {
   await initializeApi()
+  api = await BlockchainApiConnection.getConnectionOrConnect()
 }, 30_000)
 
 beforeAll(async () => {
@@ -73,7 +77,9 @@ it('fetches the correct deposit amount', async () => {
 describe('handling attestations that do not exist', () => {
   const claimHash = Crypto.hashStr('abcde')
   it('Attestation.query', async () => {
-    expect(await Attestation.query(claimHash)).toBeNull()
+    expect((await api.query.attestation.attestations(claimHash)).isNone).toBe(
+      true
+    )
   }, 30_000)
 
   it('Attestation.getRevokeTx', async () => {
@@ -182,7 +188,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await submitExtrinsic(reclaimTx, tokenHolder)
 
     // Test that the attestation has been deleted.
-    expect(await Attestation.query(attestation.claimHash)).toBeNull()
+    expect(
+      (await api.query.attestation.attestations(attestation.claimHash)).isNone
+    ).toBe(true)
     expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   }, 60_000)
 
