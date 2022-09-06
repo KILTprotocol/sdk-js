@@ -24,7 +24,6 @@ import {
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  CompressedCredential,
   DidDocument,
   DidResolve,
   DidResourceUri,
@@ -498,48 +497,4 @@ export async function createPresentation({
   })
 
   return presentation
-}
-
-/**
- * Compresses a [[Credential]] for storage and/or messaging.
- *
- * @param credential A [[Credential]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[Credential]].
- */
-export function compress(credential: ICredential): CompressedCredential {
-  verifyDataStructure(credential)
-  return [
-    Claim.compress(credential.claim),
-    credential.claimNonceMap,
-    credential.claimerSignature,
-    credential.claimHashes,
-    credential.rootHash,
-    credential.legitimations.map(compress),
-    credential.delegationId,
-  ]
-}
-
-/**
- * Decompresses a [[Credential]] from storage and/or message.
- *
- * @param credential A compressed [[Credential]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as a [[Credential]].
- */
-export function decompress(credential: CompressedCredential): ICredential {
-  if (!Array.isArray(credential) || credential.length !== 7) {
-    throw new SDKErrors.DecompressionArrayError('Credential')
-  }
-  const decompressedCredential = {
-    claim: Claim.decompress(credential[0]),
-    claimNonceMap: credential[1],
-    claimerSignature: credential[2],
-    claimHashes: credential[3],
-    rootHash: credential[4],
-    legitimations: credential[5].map(decompress),
-    delegationId: credential[6],
-  }
-  verifyDataStructure(decompressedCredential)
-  return decompressedCredential
 }
