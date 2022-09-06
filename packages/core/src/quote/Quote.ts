@@ -165,12 +165,15 @@ export async function createQuoteAgreement(
       attesterSignedQuote.attesterDid
     )
 
-  await verifyDidSignature({
+  const { verified, reason } = await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
+  if (!verified && reason) {
+    throw new SDKErrors.SignatureUnverifiableError(reason)
+  }
 
   const signature = await Did.signPayload(
     claimerIdentity,

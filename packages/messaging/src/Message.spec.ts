@@ -85,31 +85,34 @@ describe('Messaging', () => {
   const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
   async function didResolve(did: DidUri): Promise<DidResolvedDetails | null> {
+    // The light dids are regarded as not upgraded.
     if (did.startsWith(aliceLightDidWithDetails.uri)) {
       return {
         details: aliceLightDidWithDetails,
-        metadata: { deactivated: false, canonicalId: aliceFullDid.uri },
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(aliceLightDid.uri)) {
       return {
         details: aliceLightDid,
-        metadata: { deactivated: false, canonicalId: aliceFullDid.uri },
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(aliceFullDid.uri)) {
       return { details: aliceFullDid, metadata: { deactivated: false } }
     }
+
+    // The light dids are regarded as not upgraded.
     if (did.startsWith(bobLightDidWithDetails.uri)) {
       return {
         details: bobLightDidWithDetails,
-        metadata: { deactivated: false, canonicalId: bobFullDid.uri },
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(bobLightDid.uri)) {
       return {
         details: bobLightDid,
-        metadata: { deactivated: false, canonicalId: bobFullDid.uri },
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(bobFullDid.uri)) {
@@ -803,7 +806,8 @@ describe('Error checking / Verification', () => {
     async function didResolve(
       didUri: DidUri
     ): Promise<DidResolvedDetails | null> {
-      if (didUri === identityAlice.uri) {
+      const { did } = Did.Utils.parseDidUri(didUri)
+      if (did === identityAlice.uri) {
         return {
           metadata: {
             deactivated: false,
@@ -811,7 +815,7 @@ describe('Error checking / Verification', () => {
           details: identityAlice,
         }
       }
-      if (didUri === identityBob.uri) {
+      if (did === identityBob.uri) {
         return {
           metadata: {
             deactivated: false,
