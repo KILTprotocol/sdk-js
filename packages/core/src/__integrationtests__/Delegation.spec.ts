@@ -134,7 +134,7 @@ beforeAll(async () => {
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
-  const depositAmount = await api.consts.delegation.deposit.toBn()
+  const depositAmount = api.consts.delegation.deposit.toBn()
   expect(depositAmount.toString()).toMatchInlineSnapshot('"1000000000000000"')
 })
 

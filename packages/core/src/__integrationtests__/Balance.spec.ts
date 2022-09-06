@@ -165,8 +165,8 @@ describe('When there are haves and have-nots', () => {
     listenToBalanceChanges(faucet.address, listener)
 
     const batch = api.tx.utility.batchAll([
-      await api.tx.balances.transfer(richieRich.address, EXISTENTIAL_DEPOSIT),
-      await api.tx.balances.transfer(stormyD.address, EXISTENTIAL_DEPOSIT),
+      api.tx.balances.transfer(richieRich.address, EXISTENTIAL_DEPOSIT),
+      api.tx.balances.transfer(stormyD.address, EXISTENTIAL_DEPOSIT),
     ])
     await submitExtrinsic(batch, faucet)
 

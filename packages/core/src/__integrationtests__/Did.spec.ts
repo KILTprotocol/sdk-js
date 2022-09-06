@@ -792,16 +792,16 @@ describe('DID management batching', () => {
         batchFunction: api.tx.utility.batchAll,
         did: initialFullDid,
         extrinsics: [
-          await api.tx.did.removeKeyAgreementKey(
+          api.tx.did.removeKeyAgreementKey(
             Did.Utils.stripFragment(encryptionKeys[0].id)
           ),
-          await api.tx.did.removeKeyAgreementKey(
+          api.tx.did.removeKeyAgreementKey(
             Did.Utils.stripFragment(encryptionKeys[1].id)
           ),
-          await api.tx.did.removeAttestationKey(),
-          await api.tx.did.removeDelegationKey(),
-          await api.tx.did.removeServiceEndpoint('id-1'),
-          await api.tx.did.removeServiceEndpoint('id-2'),
+          api.tx.did.removeAttestationKey(),
+          api.tx.did.removeDelegationKey(),
+          api.tx.did.removeServiceEndpoint('id-1'),
+          api.tx.did.removeServiceEndpoint('id-2'),
         ],
         sign,
         submitter: paymentAccount.address,

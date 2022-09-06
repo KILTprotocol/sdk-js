@@ -46,7 +46,7 @@ beforeAll(async () => {
   await initializeApi()
   api = await BlockchainApiConnection.getConnectionOrConnect()
   paymentAccount = await createEndowedTestAccount()
-  linkDeposit = await api.consts.didLookup.deposit.toBn()
+  linkDeposit = api.consts.didLookup.deposit.toBn()
 }, 40_000)
 
 describe('When there is an on-chain DID', () => {
