@@ -6,7 +6,7 @@
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { DidUri } from './DidDetails'
+import type { DidUri } from './DidDocument'
 
 export type InstanceType =
   | 'array'

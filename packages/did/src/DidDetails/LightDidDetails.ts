@@ -8,7 +8,7 @@
 import { decodeAddress } from '@polkadot/util-crypto'
 
 import type {
-  DidDetails,
+  DidDocument,
   DidUri,
   NewLightDidVerificationKey,
 } from '@kiltprotocol/types'
@@ -18,9 +18,9 @@ import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { getAddressByKey, KILT_DID_PREFIX, parseDidUri } from '../Did.utils.js'
 
 import {
-  validateCreateDetailsInput,
+  validateCreateDocumentInput,
   decodeAndDeserializeAdditionalLightDidDetails,
-  CreateDetailsInput,
+  CreateDocumentInput,
   serializeAndEncodeAdditionalLightDidDetails,
   verificationKeyTypeToLightDidEncoding,
   lightDidEncodingToVerificationKeyType,
@@ -30,7 +30,7 @@ const authenticationKeyId = '#authentication'
 const encryptionKeyId = '#encryption'
 
 /**
- * Create [[DidDetails]] of a light DID using the provided keys and endpoints.
+ * Create [[DidDocument]] of a light DID using the provided keys and endpoints.
  * Sets proper key IDs, builds light DID URI.
  * Private keys are assumed to already live in another storage, as it contains reference only to public keys.
  *
@@ -39,14 +39,14 @@ const encryptionKeyId = '#encryption'
  * @param input.keyAgreement The optional array containing light DID encryption key.
  * @param input.service The optional light DID service endpoints.
  *
- * @returns The resulting [[DidDetails]].
+ * @returns The resulting [[DidDocument]].
  */
-export function createLightDidDetails({
+export function createLightDidDocument({
   authentication,
   keyAgreement = undefined,
   service,
-}: CreateDetailsInput): DidDetails {
-  validateCreateDetailsInput({
+}: CreateDocumentInput): DidDocument {
+  validateCreateDocumentInput({
     authentication,
     keyAgreement,
     service,
@@ -55,7 +55,7 @@ export function createLightDidDetails({
     keyAgreement,
     service,
   })
-  // Validity is checked in checkLightDidCreationDetails
+  // Validity is checked in validateCreateDocumentInput
   const authenticationKeyTypeEncoding =
     verificationKeyTypeToLightDidEncoding[authentication[0].type]
   const address = getAddressByKey(authentication[0])
@@ -64,7 +64,7 @@ export function createLightDidDetails({
   const uri =
     `${KILT_DID_PREFIX}light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
 
-  const details: DidDetails = {
+  const did: DidDocument = {
     uri,
     authentication: [
       {
@@ -76,7 +76,7 @@ export function createLightDidDetails({
   }
 
   if (keyAgreement) {
-    details.keyAgreement = [
+    did.keyAgreement = [
       {
         id: encryptionKeyId, // Encryption key always has the #encryption ID.
         ...keyAgreement[0],
@@ -84,11 +84,11 @@ export function createLightDidDetails({
     ]
   }
 
-  return details
+  return did
 }
 
 /**
- * Create [[DidDetails]] of a light DID by parsing the provided input URI.
+ * Create [[DidDocument]] of a light DID by parsing the provided input URI.
  * Only use for DIDs you control, when you are certain they have not been upgraded to on-chain full DIDs.
  * For the DIDs you have received from external sources use [[resolve]] etc.
  *
@@ -98,12 +98,12 @@ export function createLightDidDetails({
  * @param uri The DID URI to parse.
  * @param failIfFragmentPresent Whether to fail when parsing the URI in case a fragment is present or not, which is not relevant to the creation of the DID. It defaults to true.
  *
- * @returns The resulting [[DidDetails]].
+ * @returns The resulting [[DidDocument]].
  */
-export function parseDetailsFromLightDid(
+export function parseDocumentFromLightDid(
   uri: DidUri,
   failIfFragmentPresent = true
-): DidDetails {
+): DidDocument {
   const {
     address,
     version,
@@ -137,11 +137,11 @@ export function parseDetailsFromLightDid(
     { publicKey, type: keyType },
   ]
   if (!encodedDetails) {
-    return createLightDidDetails({ authentication })
+    return createLightDidDocument({ authentication })
   }
   const { keyAgreement, service } =
     decodeAndDeserializeAdditionalLightDidDetails(encodedDetails, version)
-  return createLightDidDetails({
+  return createLightDidDocument({
     authentication,
     keyAgreement,
     service,

@@ -12,7 +12,7 @@ import { BN, hexToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 
 import type {
-  DidDetails,
+  DidDocument,
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
@@ -119,7 +119,7 @@ async function queryDepositAmountEncoded(): Promise<u128> {
 // ### DECODED QUERYING types
 
 export type EncodedDid = Pick<
-  DidDetails,
+  DidDocument,
   'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
 > & {
   lastTxCounter: BN
@@ -388,9 +388,9 @@ interface GetStoreTxInput {
 }
 
 /**
- * Create a DID creation operation which includes the information present in the provided DID details.
+ * Create a DID creation operation which includes the information provided.
  *
- * The resulting extrinsic can be submitted to create an on-chain DID that has the same keys and service endpoints of the provided DID details.
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided keys and service endpoints.
  *
  * A DID creation operation can contain at most 25 new service endpoints.
  * Additionally, each service endpoint must respect the following conditions:
@@ -398,14 +398,14 @@ interface GetStoreTxInput {
  * - The service endpoint has at most 1 service type, with a value that is at most 50 bytes long.
  * - The service endpoint has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
  *
- * @param input The DID keys and services to store, also accepts DidDetails, so you can store a light DID for example.
+ * @param input The DID keys and services to store, also accepts DidDocument, so you can store a light DID for example.
  * @param submitter The KILT address authorized to submit the creation operation.
  * @param sign The sign callback.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function getStoreTx(
-  input: GetStoreTxInput | DidDetails,
+  input: GetStoreTxInput | DidDocument,
   submitter: KiltAddress,
   sign: SignCallback
 ): Promise<SubmittableExtrinsic> {
