@@ -172,7 +172,7 @@ async function checkReclaimFullDidAttestation(
   const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
+  tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
 
   const attestationResult = await api.query.attestation.attestations(
     attestation.claimHash
@@ -219,7 +219,7 @@ async function checkDeletedDidReclaimAttestation(
 
   await submitExtrinsic(tx, identity)
 
-  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
+  tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
 
   await submitExtrinsic(tx, identity)
 }

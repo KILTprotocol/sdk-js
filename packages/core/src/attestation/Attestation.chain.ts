@@ -113,20 +113,3 @@ export async function getRemoveTx(
       : null
   )
 }
-
-/**
- * Prepares an extrinsic to reclaim the deposit of an attestation, deleting the attestation in the process.
- * The submitter **must** be the KILT account that initially paid for the deposit.
- *
- * @param claimHash The hash of the claim that corresponds to the attestation.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getReclaimDepositTx(
-  claimHash: ICredential['rootHash']
-): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  log.debug(
-    () => `Claiming deposit for the attestation with claim hash ${claimHash}`
-  )
-  return api.tx.attestation.reclaimDeposit(claimHash)
-}
