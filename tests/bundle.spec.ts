@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test'
 import url from 'url'
 import path from 'path'
 
-import { WS_PORT } from './bundle-test.js'
+import { WS_PORT } from './bundle-test'
 
 declare global {
   interface Window {
