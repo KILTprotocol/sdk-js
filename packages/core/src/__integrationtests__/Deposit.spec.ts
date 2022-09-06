@@ -27,7 +27,6 @@ import {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { DecoderUtils } from '@kiltprotocol/utils'
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import {
@@ -127,10 +126,6 @@ async function checkRemoveFullDidAttestation(
   await submitExtrinsic(authorizedTx, identity)
 
   const attestationResult = await queryRaw(attestation.claimHash)
-  DecoderUtils.assertCodecIsType(attestationResult, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
@@ -179,10 +174,6 @@ async function checkReclaimFullDidAttestation(
   tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
 
   const attestationResult = await queryRaw(attestation.claimHash)
-  DecoderUtils.assertCodecIsType(attestationResult, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)

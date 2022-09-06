@@ -24,10 +24,9 @@ import type {
 } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { BN, u8aToHex } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
-import type { KeypairType } from '@polkadot/util-crypto/types'
 import { Balance } from '../balance'
 import { convertToTxUnit } from '../balance/Balance.utils'
 import {
@@ -40,8 +39,7 @@ import { disconnect } from '../kilt'
 
 let paymentAccount: KiltKeyringPair
 let linkDeposit: BN
-let keyring: Keyring
-let signingCallback: AccountLinks.LinkingSignerCallback
+let sign: AccountLinks.LinkingSignCallback
 let api: ApiPromise
 
 beforeAll(async () => {
@@ -49,8 +47,6 @@ beforeAll(async () => {
   api = await BlockchainApiConnection.getConnectionOrConnect()
   paymentAccount = await createEndowedTestAccount()
   linkDeposit = await api.consts.didLookup.deposit.toBn()
-  keyring = new Keyring({ ss58Format })
-  signingCallback = AccountLinks.defaultSignerCallback(keyring)
 }, 40_000)
 
 describe('When there is an on-chain DID', () => {
@@ -173,11 +169,14 @@ describe('When there is an on-chain DID', () => {
 
       let keypair: KeyringPair
       beforeAll(async () => {
-        keypair = keyring.addFromMnemonic(
-          mnemonicGenerate(),
-          undefined,
-          keyType as KeypairType
+        // TODO: remove this line to test against ethereum linking enabled chains
+        if (keyType === 'ethereum') return
+
+        const keyTool = makeSigningKeyTool(
+          Did.Utils.signatureAlgForKeyType[keyType]
         )
+        keypair = keyTool.keypair
+        sign = AccountLinks.makeLinkingSignCallback(keypair)
         didKey = makeSigningKeyTool()
         newDidKey = makeSigningKeyTool()
         did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
@@ -189,7 +188,7 @@ describe('When there is an on-chain DID', () => {
           await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
             keypair.address,
             did.uri,
-            signingCallback
+            sign
           )
         const signedTx = await Did.authorizeExtrinsic(
           did,
@@ -230,7 +229,7 @@ describe('When there is an on-chain DID', () => {
           await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
             keypair.address,
             newDid.uri,
-            signingCallback
+            sign
           )
         const signedTx = await Did.authorizeExtrinsic(
           newDid,
@@ -319,17 +318,12 @@ describe('When there is an on-chain DID', () => {
   describe('and a generic Ecdsa Substrate account different than the sender to link', () => {
     let genericAccount: KeyringPair
     beforeAll(async () => {
-      const genericKeyring = new Keyring()
-      // also testing that signing with type bitflag works, like the polkadot extension does it
-      signingCallback = async (payload, address) =>
-        u8aToHex(
-          genericKeyring.getPair(address).sign(payload, { withType: true })
-        )
-      genericAccount = genericKeyring.addFromMnemonic(
-        mnemonicGenerate(),
-        undefined,
-        'ecdsa'
+      genericAccount = new Keyring({ type: 'ecdsa' }).addFromMnemonic(
+        mnemonicGenerate()
       )
+      // also testing that signing with type bitflag works, like the polkadot extension does it
+      sign = async (payload) => genericAccount.sign(payload, { withType: true })
+
       await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
@@ -342,7 +336,7 @@ describe('When there is an on-chain DID', () => {
         await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
           genericAccount.address,
           did.uri,
-          signingCallback
+          sign
         )
       const signedTx = await Did.authorizeExtrinsic(
         did,

@@ -17,7 +17,7 @@ import type { OpaqueMetadata } from '@polkadot/types/interfaces/metadata';
 import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
 import type { AccountId, Block, Header, Index, KeyTypeId, SlotDuration } from '@polkadot/types/interfaces/runtime';
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
-import type { ApplyExtrinsicResultPre6 } from '@polkadot/types/interfaces/system';
+import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 
@@ -44,12 +44,12 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       slotDuration: AugmentedCall<ApiType, () => Observable<SlotDuration>>;
     };
-    /** 0x40fe3ad401f8959a/5 */
+    /** 0x40fe3ad401f8959a/6 */
     blockBuilder: {
       /**
        * Apply the given extrinsic.
        **/
-      applyExtrinsic: AugmentedCall<ApiType, (extrinsic: Extrinsic | IExtrinsic | string | Uint8Array) => Observable<ApplyExtrinsicResultPre6>>;
+      applyExtrinsic: AugmentedCall<ApiType, (extrinsic: Extrinsic | IExtrinsic | string | Uint8Array) => Observable<ApplyExtrinsicResult>>;
       /**
        * Check that the inherents are valid.
        **/

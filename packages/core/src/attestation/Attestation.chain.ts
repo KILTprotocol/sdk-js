@@ -5,23 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { bool, Enum, Option, Struct, U128 } from '@polkadot/types'
+import type { Option, U128 } from '@polkadot/types'
 import type {
-  Deposit,
   IAttestation,
   ICredential,
   KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
 import type { BN } from '@polkadot/util'
-import type { HexString } from '@polkadot/util/types'
-import type { DelegationNodeId } from '../delegation/DelegationDecoder.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
@@ -39,70 +34,24 @@ export async function getStoreTx(
 
   const api = await BlockchainApiConnection.getConnectionOrConnect()
 
-  const authorizationArgName =
-    api.tx.attestation.add.meta.args[2].name.toString()
-  switch (authorizationArgName) {
-    case 'delegationId':
-      // uses old attestation authorization
-      return api.tx.attestation.add(claimHash, cTypeHash, delegationId)
-    case 'authorization':
-      // uses generalized attestation authorization
-      return api.tx.attestation.add(
-        claimHash,
-        cTypeHash,
-        delegationId
-          ? ({ delegation: { subjectNodeId: delegationId } } as any) // maxChecks parameter is unused on the chain side and therefore omitted
-          : undefined
-      )
-    default:
-      throw new SDKErrors.CodecMismatchError(
-        'Failed to encode call: unknown authorization type'
-      )
-  }
+  return api.tx.attestation.add(
+    claimHash,
+    cTypeHash,
+    delegationId
+      ? { Delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+      : null
+  )
 }
-
-export interface AuthorizationId extends Enum {
-  readonly isDelegation: boolean
-  readonly asDelegation: H256
-  readonly type: 'Delegation'
-}
-
-interface AttestationDetailsV1 extends Struct {
-  readonly ctypeHash: Hash
-  readonly attester: AccountId
-  readonly delegationId: Option<DelegationNodeId>
-  readonly revoked: bool
-  readonly deposit: Deposit
-}
-
-interface AttestationDetailsV2
-  extends Omit<AttestationDetailsV1, 'delegationId'> {
-  readonly authorizationId: Option<AuthorizationId>
-}
-
-export type AttestationDetails = AttestationDetailsV2
 
 function decode(
-  encoded: Option<AttestationDetailsV1 | AttestationDetailsV2>,
+  encoded: Option<AttestationAttestationsAttestationDetails>,
   claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): IAttestation | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
-    let delegationId: HexString | undefined
-    if ('authorizationId' in chainAttestation) {
-      delegationId = chainAttestation.authorizationId
-        .unwrapOr(undefined)
-        ?.value.toHex()
-    } else if ('delegationId' in chainAttestation) {
-      delegationId = chainAttestation.delegationId.unwrapOr(undefined)?.toHex()
-    } else {
-      throw new SDKErrors.CodecMismatchError(
-        'Failed to decode Attestation: unknown Codec type'
-      )
-    }
+    const delegationId = chainAttestation.authorizationId
+      .unwrapOr(undefined)
+      ?.value.toHex()
     const attestation: IAttestation = {
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toHex(),
@@ -159,25 +108,12 @@ export async function getRevokeTx(
 ): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
-  const authorizationArgName =
-    api.tx.attestation.revoke.meta.args[1].name.toString()
-  switch (authorizationArgName) {
-    case 'maxParentChecks':
-      // uses old attestation authorization
-      return api.tx.attestation.revoke(claimHash, maxParentChecks)
-    case 'authorization':
-      // uses generalized attestation authorization
-      return api.tx.attestation.revoke(
-        claimHash,
-        maxParentChecks
-          ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
-          : undefined
-      )
-    default:
-      throw new SDKErrors.CodecMismatchError(
-        'Failed to encode call: unknown authorization type'
-      )
-  }
+  return api.tx.attestation.revoke(
+    claimHash,
+    maxParentChecks
+      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : null
+  )
 }
 
 /**
@@ -194,25 +130,12 @@ export async function getRemoveTx(
 ): Promise<SubmittableExtrinsic> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
-  const authorizationArgName =
-    api.tx.attestation.remove.meta.args[1].name.toString()
-  switch (authorizationArgName) {
-    case 'maxParentChecks':
-      // uses old attestation authorization
-      return api.tx.attestation.remove(claimHash, maxParentChecks)
-    case 'authorization':
-      // uses generalized attestation authorization
-      return api.tx.attestation.remove(
-        claimHash,
-        maxParentChecks
-          ? ({ delegation: { maxChecks: maxParentChecks } } as any) // subjectNodeId parameter is unused on the chain side and therefore omitted
-          : undefined
-      )
-    default:
-      throw new SDKErrors.CodecMismatchError(
-        'Failed to encode call: unknown authorization type'
-      )
-  }
+  return api.tx.attestation.remove(
+    claimHash,
+    maxParentChecks
+      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : null
+  )
 }
 
 /**

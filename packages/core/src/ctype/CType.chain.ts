@@ -7,7 +7,7 @@
 
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
-import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import type { DidUri, ICType, KiltAddress } from '@kiltprotocol/types'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { getSchemaPropertiesForHash } from './CType.js'
@@ -29,6 +29,5 @@ export function encode(ctype: ICType): string {
  * @returns The owner DID.
  */
 export function decode(encoded: Option<AccountId>): DidUri {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId32>'])
   return DidUtils.getFullDidUri(encoded.unwrap().toString() as KiltAddress)
 }
