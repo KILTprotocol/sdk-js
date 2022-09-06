@@ -177,7 +177,7 @@ export class IdentityMismatchError extends SDKError {
 export class FullnodeConnectionNotSetError extends SDKError {
   constructor(options?: ErrorOptions) {
     super(
-      'A function tried to access the ApiPromise instance before it was set. Did you forget to call `Kilt.init({api: -your ApiPromise instance here-})`?',
+      'A function tried to access the ApiPromise instance before it was set. Did you forget to call `Kilt.init({ api })`?',
       options
     )
   }
