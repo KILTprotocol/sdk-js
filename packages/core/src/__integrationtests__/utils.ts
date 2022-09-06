@@ -9,6 +9,7 @@
 /* eslint-disable no-console */
 
 import { BN } from '@polkadot/util'
+import { ApiPromise, WsProvider } from '@polkadot/api'
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
@@ -27,7 +28,7 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import * as CType from '../ctype'
 import { Balance } from '../balance'
-import { connect, init } from '../kilt'
+import { init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
@@ -53,7 +54,14 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
   }
 }
 
-export async function initializeApi(): Promise<void> {
+async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
+  const provider = new WsProvider(wsEndpoint)
+  const api = await ApiPromise.create({ provider })
+  await init({ api })
+  return api
+}
+
+export async function initializeApi(): Promise<ApiPromise> {
   const { TEST_WS_ADDRESS, JEST_WORKER_ID } = process.env
   if (TEST_WS_ADDRESS) {
     if (JEST_WORKER_ID !== '1') {
@@ -62,19 +70,16 @@ export async function initializeApi(): Promise<void> {
       )
     }
     console.log(`connecting to node ${TEST_WS_ADDRESS}`)
-    await init({ address: TEST_WS_ADDRESS })
-    connect()
-  } else {
-    const started = await getStartedTestContainer()
-    const port = started.getMappedPort(9944)
-    const host = started.getHost()
-    const WS_ADDRESS = `ws://${host}:${port}`
-    console.log(`connecting to node ${WS_ADDRESS}`)
-    await init({ address: WS_ADDRESS })
-    connect().then((api) =>
-      api.once('disconnected', () => started.stop().catch())
-    )
+    return buildConnection(TEST_WS_ADDRESS)
   }
+  const started = await getStartedTestContainer()
+  const port = started.getMappedPort(9944)
+  const host = started.getHost()
+  const WS_ADDRESS = `ws://${host}:${port}`
+  console.log(`connecting to test container at ${WS_ADDRESS}`)
+  const api = await buildConnection(WS_ADDRESS)
+  api.once('disconnected', () => started.stop().catch())
+  return api
 }
 
 const keyring = new Keyring({ ss58Format, type: 'ed25519' })
