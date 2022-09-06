@@ -68,7 +68,7 @@ beforeAll(async () => {
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
-  const depositAmount = await Attestation.queryDepositAmount()
+  const depositAmount = api.consts.attestation.deposit.toBn()
   expect(['120950000000000', '120900000000000']).toContain(
     depositAmount.toString()
   )

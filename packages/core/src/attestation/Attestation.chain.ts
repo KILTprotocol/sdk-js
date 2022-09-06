@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Option, U128 } from '@polkadot/types'
+import type { Option } from '@polkadot/types'
 import type {
   IAttestation,
   ICredential,
@@ -16,7 +16,6 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
-import type { BN } from '@polkadot/util'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
@@ -130,19 +129,4 @@ export async function getReclaimDepositTx(
     () => `Claiming deposit for the attestation with claim hash ${claimHash}`
   )
   return api.tx.attestation.reclaimDeposit(claimHash)
-}
-
-async function queryDepositAmountEncoded(): Promise<U128> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.attestation.deposit
-}
-
-/**
- * Gets the current deposit amount due for the creation of new attestations.
- *
- * @returns Deposit amount in Femto Kilt as a BigNumber.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const encodedDeposit = await queryDepositAmountEncoded()
-  return encodedDeposit.toBn()
 }
