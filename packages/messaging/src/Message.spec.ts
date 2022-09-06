@@ -1288,7 +1288,7 @@ describe('Error checking / Verification', () => {
       Message.verifyMessageEnvelope(messageRequestCredential)
     ).toThrowError(TypeError)
   })
-  it('error check should throw errors on faulty bodies', () => {
+  it('message body verifier should throw errors on faulty bodies', () => {
     // @ts-ignore
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() => Message.verifyMessageBody(requestTermsBody)).toThrowError(
@@ -1377,7 +1377,7 @@ describe('Error checking / Verification', () => {
       SDKErrors.UnknownMessageBodyTypeError
     )
   })
-  it('error check of the delegation data in messaging', () => {
+  it('delegation data structure verifier should throw on faulty delegation data', () => {
     // @ts-expect-error
     delete requestAcceptDelegationBody.content.delegationData.isPCR
     expect(() =>
