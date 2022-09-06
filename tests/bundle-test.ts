@@ -7,6 +7,9 @@
 
 /// <reference lib="dom" />
 
+import type { KeypairType } from '@polkadot/util-crypto/types'
+import { WsProvider, ApiPromise } from '@polkadot/api'
+
 import type {
   DecryptCallback,
   EncryptCallback,
@@ -19,9 +22,10 @@ import type {
   SigningAlgorithms,
   SigningData,
 } from '@kiltprotocol/types'
-import type { KeypairType } from '@polkadot/util-crypto/types'
 
 const { kilt } = window
+
+export const WS_PORT = 9944
 
 const {
   Claim,
@@ -147,9 +151,9 @@ async function createFullDidFromKeypair(
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  await kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const api = await kilt.connect()
-  if (!api) throw new Error('No blockchain connection established')
+  const provider = new WsProvider(`ws://127.0.0.1:${WS_PORT}`)
+  const api = await ApiPromise.create({ provider })
+  await kilt.init({ api })
 
   // Accounts
   console.log('Account setup started')

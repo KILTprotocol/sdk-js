@@ -12,6 +12,8 @@ import { test, expect } from '@playwright/test'
 import url from 'url'
 import path from 'path'
 
+import { WS_PORT } from './bundle-test.js'
+
 declare global {
   interface Window {
     runAll: () => Promise<void>
@@ -19,8 +21,6 @@ declare global {
 }
 
 let testcontainer: StartedTestContainer
-
-const WS_PORT = 9944
 
 test.beforeAll(async () => {
   // start dev node with testcontainers
