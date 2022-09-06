@@ -169,34 +169,6 @@ export async function submitSignedTx(
 export const dispatchTx = submitSignedTx
 
 /**
- * Checks the TxError/TxStatus for issues that may be resolved via resigning.
- *
- * @param reason Polkadot API returned error or ISubmittableResult.
- * @returns Whether or not this issue may be resolved via resigning.
- */
-export function isRecoverableTxError(
-  reason: Error | ISubmittableResult
-): boolean {
-  if (reason instanceof Error) {
-    return (
-      reason.message.includes(TxOutdated) ||
-      reason.message.includes(TxPriority) ||
-      reason.message.includes(TxDuplicate) ||
-      false
-    )
-  }
-  if (
-    reason &&
-    typeof reason === 'object' &&
-    typeof reason.status === 'object'
-  ) {
-    const { status } = reason as ISubmittableResult
-    if (status.isUsurped) return true
-  }
-  return false
-}
-
-/**
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.

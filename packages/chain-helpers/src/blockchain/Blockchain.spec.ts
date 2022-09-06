@@ -10,18 +10,10 @@
  */
 
 /* eslint-disable dot-notation */
-import type { KeyringPair } from '@polkadot/keyring/types'
-
-import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 
-import {
-  IS_FINALIZED,
-  isRecoverableTxError,
-  parseSubscriptionOptions,
-  submitSignedTx,
-} from './Blockchain'
+import { IS_FINALIZED, parseSubscriptionOptions } from './Blockchain'
 
 let api: any
 
@@ -31,69 +23,6 @@ beforeAll(() => {
 })
 
 describe('Blockchain', () => {
-  describe('submitSignedTx', () => {
-    let alice: KeyringPair
-    let bob: KeyringPair
-
-    beforeAll(async () => {
-      const keyring = new Keyring({
-        type: 'ed25519',
-        ss58Format,
-      })
-      alice = keyring.createFromUri('//Alice')
-      bob = keyring.createFromUri('//Bob')
-    })
-
-    it('catches ERROR_TRANSACTION_USURPED and discovers as recoverable', async () => {
-      api.__setDefaultResult({ isUsurped: true })
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice)
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-
-    it('catches priority error and discovers as recoverable', async () => {
-      api.__setDefaultResult()
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice)
-      tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-
-    it('catches Already Imported error and discovers as recoverable', async () => {
-      api.__setDefaultResult()
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice)
-      tx.send = jest
-        .fn()
-        .mockRejectedValue(Error('Transaction Already Imported'))
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-
-    it('catches Outdated/Stale Tx error and discovers as recoverable', async () => {
-      api.__setDefaultResult()
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice)
-      tx.send = jest
-        .fn()
-        .mockRejectedValue(
-          Error('1010: Invalid Transaction: Transaction is outdated')
-        )
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-  })
-
   describe('parseSubscriptionOptions', () => {
     it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
       function testFunction() {
