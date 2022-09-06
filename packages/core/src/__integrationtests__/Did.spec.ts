@@ -32,7 +32,6 @@ import {
   Permission,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
 
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -48,8 +47,7 @@ let paymentAccount: KiltKeyringPair
 let api: ApiPromise
 
 beforeAll(async () => {
-  await initializeApi()
-  api = ConfigService.get('api')
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {

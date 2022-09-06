@@ -70,7 +70,7 @@ export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
   if (typeof configuration[configOpt] === 'undefined') {
     switch (configOpt) {
       case 'api':
-        throw new SDKErrors.FullnodeConnectionNotSetError()
+        throw new SDKErrors.FullNodeConnectionNotSetError()
       default:
         throw new Error(`GENERIC NOT CONFIGURED ERROR FOR KEY: "${configOpt}"`)
     }
@@ -101,7 +101,7 @@ export function set<K extends Partial<configOpts>>(opts: K): void {
  */
 export function unset<K extends keyof configOpts>(key: K): void {
   if (Object.hasOwn(defaultConfig, key)) {
-    configuration[key] = defaultConfig
+    configuration[key] = defaultConfig[key]
   } else {
     delete configuration[key]
   }

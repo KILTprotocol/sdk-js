@@ -48,7 +48,7 @@ describe('Configuration Service', () => {
   it('has configuration Object with default values', () => {
     expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
     expect(() => ConfigService.get('api')).toThrowError(
-      SDKErrors.FullnodeConnectionNotSetError
+      SDKErrors.FullNodeConnectionNotSetError
     )
   })
   describe('set function for api instance, logLevel and any custom configuration prop', () => {
@@ -71,7 +71,7 @@ describe('Configuration Service', () => {
     it('throws if api not set', () => {
       ConfigService.unset('api')
       expect(() => ConfigService.get('api')).toThrowError(
-        SDKErrors.FullnodeConnectionNotSetError
+        SDKErrors.FullNodeConnectionNotSetError
       )
     })
     it('returns logLevel property', () => {
