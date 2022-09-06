@@ -7,10 +7,10 @@
 
 import { Keyring } from '@polkadot/api'
 
-import { DidDetails, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
+import { DidDocument, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 
-import { CreateDetailsInput } from './LightDidDetails.utils'
+import { CreateDocumentInput } from './LightDidDetails.utils'
 
 import * as Did from '../index.js'
 
@@ -20,8 +20,8 @@ import * as Did from '../index.js'
 
 /*
  * Functions tested:
- * - createDetails
- * - parseDetailsFromLightDid
+ * - createLightDidDocument
+ * - parseDocumentFromLightDid
  *
  * Functions tested in integration tests:
  * - getKeysForExtrinsic
@@ -47,14 +47,14 @@ describe('When creating an instance from the details', () => {
         serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const validInput: CreateDetailsInput = {
+    const validInput: CreateDocumentInput = {
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
       service,
     }
-    const lightDidDetails = Did.createLightDidDetails(validInput)
+    const lightDid = Did.createLightDidDocument(validInput)
 
-    expect(lightDidDetails).toEqual(<DidDetails>{
+    expect(lightDid).toEqual(<DidDocument>{
       uri: `did:kilt:light:00${authKey.address}:z1Dzpgq4F3EVKSe4X1Gm3GZJBkQGrXB2cbXGsPabPWK861QXnJLRaCHjr1EGYAMF7hDJi6ikYBoyNu7qMiMfixZYWfgPL1TL7GcHSq9PkoTckt7YpUoeGPyjYwVFgwuvUEDvBMT8NqstfC39hTM1FkDCgHFXaeVY4HCHThKMyXw4r3k1rmXUEm52sCs7yqWxjLUuR1g7sbBo79EQjDRbLzUZq4Vs22PaYUfxdKzboNF5UVvw8ChzAaVk56dFQ2ivmbP`,
       authentication: [
         {
@@ -91,17 +91,17 @@ describe('When creating an instance from the details', () => {
       ss58Format,
     }).addFromMnemonic('auth')
     const encKey = new Keyring().addFromMnemonic('enc')
-    const validInput: CreateDetailsInput = {
+    const validInput: CreateDocumentInput = {
       authentication: [{ publicKey: authKey.publicKey, type: 'ed25519' }],
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
     }
-    const lightDidDetails = Did.createLightDidDetails(validInput)
+    const lightDid = Did.createLightDidDocument(validInput)
 
-    expect(Did.Utils.parseDidUri(lightDidDetails.uri).address).toStrictEqual(
+    expect(Did.Utils.parseDidUri(lightDid.uri).address).toStrictEqual(
       authKey.address
     )
 
-    expect(lightDidDetails).toEqual({
+    expect(lightDid).toEqual({
       uri: `did:kilt:light:01${authKey.address}:z1Ac9CMtYCTRWjetJfJqJoV7FcP9zdFudqUaupQkBCERoCQcnu2SUS5CGHdCXhWoxbihovMVymRperWSPpRc7mJ`,
       authentication: [
         {
@@ -130,7 +130,7 @@ describe('When creating an instance from the details', () => {
       authentication: [{ publicKey: authKey.publicKey, type: 'ecdsa' }],
     }
     expect(() =>
-      Did.createLightDidDetails(invalidInput as CreateDetailsInput)
+      Did.createLightDidDocument(invalidInput as CreateDocumentInput)
     ).toThrowError()
   })
 
@@ -146,7 +146,7 @@ describe('When creating an instance from the details', () => {
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'bls' }],
     }
     expect(() =>
-      Did.createLightDidDetails(invalidInput as CreateDetailsInput)
+      Did.createLightDidDocument(invalidInput as CreateDocumentInput)
     ).toThrowError()
   })
 })
@@ -170,21 +170,19 @@ describe('When creating an instance from a URI', () => {
         serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const creationInput: CreateDetailsInput = {
+    const creationInput: CreateDocumentInput = {
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
       service: endpoints,
     }
     // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = Did.createLightDidDetails(creationInput)
+    const expectedLightDid = Did.createLightDidDocument(creationInput)
 
-    const { address } = Did.Utils.parseDidUri(expectedLightDidDetails.uri)
-    const builtLightDidDetails = Did.parseDetailsFromLightDid(
-      expectedLightDidDetails.uri
-    )
+    const { address } = Did.Utils.parseDidUri(expectedLightDid.uri)
+    const builtLightDid = Did.parseDocumentFromLightDid(expectedLightDid.uri)
 
-    expect(builtLightDidDetails).toStrictEqual(expectedLightDidDetails)
-    expect(builtLightDidDetails).toStrictEqual(<DidDetails>{
+    expect(builtLightDid).toStrictEqual(expectedLightDid)
+    expect(builtLightDid).toStrictEqual(<DidDocument>{
       uri: `did:kilt:light:00${address}:z1Dzpgq4F3EVKSe4X1Gm3GZJBkQGrXB2cbXGsPabPWK861QXnJLRaCHjr1EGYAMF7hDJi6ikYBoyNu7qMiMfixZYWfgPL1TL7GcHSq9PkoTckt7YpUoeGPyjYwVFgwuvUEDvBMT8NqstfC39hTM1FkDCgHFXaeVY4HCHThKMyXw4r3k1rmXUEm52sCs7yqWxjLUuR1g7sbBo79EQjDRbLzUZq4Vs22PaYUfxdKzboNF5UVvw8ChzAaVk56dFQ2ivmbP` as DidUri,
       authentication: [
         {
@@ -233,19 +231,19 @@ describe('When creating an instance from a URI', () => {
         serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const creationInput: CreateDetailsInput = {
+    const creationInput: CreateDocumentInput = {
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'x25519' }],
       service,
     }
     // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = Did.createLightDidDetails(creationInput)
+    const expectedLightDid = Did.createLightDidDocument(creationInput)
 
-    const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
+    const uriWithFragment: DidUri = `${expectedLightDid.uri}#authentication`
 
-    expect(() => Did.parseDetailsFromLightDid(uriWithFragment, true)).toThrow()
+    expect(() => Did.parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
     expect(() =>
-      Did.parseDetailsFromLightDid(uriWithFragment, false)
+      Did.parseDocumentFromLightDid(uriWithFragment, false)
     ).not.toThrow()
   })
 
@@ -267,7 +265,7 @@ describe('When creating an instance from a URI', () => {
       `did:kilt:light:00${validKiltAddress}:randomdetails`,
     ]
     incorrectURIs.forEach((uri) => {
-      expect(() => Did.parseDetailsFromLightDid(uri as DidUri)).toThrow()
+      expect(() => Did.parseDocumentFromLightDid(uri as DidUri)).toThrow()
     })
   })
 })

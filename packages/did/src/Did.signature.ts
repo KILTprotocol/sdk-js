@@ -8,7 +8,7 @@
 import { u8aToHex, isHex } from '@polkadot/util'
 
 import {
-  DidDetails,
+  DidDocument,
   DidResolve,
   DidResourceUri,
   DidSignature,
@@ -27,13 +27,13 @@ type DidSignatureVerificationFromDetailsInput = {
   signature: string
   keyId: DidVerificationKey['id']
   expectedVerificationMethod?: VerificationKeyRelationship
-  details: DidDetails
+  did: DidDocument
 }
 
 export type VerificationResult = {
   verified: boolean
   reason?: string
-  didDetails?: DidDetails
+  did?: DidDocument
   key?: DidVerificationKey
 }
 
@@ -42,21 +42,19 @@ function verifyDidSignatureFromDetails({
   signature,
   keyId,
   expectedVerificationMethod,
-  details,
+  did,
 }: DidSignatureVerificationFromDetailsInput): VerificationResult {
-  const key = Did.getKey(details, keyId)
+  const key = Did.getKey(did, keyId)
   if (!key) {
     return {
       verified: false,
-      reason: `No key with ID "${keyId}" for the DID ${details.uri}`,
+      reason: `No key with ID "${keyId}" for the DID ${did.uri}`,
     }
   }
   // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
   if (
     expectedVerificationMethod &&
-    !details[expectedVerificationMethod]
-      ?.map((verKey) => verKey.id)
-      .includes(keyId)
+    !did[expectedVerificationMethod]?.map((verKey) => verKey.id).includes(keyId)
   ) {
     return {
       verified: false,
@@ -76,7 +74,7 @@ function verifyDidSignatureFromDetails({
   }
   return {
     verified: true,
-    didDetails: details,
+    did,
     key: key as DidVerificationKey,
   }
 }
@@ -144,19 +142,19 @@ export async function verifyDidSignature({
       reason: 'DID for provided key has been migrated and not usable anymore',
     }
   }
-  // Otherwise, the details used are either the migrated full DID details or the light DID details.
-  const details = (
+  // Otherwise, the document used is either the migrated full DID document or the light DID document.
+  const did = (
     resolutionDetails.metadata.canonicalId !== undefined
-      ? (await didResolve(resolutionDetails.metadata.canonicalId))?.details
-      : resolutionDetails.details
-  ) as DidDetails
+      ? (await didResolve(resolutionDetails.metadata.canonicalId))?.document
+      : resolutionDetails.document
+  ) as DidDocument
 
   return verifyDidSignatureFromDetails({
     message,
     signature: signature.signature,
     keyId,
     expectedVerificationMethod,
-    details,
+    did,
   })
 }
 

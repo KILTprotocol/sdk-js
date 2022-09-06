@@ -7,7 +7,7 @@
 
 import type {
   DecryptCallback,
-  DidDetails,
+  DidDocument,
   DidEncryptionKey,
   DidResolveKey,
   DidResourceUri,
@@ -307,7 +307,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
  *
  * @param encrypted The encrypted message.
  * @param decryptCallback The callback to decrypt with the secret key.
- * @param receiverDetails The DID details of the receiver.
+ * @param receiverDid The DID of the receiver.
  * @param decryptionOptions Options to perform the decryption operation.
  * @param decryptionOptions.resolveKey The DID key resolver to use.
  * @returns The original [[Message]].
@@ -315,7 +315,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
 export async function decrypt(
   encrypted: IEncryptedMessage,
   decryptCallback: DecryptCallback,
-  receiverDetails: DidDetails,
+  receiverDid: DidDocument,
   {
     resolveKey = Did.resolveKey,
   }: {
@@ -337,7 +337,7 @@ export async function decrypt(
       `No fragment for the receiver key ID "${receiverKeyUri}"`
     )
   }
-  const receiverKeyDetails = Did.getKey(receiverDetails, fragment)
+  const receiverKeyDetails = Did.getKey(receiverDid, fragment)
   if (
     !receiverKeyDetails ||
     !encryptionKeyTypes.includes(receiverKeyDetails.type)
@@ -442,7 +442,7 @@ export function fromBody(
  *
  * @param message The message to encrypt.
  * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
- * @param senderDetails The sender's DID to use to fetch the right encryption key.
+ * @param senderDid The sender's DID to use to fetch the right encryption key.
  * @param encryptCallback The callback to encrypt with the secret key.
  * @param receiverKeyUri The key URI of the receiver.
  * @param encryptionOptions Options to perform the encryption operation.
@@ -453,7 +453,7 @@ export function fromBody(
 export async function encrypt(
   message: IMessage,
   senderKeyId: DidEncryptionKey['id'],
-  senderDetails: DidDetails,
+  senderDid: DidDocument,
   encryptCallback: EncryptCallback,
   receiverKeyUri: DidResourceUri,
   {
@@ -469,10 +469,10 @@ export async function encrypt(
   if (message.receiver !== receiverKey.controller) {
     throw new SDKErrors.IdentityMismatchError('receiver public key', 'receiver')
   }
-  if (message.sender !== senderDetails.uri) {
+  if (message.sender !== senderDid.uri) {
     throw new SDKErrors.IdentityMismatchError('sender public key', 'sender')
   }
-  const senderKey = Did.getKey(senderDetails, senderKeyId)
+  const senderKey = Did.getKey(senderDid, senderKeyId)
   if (!senderKey || !encryptionKeyTypes.includes(senderKey.type)) {
     throw new SDKErrors.DidError(
       `Cannot find key with ID "${senderKeyId}" for the sender DID`
@@ -511,7 +511,7 @@ export async function encrypt(
     receivedAt: message.receivedAt,
     ciphertext,
     nonce,
-    senderKeyUri: `${senderDetails.uri}${senderKey.id}`,
+    senderKeyUri: `${senderDid.uri}${senderKey.id}`,
     receiverKeyUri: receiverKey.id,
   }
 }

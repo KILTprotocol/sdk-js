@@ -191,7 +191,7 @@ async function runAll() {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const address = Crypto.encodeAddress(authPublicKey, ss58Format)
-  const testDid = Did.createLightDidDetails({
+  const testDid = Did.createLightDidDocument({
     authentication: [{ publicKey: authPublicKey, type: 'ed25519' }],
     keyAgreement: [{ publicKey: encPublicKey, type: 'x25519' }],
   })
@@ -214,14 +214,14 @@ async function runAll() {
   await Blockchain.signAndSubmitTx(didStoreTx, payer, { resolveOn })
 
   const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
-  if (!fullDid) throw new Error('Could not fetch created DID details')
+  if (!fullDid) throw new Error('Could not fetch created DID document')
 
   const resolved = await Did.resolve(fullDid.uri)
 
   if (
     resolved &&
     !resolved.metadata.deactivated &&
-    resolved.details?.uri === fullDid.uri
+    resolved.document?.uri === fullDid.uri
   ) {
     console.info('DID matches')
   } else {

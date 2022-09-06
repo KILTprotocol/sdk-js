@@ -45,7 +45,7 @@ export const lightDidEncodingToVerificationKeyType: Record<
 /**
  * The options that can be used to create a light DID.
  */
-export type CreateDetailsInput = {
+export type CreateDocumentInput = {
   /**
    * The DID authentication key. This is mandatory and will be used as the first authentication key
    * of the full DID upon migration.
@@ -63,33 +63,33 @@ export type CreateDetailsInput = {
   service?: DidServiceEndpoint[]
 }
 
-export function validateCreateDetailsInput(details: CreateDetailsInput): void {
+export function validateCreateDocumentInput(input: CreateDocumentInput): void {
   // Check authentication key type
   const authenticationKeyTypeEncoding =
-    verificationKeyTypeToLightDidEncoding[details.authentication[0].type]
+    verificationKeyTypeToLightDidEncoding[input.authentication[0].type]
 
   if (!authenticationKeyTypeEncoding) {
-    throw new SDKErrors.UnsupportedKeyError(details.authentication[0].type)
+    throw new SDKErrors.UnsupportedKeyError(input.authentication[0].type)
   }
 
   if (
-    details.keyAgreement?.[0].type &&
-    !encryptionKeyTypes.includes(details.keyAgreement[0].type)
+    input.keyAgreement?.[0].type &&
+    !encryptionKeyTypes.includes(input.keyAgreement[0].type)
   ) {
     throw new SDKErrors.DidError(
-      `Encryption key type "${details.keyAgreement[0].type}" is not supported`
+      `Encryption key type "${input.keyAgreement[0].type}" is not supported`
     )
   }
 
   // Check service endpoints
-  if (!details.service) {
+  if (!input.service) {
     return
   }
 
   // Checks that for all service IDs have regular strings as their ID and not a full DID.
   // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
   // when upgrading to a full DID.
-  details.service?.forEach((service) => {
+  input.service?.forEach((service) => {
     // A service ID cannot have a reserved ID that is used for key IDs.
     if (service.id === '#authentication' || service.id === '#encryption') {
       throw new SDKErrors.DidError(
@@ -123,7 +123,7 @@ interface SerializableStructure {
 export function serializeAndEncodeAdditionalLightDidDetails({
   keyAgreement,
   service,
-}: Pick<CreateDetailsInput, 'keyAgreement' | 'service'>): string | undefined {
+}: Pick<CreateDocumentInput, 'keyAgreement' | 'service'>): string | undefined {
   const objectToSerialize: SerializableStructure = {}
   if (keyAgreement) {
     const key = keyAgreement[0]
@@ -148,7 +148,7 @@ export function serializeAndEncodeAdditionalLightDidDetails({
 export function decodeAndDeserializeAdditionalLightDidDetails(
   rawInput: string,
   version = 1
-): Pick<CreateDetailsInput, 'keyAgreement' | 'service'> {
+): Pick<CreateDocumentInput, 'keyAgreement' | 'service'> {
   if (version !== 1) {
     throw new SDKErrors.DidError('Serialization version not supported')
   }

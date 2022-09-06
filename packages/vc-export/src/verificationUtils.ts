@@ -17,7 +17,7 @@ import jsonld from 'jsonld'
 import { Attestation, CType } from '@kiltprotocol/core'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
-import { VerificationKeyTypesMap } from '@kiltprotocol/types'
+import { verificationKeyTypesMap } from '@kiltprotocol/types'
 import {
   KILT_SELF_SIGNED_PROOF_TYPE,
   KILT_ATTESTED_PROOF_TYPE,
@@ -102,10 +102,10 @@ export async function verifySelfSignedProof(
     if (!verificationMethod.controller === credentialOwner)
       throw new Error('Credential subject is not owner of signing key')
     const keyType = verificationMethod.type || verificationMethod['@type']
-    if (!Object.values(VerificationKeyTypesMap).includes(keyType))
+    if (!Object.values(verificationKeyTypesMap).includes(keyType))
       throw new ProofMalformedError(
         `Signature type unknown; expected one of ${JSON.stringify(
-          Object.values(VerificationKeyTypesMap)
+          Object.values(verificationKeyTypesMap)
         )}, got "${verificationMethod.type}"`
       )
     const signerPubKey = verificationMethod.publicKeyBase58
@@ -123,7 +123,7 @@ export async function verifySelfSignedProof(
     if (
       !(
         verification.isValid &&
-        Object.values(VerificationKeyTypesMap).includes(keyType)
+        Object.values(verificationKeyTypesMap).includes(keyType)
       )
     ) {
       throw new Error('Signature could not be verified')

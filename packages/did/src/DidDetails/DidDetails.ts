@@ -8,7 +8,7 @@
 import { u8aToHex } from '@polkadot/util'
 
 import type {
-  DidDetails,
+  DidDocument,
   DidKey,
   DidResourceUri,
   DidServiceEndpoint,
@@ -29,7 +29,7 @@ import { signatureAlgForKeyType } from '../Did.utils.js'
  * @returns Array of public keys.
  */
 export function getKeys(
-  did: Partial<DidDetails> & Pick<DidDetails, 'authentication'>
+  did: Partial<DidDocument> & Pick<DidDocument, 'authentication'>
 ): DidKey[] {
   return [
     ...did.authentication,
@@ -47,7 +47,7 @@ export function getKeys(
  * @returns The respective public key data or undefined.
  */
 export function getKey(
-  did: Partial<DidDetails> & Pick<DidDetails, 'authentication'>,
+  did: Partial<DidDocument> & Pick<DidDocument, 'authentication'>,
   id: DidKey['id']
 ): DidKey | undefined {
   return getKeys(did).find((key) => key.id === id)
@@ -61,7 +61,7 @@ export function getKey(
  * @returns The respective endpoint data or undefined.
  */
 export function getEndpoint(
-  did: Pick<DidDetails, 'service'>,
+  did: Pick<DidDocument, 'service'>,
   id: DidServiceEndpoint['id']
 ): DidServiceEndpoint | undefined {
   return did.service?.find((endpoint) => endpoint.id === id)
@@ -78,7 +78,7 @@ export function getEndpoint(
  * @returns The resulting [[DidSignature]].
  */
 export async function signPayload(
-  did: Partial<DidDetails> & Pick<DidDetails, 'authentication' | 'uri'>,
+  did: Partial<DidDocument> & Pick<DidDocument, 'authentication' | 'uri'>,
   payload: Uint8Array | string,
   sign: SignCallback,
   keyId: DidVerificationKey['id']

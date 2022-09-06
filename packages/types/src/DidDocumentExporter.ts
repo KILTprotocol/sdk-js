@@ -6,23 +6,24 @@
  */
 
 import {
+  DidEncryptionKey,
+  DidResourceUri,
   DidServiceEndpoint,
-  VerificationKeyType,
-  EncryptionKeyType,
   DidUri,
   DidVerificationKey,
-  DidEncryptionKey,
-} from './DidDetails.js'
+  EncryptionKeyType,
+  VerificationKeyType,
+} from './DidDocument.js'
 
-export type DidDocumentPublicKeyType =
+export type ConformingDidDocumentKeyType =
   | 'Ed25519VerificationKey2018'
   | 'Sr25519VerificationKey2020'
   | 'EcdsaSecp256k1VerificationKey2019'
   | 'X25519KeyAgreementKey2019'
 
-export const VerificationKeyTypesMap: Record<
+export const verificationKeyTypesMap: Record<
   VerificationKeyType,
-  DidDocumentPublicKeyType
+  ConformingDidDocumentKeyType
 > = {
   // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
   sr25519: 'Sr25519VerificationKey2020',
@@ -31,27 +32,17 @@ export const VerificationKeyTypesMap: Record<
   ecdsa: 'EcdsaSecp256k1VerificationKey2019',
 }
 
-export const EncryptionKeyTypesMap: Record<
+export const encryptionKeyTypesMap: Record<
   EncryptionKeyType,
-  DidDocumentPublicKeyType
+  ConformingDidDocumentKeyType
 > = {
   x25519: 'X25519KeyAgreementKey2019',
 }
 
 /**
- * The fragment part of the DID URI including the `#` character.
- */
-export type UriFragment = `#${string}`
-
-/**
- * URI for DID resources like public keys or service endpoints.
- */
-export type DidResourceUri = `${DidUri}${UriFragment}`
-
-/**
  * A spec-compliant description of a DID key.
  */
-export type DidPublicKey = {
+export type ConformingDidKey = {
   /**
    * The full key URI, in the form of <did>#<key_id>.
    */
@@ -67,13 +58,13 @@ export type DidPublicKey = {
   /**
    * The signing/encryption algorithm type where the key can be used.
    */
-  type: DidDocumentPublicKeyType
+  type: ConformingDidDocumentKeyType
 }
 
 /**
  * A spec-compliant description of a DID endpoint.
  */
-export type DidPublicServiceEndpoint = Omit<DidServiceEndpoint, 'id'> & {
+export type ConformingDidServiceEndpoint = Omit<DidServiceEndpoint, 'id'> & {
   /**
    * The full service URI, in the form of <did>#<service_id>.
    */
@@ -83,17 +74,17 @@ export type DidPublicServiceEndpoint = Omit<DidServiceEndpoint, 'id'> & {
 /**
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
-export type DidDocument = {
+export type ConformingDidDocument = {
   id: DidUri
-  verificationMethod: DidPublicKey[]
+  verificationMethod: ConformingDidKey[]
   authentication: [DidVerificationKey['id']]
   assertionMethod?: [DidVerificationKey['id']]
   keyAgreement?: [DidEncryptionKey['id']]
   capabilityDelegation?: [DidVerificationKey['id']]
-  service?: DidPublicServiceEndpoint[]
+  service?: ConformingDidServiceEndpoint[]
 }
 
 /**
  * A JSON+LD DID Document that extends a traditional DID Document with additional semantic information.
  */
-export type JsonLDDidDocument = DidDocument & { '@context': string[] }
+export type JsonLDDidDocument = ConformingDidDocument & { '@context': string[] }

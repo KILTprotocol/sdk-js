@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidDetails, DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
+import { DidDocument, DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
 
 import { getEndpoint, getKey, getKeys } from './DidDetails'
 
@@ -13,7 +13,7 @@ import { getEndpoint, getKey, getKeys } from './DidDetails'
  * @group unit/did
  */
 
-const minimalDid: DidDetails = {
+const minimalDid: DidDocument = {
   uri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
   authentication: [
     {
@@ -24,7 +24,7 @@ const minimalDid: DidDetails = {
   ],
 }
 
-const maximalDid: DidDetails = {
+const maximalDid: DidDocument = {
   uri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
   authentication: [
     {

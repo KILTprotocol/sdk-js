@@ -9,7 +9,7 @@
  * @group integration/ctype
  */
 
-import { DidDetails, ICType, KiltKeyringPair } from '@kiltprotocol/types'
+import { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
 import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
@@ -31,7 +31,7 @@ beforeAll(async () => {
 }, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {
-  let ctypeCreator: DidDetails
+  let ctypeCreator: DidDocument
   let paymentAccount: KiltKeyringPair
   let ctypeCounter = 0
   let key: KeyTool
