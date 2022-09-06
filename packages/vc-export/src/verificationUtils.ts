@@ -83,7 +83,7 @@ export async function verifySelfSignedProof(
     if (typeof verificationMethod !== 'string') {
       verificationMethod = verificationMethod.id
     }
-    if (!verificationMethod) {
+    if (typeof verificationMethod !== 'string') {
       throw new Error('verificationMethod not understood')
     }
     if (typeof documentLoader !== 'function') {
@@ -99,9 +99,9 @@ export async function verifySelfSignedProof(
 
     const credentialOwner =
       credential.credentialSubject.id ?? credential.credentialSubject['@id']
-    if (!verificationMethod.controller === credentialOwner)
+    if (verificationMethod.controller !== credentialOwner)
       throw new Error('Credential subject is not owner of signing key')
-    const keyType = verificationMethod.type || verificationMethod['@type']
+    const keyType = verificationMethod.type ?? verificationMethod['@type']
     if (!Object.values(verificationKeyTypesMap).includes(keyType))
       throw new ProofMalformedError(
         `Signature type unknown; expected one of ${JSON.stringify(
@@ -109,7 +109,7 @@ export async function verifySelfSignedProof(
         )}, got "${verificationMethod.type}"`
       )
     const signerPubKey = verificationMethod.publicKeyBase58
-    if (!signerPubKey)
+    if (typeof signerPubKey !== 'string')
       throw new Error('Signer key is missing publicKeyBase58 property')
 
     const rootHash = fromCredentialIRI(credential.id)
@@ -183,7 +183,7 @@ export async function verifyAttestedProof(
     // query on-chain data by credential id (= claim root hash)
     const onChain = await Attestation.query(claimHash)
     // if not found, credential has not been attested, proof is invalid
-    if (!onChain) {
+    if (onChain === null) {
       status = 'invalid'
       throw new Error(
         `Attestation for credential with id "${claimHash}" not found`
@@ -197,7 +197,7 @@ export async function verifyAttestedProof(
       )
     }
     // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
-    if (onChain.revoked) {
+    if (onChain.revoked === true) {
       status = 'revoked'
       throw new Error('Attestation revoked')
     }

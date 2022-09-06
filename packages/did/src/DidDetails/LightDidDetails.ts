@@ -75,7 +75,7 @@ export function createLightDidDocument({
     service,
   }
 
-  if (keyAgreement) {
+  if (keyAgreement !== undefined) {
     did.keyAgreement = [
       {
         id: encryptionKeyId, // Encryption key always has the #encryption ID.
