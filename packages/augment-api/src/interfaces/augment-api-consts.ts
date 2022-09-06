@@ -6,9 +6,9 @@
 import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
-import type { Option, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { Permill, Perquintill } from '@polkadot/types/interfaces/runtime';
-import type { FrameSupportPalletId, FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
+import type { Option, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { Percent, Permill, Perquintill } from '@polkadot/types/interfaces/runtime';
+import type { FrameSupportPalletId, FrameSupportWeightsRuntimeDbWeight, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
 
@@ -220,31 +220,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       initialPeriodReward: u128 & AugmentedConst<ApiType>;
     };
-    kiltLaunch: {
-      /**
-       * Maximum number of accounts that get unlocked in a single block.
-       **/
-      autoUnlockBound: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of claims which can be migrated in a single call.
-       * Used for weight estimation.
-       * 
-       * Note: Benchmarks will need to be re-run and weights adjusted if this
-       * changes.
-       **/
-      maxClaims: u32 & AugmentedConst<ApiType>;
-      /**
-       * The kilt launch's pallet id, used for deriving its sovereign account
-       * ID.
-       **/
-      palletId: FrameSupportPalletId & AugmentedConst<ApiType>;
-      /**
-       * Amount of Balance which will be made available for each account
-       * which has either vesting or locking such that transaction fees can
-       * be paid from this.
-       **/
-      usableBalance: u128 & AugmentedConst<ApiType>;
-    };
     parachainStaking: {
       /**
        * Default number of blocks validation rounds last, as set in the
@@ -430,6 +405,30 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       minimumPeriod: u64 & AugmentedConst<ApiType>;
     };
+    tips: {
+      /**
+       * The amount held on deposit per byte within the tip report reason or bounty description.
+       **/
+      dataDepositPerByte: u128 & AugmentedConst<ApiType>;
+      /**
+       * Maximum acceptable reason length.
+       * 
+       * Benchmarks depend on this value, be sure to update weights file when changing this value
+       **/
+      maximumReasonLength: u32 & AugmentedConst<ApiType>;
+      /**
+       * The period for which a tip remains open after is has achieved threshold tippers.
+       **/
+      tipCountdown: u64 & AugmentedConst<ApiType>;
+      /**
+       * The percent of the final tip which goes to the original reporter of the tip.
+       **/
+      tipFindersFee: Percent & AugmentedConst<ApiType>;
+      /**
+       * The amount held on deposit for placing a tip report.
+       **/
+      tipReportDepositBase: u128 & AugmentedConst<ApiType>;
+    };
     transactionPayment: {
       /**
        * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
@@ -455,14 +454,6 @@ declare module '@polkadot/api-base/types/consts' {
        * transactions.
        **/
       operationalFeeMultiplier: u8 & AugmentedConst<ApiType>;
-      /**
-       * The fee to be paid for making a transaction; the per-byte portion.
-       **/
-      transactionByteFee: u128 & AugmentedConst<ApiType>;
-      /**
-       * The polynomial that is applied in order to derive fee from weight.
-       **/
-      weightToFee: Vec<FrameSupportWeightsWeightToFeeCoefficient> & AugmentedConst<ApiType>;
     };
     treasury: {
       /**

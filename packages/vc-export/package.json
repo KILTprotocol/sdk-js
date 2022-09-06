@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.29.0-44",
+  "version": "0.29.0-46",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
