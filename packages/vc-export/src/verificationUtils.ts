@@ -14,7 +14,6 @@ import {
   base58Decode,
 } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Attestation, CType } from '@kiltprotocol/core'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -180,18 +179,15 @@ export async function verifyAttestedProof(
       default:
         throw new CredentialMalformedError('delegationId not understood')
     }
-
-    const api = await BlockchainApiConnection.getConnectionOrConnect()
     // query on-chain data by credential id (= claim root hash)
-    const encoded = await api.query.attestation.attestations(claimHash)
+    const onChain = await Attestation.query(claimHash)
     // if not found, credential has not been attested, proof is invalid
-    if (encoded.isNone) {
+    if (!onChain) {
       status = 'invalid'
       throw new Error(
         `Attestation for credential with id "${claimHash}" not found`
       )
     }
-    const onChain = Attestation.decode(encoded, claimHash)
     // if data on proof does not correspond to data on chain, proof is incorrect
     if (onChain.owner !== attester || onChain.delegationId !== delegationId) {
       status = 'invalid'

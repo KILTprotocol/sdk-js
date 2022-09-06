@@ -14,9 +14,8 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DelegationNode } from '../delegation/DelegationNode.js'
-import { decode } from './Attestation.chain.js'
+import { query } from './Attestation.chain.js'
 import * as Credential from '../credential/index.js'
 
 /**
@@ -139,12 +138,8 @@ export async function checkValidity(
   claimHash: IAttestation['claimHash'] | ICredential['rootHash']
 ): Promise<boolean> {
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const chainAttestation = await api.query.attestation.attestations(claimHash)
-  return (
-    chainAttestation.isSome !== null &&
-    !decode(chainAttestation, claimHash).revoked
-  )
+  const chainAttestation = await query(claimHash)
+  return chainAttestation !== null && !chainAttestation.revoked
 }
 
 /**
