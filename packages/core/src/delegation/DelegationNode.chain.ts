@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { U128 } from '@polkadot/types'
 import type {
   IAttestation,
   IDelegationNode,
@@ -15,7 +14,6 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import type { BN } from '@polkadot/util'
 import { decodeDelegationNode } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
@@ -183,19 +181,4 @@ export async function getAttestationHashes(
   })
   // extract claimHash from double map key & decode
   return entries.map((keys) => keys.args[1].toHex())
-}
-
-async function queryDepositAmountEncoded(): Promise<U128> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.delegation.deposit
-}
-
-/**
- * Gets the current deposit amount due for the creation of new delegation node.
- *
- * @returns Deposit amount in Femto Kilt as a BigNumber.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const encodedDeposit = await queryDepositAmountEncoded()
-  return encodedDeposit.toBn()
 }
