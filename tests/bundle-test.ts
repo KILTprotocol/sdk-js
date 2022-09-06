@@ -349,7 +349,7 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(attestationStoreTx, payer, { resolveOn })
   const storedAttestation = await Attestation.query(credential.rootHash)
-  if (storedAttestation?.revoked === true) {
+  if (storedAttestation?.revoked === false) {
     console.info('Attestation verified with chain')
   } else {
     throw new Error('Attestation not verifiable with chain')
