@@ -43,55 +43,32 @@ export async function getStoreTx(
   )
 }
 
-function decode(
+/**
+ * Decodes the attestation returned by `api.query.attestation.attestations()`.
+ *
+ * @param encoded Raw attestation data from blockchain.
+ * @param claimHash The attestation claimHash.
+ * @returns The attestation.
+ */
+export function decode(
   encoded: Option<AttestationAttestationsAttestationDetails>,
   claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
-): IAttestation | null {
-  if (encoded.isSome) {
-    const chainAttestation = encoded.unwrap()
-    const delegationId = chainAttestation.authorizationId
-      .unwrapOr(undefined)
-      ?.value.toHex()
-    const attestation: IAttestation = {
-      claimHash,
-      cTypeHash: chainAttestation.ctypeHash.toHex(),
-      owner: DidUtils.getFullDidUri(
-        chainAttestation.attester.toString() as KiltAddress
-      ),
-      delegationId: delegationId || null,
-      revoked: chainAttestation.revoked.valueOf(),
-    }
-    log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-    return attestation
+): IAttestation {
+  const chainAttestation = encoded.unwrap()
+  const delegationId = chainAttestation.authorizationId
+    .unwrapOr(undefined)
+    ?.value.toHex()
+  const attestation: IAttestation = {
+    claimHash,
+    cTypeHash: chainAttestation.ctypeHash.toHex(),
+    owner: DidUtils.getFullDidUri(
+      chainAttestation.attester.toString() as KiltAddress
+    ),
+    delegationId: delegationId || null,
+    revoked: chainAttestation.revoked.valueOf(),
   }
-  return null
-}
-
-/**
- * Query an attestation from the blockchain, returning the SCALE encoded value.
- *
- * @param claimHash The hash of the claim attested in the attestation.
- * @returns An Option wrapping scale encoded attestation data.
- */
-export async function queryRaw(
-  claimHash: ICredential['rootHash']
-): Promise<Option<AttestationAttestationsAttestationDetails>> {
-  log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.attestation.attestations(claimHash)
-}
-
-/**
- * Queries an attestation from the blockchain given the claim hash it attests.
- *
- * @param claimHash The hash of the claim attested in the attestation.
- * @returns A promise containing the retrieved [[Attestation]] or null.
- */
-export async function query(
-  claimHash: ICredential['rootHash'] | IAttestation['claimHash']
-): Promise<IAttestation | null> {
-  const encoded = await queryRaw(claimHash)
-  return decode(encoded, claimHash)
+  log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
+  return attestation
 }
 
 /**

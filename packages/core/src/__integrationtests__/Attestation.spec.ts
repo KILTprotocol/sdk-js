@@ -77,7 +77,9 @@ it('fetches the correct deposit amount', async () => {
 describe('handling attestations that do not exist', () => {
   const claimHash = Crypto.hashStr('abcde')
   it('Attestation.query', async () => {
-    expect(await Attestation.query(claimHash)).toBeNull()
+    expect((await api.query.attestation.attestations(claimHash)).isNone).toBe(
+      true
+    )
   }, 30_000)
 
   it('Attestation.getRevokeTx', async () => {
@@ -186,7 +188,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await submitExtrinsic(reclaimTx, tokenHolder)
 
     // Test that the attestation has been deleted.
-    expect(await Attestation.query(attestation.claimHash)).toBeNull()
+    expect(
+      (await api.query.attestation.attestations(attestation.claimHash)).isNone
+    ).toBe(true)
     expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   }, 60_000)
 

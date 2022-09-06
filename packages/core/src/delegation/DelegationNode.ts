@@ -18,10 +18,11 @@ import type {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { BN } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
-import { query as queryAttestation } from '../attestation/Attestation.chain.js'
+import { decode as decodeAttestation } from '../attestation/Attestation.chain.js'
 import {
   getChildren,
   getAttestationHashes,
@@ -212,8 +213,14 @@ export class DelegationNode implements IDelegationNode {
    */
   public async getAttestations(): Promise<IAttestation[]> {
     const attestationHashes = await this.getAttestationHashes()
+    const api = await BlockchainApiConnection.getConnectionOrConnect()
+
     const attestations = await Promise.all(
-      attestationHashes.map((claimHash) => queryAttestation(claimHash))
+      attestationHashes.map(async (claimHash) => {
+        const encoded = await api.query.attestation.attestations(claimHash)
+        if (encoded.isNone) return undefined
+        return decodeAttestation(encoded, claimHash)
+      })
     )
 
     return attestations.filter((value): value is IAttestation => !!value)
