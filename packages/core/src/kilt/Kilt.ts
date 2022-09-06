@@ -13,7 +13,7 @@
  */
 
 import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, WsProvider } from '@polkadot/api'
 
 import { ConfigService } from '@kiltprotocol/config'
 
@@ -22,9 +22,12 @@ import { ConfigService } from '@kiltprotocol/config'
  *
  * @returns An instance of ApiPromise.
  */
-export async function connect(): Promise<ApiPromise> {
-  const api = ConfigService.get('api')
-  await api.connect()
+export async function connect(wsEndpoint: string): Promise<ApiPromise> {
+  const provider = new WsProvider(wsEndpoint)
+  const api = await ApiPromise.create({
+    provider,
+  })
+  await init({ api })
   return api.isReadyOrError
 }
 

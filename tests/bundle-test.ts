@@ -8,7 +8,6 @@
 /// <reference lib="dom" />
 
 import type { KeypairType } from '@polkadot/util-crypto/types'
-import { WsProvider, ApiPromise } from '@polkadot/api'
 
 import type {
   DecryptCallback,
@@ -25,7 +24,7 @@ import type {
 
 const { kilt } = window
 
-export const WS_PORT = 9944
+const WS_PORT = 9944
 
 const {
   Claim,
@@ -151,9 +150,7 @@ async function createFullDidFromKeypair(
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  const provider = new WsProvider(`ws://127.0.0.1:${WS_PORT}`)
-  const api = await ApiPromise.create({ provider })
-  await kilt.init({ api })
+  await kilt.connect(`ws://127.0.0.1:${WS_PORT}`)
 
   // Accounts
   console.log('Account setup started')
