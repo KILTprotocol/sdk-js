@@ -9,13 +9,11 @@
 /* eslint-disable no-console */
 
 import { BN } from '@polkadot/util'
+import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   ICType,
   ISubmittableResult,
@@ -25,7 +23,8 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
+import { ConfigService } from '@kiltprotocol/config'
+
 import * as CType from '../ctype'
 import { Balance } from '../balance'
 import { connect, init } from '../kilt'
@@ -145,7 +144,7 @@ export async function endowAccounts(
   addresses: string[],
   resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = Blockchain.IS_FINALIZED
 ): Promise<void> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const transactions = await Promise.all(
     addresses.map((address) => Balance.getTransferTx(address, ENDOWMENT))
   )

@@ -12,23 +12,24 @@
  * ```Kilt.connect('ws://localhost:9944');```.
  */
 
-import { ConfigService } from '@kiltprotocol/config'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { ApiPromise } from '@polkadot/api'
 
+import { ConfigService } from '@kiltprotocol/config'
+
 /**
- * Connects to the KILT Blockchain and caches the connection.
- * When used again, the cached instance is returned.
+ * Connects to the KILT Blockchain using the api instance set with `init()`.
  *
  * @returns An instance of ApiPromise.
  */
-export function connect(): Promise<ApiPromise> {
-  return BlockchainApiConnection.getConnectionOrConnect()
+export async function connect(): Promise<ApiPromise> {
+  const api = ConfigService.get('api')
+  await api.connect()
+  return api.isReadyOrError
 }
 
 /**
- * Allows setting global configuration such as the blockchain endpoint and log level.
+ * Allows setting global configuration such as the log level and the polkadot ApiPromise instance used throughout the sdk.
  *
  * @param configs Config options object.
  */
@@ -50,4 +51,16 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
   config(configs || {})
   await cryptoWaitReady()
 }
-export const { disconnect } = BlockchainApiConnection
+
+/**
+ * Disconnects the cached connection and clears the cache.
+ *
+ * @returns If there was a cached and connected connection, or not.
+ */
+export async function disconnect(): Promise<boolean> {
+  if (!ConfigService.isSet('api')) return false
+  const api = ConfigService.get('api')
+  ConfigService.unset('api')
+  await api.disconnect()
+  return true
+}

@@ -21,7 +21,6 @@ import {
   makeEncryptionKeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   DidDetails,
   DidResolvedDetails,
@@ -33,6 +32,7 @@ import {
   Permission,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -49,7 +49,7 @@ let api: ApiPromise
 
 beforeAll(async () => {
   await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = ConfigService.get('api')
 }, 30_000)
 
 beforeAll(async () => {

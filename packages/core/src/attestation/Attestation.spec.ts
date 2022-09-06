@@ -11,6 +11,8 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import type { HexString } from '@polkadot/util/types'
+
 import type {
   IAttestation,
   CompressedAttestation,
@@ -19,11 +21,11 @@ import type {
   IClaim,
   ICredential,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { HexString } from '@polkadot/util/types'
+import { ConfigService } from '@kiltprotocol/config'
+
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from '../credential'
@@ -33,7 +35,7 @@ let mockedApi: any
 
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  BlockchainApiConnection.setConnection(mockedApi)
+  ConfigService.set({ api: mockedApi })
 })
 
 describe('Attestation', () => {

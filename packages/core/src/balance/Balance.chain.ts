@@ -16,12 +16,14 @@
 
 import type { UnsubscribePromise } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
+
 import type {
   Balances,
   KeyringPair,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+
 import * as BalanceUtils from './Balance.utils.js'
 
 /**
@@ -34,7 +36,7 @@ import * as BalanceUtils from './Balance.utils.js'
 export async function getBalances(
   accountAddress: KeyringPair['address']
 ): Promise<Balances> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   return (await api.query.system.account(accountAddress)).data
 }
@@ -55,7 +57,7 @@ export async function listenToBalanceChanges(
     changes: Balances
   ) => void
 ): Promise<UnsubscribePromise> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   let previousBalances = await getBalances(accountAddress)
 
   return api.query.system.account(
@@ -95,7 +97,7 @@ export async function getTransferTx(
   amount: BN,
   exponent = -15
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const cleanExponent =
     (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
   return api.tx.balances.transfer(

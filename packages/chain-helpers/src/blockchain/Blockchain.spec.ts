@@ -11,9 +11,11 @@
 
 /* eslint-disable dot-notation */
 import type { KeyringPair } from '@polkadot/keyring/types'
+
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { setConnection } from '../blockchainApiConnection/BlockchainApiConnection'
+import { ConfigService } from '@kiltprotocol/config'
+
 import {
   IS_FINALIZED,
   isRecoverableTxError,
@@ -25,7 +27,7 @@ let api: any
 
 beforeAll(() => {
   api = ApiMocks.getMockedApi()
-  setConnection(Promise.resolve(api))
+  ConfigService.set({ api })
 })
 
 describe('Blockchain', () => {

@@ -5,6 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { SubmittableResult } from '@polkadot/api'
+import { AnyNumber } from '@polkadot/types/types'
+
 import { ConfigService } from '@kiltprotocol/config'
 import type {
   ISubmittableResult,
@@ -12,11 +15,9 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { SubmittableResult } from '@polkadot/api'
-import { AnyNumber } from '@polkadot/types/types'
+
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
-import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -135,7 +136,7 @@ export async function submitSignedTx(
     subscription(result)
   })
 
-  const api = await getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   function handleDisconnect(): void {
     const result = new SubmittableResult({

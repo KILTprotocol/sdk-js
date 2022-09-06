@@ -174,9 +174,11 @@ export class IdentityMismatchError extends SDKError {
   }
 }
 
-export class WsAddressNotSetError extends SDKError {
+export class FullnodeConnectionNotSetError extends SDKError {
   constructor() {
-    super('Node address to connect to not configured!')
+    super(
+      'A function tried to access the ApiPromise instance before it was set. Did you forget to call `Kilt.init({api: -your ApiPromise instance here-})`?'
+    )
   }
 }
 
