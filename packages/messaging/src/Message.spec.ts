@@ -1169,7 +1169,7 @@ describe('Error checking / Verification', () => {
       identityBob.uri
     )
   })
-  it('error check should not throw errors on faulty bodies', () => {
+  it('message body verifier should not throw errors on correct bodies', () => {
     expect(() => Message.verifyMessageBody(requestTermsBody)).not.toThrowError()
     expect(() => Message.verifyMessageBody(submitTermsBody)).not.toThrowError()
     expect(() => Message.verifyMessageBody(rejectTermsBody)).not.toThrowError()
@@ -1207,7 +1207,7 @@ describe('Error checking / Verification', () => {
       Message.verifyMessageBody(informCreateDelegationBody)
     ).not.toThrowError()
   })
-  it('error check should not throw errors on message', () => {
+  it('message envelope verifier should not throw errors on correct envelopes', () => {
     expect(() =>
       Message.verifyMessageEnvelope(messageRequestTerms)
     ).not.toThrowError()
@@ -1251,7 +1251,7 @@ describe('Error checking / Verification', () => {
       Message.verifyMessageEnvelope(messageInformCreateDelegation)
     ).not.toThrowError()
   })
-  it('error check should throw errors on message', () => {
+  it('message envelope verifier should throw errors on faulty envelopes', () => {
     messageRequestTerms.receiver =
       'did:kilt:thisisnotareceiveraddress' as DidUri
     expect(() =>
@@ -1267,6 +1267,26 @@ describe('Error checking / Verification', () => {
     expect(() =>
       Message.verifyMessageEnvelope(messageRejectTerms)
     ).toThrowError(SDKErrors.InvalidDidFormatError)
+    // @ts-ignore
+    messageRequestAttestationForClaim.messageId = 12
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRequestAttestationForClaim)
+    ).toThrowError(TypeError)
+    // @ts-ignore
+    messageSubmitAttestationForClaim.createdAt = '123456'
+    expect(() =>
+      Message.verifyMessageEnvelope(messageSubmitAttestationForClaim)
+    ).toThrowError(TypeError)
+    // @ts-ignore
+    messageRejectAttestationForClaim.receivedAt = '123456'
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRejectAttestationForClaim)
+    ).toThrowError(TypeError)
+    // @ts-ignore
+    messageRequestCredential.inReplyTo = 123
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRequestCredential)
+    ).toThrowError(TypeError)
   })
   it('error check should throw errors on faulty bodies', () => {
     // @ts-ignore
