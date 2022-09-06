@@ -165,7 +165,7 @@ describe('write and didDeleteTx', () => {
     const otherAccount = devBob
 
     // 10 is an example value. It is not used here since we are testing another error
-    let call = await api.tx.did.delete(new BN(10))
+    let call = api.tx.did.delete(new BN(10))
 
     let submittable = await Did.authorizeExtrinsic(
       fullDid,
@@ -180,7 +180,7 @@ describe('write and didDeleteTx', () => {
     ).rejects.toMatchObject({ section: 'did', name: 'BadDidOrigin' })
 
     // We use 1 here and this should fail as there are two service endpoints stored.
-    call = await api.tx.did.delete(new BN(1))
+    call = api.tx.did.delete(new BN(1))
 
     submittable = await Did.authorizeExtrinsic(
       fullDid,
@@ -209,7 +209,7 @@ describe('write and didDeleteTx', () => {
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
       encodedDid
     )
-    const call = await api.tx.did.delete(storedEndpointsCount)
+    const call = api.tx.did.delete(storedEndpointsCount)
 
     const submittable = await Did.authorizeExtrinsic(
       fullDid,
@@ -303,7 +303,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
 
   // Delete the added service endpoint
-  const removeEndpointCall = await api.tx.did.removeServiceEndpoint(
+  const removeEndpointCall = api.tx.did.removeServiceEndpoint(
     Did.Chain.encodeResourceId(newEndpoint.id)
   )
   const tx4 = await Did.authorizeExtrinsic(
@@ -325,7 +325,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const storedEndpointsCount = await api.query.did.didEndpointsCount(
     Did.Chain.encodeDid(fullDetails.uri)
   )
-  const reclaimDepositTx = await api.tx.did.reclaimDeposit(
+  const reclaimDepositTx = api.tx.did.reclaimDeposit(
     Did.Chain.encodeDid(fullDetails.uri),
     storedEndpointsCount
   )
@@ -496,7 +496,7 @@ describe('DID migration', () => {
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
       encodedDid
     )
-    const reclaimDepositTx = await api.tx.did.reclaimDeposit(
+    const reclaimDepositTx = api.tx.did.reclaimDeposit(
       encodedDid,
       storedEndpointsCount
     )
@@ -558,7 +558,7 @@ describe('DID authorization', () => {
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
       Did.Chain.encodeDid(didDetails.uri)
     )
-    const deleteCall = await api.tx.did.delete(storedEndpointsCount)
+    const deleteCall = api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeExtrinsic(
       didDetails,
       deleteCall,
@@ -1088,7 +1088,7 @@ describe('DID extrinsics batching', () => {
   })
 
   it('can batch extrinsics for the same required key type', async () => {
-    const web3NameClaimTx = await api.tx.web3Names.claim('test-1')
+    const web3NameClaimTx = api.tx.web3Names.claim('test-1')
     const authorizedTx = await Did.authorizeExtrinsic(
       fullDid,
       web3NameClaimTx,
@@ -1097,8 +1097,8 @@ describe('DID extrinsics batching', () => {
     )
     await submitExtrinsic(authorizedTx, paymentAccount)
 
-    const web3Name1ReleaseExt = await api.tx.web3Names.releaseByOwner()
-    const web3Name2ClaimExt = await api.tx.web3Names.claim('test-2')
+    const web3Name1ReleaseExt = api.tx.web3Names.releaseByOwner()
+    const web3Name2ClaimExt = api.tx.web3Names.claim('test-2')
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
       did: fullDid,
@@ -1120,7 +1120,7 @@ describe('DID extrinsics batching', () => {
 
   it('can batch extrinsics for different required key types', async () => {
     // Authentication key
-    const web3NameReleaseExt = await api.tx.web3Names.releaseByOwner()
+    const web3NameReleaseExt = api.tx.web3Names.releaseByOwner()
     // Attestation key
     const ctype1 = CType.fromSchema({
       title: UUID.generate(),
@@ -1138,7 +1138,7 @@ describe('DID extrinsics batching', () => {
     const delegationHierarchyCreation = await rootNode.getStoreTx()
 
     // Authentication key
-    const web3NameNewClaimExt = await api.tx.web3Names.claim('test-2')
+    const web3NameNewClaimExt = api.tx.web3Names.claim('test-2')
     // Attestation key
     const ctype2 = CType.fromSchema({
       title: UUID.generate(),

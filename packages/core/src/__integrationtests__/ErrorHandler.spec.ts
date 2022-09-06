@@ -47,10 +47,7 @@ beforeAll(async () => {
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const transferTx = await api.tx.balances.transfer(
-    addressFromRandom(),
-    new BN(1)
-  )
+  const transferTx = api.tx.balances.transfer(addressFromRandom(), new BN(1))
   await expect(
     submitExtrinsic(transferTx, paymentAccount)
   ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })

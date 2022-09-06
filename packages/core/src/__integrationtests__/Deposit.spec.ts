@@ -58,7 +58,7 @@ async function checkDeleteFullDid(
   storedEndpointsCount = await api.query.did.didEndpointsCount(
     Did.Chain.encodeDid(fullDid.uri)
   )
-  const deleteDid = await api.tx.did.delete(storedEndpointsCount)
+  const deleteDid = api.tx.did.delete(storedEndpointsCount)
 
   tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
@@ -85,7 +85,7 @@ async function checkReclaimFullDid(
   storedEndpointsCount = await api.query.did.didEndpointsCount(
     Did.Chain.encodeDid(fullDid.uri)
   )
-  tx = await api.tx.did.reclaimDeposit(
+  tx = api.tx.did.reclaimDeposit(
     Did.Chain.encodeDid(fullDid.uri),
     storedEndpointsCount
   )
@@ -214,7 +214,7 @@ async function checkDeletedDidReclaimAttestation(
 
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  const deleteDid = await api.tx.did.delete(storedEndpointsCount)
+  const deleteDid = api.tx.did.delete(storedEndpointsCount)
   tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
   await submitExtrinsic(tx, identity)
@@ -233,7 +233,7 @@ async function checkWeb3Deposit(
   const balanceBeforeClaiming = await Balance.getBalances(identity.address)
 
   const depositAmount = api.consts.web3Names.deposit.toBn()
-  const claimTx = await api.tx.web3Names.claim(web3Name)
+  const claimTx = api.tx.web3Names.claim(web3Name)
   let didAuthorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     claimTx,
@@ -250,7 +250,7 @@ async function checkWeb3Deposit(
     return false
   }
 
-  const releaseTx = await api.tx.web3Names.releaseByOwner()
+  const releaseTx = api.tx.web3Names.releaseByOwner()
   didAuthorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     releaseTx,

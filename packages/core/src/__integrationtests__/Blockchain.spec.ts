@@ -34,7 +34,7 @@ describe('Chain returns specific errors, that we check for', () => {
     testIdentity = makeSigningKeyTool().keypair
     charlie = devCharlie
 
-    const transferTx = await api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transfer(
       testIdentity.address,
       toFemtoKilt(10000)
     )

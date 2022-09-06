@@ -71,10 +71,7 @@ describe('when there is a dev chain with a faucet', () => {
     const spy = jest.fn()
     listenToBalanceChanges(address, spy)
     const balanceBefore = await getBalances(faucet.address)
-    const transferTx = await api.tx.balances.transfer(
-      address,
-      EXISTENTIAL_DEPOSIT
-    )
+    const transferTx = api.tx.balances.transfer(address, EXISTENTIAL_DEPOSIT)
     await submitExtrinsic(transferTx, faucet)
     const balanceAfter = await getBalances(faucet.address)
     const balanceIdent = await getBalances(address)
@@ -101,7 +98,7 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    const transferTx = await api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transfer(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
@@ -112,7 +109,7 @@ describe('When there are haves and have-nots', () => {
 
   it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = await getBalances(stormyD.address)
-    const transferTx = await api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transfer(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
@@ -128,7 +125,7 @@ describe('When there are haves and have-nots', () => {
 
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalances(richieRich.address)
-    const transferTx = await api.tx.balances.transfer(
+    const transferTx = api.tx.balances.transfer(
       bobbyBroke.address,
       RichieBalance.free
     )
@@ -144,12 +141,12 @@ describe('When there are haves and have-nots', () => {
     const spy = jest.fn()
     listenToBalanceChanges(faucet.address, spy)
 
-    const transferTx1 = await api.tx.balances.transfer(
+    const transferTx1 = api.tx.balances.transfer(
       richieRich.address,
       EXISTENTIAL_DEPOSIT
     )
     await submitExtrinsic(transferTx1, faucet)
-    const transferTx2 = await api.tx.balances.transfer(
+    const transferTx2 = api.tx.balances.transfer(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )

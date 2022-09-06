@@ -74,7 +74,7 @@ describe('When there is an on-chain DID', () => {
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
       ).toBe(false)
 
-      const associateSenderTx = await api.tx.didLookup.associateSender()
+      const associateSenderTx = api.tx.didLookup.associateSender()
       const signedTx = await Did.authorizeExtrinsic(
         did,
         associateSenderTx,
@@ -105,7 +105,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
-      const associateSenderTx = await api.tx.didLookup.associateSender()
+      const associateSenderTx = api.tx.didLookup.associateSender()
       const signedTx = await Did.authorizeExtrinsic(
         newDid,
         associateSenderTx,
@@ -140,7 +140,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
-      const removeSenderTx = await api.tx.didLookup.removeSenderAssociation()
+      const removeSenderTx = api.tx.didLookup.removeSenderAssociation()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
       await submitExtrinsic(removeSenderTx, paymentAccount)
 
@@ -375,7 +375,7 @@ describe('When there is an on-chain DID', () => {
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
-      const web3NameClaimTx = await api.tx.web3Names.claim('test-name')
+      const web3NameClaimTx = api.tx.web3Names.claim('test-name')
       const signedTx = await Did.authorizeExtrinsic(
         did,
         web3NameClaimTx,
@@ -397,7 +397,7 @@ describe('When there is an on-chain DID', () => {
 
     it('should be possible for the sender to remove the link', async () => {
       // No need for DID-authorizing this.
-      const reclaimDepositTx = await api.tx.didLookup.removeSenderAssociation()
+      const reclaimDepositTx = api.tx.didLookup.removeSenderAssociation()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
       await submitExtrinsic(reclaimDepositTx, genericAccount)
 

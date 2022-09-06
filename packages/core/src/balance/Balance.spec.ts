@@ -82,7 +82,7 @@ describe('Balance', () => {
 
   it('should make transfer', async () => {
     const api = await BlockchainApiConnection.getConnectionOrConnect()
-    const transferTx = await api.tx.balances.transfer(bob.address, new BN(100))
+    const transferTx = api.tx.balances.transfer(bob.address, new BN(100))
     const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBe(true)

@@ -157,7 +157,7 @@ export async function fundAccount(
   amount: BN
 ): Promise<void> {
   const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const transferTx = await api.tx.balances.transfer(address, amount)
+  const transferTx = api.tx.balances.transfer(address, amount)
   await submitExtrinsic(transferTx, devFaucet)
 }
 
