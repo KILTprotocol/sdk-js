@@ -14,7 +14,7 @@ import {
   base58Decode,
 } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ApiPromise } from '@polkadot/api'
 import { Attestation, CType } from '@kiltprotocol/core'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -143,11 +143,13 @@ export async function verifySelfSignedProof(
  *
  * @param credential Verifiable Credential to verify proof against.
  * @param proof KILT self-signed proof object.
+ * @param api The API connection.
  * @returns Object indicating whether proof could be verified.
  */
 export async function verifyAttestedProof(
   credential: VerifiableCredential,
-  proof: AttestedProof
+  proof: AttestedProof,
+  api: ApiPromise
 ): Promise<AttestationVerificationResult> {
   let status: AttestationStatus = 'unknown'
   try {
@@ -181,7 +183,6 @@ export async function verifyAttestedProof(
         throw new CredentialMalformedError('delegationId not understood')
     }
 
-    const api = await BlockchainApiConnection.getConnectionOrConnect()
     // query on-chain data by credential id (= claim root hash)
     const encoded = await api.query.attestation.attestations(claimHash)
     // if not found, credential has not been attested, proof is invalid

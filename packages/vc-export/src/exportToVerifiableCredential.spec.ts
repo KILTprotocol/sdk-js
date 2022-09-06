@@ -13,6 +13,7 @@ import { DidUri, IAttestation, ICType, ICredential } from '@kiltprotocol/types'
 import { Attestation } from '@kiltprotocol/core'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
+import { ApiMocks } from '@kiltprotocol/testing'
 import { DocumentLoader } from 'jsonld-signatures'
 import { base58Encode } from '@polkadot/util-crypto'
 import * as toVC from './exportToVerifiableCredential'
@@ -25,6 +26,8 @@ import {
   KILT_CREDENTIAL_CONTEXT_URL,
   KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
+
+const mockedApi: any = ApiMocks.getMockedApi()
 
 const ctype: ICType = {
   schema: {
@@ -96,6 +99,18 @@ const attestation: IAttestation = {
   owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   revoked: false,
 }
+
+const encodedAttestation = ApiMocks.mockChainQueryReturn(
+  'attestation',
+  'attestations',
+  [
+    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+    '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+    undefined,
+    false,
+    ['4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG', 0],
+  ]
+)
 
 it('exports credential to VC', () => {
   expect(
@@ -309,9 +324,16 @@ describe('proofs', () => {
   })
 
   it('verifies attestation proof on chain', async () => {
-    jest.spyOn(Attestation, 'query').mockResolvedValue(attestation)
+    mockedApi.query.attestation.attestations.mockResolvedValueOnce(
+      encodedAttestation
+    )
+    jest.spyOn(Attestation, 'decode').mockReturnValue(attestation)
 
-    const result = await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+    const result = await verificationUtils.verifyAttestedProof(
+      VC,
+      VC.proof[1],
+      mockedApi
+    )
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
@@ -340,7 +362,7 @@ describe('proofs', () => {
         verified: false,
       })
       expect(
-        await verificationUtils.verifyAttestedProof(VC, VC.proof[2])
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[2], mockedApi)
       ).toMatchObject({
         verified: false,
       })
@@ -382,8 +404,6 @@ describe('proofs', () => {
     })
 
     it('it detects tampering with credential fields', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(attestation)
-
       VC.delegationId = '0x123'
       expect(
         await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
@@ -391,7 +411,7 @@ describe('proofs', () => {
         verified: false,
       })
       expect(
-        await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[1], mockedApi)
       ).toMatchObject({
         verified: false,
         status: 'invalid',
@@ -416,11 +436,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation not on chain', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(null)
-
       const result = await verificationUtils.verifyAttestedProof(
         VC,
-        VC.proof[1]
+        VC.proof[1],
+        mockedApi
       )
       expect(result).toMatchObject({
         verified: false,
@@ -429,14 +448,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation on chain not identical', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue({
-        ...attestation,
-        owner: credential.claim.owner,
-      })
-
       const result = await verificationUtils.verifyAttestedProof(
         VC,
-        VC.proof[1]
+        VC.proof[1],
+        mockedApi
       )
       expect(result).toMatchObject({
         verified: false,
@@ -445,14 +460,18 @@ describe('proofs', () => {
     })
 
     it('fails if attestation revoked', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue({
+      mockedApi.query.attestation.attestations.mockResolvedValueOnce(
+        encodedAttestation
+      )
+      jest.spyOn(Attestation, 'decode').mockReturnValue({
         ...attestation,
         revoked: true,
       })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,
-        VC.proof[1]
+        VC.proof[1],
+        mockedApi
       )
       expect(result).toMatchObject({
         verified: false,

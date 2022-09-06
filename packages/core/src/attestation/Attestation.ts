@@ -141,10 +141,7 @@ export async function checkValidity(
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
   const api = await BlockchainApiConnection.getConnectionOrConnect()
   const chainAttestation = await api.query.attestation.attestations(claimHash)
-  return (
-    chainAttestation.isSome !== null &&
-    !decode(chainAttestation, claimHash).revoked
-  )
+  return chainAttestation.isSome && !decode(chainAttestation, claimHash).revoked
 }
 
 /**
