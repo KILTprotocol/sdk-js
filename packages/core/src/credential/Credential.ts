@@ -24,8 +24,7 @@ import {
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  CompressedCredential,
-  DidDetails,
+  DidDocument,
   DidResolve,
   DidResourceUri,
   DidVerificationKey,
@@ -153,7 +152,7 @@ export async function addSignature(
  *
  * @param credential - The Credential to add the signature to.
  * @param signCallback - The signing callback.
- * @param didDetails - The DID details of the signer.
+ * @param did - The DID Document of the signer.
  * @param keyId - The DID key id to be used for the signing.
  * @param options - Optional parameters.
  * @param options.challenge - An optional challenge, which will be included in the signing process.
@@ -161,7 +160,7 @@ export async function addSignature(
 export async function sign(
   credential: ICredential,
   signCallback: SignCallback,
-  didDetails: DidDetails,
+  did: DidDocument,
   keyId: DidVerificationKey['id'],
   {
     challenge,
@@ -170,7 +169,7 @@ export async function sign(
   } = {}
 ): Promise<void> {
   const { signature, keyUri: signatureKeyId } = await signPayload(
-    didDetails,
+    did,
     makeSigningData(credential, challenge),
     signCallback,
     keyId
@@ -459,7 +458,7 @@ function getAttributes(credential: ICredential): Set<string> {
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
  * @param presentationOptions.signCallback The callback to sign the presentation.
- * @param presentationOptions.claimerDid The DID details of the presenter.
+ * @param presentationOptions.claimerDid The DID document of the presenter.
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
  * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
@@ -476,7 +475,7 @@ export async function createPresentation({
   selectedAttributes?: string[]
   signCallback: SignCallback
   challenge?: string
-  claimerDid: DidDetails
+  claimerDid: DidDocument
 }): Promise<ICredential> {
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
@@ -498,48 +497,4 @@ export async function createPresentation({
   })
 
   return presentation
-}
-
-/**
- * Compresses a [[Credential]] for storage and/or messaging.
- *
- * @param credential A [[Credential]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[Credential]].
- */
-export function compress(credential: ICredential): CompressedCredential {
-  verifyDataStructure(credential)
-  return [
-    Claim.compress(credential.claim),
-    credential.claimNonceMap,
-    credential.claimerSignature,
-    credential.claimHashes,
-    credential.rootHash,
-    credential.legitimations.map(compress),
-    credential.delegationId,
-  ]
-}
-
-/**
- * Decompresses a [[Credential]] from storage and/or message.
- *
- * @param credential A compressed [[Credential]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as a [[Credential]].
- */
-export function decompress(credential: CompressedCredential): ICredential {
-  if (!Array.isArray(credential) || credential.length !== 7) {
-    throw new SDKErrors.DecompressionArrayError('Credential')
-  }
-  const decompressedCredential = {
-    claim: Claim.decompress(credential[0]),
-    claimNonceMap: credential[1],
-    claimerSignature: credential[2],
-    claimHashes: credential[3],
-    rootHash: credential[4],
-    legitimations: credential[5].map(decompress),
-    delegationId: credential[6],
-  }
-  verifyDataStructure(decompressedCredential)
-  return decompressedCredential
 }

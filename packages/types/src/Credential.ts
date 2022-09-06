@@ -6,8 +6,8 @@
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { DidSignature } from './DidDetails'
-import type { IClaim, CompressedClaim } from './Claim'
+import type { DidSignature } from './DidDocument'
+import type { IClaim } from './Claim'
 import type { IDelegationNode } from './Delegation'
 
 export type Hash = HexString
@@ -26,13 +26,3 @@ export interface ICredential {
   legitimations: ICredential[]
   rootHash: Hash
 }
-
-export type CompressedCredential = [
-  CompressedClaim,
-  ICredential['claimNonceMap'],
-  ICredential['claimerSignature'],
-  ICredential['claimHashes'],
-  ICredential['rootHash'],
-  CompressedCredential[],
-  ICredential['delegationId']
-]

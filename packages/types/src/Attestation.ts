@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DidUri } from './DidDetails'
+import type { DidUri } from './DidDocument'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { ICredential } from './Credential'
@@ -17,11 +17,3 @@ export interface IAttestation {
   delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }
-
-export type CompressedAttestation = [
-  IAttestation['claimHash'],
-  IAttestation['cTypeHash'],
-  IAttestation['owner'],
-  IAttestation['revoked'],
-  IAttestation['delegationId']
-]

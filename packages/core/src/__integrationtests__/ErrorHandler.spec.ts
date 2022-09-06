@@ -11,7 +11,7 @@
 
 import { BN } from '@polkadot/util'
 import type {
-  DidDetails,
+  DidDocument,
   IAttestation,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
@@ -32,7 +32,7 @@ import {
 } from './utils'
 
 let paymentAccount: KiltKeyringPair
-let someDid: DidDetails
+let someDid: DidDocument
 let key: KeyTool
 
 beforeAll(async () => {

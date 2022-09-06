@@ -6,11 +6,15 @@
  */
 
 import {
-  DidPublicKey,
-  DidPublicServiceEndpoint,
-  DidResourceUri,
+  ConformingDidKey,
+  ConformingDidServiceEndpoint,
 } from './DidDocumentExporter.js'
-import type { DidDetails, DidKey, DidUri } from './DidDetails.js'
+import type {
+  DidDocument,
+  DidKey,
+  DidResourceUri,
+  DidUri,
+} from './DidDocument.js'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
@@ -29,32 +33,32 @@ export type DidResolutionDocumentMetadata = {
 /**
  * The result of a DID resolution.
  *
- * It includes the DID details, and optional document resolution metadata.
+ * It includes the DID Document, and optional document resolution metadata.
  */
-export type DidResolvedDetails = {
+export type DidResolutionResult = {
   /**
-   * The resolved DID details. It is undefined if the DID has been deleted.
+   * The resolved DID document. It is undefined if the DID has been deleted.
    */
-  details?: DidDetails
+  document?: DidDocument
   /**
    * The DID resolution metadata.
    */
   metadata: DidResolutionDocumentMetadata
 }
 
-export type ResolvedDidKey = Pick<DidPublicKey, 'id' | 'controller'> &
+export type ResolvedDidKey = Pick<ConformingDidKey, 'id' | 'controller'> &
   Pick<DidKey, 'publicKey' | 'type' | 'includedAt'>
 
-export type ResolvedDidServiceEndpoint = DidPublicServiceEndpoint
+export type ResolvedDidServiceEndpoint = ConformingDidServiceEndpoint
 
 /**
  * Resolves a DID URI, returning the full contents of the DID document.
  *
  * @param did A DID URI identifying a DID document. All additional parameters and fragments are ignored.
- * @returns A promise of a [[DidResolvedDetails]] object representing the DID document or null if the DID
+ * @returns A promise of a [[DidResolutionResult]] object representing the DID document or null if the DID
  * cannot be resolved.
  */
-export type DidResolve = (did: DidUri) => Promise<DidResolvedDetails | null>
+export type DidResolve = (did: DidUri) => Promise<DidResolutionResult | null>
 
 /**
  * Resolves a DID URI identifying a public key associated with a DID.

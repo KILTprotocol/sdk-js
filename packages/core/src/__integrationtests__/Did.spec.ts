@@ -22,8 +22,8 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import {
-  DidDetails,
-  DidResolvedDetails,
+  DidDocument,
+  DidResolutionResult,
   DidServiceEndpoint,
   KiltKeyringPair,
   NewDidEncryptionKey,
@@ -62,21 +62,17 @@ it('fetches the correct deposit amount', async () => {
 })
 
 describe('write and didDeleteTx', () => {
-  let details: DidDetails
+  let did: DidDocument
   let key: KeyTool
 
   beforeAll(async () => {
     key = makeSigningKeyTool()
-    details = await createMinimalLightDidFromKeypair(key.keypair)
+    did = await createMinimalLightDidFromKeypair(key.keypair)
   })
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
     const otherAccount = devBob
-    const tx = await Did.Chain.getStoreTx(
-      details,
-      otherAccount.address,
-      key.sign
-    )
+    const tx = await Did.Chain.getStoreTx(did, otherAccount.address, key.sign)
 
     await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
       isBadOrigin: true,
@@ -84,8 +80,8 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 
   it('writes a new DID record to chain', async () => {
-    const newDetails = Did.createLightDidDetails({
-      authentication: details.authentication as [NewLightDidVerificationKey],
+    const newDid = Did.createLightDidDocument({
+      authentication: did.authentication as [NewLightDidVerificationKey],
       service: [
         {
           id: '#test-id-1',
@@ -101,22 +97,22 @@ describe('write and didDeleteTx', () => {
     })
 
     const tx = await Did.Chain.getStoreTx(
-      newDetails,
+      newDid,
       paymentAccount.address,
       key.sign
     )
 
     await submitExtrinsic(tx, paymentAccount)
 
-    const fullDidUri = Did.Utils.getFullDidUri(newDetails.uri)
-    const fullDid = (await Did.query(fullDidUri)) as DidDetails
+    const fullDidUri = Did.Utils.getFullDidUri(newDid.uri)
+    const fullDid = (await Did.query(fullDidUri)) as DidDocument
 
-    expect(fullDid).toMatchObject(<DidDetails>{
+    expect(fullDid).toMatchObject(<DidDocument>{
       uri: fullDidUri,
       authentication: [
         expect.objectContaining({
           // We cannot match the ID of the key because it will be defined by the blockchain while saving
-          publicKey: newDetails.authentication[0].publicKey,
+          publicKey: newDid.authentication[0].publicKey,
           type: 'sr25519',
         }),
       ],
@@ -154,8 +150,8 @@ describe('write and didDeleteTx', () => {
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     // We verify that the DID to delete is on chain.
     const fullDid = (await Did.query(
-      Did.Utils.getFullDidUri(details.uri)
-    )) as DidDetails
+      Did.Utils.getFullDidUri(did.uri)
+    )) as DidDocument
     expect(fullDid).not.toBeNull()
 
     const otherAccount = devBob
@@ -197,8 +193,8 @@ describe('write and didDeleteTx', () => {
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
     const fullDid = (await Did.query(
-      Did.Utils.getFullDidUri(details.uri)
-    )) as DidDetails
+      Did.Utils.getFullDidUri(did.uri)
+    )) as DidDocument
     expect(fullDid).not.toBeNull()
 
     const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
@@ -229,20 +225,16 @@ describe('write and didDeleteTx', () => {
 
 it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { keypair, sign } = makeSigningKeyTool()
-  const newDetails = await createMinimalLightDidFromKeypair(keypair)
+  const newDid = await createMinimalLightDidFromKeypair(keypair)
 
-  const tx = await Did.Chain.getStoreTx(
-    newDetails,
-    paymentAccount.address,
-    sign
-  )
+  const tx = await Did.Chain.getStoreTx(newDid, paymentAccount.address, sign)
 
   await submitExtrinsic(tx, paymentAccount)
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  let fullDetails = (await Did.query(
-    Did.Utils.getFullDidUri(newDetails.uri)
-  )) as DidDetails
+  let fullDid = (await Did.query(
+    Did.Utils.getFullDidUri(newDid.uri)
+  )) as DidDocument
 
   const newKey = makeSigningKeyTool()
 
@@ -251,18 +243,18 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     newKey.authentication[0]
   )
   const tx2 = await Did.authorizeExtrinsic(
-    fullDetails,
+    fullDid,
     updateAuthenticationKeyCall,
     sign,
     paymentAccount.address
   )
   await submitExtrinsic(tx2, paymentAccount)
 
-  // Authentication key changed, so details must be updated.
+  // Authentication key changed, so did must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  fullDetails = (await Did.query(
-    Did.Utils.getFullDidUri(newDetails.uri)
-  )) as DidDetails
+  fullDid = (await Did.query(
+    Did.Utils.getFullDidUri(newDid.uri)
+  )) as DidDocument
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
@@ -275,14 +267,14 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
 
   const tx3 = await Did.authorizeExtrinsic(
-    fullDetails,
+    fullDid,
     updateEndpointCall,
     newKey.sign,
     paymentAccount.address
   )
   await submitExtrinsic(tx3, paymentAccount)
   expect(
-    await Did.Chain.queryServiceEndpoint(fullDetails.uri, newEndpoint.id)
+    await Did.Chain.queryServiceEndpoint(fullDid.uri, newEndpoint.id)
   ).toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
@@ -290,7 +282,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     newEndpoint.id
   )
   const tx4 = await Did.authorizeExtrinsic(
-    fullDetails,
+    fullDid,
     removeEndpointCall,
     newKey.sign,
     paymentAccount.address
@@ -299,24 +291,20 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   expect(
-    await Did.Chain.queryServiceEndpoint(fullDetails.uri, newEndpoint.id)
+    await Did.Chain.queryServiceEndpoint(fullDid.uri, newEndpoint.id)
   ).toBeNull()
 
   // Claim the deposit back
-  const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-    fullDetails.uri
-  )
+  const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
   const reclaimDepositTx = await Did.Chain.getReclaimDepositExtrinsic(
-    fullDetails.uri,
+    fullDid.uri,
     storedEndpointsCount
   )
   await submitExtrinsic(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
-  expect(await Did.Chain.queryDetails(fullDetails.uri)).toBeNull()
-  expect(await Did.Chain.queryServiceEndpoints(fullDetails.uri)).toHaveLength(0)
-  const newEndpointsCount = await Did.Chain.queryEndpointsCounts(
-    fullDetails.uri
-  )
+  expect(await Did.Chain.queryDetails(fullDid.uri)).toBeNull()
+  expect(await Did.Chain.queryServiceEndpoints(fullDid.uri)).toHaveLength(0)
+  const newEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
   expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
 }, 80_000)
 
@@ -326,33 +314,33 @@ describe('DID migration', () => {
     const { keyAgreement } = makeEncryptionKeyTool(
       '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
     )
-    const lightDidDetails = Did.createLightDidDetails({
+    const lightDid = Did.createLightDidDocument({
       authentication,
       keyAgreement,
     })
 
     const storeTx = await Did.Chain.getStoreTx(
-      lightDidDetails,
+      lightDid,
       paymentAccount.address,
       sign
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDidDetails.uri)
+    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
-    expect(migratedFullDid).toMatchObject(<DidDetails>{
+    expect(migratedFullDid).toMatchObject(<DidDocument>{
       uri: migratedFullDidUri,
       authentication: [
         expect.objectContaining({
-          publicKey: lightDidDetails.authentication[0].publicKey,
+          publicKey: lightDid.authentication[0].publicKey,
           type: 'ed25519',
         }),
       ],
       keyAgreement: [
         expect.objectContaining({
-          publicKey: lightDidDetails.keyAgreement?.[0].publicKey,
+          publicKey: lightDid.keyAgreement?.[0].publicKey,
           type: 'x25519',
         }),
       ],
@@ -360,9 +348,7 @@ describe('DID migration', () => {
 
     expect(await Did.Chain.queryDetails(migratedFullDid.uri)).not.toBeNull()
 
-    const { metadata } = (await resolve(
-      lightDidDetails.uri
-    )) as DidResolvedDetails
+    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -370,26 +356,26 @@ describe('DID migration', () => {
 
   it('migrates light DID with sr25519 auth key', async () => {
     const { authentication, sign } = makeSigningKeyTool()
-    const lightDidDetails = Did.createLightDidDetails({
+    const lightDid = Did.createLightDidDocument({
       authentication,
     })
 
     const storeTx = await Did.Chain.getStoreTx(
-      lightDidDetails,
+      lightDid,
       paymentAccount.address,
       sign
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDidDetails.uri)
+    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
-    expect(migratedFullDid).toMatchObject(<DidDetails>{
+    expect(migratedFullDid).toMatchObject(<DidDocument>{
       uri: migratedFullDidUri,
       authentication: [
         expect.objectContaining({
-          publicKey: lightDidDetails.authentication[0].publicKey,
+          publicKey: lightDid.authentication[0].publicKey,
           type: 'sr25519',
         }),
       ],
@@ -397,9 +383,7 @@ describe('DID migration', () => {
 
     expect(await Did.Chain.queryDetails(migratedFullDid.uri)).not.toBeNull()
 
-    const { metadata } = (await resolve(
-      lightDidDetails.uri
-    )) as DidResolvedDetails
+    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -417,34 +401,34 @@ describe('DID migration', () => {
         serviceEndpoint: ['x:url-1'],
       },
     ]
-    const lightDidDetails = Did.createLightDidDetails({
+    const lightDid = Did.createLightDidDocument({
       authentication,
       keyAgreement,
       service,
     })
 
     const storeTx = await Did.Chain.getStoreTx(
-      lightDidDetails,
+      lightDid,
       paymentAccount.address,
       sign
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDidDetails.uri)
+    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
-    expect(migratedFullDid).toMatchObject(<DidDetails>{
+    expect(migratedFullDid).toMatchObject(<DidDocument>{
       uri: migratedFullDidUri,
       authentication: [
         expect.objectContaining({
-          publicKey: lightDidDetails.authentication[0].publicKey,
+          publicKey: lightDid.authentication[0].publicKey,
           type: 'ed25519',
         }),
       ],
       keyAgreement: [
         expect.objectContaining({
-          publicKey: lightDidDetails.keyAgreement?.[0].publicKey,
+          publicKey: lightDid.keyAgreement?.[0].publicKey,
           type: 'x25519',
         }),
       ],
@@ -459,9 +443,7 @@ describe('DID migration', () => {
 
     expect(await Did.Chain.queryDetails(migratedFullDid.uri)).not.toBeNull()
 
-    const { metadata } = (await resolve(
-      lightDidDetails.uri
-    )) as DidResolvedDetails
+    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -488,7 +470,7 @@ describe('DID migration', () => {
 
 describe('DID authorization', () => {
   // Light DIDs cannot authorize extrinsics
-  let didDetails: DidDetails
+  let did: DidDocument
   const { sign, authentication } = makeSigningKeyTool('ed25519')
 
   beforeAll(async () => {
@@ -506,7 +488,7 @@ describe('DID authorization', () => {
       Did.Utils.getFullDidUriFromKey(authentication[0])
     )
     if (!optional) throw new Error('Cannot query created DID')
-    didDetails = optional
+    did = optional
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
@@ -518,7 +500,7 @@ describe('DID authorization', () => {
     })
     const call = await CType.getStoreTx(ctype)
     const tx = await Did.authorizeExtrinsic(
-      didDetails,
+      did,
       call,
       sign,
       paymentAccount.address
@@ -529,14 +511,12 @@ describe('DID authorization', () => {
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
-    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(
-      didDetails.uri
-    )
+    const storedEndpointsCount = await Did.Chain.queryEndpointsCounts(did.uri)
     const deleteCall = await Did.Chain.getDeleteDidExtrinsic(
       storedEndpointsCount
     )
     const tx = await Did.authorizeExtrinsic(
-      didDetails,
+      did,
       deleteCall,
       sign,
       paymentAccount.address
@@ -551,7 +531,7 @@ describe('DID authorization', () => {
     })
     const call = await CType.getStoreTx(ctype)
     const tx2 = await Did.authorizeExtrinsic(
-      didDetails,
+      did,
       call,
       sign,
       paymentAccount.address
@@ -784,7 +764,7 @@ describe('DID management batching', () => {
       })
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const finalFullDid = (await Did.query(initialFullDid.uri)) as DidDetails
+      const finalFullDid = (await Did.query(initialFullDid.uri)) as DidDocument
 
       expect(finalFullDid).not.toBeNull()
 
@@ -841,7 +821,7 @@ describe('DID management batching', () => {
 
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const finalFullDid = (await Did.query(initialFullDid.uri)) as DidDetails
+      const finalFullDid = (await Did.query(initialFullDid.uri)) as DidDocument
 
       expect(finalFullDid).not.toBeNull()
 
@@ -982,7 +962,7 @@ describe('DID management batching', () => {
 })
 
 describe('DID extrinsics batching', () => {
-  let fullDid: DidDetails
+  let fullDid: DidDocument
   let key: KeyTool
 
   beforeAll(async () => {

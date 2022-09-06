@@ -15,7 +15,6 @@ import type { HexString } from '@polkadot/util/types'
 
 import type {
   IAttestation,
-  CompressedAttestation,
   DidUri,
   ICType,
   IClaim,
@@ -122,50 +121,6 @@ describe('Attestation', () => {
     expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   })
 
-  it('compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-
-    const compressedAttestation: CompressedAttestation = [
-      attestation.claimHash,
-      attestation.cTypeHash,
-      attestation.owner,
-      attestation.revoked,
-      attestation.delegationId,
-    ]
-
-    expect(Attestation.compress(attestation)).toEqual(compressedAttestation)
-
-    expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
-  })
-
-  it('Negative test for compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-
-    const compressedAttestation: CompressedAttestation = [
-      attestation.claimHash,
-      attestation.cTypeHash,
-      attestation.owner,
-      attestation.revoked,
-      attestation.delegationId,
-    ]
-    compressedAttestation.pop()
-    // @ts-ignore
-    delete attestation.claimHash
-
-    expect(() => {
-      Attestation.decompress(compressedAttestation)
-    }).toThrow()
-
-    expect(() => {
-      Attestation.compress(attestation)
-    }).toThrow()
-  })
   it('error check should throw errors on faulty Attestations', () => {
     const cTypeHash: HexString =
       '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff'

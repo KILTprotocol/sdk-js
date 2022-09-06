@@ -12,7 +12,7 @@
 import { randomAsHex } from '@polkadot/util-crypto'
 
 import type {
-  DidDetails,
+  DidDocument,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
@@ -38,8 +38,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let w3nCreatorKey: KeyTool
   let otherW3NCreatorKey: KeyTool
 
-  let w3nCreator: DidDetails
-  let otherWeb3NameCreator: DidDetails
+  let w3nCreator: DidDocument
+  let otherWeb3NameCreator: DidDocument
   let paymentAccount: KiltKeyringPair
   let otherPaymentAccount: KeyringPair
   let nick: Web3Names.Web3Name

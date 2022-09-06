@@ -6,7 +6,7 @@
  */
 
 import type {
-  DidDetails,
+  DidDocument,
   DidUri,
   IAttestation,
   ICType,
@@ -263,7 +263,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegateSign(
-    delegateDid: DidDetails,
+    delegateDid: DidDocument,
     sign: SignCallback
   ): Promise<Did.Utils.EncodedSignature> {
     const delegateSignature = await Did.signPayload(

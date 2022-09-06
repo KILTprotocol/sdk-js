@@ -10,9 +10,9 @@
  */
 
 import type {
-  DidDetails,
+  DidDocument,
   DidKey,
-  DidResolvedDetails,
+  DidResolutionResult,
   DidResourceUri,
   DidUri,
   IEncryptedMessage,
@@ -72,48 +72,51 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import * as Message from './Message'
 
 describe('Messaging', () => {
-  let aliceLightDid: DidDetails
-  let aliceLightDidWithDetails: DidDetails
-  let aliceFullDid: DidDetails
+  let aliceLightDid: DidDocument
+  let aliceLightDidWithDetails: DidDocument
+  let aliceFullDid: DidDocument
   let aliceSign: SignCallback
   const aliceEncKey = makeEncryptionKeyTool('Alice//enc')
 
-  let bobLightDid: DidDetails
-  let bobLightDidWithDetails: DidDetails
-  let bobFullDid: DidDetails
+  let bobLightDid: DidDocument
+  let bobLightDidWithDetails: DidDocument
+  let bobFullDid: DidDocument
   let bobSign: SignCallback
   const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
-  async function didResolve(did: DidUri): Promise<DidResolvedDetails | null> {
+  async function didResolve(did: DidUri): Promise<DidResolutionResult | null> {
+    // The light dids are regarded as not upgraded.
     if (did.startsWith(aliceLightDidWithDetails.uri)) {
       return {
-        details: aliceLightDidWithDetails,
-        metadata: { deactivated: false, canonicalId: aliceFullDid.uri },
+        document: aliceLightDidWithDetails,
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(aliceLightDid.uri)) {
       return {
-        details: aliceLightDid,
-        metadata: { deactivated: false, canonicalId: aliceFullDid.uri },
+        document: aliceLightDid,
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(aliceFullDid.uri)) {
-      return { details: aliceFullDid, metadata: { deactivated: false } }
+      return { document: aliceFullDid, metadata: { deactivated: false } }
     }
+
+    // The light dids are regarded as not upgraded.
     if (did.startsWith(bobLightDidWithDetails.uri)) {
       return {
-        details: bobLightDidWithDetails,
-        metadata: { deactivated: false, canonicalId: bobFullDid.uri },
+        document: bobLightDidWithDetails,
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(bobLightDid.uri)) {
       return {
-        details: bobLightDid,
-        metadata: { deactivated: false, canonicalId: bobFullDid.uri },
+        document: bobLightDid,
+        metadata: { deactivated: false },
       }
     }
     if (did.startsWith(bobFullDid.uri)) {
-      return { details: bobFullDid, metadata: { deactivated: false } }
+      return { document: bobFullDid, metadata: { deactivated: false } }
     }
     return null
   }
@@ -122,11 +125,13 @@ describe('Messaging', () => {
     keyUri: DidResourceUri
   ): Promise<ResolvedDidKey | null> {
     const { fragment, did } = Did.Utils.parseDidUri(keyUri)
-    const { details } = (await didResolve(did as DidUri)) as DidResolvedDetails
-    if (!details) throw new Error('Could not resolve details')
-    const key = Did.getKey(details, fragment!) as DidKey
+    const { document } = (await didResolve(
+      did as DidUri
+    )) as DidResolutionResult
+    if (!document) throw new Error('Could not resolve details')
+    const key = Did.getKey(document, fragment!) as DidKey
     return {
-      controller: details!.uri,
+      controller: document!.uri,
       id: keyUri,
       publicKey: key.publicKey,
       type: key.type,
@@ -136,11 +141,11 @@ describe('Messaging', () => {
   beforeAll(async () => {
     const aliceAuthKey = makeSigningKeyTool('ed25519')
     aliceSign = aliceAuthKey.sign
-    aliceLightDid = Did.createLightDidDetails({
+    aliceLightDid = Did.createLightDidDocument({
       authentication: aliceAuthKey.authentication,
       keyAgreement: aliceEncKey.keyAgreement,
     })
-    aliceLightDidWithDetails = Did.createLightDidDetails({
+    aliceLightDidWithDetails = Did.createLightDidDocument({
       authentication: aliceAuthKey.authentication,
       keyAgreement: aliceEncKey.keyAgreement,
       service: [
@@ -151,11 +156,11 @@ describe('Messaging', () => {
 
     const bobAuthKey = makeSigningKeyTool('ed25519')
     bobSign = bobAuthKey.sign
-    bobLightDid = Did.createLightDidDetails({
+    bobLightDid = Did.createLightDidDocument({
       authentication: bobAuthKey.authentication,
       keyAgreement: bobEncKey.keyAgreement,
     })
-    bobLightDidWithDetails = Did.createLightDidDetails({
+    bobLightDidWithDetails = Did.createLightDidDocument({
       authentication: bobAuthKey.authentication,
       keyAgreement: bobEncKey.keyAgreement,
       service: [
@@ -729,10 +734,10 @@ describe('Error checking / Verification', () => {
     return [credential, testAttestation]
   }
 
-  let identityAlice: DidDetails
+  let identityAlice: DidDocument
   let keyAlice: KeyTool
 
-  let identityBob: DidDetails
+  let identityBob: DidDocument
   let keyBob: KeyTool
 
   let date: string
@@ -802,21 +807,22 @@ describe('Error checking / Verification', () => {
 
     async function didResolve(
       didUri: DidUri
-    ): Promise<DidResolvedDetails | null> {
-      if (didUri === identityAlice.uri) {
+    ): Promise<DidResolutionResult | null> {
+      const { did } = Did.Utils.parseDidUri(didUri)
+      if (did === identityAlice.uri) {
         return {
           metadata: {
             deactivated: false,
           },
-          details: identityAlice,
+          document: identityAlice,
         }
       }
-      if (didUri === identityBob.uri) {
+      if (did === identityBob.uri) {
         return {
           metadata: {
             deactivated: false,
           },
-          details: identityBob,
+          document: identityBob,
         }
       }
       return null
@@ -1163,7 +1169,7 @@ describe('Error checking / Verification', () => {
       identityBob.uri
     )
   })
-  it('error check should not throw errors on faulty bodies', () => {
+  it('message body verifier should not throw errors on correct bodies', () => {
     expect(() => Message.verifyMessageBody(requestTermsBody)).not.toThrowError()
     expect(() => Message.verifyMessageBody(submitTermsBody)).not.toThrowError()
     expect(() => Message.verifyMessageBody(rejectTermsBody)).not.toThrowError()
@@ -1201,7 +1207,7 @@ describe('Error checking / Verification', () => {
       Message.verifyMessageBody(informCreateDelegationBody)
     ).not.toThrowError()
   })
-  it('error check should not throw errors on message', () => {
+  it('message envelope verifier should not throw errors on correct envelopes', () => {
     expect(() =>
       Message.verifyMessageEnvelope(messageRequestTerms)
     ).not.toThrowError()
@@ -1245,7 +1251,7 @@ describe('Error checking / Verification', () => {
       Message.verifyMessageEnvelope(messageInformCreateDelegation)
     ).not.toThrowError()
   })
-  it('error check should throw errors on message', () => {
+  it('message envelope verifier should throw errors on faulty envelopes', () => {
     messageRequestTerms.receiver =
       'did:kilt:thisisnotareceiveraddress' as DidUri
     expect(() =>
@@ -1261,8 +1267,28 @@ describe('Error checking / Verification', () => {
     expect(() =>
       Message.verifyMessageEnvelope(messageRejectTerms)
     ).toThrowError(SDKErrors.InvalidDidFormatError)
+    // @ts-ignore
+    messageRequestAttestationForClaim.messageId = 12
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRequestAttestationForClaim)
+    ).toThrowError(TypeError)
+    // @ts-ignore
+    messageSubmitAttestationForClaim.createdAt = '123456'
+    expect(() =>
+      Message.verifyMessageEnvelope(messageSubmitAttestationForClaim)
+    ).toThrowError(TypeError)
+    // @ts-ignore
+    messageRejectAttestationForClaim.receivedAt = '123456'
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRejectAttestationForClaim)
+    ).toThrowError(TypeError)
+    // @ts-ignore
+    messageRequestCredential.inReplyTo = 123
+    expect(() =>
+      Message.verifyMessageEnvelope(messageRequestCredential)
+    ).toThrowError(TypeError)
   })
-  it('error check should throw errors on faulty bodies', () => {
+  it('message body verifier should throw errors on faulty bodies', () => {
     // @ts-ignore
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() => Message.verifyMessageBody(requestTermsBody)).toThrowError(
@@ -1351,7 +1377,7 @@ describe('Error checking / Verification', () => {
       SDKErrors.UnknownMessageBodyTypeError
     )
   })
-  it('error check of the delegation data in messaging', () => {
+  it('delegation data structure verifier should throw on faulty delegation data', () => {
     // @ts-expect-error
     delete requestAcceptDelegationBody.content.delegationData.isPCR
     expect(() =>

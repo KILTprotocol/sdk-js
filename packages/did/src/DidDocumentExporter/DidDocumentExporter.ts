@@ -8,18 +8,18 @@
 import { base58Encode } from '@polkadot/util-crypto'
 
 import type {
-  DidDetails,
   DidDocument,
+  ConformingDidDocument,
   DidResourceUri,
   JsonLDDidDocument,
 } from '@kiltprotocol/types'
 import {
-  EncryptionKeyTypesMap,
-  VerificationKeyTypesMap,
+  encryptionKeyTypesMap,
+  verificationKeyTypesMap,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-function exportToJsonDidDocument(details: DidDetails): DidDocument {
+function exportToJsonDidDocument(did: DidDocument): ConformingDidDocument {
   const {
     uri: controller,
     authentication,
@@ -27,18 +27,18 @@ function exportToJsonDidDocument(details: DidDetails): DidDocument {
     capabilityDelegation = [],
     keyAgreement = [],
     service = [],
-  } = details
+  } = did
 
-  const verificationMethod: DidDocument['verificationMethod'] = [
+  const verificationMethod: ConformingDidDocument['verificationMethod'] = [
     ...authentication,
     ...assertionMethod,
     ...capabilityDelegation,
   ]
-    .map((key) => ({ ...key, type: VerificationKeyTypesMap[key.type] }))
+    .map((key) => ({ ...key, type: verificationKeyTypesMap[key.type] }))
     .concat(
       keyAgreement.map((key) => ({
         ...key,
-        type: EncryptionKeyTypesMap[key.type],
+        type: encryptionKeyTypesMap[key.type],
       }))
     )
     .map(({ id, type, publicKey }) => ({
@@ -75,28 +75,28 @@ function exportToJsonDidDocument(details: DidDetails): DidDocument {
   }
 }
 
-function exportToJsonLdDidDocument(details: DidDetails): JsonLDDidDocument {
-  const document = exportToJsonDidDocument(details)
+function exportToJsonLdDidDocument(did: DidDocument): JsonLDDidDocument {
+  const document = exportToJsonDidDocument(did)
   document['@context'] = ['https://www.w3.org/ns/did/v1']
   return document as JsonLDDidDocument
 }
 
 /**
- * Export an instance of [[IDidDetails]] to a W3c-compliant DID Document in the format provided.
+ * Export a [[DidDocument]] to a W3C-spec conforming DID Document in the format provided.
  *
- * @param details The [[IDidDetails]] instance.
+ * @param did The [[DidDocument]].
  * @param mimeType The format for the output DID Document. Accepted values are `application/json` and `application/ld+json`.
  * @returns The DID Document formatted according to the mime type provided, or an error if the format specified is not supported.
  */
 export function exportToDidDocument(
-  details: DidDetails,
+  did: DidDocument,
   mimeType: 'application/json' | 'application/ld+json'
-): DidDocument {
+): ConformingDidDocument {
   switch (mimeType) {
     case 'application/json':
-      return exportToJsonDidDocument(details)
+      return exportToJsonDidDocument(did)
     case 'application/ld+json':
-      return exportToJsonLdDidDocument(details)
+      return exportToJsonLdDidDocument(did)
     default:
       throw new SDKErrors.DidExporterError(
         `The MIME type "${mimeType}" not supported by any of the available exporters`

@@ -16,7 +16,7 @@ import { Keyring } from '@polkadot/keyring'
 
 import {
   DecryptCallback,
-  DidDetails,
+  DidDocument,
   DidKey,
   DidServiceEndpoint,
   DidVerificationKey,
@@ -184,13 +184,13 @@ export function makeSigningKeyTool(
  * Given a keypair, creates a light DID with an authentication and an encryption key.
  *
  * @param keypair KeyringPair instance for authentication key.
- * @returns DidDetails.
+ * @returns DidDocument.
  */
 export async function createMinimalLightDidFromKeypair(
   keypair: KeyringPair
-): Promise<DidDetails> {
+): Promise<DidDocument> {
   const type = keypair.type as LightDidSupportedVerificationKeyType
-  return Did.createLightDidDetails({
+  return Did.createLightDidDocument({
     authentication: [{ publicKey: keypair.publicKey, type }],
     keyAgreement: makeEncryptionKeyTool(`${keypair.publicKey}//enc`)
       .keyAgreement,
@@ -214,14 +214,14 @@ function makeDidKeyFromKeypair({
 }
 
 /**
- * Creates [[DidDetails]] for local use, e.g., in testing. Will not work on-chain because key IDs are generated ad-hoc.
+ * Creates [[DidDocument]] for local use, e.g., in testing. Will not work on-chain because key IDs are generated ad-hoc.
  *
  * @param keypair The KeyringPair for authentication key, other keys derived from it.
  * @param generationOptions The additional options for generation.
  * @param generationOptions.keyRelationships The set of key relationships to indicate which keys must be added to the DID.
  * @param generationOptions.endpoints The set of service endpoints that must be added to the DID.
  *
- * @returns A promise resolving to a [[DidDetails]] object. The resulting object is NOT stored on chain.
+ * @returns A promise resolving to a [[DidDocument]] object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoFullDidFromKeypair(
   keypair: KeyringPair,
@@ -236,11 +236,11 @@ export async function createLocalDemoFullDidFromKeypair(
     keyRelationships?: Set<Omit<KeyRelationship, 'authentication'>>
     endpoints?: DidServiceEndpoint[]
   } = {}
-): Promise<DidDetails> {
+): Promise<DidDocument> {
   const authKey = makeDidKeyFromKeypair(keypair)
   const uri = Did.Utils.getFullDidUriFromKey(authKey)
 
-  const result: DidDetails = {
+  const result: DidDocument = {
     uri,
     authentication: [authKey],
     service: endpoints,
@@ -275,8 +275,8 @@ export async function createLocalDemoFullDidFromKeypair(
  * @returns A full DID instance that is not yet written to the blockchain.
  */
 export async function createLocalDemoFullDidFromLightDid(
-  lightDid: DidDetails
-): Promise<DidDetails> {
+  lightDid: DidDocument
+): Promise<DidDocument> {
   const { uri, authentication } = lightDid
 
   return {
@@ -291,9 +291,9 @@ export async function createLocalDemoFullDidFromLightDid(
 // It takes the auth key from the light DID and use it as attestation and delegation key as well.
 export async function createFullDidFromLightDid(
   payer: KiltKeyringPair,
-  lightDidForId: DidDetails,
+  lightDidForId: DidDocument,
   sign: SignCallback
-): Promise<DidDetails> {
+): Promise<DidDocument> {
   const { authentication, uri } = lightDidForId
   const tx = await Did.Chain.getStoreTx(
     {
@@ -310,14 +310,14 @@ export async function createFullDidFromLightDid(
     resolveOn: Blockchain.IS_IN_BLOCK,
   })
   const fullDid = await Did.query(Did.Utils.getFullDidUri(uri))
-  if (!fullDid) throw new Error('Could not fetch created DID details')
+  if (!fullDid) throw new Error('Could not fetch created DID document')
   return fullDid
 }
 
 export async function createFullDidFromSeed(
   payer: KiltKeyringPair,
   keypair: KeyringPair
-): Promise<DidDetails> {
+): Promise<DidDocument> {
   const lightDid = await createMinimalLightDidFromKeypair(keypair)
   const sign = makeSignCallback(keypair)
   return createFullDidFromLightDid(payer, lightDid, sign)

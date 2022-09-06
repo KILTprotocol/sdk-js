@@ -12,9 +12,8 @@
 /* eslint-disable dot-notation */
 
 import type {
-  CompressedCredential,
-  DidDetails,
-  DidResolvedDetails,
+  DidDocument,
+  DidResolutionResult,
   DidSignature,
   DidUri,
   DidVerificationKey,
@@ -139,62 +138,6 @@ describe('Credential', () => {
     credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]] = '1234'
     expect(() => {
       Credential.verifyDataIntegrity(credential)
-    }).toThrow()
-  })
-
-  it('compresses and decompresses the credential object', async () => {
-    const credential = buildCredential(
-      identityBob,
-      {
-        a: 'a',
-        b: 'b',
-        c: 'c',
-      },
-      [legitimation]
-    )
-
-    const compressedLegitimation: CompressedCredential = [
-      [
-        legitimation.claim.cTypeHash,
-        legitimation.claim.owner,
-        legitimation.claim.contents,
-      ],
-      legitimation.claimNonceMap,
-      legitimation.claimerSignature,
-      legitimation.claimHashes,
-      legitimation.rootHash,
-      [],
-      legitimation.delegationId,
-    ]
-
-    const compressedCredential: CompressedCredential = [
-      [
-        credential.claim.cTypeHash,
-        credential.claim.owner,
-        credential.claim.contents,
-      ],
-      credential.claimNonceMap,
-      credential.claimerSignature,
-      credential.claimHashes,
-      credential.rootHash,
-      [compressedLegitimation],
-      credential.delegationId,
-    ]
-
-    expect(Credential.compress(credential)).toEqual(compressedCredential)
-
-    expect(Credential.decompress(compressedCredential)).toEqual(credential)
-
-    compressedCredential.pop()
-    // @ts-expect-error
-    delete credential.claim.owner
-
-    expect(() => {
-      Credential.compress(credential)
-    }).toThrow()
-
-    expect(() => {
-      Credential.decompress(compressedCredential)
     }).toThrow()
   })
 
@@ -383,29 +326,28 @@ describe('Credential', () => {
 describe('Credential', () => {
   let keyAlice: KeyTool
   let keyCharlie: KeyTool
-  let identityAlice: DidDetails
-  let identityBob: DidDetails
-  let identityCharlie: DidDetails
+  let identityAlice: DidDocument
+  let identityBob: DidDocument
+  let identityCharlie: DidDocument
   let legitimation: ICredential
-  let compressedLegitimation: CompressedCredential
-  let identityDave: DidDetails
-  let migratedAndDeletedLightDid: DidDetails
-  let migratedAndDeletedFullDid: DidDetails
+  let identityDave: DidDocument
+  let migratedAndDeletedLightDid: DidDocument
+  let migratedAndDeletedFullDid: DidDocument
 
   async function mockResolve(
     didUri: DidUri
-  ): Promise<DidResolvedDetails | null> {
+  ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
     const { did } = Did.Utils.parseDidUri(didUri)
     switch (did) {
       case identityAlice?.uri:
-        return { details: identityAlice, metadata: { deactivated: false } }
+        return { document: identityAlice, metadata: { deactivated: false } }
       case identityBob?.uri:
-        return { details: identityBob, metadata: { deactivated: false } }
+        return { document: identityBob, metadata: { deactivated: false } }
       case identityCharlie?.uri:
-        return { details: identityCharlie, metadata: { deactivated: false } }
+        return { document: identityCharlie, metadata: { deactivated: false } }
       case identityDave?.uri:
-        return { details: identityDave, metadata: { deactivated: false } }
+        return { document: identityDave, metadata: { deactivated: false } }
       case migratedAndDeletedLightDid?.uri:
         return {
           metadata: {
@@ -425,7 +367,7 @@ describe('Credential', () => {
 
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
   async function buildCredential2(
-    claimer: DidDetails,
+    claimer: DidDocument,
     attesterDid: DidUri,
     contents: IClaim['contents'],
     legitimations: ICredential[],
@@ -486,19 +428,6 @@ describe('Credential', () => {
       [],
       keyAlice.sign
     )
-    compressedLegitimation = [
-      [
-        legitimation.claim.cTypeHash,
-        legitimation.claim.owner,
-        legitimation.claim.contents,
-      ],
-      legitimation.claimNonceMap,
-      legitimation.claimerSignature,
-      legitimation.claimHashes,
-      legitimation.rootHash,
-      [],
-      legitimation.delegationId,
-    ]
   })
 
   it('verify credentials signed by a full DID', async () => {
@@ -522,7 +451,7 @@ describe('Credential', () => {
   })
   it('verify credentials signed by a light DID', async () => {
     const { sign, authentication } = makeSigningKeyTool('ed25519')
-    identityDave = await Did.createLightDidDetails({
+    identityDave = await Did.createLightDidDocument({
       authentication,
     })
 
@@ -547,7 +476,7 @@ describe('Credential', () => {
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
     const migratedAndDeleted = makeSigningKeyTool('ed25519')
-    migratedAndDeletedLightDid = Did.createLightDidDetails({
+    migratedAndDeletedLightDid = Did.createLightDidDocument({
       authentication: migratedAndDeleted.authentication,
     })
     migratedAndDeletedFullDid = {
@@ -576,24 +505,6 @@ describe('Credential', () => {
     ).rejects.toThrowError()
   })
 
-  it('compresses and decompresses the credentials object', () => {
-    expect(Credential.compress(legitimation)).toEqual(compressedLegitimation)
-    expect(Credential.decompress(compressedLegitimation)).toEqual(legitimation)
-  })
-
-  it('Negative test for compresses and decompresses the credentials object', () => {
-    compressedLegitimation.pop()
-    // @ts-expect-error
-    delete legitimation.claimHashes
-
-    expect(() => {
-      Credential.compress(legitimation)
-    }).toThrow()
-
-    expect(() => {
-      Credential.decompress(compressedLegitimation)
-    }).toThrow()
-  })
   it('Typeguard should return true on complete Credentials', async () => {
     const [credential] = await buildCredential2(
       identityAlice,
@@ -643,23 +554,23 @@ describe('Credential', () => {
 })
 
 describe('create presentation', () => {
-  let migratedClaimerLightDid: DidDetails
-  let migratedClaimerFullDid: DidDetails
+  let migratedClaimerLightDid: DidDocument
+  let migratedClaimerFullDid: DidDocument
   let newKeyForMigratedClaimerDid: KeyTool
-  let unmigratedClaimerLightDid: DidDetails
+  let unmigratedClaimerLightDid: DidDocument
   let unmigratedClaimerKey: KeyTool
-  let migratedThenDeletedClaimerLightDid: DidDetails
+  let migratedThenDeletedClaimerLightDid: DidDocument
   let migratedThenDeletedKey: KeyTool
-  let migratedThenDeletedClaimerFullDid: DidDetails
-  let attester: DidDetails
+  let migratedThenDeletedClaimerFullDid: DidDocument
+  let attester: DidDocument
   let ctype: ICType
   let credential: ICredential
 
   // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
-    lightDidForId: DidDetails,
+    lightDidForId: DidDocument,
     newAuthenticationKey?: DidVerificationKey
-  ): DidDetails {
+  ): DidDocument {
     const uri = Did.Utils.getFullDidUri(lightDidForId.uri)
     const authKey = newAuthenticationKey || lightDidForId.authentication[0]
 
@@ -671,13 +582,13 @@ describe('create presentation', () => {
 
   async function mockResolve(
     didUri: DidUri
-  ): Promise<DidResolvedDetails | null> {
+  ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
     const { did } = Did.Utils.parseDidUri(didUri)
     switch (did) {
       case migratedClaimerLightDid?.uri:
         return {
-          details: migratedClaimerLightDid,
+          document: migratedClaimerLightDid,
           metadata: {
             canonicalId: migratedClaimerFullDid.uri,
             deactivated: false,
@@ -697,16 +608,16 @@ describe('create presentation', () => {
         }
       case unmigratedClaimerLightDid?.uri:
         return {
-          details: unmigratedClaimerLightDid,
+          document: unmigratedClaimerLightDid,
           metadata: { deactivated: false },
         }
       case migratedClaimerFullDid?.uri:
         return {
-          details: migratedClaimerFullDid,
+          document: migratedClaimerFullDid,
           metadata: { deactivated: false },
         }
       case attester?.uri:
-        return { details: attester, metadata: { deactivated: false } }
+        return { document: attester, metadata: { deactivated: false } }
       default:
         return null
     }
@@ -717,11 +628,11 @@ describe('create presentation', () => {
     attester = await createLocalDemoFullDidFromKeypair(keypair)
 
     unmigratedClaimerKey = makeSigningKeyTool()
-    unmigratedClaimerLightDid = Did.createLightDidDetails({
+    unmigratedClaimerLightDid = Did.createLightDidDocument({
       authentication: unmigratedClaimerKey.authentication,
     })
     const migratedClaimerKey = makeSigningKeyTool()
-    migratedClaimerLightDid = Did.createLightDidDetails({
+    migratedClaimerLightDid = Did.createLightDidDocument({
       authentication: migratedClaimerKey.authentication,
     })
     // Change also the authentication key of the full DID to properly verify signature verification,
@@ -735,7 +646,7 @@ describe('create presentation', () => {
       }
     )
     migratedThenDeletedKey = makeSigningKeyTool('ed25519')
-    migratedThenDeletedClaimerLightDid = Did.createLightDidDetails({
+    migratedThenDeletedClaimerLightDid = Did.createLightDidDocument({
       authentication: migratedThenDeletedKey.authentication,
     })
     migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
