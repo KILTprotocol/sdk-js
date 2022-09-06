@@ -39,10 +39,10 @@ jobs:
       - name: Log out node version
         run: node --version
       - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 14
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 14
           cache: 'yarn'
       - name: Log out node version
         run: node --version
@@ -63,6 +63,10 @@ jobs:
     needs: build
 
     steps:
+      - name: Use Node.js 14
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -92,7 +96,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -130,7 +133,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-          cache: 'yarn'
       - name: Log out node version
         run: node --version
       - uses: actions/download-artifact@v2
@@ -177,7 +179,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-          cache: 'yarn'
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -209,7 +210,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-          cache: 'yarn'
       - uses: actions/download-artifact@v2
         with:
           name: build
