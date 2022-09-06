@@ -17,11 +17,3 @@ export interface IAttestation {
   delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }
-
-export type CompressedAttestation = [
-  IAttestation['claimHash'],
-  IAttestation['cTypeHash'],
-  IAttestation['owner'],
-  IAttestation['revoked'],
-  IAttestation['delegationId']
-]

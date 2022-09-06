@@ -34,17 +34,3 @@ export interface ICType {
   owner: DidUri | null
   schema: ICTypeSchema
 }
-
-export type CompressedCTypeSchema = [
-  ICTypeSchema['$id'],
-  ICTypeSchema['$schema'],
-  ICTypeSchema['title'],
-  ICTypeSchema['properties'],
-  ICTypeSchema['type']
-]
-
-export type CompressedCType = [
-  ICType['hash'],
-  ICType['owner'],
-  CompressedCTypeSchema
-]

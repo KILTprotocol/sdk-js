@@ -10,12 +10,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type {
-  IClaim,
-  CompressedClaim,
-  ICType,
-  DidUri,
-} from '@kiltprotocol/types'
+import type { IClaim, ICType, DidUri } from '@kiltprotocol/types'
 import * as CType from '../ctype'
 import * as Claim from './Claim'
 
@@ -161,7 +156,6 @@ describe('Claim', () => {
   let rawCType: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let compressedClaim: CompressedClaim
 
   beforeAll(async () => {
     did = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
@@ -183,13 +177,6 @@ describe('Claim', () => {
     testCType = CType.fromSchema(rawCType)
 
     claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
-    compressedClaim = [
-      claim.cTypeHash,
-      claim.owner,
-      {
-        name: 'Bob',
-      },
-    ]
   })
 
   it('can be made from object', () => {
@@ -205,30 +192,6 @@ describe('Claim', () => {
       },
     }
     expect(() => Claim.verifyDataStructure(claimWithFalsy)).not.toThrow()
-  })
-
-  it('compresses and decompresses the Claim object', () => {
-    expect(Claim.compress(claim)).toEqual(compressedClaim)
-
-    expect(Claim.decompress(compressedClaim)).toEqual(claim)
-  })
-
-  it('Negative test for compresses and decompresses the Claim object', () => {
-    compressedClaim.pop()
-    // Claim type guard won't throw on deleted claim.owner
-    // delete claim.owner
-
-    // expect(() => {
-    //   Claim.compress(claim)
-    // }).toThrow()
-
-    expect(() => {
-      Claim.decompress(compressedClaim)
-    }).toThrow()
-
-    // expect(() => {
-    //   claim.compress()
-    // }).toThrow()
   })
 
   it('should throw an error on faulty constructor input', () => {
