@@ -23,6 +23,7 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import * as BalanceUtils from './Balance.utils.js'
 
@@ -58,6 +59,10 @@ export async function listenToBalanceChanges(
   ) => void
 ): Promise<UnsubscribePromise> {
   const api = ConfigService.get('api')
+  if (!api.hasSubscriptions) {
+    throw new SDKErrors.SubscriptionsNotSupportedError()
+  }
+
   let previousBalances = await getBalances(accountAddress)
 
   return api.query.system.account(

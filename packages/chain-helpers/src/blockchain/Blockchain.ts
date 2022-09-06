@@ -15,6 +15,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
@@ -126,6 +127,11 @@ export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   opts?: Partial<SubscriptionPromise.Options>
 ): Promise<ISubmittableResult> {
+  const api = ConfigService.get('api')
+  if (!api.hasSubscriptions) {
+    throw new SDKErrors.SubscriptionsNotSupportedError()
+  }
+
   log.info(`Submitting ${tx.method}`)
   const options = parseSubscriptionOptions(opts)
   const { promise, subscription } = makeSubscriptionPromise(options)
@@ -135,8 +141,6 @@ export async function submitSignedTx(
     latestResult = result
     subscription(result)
   })
-
-  const api = ConfigService.get('api')
 
   function handleDisconnect(): void {
     const result = new SubmittableResult({
