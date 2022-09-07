@@ -27,7 +27,6 @@ import type {
   DidDocument,
   DidResolve,
   DidResourceUri,
-  DidVerificationKey,
   Hash,
   IAttestation,
   IClaim,
@@ -153,7 +152,6 @@ export async function addSignature(
  * @param credential - The Credential to add the signature to.
  * @param signCallback - The signing callback.
  * @param did - The DID Document of the signer.
- * @param keyId - The DID key id to be used for the signing.
  * @param options - Optional parameters.
  * @param options.challenge - An optional challenge, which will be included in the signing process.
  */
@@ -161,7 +159,6 @@ export async function sign(
   credential: ICredential,
   signCallback: SignCallback,
   did: DidDocument,
-  keyId: DidVerificationKey['id'],
   {
     challenge,
   }: {
@@ -171,8 +168,7 @@ export async function sign(
   const { signature, keyUri: signatureKeyId } = await signPayload(
     did,
     makeSigningData(credential, challenge),
-    signCallback,
-    keyId
+    signCallback
   )
   await addSignature(credential, signature, signatureKeyId, { challenge })
 }
@@ -492,9 +488,7 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const selectedKeyId = claimerDid.authentication[0].id
-
-  await sign(presentation, signCallback, claimerDid, selectedKeyId, {
+  await sign(presentation, signCallback, claimerDid, {
     challenge,
   })
 

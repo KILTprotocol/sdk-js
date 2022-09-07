@@ -6,74 +6,73 @@
  */
 
 import type { SignerPayloadJSON } from '@polkadot/types/types'
+import { DidEncryptionKey, DidUri, DidVerificationKey } from './DidDocument.js'
 
-export type SigningAlgorithms = 'ed25519' | 'sr25519' | 'ecdsa-secp256k1'
+const signingAlgorithmsC = ['ed25519', 'sr25519', 'ecdsa-secp256k1'] as const
+export const signingAlgorithms = signingAlgorithmsC as unknown as string[]
+export type SigningAlgorithms = typeof signingAlgorithmsC[number]
 
 export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
 
 /**
  * Base interface for all {en/de}cryption & signing requests.
  */
-export interface RequestData<
-  A extends SigningAlgorithms | EncryptionAlgorithms
-> {
-  /**
-   * Identifier for the encryption/signing algorithm to use.
-   */
-  alg: A
-  /**
-   * Public key as u8a identifying the keypair to use (in combination with the alg).
-   */
-  publicKey: Uint8Array
+export interface RequestData {
   /**
    * Data to be {en/de}crypted or signed.
    */
   data: Uint8Array
 
-  [x: string]: unknown
+  did: DidUri
 }
 
 /**
  * Base interface for responses to {en/de}cryption & signing requests.
  */
-export interface ResponseData<
-  A extends SigningAlgorithms | EncryptionAlgorithms
-> {
-  /**
-   * Identifier for the encryption/signing algorithm used.
-   */
-  alg: A
+export interface ResponseData {
   /**
    * Result of the {en/de}cryption or signing.
    */
   data: Uint8Array
-
-  [x: string]: unknown
 }
 
 /**
  * Extends [[RequestData]] with optional metadata for providing info on the data to be signed, especially in case of signing extrinsics.
  */
-export interface SigningData<A extends SigningAlgorithms>
-  extends RequestData<A> {
+export interface SigningExtrinsicData extends RequestData {
   /**
    * Info for extensions to display to user.
    */
-  meta?: Partial<SignerPayloadJSON>
+  meta: Partial<SignerPayloadJSON>
+  keyId: DidVerificationKey['id']
 }
 
 /**
- * A callback function to sign with a given signature algorithm.
+ * A callback function to sign extrinsics.
  */
-export type SignCallback<A extends SigningAlgorithms = any> = (
-  signData: SigningData<A>
-) => Promise<ResponseData<A>>
+export type SignExtrinsicCallback = (
+  signData: SigningExtrinsicData
+) => Promise<ResponseData>
 
-export interface SigningOptions<A extends SigningAlgorithms = any> {
-  sign: SignCallback<A>
-  signingPublicKey: string | Uint8Array
-  alg: A
-}
+/**
+ * A callback function to sign an extrinsic without an existing DID.
+ */
+export type SignExtrinsicWithoutDidCallback = (
+  signData: Omit<RequestData, 'did'>
+) => Promise<
+  ResponseData & {
+    keyType: DidVerificationKey['type']
+  }
+>
+
+/**
+ * A callback function to sign data.
+ */
+export type SignCallback = (signData: RequestData) => Promise<
+  ResponseData & {
+    keyId: DidVerificationKey['id']
+  }
+>
 
 /**
  * Uses stored key material to encrypt a message encoded as u8a.
@@ -82,14 +81,17 @@ export interface SigningOptions<A extends SigningAlgorithms = any> {
  * @param requestData.peerPublicKey The other party's public key to be used for x25519 Diffie-Hellman key agreement.
  * @returns [[ResponseData]] which additionally contains a `nonce` randomly generated in the encryption process (required for decryption).
  */
-export interface EncryptCallback<
-  A extends 'x25519-xsalsa20-poly1305' = 'x25519-xsalsa20-poly1305'
-> {
+export interface EncryptCallback {
   (
-    requestData: RequestData<A> & {
+    requestData: RequestData & {
       peerPublicKey: Uint8Array
     }
-  ): Promise<ResponseData<A> & { nonce: Uint8Array }>
+  ): Promise<
+    ResponseData & {
+      nonce: Uint8Array
+      keyId: DidEncryptionKey['id']
+    }
+  >
 }
 
 /**
@@ -100,13 +102,11 @@ export interface EncryptCallback<
  * @param requestData.nonce The random nonce generated during encryption as u8a.
  * @returns A Promise resolving to [[ResponseData]] containing the decrypted message or rejecting if key or algorithm is unknown or if they do not match.
  */
-export interface DecryptCallback<
-  A extends 'x25519-xsalsa20-poly1305' = 'x25519-xsalsa20-poly1305'
-> {
+export interface DecryptCallback {
   (
-    requestData: RequestData<A> & {
+    requestData: RequestData & {
       peerPublicKey: Uint8Array
       nonce: Uint8Array
     }
-  ): Promise<ResponseData<A>>
+  ): Promise<ResponseData>
 }

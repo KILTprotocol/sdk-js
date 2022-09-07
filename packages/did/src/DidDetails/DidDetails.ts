@@ -13,14 +13,9 @@ import type {
   DidResourceUri,
   DidServiceEndpoint,
   DidSignature,
-  DidVerificationKey,
   SignCallback,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
-import { verificationKeyTypes } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-
-import { signatureAlgForKeyType } from '../Did.utils.js'
+import { Crypto } from '@kiltprotocol/utils'
 
 /**
  * Gets all public keys associated with this DID.
@@ -70,33 +65,24 @@ export function getEndpoint(
 /**
  * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
  *
- * @param did The DID data.
+ * @param did The DID document.
  * @param payload The byte array or HEX-encoded payload to sign.
  * @param sign The sign callback to use for the signing operation.
- * @param keyId The key ID to use to generate the signature.
  *
  * @returns The resulting [[DidSignature]].
  */
 export async function signPayload(
   did: Partial<DidDocument> & Pick<DidDocument, 'authentication' | 'uri'>,
   payload: Uint8Array | string,
-  sign: SignCallback,
-  keyId: DidVerificationKey['id']
+  sign: SignCallback
 ): Promise<DidSignature> {
-  const key = getKey(did, keyId)
-  if (!key || !verificationKeyTypes.includes(key.type)) {
-    throw new SDKErrors.DidError(
-      `Failed to find verification key with ID "${keyId}" on DID "${did.uri}"`
-    )
-  }
-  const alg = signatureAlgForKeyType[key.type as VerificationKeyType]
-  const { data: signature } = await sign({
-    publicKey: key.publicKey,
-    alg,
+  const { data: signature, keyId } = await sign({
     data: Crypto.coToUInt8(payload),
+    did: did.uri,
   })
+
   return {
-    keyUri: `${did.uri}${key.id}` as DidResourceUri,
+    keyUri: `${did.uri}${keyId}` as DidResourceUri,
     signature: u8aToHex(signature),
   }
 }

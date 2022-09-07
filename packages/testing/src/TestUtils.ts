@@ -27,10 +27,9 @@ import {
   KiltKeyringPair,
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
-  ResponseData,
   SignCallback,
+  SignExtrinsicWithoutDidCallback,
   SigningAlgorithms,
-  SigningData,
 } from '@kiltprotocol/types'
 import { Crypto, ss58Format } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
@@ -51,13 +50,17 @@ export function makeEncryptCallback({
   secretKey: Uint8Array
   type: 'x25519'
 }): EncryptCallback {
-  return async function encryptCallback({ data, peerPublicKey, alg }) {
+  return async function encryptCallback({ data, peerPublicKey }) {
     const { box, nonce } = Crypto.encryptAsymmetric(
       data,
       peerPublicKey,
       secretKey
     )
-    return { alg, nonce, data: box }
+    return {
+      nonce,
+      data: box,
+      keyId: '#0123',
+    }
   }
 }
 
@@ -75,14 +78,14 @@ export function makeDecryptCallback({
   secretKey: Uint8Array
   type: 'x25519'
 }): DecryptCallback {
-  return async function decryptCallback({ data, nonce, peerPublicKey, alg }) {
+  return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
       peerPublicKey,
       secretKey
     )
     if (decrypted === false) throw new Error('Decryption failed')
-    return { data: decrypted, alg }
+    return { data: decrypted }
   }
 }
 
@@ -129,12 +132,30 @@ export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
  * @returns The callback.
  */
 export function makeSignCallback(keypair: KeyringPair): SignCallback {
-  return async function sign<A extends SigningAlgorithms>({
-    alg,
-    data,
-  }: SigningData<A>): Promise<ResponseData<A>> {
+  return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
-    return { alg, data: signature }
+    return {
+      data: signature,
+      keyId: '#0123',
+    }
+  }
+}
+
+/**
+ * Generates a callback that can be used for signing.
+ *
+ * @param keypair The keypair to use for signing.
+ * @returns The callback.
+ */
+export function makeSignExtrinsicWithoutDidCallback(
+  keypair: KiltKeyringPair
+): SignExtrinsicWithoutDidCallback {
+  return async function sign({ data }) {
+    const signature = keypair.sign(data, { withType: false })
+    return {
+      data: signature,
+      keyType: keypair.type,
+    }
   }
 }
 
@@ -147,6 +168,7 @@ const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
 export interface KeyTool {
   keypair: KiltKeyringPair
   sign: SignCallback
+  signWithoutDid: SignExtrinsicWithoutDidCallback
   authentication: [NewLightDidVerificationKey]
 }
 
@@ -167,6 +189,7 @@ export function makeSigningKeyTool(
     type
   ) as KiltKeyringPair
   const sign = makeSignCallback(keypair)
+  const signWithoutDid = makeSignExtrinsicWithoutDidCallback(keypair)
 
   const authenticationKey = {
     publicKey: keypair.publicKey,
@@ -176,6 +199,7 @@ export function makeSigningKeyTool(
   return {
     keypair,
     sign,
+    signWithoutDid,
     authentication: [authenticationKey],
   }
 }
@@ -292,7 +316,7 @@ export async function createLocalDemoFullDidFromLightDid(
 export async function createFullDidFromLightDid(
   payer: KiltKeyringPair,
   lightDidForId: DidDocument,
-  sign: SignCallback
+  sign: SignExtrinsicWithoutDidCallback
 ): Promise<DidDocument> {
   const { authentication, uri } = lightDidForId
   const tx = await Did.Chain.getStoreTx(
@@ -316,9 +340,9 @@ export async function createFullDidFromLightDid(
 
 export async function createFullDidFromSeed(
   payer: KiltKeyringPair,
-  keypair: KeyringPair
+  keypair: KiltKeyringPair
 ): Promise<DidDocument> {
   const lightDid = await createMinimalLightDidFromKeypair(keypair)
-  const sign = makeSignCallback(keypair)
+  const sign = makeSignExtrinsicWithoutDidCallback(keypair)
   return createFullDidFromLightDid(payer, lightDid, sign)
 }

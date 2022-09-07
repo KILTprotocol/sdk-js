@@ -76,17 +76,15 @@ export async function createAttesterSignedQuote(
     throw new SDKErrors.QuoteUnverifiableError()
   }
 
-  const authenticationKeyId = attesterIdentity.authentication[0].id
   const signature = await Did.signPayload(
     attesterIdentity,
     Crypto.hashObjectAsStr(quoteInput),
-    sign,
-    authenticationKeyId
+    sign
   )
   return {
     ...quoteInput,
     attesterSignature: {
-      keyUri: `${attesterIdentity.uri}${authenticationKeyId}`,
+      keyUri: signature.keyUri,
       signature: signature.signature,
     },
   }
@@ -171,8 +169,7 @@ export async function createQuoteAgreement(
   const signature = await Did.signPayload(
     claimerIdentity,
     Crypto.hashObjectAsStr(attesterSignedQuote),
-    sign,
-    claimerIdentity.authentication[0].id
+    sign
   )
 
   return {

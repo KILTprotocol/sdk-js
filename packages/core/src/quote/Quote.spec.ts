@@ -159,8 +159,7 @@ describe('Quote', () => {
       await Did.signPayload(
         claimerIdentity,
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimer.sign,
-        claimerIdentity.authentication[0].id
+        claimer.sign
       )
     ).toEqual(quoteBothAgreed.claimerSignature)
 

@@ -23,8 +23,8 @@ import type {
   KiltAddress,
   NewDidEncryptionKey,
   NewDidVerificationKey,
-  SignCallback,
-  SigningOptions,
+  SignExtrinsicCallback,
+  SignExtrinsicWithoutDidCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
@@ -47,9 +47,7 @@ import {
   EncodedVerificationKey,
   getAddressByKey,
   getFullDidUri,
-  keyTypeForSignatureAlg,
   parseDidUri,
-  signatureAlgForKeyType,
   stripFragment,
 } from './Did.utils.js'
 
@@ -400,14 +398,14 @@ interface GetStoreTxInput {
  *
  * @param input The DID keys and services to store, also accepts DidDocument, so you can store a light DID for example.
  * @param submitter The KILT address authorized to submit the creation operation.
- * @param sign The sign callback.
+ * @param sign The sign callback. The authentication key has to be used.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function getStoreTx(
   input: GetStoreTxInput | DidDocument,
   submitter: KiltAddress,
-  sign: SignCallback
+  sign: SignExtrinsicWithoutDidCallback
 ): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
 
@@ -487,14 +485,12 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
-  const { publicKey, type } = authenticationKey
   const signature = await sign({
     data: encoded,
-    meta: {},
-    publicKey,
-    alg: signatureAlgForKeyType[type],
   })
-  const encodedSignature = { [type]: signature.data } as EncodedSignature
+  const encodedSignature = {
+    [signature.keyType]: signature.data,
+  } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
 
@@ -666,14 +662,18 @@ export async function getReclaimDepositExtrinsic(
   return api.tx.did.reclaimDeposit(encodeDid(did), endpointsCount)
 }
 
+export interface SigningOptions {
+  sign: SignExtrinsicCallback
+  key: DidVerificationKey
+}
+
 /**
  * DID related operations on the KILT blockchain require authorization by a full DID. This is realized by requiring that relevant extrinsics are signed with a key featured by a full DID as a verification method.
  * Such extrinsics can be produced using this function.
  *
  * @param params Object wrapping all input to the function.
  * @param params.did Full DID.
- * @param params.signingPublicKey Public key of the keypair to be used for authorization as hex string or Uint8Array.
- * @param params.alg The cryptographic signing algorithm to be used.
+ * @param params.key DID key to be used for authorization.
  * @param params.sign The callback to interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
  * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing full DID.
@@ -683,8 +683,7 @@ export async function getReclaimDepositExtrinsic(
  */
 export async function generateDidAuthenticatedTx({
   did,
-  signingPublicKey,
-  alg,
+  key,
   sign,
   call,
   txCounter,
@@ -705,8 +704,8 @@ export async function generateDidAuthenticatedTx({
     )
   const signature = await sign({
     data: signableCall.toU8a(),
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
+    keyId: key.id,
+    did,
     meta: {
       method: call.method.toHex(),
       version: call.version,
@@ -717,8 +716,7 @@ export async function generateDidAuthenticatedTx({
       address: Crypto.encodeAddress(signableCall.did, ss58Format),
     },
   })
-  const keyType = keyTypeForSignatureAlg[signature.alg]
-  const encodedSignature = { [keyType]: signature.data } as EncodedSignature
+  const encodedSignature = { [key.type]: signature.data } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
 

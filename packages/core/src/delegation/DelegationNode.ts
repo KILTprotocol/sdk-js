@@ -8,6 +8,7 @@
 import type {
   DidDocument,
   DidUri,
+  DidVerificationKey,
   IAttestation,
   ICType,
   IDelegationHierarchyDetails,
@@ -269,11 +270,22 @@ export class DelegationNode implements IDelegationNode {
     const delegateSignature = await Did.signPayload(
       delegateDid,
       this.generateHash(),
-      sign,
-      delegateDid.authentication[0].id
+      sign
     )
+    const { fragment } = Did.Utils.parseDidUri(delegateSignature.keyUri)
+    if (!fragment) {
+      throw new SDKErrors.DidError(
+        `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`
+      )
+    }
+    const key = Did.getKey(delegateDid, fragment)
+    if (!key) {
+      throw new SDKErrors.DidError(
+        `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
+      )
+    }
     return Did.Chain.encodeDidSignature(
-      delegateDid.authentication[0],
+      key as DidVerificationKey,
       delegateSignature
     )
   }

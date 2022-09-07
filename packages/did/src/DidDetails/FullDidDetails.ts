@@ -14,7 +14,7 @@ import type {
   DidUri,
   DidVerificationKey,
   KiltAddress,
-  SignCallback,
+  SignExtrinsicCallback,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -27,7 +27,7 @@ import {
   queryNonce,
   queryServiceEndpoints,
 } from '../Did.chain.js'
-import { parseDidUri, signatureAlgForKeyType } from '../Did.utils.js'
+import { parseDidUri } from '../Did.utils.js'
 
 import {
   getKeyRelationshipForExtrinsic,
@@ -114,7 +114,7 @@ export async function getNextNonce(did: DidDocument): Promise<BN> {
 export async function authorizeExtrinsic(
   did: DidDocument,
   extrinsic: Extrinsic,
-  sign: SignCallback,
+  sign: SignExtrinsicCallback,
   submitterAccount: KiltAddress,
   {
     txCounter,
@@ -137,8 +137,7 @@ export async function authorizeExtrinsic(
   }
   return generateDidAuthenticatedTx({
     did: did.uri,
-    signingPublicKey: signingKey.publicKey,
-    alg: signatureAlgForKeyType[signingKey.type],
+    key: signingKey,
     sign,
     call: extrinsic,
     txCounter: txCounter || (await getNextNonce(did)),
@@ -211,7 +210,7 @@ export async function authorizeBatch({
   did: DidDocument
   extrinsics: Extrinsic[]
   nonce?: BN
-  sign: SignCallback
+  sign: SignExtrinsicCallback
   submitter: KiltAddress
 }): Promise<SubmittableExtrinsic> {
   if (extrinsics.length === 0) {
@@ -251,8 +250,7 @@ export async function authorizeBatch({
 
     return generateDidAuthenticatedTx({
       did: did.uri,
-      signingPublicKey: signingKey.publicKey,
-      alg: signatureAlgForKeyType[signingKey.type],
+      key: signingKey,
       sign,
       call,
       txCounter,

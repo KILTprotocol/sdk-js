@@ -182,8 +182,6 @@ describe('Messaging', () => {
     )
     const encryptedMessage = await Message.encrypt(
       message,
-      '#encryption',
-      aliceLightDid,
       aliceEncKey.encrypt,
       `${bobLightDid.uri}#encryption`,
       { resolveKey }
@@ -220,10 +218,9 @@ describe('Messaging', () => {
     ).rejects.toThrowError(SDKErrors.DecodingMessageError)
 
     const encryptedWrongBody = await aliceEncKey.encrypt({
-      alg: 'x25519-xsalsa20-poly1305',
       data: Crypto.coToUInt8('{ wrong JSON'),
-      publicKey: aliceLightDid.keyAgreement![0].publicKey,
       peerPublicKey: bobLightDid.keyAgreement![0].publicKey,
+      did: aliceLightDid.uri,
     })
     const encryptedMessageWrongBody: IEncryptedMessage = {
       ciphertext: u8aToHex(encryptedWrongBody.data),
@@ -963,8 +960,7 @@ describe('Error checking / Verification', () => {
         inviter: await Did.signPayload(
           identityAlice,
           'signature',
-          keyAlice.sign,
-          identityAlice.authentication[0].id
+          keyAlice.sign
         ),
       },
     }
@@ -981,15 +977,9 @@ describe('Error checking / Verification', () => {
         inviter: await Did.signPayload(
           identityAlice,
           'signature',
-          keyAlice.sign,
-          identityAlice.authentication[0].id
+          keyAlice.sign
         ),
-        invitee: await Did.signPayload(
-          identityBob,
-          'signature',
-          keyBob.sign,
-          identityBob.authentication[0].id
-        ),
+        invitee: await Did.signPayload(identityBob, 'signature', keyBob.sign),
       },
     }
     // Reject Accept Delegation content
