@@ -42,7 +42,6 @@ let sign: AccountLinks.LinkingSignCallback
 let api: ApiPromise
 
 beforeAll(async () => {
-  await initializeApi()
   api = await initializeApi()
   paymentAccount = await createEndowedTestAccount()
   linkDeposit = api.consts.didLookup.deposit.toBn()
