@@ -10,7 +10,6 @@ import type {
   IAttestation,
   ICredential,
   KiltAddress,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { Utils as DidUtils } from '@kiltprotocol/did'
@@ -44,26 +43,4 @@ export function decode(
   }
   log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
   return attestation
-}
-
-/**
- * Prepares an extrinsic to remove a given attestation.
- * The submitter can be the owner of the attestation or an authorized delegator thereof.
- *
- * @param claimHash The hash of the claim that corresponds to the attestation.
- * @param maxParentChecks The number of levels to walk up the delegation hierarchy until the delegation node is found.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getRemoveTx(
-  claimHash: ICredential['rootHash'],
-  maxParentChecks: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  log.debug(() => `Removing attestation with claim hash ${claimHash}`)
-  return api.tx.attestation.remove(
-    claimHash,
-    maxParentChecks > 0
-      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
-      : null
-  )
 }

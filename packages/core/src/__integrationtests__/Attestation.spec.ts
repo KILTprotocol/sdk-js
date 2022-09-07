@@ -24,7 +24,6 @@ import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { ApiPromise } from '@polkadot/api'
 import * as Attestation from '../attestation'
-import { getRemoveTx } from '../attestation/Attestation.chain'
 import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import * as Claim from '../claim'
@@ -97,7 +96,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 
   it('Attestation.getRemoveTx', async () => {
-    const draft = await Attestation.getRemoveTx(claimHash, 0)
+    const draft = await api.tx.attestation.remove(claimHash, null)
     const authorized = await Did.authorizeExtrinsic(
       attester,
       draft,
@@ -391,7 +390,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
-      const removeTx = await getRemoveTx(attestation.claimHash, 0)
+      const removeTx = await api.tx.attestation.remove(
+        attestation.claimHash,
+        null
+      )
       const authorizedRemoveTx = await Did.authorizeExtrinsic(
         attester,
         removeTx,

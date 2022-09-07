@@ -137,7 +137,7 @@ async function checkRemoveFullDidAttestation(
   const balanceBeforeRemoving = await Balance.getBalances(identity.address)
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getRemoveTx(attestation.claimHash, 0)
+  tx = await api.tx.attestation.remove(attestation.claimHash, null)
   authorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     tx,
