@@ -39,10 +39,7 @@ import {
   isCtypeOnChain,
   submitExtrinsic,
 } from './utils'
-import {
-  getAttestationHashes,
-  getRevokeTx,
-} from '../delegation/DelegationNode.chain'
+import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
 let api: ApiPromise
 
@@ -313,7 +310,7 @@ describe('revocation', () => {
       delegatorSign,
       firstDelegateSign
     )
-    const revokeTx = await getRevokeTx(delegationRoot.id, 1, 1)
+    const revokeTx = api.tx.delegation.revokeDelegation(delegationRoot.id, 1, 1)
     const authorizedRevokeTx = await Did.authorizeExtrinsic(
       firstDelegate,
       revokeTx,

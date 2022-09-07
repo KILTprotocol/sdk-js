@@ -88,27 +88,6 @@ export async function query(
 }
 
 /**
- * Generate the extrinsic to revoke a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
- *
- * @param delegationId The identifier of the delegation node to revoke.
- * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorization of the caller to perform the revocation.
- * @param maxRevocations The max number of children nodes that will be revoked as part of the revocation operation. This value does not include the node itself being removed.
- * @returns The SubmittableExtrinsic for the `revokeDelegation` call.
- */
-export async function getRevokeTx(
-  delegationId: IDelegationNode['id'],
-  maxParentChecks: number,
-  maxRevocations: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.delegation.revokeDelegation(
-    delegationId,
-    maxParentChecks,
-    maxRevocations
-  )
-}
-
-/**
  * Query the blockchain to retrieve the number of **direct** children of a given delegation node.
  *
  * @param delegationNode The delegation node to perform the lookup for.

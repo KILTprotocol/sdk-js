@@ -17,9 +17,18 @@ import {
   ICType,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
+import { ApiMocks } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { DelegationNode } from './DelegationNode'
 import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
+
+let mockedApi: any
+
+beforeAll(() => {
+  mockedApi = ApiMocks.getMockedApi()
+  ConfigService.set({ api: mockedApi })
+})
 
 let hierarchiesDetails: Record<string, IDelegationHierarchyDetails> = {}
 let nodes: Record<string, DelegationNode> = {}
@@ -36,21 +45,6 @@ jest.mock('./DelegationNode.chain', () => ({
       cTypeHash: await node.getCTypeHash(),
     }
   }),
-  getRevokeTx: jest.fn(
-    async (
-      nodeId: IDelegationNode['id'],
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      maxDepth: number,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      maxRevocations: number
-    ) => {
-      nodes[nodeId] = new DelegationNode({
-        ...nodes[nodeId],
-        childrenIds: nodes[nodeId].childrenIds,
-        revoked: true,
-      })
-    }
-  ),
 }))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
@@ -72,6 +66,16 @@ describe('DelegationNode', () => {
   let addresses: DidUri[]
 
   beforeAll(() => {
+    jest
+      .mocked(mockedApi.tx.delegation.revokeDelegation)
+      .mockImplementation((nodeId: IDelegationNode['id']) => {
+        nodes[nodeId] = new DelegationNode({
+          ...nodes[nodeId],
+          childrenIds: nodes[nodeId].childrenIds,
+          revoked: true,
+        })
+      })
+
     successId = Crypto.hashStr('success')
     hierarchyId = Crypto.hashStr('rootId')
     id = Crypto.hashStr('id')

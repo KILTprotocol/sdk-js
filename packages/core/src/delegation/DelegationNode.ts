@@ -24,7 +24,6 @@ import { decode as decodeAttestation } from '../attestation/Attestation.chain.js
 import {
   getAttestationHashes,
   getChildren,
-  getRevokeTx,
   getStoreAsDelegationTx,
   getStoreAsRootTx,
   query,
@@ -389,7 +388,8 @@ export class DelegationNode implements IDelegationNode {
     log.debug(
       `:: revoke(${this.id}) with maxRevocations=${childCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
     )
-    return getRevokeTx(this.id, steps, childCount)
+    const api = ConfigService.get('api')
+    return api.tx.delegation.revokeDelegation(this.id, steps, childCount)
   }
 
   /**
