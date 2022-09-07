@@ -6,7 +6,6 @@
  */
 
 import { BN } from '@polkadot/util'
-import { decodeAddress } from '@polkadot/util-crypto'
 import Keyring from '@polkadot/keyring'
 
 import type {
@@ -28,7 +27,12 @@ import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import type { EncodedDid } from '../Did.chain'
 import { getFullDidUriFromKey, parseDidUri, stripFragment } from '../Did.utils'
 
-import { resolve, resolveKey, resolveServiceEndpoint } from './index.js'
+import {
+  resolve,
+  resolveKey,
+  resolveServiceEndpoint,
+  compliantResolve,
+} from './index.js'
 import * as Did from '../index.js'
 
 /**
@@ -435,24 +439,26 @@ describe('When resolving a light DID', () => {
     const { document, metadata } = (await resolve(
       migratedDid
     )) as DidResolutionResult
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+      canonicalId: didWithAuthenticationKey,
+    })
+    expect(document).toBe(undefined)
+  })
+
+  it('correctly resolves a migrated and not deleted DID in compliant mode', async () => {
+    const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
+    const { document, metadata } = (await compliantResolve(
+      migratedDid
+    )) as DidResolutionResult
     if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
       canonicalId: didWithAuthenticationKey,
     })
-    expect(document.uri).toStrictEqual<DidUri>(migratedDid)
-    expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
-      {
-        id: '#authentication',
-        type: 'sr25519',
-        publicKey: decodeAddress(
-          addressWithAuthenticationKey,
-          false,
-          ss58Format
-        ),
-      },
-    ])
+    expect(document).toEqual({ uri: migratedDid })
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {

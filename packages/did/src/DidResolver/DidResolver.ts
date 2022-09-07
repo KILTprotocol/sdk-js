@@ -6,6 +6,7 @@
  */
 
 import {
+  DidDocument,
   DidResolutionResult,
   DidResourceUri,
   DidUri,
@@ -61,7 +62,6 @@ export async function resolve(
   // If a full DID with same subject is present, return the resolution metadata accordingly.
   if (document) {
     return {
-      document: lightDocument,
       metadata: {
         canonicalId: getFullDidUri(did),
         deactivated: false,
@@ -76,6 +76,39 @@ export async function resolve(
     metadata: {
       deactivated: false,
     },
+  }
+}
+
+type CompliantDidResolutionResult = Omit<DidResolutionResult, 'document'> & {
+  document?: DidDocument | { uri: DidUri }
+}
+
+/**
+ * Resolve a DID URI to the DID document and its metadata.
+ * This alternative to `resolve()` behaves closer to the DID specification
+ * when it resolves a light DID that has been upgraded to a full DID.
+ * In this case `compliantResolve()` will return a `document` that only contains `uri`,
+ * while `resolve()` takes a more practical approach and does not return `document`.
+ *
+ * The URI can also identify a key or a service, but it will be ignored during resolution.
+ *
+ * @param did The subject's DID.
+ * @returns The details associated with the DID subject.
+ */
+export async function compliantResolve(
+  did: DidUri
+): Promise<CompliantDidResolutionResult | null> {
+  const resolved = await resolve(did)
+
+  if (!resolved?.metadata.canonicalId) {
+    return resolved
+  }
+
+  return {
+    document: {
+      uri: did,
+    },
+    metadata: resolved.metadata,
   }
 }
 
