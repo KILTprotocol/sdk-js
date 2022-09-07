@@ -79,7 +79,7 @@ export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
 }
 
 function setLogLevel(logLevel: LogLevel | undefined): void {
-  if (logLevel || logLevel === 0) {
+  if (logLevel !== undefined) {
     modifyLogLevel(logLevel)
   }
 }

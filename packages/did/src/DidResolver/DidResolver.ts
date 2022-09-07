@@ -139,10 +139,10 @@ export async function resolveKey(
     }
     case 'light': {
       const resolvedDetails = await resolve(didUri)
-      if (!resolvedDetails) {
+      if (resolvedDetails === null) {
         throw new SDKErrors.InvalidDidFormatError(didUri)
       }
-      if (!resolvedDetails.document) {
+      if (resolvedDetails.document === undefined) {
         return null
       }
       const key = Did.getKey(resolvedDetails.document, keyId)
@@ -191,10 +191,10 @@ export async function resolveServiceEndpoint(
     }
     case 'light': {
       const resolvedDetails = await resolve(did)
-      if (!resolvedDetails) {
+      if (resolvedDetails === null) {
         throw new SDKErrors.InvalidDidFormatError(serviceUri)
       }
-      if (!resolvedDetails.document) {
+      if (resolvedDetails.document === undefined) {
         return null
       }
       const serviceEndpoint = Did.getEndpoint(

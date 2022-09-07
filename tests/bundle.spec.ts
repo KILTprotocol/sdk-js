@@ -20,7 +20,7 @@ declare global {
   }
 }
 
-let testcontainer: StartedTestContainer
+let testcontainer: StartedTestContainer | undefined
 
 test.beforeAll(async () => {
   // start dev node with testcontainers

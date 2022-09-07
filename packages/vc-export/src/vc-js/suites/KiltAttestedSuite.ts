@@ -43,7 +43,7 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
     // vc-js complains when there is no verificationMethod
     super({ type: KILT_ATTESTED_PROOF_TYPE, verificationMethod: '<none>' })
     if (
-      !options.KiltConnection ||
+      !('KiltConnection' in options) ||
       !(options.KiltConnection instanceof ApiPromise)
     )
       throw new TypeError('KiltConnection must be a Kilt blockchain connection')
@@ -66,9 +66,9 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
   }): Promise<VerificationResult> {
     try {
       const { document, proof } = options
-      if (!document || typeof document !== 'object')
+      if (typeof document !== 'object')
         throw new TypeError('Document must be a JsonLd object')
-      if (!proof || typeof proof !== 'object')
+      if (typeof proof !== 'object')
         throw new TypeError('Proof must be a JsonLd object')
       const compactedDoc = await this.compactDoc(document, options)
       const compactedProof = await this.compactProof<AttestedProof>(

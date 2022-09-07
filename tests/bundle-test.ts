@@ -119,7 +119,7 @@ function makeDecryptCallback({
       peerPublicKey,
       secretKey
     )
-    if (!decrypted) throw new Error('Decryption failed')
+    if (decrypted === false) throw new Error('Decryption failed')
     return { data: decrypted, alg }
   }
 }
@@ -239,7 +239,7 @@ async function runAll() {
   await Blockchain.signAndSubmitTx(deleteTx, payer, { resolveOn })
 
   const resolvedAgain = await Did.resolve(fullDid.uri)
-  if (resolvedAgain?.metadata.deactivated) {
+  if (!resolvedAgain || resolvedAgain.metadata.deactivated) {
     console.info('DID successfully deleted')
   } else {
     throw new Error('DID was not deleted')

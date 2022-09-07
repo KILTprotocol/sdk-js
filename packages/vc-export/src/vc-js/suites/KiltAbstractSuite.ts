@@ -83,7 +83,7 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
   }): Promise<boolean> {
     const { proof } = options
     const compact = await this.compactProof(proof, options)
-    const type = compact['@type'] || compact.type
+    const type = compact['@type'] ?? compact.type
     return type instanceof Array ? type.includes(this.type) : type === this.type
   }
 

@@ -74,7 +74,7 @@ export async function verifySelfSignedProof(
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
-    const type = proof['@type'] || proof.type
+    const type = proof['@type'] ?? proof.type
     if (type !== KILT_SELF_SIGNED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (!proof.signature) throw new ProofMalformedError('signature missing')
@@ -83,13 +83,14 @@ export async function verifySelfSignedProof(
     if (typeof verificationMethod !== 'string') {
       verificationMethod = verificationMethod.id
     }
-    if (!verificationMethod) {
+    if (typeof verificationMethod !== 'string') {
       throw new Error('verificationMethod not understood')
     }
-    const dereferenced = documentLoader
-      ? await documentLoader(verificationMethod)
-      : undefined
-    if (!dereferenced?.document) {
+    if (typeof documentLoader !== 'function') {
+      throw new Error('did you select an appropriate document loader?')
+    }
+    const dereferenced = await documentLoader(verificationMethod)
+    if (!('document' in dereferenced)) {
       throw new Error(
         'verificationMethod could not be dereferenced; did you select an appropriate document loader?'
       )
@@ -97,10 +98,10 @@ export async function verifySelfSignedProof(
     verificationMethod = dereferenced.document as IPublicKeyRecord
 
     const credentialOwner =
-      credential.credentialSubject.id || credential.credentialSubject['@id']
-    if (!verificationMethod.controller === credentialOwner)
+      credential.credentialSubject.id ?? credential.credentialSubject['@id']
+    if (verificationMethod.controller !== credentialOwner)
       throw new Error('Credential subject is not owner of signing key')
-    const keyType = verificationMethod.type || verificationMethod['@type']
+    const keyType = verificationMethod.type ?? verificationMethod['@type']
     if (!Object.values(verificationKeyTypesMap).includes(keyType))
       throw new ProofMalformedError(
         `Signature type unknown; expected one of ${JSON.stringify(
@@ -108,7 +109,7 @@ export async function verifySelfSignedProof(
         )}, got "${verificationMethod.type}"`
       )
     const signerPubKey = verificationMethod.publicKeyBase58
-    if (!signerPubKey)
+    if (typeof signerPubKey !== 'string')
       throw new Error('Signer key is missing publicKeyBase58 property')
 
     const rootHash = fromCredentialIRI(credential.id)
@@ -151,7 +152,7 @@ export async function verifyAttestedProof(
   let status: AttestationStatus = 'unknown'
   try {
     // check proof
-    const type = proof['@type'] || proof.type
+    const type = proof['@type'] ?? proof.type
     if (type !== KILT_ATTESTED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     const { attester } = proof
@@ -182,7 +183,7 @@ export async function verifyAttestedProof(
     // query on-chain data by credential id (= claim root hash)
     const onChain = await Attestation.query(claimHash)
     // if not found, credential has not been attested, proof is invalid
-    if (!onChain) {
+    if (onChain === null) {
       status = 'invalid'
       throw new Error(
         `Attestation for credential with id "${claimHash}" not found`
@@ -196,7 +197,7 @@ export async function verifyAttestedProof(
       )
     }
     // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
-    if (onChain.revoked) {
+    if (onChain.revoked === true) {
       status = 'revoked'
       throw new Error('Attestation revoked')
     }
@@ -231,7 +232,7 @@ export async function verifyCredentialDigestProof(
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
-    const type = proof['@type'] || proof.type
+    const type = proof['@type'] ?? proof.type
     if (type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (typeof proof.nonces !== 'object') {
@@ -315,10 +316,10 @@ export function validateSchema(
     // there's no rule against additional properties, so we can just validate the ones that are there
     const validator = new JsonSchema.Validator(schema)
     validator.addSchema(CType.Schemas.CTypeModel)
-    const result = validator.validate(credential.credentialSubject)
+    const { errors, valid } = validator.validate(credential.credentialSubject)
     return {
-      verified: result.valid,
-      errors: result.errors?.map((e) => new Error(e.error)) || [],
+      verified: valid,
+      errors: errors.length > 0 ? errors.map((e) => new Error(e.error)) : [],
     }
   }
   return { verified: false, errors: [] }

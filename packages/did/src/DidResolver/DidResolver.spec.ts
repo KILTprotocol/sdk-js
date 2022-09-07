@@ -249,7 +249,7 @@ describe('When resolving a full DID', () => {
     const { document, metadata } = (await resolve(
       fullDidWithAuthenticationKey
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
@@ -269,7 +269,7 @@ describe('When resolving a full DID', () => {
     const { document, metadata } = (await resolve(
       fullDidWithAllKeys
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
@@ -307,7 +307,7 @@ describe('When resolving a full DID', () => {
     const { document, metadata } = (await resolve(
       fullDidWithServiceEndpoints
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
@@ -435,13 +435,13 @@ describe('When resolving a light DID', () => {
     const { document, metadata } = (await resolve(
       migratedDid
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
       canonicalId: didWithAuthenticationKey,
     })
-    expect(document?.uri).toStrictEqual<DidUri>(migratedDid)
+    expect(document.uri).toStrictEqual<DidUri>(migratedDid)
     expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
       {
         id: '#authentication',
