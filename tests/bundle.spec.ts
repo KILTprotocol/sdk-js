@@ -12,8 +12,6 @@ import { test, expect } from '@playwright/test'
 import url from 'url'
 import path from 'path'
 
-const WS_PORT = 9944
-
 declare global {
   interface Window {
     runAll: () => Promise<void>
@@ -21,6 +19,8 @@ declare global {
 }
 
 let testcontainer: StartedTestContainer | undefined
+
+const WS_PORT = 9944
 
 test.beforeAll(async () => {
   // start dev node with testcontainers

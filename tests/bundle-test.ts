@@ -24,8 +24,6 @@ import type {
 
 const { kilt } = window
 
-const WS_PORT = 9944
-
 const {
   Claim,
   Attestation,
@@ -150,7 +148,7 @@ async function createFullDidFromKeypair(
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  await kilt.connect(`ws://127.0.0.1:${WS_PORT}`)
+  await kilt.connect('ws://127.0.0.1:9944')
 
   // Accounts
   console.log('Account setup started')
