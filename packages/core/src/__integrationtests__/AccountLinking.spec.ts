@@ -64,8 +64,8 @@ describe('When there is an on-chain DID', () => {
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
       expect(
-        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).toBeNull()
+        (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
+      ).toBe(true)
       expect(
         await AccountLinks.queryConnectedAccountsForDid(did.uri)
       ).toStrictEqual([])
@@ -94,7 +94,9 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
       expect(
-        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+        AccountLinks.decodeConnectedDid(
+          await AccountLinks.queryConnectedDid(paymentAccount.address)
+        ).did
       ).toStrictEqual(did.uri)
       expect(
         await AccountLinks.queryConnectedAccountsForDid(did.uri, ss58Format)
@@ -121,7 +123,9 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that account is linked to new DID
       expect(
-        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+        AccountLinks.decodeConnectedDid(
+          await AccountLinks.queryConnectedDid(paymentAccount.address)
+        ).did
       ).toStrictEqual(newDid.uri)
       // Check that old DID has no accounts linked
       expect(
@@ -149,8 +153,8 @@ describe('When there is an on-chain DID', () => {
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
       expect(
-        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).toBeNull()
+        (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
+      ).toBe(true)
       expect(
         await AccountLinks.queryConnectedAccountsForDid(did.uri)
       ).toStrictEqual([])
@@ -208,11 +212,13 @@ describe('When there is an on-chain DID', () => {
             .toString()
         ).toMatchInlineSnapshot('"0"')
         expect(
-          await AccountLinks.queryConnectedDidForAccount(keypair.address)
+          AccountLinks.decodeConnectedDid(
+            await AccountLinks.queryConnectedDid(keypair.address)
+          ).did
         ).toStrictEqual(did.uri)
         expect(
-          await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-        ).toBeNull()
+          (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
+        ).toBe(true)
         expect(
           await AccountLinks.queryConnectedAccountsForDid(did.uri, ss58Format)
         ).toStrictEqual([keypair.address])
@@ -245,10 +251,12 @@ describe('When there is an on-chain DID', () => {
           balanceAfter.reserved.sub(balanceBefore.reserved).toString()
         ).toMatchInlineSnapshot('"0"')
         expect(
-          await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-        ).toBeNull()
+          (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
+        ).toBe(true)
         expect(
-          await AccountLinks.queryConnectedDidForAccount(keypair.address)
+          AccountLinks.decodeConnectedDid(
+            await AccountLinks.queryConnectedDid(keypair.address)
+          ).did
         ).toStrictEqual(newDid.uri)
         expect(
           await AccountLinks.queryConnectedAccountsForDid(did.uri)
@@ -296,11 +304,11 @@ describe('When there is an on-chain DID', () => {
         ).toStrictEqual(linkDeposit.toString())
         // Check that the link has been removed completely
         expect(
-          await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-        ).toBeNull()
+          (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
+        ).toBe(true)
         expect(
-          await AccountLinks.queryConnectedDidForAccount(keypair.address)
-        ).toBeNull()
+          (await AccountLinks.queryConnectedDid(keypair.address)).isNone
+        ).toBe(true)
         expect(
           await AccountLinks.queryConnectedAccountsForDid(newDid.uri)
         ).toStrictEqual([])
@@ -356,11 +364,13 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       expect(
-        await AccountLinks.queryConnectedDidForAccount(genericAccount.address)
+        AccountLinks.decodeConnectedDid(
+          await AccountLinks.queryConnectedDid(genericAccount.address)
+        ).did
       ).toStrictEqual(did.uri)
       expect(
-        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).toBeNull()
+        (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
+      ).toBe(true)
       expect(
         // Wildcard substrate encoding. Account should match the generated one.
         await AccountLinks.queryConnectedAccountsForDid(did.uri, 42)
@@ -407,11 +417,11 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual(linkDeposit.toString())
       // Check that the link has been removed completely
       expect(
-        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).toBeNull()
+        (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
+      ).toBe(true)
       expect(
-        await AccountLinks.queryConnectedDidForAccount(genericAccount.address)
-      ).toBeNull()
+        (await AccountLinks.queryConnectedDid(genericAccount.address)).isNone
+      ).toBe(true)
       expect(
         await AccountLinks.queryConnectedAccountsForDid(newDid.uri)
       ).toStrictEqual([])

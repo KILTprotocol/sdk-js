@@ -163,7 +163,7 @@ function encodeMultiAddress(address: Address): EncodedMultiAddress {
 
 /* ### QUERY ### */
 
-async function queryConnectedDid(
+export async function queryConnectedDid(
   linkedAccount: Address
 ): Promise<Option<PalletDidLookupConnectionRecord>> {
   const api = ConfigService.get('api')
@@ -179,7 +179,7 @@ async function queryConnectedDid(
  * @param encoded The output of `api.query.didLookup.connectedDids()`.
  * @returns The connection details.
  */
-export function decodeDidConnection(
+export function decodeConnectedDid(
   encoded: Option<PalletDidLookupConnectionRecord>
 ): {
   did: DidUri
@@ -190,19 +190,6 @@ export function decodeDidConnection(
     did: getFullDidUri(did.toString() as KiltAddress),
     deposit: decodeDeposit(deposit),
   }
-}
-
-/**
- * Return the addresses of the DID linked to the provided account, if present.
- *
- * @param linkedAccount The account to use for the lookup.
- * @returns The linked DID if present, or null otherwise.
- */
-export async function queryConnectedDidForAccount(
-  linkedAccount: Address
-): Promise<DidUri | null> {
-  const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isNone ? null : decodeDidConnection(connectedDid).did
 }
 
 function isLinkableAccountId(
@@ -250,13 +237,14 @@ export async function queryConnectedAccountsForDid(
 export async function queryWeb3Name(
   linkedAccount: Address
 ): Promise<Web3Name | null> {
+  const api = ConfigService.get('api')
   // TODO: Replace with custom RPC call when available.
-  const linkedDid = await queryConnectedDidForAccount(linkedAccount)
-  if (!linkedDid) {
+  const encoded = await queryConnectedDid(linkedAccount)
+  if (encoded.isNone) {
     return null
   }
-  const api = ConfigService.get('api')
-  return decodeWeb3Name(await api.query.web3Names.names(encodeDid(linkedDid)))
+  const { did } = decodeConnectedDid(encoded)
+  return decodeWeb3Name(await api.query.web3Names.names(encodeDid(did)))
 }
 
 /**
