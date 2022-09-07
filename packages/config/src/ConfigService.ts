@@ -100,7 +100,7 @@ export function set<K extends Partial<configOpts>>(opts: K): void {
  * @param key Key identifying the configuration option.
  */
 export function unset<K extends keyof configOpts>(key: K): void {
-  if (defaultConfig.hasOwnProperty(key)) {
+  if (Object.prototype.hasOwnProperty.call(defaultConfig, key)) {
     configuration[key] = defaultConfig[key]
   } else {
     delete configuration[key]
