@@ -220,7 +220,9 @@ describe('and attestation rights have been delegated', () => {
     expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
 
     // revoke attestation through root
-    const revokeTx = await Attestation.getRevokeTx(attestation.claimHash, 1)
+    const revokeTx = api.tx.attestation.revoke(attestation.claimHash, {
+      Delegation: { maxChecks: 1 },
+    })
     const authorizedStoreTx2 = await Did.authorizeExtrinsic(
       root,
       revokeTx,

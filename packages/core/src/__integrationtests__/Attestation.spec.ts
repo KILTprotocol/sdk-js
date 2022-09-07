@@ -24,7 +24,7 @@ import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { ApiPromise } from '@polkadot/api'
 import * as Attestation from '../attestation'
-import { getRemoveTx, getRevokeTx } from '../attestation/Attestation.chain'
+import { getRemoveTx } from '../attestation/Attestation.chain'
 import * as Credential from '../credential'
 import { disconnect } from '../kilt'
 import * as Claim from '../claim'
@@ -81,7 +81,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 
   it('Attestation.getRevokeTx', async () => {
-    const draft = await Attestation.getRevokeTx(claimHash, 0)
+    const draft = api.tx.attestation.revoke(claimHash, null)
     const authorized = await Did.authorizeExtrinsic(
       attester,
       draft,
@@ -361,7 +361,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     }, 15_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
-      const revokeTx = await getRevokeTx(attestation.claimHash, 0)
+      const revokeTx = api.tx.attestation.revoke(attestation.claimHash, null)
       const authorizedRevokeTx = await Did.authorizeExtrinsic(
         claimer,
         revokeTx,
@@ -378,7 +378,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     it('should be possible for the attester to revoke an attestation', async () => {
       expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
 
-      const revokeTx = await getRevokeTx(attestation.claimHash, 0)
+      const revokeTx = api.tx.attestation.revoke(attestation.claimHash, null)
       const authorizedRevokeTx = await Did.authorizeExtrinsic(
         attester,
         revokeTx,

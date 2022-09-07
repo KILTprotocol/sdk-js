@@ -47,28 +47,6 @@ export function decode(
 }
 
 /**
- * Prepares an extrinsic to revoke a given attestation.
- * The submitter can be the owner of the attestation or an authorized delegator thereof.
- *
- * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
- * @param maxParentChecks The number of levels to walk up the delegation hierarchy until the delegation node is found.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getRevokeTx(
-  claimHash: ICredential['rootHash'] | IAttestation['claimHash'],
-  maxParentChecks: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
-  return api.tx.attestation.revoke(
-    claimHash,
-    maxParentChecks > 0
-      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
-      : null
-  )
-}
-
-/**
  * Prepares an extrinsic to remove a given attestation.
  * The submitter can be the owner of the attestation or an authorized delegator thereof.
  *
