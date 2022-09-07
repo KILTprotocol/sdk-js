@@ -430,7 +430,7 @@ describe('Credential', () => {
   })
 
   it('verify credentials signed by a full DID', async () => {
-    const [credential] = await buildPresentation(
+    const [presentation] = await buildPresentation(
       identityCharlie,
       identityAlice.uri,
       {
@@ -443,8 +443,8 @@ describe('Credential', () => {
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    await Credential.verifyPresentation(credential, {
+    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    await Credential.verify(presentation, {
       didResolve: mockResolve,
     })
   })
@@ -454,7 +454,7 @@ describe('Credential', () => {
       authentication,
     })
 
-    const [credential] = await buildPresentation(
+    const [presentation] = await buildPresentation(
       identityDave,
       identityAlice.uri,
       {
@@ -467,8 +467,8 @@ describe('Credential', () => {
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    await Credential.verifyPresentation(credential, {
+    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    await Credential.verify(presentation, {
       didResolve: mockResolve,
     })
   })
@@ -483,7 +483,7 @@ describe('Credential', () => {
       authentication: [migratedAndDeletedLightDid.authentication[0]],
     }
 
-    const [credential] = await buildPresentation(
+    const [presentation] = await buildPresentation(
       migratedAndDeletedLightDid,
       identityAlice.uri,
       {
@@ -496,27 +496,27 @@ describe('Credential', () => {
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
     await expect(
-      Credential.verifyPresentation(credential, {
+      Credential.verify(presentation, {
         didResolve: mockResolve,
       })
     ).rejects.toThrowError()
   })
 
   it('Typeguard should return true on complete Credentials', async () => {
-    const [credential] = await buildPresentation(
+    const [presentation] = await buildPresentation(
       identityAlice,
       identityBob.uri,
       {},
       [],
       keyAlice.sign
     )
-    expect(Credential.isICredential(credential)).toBe(true)
+    expect(Credential.isICredential(presentation)).toBe(true)
     // @ts-expect-error
     delete credential.claimHashes
 
-    expect(Credential.isICredential(credential)).toBe(false)
+    expect(Credential.isICredential(presentation)).toBe(false)
   })
   it('Should throw error when attestation is from different credential', async () => {
     const [credential, attestation] = await buildPresentation(
@@ -676,7 +676,7 @@ describe('create presentation', () => {
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await Credential.verifyPresentation(presentation, {
+    await Credential.verify(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -704,7 +704,7 @@ describe('create presentation', () => {
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
-    await Credential.verifyPresentation(presentation, {
+    await Credential.verify(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -734,7 +734,7 @@ describe('create presentation', () => {
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await Credential.verifyPresentation(presentation, {
+    await Credential.verify(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -766,7 +766,7 @@ describe('create presentation', () => {
       challenge,
     })
     await expect(
-      Credential.verifyPresentation(att, {
+      Credential.verify(att, {
         didResolve: mockResolve,
       })
     ).rejects.toThrow()
@@ -798,7 +798,7 @@ describe('create presentation', () => {
       challenge,
     })
     await expect(
-      Credential.verifyPresentation(presentation, {
+      Credential.verify(presentation, {
         didResolve: mockResolve,
       })
     ).rejects.toThrow()

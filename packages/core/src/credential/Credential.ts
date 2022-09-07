@@ -261,12 +261,12 @@ export function verifyAgainstCType(
 }
 
 /**
- * Verifies the signature of the [[Credential]].
- * It supports migrated DIDs, meaning that if the original claim within the [[Credential]] included a light DID that was afterwards upgraded,
+ * Verifies the signature of the [[ICredentialPresentation]].
+ * It supports migrated DIDs, meaning that if the original claim within the [[ICredential]] included a light DID that was afterwards upgraded,
  * the signature over the presentation **must** be generated with the full DID in order for the verification to be successful.
  * On the other hand, a light DID that has been migrated and then deleted from the chain will not be allowed to generate valid presentations anymore.
  *
- * @param input - The [[Credential]].
+ * @param input - The [[ICredentialPresentation]].
  * @param verificationOpts Additional verification options.
  * @param verificationOpts.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
@@ -283,7 +283,7 @@ export async function verifySignature(
   } = {}
 ): Promise<boolean> {
   const { claimerSignature } = input
-  if (!claimerSignature) return false
+  if (!claimerSignature || !isDidSignature(claimerSignature)) return false
   if (challenge && challenge !== claimerSignature.challenge) return false
   const signingData = makeSigningData(input, claimerSignature.challenge)
   const { verified } = await verifyDidSignature({
@@ -322,7 +322,6 @@ export function fromClaim(
     delegationId,
   })
 
-  // signature will be added afterwards!
   const credential = {
     claim,
     legitimations,
@@ -365,9 +364,9 @@ export async function verifyCredential(
 }
 
 /**
- * Verifies data structure, data integrity and claimers signature.
+ * Verifies data structure, data integrity and the claimer's signature.
  *
- * Upon presentation of a credential, a verifier would call this [[verifyPresentation]] function.
+ * Upon presentation of a credential, a verifier would call this [[verify]] function.
  *
  * @param presentation - The object to check.
  * @param options - Additional parameter for more verification steps.
@@ -375,7 +374,7 @@ export async function verifyCredential(
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  */
-export async function verifyPresentation(
+export async function verify(
   presentation: ICredentialPresentation,
   { ctype, challenge, didResolve = resolve }: VerifyOptions = {}
 ) {
@@ -389,7 +388,7 @@ export async function verifyPresentation(
 }
 
 /**
- * Custom Type Guard to determine input being of type [[ICredential]].
+ * Type Guard to determine input being of type [[ICredential]].
  *
  * @param input - A potentially only partial [[ICredential]].
  *
