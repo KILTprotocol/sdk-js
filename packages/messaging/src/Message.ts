@@ -179,7 +179,9 @@ export function verifyMessageBody(body: MessageBody): void {
     }
     case 'request-accept-delegation': {
       verifyDelegationStructure(body.content.delegationData)
-      Did.isDidSignature(body.content.signatures.inviter)
+      if (!Did.isDidSignature(body.content.signatures.inviter)) {
+        throw new SDKErrors.SignatureMalformedError()
+      }
       if (!isJsonObject(body.content.metaData)) {
         throw new SDKErrors.ObjectUnverifiableError()
       }
@@ -187,8 +189,12 @@ export function verifyMessageBody(body: MessageBody): void {
     }
     case 'submit-accept-delegation': {
       verifyDelegationStructure(body.content.delegationData)
-      Did.isDidSignature(body.content.signatures.inviter)
-      Did.isDidSignature(body.content.signatures.invitee)
+      if (
+        !Did.isDidSignature(body.content.signatures.inviter) ||
+        !Did.isDidSignature(body.content.signatures.invitee)
+      ) {
+        throw new SDKErrors.SignatureMalformedError()
+      }
       break
     }
 

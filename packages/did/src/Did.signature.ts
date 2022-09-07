@@ -16,7 +16,7 @@ import {
   UriFragment,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 
 import { resolve } from './DidResolver/index.js'
 import { parseDidUri, validateKiltDidUri } from './Did.utils.js'
@@ -178,13 +178,10 @@ export function isDidSignature(
   try {
     const keyUri = 'keyUri' in signature ? signature.keyUri : signature.keyId
     if (!isHex(signature.signature) || !validateKiltDidUri(keyUri, true)) {
-      throw new SDKErrors.SignatureMalformedError()
+      return false
     }
     return true
   } catch (cause) {
-    // TODO: type guards shouldn't throw
-    throw new SDKErrors.SignatureMalformedError(undefined, {
-      cause: cause as Error,
-    })
+    return false
   }
 }

@@ -261,7 +261,9 @@ export function verifyDataStructure(input: ICredential): void {
   if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
   }
-  if (input.claimerSignature) isDidSignature(input.claimerSignature)
+  if (input.claimerSignature && !isDidSignature(input.claimerSignature)) {
+    throw new SDKErrors.SignatureMalformedError()
+  }
 }
 
 /**
