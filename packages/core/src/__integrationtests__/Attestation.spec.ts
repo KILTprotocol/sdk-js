@@ -169,7 +169,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       credential,
       attester.uri
     )
-    const storeTx = await Attestation.getStoreTx(attestation)
+    const storeTx = api.tx.attestation.add(
+      attestation.claimHash,
+      attestation.cTypeHash,
+      null
+    )
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       attester,
       storeTx,
@@ -215,7 +219,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     )
     const { keypair, sign } = makeSigningKeyTool()
 
-    const storeTx = await Attestation.getStoreTx(attestation)
+    const storeTx = api.tx.attestation.add(
+      attestation.claimHash,
+      attestation.cTypeHash,
+      null
+    )
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       attester,
       storeTx,
@@ -258,7 +266,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       credential,
       attester.uri
     )
-    const storeTx = await Attestation.getStoreTx(attestation)
+    const storeTx = api.tx.attestation.add(
+      attestation.claimHash,
+      attestation.cTypeHash,
+      null
+    )
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       attester,
       storeTx,
@@ -290,7 +302,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer.authentication[0].id
       )
       attestation = Attestation.fromCredentialAndDid(credential, attester.uri)
-      const storeTx = await Attestation.getStoreTx(attestation)
+      const storeTx = api.tx.attestation.add(
+        attestation.claimHash,
+        attestation.cTypeHash,
+        null
+      )
       const authorizedStoreTx = await Did.authorizeExtrinsic(
         attester,
         storeTx,
@@ -304,7 +320,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
-      const storeTx = await Attestation.getStoreTx(attestation)
+      const storeTx = api.tx.attestation.add(
+        attestation.claimHash,
+        attestation.cTypeHash,
+        null
+      )
       const authorizedStoreTx = await Did.authorizeExtrinsic(
         attester,
         storeTx,
@@ -435,7 +455,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         credential1,
         anotherAttester.uri
       )
-      const storeTx = await Attestation.getStoreTx(licenseAuthorizationGranted)
+      const storeTx = api.tx.attestation.add(
+        licenseAuthorizationGranted.claimHash,
+        licenseAuthorizationGranted.cTypeHash,
+        null
+      )
       const authorizedStoreTx = await Did.authorizeExtrinsic(
         anotherAttester,
         storeTx,
@@ -463,7 +487,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         credential2,
         attester.uri
       )
-      const storeTx2 = await Attestation.getStoreTx(licenseGranted)
+      const storeTx2 = api.tx.attestation.add(
+        licenseGranted.claimHash,
+        licenseGranted.cTypeHash,
+        null
+      )
       const authorizedStoreTx2 = await Did.authorizeExtrinsic(
         attester,
         storeTx2,

@@ -204,7 +204,11 @@ describe('and attestation rights have been delegated', () => {
       credential,
       attester.uri
     )
-    const storeTx = await Attestation.getStoreTx(attestation)
+    const storeTx = api.tx.attestation.add(
+      attestation.claimHash,
+      attestation.cTypeHash,
+      { Delegation: { subjectNodeId: delegatedNode.id } }
+    )
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       attester,
       storeTx,

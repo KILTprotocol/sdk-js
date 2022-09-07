@@ -113,7 +113,11 @@ async function checkRemoveFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getStoreTx(attestation)
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
   authorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     tx,
@@ -158,7 +162,11 @@ async function checkReclaimFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getStoreTx(attestation)
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
   authorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     tx,
@@ -197,7 +205,11 @@ async function checkDeletedDidReclaimAttestation(
 ): Promise<void> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getStoreTx(attestation)
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
   authorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     tx,

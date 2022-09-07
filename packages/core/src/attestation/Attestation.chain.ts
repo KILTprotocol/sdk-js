@@ -19,29 +19,6 @@ import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/au
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 /**
- * Prepares an extrinsic to store the provided [[IAttestation]] on chain.
- *
- * @param attestation The Attestation to write on the blockchain.
- * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
- */
-export async function getStoreTx(
-  attestation: IAttestation
-): Promise<SubmittableExtrinsic> {
-  const { claimHash, cTypeHash, delegationId } = attestation
-  log.debug(() => `Create tx for 'attestation.add'`)
-
-  const api = ConfigService.get('api')
-
-  return api.tx.attestation.add(
-    claimHash,
-    cTypeHash,
-    delegationId
-      ? { Delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
-      : null
-  )
-}
-
-/**
  * Decodes the attestation returned by `api.query.attestation.attestations()`.
  *
  * @param encoded Raw attestation data from blockchain.

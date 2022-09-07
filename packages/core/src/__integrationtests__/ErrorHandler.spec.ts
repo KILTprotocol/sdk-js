@@ -10,7 +10,7 @@
  */
 
 import { BN } from '@polkadot/util'
-import { ConfigService } from '@kiltprotocol/config'
+import { ApiPromise } from '@polkadot/api'
 import type {
   DidDocument,
   IAttestation,
@@ -22,7 +22,6 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
-import { Attestation } from '../index'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
@@ -34,9 +33,10 @@ import {
 let paymentAccount: KiltKeyringPair
 let someDid: DidDocument
 let key: KeyTool
+let api: ApiPromise
 
 beforeAll(async () => {
-  await initializeApi()
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {
@@ -46,7 +46,6 @@ beforeAll(async () => {
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const api = ConfigService.get('api')
   const transferTx = api.tx.balances.transfer(addressFromRandom(), new BN(1))
   await expect(
     submitExtrinsic(transferTx, paymentAccount)
@@ -63,7 +62,11 @@ it('records an extrinsic error when ctype does not exist', async () => {
     owner: someDid.uri,
     revoked: false,
   }
-  const storeTx = await Attestation.getStoreTx(attestation)
+  const storeTx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
   const tx = await Did.authorizeExtrinsic(
     someDid,
     storeTx,
