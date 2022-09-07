@@ -9,6 +9,7 @@
  * @group unit/delegation
  */
 
+import type { HexString } from '@polkadot/util/types'
 import {
   IDelegationNode,
   IDelegationHierarchyDetails,
@@ -38,13 +39,6 @@ jest.mock('./DelegationNode.chain', () => ({
     node.childrenIds.map((id) => (id in nodes ? nodes[id] : null))
   ),
   query: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
-  getStoreAsRootTx: jest.fn(async (node: DelegationNode) => {
-    nodes[node.id] = node
-    hierarchiesDetails[node.id] = {
-      id: node.id,
-      cTypeHash: await node.getCTypeHash(),
-    }
-  }),
 }))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
@@ -74,6 +68,14 @@ describe('DelegationNode', () => {
           childrenIds: nodes[nodeId].childrenIds,
           revoked: true,
         })
+      })
+    jest
+      .mocked(mockedApi.tx.delegation.createHierarchy)
+      .mockImplementation(async (nodeId: string, cTypeHash: HexString) => {
+        hierarchiesDetails[nodeId] = {
+          id: nodeId,
+          cTypeHash,
+        }
       })
 
     successId = Crypto.hashStr('success')

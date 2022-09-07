@@ -20,26 +20,6 @@ import { permissionsAsBitset } from './DelegationNode.utils.js'
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 /**
- * Generate the extrinsic to store a given delegation node as the root of a new delegation hierarchy.
- *
- * @param delegation The delegation node to store as hierarchy root.
- * @returns The SubmittableExtrinsic for the `createHierarchy` call.
- */
-export async function getStoreAsRootTx(
-  delegation: DelegationNode
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-
-  if (!delegation.isRoot()) {
-    throw new SDKErrors.InvalidRootNodeError()
-  }
-  return api.tx.delegation.createHierarchy(
-    delegation.hierarchyId,
-    await delegation.getCTypeHash()
-  )
-}
-
-/**
  * Generate the extrinsic to store a given delegation node under a given delegation hierarchy.
  *
  * @param delegation The delegation node to store under the hierarchy specified as part of the node.

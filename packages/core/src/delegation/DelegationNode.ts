@@ -25,7 +25,6 @@ import {
   getAttestationHashes,
   getChildren,
   getStoreAsDelegationTx,
-  getStoreAsRootTx,
   query,
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
@@ -302,7 +301,11 @@ export class DelegationNode implements IDelegationNode {
     signature?: Did.Utils.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
-      return getStoreAsRootTx(this)
+      const api = ConfigService.get('api')
+      return api.tx.delegation.createHierarchy(
+        this.hierarchyId,
+        await this.getCTypeHash()
+      )
     }
     if (!signature) {
       throw new SDKErrors.DelegateSignatureMissingError()
