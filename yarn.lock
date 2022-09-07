@@ -1234,6 +1234,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"
   dependencies:
+    "@polkadot/api": ^9.0.0
     "@polkadot/typegen": ^9.0.0
     "@types/websocket": ^1.0.0
     glob: ^7.1.1
@@ -1241,6 +1242,7 @@ __metadata:
     ts-node: ^10.4.0
     typescript: ^4.5.4
     websocket: ^1.0.31
+    yargs: ^16.2.0
   languageName: unknown
   linkType: soft
 
@@ -1254,6 +1256,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.0.0
+    "@polkadot/keyring": ^10.0.0
     "@polkadot/types": ^9.0.0
     rimraf: ^3.0.2
     typescript: ^4.5.4
@@ -1265,6 +1268,7 @@ __metadata:
   resolution: "@kiltprotocol/config@workspace:packages/config"
   dependencies:
     "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/api": ^9.0.0
     rimraf: ^3.0.2
     typescript: ^4.5.4
     typescript-logging: ^0.6.4
@@ -1299,7 +1303,6 @@ __metadata:
   resolution: "@kiltprotocol/did@workspace:packages/did"
   dependencies:
     "@kiltprotocol/augment-api": "workspace:*"
-    "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
@@ -1371,7 +1374,6 @@ __metadata:
     "@polkadot/util-crypto": ^10.0.0
     rimraf: ^3.0.2
     typescript: ^4.5.4
-    yargs: ^16.2.0
   languageName: unknown
   linkType: soft
 
@@ -1384,8 +1386,8 @@ __metadata:
     "@polkadot/keyring": ^10.0.0
     "@polkadot/types": ^9.0.0
     "@polkadot/util": ^10.0.0
+    "@polkadot/util-crypto": ^10.0.0
     rimraf: ^3.0.2
-    tweetnacl: ^1.0.3
     typescript: ^4.5.4
   languageName: unknown
   linkType: soft
@@ -1396,7 +1398,6 @@ __metadata:
   dependencies:
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/keyring": ^10.0.0
-    "@polkadot/types": ^9.0.0
     "@polkadot/util": ^10.0.0
     "@polkadot/util-crypto": ^10.0.0
     rimraf: ^3.0.2
@@ -1411,7 +1412,7 @@ __metadata:
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
     "@kiltprotocol/augment-api": "workspace:*"
-    "@kiltprotocol/chain-helpers": "workspace:*"
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/testing": "workspace:*"

@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@kiltprotocol/utils": "workspace:*",
+    "@polkadot/api": "^9.0.0",
     "typescript-logging": "^0.6.4"
   }
 }

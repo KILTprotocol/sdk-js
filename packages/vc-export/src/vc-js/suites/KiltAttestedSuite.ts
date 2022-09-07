@@ -7,7 +7,6 @@
 
 /* eslint-disable max-classes-per-file */
 import { ApiPromise } from '@polkadot/api'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type {
   DocumentLoader,
   ExpansionMap,
@@ -16,6 +15,9 @@ import type {
   VerificationResult,
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
+
+import { ConfigService } from '@kiltprotocol/config'
+
 import type { AttestedProof } from '../../types.js'
 import {
   verifyAttestedProof,
@@ -49,7 +51,7 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
   }
 
   private setConnection(): void {
-    BlockchainApiConnection.setConnection(Promise.resolve(this.provider))
+    ConfigService.set({ api: this.provider })
   }
 
   /**

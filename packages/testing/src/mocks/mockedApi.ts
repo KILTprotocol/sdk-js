@@ -366,6 +366,7 @@ export function getMockedApi(): MockApiPromise {
       },
     },
     registry: TYPE_REGISTRY,
+    hasSubscriptions: true,
   }
   return MockedApi as MockApiPromise
 }
