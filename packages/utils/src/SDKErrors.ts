@@ -174,10 +174,10 @@ export class IdentityMismatchError extends SDKError {
   }
 }
 
-export class FullNodeConnectionNotSetError extends SDKError {
+export class BlockchainApiMissingError extends SDKError {
   constructor(options?: ErrorOptions) {
     super(
-      'A function tried to access the ApiPromise instance before it was set. Did you forget to call `Kilt.init({ api })`?',
+      'The blockchain API is not set. Did you forget to call `Kilt.connect(…)` or `Kilt.init(…)`?',
       options
     )
   }
@@ -186,7 +186,7 @@ export class FullNodeConnectionNotSetError extends SDKError {
 export class SubscriptionsNotSupportedError extends SDKError {
   constructor(options?: ErrorOptions) {
     super(
-      'The api instance was used in a context that relies on state or event subscriptions, but the provider does not support them',
+      'This function is not available if the blockchain API does not support state or event subscriptions, use `WsProvider` to enable the complete feature set',
       options
     )
   }

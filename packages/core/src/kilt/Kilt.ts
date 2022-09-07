@@ -44,11 +44,11 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
 /**
  * Connects to the KILT Blockchain using the api instance set with `init()`.
  *
- * @param wsEndpoint
+ * @param blockchainRpcWsUrl WebSocket URL of the RPC endpoint exposed by a node that is part of the Kilt blockchain network you wish to connect to.
  * @returns An instance of ApiPromise.
  */
-export async function connect(wsEndpoint: string): Promise<ApiPromise> {
-  const provider = new WsProvider(wsEndpoint)
+export async function connect(blockchainRpcWsUrl: string): Promise<ApiPromise> {
+  const provider = new WsProvider(blockchainRpcWsUrl)
   const api = await ApiPromise.create({
     provider,
   })
