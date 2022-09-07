@@ -18,20 +18,6 @@ import { ApiPromise, WsProvider } from '@polkadot/api'
 import { ConfigService } from '@kiltprotocol/config'
 
 /**
- * Connects to the KILT Blockchain using the api instance set with `init()`.
- *
- * @returns An instance of ApiPromise.
- */
-export async function connect(wsEndpoint: string): Promise<ApiPromise> {
-  const provider = new WsProvider(wsEndpoint)
-  const api = await ApiPromise.create({
-    provider,
-  })
-  await init({ api })
-  return api.isReadyOrError
-}
-
-/**
  * Allows setting global configuration such as the log level and the polkadot ApiPromise instance used throughout the sdk.
  *
  * @param configs Config options object.
@@ -53,6 +39,21 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
 ): Promise<void> {
   config(configs || {})
   await cryptoWaitReady()
+}
+
+/**
+ * Connects to the KILT Blockchain using the api instance set with `init()`.
+ *
+ * @param wsEndpoint
+ * @returns An instance of ApiPromise.
+ */
+export async function connect(wsEndpoint: string): Promise<ApiPromise> {
+  const provider = new WsProvider(wsEndpoint)
+  const api = await ApiPromise.create({
+    provider,
+  })
+  await init({ api })
+  return api.isReadyOrError
 }
 
 /**
