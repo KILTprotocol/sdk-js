@@ -11,7 +11,14 @@ import {
   ethereumEncode,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import type { bool, Enum, Option, u64, U8aFixed } from '@polkadot/types'
+import type {
+  bool,
+  Enum,
+  Option,
+  StorageKey,
+  u64,
+  U8aFixed,
+} from '@polkadot/types'
 import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
@@ -199,33 +206,28 @@ function isLinkableAccountId(
 }
 
 /**
- * Return all the accounts linked to the provided DID.
+ * Decodes the accounts linked to the provided DID.
  *
- * @param linkedDid The DID to use for the lookup.
+ * @param encoded The data returned by `api.query.didLookup.connectedAccounts.keys()`.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
- * @returns A list of addresses of accounts linked to the DID, encoded using `networkPrefix`.
+ * @returns A list of addresses of accounts, encoded using `networkPrefix`.
  */
-export async function queryConnectedAccountsForDid(
-  linkedDid: DidUri,
+export function decodeConnectedAccounts(
+  encoded: Array<StorageKey<[AccountId32, AccountId32]>>,
   networkPrefix = ss58Format
-): Promise<Array<KiltAddress | SubstrateAddress>> {
-  const api = ConfigService.get('api')
-  const connectedAccountsRecords =
-    await api.query.didLookup.connectedAccounts.keys(encodeDid(linkedDid))
-  return connectedAccountsRecords.map<string>(
-    ({ args: [, accountAddress] }) => {
-      if (isLinkableAccountId(accountAddress)) {
-        // linked account is substrate address (ethereum-enabled storage version)
-        if (accountAddress.isAccountId32)
-          return encodeAddress(accountAddress.asAccountId32, networkPrefix)
-        // linked account is ethereum address (ethereum-enabled storage version)
-        if (accountAddress.isAccountId20)
-          return ethereumEncode(accountAddress.asAccountId20)
-      }
-      // linked account is substrate account (legacy storage version)
-      return encodeAddress(accountAddress.toU8a(), networkPrefix)
+): Array<KiltAddress | SubstrateAddress> {
+  return encoded.map<string>(({ args: [, accountAddress] }) => {
+    if (isLinkableAccountId(accountAddress)) {
+      // linked account is substrate address (ethereum-enabled storage version)
+      if (accountAddress.isAccountId32)
+        return encodeAddress(accountAddress.asAccountId32, networkPrefix)
+      // linked account is ethereum address (ethereum-enabled storage version)
+      if (accountAddress.isAccountId20)
+        return ethereumEncode(accountAddress.asAccountId20)
     }
-  )
+    // linked account is substrate account (legacy storage version)
+    return encodeAddress(accountAddress.toU8a(), networkPrefix)
+  })
 }
 
 /**

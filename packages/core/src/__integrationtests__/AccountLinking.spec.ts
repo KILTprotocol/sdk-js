@@ -16,7 +16,6 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { ss58Format } from '@kiltprotocol/utils'
 import type {
   DidDocument,
   KeyringPair,
@@ -66,7 +65,9 @@ describe('When there is an on-chain DID', () => {
         (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
       ).toBe(true)
       expect(
-        await AccountLinks.queryConnectedAccountsForDid(did.uri)
+        await api.query.didLookup.connectedAccounts.keys(
+          Did.Chain.encodeDid(did.uri)
+        )
       ).toStrictEqual([])
       expect(
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
@@ -97,9 +98,12 @@ describe('When there is an on-chain DID', () => {
           await AccountLinks.queryConnectedDid(paymentAccount.address)
         ).did
       ).toStrictEqual(did.uri)
-      expect(
-        await AccountLinks.queryConnectedAccountsForDid(did.uri, ss58Format)
-      ).toStrictEqual([paymentAccount.address])
+      const encoded = await api.query.didLookup.connectedAccounts.keys(
+        Did.Chain.encodeDid(did.uri)
+      )
+      expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+        paymentAccount.address,
+      ])
       expect(
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
       ).toBe(true)
@@ -128,15 +132,20 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual(newDid.uri)
       // Check that old DID has no accounts linked
       expect(
-        await AccountLinks.queryConnectedAccountsForDid(did.uri)
+        await api.query.didLookup.connectedAccounts.keys(
+          Did.Chain.encodeDid(did.uri)
+        )
       ).toStrictEqual([])
       expect(
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
       ).toBe(false)
       // Check that new DID has the account linked
-      expect(
-        await AccountLinks.queryConnectedAccountsForDid(newDid.uri, ss58Format)
-      ).toStrictEqual([paymentAccount.address])
+      const encoded = await api.query.didLookup.connectedAccounts.keys(
+        Did.Chain.encodeDid(newDid.uri)
+      )
+      expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+        paymentAccount.address,
+      ])
       expect(
         await AccountLinks.queryIsConnected(newDid.uri, paymentAccount.address)
       ).toBe(true)
@@ -155,7 +164,9 @@ describe('When there is an on-chain DID', () => {
         (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
       ).toBe(true)
       expect(
-        await AccountLinks.queryConnectedAccountsForDid(did.uri)
+        await api.query.didLookup.connectedAccounts.keys(
+          Did.Chain.encodeDid(did.uri)
+        )
       ).toStrictEqual([])
       expect(
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
@@ -218,9 +229,12 @@ describe('When there is an on-chain DID', () => {
         expect(
           (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
         ).toBe(true)
-        expect(
-          await AccountLinks.queryConnectedAccountsForDid(did.uri, ss58Format)
-        ).toStrictEqual([keypair.address])
+        const encoded = await api.query.didLookup.connectedAccounts.keys(
+          Did.Chain.encodeDid(did.uri)
+        )
+        expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+          keypair.address,
+        ])
         expect(
           await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
         ).toBe(false)
@@ -258,7 +272,9 @@ describe('When there is an on-chain DID', () => {
           ).did
         ).toStrictEqual(newDid.uri)
         expect(
-          await AccountLinks.queryConnectedAccountsForDid(did.uri)
+          await api.query.didLookup.connectedAccounts.keys(
+            Did.Chain.encodeDid(did.uri)
+          )
         ).toStrictEqual([])
         expect(
           await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
@@ -267,12 +283,12 @@ describe('When there is an on-chain DID', () => {
           await AccountLinks.queryIsConnected(did.uri, keypair.address)
         ).toBe(false)
         // Check that new DID has the account linked
-        expect(
-          await AccountLinks.queryConnectedAccountsForDid(
-            newDid.uri,
-            ss58Format
-          )
-        ).toStrictEqual([keypair.address])
+        const encoded = await api.query.didLookup.connectedAccounts.keys(
+          Did.Chain.encodeDid(newDid.uri)
+        )
+        expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+          keypair.address,
+        ])
         expect(
           await AccountLinks.queryIsConnected(
             newDid.uri,
@@ -309,7 +325,9 @@ describe('When there is an on-chain DID', () => {
           (await AccountLinks.queryConnectedDid(keypair.address)).isNone
         ).toBe(true)
         expect(
-          await AccountLinks.queryConnectedAccountsForDid(newDid.uri)
+          await api.query.didLookup.connectedAccounts.keys(
+            Did.Chain.encodeDid(newDid.uri)
+          )
         ).toStrictEqual([])
         expect(
           await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
@@ -370,9 +388,12 @@ describe('When there is an on-chain DID', () => {
       expect(
         (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
       ).toBe(true)
+      const encoded = await api.query.didLookup.connectedAccounts.keys(
+        Did.Chain.encodeDid(did.uri)
+      )
       expect(
         // Wildcard substrate encoding. Account should match the generated one.
-        await AccountLinks.queryConnectedAccountsForDid(did.uri, 42)
+        AccountLinks.decodeConnectedAccounts(encoded, 42)
       ).toStrictEqual([genericAccount.address])
       expect(
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
@@ -422,7 +443,9 @@ describe('When there is an on-chain DID', () => {
         (await AccountLinks.queryConnectedDid(genericAccount.address)).isNone
       ).toBe(true)
       expect(
-        await AccountLinks.queryConnectedAccountsForDid(newDid.uri)
+        await api.query.didLookup.connectedAccounts.keys(
+          Did.Chain.encodeDid(newDid.uri)
+        )
       ).toStrictEqual([])
       expect(
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
