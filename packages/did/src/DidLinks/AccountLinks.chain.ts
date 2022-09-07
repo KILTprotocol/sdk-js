@@ -193,19 +193,6 @@ export function decodeDidConnection(
 }
 
 /**
- * Gets deposit information for a given account link.
- *
- * @param linkedAccount The linked account.
- * @returns Deposit info giving amount and owner of deposit, null if this account is not linked.
- */
-export async function queryAccountLinkDepositInfo(
-  linkedAccount: Address
-): Promise<Deposit | null> {
-  const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isSome ? decodeDidConnection(connectedDid).deposit : null
-}
-
-/**
  * Return the addresses of the DID linked to the provided account, if present.
  *
  * @param linkedAccount The account to use for the lookup.
