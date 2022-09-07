@@ -24,7 +24,6 @@ import { decode as decodeAttestation } from '../attestation/Attestation.chain.js
 import {
   getAttestationHashes,
   getChildren,
-  getRemoveTx,
   getRevokeTx,
   getStoreAsDelegationTx,
   getStoreAsRootTx,
@@ -401,7 +400,8 @@ export class DelegationNode implements IDelegationNode {
   public async getRemoveTx(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
     log.debug(`:: remove(${this.id}) with maxRevocations=${childCount}`)
-    return getRemoveTx(this.id, childCount)
+    const api = ConfigService.get('api')
+    return api.tx.delegation.removeDelegation(this.id, childCount)
   }
 
   /**

@@ -109,21 +109,6 @@ export async function getRevokeTx(
 }
 
 /**
- * Generate the extrinsic to remove a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
- *
- * @param delegationId The identifier of the delegation node to remove.
- * @param maxRevocations The max number of children nodes that will be removed as part of the removal operation. This value does not include the node itself being removed.
- * @returns The SubmittableExtrinsic for the `removeDelegation` call.
- */
-export async function getRemoveTx(
-  delegationId: IDelegationNode['id'],
-  maxRevocations: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.delegation.removeDelegation(delegationId, maxRevocations)
-}
-
-/**
  * Query the blockchain to retrieve the number of **direct** children of a given delegation node.
  *
  * @param delegationNode The delegation node to perform the lookup for.
