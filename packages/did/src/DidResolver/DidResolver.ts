@@ -104,21 +104,24 @@ export async function resolveKey(
     document,
     metadata: { canonicalId },
   } = resolved
-  const controller = canonicalId || did
-  const latestDocument = canonicalId ? await Did.query(canonicalId) : document
-  if (!latestDocument) {
+
+  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  if (canonicalId) {
+    return null
+  }
+  if (!document) {
     return null
   }
 
-  const key = Did.getKey(latestDocument, keyId)
+  const key = Did.getKey(document, keyId)
   if (!key) {
     return null
   }
 
   const { includedAt } = key
   return {
-    controller,
-    id: `${controller}${keyId}`,
+    controller: did,
+    id: `${did}${keyId}`,
     publicKey: key.publicKey,
     type: key.type,
     ...(includedAt && { includedAt }),
@@ -161,19 +164,22 @@ export async function resolveServiceEndpoint(
     document,
     metadata: { canonicalId },
   } = resolved
-  const controller = canonicalId || did
-  const latestDocument = canonicalId ? await Did.query(canonicalId) : document
-  if (!latestDocument) {
+
+  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  if (canonicalId) {
+    return null
+  }
+  if (!document) {
     return null
   }
 
-  const endpoint = Did.getEndpoint(latestDocument, serviceId)
+  const endpoint = Did.getEndpoint(document, serviceId)
   if (!endpoint) {
     return null
   }
 
   return {
     ...endpoint,
-    id: `${controller}${serviceId}`,
+    id: `${did}${serviceId}`,
   }
 }
