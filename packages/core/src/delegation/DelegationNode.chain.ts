@@ -124,23 +124,6 @@ export async function getRemoveTx(
 }
 
 /**
- * Generate the extrinsic to reclaim the deposit for a given delegation node.
- *
- * The generated extrinsic can only be successfully executed if the submitter is the original payer of the delegation deposit.
- *
- * @param delegationId The identifier of the delegation node to claim back deposit for.
- * @param maxRemovals The max number of children nodes that will be removed as part of the operation. This value does not include the node itself being removed.
- * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
- */
-export async function getReclaimDepositTx(
-  delegationId: IDelegationNode['id'],
-  maxRemovals: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.delegation.reclaimDeposit(delegationId, maxRemovals)
-}
-
-/**
  * Query the blockchain to retrieve the number of **direct** children of a given delegation node.
  *
  * @param delegationNode The delegation node to perform the lookup for.
