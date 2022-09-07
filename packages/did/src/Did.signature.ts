@@ -19,7 +19,7 @@ import {
 import { Crypto } from '@kiltprotocol/utils'
 
 import { resolve } from './DidResolver/index.js'
-import { parseDidUri, validateKiltDidUri } from './Did.utils.js'
+import { parseDidUri, isKiltDidUri } from './Did.utils.js'
 import * as Did from './index.js'
 
 type DidSignatureVerificationFromDetailsInput = {
@@ -177,7 +177,7 @@ export function isDidSignature(
   const signature = input as DidSignature | OldDidSignature
   try {
     const keyUri = 'keyUri' in signature ? signature.keyUri : signature.keyId
-    if (!isHex(signature.signature) || !validateKiltDidUri(keyUri, true)) {
+    if (!isHex(signature.signature) || !isKiltDidUri(keyUri, 'ResourceUri')) {
       return false
     }
     return true

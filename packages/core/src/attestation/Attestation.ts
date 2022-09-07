@@ -51,7 +51,9 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  DidUtils.validateKiltDidUri(input.owner)
+  if (!DidUtils.isKiltDidUri(input.owner)) {
+    throw new TypeError('Attestation owner is expected to be a Kilt Did')
+  }
 
   if (typeof input.revoked !== 'boolean') {
     throw new SDKErrors.RevokedTypeError()

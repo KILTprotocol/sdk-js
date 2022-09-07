@@ -58,7 +58,9 @@ export function verifyDelegationStructure(
   if (!account) {
     throw new SDKErrors.OwnerMissingError()
   }
-  Did.Utils.validateKiltDidUri(account)
+  if (!Did.Utils.isKiltDidUri(account, 'Did')) {
+    throw new TypeError('account is expected to be a Kilt Did')
+  }
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
@@ -142,7 +144,12 @@ export function verifyMessageBody(body: MessageBody): void {
             cTypeHash,
             'request credential cTypeHash invalid'
           )
-          trustedAttesters?.forEach((did) => Did.Utils.validateKiltDidUri(did))
+          trustedAttesters?.forEach((did) => {
+            if (!Did.Utils.isKiltDidUri(did, 'Did'))
+              throw new TypeError(
+                'requested attesters is expected to be an array of Kilt Dids'
+              )
+          })
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
@@ -232,8 +239,12 @@ export function verifyMessageEnvelope(message: IMessage): void {
   if (receivedAt !== undefined && typeof receivedAt !== 'number') {
     throw new TypeError('Received at is expected to be a number')
   }
-  Did.Utils.validateKiltDidUri(receiver)
-  Did.Utils.validateKiltDidUri(sender)
+  if (
+    !Did.Utils.isKiltDidUri(receiver, 'Did') ||
+    !Did.Utils.isKiltDidUri(sender, 'Did')
+  ) {
+    throw new TypeError('receiver & sender are expected to be Kilt Dids')
+  }
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }

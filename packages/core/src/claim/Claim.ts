@@ -195,8 +195,8 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
-  if (input.owner) {
-    DidUtils.validateKiltDidUri(input.owner)
+  if (input.owner && !DidUtils.isKiltDidUri(input.owner, 'Did')) {
+    throw new TypeError('Claim owner is expected to be a Kilt Did')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {

@@ -165,29 +165,48 @@ export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
 
 export type EncodedSignature = EncodedVerificationKey
 
+export function isKiltDidUri(
+  input: unknown,
+  expectType: 'ResourceUri'
+): input is DidResourceUri
+export function isKiltDidUri(input: unknown, expectType: 'Did'): input is DidUri
+export function isKiltDidUri(input: unknown): input is DidUri | DidResourceUri
+
 /**
- * Type guard assuring that a string (or other input) is a valid KILT DID uri.
+ * Type guard assuring that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
  *
  * @param input Arbitrary input.
- * @param allowFragment Whether the uri is allowed to have a fragment (following '#').
- * @returns True if validation has passed.
+ * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
+ * @returns True if validation has passed, false otherwise.
  */
-export function validateKiltDidUri(
+export function isKiltDidUri(
   input: unknown,
-  allowFragment = false
+  expectType?: 'Did' | 'ResourceUri'
 ): input is DidUri | DidResourceUri {
-  if (typeof input !== 'string') {
-    throw new TypeError(`DID string expected, got ${typeof input}`)
-  }
-  const { address, fragment } = parseDidUri(input as DidUri)
-  if (!allowFragment && fragment) {
-    throw new SDKErrors.InvalidDidFormatError(input)
-  }
-  if (!isKiltAddress(address)) {
-    throw new SDKErrors.AddressInvalidError(address, 'DID')
-  }
+  try {
+    if (typeof input !== 'string') {
+      return false
+    }
+    const { address, fragment } = parseDidUri(input as DidUri)
+    switch (expectType) {
+      case 'Did':
+        if (fragment) return false
+        break
+      case 'ResourceUri':
+        if (!fragment) return false
+        break
+      default:
+        break
+    }
 
-  return true
+    if (!isKiltAddress(address)) {
+      return false
+    }
+
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
