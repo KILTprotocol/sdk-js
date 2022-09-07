@@ -14,7 +14,7 @@ import type {
   ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
 import {
@@ -38,7 +38,7 @@ export async function resolve(
 ): Promise<DidResolutionResult | null> {
   const { type } = parseDidUri(did)
   const fullDidUri = getFullDidUri(did)
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   switch (type) {
     case 'full': {
@@ -128,13 +128,13 @@ export async function resolveKey(
   if (!keyId) {
     throw new SDKErrors.InvalidDidFormatError(didUri)
   }
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   switch (type) {
     case 'full': {
       const encoded = await api.query.did.did(encodeDid(didUri))
       const key = encoded.isSome && Did.getKey(decodeDid(encoded), keyId)
-      if (!key) {
+      if (key === undefined || key === false) {
         return null
       }
       const { includedAt } = key
@@ -143,15 +143,15 @@ export async function resolveKey(
         id: didUri,
         publicKey: key.publicKey,
         type: key.type,
-        ...(includedAt && { includedAt }),
+        ...(includedAt !== undefined && { includedAt }),
       }
     }
     case 'light': {
       const resolvedDetails = await resolve(didUri)
-      if (!resolvedDetails) {
+      if (resolvedDetails === null) {
         throw new SDKErrors.InvalidDidFormatError(didUri)
       }
-      if (!resolvedDetails.document) {
+      if (resolvedDetails.document === undefined) {
         return null
       }
       const key = Did.getKey(resolvedDetails.document, keyId)
@@ -185,7 +185,7 @@ export async function resolveServiceEndpoint(
   if (!serviceId) {
     throw new SDKErrors.InvalidDidFormatError(serviceUri)
   }
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   switch (type) {
     case 'full': {
@@ -205,10 +205,10 @@ export async function resolveServiceEndpoint(
     }
     case 'light': {
       const resolvedDetails = await resolve(did)
-      if (!resolvedDetails) {
+      if (resolvedDetails === null) {
         throw new SDKErrors.InvalidDidFormatError(serviceUri)
       }
-      if (!resolvedDetails.document) {
+      if (resolvedDetails.document === undefined) {
         return null
       }
       const serviceEndpoint = Did.getEndpoint(

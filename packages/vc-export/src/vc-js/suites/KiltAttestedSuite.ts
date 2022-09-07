@@ -15,6 +15,7 @@ import type {
   VerificationResult,
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
+
 import type { AttestedProof } from '../../types.js'
 import {
   verifyAttestedProof,
@@ -56,9 +57,9 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
   }): Promise<VerificationResult> {
     try {
       const { document, proof } = options
-      if (!document || typeof document !== 'object')
+      if (typeof document !== 'object')
         throw new TypeError('Document must be a JsonLd object')
-      if (!proof || typeof proof !== 'object')
+      if (typeof proof !== 'object')
         throw new TypeError('Proof must be a JsonLd object')
       const compactedDoc = await this.compactDoc(document, options)
       const compactedProof = await this.compactProof<AttestedProof>(

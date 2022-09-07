@@ -5,16 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import type {
-  Deposit,
-  DidUri,
-  KiltAddress,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
-import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
-
 import {
   decodeAddress,
   encodeAddress,
@@ -34,13 +24,23 @@ import {
   u8aWrapBytes,
   U8A_WRAP_ETHEREUM,
 } from '@polkadot/util'
-
 import type {
   AugmentedQuery,
   AugmentedQueryDoubleMap,
   AugmentedSubmittable,
 } from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
+
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import type {
+  Deposit,
+  DidUri,
+  KiltAddress,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
+import { ConfigService } from '@kiltprotocol/config'
+
 import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
 import { decodeWeb3Name, Web3Name } from './Web3Names.chain.js'
 import { encodeDid } from '../Did.chain.js'
@@ -166,7 +166,7 @@ function encodeMultiAddress(address: Address): EncodedMultiAddress {
 async function queryConnectedDid(
   linkedAccount: Address
 ): Promise<Option<PalletDidLookupConnectionRecord>> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   if (isEthereumEnabled(api)) {
     return api.query.didLookup.connectedDids(encodeMultiAddress(linkedAccount))
   }
@@ -218,7 +218,7 @@ export async function queryConnectedAccountsForDid(
   linkedDid: DidUri,
   networkPrefix = ss58Format
 ): Promise<Array<KiltAddress | SubstrateAddress>> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const connectedAccountsRecords =
     await api.query.didLookup.connectedAccounts.keys(encodeDid(linkedDid))
   return connectedAccountsRecords.map<string>(
@@ -251,7 +251,7 @@ export async function queryWeb3Name(
   if (!linkedDid) {
     return null
   }
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return decodeWeb3Name(await api.query.web3Names.names(encodeDid(linkedDid)))
 }
 
@@ -266,7 +266,7 @@ export async function queryIsConnected(
   did: DidUri,
   account: Address
 ): Promise<boolean> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   if (isEthereumEnabled(api)) {
     // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
     return !(
@@ -305,7 +305,7 @@ export async function getAccountSignedAssociationExtrinsic(
 ): Promise<Extrinsic> {
   const proof = { [sigType]: signature } as EncodedSignature
 
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   if (isEthereumEnabled(api)) {
     if (sigType === 'ethereum') {
       return api.tx.didLookup.associateAccount(
@@ -341,7 +341,7 @@ export async function getAccountSignedAssociationExtrinsic(
 export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
 ): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   if (isEthereumEnabled(api)) {
     return api.tx.didLookup.removeAccountAssociation(
       encodeMultiAddress(linkedAccount)
@@ -413,7 +413,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   sign: LinkingSignCallback,
   nBlocksValid = 10
 ): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   const blockNo = await api.query.system.number()
   const validTill = blockNo.addn(nBlocksValid)

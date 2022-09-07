@@ -63,7 +63,7 @@ function exportToJsonDidDocument(did: DidDocument): ConformingDidDocument {
     ...(capabilityDelegation[0] && {
       capabilityDelegation: [capabilityDelegation[0].id],
     }),
-    ...(keyAgreement[0] && {
+    ...(keyAgreement.length > 0 && {
       keyAgreement: [keyAgreement[0].id],
     }),
     ...(service.length > 0 && {

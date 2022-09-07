@@ -10,7 +10,7 @@
  */
 
 import { BN } from '@polkadot/util'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 import type {
   DidDocument,
   IAttestation,
@@ -46,7 +46,7 @@ beforeAll(async () => {
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const transferTx = api.tx.balances.transfer(addressFromRandom(), new BN(1))
   await expect(
     submitExtrinsic(transferTx, paymentAccount)

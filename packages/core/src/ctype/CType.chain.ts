@@ -7,9 +7,11 @@
 
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
+
 import { Crypto } from '@kiltprotocol/utils'
 import type { DidUri, ICType, KiltAddress } from '@kiltprotocol/types'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+
 import { getSchemaPropertiesForHash } from './CType.js'
 
 /**

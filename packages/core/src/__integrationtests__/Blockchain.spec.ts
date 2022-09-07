@@ -16,12 +16,11 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { toFemtoKilt } from '../balance/Balance.utils'
 import { devCharlie, devFaucet, initializeApi, submitExtrinsic } from './utils'
-import { connect, disconnect } from '../kilt'
+import { disconnect } from '../kilt'
 
 let api: ApiPromise
 beforeAll(async () => {
-  await initializeApi()
-  api = await connect()
+  api = await initializeApi()
 }, 30_000)
 
 describe('Chain returns specific errors, that we check for', () => {

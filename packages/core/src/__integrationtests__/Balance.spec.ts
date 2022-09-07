@@ -11,9 +11,10 @@
 
 import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+
 import type { KeyringPair } from '@kiltprotocol/types'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+
 import { getBalances, listenToBalanceChanges } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
@@ -28,8 +29,7 @@ import {
 
 let api: ApiPromise
 beforeAll(async () => {
-  await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
 }, 30_000)
 
 describe('when there is a dev chain with a faucet', () => {

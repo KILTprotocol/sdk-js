@@ -30,35 +30,3 @@ export interface IQuoteAgreement extends IQuoteAttesterSigned {
   rootHash: ICredential['rootHash']
   claimerSignature: DidSignature
 }
-
-export type CompressedCostBreakdown = [
-  ICostBreakdown['gross'],
-  ICostBreakdown['net'],
-  ICostBreakdown['tax']
-]
-
-export type CompressedQuote = [
-  IQuote['attesterDid'],
-  IQuote['cTypeHash'],
-  CompressedCostBreakdown,
-  IQuote['currency'],
-  IQuote['termsAndConditions'],
-  IQuote['timeframe']
-]
-
-export type CompressedQuoteAttesterSigned = [
-  ...CompressedQuote,
-  [
-    IQuoteAttesterSigned['attesterSignature']['signature'],
-    IQuoteAttesterSigned['attesterSignature']['keyUri']
-  ]
-]
-
-export type CompressedQuoteAgreed = [
-  ...CompressedQuoteAttesterSigned,
-  [
-    IQuoteAgreement['claimerSignature']['signature'],
-    IQuoteAgreement['claimerSignature']['keyUri']
-  ],
-  IQuoteAgreement['rootHash']
-]

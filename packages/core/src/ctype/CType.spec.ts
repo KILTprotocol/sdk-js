@@ -10,14 +10,12 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 import { ApiMocks } from '@kiltprotocol/testing'
 import type {
   ICType,
-  CompressedCType,
   CTypeSchemaWithoutId,
   ICTypeSchema,
-  CompressedCTypeSchema,
   IClaim,
 } from '@kiltprotocol/types'
 import * as Claim from '../claim'
@@ -26,7 +24,7 @@ import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CType.schemas'
 
 const mockedApi: any = ApiMocks.getMockedApi()
-BlockchainApiConnection.setConnection(mockedApi)
+ConfigService.set({ api: mockedApi })
 
 const encodedAliceDid = ApiMocks.mockChainQueryReturn(
   'ctype',
@@ -47,7 +45,6 @@ describe('CType', () => {
   let claimCtype: ICType
   let claimContents: any
   let claim: IClaim
-  let compressedCType: CompressedCType
   beforeAll(async () => {
     rawCType = {
       $id: 'kilt:ctype:0x2',
@@ -76,21 +73,6 @@ describe('CType', () => {
     }
 
     claim = Claim.fromCTypeAndClaimContents(claimCtype, claimContents, didAlice)
-    compressedCType = [
-      claimCtype.hash,
-      claimCtype.owner,
-      [
-        claimCtype.schema.$id,
-        claimCtype.schema.$schema,
-        claimCtype.schema.title,
-        {
-          name: {
-            type: 'string',
-          },
-        },
-        'object',
-      ],
-    ]
   })
 
   it('makes ctype object from schema without id', () => {
@@ -162,38 +144,6 @@ describe('CType', () => {
     ).toThrowErrorMatchingInlineSnapshot(
       `"Provided $id \\"kilt:ctype:0xd5302762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" does not match schema $id \\"kilt:ctype:0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\""`
     )
-  })
-
-  it('compresses and decompresses the ctype object', () => {
-    expect(CType.compressSchema(claimCtype.schema)).toEqual(compressedCType[2])
-    expect(CType.decompressSchema(compressedCType[2])).toEqual(
-      claimCtype.schema
-    )
-
-    expect(CType.compress(claimCtype)).toEqual(compressedCType)
-
-    expect(CType.decompress(compressedCType)).toEqual(claimCtype)
-  })
-
-  it('Negative test for compresses and decompresses the ctype object', () => {
-    const faultySchema = [...compressedCType[2]]
-    faultySchema.pop()
-    const faultySchemaCTypeCompressed = [...compressedCType]
-    faultySchemaCTypeCompressed[2] = faultySchema as CompressedCTypeSchema
-    compressedCType.pop()
-    // @ts-expect-error
-    delete rawCType.$id
-    // @ts-expect-error
-    delete claimCtype.hash
-
-    expect(() =>
-      CType.decompress(faultySchemaCTypeCompressed as CompressedCType)
-    ).toThrow()
-    expect(() => CType.compressSchema(rawCType)).toThrow()
-
-    expect(() => CType.compress(claimCtype)).toThrow()
-
-    expect(() => CType.decompress(compressedCType)).toThrow()
   })
 
   it('verifies whether a ctype is registered on chain ', async () => {

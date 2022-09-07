@@ -24,7 +24,6 @@ import {
 import { Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
 import type { ApiPromise } from '@polkadot/api'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -35,8 +34,7 @@ import {
 let api: ApiPromise
 
 beforeAll(async () => {
-  await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
 }, 30_000)
 
 describe('When there is an Web3NameCreator and a payer', () => {

@@ -27,9 +27,8 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { UriFragment, verificationKeyTypes } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
-
+import { ConfigService } from '@kiltprotocol/config'
 import type {
   DidDidDetails,
   DidDidDetailsDidAuthorizedCallOperation,
@@ -37,6 +36,7 @@ import type {
   DidDidDetailsDidPublicKeyDetails,
   DidServiceEndpointsDidEndpoint,
 } from '@kiltprotocol/augment-api'
+
 import {
   checkServiceEndpointSizeConstraints,
   checkServiceEndpointSyntax,
@@ -80,7 +80,7 @@ export function decodeDeletedDids(
 async function queryAllServicesEncoded(
   did: DidUri
 ): Promise<DidServiceEndpointsDidEndpoint[]> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encodedEndpoints = await api.query.did.serviceEndpoints.entries(
     encodeDid(did)
   )
@@ -291,7 +291,7 @@ export async function getStoreTx(
   submitter: KiltAddress,
   sign: SignCallback
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   const {
     authentication,
@@ -301,7 +301,7 @@ export async function getStoreTx(
     service = [],
   } = input
 
-  if (!authentication?.[0]) {
+  if (!('authentication' in input) || typeof authentication[0] !== 'object') {
     throw new SDKErrors.DidError(
       `The provided DID does not have an authentication key to sign the creation operation`
     )
@@ -342,10 +342,17 @@ export async function getStoreTx(
 
   const [authenticationKey] = authentication
   const did = getAddressByKey(authenticationKey)
+
   const newAttestationKey =
-    assertionMethod?.[0] && encodePublicKey(assertionMethod[0])
+    assertionMethod &&
+    assertionMethod.length > 0 &&
+    encodePublicKey(assertionMethod[0])
+
   const newDelegationKey =
-    capabilityDelegation?.[0] && encodePublicKey(capabilityDelegation[0])
+    capabilityDelegation &&
+    capabilityDelegation.length > 0 &&
+    encodePublicKey(capabilityDelegation[0])
+
   const newKeyAgreementKeys = keyAgreement.map(encodePublicKey)
   const newServiceDetails = service.map(endpointToBlockchainEndpoint)
 
@@ -386,7 +393,7 @@ export async function getStoreTx(
 export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   checkServiceEndpointInput(api, endpoint)
   return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
 }
@@ -416,7 +423,7 @@ export async function generateDidAuthenticatedTx({
   submitter,
   blockNumber,
 }: AuthorizeCallInput & SigningOptions): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const signableCall =
     api.registry.createType<DidDidDetailsDidAuthorizedCallOperation>(
       api.tx.did.submitDidCall.meta.args[0].type.toString(),
@@ -425,7 +432,7 @@ export async function generateDidAuthenticatedTx({
         did: encodeDid(did),
         call,
         submitter,
-        blockNumber: blockNumber || (await api.query.system.number()),
+        blockNumber: blockNumber ?? (await api.query.system.number()),
       }
     )
   const signature = await sign({

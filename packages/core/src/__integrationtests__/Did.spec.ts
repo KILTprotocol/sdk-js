@@ -21,7 +21,6 @@ import {
   makeEncryptionKeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   DidDocument,
   DidResolutionResult,
@@ -48,8 +47,7 @@ let paymentAccount: KiltKeyringPair
 let api: ApiPromise
 
 beforeAll(async () => {
-  await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {

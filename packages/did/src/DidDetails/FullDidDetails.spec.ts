@@ -21,7 +21,7 @@ import {
   createLocalDemoFullDidFromKeypair,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 
 import type { EncodedDid } from '../Did.chain'
 import {
@@ -40,7 +40,7 @@ import * as Did from './index.js'
 
 const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()
-BlockchainApiConnection.setConnection(mockedApi)
+ConfigService.set({ api: mockedApi })
 
 const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
 const existingDid: DidUri = `did:kilt:${existingAddress}`

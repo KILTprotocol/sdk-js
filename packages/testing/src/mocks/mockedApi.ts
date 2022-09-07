@@ -77,25 +77,25 @@ class MockSubmittableExtrinsic {
   }
 
   public addSignature(): this {
-    const signature = this.signature.toHuman()
-      ? this.signature.toHuman()! + 1
-      : 0
+    const signature =
+      this.signature.toHuman() !== undefined ? this.signature.toHuman()! + 1 : 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() ? this.nonce.toHuman()! + 1 : 0
+    const nonce =
+      this.nonce.toHuman() !== undefined ? this.nonce.toHuman()! + 1 : 0
     this.nonce = { toHuman: () => nonce }
     return this
   }
 
   public signAsync(): this {
-    const signature = this.signature.toHuman() || 0
+    const signature = this.signature.toHuman() ?? 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() || 0
+    const nonce = this.nonce.toHuman() ?? 0
     this.nonce = { toHuman: () => nonce }
 
     return this
@@ -104,7 +104,7 @@ class MockSubmittableExtrinsic {
   public async send(
     callable: (...params: unknown[]) => void
   ): Promise<string | (() => void)> {
-    if (callable) {
+    if (typeof callable === 'function') {
       callable(this.result)
       return () => {}
     }
@@ -115,14 +115,14 @@ class MockSubmittableExtrinsic {
     a: any,
     callable: (...params: unknown[]) => void
   ): Promise<string | (() => void)> {
-    const signature = this.signature.toHuman() || 0
+    const signature = this.signature.toHuman() ?? 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() || 0
+    const nonce = this.nonce.toHuman() ?? 0
     this.nonce = { toHuman: () => nonce }
-    if (callable) {
+    if (typeof callable === 'function') {
       callable(this.result)
       return () => {
         // noop
@@ -374,6 +374,7 @@ export function getMockedApi(): MockApiPromise {
       },
     },
     registry: TYPE_REGISTRY,
+    hasSubscriptions: true,
   }
   MockedApi.query.did.serviceEndpoints.entries = jest.fn().mockReturnValue([])
   return MockedApi as MockApiPromise

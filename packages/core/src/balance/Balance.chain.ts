@@ -16,8 +16,10 @@
 
 import type { UnsubscribePromise } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
+
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 /**
  * Fetches the current balances of the account with [accountAddress].
@@ -29,7 +31,7 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 export async function getBalances(
   accountAddress: KeyringPair['address']
 ): Promise<Balances> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   return (await api.query.system.account(accountAddress)).data
 }
@@ -50,7 +52,11 @@ export async function listenToBalanceChanges(
     changes: Balances
   ) => void
 ): Promise<UnsubscribePromise> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
+  if (!api.hasSubscriptions) {
+    throw new SDKErrors.SubscriptionsNotSupportedError()
+  }
+
   let previousBalances = await getBalances(accountAddress)
 
   return api.query.system.account(

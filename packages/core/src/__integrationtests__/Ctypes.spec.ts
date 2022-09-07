@@ -17,7 +17,6 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import { Crypto } from '@kiltprotocol/utils'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { ApiPromise } from '@polkadot/api'
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -29,8 +28,7 @@ import {
 
 let api: ApiPromise
 beforeAll(async () => {
-  await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
 }, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {

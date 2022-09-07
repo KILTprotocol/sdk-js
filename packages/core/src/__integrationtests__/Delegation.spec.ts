@@ -23,7 +23,6 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
@@ -108,8 +107,7 @@ async function addDelegation(
 }
 
 beforeAll(async () => {
-  await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {

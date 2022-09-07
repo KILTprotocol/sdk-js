@@ -9,12 +9,11 @@ import type {
   IAttestation,
   IDelegationHierarchyDetails,
   ICredential,
-  CompressedAttestation,
   DidUri,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import { decode } from './Attestation.chain.js'
 import * as Credential from '../credential/index.js'
@@ -46,7 +45,7 @@ export function verifyDataStructure(input: IAttestation): void {
   }
   DataUtils.validateHash(input.claimHash, 'Claim')
 
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+  if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
   }
 
@@ -91,7 +90,7 @@ export function fromCredentialAndDid(
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation
 ): Promise<IDelegationHierarchyDetails | null> {
-  if (!input) {
+  if (input === null) {
     return null
   }
 
@@ -139,7 +138,7 @@ export async function checkValidity(
   claimHash: IAttestation['claimHash'] | ICredential['rootHash']
 ): Promise<boolean> {
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const chainAttestation = await api.query.attestation.attestations(claimHash)
   return chainAttestation.isSome && !decode(chainAttestation, claimHash).revoked
 }
@@ -163,42 +162,4 @@ export function verifyAgainstCredential(
     credential.rootHash === attestation.claimHash &&
     Credential.verifyDataIntegrity(credential)
   )
-}
-
-/**
- * Compresses an [[Attestation]] object into an array for storage and/or messaging.
- *
- * @param attestation An [[Attestation]] object that will be sorted and stripped for messaging or storage.
- * @returns An ordered array of an [[Attestation]].
- */
-export function compress(attestation: IAttestation): CompressedAttestation {
-  verifyDataStructure(attestation)
-  return [
-    attestation.claimHash,
-    attestation.cTypeHash,
-    attestation.owner,
-    attestation.revoked,
-    attestation.delegationId,
-  ]
-}
-
-/**
- * Decompresses an [[Attestation]] from storage and/or message into an object.
- *
- * @param attestation A compressed [[Attestation]] array that is decompressed back into an object.
- * @returns An object that has the same properties as an [[Attestation]].
- */
-export function decompress(attestation: CompressedAttestation): IAttestation {
-  if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw new SDKErrors.DecompressionArrayError('Attestation')
-  }
-  const decompressedAttestation = {
-    claimHash: attestation[0],
-    cTypeHash: attestation[1],
-    owner: attestation[2],
-    revoked: attestation[3],
-    delegationId: attestation[4],
-  }
-  verifyDataStructure(decompressedAttestation)
-  return decompressedAttestation
 }

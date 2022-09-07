@@ -19,18 +19,12 @@
 
 import { hexToBn } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
-import type {
-  CompressedClaim,
-  CompressedPartialClaim,
-  DidUri,
-  IClaim,
-  ICType,
-  PartialClaim,
-} from '@kiltprotocol/types'
-import { Crypto, DataUtils, jsonabc, SDKErrors } from '@kiltprotocol/utils'
+import type { DidUri, IClaim, ICType, PartialClaim } from '@kiltprotocol/types'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import {
   getIdForCTypeHash,
+  isICType,
   verifyClaimAgainstNestedSchemas,
   verifyClaimAgainstSchema,
 } from '../ctype/index.js'
@@ -289,10 +283,11 @@ export function fromCTypeAndClaimContents(
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  if (ctypeInput.schema) {
-    if (!verifyAgainstCType(claimContents, ctypeInput.schema)) {
-      throw new SDKErrors.ClaimUnverifiableError()
-    }
+  if (
+    !isICType(ctypeInput) ||
+    !verifyAgainstCType(claimContents, ctypeInput.schema)
+  ) {
+    throw new SDKErrors.ClaimUnverifiableError()
   }
   const claim = {
     cTypeHash: ctypeInput.hash,
@@ -317,73 +312,4 @@ export function isIClaim(input: unknown): input is IClaim {
     return false
   }
   return true
-}
-
-/**
- * Compresses an [[IClaim]] for storage and/or messaging.
- *
- * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[CompressedClaim]].
- */
-export function compress(claim: IClaim): CompressedClaim
-/**
- * Compresses a [[PartialClaim]] for storage and/or messaging.
- *
- * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[CompressedPartialClaim]].
- */
-export function compress(claim: PartialClaim): CompressedPartialClaim
-/**
- * Compresses a claim object for storage and/or messaging.
- *
- * @param claim A (partial) claim object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of that represents the underlying data in a more compact form.
- */
-export function compress(
-  claim: IClaim | PartialClaim
-): CompressedClaim | CompressedPartialClaim {
-  verifyDataStructure(claim)
-  let sortedContents
-  if (claim.contents) {
-    sortedContents = jsonabc.sortObj(claim.contents)
-  }
-  return [claim.cTypeHash, claim.owner, sortedContents]
-}
-
-/**
- * Decompresses an [[IClaim]] from storage and/or message.
- *
- * @param claim A [[CompressedClaim]] array that is reverted back into an object.
- * @returns An [[IClaim]] object that has the same properties compressed representation.
- */
-export function decompress(claim: CompressedClaim): IClaim
-/**
- * Decompresses a partial [[IClaim]] from storage and/or message.
- *
- * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
- * @returns A [[PartialClaim]] object that has the same properties compressed representation.
- */
-export function decompress(claim: CompressedPartialClaim): PartialClaim
-/**
- * Decompresses compressed representation of a (partial) [[IClaim]] from storage and/or message.
- *
- * @param claim A [[CompressedClaim]] or [[CompressedPartialClaim]] array that is reverted back into an object.
- * @returns An [[IClaim]] or [[PartialClaim]] object that has the same properties compressed representation.
- */
-export function decompress(
-  claim: CompressedClaim | CompressedPartialClaim
-): IClaim | PartialClaim {
-  if (!Array.isArray(claim) || claim.length !== 3) {
-    throw new SDKErrors.DecompressionArrayError('Claim')
-  }
-  const decompressedClaim = {
-    cTypeHash: claim[0],
-    owner: claim[1],
-    contents: claim[2],
-  }
-  verifyDataStructure(decompressedClaim)
-  return decompressedClaim
 }

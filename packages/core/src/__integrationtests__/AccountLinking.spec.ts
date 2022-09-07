@@ -23,7 +23,6 @@ import type {
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { BN } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
@@ -44,7 +43,7 @@ let api: ApiPromise
 
 beforeAll(async () => {
   await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
   paymentAccount = await createEndowedTestAccount()
   linkDeposit = api.consts.didLookup.deposit.toBn()
 }, 40_000)

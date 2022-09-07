@@ -22,15 +22,3 @@ export interface IClaim {
  * The minimal partial claim from which a JSON-LD representation can be built.
  */
 export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
-
-export type CompressedClaim = [
-  IClaim['cTypeHash'],
-  IClaim['owner'],
-  IClaimContents
-]
-
-export type CompressedPartialClaim = [
-  IClaim['cTypeHash'],
-  IClaim['owner'] | undefined,
-  IClaimContents | undefined
-]

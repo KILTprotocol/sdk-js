@@ -13,7 +13,6 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
 
@@ -31,7 +30,7 @@ export async function getStoreTx(
   const { claimHash, cTypeHash, delegationId } = attestation
   log.debug(() => `Create tx for 'attestation.add'`)
 
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   return api.tx.attestation.add(
     claimHash,
@@ -82,11 +81,11 @@ export async function getRevokeTx(
   claimHash: ICredential['rootHash'] | IAttestation['claimHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   return api.tx.attestation.revoke(
     claimHash,
-    maxParentChecks
+    maxParentChecks > 0
       ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
       : null
   )
@@ -104,11 +103,11 @@ export async function getRemoveTx(
   claimHash: ICredential['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   return api.tx.attestation.remove(
     claimHash,
-    maxParentChecks
+    maxParentChecks > 0
       ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
       : null
   )

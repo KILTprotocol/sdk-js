@@ -20,12 +20,10 @@ import type {
   CTypeSchemaWithoutId,
   IClaim,
   ICTypeMetadata,
-  CompressedCType,
-  CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 import type { HexString } from '@polkadot/util/types'
 import { decode } from './CType.chain.js'
 import {
@@ -144,7 +142,7 @@ export function verifyClaimAgainstSchema(
  * @returns Whether or not the CType is registered on-chain.
  */
 export async function verifyStored(ctype: ICType): Promise<boolean> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encoded = await api.query.ctype.ctypes(ctype.hash)
   return encoded.isSome
 }
@@ -156,7 +154,7 @@ export async function verifyStored(ctype: ICType): Promise<boolean> {
  * @returns Whether or not the CType is registered on-chain to `ctype.owner`.
  */
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encoded = await api.query.ctype.ctypes(ctype.hash)
   return encoded.isSome ? decode(encoded) === ctype.owner : false
 }
@@ -171,7 +169,7 @@ export function verifyDataStructure(input: ICType): void {
   if (!verifyObjectAgainstSchema(input, CTypeWrapperModel)) {
     throw new SDKErrors.ObjectUnverifiableError()
   }
-  if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
+  if (!('schema' in input) || getHashForSchema(input.schema) !== input.hash) {
     throw new SDKErrors.HashMalformedError(input.hash, 'CType')
   }
   if (getIdForSchema(input.schema) !== input.schema.$id) {
@@ -266,84 +264,4 @@ export function isICType(input: unknown): input is ICType {
     return false
   }
   return true
-}
-
-/**
- * Compresses a [[CType]] schema for storage and/or messaging.
- *
- * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
- * @returns An ordered array of a [[CType]] schema.
- */
-export function compressSchema(
-  cTypeSchema: ICType['schema']
-): CompressedCTypeSchema {
-  if (
-    !cTypeSchema.$id ||
-    !cTypeSchema.$schema ||
-    !cTypeSchema.title ||
-    !cTypeSchema.properties ||
-    !cTypeSchema.type
-  ) {
-    throw new SDKErrors.CompressObjectError(cTypeSchema, 'cTypeSchema')
-  }
-  const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
-  return [
-    sortedCTypeSchema.$id,
-    sortedCTypeSchema.$schema,
-    sortedCTypeSchema.title,
-    sortedCTypeSchema.properties,
-    sortedCTypeSchema.type,
-  ]
-}
-
-/**
- * Decompresses a schema of a [[CType]] from storage and/or message.
- *
- * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
- * @returns An object that has the same properties as a [[CType]] schema.
- */
-export function decompressSchema(
-  cTypeSchema: CompressedCTypeSchema
-): ICType['schema'] {
-  if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 5) {
-    throw new SDKErrors.DecompressionArrayError('cTypeSchema')
-  }
-  return {
-    $id: cTypeSchema[0],
-    $schema: cTypeSchema[1],
-    title: cTypeSchema[2],
-    properties: cTypeSchema[3],
-    type: cTypeSchema[4],
-  }
-}
-
-/**
- * Compresses a [[CType]] for storage and/or messaging.
- *
- * @param cType A [[CType]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[CType]].
- */
-export function compress(cType: ICType): CompressedCType {
-  verifyDataStructure(cType)
-  return [cType.hash, cType.owner, compressSchema(cType.schema)]
-}
-
-/**
- * Decompresses a [[CType]] from storage and/or message.
- *
- * @param cType A compressed [[CType]] array that is reverted back into an object.
- * @returns An object that has the same properties as a [[CType]].
- */
-export function decompress(cType: CompressedCType): ICType {
-  if (!Array.isArray(cType) || cType.length !== 3) {
-    throw new SDKErrors.DecompressionArrayError('CType')
-  }
-  const decompressedCType = {
-    hash: cType[0],
-    owner: cType[1],
-    schema: decompressSchema(cType[2]),
-  }
-  verifyDataStructure(decompressedCType)
-  return decompressedCType
 }

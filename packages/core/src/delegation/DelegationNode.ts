@@ -18,7 +18,6 @@ import type {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { decode as decodeAttestation } from '../attestation/Attestation.chain.js'
@@ -211,7 +210,7 @@ export class DelegationNode implements IDelegationNode {
    */
   public async getAttestations(): Promise<IAttestation[]> {
     const attestationHashes = await this.getAttestationHashes()
-    const api = await BlockchainApiConnection.getConnectionOrConnect()
+    const api = ConfigService.get('api')
 
     const attestations = await Promise.all(
       attestationHashes.map(async (claimHash) => {

@@ -20,7 +20,7 @@ import type {
 } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 
 import {
   decodeDid,
@@ -54,7 +54,7 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
     )
   }
 
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encoded = await api.query.did.did(encodeDid(didUri))
   if (encoded.isNone) return null
   const didRec = decodeDid(encoded)
@@ -100,7 +100,7 @@ export function getKeysForExtrinsic(
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
 export async function getNextNonce(did: DidDocument): Promise<BN> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const queried = await api.query.did.did(encodeDid(did.uri))
   const currentNonce = queried.isSome
     ? decodeDid(queried).lastTxCounter
@@ -138,7 +138,7 @@ export async function authorizeExtrinsic(
   }
 
   const [signingKey] = getKeysForExtrinsic(did, extrinsic)
-  if (!signingKey) {
+  if (signingKey === undefined) {
     throw new SDKErrors.DidError(
       `The details for DID "${uri}" do not contain the required keys for this operation`
     )

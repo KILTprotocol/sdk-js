@@ -11,19 +11,20 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import type { HexString } from '@polkadot/util/types'
+
 import type {
   IAttestation,
-  CompressedAttestation,
   DidUri,
   ICType,
   IClaim,
   ICredential,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { HexString } from '@polkadot/util/types'
+import { ConfigService } from '@kiltprotocol/config'
+
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from '../credential'
@@ -33,7 +34,7 @@ let mockedApi: any
 
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  BlockchainApiConnection.setConnection(mockedApi)
+  ConfigService.set({ api: mockedApi })
 })
 
 describe('Attestation', () => {
@@ -120,50 +121,6 @@ describe('Attestation', () => {
     expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   })
 
-  it('compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-
-    const compressedAttestation: CompressedAttestation = [
-      attestation.claimHash,
-      attestation.cTypeHash,
-      attestation.owner,
-      attestation.revoked,
-      attestation.delegationId,
-    ]
-
-    expect(Attestation.compress(attestation)).toEqual(compressedAttestation)
-
-    expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
-  })
-
-  it('Negative test for compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-
-    const compressedAttestation: CompressedAttestation = [
-      attestation.claimHash,
-      attestation.cTypeHash,
-      attestation.owner,
-      attestation.revoked,
-      attestation.delegationId,
-    ]
-    compressedAttestation.pop()
-    // @ts-ignore
-    delete attestation.claimHash
-
-    expect(() => {
-      Attestation.decompress(compressedAttestation)
-    }).toThrow()
-
-    expect(() => {
-      Attestation.compress(attestation)
-    }).toThrow()
-  })
   it('error check should throw errors on faulty Attestations', () => {
     const cTypeHash: HexString =
       '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff'

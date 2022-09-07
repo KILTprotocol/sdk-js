@@ -12,6 +12,8 @@
  * @packageDocumentation
  */
 
+import type { ApiPromise } from '@polkadot/api'
+
 import {
   LFService,
   LoggerFactoryOptions,
@@ -30,7 +32,7 @@ const DEFAULT_DEBUG_LEVEL =
     : LogLevel.Error
 
 export type configOpts = {
-  address: string
+  api: ApiPromise
   logLevel: LogLevel
 } & { [key: string]: any }
 
@@ -52,16 +54,11 @@ export function modifyLogLevel(level: LogLevel): LogLevel {
   return actualLevel
 }
 
-let configuration: configOpts = {
+const defaultConfig: Partial<configOpts> = {
   logLevel: DEFAULT_DEBUG_LEVEL,
-  address: '',
 }
 
-function checkAddress(): void {
-  if (!configuration.address) {
-    throw new SDKErrors.WsAddressNotSetError()
-  }
-}
+let configuration: Partial<configOpts> = { ...defaultConfig }
 
 /**
  * Get the value set for a configuration.
@@ -70,19 +67,19 @@ function checkAddress(): void {
  * @returns Value for this key.
  */
 export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
-  switch (configOpt) {
-    case 'address':
-      checkAddress()
-      break
-    default:
+  if (typeof configuration[configOpt] === 'undefined') {
+    switch (configOpt) {
+      case 'api':
+        throw new SDKErrors.BlockchainApiMissingError()
+      default:
+        throw new Error(`GENERIC NOT CONFIGURED ERROR FOR KEY: "${configOpt}"`)
+    }
   }
-  if (typeof configuration[configOpt] === 'undefined')
-    throw new Error(`GENERIC NOT CONFIGURED ERROR FOR KEY: "${configOpt}"`)
   return configuration[configOpt]
 }
 
 function setLogLevel(logLevel: LogLevel | undefined): void {
-  if (logLevel || logLevel === 0) {
+  if (logLevel !== undefined) {
     modifyLogLevel(logLevel)
   }
 }
@@ -95,6 +92,28 @@ function setLogLevel(logLevel: LogLevel | undefined): void {
 export function set<K extends Partial<configOpts>>(opts: K): void {
   configuration = { ...configuration, ...opts }
   setLogLevel(configuration.logLevel)
+}
+
+/**
+ * Set the value for a configuration to its default (which may be `undefined`).
+ *
+ * @param key Key identifying the configuration option.
+ */
+export function unset<K extends keyof configOpts>(key: K): void {
+  if (Object.prototype.hasOwnProperty.call(defaultConfig, key)) {
+    configuration[key] = defaultConfig[key]
+  } else {
+    delete configuration[key]
+  }
+}
+
+/**
+ * Indicates whether a configuration option is set.
+ *
+ * @param key Key identifying the configuration option.
+ */
+export function isSet<K extends keyof configOpts>(key: K): boolean {
+  return typeof configuration[key] !== 'undefined'
 }
 
 // Create options instance and specify 1 LogGroupRule:

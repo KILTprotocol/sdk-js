@@ -22,7 +22,6 @@ import {
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { ApiPromise } from '@polkadot/api'
 import * as Attestation from '../attestation'
 import { getRemoveTx, getRevokeTx } from '../attestation/Attestation.chain'
@@ -50,8 +49,7 @@ let claimerKey: KeyTool
 
 let api: ApiPromise
 beforeAll(async () => {
-  await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {

@@ -63,11 +63,11 @@ export function decodeDelegationHierarchyDetails(
 function decodePermissions(bitset: number): PermissionType[] {
   const permissions: PermissionType[] = []
   // eslint-disable-next-line no-bitwise
-  if (bitset & Permission.ATTEST) {
+  if ((bitset & Permission.ATTEST) > 0) {
     permissions.push(Permission.ATTEST)
   }
   // eslint-disable-next-line no-bitwise
-  if (bitset & Permission.DELEGATE) {
+  if ((bitset & Permission.DELEGATE) > 0) {
     permissions.push(Permission.DELEGATE)
   }
   return permissions

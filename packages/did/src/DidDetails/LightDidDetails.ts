@@ -75,7 +75,7 @@ export function createLightDidDocument({
     service,
   }
 
-  if (keyAgreement) {
+  if (keyAgreement !== undefined) {
     did.keyAgreement = [
       {
         id: encryptionKeyId, // Encryption key always has the #encryption ID.
@@ -127,7 +127,7 @@ export function parseDocumentFromLightDid(
     authKeyTypeEncoding &&
     lightDidEncodingToVerificationKeyType[authKeyTypeEncoding]
 
-  if (!keyType) {
+  if (keyType === undefined) {
     throw new SDKErrors.DidError(
       `Authentication key encoding "${authKeyTypeEncoding}" does not match any supported key type`
     )

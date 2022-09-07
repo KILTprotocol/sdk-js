@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/utils",
-  "version": "0.29.0-47",
+  "version": "0.29.0-50",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -36,7 +36,6 @@
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
     "@polkadot/keyring": "^10.0.0",
-    "@polkadot/types": "^9.0.0",
     "@polkadot/util": "^10.0.0",
     "@polkadot/util-crypto": "^10.0.0",
     "tweetnacl": "^1.0.3",

@@ -24,7 +24,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks, makeSigningKeyTool } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 
 import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
 import {
@@ -73,7 +73,7 @@ const didIsBlacklisted = ApiMocks.mockChainQueryReturn(
 let mockedApi: any
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  BlockchainApiConnection.setConnection(mockedApi)
+  ConfigService.set({ api: mockedApi })
 
   mockedApi.query.did.did.mockReturnValue(encodedDidWithAuthenticationKey)
   mockedApi.query.did.serviceEndpoints.mockReturnValue(
@@ -230,7 +230,7 @@ describe('When resolving a full DID', () => {
     const { document, metadata } = (await resolve(
       fullDidWithAuthenticationKey
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
@@ -261,7 +261,7 @@ describe('When resolving a full DID', () => {
     const { document, metadata } = (await resolve(
       fullDidWithAllKeys
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
@@ -305,7 +305,7 @@ describe('When resolving a full DID', () => {
     const { document, metadata } = (await resolve(
       fullDidWithServiceEndpoints
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
@@ -443,13 +443,13 @@ describe('When resolving a light DID', () => {
     const { document, metadata } = (await resolve(
       migratedDid
     )) as DidResolutionResult
-    if (!document) throw new Error('Document unresolved')
+    if (document === undefined) throw new Error('Document unresolved')
 
     expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
       deactivated: false,
       canonicalId: didWithAuthenticationKey,
     })
-    expect(document?.uri).toStrictEqual<DidUri>(migratedDid)
+    expect(document.uri).toStrictEqual<DidUri>(migratedDid)
     expect(Did.getKeys(document)).toStrictEqual<DidKey[]>([
       {
         id: '#authentication',

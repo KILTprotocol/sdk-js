@@ -24,7 +24,6 @@ import {
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  CompressedCredential,
   DidDocument,
   DidResolve,
   DidResourceUri,
@@ -49,8 +48,8 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 function getHashLeaves(
   claimHashes: Hash[],
-  legitimations: ICredential[],
-  delegationId: IDelegationNode['id'] | null
+  legitimations?: ICredential[],
+  delegationId?: IDelegationNode['id'] | null
 ): Uint8Array[] {
   const result = claimHashes.map((item) => Crypto.coToUInt8(item))
   if (legitimations) {
@@ -201,13 +200,13 @@ export function verifyDataIntegrity(input: ICredential): boolean {
   }
 
   // verify properties against selective disclosure proof
-  const verificationResult = Claim.verifyDisclosedAttributes(input.claim, {
+  const { errors, verified } = Claim.verifyDisclosedAttributes(input.claim, {
     nonces: input.claimNonceMap,
     hashes: input.claimHashes,
   })
   // TODO: how do we want to deal with multiple errors during claim verification?
-  if (!verificationResult.verified)
-    throw verificationResult.errors[0] || new SDKErrors.ClaimUnverifiableError()
+  if (!verified)
+    throw errors.length > 0 ? errors[0] : new SDKErrors.ClaimUnverifiableError()
 
   // check legitimations
   input.legitimations.forEach((legitimation) => {
@@ -227,7 +226,7 @@ export function verifyDataIntegrity(input: ICredential): boolean {
  *
  */
 export function verifyDataStructure(input: ICredential): void {
-  if (!input.claim) {
+  if (!('claim' in input)) {
     throw new SDKErrors.ClaimMissingError()
   } else {
     Claim.verifyDataStructure(input.claim)
@@ -235,11 +234,11 @@ export function verifyDataStructure(input: ICredential): void {
   if (!input.claim.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  if (!input.legitimations && !Array.isArray(input.legitimations)) {
+  if (!Array.isArray(input.legitimations)) {
     throw new SDKErrors.LegitimationsMissingError()
   }
 
-  if (!input.claimNonceMap) {
+  if (!('claimNonceMap' in input)) {
     throw new SDKErrors.ClaimNonceMapMissingError()
   }
   if (
@@ -255,11 +254,11 @@ export function verifyDataStructure(input: ICredential): void {
     throw new SDKErrors.ClaimNonceMapMalformedError()
   }
 
-  if (!input.claimHashes) {
+  if (!('claimHashes' in input)) {
     throw new SDKErrors.DataStructureError('claim hashes not provided')
   }
 
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+  if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
   }
   if (input.claimerSignature) isDidSignature(input.claimerSignature)
@@ -498,48 +497,4 @@ export async function createPresentation({
   })
 
   return presentation
-}
-
-/**
- * Compresses a [[Credential]] for storage and/or messaging.
- *
- * @param credential A [[Credential]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[Credential]].
- */
-export function compress(credential: ICredential): CompressedCredential {
-  verifyDataStructure(credential)
-  return [
-    Claim.compress(credential.claim),
-    credential.claimNonceMap,
-    credential.claimerSignature,
-    credential.claimHashes,
-    credential.rootHash,
-    credential.legitimations.map(compress),
-    credential.delegationId,
-  ]
-}
-
-/**
- * Decompresses a [[Credential]] from storage and/or message.
- *
- * @param credential A compressed [[Credential]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as a [[Credential]].
- */
-export function decompress(credential: CompressedCredential): ICredential {
-  if (!Array.isArray(credential) || credential.length !== 7) {
-    throw new SDKErrors.DecompressionArrayError('Credential')
-  }
-  const decompressedCredential = {
-    claim: Claim.decompress(credential[0]),
-    claimNonceMap: credential[1],
-    claimerSignature: credential[2],
-    claimHashes: credential[3],
-    rootHash: credential[4],
-    legitimations: credential[5].map(decompress),
-    delegationId: credential[6],
-  }
-  verifyDataStructure(decompressedCredential)
-  return decompressedCredential
 }

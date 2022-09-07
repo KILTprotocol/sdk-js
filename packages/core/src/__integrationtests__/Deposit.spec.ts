@@ -26,7 +26,6 @@ import type {
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import {
@@ -271,8 +270,7 @@ let keys: KeyTool[]
 let credential: ICredential
 
 beforeAll(async () => {
-  await initializeApi()
-  api = await BlockchainApiConnection.getConnectionOrConnect()
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {
