@@ -43,7 +43,7 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
 import { decodeWeb3Name, Web3Name } from './Web3Names.chain.js'
-import { encodeDid } from '../Did.chain.js'
+import { decodeDeposit, encodeDid } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -183,7 +183,9 @@ export async function queryAccountLinkDepositInfo(
   linkedAccount: Address
 ): Promise<Deposit | null> {
   const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isSome ? connectedDid.unwrap().deposit : null
+  return connectedDid.isSome
+    ? decodeDeposit(connectedDid.unwrap().deposit)
+    : null
 }
 
 /**

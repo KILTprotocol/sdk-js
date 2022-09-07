@@ -12,6 +12,7 @@ import { BN, hexToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 
 import type {
+  Deposit,
   DidDocument,
   DidEncryptionKey,
   DidKey,
@@ -25,8 +26,9 @@ import type {
   SignCallback,
   SigningOptions,
   SubmittableExtrinsic,
+  UriFragment,
 } from '@kiltprotocol/types'
-import { UriFragment, verificationKeyTypes } from '@kiltprotocol/types'
+import { verificationKeyTypes } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
@@ -35,6 +37,7 @@ import type {
   DidDidDetailsDidPublicKey,
   DidDidDetailsDidPublicKeyDetails,
   DidServiceEndpointsDidEndpoint,
+  KiltSupportDeposit,
 } from '@kiltprotocol/augment-api'
 
 import {
@@ -75,6 +78,13 @@ export function decodeDeletedDids(
   )
 }
 
+export function decodeDeposit(deposit: KiltSupportDeposit): Deposit {
+  return {
+    owner: deposit.owner.toString() as KiltAddress,
+    amount: deposit.amount.toBn(),
+  }
+}
+
 // Query all services for a DID given the DID.
 // Interacts with the ServiceEndpoints storage double map.
 async function queryAllServicesEncoded(
@@ -94,10 +104,7 @@ export type EncodedDid = Pick<
   'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
 > & {
   lastTxCounter: BN
-  deposit: {
-    owner: KiltAddress
-    amount: BN
-  }
+  deposit: Deposit
 }
 
 // ### DECODED QUERYING (builds on top of raw querying)
