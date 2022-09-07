@@ -87,7 +87,7 @@ type CompliantDidResolutionResult = Omit<DidResolutionResult, 'document'> & {
  * Resolve a DID URI to the DID document and its metadata.
  * This alternative to `resolve()` behaves closer to the DID specification
  * when it resolves a light DID that has been upgraded to a full DID.
- * In this case `compliantResolve()` will return a `document` that only contains `uri`,
+ * In this case `strictResolve()` will return a `document` that only contains `uri`,
  * while `resolve()` takes a more practical approach and does not return `document`.
  *
  * The URI can also identify a key or a service, but it will be ignored during resolution.
@@ -95,7 +95,7 @@ type CompliantDidResolutionResult = Omit<DidResolutionResult, 'document'> & {
  * @param did The subject's DID.
  * @returns The details associated with the DID subject.
  */
-export async function compliantResolve(
+export async function strictResolve(
   did: DidUri
 ): Promise<CompliantDidResolutionResult | null> {
   const resolved = await resolve(did)
