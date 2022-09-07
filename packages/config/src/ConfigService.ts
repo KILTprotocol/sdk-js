@@ -12,7 +12,7 @@
  * @packageDocumentation
  */
 
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 
 import {
   LFService,
@@ -100,7 +100,7 @@ export function set<K extends Partial<configOpts>>(opts: K): void {
  * @param key Key identifying the configuration option.
  */
 export function unset<K extends keyof configOpts>(key: K): void {
-  if (Object.hasOwn(defaultConfig, key)) {
+  if (defaultConfig.hasOwnProperty(key)) {
     configuration[key] = defaultConfig[key]
   } else {
     delete configuration[key]
