@@ -174,6 +174,25 @@ async function queryConnectedDid(
 }
 
 /**
+ * Decodes the information about the connection between an address and a DID.
+ *
+ * @param encoded The output of `api.query.didLookup.connectedDids()`.
+ * @returns The connection details.
+ */
+export function decodeDidConnection(
+  encoded: Option<PalletDidLookupConnectionRecord>
+): {
+  did: DidUri
+  deposit: Deposit
+} {
+  const { did, deposit } = encoded.unwrap()
+  return {
+    did: getFullDidUri(did.toString() as KiltAddress),
+    deposit: decodeDeposit(deposit),
+  }
+}
+
+/**
  * Gets deposit information for a given account link.
  *
  * @param linkedAccount The linked account.
@@ -183,9 +202,7 @@ export async function queryAccountLinkDepositInfo(
   linkedAccount: Address
 ): Promise<Deposit | null> {
   const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isSome
-    ? decodeDeposit(connectedDid.unwrap().deposit)
-    : null
+  return connectedDid.isSome ? decodeDidConnection(connectedDid).deposit : null
 }
 
 /**
@@ -198,9 +215,7 @@ export async function queryConnectedDidForAccount(
   linkedAccount: Address
 ): Promise<DidUri | null> {
   const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isNone
-    ? null
-    : getFullDidUri(connectedDid.unwrap().did.toString() as KiltAddress)
+  return connectedDid.isNone ? null : decodeDidConnection(connectedDid).did
 }
 
 function isLinkableAccountId(
