@@ -105,24 +105,6 @@ describe('Credential', () => {
     )
   })
 
-  it('throws on not allowing unsigned credential', async () => {
-    const credential = buildCredential(
-      identityBob,
-      {
-        a: 'a',
-        b: 'b',
-        c: 'c',
-      },
-      [legitimation]
-    )
-    const testCType = CType.fromSchema(rawCType)
-    await expect(
-      Credential.verifyCredential(credential, {
-        ctype: testCType,
-      })
-    ).rejects.toThrow()
-  })
-
   it('throws on wrong hash in claim hash tree', async () => {
     const credential = buildCredential(
       identityBob,
@@ -275,9 +257,9 @@ describe('Credential', () => {
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialIncompleteClaimHashTree)
     ).toThrowError(SDKErrors.NoProofForStatementError)
-    expect(() =>
-      Credential.verifyDataStructure(builtCredentialMalformedSignature)
-    ).toThrowError(SDKErrors.SignatureMalformedError)
+    expect(
+      Credential.isICredentialPresentation(builtCredentialMalformedSignature)
+    ).toBe(false)
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialMalformedHashes)
     ).toThrowError(SDKErrors.NoProofForStatementError)
@@ -473,6 +455,25 @@ describe('Credential', () => {
     })
   })
 
+  it('throws if signature is missing on credential presentation', async () => {
+    const credential = buildCredential(
+      identityBob.uri,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+    const testCType = CType.fromSchema(rawCType)
+    await expect(
+      Credential.verify(credential as ICredentialPresentation, {
+        ctype: testCType,
+        didResolve: mockResolve,
+      })
+    ).rejects.toThrow()
+  })
+
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
     const migratedAndDeleted = makeSigningKeyTool('ed25519')
     migratedAndDeletedLightDid = Did.createLightDidDocument({
@@ -513,8 +514,7 @@ describe('Credential', () => {
       keyAlice.sign
     )
     expect(Credential.isICredential(presentation)).toBe(true)
-    // @ts-expect-error
-    delete credential.claimHashes
+    delete (presentation as Partial<ICredential>).claimHashes
 
     expect(Credential.isICredential(presentation)).toBe(false)
   })
