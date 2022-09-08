@@ -20,7 +20,6 @@ import type {
   IClaim,
   ICredential,
 } from '@kiltprotocol/types'
-import { Utils as DidUtils } from '@kiltprotocol/did'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
@@ -68,57 +67,6 @@ describe('Attestation', () => {
       identityBob
     )
     credential = Credential.fromClaim(testClaim)
-  })
-
-  it('stores attestation', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
-        testCType.hash,
-        DidUtils.parseDidUri(identityAlice).address,
-        null,
-        false,
-        [DidUtils.parseDidUri(identityAlice).address, 10],
-      ])
-    )
-
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
-  })
-
-  it('verify attestations not on chain', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations')
-    )
-
-    const attestation: IAttestation = {
-      claimHash: credential.rootHash,
-      cTypeHash: testCType.hash,
-      delegationId: null,
-      owner: identityAlice,
-      revoked: false,
-    }
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
-  })
-
-  it('verify attestation revoked', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
-        testCType.hash,
-        DidUtils.parseDidUri(identityAlice).address,
-        null,
-        true,
-        [DidUtils.parseDidUri(identityAlice).address, 10],
-      ])
-    )
-
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   })
 
   it('error check should throw errors on faulty Attestations', () => {
