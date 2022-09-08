@@ -11,14 +11,7 @@ import {
   ethereumEncode,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import type {
-  bool,
-  Enum,
-  Option,
-  StorageKey,
-  u64,
-  U8aFixed,
-} from '@polkadot/types'
+import type { Enum, Option, StorageKey, U8aFixed } from '@polkadot/types'
 import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
@@ -31,25 +24,15 @@ import {
   u8aWrapBytes,
   U8A_WRAP_ETHEREUM,
 } from '@polkadot/util'
-import type {
-  AugmentedQuery,
-  AugmentedQueryDoubleMap,
-  AugmentedSubmittable,
-} from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import type {
-  Deposit,
-  DidUri,
-  KiltAddress,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
-import { web3NameFromChain, Web3Name } from './Web3Names.chain.js'
+import { Web3Name, web3NameFromChain } from './Web3Names.chain.js'
 import { depositFromChain, didToChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
@@ -83,75 +66,22 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly type: 'AccountId20' | 'AccountId32'
 }
 
-type AssociateAccountRequestValue = [
-  string | Uint8Array, // AccountId
-  string | Uint8Array | EncodedSignature // signature
-]
-
-/**
- * Type required for encoding Enum type for association request extrinsics.
- */
-type AssociateAccountRequest =
-  | { Dotsama: AssociateAccountRequestValue }
-  | { Ethereum: AssociateAccountRequestValue }
-
-/**
- * Api augmentation override for when the ethereum enabled pallet version has landed.
- */
-type WithEtherumSupport = {
-  tx: {
-    didLookup: {
-      associateAccount: AugmentedSubmittable<
-        (
-          req: AssociateAccountRequest,
-          expiration: u64 | AnyNumber | Uint8Array
-        ) => SubmittableExtrinsic
-      >
-      removeAccountAssociation: AugmentedSubmittable<
-        (account: EncodedMultiAddress) => SubmittableExtrinsic,
-        [PalletDidLookupLinkableAccountLinkableAccountId]
-      >
-    }
-  }
-  query: {
-    didLookup: {
-      connectedDids: AugmentedQuery<
-        'promise',
-        (arg: EncodedMultiAddress) => Option<PalletDidLookupConnectionRecord>,
-        [PalletDidLookupLinkableAccountLinkableAccountId]
-      >
-      connectedAccounts: AugmentedQueryDoubleMap<
-        'promise',
-        (
-          didId: string | Uint8Array,
-          accountId: EncodedMultiAddress
-        ) => Option<bool>,
-        [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]
-      >
-    }
-  }
-}
-
 /**
  * Detects whether api augmentation indicates presence of Ethereum linking enabled pallet.
  *
  * @param api The api object.
  * @returns True if Ethereum linking is supported.
  */
-function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
-  return (
-    api instanceof ApiPromise &&
-    ('isAccountId20' in
-      api.createType(
-        api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
-          'bool'
-      ) ||
-      'isEthereum' in
-        api.createType(
-          api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() ||
-            'bool'
-        ))
+function isEthereumEnabled(api: ApiPromise): boolean {
+  const removeType = api.createType(
+    api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
+      'bool'
   )
+  const associateType = api.createType(
+    api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() || 'bool'
+  )
+
+  return 'isAccountId20' in removeType || 'isEthereum' in associateType
 }
 
 /**
@@ -254,39 +184,29 @@ export async function queryWeb3Name(
 
 /* ### EXTRINSICS ### */
 
-/**
- * Signing (authorizing) this extrinsic with a full DID and submitting it with any Account
- * will link Account to full DID and remove any pre-existing links of Account.
- * Account must give permission by signing a Scale-encoded tuple consisting of the full DID address
- * and a block number representing the expiration block of the signature (after which it cannot be submitted anymore).
- * Account does not need to hold balance. The submitting account will pay and own the deposit for the link.
- *
- * @param account The account to link to the authorizing full DID.
- * @param signatureValidUntilBlock The link request will be rejected if submitted later than this block number.
- * @param signature Account's signature over `(DidAddress, BlockNumber).toU8a()`.
- * @param sigType The type of key/substrate account which produced the `signature`.
- * @returns An extrinsic that must be DID-authorized.
- */
-export async function getAccountSignedAssociationExtrinsic(
+type AssociateAccountToChainResult = [string, AnyNumber, EncodedSignature]
+
+function associateAccountToChainArgs(
   account: Address,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
   sigType: KeypairType
-): Promise<Extrinsic> {
+): AssociateAccountToChainResult {
   const proof = { [sigType]: signature } as EncodedSignature
 
   const api = ConfigService.get('api')
   if (isEthereumEnabled(api)) {
     if (sigType === 'ethereum') {
-      return api.tx.didLookup.associateAccount(
+      const result = [
         { Ethereum: [account, signature] },
-        signatureValidUntilBlock
-      )
+        signatureValidUntilBlock,
+      ]
+      // Force type cast to enable the old blockchain types to accept the future format
+      return result as unknown as AssociateAccountToChainResult
     }
-    return api.tx.didLookup.associateAccount(
-      { Dotsama: [account, proof] },
-      signatureValidUntilBlock
-    )
+    const result = [{ Dotsama: [account, proof] }, signatureValidUntilBlock]
+    // Force type cast to enable the old blockchain types to accept the future format
+    return result as unknown as AssociateAccountToChainResult
   }
 
   if (sigType === 'ethereum')
@@ -294,11 +214,7 @@ export async function getAccountSignedAssociationExtrinsic(
       'Ethereum linking is not yet supported by this chain'
     )
 
-  return api.tx.didLookup.associateAccount(
-    account,
-    signatureValidUntilBlock,
-    proof
-  )
+  return [account, signatureValidUntilBlock, proof]
 }
 
 /**
@@ -415,10 +331,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
     accountAddress
   )
 
-  return getAccountSignedAssociationExtrinsic(
-    accountAddress,
-    validTill,
-    signature,
-    type
+  return api.tx.didLookup.associateAccount(
+    ...associateAccountToChainArgs(accountAddress, validTill, signature, type)
   )
 }
