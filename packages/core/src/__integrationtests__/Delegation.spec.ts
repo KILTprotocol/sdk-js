@@ -187,12 +187,11 @@ describe('and attestation rights have been delegated', () => {
     const credential = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    const presentation = await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      claimerKey.sign,
-      claimer,
-      claimer.authentication[0].id
-    )
+      signCallback: claimerKey.sign,
+      claimerDid: claimer,
+    })
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     expect(await Credential.verifySignature(presentation)).toBe(true)
     await Credential.verify(presentation)

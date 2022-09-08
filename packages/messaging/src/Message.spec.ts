@@ -249,12 +249,11 @@ describe('Messaging', () => {
       contents: {},
     })
 
-    const presentation = await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      aliceSign,
-      aliceFullDid,
-      aliceFullDid.authentication[0].id
-    )
+      signCallback: aliceSign,
+      claimerDid: aliceFullDid,
+    })
 
     const date = new Date(2019, 11, 10).toISOString()
 
@@ -422,12 +421,11 @@ describe('Messaging', () => {
       contents: {},
     })
 
-    const presentation = await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      aliceSign,
-      aliceLightDid,
-      aliceLightDid.authentication[0].id
-    )
+      signCallback: aliceSign,
+      claimerDid: aliceLightDid,
+    })
 
     const date = new Date(2019, 11, 10).toISOString()
     const quoteData: IQuote = {
@@ -464,16 +462,15 @@ describe('Messaging', () => {
     }
 
     // Create request for attestation to the light DID with encoded details
-    const contentWithEncodedDetails = await Credential.sign(
-      Credential.fromClaim({
+    const contentWithEncodedDetails = await Credential.createPresentation({
+      credential: Credential.fromClaim({
         cTypeHash: `${Crypto.hashStr('0x12345678')}`,
         owner: aliceLightDidWithDetails.uri,
         contents: {},
       }),
-      aliceSign,
-      aliceLightDidWithDetails,
-      aliceLightDidWithDetails.authentication[0].id
-    )
+      signCallback: aliceSign,
+      claimerDid: aliceLightDidWithDetails,
+    })
 
     const quoteDataEncodedDetails: IQuote = {
       attesterDid: bobLightDidWithDetails.uri,

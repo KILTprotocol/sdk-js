@@ -130,12 +130,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.uri
     )
     const credential = Credential.fromClaim(claim)
-    const presentation = await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      claimerKey.sign,
-      claimer,
-      claimer.authentication[0].id
-    )
+      signCallback: claimerKey.sign,
+      claimerDid: claimer,
+    })
     expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
     expect(await Credential.verifySignature(presentation)).toBe(true)
     expect(credential.claim.contents).toMatchObject(content)
@@ -152,12 +151,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const credential = Credential.fromClaim(claim)
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
 
-    const presentation = await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      claimerKey.sign,
-      claimer,
-      claimer.authentication[0].id
-    )
+      signCallback: claimerKey.sign,
+      claimerDid: claimer,
+    })
     expect(await Credential.verifySignature(presentation)).toBe(true)
     await Credential.verify(presentation)
 
@@ -198,12 +196,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const credential = Credential.fromClaim(claim)
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
 
-    const presentation = await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      claimerKey.sign,
-      claimer,
-      claimer.authentication[0].id
-    )
+      signCallback: claimerKey.sign,
+      claimerDid: claimer,
+    })
     expect(await Credential.verifySignature(presentation)).toBe(true)
 
     const attestation = Attestation.fromCredentialAndDid(
@@ -280,12 +277,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer.uri
       )
       credential = Credential.fromClaim(claim)
-      const presentation = await Credential.sign(
+      const presentation = await Credential.createPresentation({
         credential,
-        claimerKey.sign,
-        claimer,
-        claimer.authentication[0].id
-      )
+        signCallback: claimerKey.sign,
+        claimerDid: claimer,
+      })
       attestation = Attestation.fromCredentialAndDid(credential, attester.uri)
       const storeTx = await Attestation.getStoreTx(attestation)
       const authorizedStoreTx = await Did.authorizeExtrinsic(
@@ -327,12 +323,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimer.uri
       )
       const fakeCredential = Credential.fromClaim(claim)
-      await Credential.sign(
+      await Credential.createPresentation({
         credential,
-        claimerKey.sign,
-        claimer,
-        claimer.authentication[0].id
-      )
+        signCallback: claimerKey.sign,
+        claimerDid: claimer,
+      })
 
       expect(
         Attestation.verifyAgainstCredential(attestation, fakeCredential)
@@ -430,12 +425,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attester.uri
       )
       const credential1 = Credential.fromClaim(licenseAuthorization)
-      await Credential.sign(
-        credential1,
-        claimerKey.sign,
-        claimer,
-        claimer.authentication[0].id
-      )
+      await Credential.createPresentation({
+        credential: credential1,
+        signCallback: claimerKey.sign,
+        claimerDid: claimer,
+      })
       const licenseAuthorizationGranted = Attestation.fromCredentialAndDid(
         credential1,
         anotherAttester.uri
@@ -458,12 +452,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const credential2 = Credential.fromClaim(iBelieveICanDrive, {
         legitimations: [credential1],
       })
-      await Credential.sign(
-        credential2,
-        claimerKey.sign,
-        claimer,
-        claimer.authentication[0].id
-      )
+      await Credential.createPresentation({
+        credential: credential2,
+        signCallback: claimerKey.sign,
+        claimerDid: claimer,
+      })
       const licenseGranted = Attestation.fromCredentialAndDid(
         credential2,
         attester.uri

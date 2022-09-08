@@ -377,12 +377,11 @@ describe('Credential', () => {
     const credential = Credential.fromClaim(claim, {
       legitimations,
     })
-    const presentation = await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      sign,
-      claimer,
-      claimer.authentication[0].id
-    )
+      signCallback: sign,
+      claimerDid: claimer,
+    })
     // build attestation
     const testAttestation = Attestation.fromCredentialAndDid(
       credential,
