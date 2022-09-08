@@ -282,7 +282,7 @@ export async function verifySignature(
   } = {}
 ): Promise<boolean> {
   const { claimerSignature } = input
-  if (!claimerSignature || !isDidSignature(claimerSignature)) return false
+  if (!isDidSignature(claimerSignature)) return false
   if (challenge && challenge !== claimerSignature.challenge) return false
   const signingData = makeSigningData(input, claimerSignature.challenge)
   const { verified } = await verifyDidSignature({
@@ -376,7 +376,7 @@ export async function verifyCredential(
 export async function verify(
   presentation: ICredentialPresentation,
   { ctype, challenge, didResolve = resolve }: VerifyOptions = {}
-) {
+): Promise<void> {
   await verifyCredential(presentation, { ctype })
   const isSignatureCorrect = await verifySignature(presentation, {
     challenge,
