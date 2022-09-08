@@ -29,6 +29,3 @@ export interface ICredential {
 export interface ICredentialPresentation extends ICredential {
   claimerSignature: DidSignature & { challenge?: string }
 }
-
-export type CredentialOrPresentation = ICredential &
-  Partial<ICredentialPresentation>

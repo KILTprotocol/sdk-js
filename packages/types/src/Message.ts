@@ -12,11 +12,7 @@ import type { PartialClaim } from './Claim.js'
 import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
 import type { IQuoteAgreement } from './Quote.js'
-import type {
-  CredentialOrPresentation,
-  ICredential,
-  ICredentialPresentation,
-} from './Credential.js'
+import type { ICredential, ICredentialPresentation } from './Credential.js'
 import type { ITerms } from './Terms.js'
 import type { DidResourceUri } from './index.js'
 
@@ -100,7 +96,7 @@ export interface IRejectCredential extends IMessageBodyBase {
 }
 
 export interface IRequestAttestationContent {
-  credential: CredentialOrPresentation
+  credential: ICredential
   quote?: IQuoteAgreement
 }
 

@@ -7,11 +7,12 @@
 
 import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
-import { Claim } from '@kiltprotocol/core'
+import { Claim, Credential } from '@kiltprotocol/core'
 import type {
   ICType,
   IAttestation,
-  CredentialOrPresentation,
+  ICredentialPresentation,
+  ICredential,
 } from '@kiltprotocol/types'
 import type { HexString } from '@polkadot/util/types'
 import {
@@ -75,18 +76,11 @@ export function toCredentialIRI(rootHash: string): string {
  * @returns The VC representation of the KILT credential and optionally its CType.
  */
 export function fromCredentialAndAttestation(
-  input: CredentialOrPresentation,
+  input: ICredential | ICredentialPresentation,
   attestation: IAttestation,
   ctype?: ICType
 ): VerifiableCredential {
-  const {
-    claimHashes,
-    legitimations,
-    delegationId,
-    rootHash,
-    claimerSignature,
-    claim,
-  } = input
+  const { claimHashes, legitimations, delegationId, rootHash, claim } = input
 
   // write root hash to id
   const id = toCredentialIRI(rootHash)
@@ -138,7 +132,8 @@ export function fromCredentialAndAttestation(
   }
 
   // add self-signed proof
-  if (claimerSignature) {
+  if (Credential.isICredentialPresentation(input)) {
+    const { claimerSignature } = input
     const sSProof: SelfSignedProof = {
       type: KILT_SELF_SIGNED_PROOF_TYPE,
       proofPurpose: 'assertionMethod',

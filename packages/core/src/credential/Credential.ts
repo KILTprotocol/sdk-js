@@ -24,7 +24,6 @@ import {
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  CredentialOrPresentation,
   DidDocument,
   DidResolve,
   DidVerificationKey,
@@ -202,7 +201,7 @@ export function verifyDataIntegrity(input: ICredential): boolean {
  * @param input - A potentially only partial [[Credential]].
  *
  */
-export function verifyDataStructure(input: CredentialOrPresentation): void {
+export function verifyDataStructure(input: ICredential): void {
   if (!input.claim) {
     throw new SDKErrors.ClaimMissingError()
   } else {
