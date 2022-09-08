@@ -170,14 +170,22 @@ function encodeMultiAddress(address: Address): EncodedMultiAddress {
 
 /* ### QUERY ### */
 
+export function accountToChain(account: Address): Address {
+  const api = ConfigService.get('api')
+  if (!isEthereumEnabled(api)) {
+    // No change for the old blockchain version
+    return account
+  }
+  const encoded: EncodedMultiAddress = encodeMultiAddress(account)
+  // Force type cast to enable the old blockchain types to accept the future format
+  return encoded as unknown as Address
+}
+
 export async function queryConnectedDid(
   linkedAccount: Address
 ): Promise<Option<PalletDidLookupConnectionRecord>> {
   const api = ConfigService.get('api')
-  if (isEthereumEnabled(api)) {
-    return api.query.didLookup.connectedDids(encodeMultiAddress(linkedAccount))
-  }
-  return api.query.didLookup.connectedDids(linkedAccount)
+  return api.query.didLookup.connectedDids(accountToChain(linkedAccount))
 }
 
 /**
@@ -261,19 +269,14 @@ export async function queryIsConnected(
   account: Address
 ): Promise<boolean> {
   const api = ConfigService.get('api')
-  if (isEthereumEnabled(api)) {
-    // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
-    return !(
-      await api.query.didLookup.connectedAccounts.hash(
-        didToChain(did),
-        encodeMultiAddress(account)
-      )
-    ).isEmpty
-    // isEmpty returns true if there is no entry for the given key -> the function should return false.
-  }
+  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
   return !(
-    await api.query.didLookup.connectedAccounts.hash(didToChain(did), account)
+    await api.query.didLookup.connectedAccounts.hash(
+      didToChain(did),
+      accountToChain(account)
+    )
   ).isEmpty
+  // isEmpty returns true if there is no entry for the given key -> the function should return false.
 }
 
 /* ### EXTRINSICS ### */
@@ -336,12 +339,9 @@ export async function getLinkRemovalByDidExtrinsic(
   linkedAccount: Address
 ): Promise<Extrinsic> {
   const api = ConfigService.get('api')
-  if (isEthereumEnabled(api)) {
-    return api.tx.didLookup.removeAccountAssociation(
-      encodeMultiAddress(linkedAccount)
-    )
-  }
-  return api.tx.didLookup.removeAccountAssociation(linkedAccount)
+  return api.tx.didLookup.removeAccountAssociation(
+    accountToChain(linkedAccount)
+  )
 }
 
 /* ### HELPERS ### */
