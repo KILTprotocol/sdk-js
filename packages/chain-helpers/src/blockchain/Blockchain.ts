@@ -5,6 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { SubmittableResult } from '@polkadot/api'
+import { AnyNumber } from '@polkadot/types/types'
+
 import { ConfigService } from '@kiltprotocol/config'
 import type {
   ISubmittableResult,
@@ -12,11 +15,10 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { SubmittableResult } from '@polkadot/api'
-import { AnyNumber } from '@polkadot/types/types'
+import { SDKErrors } from '@kiltprotocol/utils'
+
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
-import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -125,6 +127,11 @@ export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   opts?: Partial<SubscriptionPromise.Options>
 ): Promise<ISubmittableResult> {
+  const api = ConfigService.get('api')
+  if (!api.hasSubscriptions) {
+    throw new SDKErrors.SubscriptionsNotSupportedError()
+  }
+
   log.info(`Submitting ${tx.method}`)
   const options = parseSubscriptionOptions(opts)
   const { promise, subscription } = makeSubscriptionPromise(options)
@@ -134,8 +141,6 @@ export async function submitSignedTx(
     latestResult = result
     subscription(result)
   })
-
-  const api = await getConnectionOrConnect()
 
   function handleDisconnect(): void {
     const result = new SubmittableResult({
@@ -162,30 +167,6 @@ export async function submitSignedTx(
 }
 
 export const dispatchTx = submitSignedTx
-
-/**
- * Checks the TxError/TxStatus for issues that may be resolved via resigning.
- *
- * @param reason Polkadot API returned error or ISubmittableResult.
- * @returns Whether or not this issue may be resolved via resigning.
- */
-export function isRecoverableTxError(
-  reason: Error | ISubmittableResult
-): boolean {
-  if (reason instanceof Error) {
-    return (
-      reason.message.includes(TxOutdated) ||
-      reason.message.includes(TxPriority) ||
-      reason.message.includes(TxDuplicate) ||
-      false
-    )
-  }
-  if (typeof reason === 'object' && typeof reason.status === 'object') {
-    const { status } = reason as ISubmittableResult
-    if (status.isUsurped) return true
-  }
-  return false
-}
 
 /**
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.

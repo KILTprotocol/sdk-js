@@ -174,9 +174,21 @@ export class IdentityMismatchError extends SDKError {
   }
 }
 
-export class WsAddressNotSetError extends SDKError {
-  constructor() {
-    super('Node address to connect to not configured!')
+export class BlockchainApiMissingError extends SDKError {
+  constructor(options?: ErrorOptions) {
+    super(
+      'The blockchain API is not set. Did you forget to call `Kilt.connect(…)` or `Kilt.init(…)`?',
+      options
+    )
+  }
+}
+
+export class SubscriptionsNotSupportedError extends SDKError {
+  constructor(options?: ErrorOptions) {
+    super(
+      'This function is not available if the blockchain API does not support state or event subscriptions, use `WsProvider` to enable the complete feature set',
+      options
+    )
   }
 }
 
