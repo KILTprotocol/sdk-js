@@ -111,6 +111,7 @@ export function unset<K extends keyof configOpts>(key: K): void {
  * Indicates whether a configuration option is set.
  *
  * @param key Key identifying the configuration option.
+ * @returns True if this value is set, false otherwise.
  */
 export function isSet<K extends keyof configOpts>(key: K): boolean {
   return typeof configuration[key] !== 'undefined'
