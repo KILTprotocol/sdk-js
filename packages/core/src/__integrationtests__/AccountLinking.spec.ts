@@ -25,7 +25,6 @@ import { Keyring } from '@polkadot/keyring'
 import { BN } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
-import { Balance } from '../balance'
 import { convertToTxUnit } from '../balance/Balance.utils'
 import {
   createEndowedTestAccount,
@@ -80,11 +79,15 @@ describe('When there is an on-chain DID', () => {
         didKey.sign,
         paymentAccount.address
       )
-      const balanceBefore = await Balance.getBalances(paymentAccount.address)
+      const balanceBefore = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       await submitExtrinsic(signedTx, paymentAccount)
 
       // Check that the deposit has been taken from the sender's balance.
-      const balanceAfter = await Balance.getBalances(paymentAccount.address)
+      const balanceAfter = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       // Lookup reserve - deposit == 0
       expect(
         balanceAfter.reserved
@@ -116,11 +119,15 @@ describe('When there is an on-chain DID', () => {
         newDidKey.sign,
         paymentAccount.address
       )
-      const balanceBefore = await Balance.getBalances(paymentAccount.address)
+      const balanceBefore = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       await submitExtrinsic(signedTx, paymentAccount)
 
       // Reserve should not change when replacing the link
-      const balanceAfter = await Balance.getBalances(paymentAccount.address)
+      const balanceAfter = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       expect(
         balanceAfter.reserved.sub(balanceBefore.reserved).toString()
       ).toMatchInlineSnapshot('"0"')
@@ -152,11 +159,15 @@ describe('When there is an on-chain DID', () => {
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = api.tx.didLookup.removeSenderAssociation()
-      const balanceBefore = await Balance.getBalances(paymentAccount.address)
+      const balanceBefore = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       await submitExtrinsic(removeSenderTx, paymentAccount)
 
       // Check that the deposit has been returned to the sender's balance.
-      const balanceAfter = await Balance.getBalances(paymentAccount.address)
+      const balanceAfter = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
@@ -209,11 +220,15 @@ describe('When there is an on-chain DID', () => {
           didKey.sign,
           paymentAccount.address
         )
-        const balanceBefore = await Balance.getBalances(paymentAccount.address)
+        const balanceBefore = (
+          await api.query.system.account(paymentAccount.address)
+        ).data
         await submitExtrinsic(signedTx, paymentAccount)
 
         // Check that the deposit has been taken from the sender's balance.
-        const balanceAfter = await Balance.getBalances(paymentAccount.address)
+        const balanceAfter = (
+          await api.query.system.account(paymentAccount.address)
+        ).data
         // Lookup reserve - deposit == 0
         expect(
           balanceAfter.reserved
@@ -255,11 +270,15 @@ describe('When there is an on-chain DID', () => {
           newDidKey.sign,
           paymentAccount.address
         )
-        const balanceBefore = await Balance.getBalances(paymentAccount.address)
+        const balanceBefore = (
+          await api.query.system.account(paymentAccount.address)
+        ).data
         await submitExtrinsic(signedTx, paymentAccount)
 
         // Reserve should not change when replacing the link
-        const balanceAfter = await Balance.getBalances(paymentAccount.address)
+        const balanceAfter = (
+          await api.query.system.account(paymentAccount.address)
+        ).data
         expect(
           balanceAfter.reserved.sub(balanceBefore.reserved).toString()
         ).toMatchInlineSnapshot('"0"')
@@ -309,11 +328,15 @@ describe('When there is an on-chain DID', () => {
           newDidKey.sign,
           paymentAccount.address
         )
-        const balanceBefore = await Balance.getBalances(paymentAccount.address)
+        const balanceBefore = (
+          await api.query.system.account(paymentAccount.address)
+        ).data
         await submitExtrinsic(signedTx, paymentAccount)
 
         // Check that the deposit has been returned to the sender's balance.
-        const balanceAfter = await Balance.getBalances(paymentAccount.address)
+        const balanceAfter = (
+          await api.query.system.account(paymentAccount.address)
+        ).data
         expect(
           balanceBefore.reserved.sub(balanceAfter.reserved).toString()
         ).toStrictEqual(linkDeposit.toString())
@@ -368,11 +391,15 @@ describe('When there is an on-chain DID', () => {
         didKey.sign,
         paymentAccount.address
       )
-      const balanceBefore = await Balance.getBalances(paymentAccount.address)
+      const balanceBefore = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       await submitExtrinsic(signedTx, paymentAccount)
 
       // Check that the deposit has been taken from the sender's balance.
-      const balanceAfter = await Balance.getBalances(paymentAccount.address)
+      const balanceAfter = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       // Lookup reserve - deposit == 0
       expect(
         balanceAfter.reserved
@@ -427,11 +454,15 @@ describe('When there is an on-chain DID', () => {
     it('should be possible for the sender to remove the link', async () => {
       // No need for DID-authorizing this.
       const reclaimDepositTx = api.tx.didLookup.removeSenderAssociation()
-      const balanceBefore = await Balance.getBalances(paymentAccount.address)
+      const balanceBefore = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       await submitExtrinsic(reclaimDepositTx, genericAccount)
 
       // Check that the deposit has been returned to the sender's balance.
-      const balanceAfter = await Balance.getBalances(paymentAccount.address)
+      const balanceAfter = (
+        await api.query.system.account(paymentAccount.address)
+      ).data
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())

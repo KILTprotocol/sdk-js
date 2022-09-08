@@ -36,7 +36,6 @@ import {
   isCtypeOnChain,
   submitExtrinsic,
 } from './utils'
-import { Balance } from '../balance'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as Credential from '../credential'
@@ -61,7 +60,9 @@ async function checkDeleteFullDid(
 
   tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
 
-  const balanceBeforeDeleting = await Balance.getBalances(identity.address)
+  const balanceBeforeDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
   const didResult = Did.Chain.decodeDid(
     await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))
@@ -70,7 +71,9 @@ async function checkDeleteFullDid(
 
   await submitExtrinsic(tx, identity)
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address)
+  const balanceAfterDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeDeleting.reserved
     .sub(didDeposit.amount)
@@ -89,7 +92,9 @@ async function checkReclaimFullDid(
     storedEndpointsCount
   )
 
-  const balanceBeforeRevoking = await Balance.getBalances(identity.address)
+  const balanceBeforeRevoking = (
+    await api.query.system.account(identity.address)
+  ).data
 
   const didResult = Did.Chain.decodeDid(
     await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))
@@ -98,7 +103,9 @@ async function checkReclaimFullDid(
 
   await submitExtrinsic(tx, identity)
 
-  const balanceAfterRevoking = await Balance.getBalances(identity.address)
+  const balanceAfterRevoking = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeRevoking.reserved
     .sub(didDeposit.amount)
@@ -134,7 +141,9 @@ async function checkRemoveFullDidAttestation(
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
-  const balanceBeforeRemoving = await Balance.getBalances(identity.address)
+  const balanceBeforeRemoving = (
+    await api.query.system.account(identity.address)
+  ).data
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = await api.tx.attestation.remove(attestation.claimHash, null)
@@ -147,7 +156,9 @@ async function checkRemoveFullDidAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  const balanceAfterRemoving = await Balance.getBalances(identity.address)
+  const balanceAfterRemoving = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeRemoving.reserved
     .sub(attestationDeposit)
@@ -176,7 +187,9 @@ async function checkReclaimFullDidAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
+  const balanceBeforeReclaiming = (
+    await api.query.system.account(identity.address)
+  ).data
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
@@ -190,7 +203,9 @@ async function checkReclaimFullDidAttestation(
 
   await submitExtrinsic(tx, identity)
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address)
+  const balanceAfterDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeReclaiming.reserved
     .sub(attestationDeposit)
@@ -241,7 +256,9 @@ async function checkWeb3Deposit(
   sign: SignCallback
 ): Promise<boolean> {
   const web3Name = 'test-web3name'
-  const balanceBeforeClaiming = await Balance.getBalances(identity.address)
+  const balanceBeforeClaiming = (
+    await api.query.system.account(identity.address)
+  ).data
 
   const depositAmount = api.consts.web3Names.deposit.toBn()
   const claimTx = api.tx.web3Names.claim(web3Name)
@@ -252,7 +269,9 @@ async function checkWeb3Deposit(
     identity.address
   )
   await submitExtrinsic(didAuthorizedTx, identity)
-  const balanceAfterClaiming = await Balance.getBalances(identity.address)
+  const balanceAfterClaiming = (
+    await api.query.system.account(identity.address)
+  ).data
   if (
     !balanceAfterClaiming.reserved
       .sub(balanceBeforeClaiming.reserved)
@@ -269,7 +288,9 @@ async function checkWeb3Deposit(
     identity.address
   )
   await submitExtrinsic(didAuthorizedTx, identity)
-  const balanceAfterReleasing = await Balance.getBalances(identity.address)
+  const balanceAfterReleasing = (
+    await api.query.system.account(identity.address)
+  ).data
 
   if (!balanceAfterReleasing.reserved.eq(balanceBeforeClaiming.reserved)) {
     return false
