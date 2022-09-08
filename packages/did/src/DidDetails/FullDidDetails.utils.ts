@@ -8,10 +8,10 @@
 // This module is not part of the public-facing api.
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
 
 import type { VerificationKeyRelationship } from '@kiltprotocol/types'
+import { AnyTuple, CallBase } from '@polkadot/types-codec/types'
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
@@ -28,10 +28,32 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   web3Names: 'authentication',
 }
 
-export function getKeyRelationshipForExtrinsic(
-  extrinsic: Extrinsic
+export function getKeyRelationshipForExtrinsic<A extends AnyTuple = AnyTuple>(
+  call: CallBase<A>
 ): VerificationKeyRelationship | undefined {
-  const { section, method } = extrinsic.method
+  const { section, method } = call
+
+  // get the VerificationKeyRelationship of a batched call
+  if (
+    section === 'utility' &&
+    (method === 'batch' || method === 'batchAll' || method === 'forceBatch') &&
+    call.args[0].toRawType() === 'Vec<Call>'
+  ) {
+    // map all calls to their VerificationKeyRelationship and deduplicate the items
+    const keys = new Set(
+      (call.args[0] as any as Array<CallBase<A>>).map(
+        (innerExtrinsic: CallBase<A>) => {
+          return getKeyRelationshipForExtrinsic(innerExtrinsic)
+        }
+      )
+    )
+
+    // Multiple VerificationKeyRelationships are not allowed.
+    if (keys.size !== 1) {
+      return undefined
+    }
+    return [...keys][0]
+  }
 
   const signature = `${section}.${method}`
   if (signature in methodMapping) {
