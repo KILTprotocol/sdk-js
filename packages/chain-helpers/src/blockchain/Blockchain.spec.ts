@@ -115,6 +115,29 @@ describe('Blockchain', () => {
       ).toHaveProperty('status.isReady', true)
     })
 
+    it('uses default resolution config', async () => {
+      api.__setDefaultResult({ isReady: true })
+      ConfigService.set({ submitTxResolveOn: IS_READY })
+      let tx = api.tx.balances.transfer('abcdef', 50)
+      expect(await signAndSubmitTx(tx, pair)).toHaveProperty(
+        'status.isReady',
+        true
+      )
+
+      api.__setDefaultResult({ isInBlock: true })
+      ConfigService.set({ submitTxResolveOn: IS_IN_BLOCK })
+      tx = api.tx.balances.transfer('abcdef', 50)
+      expect(await signAndSubmitTx(tx, pair)).toHaveProperty('isInBlock', true)
+
+      api.__setDefaultResult({ isFinalized: true })
+      ConfigService.set({ submitTxResolveOn: IS_FINALIZED })
+      tx = api.tx.balances.transfer('abcdef', 50)
+      expect(await signAndSubmitTx(tx, pair)).toHaveProperty(
+        'isFinalized',
+        true
+      )
+    })
+
     it('rejects on error condition', async () => {
       api.__setDefaultResult({ isInvalid: true })
       const tx = api.tx.balances.transfer('abcdef', 50)

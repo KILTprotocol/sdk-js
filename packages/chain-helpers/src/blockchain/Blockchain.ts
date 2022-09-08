@@ -98,7 +98,9 @@ export function parseSubscriptionOptions(
   opts?: Partial<SubscriptionPromise.Options>
 ): SubscriptionPromise.Options {
   const {
-    resolveOn = IS_FINALIZED,
+    resolveOn = ConfigService.isSet('submitTxResolveOn')
+      ? ConfigService.get('submitTxResolveOn')
+      : IS_FINALIZED,
     rejectOn = (result: ISubmittableResult) =>
       EXTRINSIC_FAILED(result) || IS_ERROR(result),
     timeout,
