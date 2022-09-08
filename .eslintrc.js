@@ -20,7 +20,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
-    project: './tsconfig.build.json'
+    project: './tsconfig.json',
   },
   plugins: [
     '@typescript-eslint',
@@ -74,11 +74,14 @@ module.exports = {
       },
     ],
     '@typescript-eslint/ban-ts-comment': 'warn',
-    '@typescript-eslint/strict-boolean-expressions': ['error', {
-      allowNumber: false,
-      allowNullableString: true,
-      allowNullableBoolean: true,
-    }],
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowNumber: false,
+        allowNullableString: true,
+        allowNullableBoolean: true,
+      },
+    ],
     'jsdoc/require-description': 'warn',
     'jsdoc/require-description-complete-sentence': 'warn',
     'jsdoc/no-types': 'warn',
