@@ -59,7 +59,7 @@ export function verifyDelegationStructure(
     throw new SDKErrors.OwnerMissingError()
   }
   if (!Did.Utils.isKiltDidUri(account, 'Did')) {
-    throw new TypeError('account is expected to be a Kilt Did')
+    throw new SDKErrors.InvalidDidFormatError(account)
   }
 
   if (typeof isPCR !== 'boolean') {
@@ -239,12 +239,11 @@ export function verifyMessageEnvelope(message: IMessage): void {
   if (receivedAt !== undefined && typeof receivedAt !== 'number') {
     throw new TypeError('Received at is expected to be a number')
   }
-  if (
-    !Did.Utils.isKiltDidUri(receiver, 'Did') ||
-    !Did.Utils.isKiltDidUri(sender, 'Did')
-  ) {
-    throw new TypeError('receiver & sender are expected to be Kilt Dids')
-  }
+  ;[receiver, sender].forEach((did) => {
+    if (!Did.Utils.isKiltDidUri(did, 'Did')) {
+      throw new SDKErrors.InvalidDidFormatError(did)
+    }
+  })
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }

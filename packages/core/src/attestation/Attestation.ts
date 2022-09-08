@@ -52,7 +52,7 @@ export function verifyDataStructure(input: IAttestation): void {
     throw new SDKErrors.OwnerMissingError()
   }
   if (!DidUtils.isKiltDidUri(input.owner)) {
-    throw new TypeError('Attestation owner is expected to be a Kilt Did')
+    throw new SDKErrors.InvalidDidFormatError(input.owner)
   }
 
   if (typeof input.revoked !== 'boolean') {

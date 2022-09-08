@@ -406,31 +406,31 @@ describe('type guard', () => {
       keyUri: `did:kilt:${keypair.address}?mykey`,
       signature: randomAsHex(32),
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
       keyUri: `kilt:did:${keypair.address}#mykey`,
       signature: randomAsHex(32),
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
       keyUri: `kilt:did:${keypair.address}`,
       signature: randomAsHex(32),
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
       keyUri: keypair.address,
       signature: randomAsHex(32),
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
       keyUri: '',
       signature: randomAsHex(32),
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
   })
 
   it('rejects unexpected signature type', () => {
@@ -438,12 +438,12 @@ describe('type guard', () => {
       keyUri: `did:kilt:${keypair.address}#mykey` as DidResourceUri,
       signature: '',
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     signature.signature = randomAsHex(32).substring(2)
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
     signature.signature = randomAsU8a(32)
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
   })
 
   it('rejects incomplete objects', () => {
@@ -452,28 +452,28 @@ describe('type guard', () => {
       // @ts-expect-error
       signature: undefined,
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     signature = {
       // @ts-expect-error
       keyUri: undefined,
       signature: randomAsHex(32),
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
     signature = {
       signature: randomAsHex(32),
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
     signature = {
       keyUri: `did:kilt:${keypair.address}#mykey` as DidResourceUri,
     }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
     signature = {}
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
     // @ts-expect-error
     signature = { keyUri: null, signature: null }
-    expect(() => isDidSignature(signature)).toBe(false)
+    expect(isDidSignature(signature)).toBe(false)
   })
 })
