@@ -22,9 +22,9 @@ import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
 import {
+  addDelegationToChainArgs,
   getAttestationHashes,
   getChildren,
-  getStoreAsDelegationTx,
   query,
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
@@ -300,8 +300,9 @@ export class DelegationNode implements IDelegationNode {
   public async getStoreTx(
     signature?: Did.Utils.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
+    const api = ConfigService.get('api')
+
     if (this.isRoot()) {
-      const api = ConfigService.get('api')
       return api.tx.delegation.createHierarchy(
         this.hierarchyId,
         await this.getCTypeHash()
@@ -310,7 +311,10 @@ export class DelegationNode implements IDelegationNode {
     if (!signature) {
       throw new SDKErrors.DelegateSignatureMissingError()
     }
-    return getStoreAsDelegationTx(this, signature)
+
+    return api.tx.delegation.addDelegation(
+      ...addDelegationToChainArgs(this, signature)
+    )
   }
 
   isRoot(): boolean {

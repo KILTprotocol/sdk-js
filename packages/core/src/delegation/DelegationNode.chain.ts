@@ -8,11 +8,11 @@
 import type {
   IAttestation,
   IDelegationNode,
-  SubmittableExtrinsic,
+  KiltAddress,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import { Utils as DidUtils, Chain as DidChain } from '@kiltprotocol/did'
 import { delegationNodeFromChain } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
@@ -20,29 +20,29 @@ import { permissionsAsBitset } from './DelegationNode.utils.js'
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 /**
- * Generate the extrinsic to store a given delegation node under a given delegation hierarchy.
+ * Encodes the delegation and the signature for usage as arguments of `api.tx.delegation.addDelegation()`.
  *
  * @param delegation The delegation node to store under the hierarchy specified as part of the node.
  * @param signature The DID signature of the delegate owner of the new delegation node.
- * @returns The SubmittableExtrinsic for the `addDelegation` call.
+ * @returns The array of arguments for `addDelegation`.
  */
-export async function getStoreAsDelegationTx(
+export function addDelegationToChainArgs(
   delegation: DelegationNode,
   signature: DidUtils.EncodedSignature
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-
-  if (delegation.isRoot()) {
-    throw new SDKErrors.InvalidDelegationNodeError()
-  }
-
-  return api.tx.delegation.addDelegation(
+): [
+  DelegationNode['id'],
+  string,
+  KiltAddress,
+  Uint8Array,
+  DidUtils.EncodedSignature
+] {
+  return [
     delegation.id,
     delegation.parentId || '',
-    DidUtils.parseDidUri(delegation.account).address,
+    DidChain.didToChain(delegation.account),
     permissionsAsBitset(delegation),
-    signature
-  )
+    signature,
+  ]
 }
 
 /**
