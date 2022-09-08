@@ -252,28 +252,6 @@ export async function queryWeb3Name(
   return web3NameFromChain(await api.query.web3Names.names(didToChain(did)))
 }
 
-/**
- * Return true whether the provided account has been linked to the provided DID.
- *
- * @param did The DID to use for the lookup.
- * @param account The account to use for the lookup.
- * @returns True if the DID and account is linked, false otherwise.
- */
-export async function queryIsConnected(
-  did: DidUri,
-  account: Address
-): Promise<boolean> {
-  const api = ConfigService.get('api')
-  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
-  return !(
-    await api.query.didLookup.connectedAccounts.hash(
-      didToChain(did),
-      accountToChain(account)
-    )
-  ).isEmpty
-  // isEmpty returns true if there is no entry for the given key -> the function should return false.
-}
-
 /* ### EXTRINSICS ### */
 
 /**

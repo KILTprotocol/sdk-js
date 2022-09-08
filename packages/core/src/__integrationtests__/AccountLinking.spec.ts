@@ -35,6 +35,7 @@ import {
 import { disconnect } from '../kilt'
 
 let paymentAccount: KiltKeyringPair
+let paymentAccountChain: string
 let linkDeposit: BN
 let sign: AccountLinks.LinkingSignCallback
 let api: ApiPromise
@@ -42,13 +43,16 @@ let api: ApiPromise
 beforeAll(async () => {
   api = await initializeApi()
   paymentAccount = await createEndowedTestAccount()
+  paymentAccountChain = AccountLinks.accountToChain(paymentAccount.address)
   linkDeposit = api.consts.didLookup.deposit.toBn()
 }, 40_000)
 
 describe('When there is an on-chain DID', () => {
   let did: DidDocument
+  let didChain: string
   let didKey: KeyTool
   let newDid: DidDocument
+  let newDidChain: string
   let newDidKey: KeyTool
 
   describe('and a tx sender willing to link its account', () => {
@@ -56,25 +60,26 @@ describe('When there is an on-chain DID', () => {
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+      didChain = Did.Chain.didToChain(did.uri)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
+      newDidChain = Did.Chain.didToChain(newDid.uri)
     }, 40_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
       expect(
-        (
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(paymentAccount.address)
-          )
-        ).isNone
+        (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
       ).toBe(true)
       expect(
-        await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.didToChain(did.uri)
-        )
+        await api.query.didLookup.connectedAccounts.keys(didChain)
       ).toStrictEqual([])
       expect(
-        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-      ).toBe(false)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            paymentAccountChain
+          )
+        ).isEmpty
+      ).toBe(true)
 
       const associateSenderTx = api.tx.didLookup.associateSender()
       const signedTx = await Did.authorizeExtrinsic(
@@ -102,20 +107,21 @@ describe('When there is an on-chain DID', () => {
       // Check that the link has been created correctly
       expect(
         AccountLinks.connectedDidFromChain(
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(paymentAccount.address)
-          )
+          await api.query.didLookup.connectedDids(paymentAccountChain)
         ).did
       ).toStrictEqual(did.uri)
-      const encoded = await api.query.didLookup.connectedAccounts.keys(
-        Did.Chain.didToChain(did.uri)
-      )
+      const encoded = await api.query.didLookup.connectedAccounts.keys(didChain)
       expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
         paymentAccount.address,
       ])
       expect(
-        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-      ).toBe(true)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            paymentAccountChain
+          )
+        ).isEmpty
+      ).toBe(false)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = api.tx.didLookup.associateSender()
@@ -140,30 +146,36 @@ describe('When there is an on-chain DID', () => {
       // Check that account is linked to new DID
       expect(
         AccountLinks.connectedDidFromChain(
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(paymentAccount.address)
-          )
+          await api.query.didLookup.connectedDids(paymentAccountChain)
         ).did
       ).toStrictEqual(newDid.uri)
       // Check that old DID has no accounts linked
       expect(
-        await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.didToChain(did.uri)
-        )
+        await api.query.didLookup.connectedAccounts.keys(didChain)
       ).toStrictEqual([])
       expect(
-        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-      ).toBe(false)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            paymentAccountChain
+          )
+        ).isEmpty
+      ).toBe(true)
       // Check that new DID has the account linked
       const encoded = await api.query.didLookup.connectedAccounts.keys(
-        Did.Chain.didToChain(newDid.uri)
+        newDidChain
       )
       expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
         paymentAccount.address,
       ])
       expect(
-        await AccountLinks.queryIsConnected(newDid.uri, paymentAccount.address)
-      ).toBe(true)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            newDidChain,
+            paymentAccountChain
+          )
+        ).isEmpty
+      ).toBe(false)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = api.tx.didLookup.removeSenderAssociation()
@@ -180,20 +192,19 @@ describe('When there is an on-chain DID', () => {
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
       expect(
-        (
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(paymentAccount.address)
-          )
-        ).isNone
+        (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
       ).toBe(true)
       expect(
-        await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.didToChain(did.uri)
-        )
+        await api.query.didLookup.connectedAccounts.keys(didChain)
       ).toStrictEqual([])
       expect(
-        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-      ).toBe(false)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            paymentAccountChain
+          )
+        ).isEmpty
+      ).toBe(true)
     })
   })
 
@@ -204,6 +215,7 @@ describe('When there is an on-chain DID', () => {
       const it = keyType === 'ethereum' ? test.skip : test
 
       let keypair: KeyringPair
+      let keypairChain: string
       beforeAll(async () => {
         // TODO: remove this line to test against ethereum linking enabled chains
         if (keyType === 'ethereum') return
@@ -212,11 +224,14 @@ describe('When there is an on-chain DID', () => {
           Did.Utils.signatureAlgForKeyType[keyType]
         )
         keypair = keyTool.keypair
+        keypairChain = AccountLinks.accountToChain(keypair.address)
         sign = AccountLinks.makeLinkingSignCallback(keypair)
         didKey = makeSigningKeyTool()
         newDidKey = makeSigningKeyTool()
         did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+        didChain = Did.Chain.didToChain(did.uri)
         newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
+        newDidChain = Did.Chain.didToChain(newDid.uri)
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
@@ -250,30 +265,34 @@ describe('When there is an on-chain DID', () => {
         ).toMatchInlineSnapshot('"0"')
         expect(
           AccountLinks.connectedDidFromChain(
-            await api.query.didLookup.connectedDids(
-              AccountLinks.accountToChain(keypair.address)
-            )
+            await api.query.didLookup.connectedDids(keypairChain)
           ).did
         ).toStrictEqual(did.uri)
         expect(
-          (
-            await api.query.didLookup.connectedDids(
-              AccountLinks.accountToChain(paymentAccount.address)
-            )
-          ).isNone
+          (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
         ).toBe(true)
         const encoded = await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.didToChain(did.uri)
+          didChain
         )
         expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
           keypair.address,
         ])
         expect(
-          await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-        ).toBe(false)
-        expect(
-          await AccountLinks.queryIsConnected(did.uri, keypair.address)
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              didChain,
+              paymentAccountChain
+            )
+          ).isEmpty
         ).toBe(true)
+        expect(
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              didChain,
+              keypairChain
+            )
+          ).isEmpty
+        ).toBe(false)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
         const linkAuthorization =
@@ -301,46 +320,55 @@ describe('When there is an on-chain DID', () => {
           balanceAfter.reserved.sub(balanceBefore.reserved).toString()
         ).toMatchInlineSnapshot('"0"')
         expect(
-          (
-            await api.query.didLookup.connectedDids(
-              AccountLinks.accountToChain(paymentAccount.address)
-            )
-          ).isNone
+          (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
         ).toBe(true)
         expect(
           AccountLinks.connectedDidFromChain(
-            await api.query.didLookup.connectedDids(
-              AccountLinks.accountToChain(keypair.address)
-            )
+            await api.query.didLookup.connectedDids(keypairChain)
           ).did
         ).toStrictEqual(newDid.uri)
         expect(
-          await api.query.didLookup.connectedAccounts.keys(
-            Did.Chain.didToChain(did.uri)
-          )
+          await api.query.didLookup.connectedAccounts.keys(didChain)
         ).toStrictEqual([])
         expect(
-          await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-        ).toBe(false)
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              didChain,
+              paymentAccountChain
+            )
+          ).isEmpty
+        ).toBe(true)
         expect(
-          await AccountLinks.queryIsConnected(did.uri, keypair.address)
-        ).toBe(false)
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              didChain,
+              keypairChain
+            )
+          ).isEmpty
+        ).toBe(true)
         // Check that new DID has the account linked
         const encoded = await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.didToChain(newDid.uri)
+          newDidChain
         )
         expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
           keypair.address,
         ])
         expect(
-          await AccountLinks.queryIsConnected(
-            newDid.uri,
-            paymentAccount.address
-          )
-        ).toBe(false)
-        expect(
-          await AccountLinks.queryIsConnected(newDid.uri, keypair.address)
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              newDidChain,
+              paymentAccountChain
+            )
+          ).isEmpty
         ).toBe(true)
+        expect(
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              newDidChain,
+              keypairChain
+            )
+          ).isEmpty
+        ).toBe(false)
       })
       it('should be possible for the DID to remove the link', async () => {
         const removeLinkTx = await AccountLinks.getLinkRemovalByDidExtrinsic(
@@ -366,40 +394,43 @@ describe('When there is an on-chain DID', () => {
         ).toStrictEqual(linkDeposit.toString())
         // Check that the link has been removed completely
         expect(
-          (
-            await api.query.didLookup.connectedDids(
-              AccountLinks.accountToChain(paymentAccount.address)
-            )
-          ).isNone
+          (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
         ).toBe(true)
         expect(
-          (
-            await api.query.didLookup.connectedDids(
-              AccountLinks.accountToChain(keypair.address)
-            )
-          ).isNone
+          (await api.query.didLookup.connectedDids(keypairChain)).isNone
         ).toBe(true)
         expect(
-          await api.query.didLookup.connectedAccounts.keys(
-            Did.Chain.didToChain(newDid.uri)
-          )
+          await api.query.didLookup.connectedAccounts.keys(newDidChain)
         ).toStrictEqual([])
         expect(
-          await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-        ).toBe(false)
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              didChain,
+              paymentAccountChain
+            )
+          ).isEmpty
+        ).toBe(true)
         expect(
-          await AccountLinks.queryIsConnected(did.uri, keypair.address)
-        ).toBe(false)
+          (
+            await api.query.didLookup.connectedAccounts.hash(
+              didChain,
+              keypairChain
+            )
+          ).isEmpty
+        ).toBe(true)
       })
     }
   )
 
   describe('and a generic Ecdsa Substrate account different than the sender to link', () => {
     let genericAccount: KeyringPair
+    let genericAccountChain: string
+
     beforeAll(async () => {
       genericAccount = new Keyring({ type: 'ecdsa' }).addFromMnemonic(
         mnemonicGenerate()
       )
+      genericAccountChain = AccountLinks.accountToChain(genericAccount.address)
       // also testing that signing with type bitflag works, like the polkadot extension does it
       sign = async (payload) => genericAccount.sign(payload, { withType: true })
 
@@ -407,7 +438,9 @@ describe('When there is an on-chain DID', () => {
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+      didChain = Did.Chain.didToChain(did.uri)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
+      newDidChain = Did.Chain.didToChain(newDid.uri)
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
@@ -441,31 +474,33 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       expect(
         AccountLinks.connectedDidFromChain(
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(genericAccount.address)
-          )
+          await api.query.didLookup.connectedDids(genericAccountChain)
         ).did
       ).toStrictEqual(did.uri)
       expect(
-        (
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(paymentAccount.address)
-          )
-        ).isNone
+        (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
       ).toBe(true)
-      const encoded = await api.query.didLookup.connectedAccounts.keys(
-        Did.Chain.didToChain(did.uri)
-      )
+      const encoded = await api.query.didLookup.connectedAccounts.keys(didChain)
       expect(
         // Wildcard substrate encoding. Account should match the generated one.
         AccountLinks.connectedAccountsFromChain(encoded, 42)
       ).toStrictEqual([genericAccount.address])
       expect(
-        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-      ).toBe(false)
-      expect(
-        await AccountLinks.queryIsConnected(did.uri, genericAccount.address)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            paymentAccountChain
+          )
+        ).isEmpty
       ).toBe(true)
+      expect(
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            genericAccountChain
+          )
+        ).isEmpty
+      ).toBe(false)
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
@@ -506,30 +541,30 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual(linkDeposit.toString())
       // Check that the link has been removed completely
       expect(
-        (
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(paymentAccount.address)
-          )
-        ).isNone
+        (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
       ).toBe(true)
       expect(
-        (
-          await api.query.didLookup.connectedDids(
-            AccountLinks.accountToChain(genericAccount.address)
-          )
-        ).isNone
+        (await api.query.didLookup.connectedDids(genericAccountChain)).isNone
       ).toBe(true)
       expect(
-        await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.didToChain(newDid.uri)
-        )
+        await api.query.didLookup.connectedAccounts.keys(newDidChain)
       ).toStrictEqual([])
       expect(
-        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
-      ).toBe(false)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            paymentAccountChain
+          )
+        ).isEmpty
+      ).toBe(true)
       expect(
-        await AccountLinks.queryIsConnected(did.uri, genericAccount.address)
-      ).toBe(false)
+        (
+          await api.query.didLookup.connectedAccounts.hash(
+            didChain,
+            genericAccountChain
+          )
+        ).isEmpty
+      ).toBe(true)
     })
   })
 })
