@@ -371,8 +371,8 @@ describe('When there is an on-chain DID', () => {
         ).toBe(false)
       })
       it('should be possible for the DID to remove the link', async () => {
-        const removeLinkTx = await AccountLinks.getLinkRemovalByDidExtrinsic(
-          keypair.address
+        const removeLinkTx = await api.tx.didLookup.removeAccountAssociation(
+          keypairChain
         )
         const signedTx = await Did.authorizeExtrinsic(
           newDid,

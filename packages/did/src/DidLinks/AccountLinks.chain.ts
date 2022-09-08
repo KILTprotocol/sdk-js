@@ -217,22 +217,6 @@ function associateAccountToChainArgs(
   return [account, signatureValidUntilBlock, proof]
 }
 
-/**
- * Allows the authorizing full DID to unilaterally remove its link to a given account.
- * This must be DID-authorized, but can be submitted by any account.
- *
- * @param linkedAccount An account linked to the full DID which should be unlinked.
- * @returns An Extrinsic that must be DID-authorized by the full DID linked to `linkedAccount`.
- */
-export async function getLinkRemovalByDidExtrinsic(
-  linkedAccount: Address
-): Promise<Extrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.didLookup.removeAccountAssociation(
-    accountToChain(linkedAccount)
-  )
-}
-
 /* ### HELPERS ### */
 
 /**
