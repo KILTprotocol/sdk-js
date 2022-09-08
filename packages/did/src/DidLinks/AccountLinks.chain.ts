@@ -181,13 +181,6 @@ export function accountToChain(account: Address): Address {
   return encoded as unknown as Address
 }
 
-export async function queryConnectedDid(
-  linkedAccount: Address
-): Promise<Option<PalletDidLookupConnectionRecord>> {
-  const api = ConfigService.get('api')
-  return api.query.didLookup.connectedDids(accountToChain(linkedAccount))
-}
-
 /**
  * Decodes the information about the connection between an address and a DID.
  *
@@ -249,7 +242,9 @@ export async function queryWeb3Name(
 ): Promise<Web3Name | null> {
   const api = ConfigService.get('api')
   // TODO: Replace with custom RPC call when available.
-  const encoded = await queryConnectedDid(linkedAccount)
+  const encoded = await api.query.didLookup.connectedDids(
+    accountToChain(linkedAccount)
+  )
   if (encoded.isNone) {
     return null
   }
