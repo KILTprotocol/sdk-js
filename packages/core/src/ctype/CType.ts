@@ -174,8 +174,8 @@ export function verifyDataStructure(input: ICType): void {
       input.schema.$id
     )
   }
-  if (input.owner !== null && !DidUtils.isKiltDidUri(input.owner, 'Did')) {
-    throw new SDKErrors.InvalidDidFormatError(input.owner)
+  if (input.owner !== null) {
+    DidUtils.validateKiltDidUri(input.owner, 'Did')
   }
 }
 
