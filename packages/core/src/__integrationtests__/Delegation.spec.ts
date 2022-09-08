@@ -214,7 +214,12 @@ describe('and attestation rights have been delegated', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
+    const storedAttestation = Attestation.fromChain(
+      await api.query.attestation.attestations(attestation.claimHash),
+      attestation.claimHash
+    )
+    expect(storedAttestation).not.toBeNull()
+    expect(storedAttestation?.revoked).toBe(false)
 
     // revoke attestation through root
     const revokeTx = api.tx.attestation.revoke(attestation.claimHash, {
@@ -227,7 +232,13 @@ describe('and attestation rights have been delegated', () => {
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx2, paymentAccount)
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
+
+    const storedAttestationAfter = Attestation.fromChain(
+      await api.query.attestation.attestations(attestation.claimHash),
+      attestation.claimHash
+    )
+    expect(storedAttestationAfter).not.toBeNull()
+    expect(storedAttestationAfter?.revoked).toBe(true)
   }, 75_000)
 })
 

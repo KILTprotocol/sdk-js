@@ -13,9 +13,7 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { ConfigService } from '@kiltprotocol/config'
 import { DelegationNode } from '../delegation/DelegationNode.js'
-import { fromChain } from './Attestation.chain.js'
 import * as Credential from '../credential/index.js'
 
 /**
@@ -126,23 +124,6 @@ export function isIAttestation(input: unknown): input is IAttestation {
     return false
   }
   return true
-}
-
-/**
- * Queries an attestation from the chain and checks if it is existing, if the owner of the attestation matches and if it was not revoked.
- *
- * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
- * @returns A promise containing whether the attestation is valid.
- */
-export async function checkValidity(
-  claimHash: IAttestation['claimHash'] | ICredential['rootHash']
-): Promise<boolean> {
-  // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-  const api = ConfigService.get('api')
-  const chainAttestation = await api.query.attestation.attestations(claimHash)
-  return (
-    chainAttestation.isSome && !fromChain(chainAttestation, claimHash).revoked
-  )
 }
 
 /**

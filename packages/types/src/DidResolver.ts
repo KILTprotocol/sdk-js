@@ -37,7 +37,7 @@ export type DidResolutionDocumentMetadata = {
  */
 export type DidResolutionResult = {
   /**
-   * The resolved DID document. It is undefined if the DID has been deleted.
+   * The resolved DID document. It is undefined if the DID has been upgraded or deleted.
    */
   document?: DidDocument
   /**
