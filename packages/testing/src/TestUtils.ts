@@ -28,7 +28,7 @@ import {
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
   SignCallback,
-  SignExtrinsicWithoutDidCallback,
+  SignWithoutDidCallback,
   SigningAlgorithms,
 } from '@kiltprotocol/types'
 import { Crypto, ss58Format } from '@kiltprotocol/utils'
@@ -145,7 +145,8 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
   return (didDocument) =>
     async function sign({ data, keyRelationship }) {
       const keyId = didDocument[keyRelationship]?.[0].id
-      if (keyId === undefined) {
+      const keyType = didDocument[keyRelationship]?.[0].type
+      if (keyId === undefined || keyType === undefined) {
         throw new Error(
           `Key for purpose "${keyRelationship}" not found in did "${didDocument.uri}"`
         )
@@ -155,6 +156,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
       return {
         data: signature,
         keyUri: `${didDocument.uri}${keyId}`,
+        keyType,
       }
     }
 }
@@ -165,9 +167,9 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
  * @param keypair The keypair to use for signing.
  * @returns The callback.
  */
-export function makeSignExtrinsicWithoutDidCallback(
+export function makeSignWithoutDidCallback(
   keypair: KiltKeyringPair
-): SignExtrinsicWithoutDidCallback {
+): SignWithoutDidCallback {
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
@@ -186,7 +188,7 @@ const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
 export interface KeyTool {
   keypair: KiltKeyringPair
   sign: KeyToolSignCallback
-  signWithoutDid: SignExtrinsicWithoutDidCallback
+  signWithoutDid: SignWithoutDidCallback
   authentication: [NewLightDidVerificationKey]
 }
 
@@ -207,7 +209,7 @@ export function makeSigningKeyTool(
     type
   ) as KiltKeyringPair
   const sign = makeSignCallback(keypair)
-  const signWithoutDid = makeSignExtrinsicWithoutDidCallback(keypair)
+  const signWithoutDid = makeSignWithoutDidCallback(keypair)
 
   const authenticationKey = {
     publicKey: keypair.publicKey,
@@ -334,7 +336,7 @@ export async function createLocalDemoFullDidFromLightDid(
 export async function createFullDidFromLightDid(
   payer: KiltKeyringPair,
   lightDidForId: DidDocument,
-  sign: SignExtrinsicWithoutDidCallback
+  sign: SignWithoutDidCallback
 ): Promise<DidDocument> {
   const { authentication, uri } = lightDidForId
   const tx = await Did.Chain.getStoreTx(
@@ -361,6 +363,6 @@ export async function createFullDidFromSeed(
   keypair: KiltKeyringPair
 ): Promise<DidDocument> {
   const lightDid = await createMinimalLightDidFromKeypair(keypair)
-  const sign = makeSignExtrinsicWithoutDidCallback(keypair)
+  const sign = makeSignWithoutDidCallback(keypair)
   return createFullDidFromLightDid(payer, lightDid, sign)
 }

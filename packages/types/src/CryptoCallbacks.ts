@@ -19,102 +19,119 @@ export type SigningAlgorithms = typeof signingAlgorithmsC[number]
 export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
 
 /**
- * Base interface for all {en/de}cryption & signing requests.
+ * Base interface for all signing requests.
  */
-export interface RequestData {
+export interface SignRequestData {
   /**
-   * Data to be {en/de}crypted or signed.
+   * Data to be signed.
    */
   data: Uint8Array
-}
-
-/**
- * Base interface for responses to {en/de}cryption & signing requests.
- */
-export interface ResponseData {
-  /**
-   * Result of the {en/de}cryption or signing.
-   */
-  data: Uint8Array
-}
-
-/**
- * Extends [[RequestData]] with optional metadata for providing info on the data to be signed, especially in case of signing extrinsics.
- */
-export interface SigningExtrinsicData extends RequestData {
   /**
    * Info for extensions to display to user.
+   * Available when signing extrinsics.
    */
-  meta: Partial<SignerPayloadJSON>
+  meta?: Partial<SignerPayloadJSON>
+  /**
+   * The did key relationship to be used.
+   */
   keyRelationship: VerificationKeyRelationship
 }
 
 /**
- * A callback function to sign extrinsics.
+ * Base interface for responses to signing requests.
  */
-export type SignExtrinsicCallback = (signData: SigningExtrinsicData) => Promise<
-  ResponseData & {
-    keyType: DidVerificationKey['type']
-  }
->
-
-/**
- * A callback function to sign an extrinsic without an existing DID.
- */
-export type SignExtrinsicWithoutDidCallback = (
-  signData: RequestData
-) => Promise<
-  ResponseData & {
-    keyType: DidVerificationKey['type']
-  }
->
+export interface SignResponseData {
+  /**
+   * Result of the signing.
+   */
+  data: Uint8Array
+  /**
+   * The did key uri used for signing.
+   */
+  keyUri: DidResourceUri
+  /**
+   * The did key type used for signing.
+   */
+  keyType: DidVerificationKey['type']
+}
 
 /**
  * A callback function to sign data.
  */
 export type SignCallback = (
-  signData: RequestData & {
-    keyRelationship: VerificationKeyRelationship
-  }
-) => Promise<
-  ResponseData & {
-    keyUri: DidResourceUri
-  }
->
+  signData: SignRequestData
+) => Promise<SignResponseData>
+
+/**
+ * A callback function to sign data without an existing DID.
+ */
+export type SignWithoutDidCallback = (
+  signData: SignRequestData
+) => Promise<Omit<SignResponseData, 'keyUri'>>
+
+/**
+ * Base interface for encryption requests.
+ */
+export interface EncryptionRequestData {
+  /**
+   * Data to be encrypted.
+   */
+  data: Uint8Array
+  /**
+   * The other party's public key to be used for x25519 Diffie-Hellman key agreement.
+   */
+  peerPublicKey: Uint8Array
+}
+
+/**
+ * Base interface for responses to encryption requests.
+ */
+export interface EncryptionResponseData {
+  /**
+   * Result of the encryption.
+   */
+  data: Uint8Array
+  /**
+   * A random nonce generated in the encryption process.
+   */
+  nonce: Uint8Array
+  /**
+   * The did key uri used for the encryption.
+   */
+  keyUri: DidResourceUri
+}
 
 /**
  * Uses stored key material to encrypt a message encoded as u8a.
  *
- * @param requestData Slightly extended [[RequestData]] containing both our and their public keys, the data to be encrypted, and `alg: 'x25519-xsalsa20-poly1305'`.
- * @param requestData.peerPublicKey The other party's public key to be used for x25519 Diffie-Hellman key agreement.
- * @returns [[ResponseData]] which additionally contains a `nonce` randomly generated in the encryption process (required for decryption).
+ * @param requestData The data to be encrypted, the peers public key and `alg: 'x25519-xsalsa20-poly1305'`.
+ * @returns [[EncryptionResponseData]] which additionally to the data contains a `nonce` randomly generated in the encryption process (required for decryption).
  */
 export interface EncryptCallback {
-  (
-    requestData: RequestData & {
-      peerPublicKey: Uint8Array
-    }
-  ): Promise<
-    ResponseData & {
-      nonce: Uint8Array
-      keyUri: DidResourceUri
-    }
-  >
+  (requestData: EncryptionRequestData): Promise<EncryptionResponseData>
+}
+
+export interface DecryptRequestData extends EncryptionRequestData {
+  /**
+   * The random nonce generated during encryption as u8a.
+   */
+  nonce: Uint8Array
+}
+
+export interface DecryptResponseData {
+  /**
+   * Result of the decryption.
+   */
+  data: Uint8Array
 }
 
 /**
  * Uses stored key material to decrypt a message encoded as u8a.
  *
  * @param requestData Slightly extended [[RequestData]] containing both our and their public keys, the nonce used for encryption, the data to be decrypted, and `alg: 'x25519-xsalsa20-poly1305'`.
- * @param requestData.peerPublicKey The other party's public key to be used for x25519 Diffie-Hellman key agreement.
  * @param requestData.nonce The random nonce generated during encryption as u8a.
  * @returns A Promise resolving to [[ResponseData]] containing the decrypted message or rejecting if key or algorithm is unknown or if they do not match.
  */
 export interface DecryptCallback {
-  (
-    requestData: RequestData & {
-      peerPublicKey: Uint8Array
-      nonce: Uint8Array
-    }
-  ): Promise<ResponseData>
+  (requestData: DecryptRequestData): Promise<DecryptResponseData>
 }

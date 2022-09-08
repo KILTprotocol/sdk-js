@@ -23,8 +23,8 @@ import type {
   KiltAddress,
   NewDidEncryptionKey,
   NewDidVerificationKey,
-  SignExtrinsicCallback,
-  SignExtrinsicWithoutDidCallback,
+  SignCallback,
+  SignWithoutDidCallback,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -406,7 +406,7 @@ interface GetStoreTxInput {
 export async function getStoreTx(
   input: GetStoreTxInput | DidDocument,
   submitter: KiltAddress,
-  sign: SignExtrinsicWithoutDidCallback
+  sign: SignWithoutDidCallback
 ): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
 
@@ -488,6 +488,7 @@ export async function getStoreTx(
 
   const signature = await sign({
     data: encoded,
+    keyRelationship: 'authentication',
   })
   const encodedSignature = {
     [signature.keyType]: signature.data,
@@ -664,7 +665,7 @@ export async function getReclaimDepositExtrinsic(
 }
 
 export interface SigningOptions {
-  sign: SignExtrinsicCallback
+  sign: SignCallback
   keyRelationship: VerificationKeyRelationship
 }
 

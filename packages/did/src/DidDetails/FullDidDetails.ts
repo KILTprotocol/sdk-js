@@ -14,7 +14,7 @@ import type {
   DidUri,
   DidVerificationKey,
   KiltAddress,
-  SignExtrinsicCallback,
+  SignCallback,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -114,7 +114,7 @@ export async function getNextNonce(did: DidUri): Promise<BN> {
 export async function authorizeExtrinsic(
   did: DidUri,
   extrinsic: Extrinsic,
-  sign: SignExtrinsicCallback,
+  sign: SignCallback,
   submitterAccount: KiltAddress,
   {
     txCounter,
@@ -208,7 +208,7 @@ export async function authorizeBatch({
   did: DidUri
   extrinsics: Extrinsic[]
   nonce?: BN
-  sign: SignExtrinsicCallback
+  sign: SignCallback
   submitter: KiltAddress
 }): Promise<SubmittableExtrinsic> {
   if (extrinsics.length === 0) {
