@@ -196,8 +196,10 @@ describe('When creating an instance from the chain', () => {
     let fullDid: DidDocument
 
     beforeAll(async () => {
-      ;({ keypair, sign } = makeSigningKeyTool())
-      fullDid = await createLocalDemoFullDidFromKeypair(keypair)
+      const keyTool = makeSigningKeyTool()
+      keypair = keyTool.keypair
+      fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
+      sign = keyTool.sign(fullDid)
     })
 
     describe('.addSingleExtrinsic()', () => {
@@ -205,7 +207,7 @@ describe('When creating an instance from the chain', () => {
         const extrinsic = mockApi.tx.indices.claim(1)
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid,
+            did: fullDid.uri,
             batchFunction: mockApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
@@ -222,7 +224,7 @@ describe('When creating an instance from the chain', () => {
         ])
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid,
+            did: fullDid.uri,
             batchFunction: mockApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
@@ -230,28 +232,6 @@ describe('When creating an instance from the chain', () => {
           })
         ).rejects.toMatchInlineSnapshot(
           '[DidBuilderError: Can only batch extrinsics that require a DID signature]'
-        )
-      })
-
-      it('fails if the DID does not have any key required to sign the batch', async () => {
-        // Full DID with only an authentication key.
-        const newFullDid: DidDocument = {
-          uri: fullDid.uri,
-          authentication: [fullDid.authentication[0]],
-        }
-        const extrinsic = await mockApi.tx.ctype.add('test-ctype')
-
-        await expect(async () =>
-          Did.authorizeBatch({
-            did: newFullDid,
-            batchFunction: mockApi.tx.utility.batchAll,
-            extrinsics: [extrinsic, extrinsic],
-            nonce: new BN(0),
-            sign,
-            submitter: keypair.address,
-          })
-        ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Found no key for relationship "assertionMethod"]'
         )
       })
 
@@ -282,7 +262,7 @@ describe('When creating an instance from the chain', () => {
           ctype4Extrinsic,
         ]
         await Did.authorizeBatch({
-          did: fullDid,
+          did: fullDid.uri,
           batchFunction,
           extrinsics,
           nonce: new BN(0),
@@ -310,7 +290,7 @@ describe('When creating an instance from the chain', () => {
       it('throws if batch is empty', async () => {
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid,
+            did: fullDid.uri,
             batchFunction: mockApi.tx.utility.batchAll,
             extrinsics: [],
             sign,

@@ -396,12 +396,7 @@ describe('Credential', () => {
     const credential = Credential.fromClaim(claim, {
       legitimations,
     })
-    await Credential.sign(
-      credential,
-      sign,
-      claimer,
-      claimer.authentication[0].id
-    )
+    await Credential.sign(credential, sign)
     // build attestation
     const testAttestation = Attestation.fromCredentialAndDid(
       credential,
@@ -426,7 +421,7 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.sign(identityAlice)
     )
   })
 
@@ -440,7 +435,7 @@ describe('Credential', () => {
         c: 'c',
       },
       [legitimation],
-      keyCharlie.sign
+      keyCharlie.sign(identityCharlie)
     )
 
     // check proof on complete data
@@ -464,7 +459,7 @@ describe('Credential', () => {
         c: 'c',
       },
       [legitimation],
-      sign
+      sign(identityDave)
     )
 
     // check proof on complete data
@@ -493,7 +488,7 @@ describe('Credential', () => {
         c: 'c',
       },
       [legitimation],
-      migratedAndDeleted.sign
+      migratedAndDeleted.sign(migratedAndDeletedLightDid)
     )
 
     // check proof on complete data
@@ -511,7 +506,7 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.sign(identityAlice)
     )
     expect(Credential.isICredential(credential)).toBe(true)
     // @ts-expect-error
@@ -525,7 +520,7 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.sign(identityAlice)
     )
     expect(Attestation.verifyAgainstCredential(attestation, credential)).toBe(
       true
@@ -547,7 +542,7 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.sign(identityAlice)
     )
     expect(Credential.getHash(credential)).toEqual(attestation.claimHash)
   })
@@ -673,8 +668,7 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: newKeyForMigratedClaimerDid.sign,
-      claimerDid: migratedClaimerFullDid,
+      signCallback: newKeyForMigratedClaimerDid.sign(migratedClaimerFullDid),
       challenge,
     })
     await Credential.verify(presentation, {
@@ -701,8 +695,7 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: unmigratedClaimerKey.sign,
-      claimerDid: unmigratedClaimerLightDid,
+      signCallback: unmigratedClaimerKey.sign(unmigratedClaimerLightDid),
       challenge,
     })
     await Credential.verify(presentation, {
@@ -730,9 +723,8 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: newKeyForMigratedClaimerDid.sign,
       // Use of full DID to sign the presentation.
-      claimerDid: migratedClaimerFullDid,
+      signCallback: newKeyForMigratedClaimerDid.sign(migratedClaimerFullDid),
       challenge,
     })
     await Credential.verify(presentation, {
@@ -761,9 +753,8 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: newKeyForMigratedClaimerDid.sign,
       // Still using the light DID, which should fail since it has been migrated
-      claimerDid: migratedClaimerLightDid,
+      signCallback: newKeyForMigratedClaimerDid.sign(migratedClaimerLightDid),
       challenge,
     })
     await expect(
@@ -793,9 +784,10 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: migratedThenDeletedKey.sign,
       // Still using the light DID, which should fail since it has been migrated and then deleted
-      claimerDid: migratedThenDeletedClaimerLightDid,
+      signCallback: migratedThenDeletedKey.sign(
+        migratedThenDeletedClaimerLightDid
+      ),
       challenge,
     })
     await expect(

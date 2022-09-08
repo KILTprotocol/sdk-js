@@ -220,6 +220,7 @@ describe('Messaging', () => {
     const encryptedWrongBody = await aliceEncKey.encrypt(aliceLightDid)({
       data: Crypto.coToUInt8('{ wrong JSON'),
       peerPublicKey: bobLightDid.keyAgreement![0].publicKey,
+      did: aliceLightDid.uri,
     })
     const encryptedMessageWrongBody: IEncryptedMessage = {
       ciphertext: u8aToHex(encryptedWrongBody.data),
@@ -265,6 +266,7 @@ describe('Messaging', () => {
       quoteAttesterSigned,
       content.rootHash,
       aliceSign(aliceFullDid),
+      aliceFullDid.uri,
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
@@ -427,6 +429,7 @@ describe('Messaging', () => {
       quoteAttesterSigned,
       content.rootHash,
       aliceSign(aliceLightDid),
+      aliceLightDid.uri,
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
@@ -465,6 +468,7 @@ describe('Messaging', () => {
       quoteAttesterSignedEncodedDetails,
       content.rootHash,
       aliceSign(aliceLightDidWithDetails),
+      aliceLightDidWithDetails.uri,
       { didResolve }
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
@@ -879,6 +883,7 @@ describe('Error checking / Verification', () => {
       quoteAttesterSigned,
       legitimation.rootHash,
       keyBob.sign(identityBob),
+      identityBob.uri,
       { didResolve }
     )
     // Request Terms content
@@ -945,6 +950,7 @@ describe('Error checking / Verification', () => {
       metaData: {},
       signatures: {
         inviter: await Did.signPayload(
+          identityAlice.uri,
           'signature',
           keyAlice.sign(identityAlice)
         ),
@@ -961,10 +967,15 @@ describe('Error checking / Verification', () => {
       },
       signatures: {
         inviter: await Did.signPayload(
+          identityAlice.uri,
           'signature',
           keyAlice.sign(identityAlice)
         ),
-        invitee: await Did.signPayload('signature', keyBob.sign(identityBob)),
+        invitee: await Did.signPayload(
+          identityBob.uri,
+          'signature',
+          keyBob.sign(identityBob)
+        ),
       },
     }
     // Reject Accept Delegation content
