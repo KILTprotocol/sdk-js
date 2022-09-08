@@ -13,14 +13,13 @@ import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
-import {
-  BlockchainApiConnection,
-  Blockchain,
-} from '@kiltprotocol/chain-helpers'
 
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
 import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
+
 import {
   getBalances,
   listenToBalanceChanges,
@@ -29,7 +28,7 @@ import {
 import * as BalanceUtils from './Balance.utils'
 
 const mockedApi: any = ApiMocks.getMockedApi()
-BlockchainApiConnection.setConnection(mockedApi)
+ConfigService.set({ api: mockedApi })
 
 const BALANCE = 42
 const FEE = 30
@@ -53,7 +52,7 @@ describe('Balance', () => {
 
   mockedApi.query.system.account = jest.fn(
     (accountAddress, cb): AccountInfo => {
-      if (cb) {
+      if (typeof cb === 'function') {
         setTimeout(() => {
           cb(accountInfo(BALANCE))
         }, 1)

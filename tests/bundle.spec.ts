@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-let testcontainer: StartedTestContainer
+let testcontainer: StartedTestContainer | undefined
 
 const WS_PORT = 9944
 

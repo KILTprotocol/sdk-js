@@ -129,7 +129,7 @@ describe('Messaging', () => {
     const { document } = (await didResolve(
       did as DidUri
     )) as DidResolutionResult
-    if (!document) throw new Error('Could not resolve details')
+    if (document === undefined) throw new Error('Could not resolve details')
     const key = Did.getKey(document, fragment!) as DidKey
     return {
       controller: document!.uri,

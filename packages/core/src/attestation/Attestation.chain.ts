@@ -6,6 +6,8 @@
  */
 
 import type { Option, U128 } from '@polkadot/types'
+import type { BN } from '@polkadot/util'
+
 import type {
   IAttestation,
   ICredential,
@@ -13,10 +15,8 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
-import type { BN } from '@polkadot/util'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
@@ -32,7 +32,7 @@ export async function getStoreTx(
   const { claimHash, cTypeHash, delegationId } = attestation
   log.debug(() => `Create tx for 'attestation.add'`)
 
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   return api.tx.attestation.add(
     claimHash,
@@ -77,7 +77,7 @@ export async function queryRaw(
   claimHash: ICredential['rootHash']
 ): Promise<Option<AttestationAttestationsAttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.query.attestation.attestations(claimHash)
 }
 
@@ -106,11 +106,11 @@ export async function getRevokeTx(
   claimHash: ICredential['rootHash'] | IAttestation['claimHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   return api.tx.attestation.revoke(
     claimHash,
-    maxParentChecks
+    maxParentChecks > 0
       ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
       : null
   )
@@ -128,11 +128,11 @@ export async function getRemoveTx(
   claimHash: ICredential['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   return api.tx.attestation.remove(
     claimHash,
-    maxParentChecks
+    maxParentChecks > 0
       ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
       : null
   )
@@ -148,7 +148,7 @@ export async function getRemoveTx(
 export async function getReclaimDepositTx(
   claimHash: ICredential['rootHash']
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(
     () => `Claiming deposit for the attestation with claim hash ${claimHash}`
   )
@@ -156,7 +156,7 @@ export async function getReclaimDepositTx(
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.consts.attestation.deposit
 }
 

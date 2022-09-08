@@ -5,16 +5,16 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import type { BN } from '@polkadot/util'
+
 import type {
   SubmittableExtrinsic,
   DidUri,
   KiltAddress,
 } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
-
-import type { ApiPromise } from '@polkadot/api'
-import type { BN } from '@polkadot/util'
+import { ConfigService } from '@kiltprotocol/config'
 
 import * as DidUtils from '../Did.utils.js'
 import { encodeDid } from '../Did.chain.js'
@@ -55,7 +55,7 @@ function checkWeb3NameInputConstraints(
 export async function getClaimTx(
   name: Web3Name
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   checkWeb3NameInputConstraints(api, name)
   return api.tx.web3Names.claim(name)
 }
@@ -66,7 +66,7 @@ export async function getClaimTx(
  * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
  */
 export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.tx.web3Names.releaseByOwner()
 }
 
@@ -80,7 +80,7 @@ export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
 export async function getReclaimDepositTx(
   name: Web3Name
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   checkWeb3NameInputConstraints(api, name)
   return api.tx.web3Names.reclaimDeposit(name)
 }
@@ -94,7 +94,7 @@ export async function getReclaimDepositTx(
 export async function queryWeb3NameForDid(
   did: DidUri
 ): Promise<Web3Name | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encoded = await api.query.web3Names.names(encodeDid(did))
   return encoded.isSome ? encoded.unwrap().toUtf8() : null
 }
@@ -108,7 +108,7 @@ export async function queryWeb3NameForDid(
 export async function queryDidForWeb3Name(
   name: Web3Name
 ): Promise<DidUri | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encoded = await api.query.web3Names.owner(name)
 
   const address = encoded.isSome
@@ -126,6 +126,6 @@ export async function queryDidForWeb3Name(
  * @returns The deposit amount. The value is indicated in femto KILTs.
  */
 export async function queryDepositAmount(): Promise<BN> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.consts.web3Names.deposit.toBn()
 }

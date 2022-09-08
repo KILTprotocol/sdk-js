@@ -24,6 +24,7 @@ import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import {
   getIdForCTypeHash,
+  isICType,
   verifyClaimAgainstNestedSchemas,
   verifyClaimAgainstSchema,
 } from '../ctype/index.js'
@@ -195,7 +196,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
     throw new SDKErrors.CTypeHashMissingError()
   }
   if (input.owner) {
-    DidUtils.validateKiltDidUri(input.owner)
+    DidUtils.validateKiltDidUri(input.owner, 'Did')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
@@ -282,10 +283,11 @@ export function fromCTypeAndClaimContents(
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  if (ctypeInput.schema) {
-    if (!verifyAgainstCType(claimContents, ctypeInput.schema)) {
-      throw new SDKErrors.ClaimUnverifiableError()
-    }
+  if (
+    !isICType(ctypeInput) ||
+    !verifyAgainstCType(claimContents, ctypeInput.schema)
+  ) {
+    throw new SDKErrors.ClaimUnverifiableError()
   }
   const claim = {
     cTypeHash: ctypeInput.hash,

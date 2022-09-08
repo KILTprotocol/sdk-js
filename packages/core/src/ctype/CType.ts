@@ -165,7 +165,7 @@ export function verifyDataStructure(input: ICType): void {
   if (!verifyObjectAgainstSchema(input, CTypeWrapperModel)) {
     throw new SDKErrors.ObjectUnverifiableError()
   }
-  if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
+  if (!('schema' in input) || getHashForSchema(input.schema) !== input.hash) {
     throw new SDKErrors.HashMalformedError(input.hash, 'CType')
   }
   if (getIdForSchema(input.schema) !== input.schema.$id) {
@@ -174,8 +174,8 @@ export function verifyDataStructure(input: ICType): void {
       input.schema.$id
     )
   }
-  if (!(input.owner === null || DidUtils.validateKiltDidUri(input.owner))) {
-    throw new SDKErrors.CTypeOwnerTypeError()
+  if (input.owner !== null) {
+    DidUtils.validateKiltDidUri(input.owner, 'Did')
   }
 }
 

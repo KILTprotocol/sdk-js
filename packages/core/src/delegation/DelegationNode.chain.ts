@@ -6,16 +6,17 @@
  */
 
 import type { U128 } from '@polkadot/types'
+import type { BN } from '@polkadot/util'
+
 import type {
   IAttestation,
   IDelegationNode,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import type { BN } from '@polkadot/util'
+
 import { decodeDelegationNode } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
@@ -31,7 +32,7 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 export async function getStoreAsRootTx(
   delegation: DelegationNode
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   if (!delegation.isRoot()) {
     throw new SDKErrors.InvalidRootNodeError()
@@ -53,7 +54,7 @@ export async function getStoreAsDelegationTx(
   delegation: DelegationNode,
   signature: DidUtils.EncodedSignature
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
   if (delegation.isRoot()) {
     throw new SDKErrors.InvalidDelegationNodeError()
@@ -77,7 +78,7 @@ export async function getStoreAsDelegationTx(
 export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const decoded = decodeDelegationNode(
     await api.query.delegation.delegationNodes(delegationId)
   )
@@ -103,7 +104,7 @@ export async function getRevokeTx(
   maxParentChecks: number,
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.tx.delegation.revokeDelegation(
     delegationId,
     maxParentChecks,
@@ -122,7 +123,7 @@ export async function getRemoveTx(
   delegationId: IDelegationNode['id'],
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.tx.delegation.removeDelegation(delegationId, maxRevocations)
 }
 
@@ -139,7 +140,7 @@ export async function getReclaimDepositTx(
   delegationId: IDelegationNode['id'],
   maxRemovals: number
 ): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.tx.delegation.reclaimDeposit(delegationId, maxRemovals)
 }
 
@@ -175,7 +176,7 @@ export async function getChildren(
 export async function getAttestationHashes(
   id: IDelegationNode['id']
 ): Promise<Array<IAttestation['claimHash']>> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   // this info is stored chain-side as a double map from (authorizationId, claimHash) -> boolean.
   // the following line retrieves all keys where authorizationId is equal to the delegation id.
   const entries = await api.query.attestation.externalAttestations.keys({
@@ -186,7 +187,7 @@ export async function getAttestationHashes(
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   return api.consts.delegation.deposit
 }
 

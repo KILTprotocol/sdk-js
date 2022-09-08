@@ -10,9 +10,11 @@
  */
 
 import { BN } from '@polkadot/util'
+
 import type { KeyringPair } from '@kiltprotocol/types'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+
 import {
   getBalances,
   getTransferTx,
@@ -159,7 +161,7 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
 
-    const api = await BlockchainApiConnection.getConnectionOrConnect()
+    const api = ConfigService.get('api')
     const batch = api.tx.utility.batchAll([
       await getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT),
       await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT),

@@ -261,7 +261,7 @@ export function decryptAsymmetricAsStr(
     coToUInt8(publicKeyB),
     coToUInt8(secretKeyA)
   )
-  return result ? u8aToString(result) : false
+  return result !== false ? u8aToString(result) : false
 }
 
 /**

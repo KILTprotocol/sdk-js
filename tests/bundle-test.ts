@@ -7,6 +7,8 @@
 
 /// <reference lib="dom" />
 
+import type { KeypairType } from '@polkadot/util-crypto/types'
+
 import type {
   DecryptCallback,
   EncryptCallback,
@@ -19,7 +21,6 @@ import type {
   SigningAlgorithms,
   SigningData,
 } from '@kiltprotocol/types'
-import type { KeypairType } from '@polkadot/util-crypto/types'
 
 const { kilt } = window
 
@@ -116,7 +117,7 @@ function makeDecryptCallback({
       peerPublicKey,
       secretKey
     )
-    if (!decrypted) throw new Error('Decryption failed')
+    if (decrypted === false) throw new Error('Decryption failed')
     return { data: decrypted, alg }
   }
 }
@@ -147,9 +148,7 @@ async function createFullDidFromKeypair(
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  await kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const api = await kilt.connect()
-  if (!api) throw new Error('No blockchain connection established')
+  await kilt.connect('ws://127.0.0.1:9944')
 
   // Accounts
   console.log('Account setup started')
@@ -238,7 +237,7 @@ async function runAll() {
   await Blockchain.signAndSubmitTx(deleteTx, payer, { resolveOn })
 
   const resolvedAgain = await Did.resolve(fullDid.uri)
-  if (resolvedAgain?.metadata.deactivated) {
+  if (!resolvedAgain || resolvedAgain.metadata.deactivated) {
     console.info('DID successfully deleted')
   } else {
     throw new Error('DID was not deleted')
@@ -349,7 +348,8 @@ async function runAll() {
     payer.address
   )
   await Blockchain.signAndSubmitTx(attestationStoreTx, payer, { resolveOn })
-  if (await Attestation.checkValidity(credential.rootHash)) {
+  const storedAttestation = await Attestation.query(credential.rootHash)
+  if (storedAttestation?.revoked === false) {
     console.info('Attestation verified with chain')
   } else {
     throw new Error('Attestation not verifiable with chain')

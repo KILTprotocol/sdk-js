@@ -96,8 +96,6 @@ export class ClaimContentsMalformedError extends SDKError {}
 
 export class ObjectUnverifiableError extends SDKError {}
 
-export class CTypeOwnerTypeError extends SDKError {}
-
 export class QuoteUnverifiableError extends SDKError {}
 
 export class ClaimNonceMapMalformedError extends SDKError {
@@ -131,12 +129,6 @@ export class HierarchyQueryError extends SDKError {
 export class InvalidDidFormatError extends SDKError {
   constructor(did: string, options?: ErrorOptions) {
     super(`Not a valid KILT DID "${did}"`, options)
-  }
-}
-
-export class UnsupportedDidError extends SDKError {
-  constructor(input: string) {
-    super(`The DID "${input}" is not supported`)
   }
 }
 
@@ -174,9 +166,21 @@ export class IdentityMismatchError extends SDKError {
   }
 }
 
-export class WsAddressNotSetError extends SDKError {
-  constructor() {
-    super('Node address to connect to not configured!')
+export class BlockchainApiMissingError extends SDKError {
+  constructor(options?: ErrorOptions) {
+    super(
+      'The blockchain API is not set. Did you forget to call `Kilt.connect(…)` or `Kilt.init(…)`?',
+      options
+    )
+  }
+}
+
+export class SubscriptionsNotSupportedError extends SDKError {
+  constructor(options?: ErrorOptions) {
+    super(
+      'This function is not available if the blockchain API does not support state or event subscriptions, use `WsProvider` to enable the complete feature set',
+      options
+    )
   }
 }
 

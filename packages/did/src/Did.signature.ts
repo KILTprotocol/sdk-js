@@ -16,10 +16,10 @@ import {
   UriFragment,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 
 import { resolve } from './DidResolver/index.js'
-import { parseDidUri, validateKiltDidUri } from './Did.utils.js'
+import { parseDidUri, isKiltDidUri } from './Did.utils.js'
 import * as Did from './index.js'
 
 type DidSignatureVerificationFromDetailsInput = {
@@ -144,7 +144,7 @@ export async function verifyDidSignature({
   }
   // Otherwise, the document used is either the migrated full DID document or the light DID document.
   const did = (
-    resolutionDetails.metadata.canonicalId
+    resolutionDetails.metadata.canonicalId !== undefined
       ? (await didResolve(resolutionDetails.metadata.canonicalId))?.document
       : resolutionDetails.document
   ) as DidDocument
@@ -176,20 +176,12 @@ export function isDidSignature(
 ): input is DidSignature | OldDidSignature {
   const signature = input as DidSignature | OldDidSignature
   try {
-    if (
-      !isHex(signature.signature) ||
-      !validateKiltDidUri(
-        (signature as any).keyUri || (signature as any).keyId,
-        true
-      )
-    ) {
-      throw new SDKErrors.SignatureMalformedError()
+    const keyUri = 'keyUri' in signature ? signature.keyUri : signature.keyId
+    if (!isHex(signature.signature) || !isKiltDidUri(keyUri, 'ResourceUri')) {
+      return false
     }
     return true
   } catch (cause) {
-    // TODO: type guards shouldn't throw
-    throw new SDKErrors.SignatureMalformedError(undefined, {
-      cause: cause as Error,
-    })
+    return false
   }
 }
