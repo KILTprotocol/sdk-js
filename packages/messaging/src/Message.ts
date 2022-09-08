@@ -154,9 +154,12 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'submit-credential': {
-      body.content.forEach((credential) =>
+      body.content.forEach((credential) => {
         Credential.verifyDataStructure(credential)
-      )
+        if (!Did.isDidSignature(credential.claimerSignature)) {
+          throw new SDKErrors.SignatureMalformedError()
+        }
+      })
       break
     }
     case 'accept-credential': {

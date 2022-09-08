@@ -1337,14 +1337,12 @@ describe('Error checking / Verification', () => {
     expect(() => Message.verifyMessageBody(rejectTermsBody)).toThrowError(
       SDKErrors.CTypeHashMissingError
     )
-    requestAttestationBody.content.credential.claimerSignature = {
+    submitCredentialBody.content[0].claimerSignature = {
       signature: 'this is not the claimers signature',
       // @ts-ignore
       keyUri: 'this is not a key id',
     }
-    expect(() =>
-      Message.verifyMessageBody(requestAttestationBody)
-    ).toThrowError()
+    expect(() => Message.verifyMessageBody(submitCredentialBody)).toThrowError()
     // @ts-ignore
     submitAttestationBody.content.attestation.claimHash =
       'this is not the claim hash'
