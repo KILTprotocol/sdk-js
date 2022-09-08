@@ -8,6 +8,7 @@
 import type { SignerPayloadJSON } from '@polkadot/types/types'
 import {
   DidResourceUri,
+  DidUri,
   DidVerificationKey,
   VerificationKeyRelationship,
 } from './DidDocument.js'
@@ -35,6 +36,11 @@ export interface SignRequestData {
    * The did key relationship to be used.
    */
   keyRelationship: VerificationKeyRelationship
+
+  /**
+   * The DID to be used for signing.
+   */
+  did: DidUri
 }
 
 /**
@@ -66,7 +72,7 @@ export type SignCallback = (
  * A callback function to sign data without an existing DID.
  */
 export type SignWithoutDidCallback = (
-  signData: SignRequestData
+  signData: Omit<SignRequestData, 'did'>
 ) => Promise<Omit<SignResponseData, 'keyUri'>>
 
 /**
@@ -81,6 +87,10 @@ export interface EncryptionRequestData {
    * The other party's public key to be used for x25519 Diffie-Hellman key agreement.
    */
   peerPublicKey: Uint8Array
+  /**
+   * The DID to be used for encryption.
+   */
+  did: DidUri
 }
 
 /**
@@ -111,11 +121,23 @@ export interface EncryptCallback {
   (requestData: EncryptionRequestData): Promise<EncryptionResponseData>
 }
 
-export interface DecryptRequestData extends EncryptionRequestData {
+export interface DecryptRequestData {
+  /**
+   * Data to be encrypted.
+   */
+  data: Uint8Array
+  /**
+   * The other party's public key to be used for x25519 Diffie-Hellman key agreement.
+   */
+  peerPublicKey: Uint8Array
   /**
    * The random nonce generated during encryption as u8a.
    */
   nonce: Uint8Array
+  /**
+   * The did key uri, which should be used for decryption.
+   */
+  keyUri: DidResourceUri
 }
 
 export interface DecryptResponseData {

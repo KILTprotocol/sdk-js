@@ -163,6 +163,7 @@ export async function sign(
   } = {}
 ): Promise<void> {
   const { signature, keyUri: signatureKeyId } = await signPayload(
+    credential.claim.owner,
     makeSigningData(credential, challenge),
     signCallback
   )

@@ -267,7 +267,11 @@ export class DelegationNode implements IDelegationNode {
     delegateDid: DidDocument,
     sign: SignCallback
   ): Promise<Did.Utils.EncodedSignature> {
-    const delegateSignature = await Did.signPayload(this.generateHash(), sign)
+    const delegateSignature = await Did.signPayload(
+      delegateDid.uri,
+      this.generateHash(),
+      sign
+    )
     const { fragment } = Did.Utils.parseDidUri(delegateSignature.keyUri)
     if (!fragment) {
       throw new SDKErrors.DidError(

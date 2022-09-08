@@ -707,6 +707,7 @@ export async function generateDidAuthenticatedTx({
   const signature = await sign({
     data: signableCall.toU8a(),
     keyRelationship,
+    did,
     meta: {
       method: call.method.toHex(),
       version: call.version,

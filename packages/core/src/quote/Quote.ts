@@ -22,6 +22,7 @@ import type {
   ICredential,
   SignCallback,
   DidResolve,
+  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { resolve, verifyDidSignature } from '@kiltprotocol/did'
@@ -74,6 +75,7 @@ export async function createAttesterSignedQuote(
   }
 
   const signature = await Did.signPayload(
+    quoteInput.attesterDid,
     Crypto.hashObjectAsStr(quoteInput),
     sign
   )
@@ -126,6 +128,7 @@ export async function verifyAttesterSignedQuote(
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param credentialRootHash A root hash of the entire object.
  * @param sign The callback to sign with the private key.
+ * @param claimerDid The DID of the Claimer, who has to sign.
  * @param options Optional settings.
  * @param options.didResolve Resolve function used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
@@ -134,6 +137,7 @@ export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   credentialRootHash: ICredential['rootHash'],
   sign: SignCallback,
+  claimerDid: DidUri,
   {
     didResolve = resolve,
   }: {
@@ -153,6 +157,7 @@ export async function createQuoteAgreement(
   }
 
   const signature = await Did.signPayload(
+    claimerDid,
     Crypto.hashObjectAsStr(attesterSignedQuote),
     sign
   )

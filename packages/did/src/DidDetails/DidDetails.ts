@@ -12,6 +12,7 @@ import type {
   DidKey,
   DidServiceEndpoint,
   DidSignature,
+  DidUri,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
@@ -64,18 +65,21 @@ export function getEndpoint(
 /**
  * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
  *
+ * @param did The DID to be used.
  * @param payload The byte array or HEX-encoded payload to sign.
  * @param sign The sign callback to use for the signing operation.
  *
  * @returns The resulting [[DidSignature]].
  */
 export async function signPayload(
+  did: DidUri,
   payload: Uint8Array | string,
   sign: SignCallback
 ): Promise<DidSignature> {
   const { data: signature, keyUri } = await sign({
     data: Crypto.coToUInt8(payload),
     keyRelationship: 'authentication',
+    did,
   })
 
   return {

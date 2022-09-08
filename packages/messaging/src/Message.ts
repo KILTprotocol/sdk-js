@@ -370,6 +370,7 @@ export async function decrypt(
         peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
         nonce: hexToU8a(nonce),
+        keyUri: receiverKeyUri,
       })
     ).data
   } catch (cause) {
@@ -484,6 +485,7 @@ export async function encrypt(
   const serialized = stringToU8a(JSON.stringify(toEncrypt))
 
   const encrypted = await encryptCallback({
+    did: message.sender,
     data: serialized,
     peerPublicKey: receiverKey.publicKey,
   })
