@@ -20,7 +20,6 @@ import {
   IS_FINALIZED,
   IS_IN_BLOCK,
   IS_READY,
-  parseSubscriptionOptions,
   signAndSubmitTx,
 } from './Blockchain'
 
@@ -32,58 +31,6 @@ beforeEach(() => {
 })
 
 describe('Blockchain', () => {
-  describe('parseSubscriptionOptions', () => {
-    it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
-      function testFunction() {
-        return true
-      }
-
-      expect(parseSubscriptionOptions()).toEqual({
-        resolveOn: IS_FINALIZED,
-        rejectOn: expect.any(Function),
-        timeout: undefined,
-      })
-
-      expect(parseSubscriptionOptions({ resolveOn: testFunction })).toEqual({
-        resolveOn: testFunction,
-        rejectOn: expect.any(Function),
-        timeout: undefined,
-      })
-
-      expect(
-        parseSubscriptionOptions({
-          resolveOn: testFunction,
-          rejectOn: testFunction,
-        })
-      ).toEqual({
-        resolveOn: testFunction,
-        rejectOn: testFunction,
-        timeout: undefined,
-      })
-
-      expect(
-        parseSubscriptionOptions({
-          resolveOn: testFunction,
-          timeout: 10,
-        })
-      ).toEqual({
-        resolveOn: testFunction,
-        rejectOn: expect.any(Function),
-        timeout: 10,
-      })
-
-      expect(
-        parseSubscriptionOptions({
-          timeout: 10,
-        })
-      ).toEqual({
-        resolveOn: IS_FINALIZED,
-        rejectOn: expect.any(Function),
-        timeout: 10,
-      })
-    })
-  })
-
   describe('submitSignedTx', () => {
     let pair: KeyringPair
 

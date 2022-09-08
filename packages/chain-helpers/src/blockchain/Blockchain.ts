@@ -88,29 +88,10 @@ export function EXTRINSIC_FAILED(result: ISubmittableResult): boolean {
   return ErrorHandler.extrinsicFailed(result)
 }
 
-/**
- * Parses potentially incomplete or undefined options and returns complete [[Options]].
- *
- * @param opts Potentially undefined or partial [[Options]] .
- * @returns Complete [[Options]], with potentially defaulted values.
- */
-export function parseSubscriptionOptions(
-  opts?: Partial<SubscriptionPromise.Options>
-): SubscriptionPromise.Options {
-  const {
-    resolveOn = ConfigService.isSet('submitTxResolveOn')
-      ? ConfigService.get('submitTxResolveOn')
-      : IS_FINALIZED,
-    rejectOn = (result: ISubmittableResult) =>
-      EXTRINSIC_FAILED(result) || IS_ERROR(result),
-    timeout,
-  } = { ...opts }
-
-  return {
-    resolveOn,
-    rejectOn,
-    timeout,
-  }
+function defaultResolveOn(): SubscriptionPromise.ResultEvaluator {
+  return ConfigService.isSet('submitTxResolveOn')
+    ? ConfigService.get('submitTxResolveOn')
+    : IS_FINALIZED
 }
 
 /**
@@ -127,16 +108,25 @@ export function parseSubscriptionOptions(
  */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  opts?: Partial<SubscriptionPromise.Options>
+  opts: Partial<SubscriptionPromise.Options> = {}
 ): Promise<ISubmittableResult> {
+  const {
+    resolveOn = defaultResolveOn(),
+    rejectOn = (result: ISubmittableResult) =>
+      EXTRINSIC_FAILED(result) || IS_ERROR(result),
+  } = opts
+
   const api = ConfigService.get('api')
   if (!api.hasSubscriptions) {
     throw new SDKErrors.SubscriptionsNotSupportedError()
   }
 
   log.info(`Submitting ${tx.method}`)
-  const options = parseSubscriptionOptions(opts)
-  const { promise, subscription } = makeSubscriptionPromise(options)
+  const { promise, subscription } = makeSubscriptionPromise({
+    ...opts,
+    resolveOn,
+    rejectOn,
+  })
 
   let latestResult: SubmittableResult | undefined
   const unsubscribe = await tx.send((result) => {
