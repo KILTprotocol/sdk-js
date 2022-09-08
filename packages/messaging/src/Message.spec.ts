@@ -259,12 +259,12 @@ describe('Messaging', () => {
     }
     const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
-      bobSign(bobFullDid, 'authentication')
+      bobSign(bobFullDid)
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
-      aliceSign(aliceFullDid, 'authentication'),
+      aliceSign(aliceFullDid),
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
@@ -421,12 +421,12 @@ describe('Messaging', () => {
     }
     const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
-      bobSign(bobLightDid, 'authentication')
+      bobSign(bobLightDid)
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
-      aliceSign(aliceLightDid, 'authentication'),
+      aliceSign(aliceLightDid),
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
@@ -459,12 +459,12 @@ describe('Messaging', () => {
     const quoteAttesterSignedEncodedDetails =
       await Quote.createAttesterSignedQuote(
         quoteDataEncodedDetails,
-        bobSign(bobLightDidWithDetails, 'authentication')
+        bobSign(bobLightDidWithDetails)
       )
     const bothSignedEncodedDetails = await Quote.createQuoteAgreement(
       quoteAttesterSignedEncodedDetails,
       content.rootHash,
-      aliceSign(aliceLightDidWithDetails, 'authentication'),
+      aliceSign(aliceLightDidWithDetails),
       { didResolve }
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
@@ -872,13 +872,13 @@ describe('Error checking / Verification', () => {
     // Quote signed by attester
     quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
-      keyAlice.sign(identityAlice, 'authentication')
+      keyAlice.sign(identityAlice)
     )
     // Quote agreement
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       legitimation.rootHash,
-      keyBob.sign(identityBob, 'authentication'),
+      keyBob.sign(identityBob),
       { didResolve }
     )
     // Request Terms content
@@ -946,7 +946,7 @@ describe('Error checking / Verification', () => {
       signatures: {
         inviter: await Did.signPayload(
           'signature',
-          keyAlice.sign(identityAlice, 'authentication')
+          keyAlice.sign(identityAlice)
         ),
       },
     }
@@ -962,12 +962,9 @@ describe('Error checking / Verification', () => {
       signatures: {
         inviter: await Did.signPayload(
           'signature',
-          keyAlice.sign(identityAlice, 'authentication')
+          keyAlice.sign(identityAlice)
         ),
-        invitee: await Did.signPayload(
-          'signature',
-          keyBob.sign(identityBob, 'authentication')
-        ),
+        invitee: await Did.signPayload('signature', keyBob.sign(identityBob)),
       },
     }
     // Reject Accept Delegation content

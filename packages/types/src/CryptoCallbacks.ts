@@ -6,7 +6,11 @@
  */
 
 import type { SignerPayloadJSON } from '@polkadot/types/types'
-import { DidResourceUri, DidUri, DidVerificationKey } from './DidDocument.js'
+import {
+  DidResourceUri,
+  DidVerificationKey,
+  VerificationKeyRelationship,
+} from './DidDocument.js'
 
 const signingAlgorithmsC = ['ed25519', 'sr25519', 'ecdsa-secp256k1'] as const
 export const signingAlgorithms = signingAlgorithmsC as unknown as string[]
@@ -42,16 +46,17 @@ export interface SigningExtrinsicData extends RequestData {
    * Info for extensions to display to user.
    */
   meta: Partial<SignerPayloadJSON>
-  did: DidUri
-  keyId: DidVerificationKey['id']
+  keyRelationship: VerificationKeyRelationship
 }
 
 /**
  * A callback function to sign extrinsics.
  */
-export type SignExtrinsicCallback = (
-  signData: SigningExtrinsicData
-) => Promise<ResponseData>
+export type SignExtrinsicCallback = (signData: SigningExtrinsicData) => Promise<
+  ResponseData & {
+    keyType: DidVerificationKey['type']
+  }
+>
 
 /**
  * A callback function to sign an extrinsic without an existing DID.
@@ -67,7 +72,11 @@ export type SignExtrinsicWithoutDidCallback = (
 /**
  * A callback function to sign data.
  */
-export type SignCallback = (signData: RequestData) => Promise<
+export type SignCallback = (
+  signData: RequestData & {
+    keyRelationship: VerificationKeyRelationship
+  }
+) => Promise<
   ResponseData & {
     keyUri: DidResourceUri
   }

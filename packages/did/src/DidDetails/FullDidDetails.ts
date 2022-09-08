@@ -95,8 +95,8 @@ export function getKeysForExtrinsic(
  * @param did The DID data.
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
-export async function getNextNonce(did: DidDocument): Promise<BN> {
-  const currentNonce = await queryNonce(did.uri)
+export async function getNextNonce(did: DidUri): Promise<BN> {
+  const currentNonce = await queryNonce(did)
   return increaseNonce(currentNonce)
 }
 
@@ -112,7 +112,7 @@ export async function getNextNonce(did: DidDocument): Promise<BN> {
  * @returns The DID-signed submittable extrinsic.
  */
 export async function authorizeExtrinsic(
-  did: DidDocument,
+  did: DidUri,
   extrinsic: Extrinsic,
   sign: SignExtrinsicCallback,
   submitterAccount: KiltAddress,
@@ -122,22 +122,20 @@ export async function authorizeExtrinsic(
     txCounter?: BN
   } = {}
 ): Promise<SubmittableExtrinsic> {
-  const { uri } = did
-  if (parseDidUri(uri).type === 'light') {
+  if (parseDidUri(did).type === 'light') {
     throw new SDKErrors.DidError(
-      `An extrinsic can only be authorized with a full DID, not with "${uri}"`
+      `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
   }
 
-  const [signingKey] = getKeysForExtrinsic(did, extrinsic)
-  if (signingKey === undefined) {
-    throw new SDKErrors.DidError(
-      `The details for DID "${uri}" do not contain the required keys for this operation`
-    )
+  const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
+  if (keyRelationship === undefined) {
+    throw new SDKErrors.SDKError('No key relationship found for extrinsic')
   }
+
   return generateDidAuthenticatedTx({
-    did: did.uri,
-    key: signingKey,
+    did,
+    keyRelationship,
     sign,
     call: extrinsic,
     txCounter: txCounter || (await getNextNonce(did)),
@@ -207,7 +205,7 @@ export async function authorizeBatch({
   submitter,
 }: {
   batchFunction: SubmittableExtrinsicFunction<'promise'>
-  did: DidDocument
+  did: DidUri
   extrinsics: Extrinsic[]
   nonce?: BN
   sign: SignExtrinsicCallback
@@ -219,10 +217,9 @@ export async function authorizeBatch({
     )
   }
 
-  const { uri } = did
-  if (parseDidUri(uri).type === 'light') {
+  if (parseDidUri(did).type === 'light') {
     throw new SDKErrors.DidError(
-      `An extrinsic can only be authorized with a full DID, not with "${uri}"`
+      `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
   }
 
@@ -241,16 +238,10 @@ export async function authorizeBatch({
     const txCounter = increaseNonce(firstNonce, batchIndex)
 
     const { keyRelationship } = group
-    const [signingKey] = did[keyRelationship] || []
-    if (!signingKey) {
-      throw new SDKErrors.DidBuilderError(
-        `Found no key for relationship "${keyRelationship}"`
-      )
-    }
 
     return generateDidAuthenticatedTx({
-      did: did.uri,
-      key: signingKey,
+      did,
+      keyRelationship,
       sign,
       call,
       txCounter,

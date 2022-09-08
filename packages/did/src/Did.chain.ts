@@ -26,6 +26,7 @@ import type {
   SignExtrinsicCallback,
   SignExtrinsicWithoutDidCallback,
   SubmittableExtrinsic,
+  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { encryptionKeyTypes, verificationKeyTypes } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -664,7 +665,7 @@ export async function getReclaimDepositExtrinsic(
 
 export interface SigningOptions {
   sign: SignExtrinsicCallback
-  key: DidVerificationKey
+  keyRelationship: VerificationKeyRelationship
 }
 
 /**
@@ -673,7 +674,7 @@ export interface SigningOptions {
  *
  * @param params Object wrapping all input to the function.
  * @param params.did Full DID.
- * @param params.key DID key to be used for authorization.
+ * @param params.keyRelationship DID key relationship to be used for authorization.
  * @param params.sign The callback to interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
  * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing full DID.
@@ -683,7 +684,7 @@ export interface SigningOptions {
  */
 export async function generateDidAuthenticatedTx({
   did,
-  key,
+  keyRelationship,
   sign,
   call,
   txCounter,
@@ -704,8 +705,7 @@ export async function generateDidAuthenticatedTx({
     )
   const signature = await sign({
     data: signableCall.toU8a(),
-    keyId: key.id,
-    did,
+    keyRelationship,
     meta: {
       method: call.method.toHex(),
       version: call.version,
@@ -716,7 +716,9 @@ export async function generateDidAuthenticatedTx({
       address: Crypto.encodeAddress(signableCall.did, ss58Format),
     },
   })
-  const encodedSignature = { [key.type]: signature.data } as EncodedSignature
+  const encodedSignature = {
+    [signature.keyType]: signature.data,
+  } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
 

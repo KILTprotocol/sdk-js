@@ -133,10 +133,7 @@ export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
   }
 }
 
-export type KeyToolSignCallback = (
-  didDocument: DidDocument,
-  keyPurpose: 'authentication' | 'assertionMethod' | 'capabilityDelegation'
-) => SignCallback
+export type KeyToolSignCallback = (didDocument: DidDocument) => SignCallback
 
 /**
  * Generates a callback that can be used for signing.
@@ -145,15 +142,16 @@ export type KeyToolSignCallback = (
  * @returns The callback.
  */
 export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
-  return (didDocument, keyPurpose) =>
-    async function sign({ data }) {
-      const keyId = didDocument[keyPurpose]?.[0].id
-      if (!keyId) {
+  return (didDocument) =>
+    async function sign({ data, keyRelationship }) {
+      const keyId = didDocument[keyRelationship]?.[0].id
+      if (keyId === undefined) {
         throw new Error(
-          `Key for purpose "${keyPurpose}" not found in did "${didDocument.uri}"`
+          `Key for purpose "${keyRelationship}" not found in did "${didDocument.uri}"`
         )
       }
       const signature = keypair.sign(data, { withType: false })
+
       return {
         data: signature,
         keyUri: `${didDocument.uri}${keyId}`,

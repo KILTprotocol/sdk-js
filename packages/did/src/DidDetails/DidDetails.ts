@@ -75,6 +75,7 @@ export async function signPayload(
 ): Promise<DidSignature> {
   const { data: signature, keyUri } = await sign({
     data: Crypto.coToUInt8(payload),
+    keyRelationship: 'authentication',
   })
 
   return {
