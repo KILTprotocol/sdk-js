@@ -367,7 +367,6 @@ export async function decrypt(
   try {
     data = (
       await decryptCallback({
-        did: receiverDid.uri,
         peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
         nonce: hexToU8a(nonce),
@@ -487,7 +486,6 @@ export async function encrypt(
   const encrypted = await encryptCallback({
     data: serialized,
     peerPublicKey: receiverKey.publicKey,
-    did: message.sender,
   })
 
   const ciphertext = u8aToHex(encrypted.data)
@@ -497,7 +495,7 @@ export async function encrypt(
     receivedAt: message.receivedAt,
     ciphertext,
     nonce,
-    senderKeyUri: `${message.sender}${encrypted.keyId}`,
+    senderKeyUri: encrypted.keyUri,
     receiverKeyUri: receiverKey.id,
   }
 }

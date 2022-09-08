@@ -10,7 +10,6 @@ import { u8aToHex } from '@polkadot/util'
 import type {
   DidDocument,
   DidKey,
-  DidResourceUri,
   DidServiceEndpoint,
   DidSignature,
   SignCallback,
@@ -65,24 +64,21 @@ export function getEndpoint(
 /**
  * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
  *
- * @param did The DID document.
  * @param payload The byte array or HEX-encoded payload to sign.
  * @param sign The sign callback to use for the signing operation.
  *
  * @returns The resulting [[DidSignature]].
  */
 export async function signPayload(
-  did: Partial<DidDocument> & Pick<DidDocument, 'authentication' | 'uri'>,
   payload: Uint8Array | string,
   sign: SignCallback
 ): Promise<DidSignature> {
-  const { data: signature, keyId } = await sign({
+  const { data: signature, keyUri } = await sign({
     data: Crypto.coToUInt8(payload),
-    did: did.uri,
   })
 
   return {
-    keyUri: `${did.uri}${keyId}` as DidResourceUri,
+    keyUri,
     signature: u8aToHex(signature),
   }
 }

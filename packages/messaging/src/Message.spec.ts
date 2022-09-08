@@ -21,7 +21,6 @@ import type {
   ISubmitAttestation,
   ISubmitCredential,
   ResolvedDidKey,
-  SignCallback,
   IAcceptCredential,
   IAttestation,
   IClaim,
@@ -65,6 +64,7 @@ import {
   makeSigningKeyTool,
   createLocalDemoFullDidFromKeypair,
   KeyTool,
+  KeyToolSignCallback,
 } from '@kiltprotocol/testing'
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -75,13 +75,13 @@ describe('Messaging', () => {
   let aliceLightDid: DidDocument
   let aliceLightDidWithDetails: DidDocument
   let aliceFullDid: DidDocument
-  let aliceSign: SignCallback
+  let aliceSign: KeyToolSignCallback
   const aliceEncKey = makeEncryptionKeyTool('Alice//enc')
 
   let bobLightDid: DidDocument
   let bobLightDidWithDetails: DidDocument
   let bobFullDid: DidDocument
-  let bobSign: SignCallback
+  let bobSign: KeyToolSignCallback
   const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
   async function didResolve(did: DidUri): Promise<DidResolutionResult | null> {
@@ -182,7 +182,7 @@ describe('Messaging', () => {
     )
     const encryptedMessage = await Message.encrypt(
       message,
-      aliceEncKey.encrypt,
+      aliceEncKey.encrypt(aliceLightDid),
       `${bobLightDid.uri}#encryption`,
       { resolveKey }
     )
@@ -217,10 +217,9 @@ describe('Messaging', () => {
       )
     ).rejects.toThrowError(SDKErrors.DecodingMessageError)
 
-    const encryptedWrongBody = await aliceEncKey.encrypt({
+    const encryptedWrongBody = await aliceEncKey.encrypt(aliceLightDid)({
       data: Crypto.coToUInt8('{ wrong JSON'),
       peerPublicKey: bobLightDid.keyAgreement![0].publicKey,
-      did: aliceLightDid.uri,
     })
     const encryptedMessageWrongBody: IEncryptedMessage = {
       ciphertext: u8aToHex(encryptedWrongBody.data),
@@ -260,15 +259,12 @@ describe('Messaging', () => {
     }
     const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
-      bobFullDid,
-      bobSign
+      bobSign(bobFullDid, 'authentication')
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
-      bobFullDid.uri,
-      aliceFullDid,
-      aliceSign,
+      aliceSign(aliceFullDid, 'authentication'),
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
@@ -425,15 +421,12 @@ describe('Messaging', () => {
     }
     const quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
-      bobLightDid,
-      bobSign
+      bobSign(bobLightDid, 'authentication')
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
-      bobLightDid.uri,
-      aliceLightDid,
-      aliceSign,
+      aliceSign(aliceLightDid, 'authentication'),
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
@@ -466,15 +459,12 @@ describe('Messaging', () => {
     const quoteAttesterSignedEncodedDetails =
       await Quote.createAttesterSignedQuote(
         quoteDataEncodedDetails,
-        bobLightDidWithDetails,
-        bobSign
+        bobSign(bobLightDidWithDetails, 'authentication')
       )
     const bothSignedEncodedDetails = await Quote.createQuoteAgreement(
       quoteAttesterSignedEncodedDetails,
       content.rootHash,
-      bobLightDidWithDetails.uri,
-      aliceLightDidWithDetails,
-      aliceSign,
+      aliceSign(aliceLightDidWithDetails, 'authentication'),
       { didResolve }
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
@@ -882,16 +872,13 @@ describe('Error checking / Verification', () => {
     // Quote signed by attester
     quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
-      identityAlice,
-      keyAlice.sign
+      keyAlice.sign(identityAlice, 'authentication')
     )
     // Quote agreement
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       legitimation.rootHash,
-      identityAlice.uri,
-      identityBob,
-      keyBob.sign,
+      keyBob.sign(identityBob, 'authentication'),
       { didResolve }
     )
     // Request Terms content
@@ -958,9 +945,8 @@ describe('Error checking / Verification', () => {
       metaData: {},
       signatures: {
         inviter: await Did.signPayload(
-          identityAlice,
           'signature',
-          keyAlice.sign
+          keyAlice.sign(identityAlice, 'authentication')
         ),
       },
     }
@@ -975,11 +961,13 @@ describe('Error checking / Verification', () => {
       },
       signatures: {
         inviter: await Did.signPayload(
-          identityAlice,
           'signature',
-          keyAlice.sign
+          keyAlice.sign(identityAlice, 'authentication')
         ),
-        invitee: await Did.signPayload(identityBob, 'signature', keyBob.sign),
+        invitee: await Did.signPayload(
+          'signature',
+          keyBob.sign(identityBob, 'authentication')
+        ),
       },
     }
     // Reject Accept Delegation content

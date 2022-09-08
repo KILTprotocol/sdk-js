@@ -36,30 +36,38 @@ import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 
+export type EncryptionKeyToolCallback = (
+  didDocument: DidDocument
+) => EncryptCallback
+
 /**
  * Generates a callback that can be used for encryption.
  *
  * @param secretKey The options parameter.
  * @param secretKey.secretKey The key to use for encryption.
- * @param secretKey.type The X25519 type, only this one is supported.
  * @returns The callback.
  */
 export function makeEncryptCallback({
   secretKey,
 }: {
   secretKey: Uint8Array
-  type: 'x25519'
-}): EncryptCallback {
-  return async function encryptCallback({ data, peerPublicKey }) {
-    const { box, nonce } = Crypto.encryptAsymmetric(
-      data,
-      peerPublicKey,
-      secretKey
-    )
-    return {
-      nonce,
-      data: box,
-      keyId: '#0123',
+}): EncryptionKeyToolCallback {
+  return (didDocument) => {
+    return async function encryptCallback({ data, peerPublicKey }) {
+      const keyId = didDocument.keyAgreement?.[0].id
+      if (!keyId) {
+        throw new Error(`Encryption key not found in did "${didDocument.uri}"`)
+      }
+      const { box, nonce } = Crypto.encryptAsymmetric(
+        data,
+        peerPublicKey,
+        secretKey
+      )
+      return {
+        nonce,
+        data: box,
+        keyUri: `${didDocument.uri}${keyId}`,
+      }
     }
   }
 }
@@ -97,7 +105,7 @@ export interface EncryptionKeyTool {
       type: EncryptionKeyType
     }
   ]
-  encrypt: EncryptCallback
+  encrypt: EncryptionKeyToolCallback
   decrypt: DecryptCallback
 }
 
@@ -125,20 +133,32 @@ export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
   }
 }
 
+export type KeyToolSignCallback = (
+  didDocument: DidDocument,
+  keyPurpose: 'authentication' | 'assertionMethod' | 'capabilityDelegation'
+) => SignCallback
+
 /**
  * Generates a callback that can be used for signing.
  *
  * @param keypair The keypair to use for signing.
  * @returns The callback.
  */
-export function makeSignCallback(keypair: KeyringPair): SignCallback {
-  return async function sign({ data }) {
-    const signature = keypair.sign(data, { withType: false })
-    return {
-      data: signature,
-      keyId: '#0123',
+export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
+  return (didDocument, keyPurpose) =>
+    async function sign({ data }) {
+      const keyId = didDocument[keyPurpose]?.[0].id
+      if (!keyId) {
+        throw new Error(
+          `Key for purpose "${keyPurpose}" not found in did "${didDocument.uri}"`
+        )
+      }
+      const signature = keypair.sign(data, { withType: false })
+      return {
+        data: signature,
+        keyUri: `${didDocument.uri}${keyId}`,
+      }
     }
-  }
 }
 
 /**
@@ -167,7 +187,7 @@ const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
 
 export interface KeyTool {
   keypair: KiltKeyringPair
-  sign: SignCallback
+  sign: KeyToolSignCallback
   signWithoutDid: SignExtrinsicWithoutDidCallback
   authentication: [NewLightDidVerificationKey]
 }

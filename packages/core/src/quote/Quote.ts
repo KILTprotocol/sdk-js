@@ -16,8 +16,6 @@
  */
 
 import type {
-  DidDocument,
-  DidUri,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
@@ -69,7 +67,6 @@ export function validateQuoteSchema(
  */
 export async function createAttesterSignedQuote(
   quoteInput: IQuote,
-  attesterIdentity: DidDocument,
   sign: SignCallback
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
@@ -77,7 +74,6 @@ export async function createAttesterSignedQuote(
   }
 
   const signature = await Did.signPayload(
-    attesterIdentity,
     Crypto.hashObjectAsStr(quoteInput),
     sign
   )
@@ -129,8 +125,6 @@ export async function verifyAttesterSignedQuote(
  *
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param credentialRootHash A root hash of the entire object.
- * @param attesterIdentity The uri of the Attester DID.
- * @param claimerIdentity The DID of the Claimer in order to sign.
  * @param sign The callback to sign with the private key.
  * @param options Optional settings.
  * @param options.didResolve Resolve function used in the process of verifying the attester signature.
@@ -139,8 +133,6 @@ export async function verifyAttesterSignedQuote(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   credentialRootHash: ICredential['rootHash'],
-  attesterIdentity: DidUri,
-  claimerIdentity: DidDocument,
   sign: SignCallback,
   {
     didResolve = resolve,
@@ -149,12 +141,6 @@ export async function createQuoteAgreement(
   } = {}
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-
-  if (attesterIdentity !== attesterSignedQuote.attesterDid)
-    throw new SDKErrors.DidSubjectMismatchError(
-      attesterIdentity,
-      attesterSignedQuote.attesterDid
-    )
 
   const { verified, reason } = await verifyDidSignature({
     signature: attesterSignature,
@@ -167,7 +153,6 @@ export async function createQuoteAgreement(
   }
 
   const signature = await Did.signPayload(
-    claimerIdentity,
     Crypto.hashObjectAsStr(attesterSignedQuote),
     sign
   )

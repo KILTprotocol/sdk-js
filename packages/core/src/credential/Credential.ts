@@ -24,7 +24,6 @@ import {
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  DidDocument,
   DidResolve,
   DidResourceUri,
   Hash,
@@ -151,14 +150,12 @@ export async function addSignature(
  *
  * @param credential - The Credential to add the signature to.
  * @param signCallback - The signing callback.
- * @param did - The DID Document of the signer.
  * @param options - Optional parameters.
  * @param options.challenge - An optional challenge, which will be included in the signing process.
  */
 export async function sign(
   credential: ICredential,
   signCallback: SignCallback,
-  did: DidDocument,
   {
     challenge,
   }: {
@@ -166,7 +163,6 @@ export async function sign(
   } = {}
 ): Promise<void> {
   const { signature, keyUri: signatureKeyId } = await signPayload(
-    did,
     makeSigningData(credential, challenge),
     signCallback
   )
@@ -456,7 +452,7 @@ function getAttributes(credential: ICredential): Set<string> {
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
  * @param presentationOptions.signCallback The callback to sign the presentation.
- * @param presentationOptions.claimerDid The DID document of the presenter.
+ * @param presentationOptions.claimerDid The DID uri of the presenter.
  * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
  * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
@@ -467,13 +463,11 @@ export async function createPresentation({
   selectedAttributes,
   signCallback,
   challenge,
-  claimerDid,
 }: {
   credential: ICredential
   selectedAttributes?: string[]
   signCallback: SignCallback
   challenge?: string
-  claimerDid: DidDocument
 }): Promise<ICredential> {
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
@@ -488,7 +482,7 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  await sign(presentation, signCallback, claimerDid, {
+  await sign(presentation, signCallback, {
     challenge,
   })
 
