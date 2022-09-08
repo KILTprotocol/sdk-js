@@ -327,7 +327,7 @@ describe('proofs', () => {
     mockedApi.query.attestation.attestations.mockResolvedValueOnce(
       encodedAttestation
     )
-    jest.spyOn(Attestation, 'decode').mockReturnValue(attestation)
+    jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
 
     const result = await verificationUtils.verifyAttestedProof(
       VC,
@@ -463,7 +463,7 @@ describe('proofs', () => {
       mockedApi.query.attestation.attestations.mockResolvedValueOnce(
         encodedAttestation
       )
-      jest.spyOn(Attestation, 'decode').mockReturnValue({
+      jest.spyOn(Attestation, 'fromChain').mockReturnValue({
         ...attestation,
         revoked: true,
       })

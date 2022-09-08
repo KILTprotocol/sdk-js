@@ -11,7 +11,7 @@ import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
 import type { BN } from '@polkadot/util'
 
 import * as DidUtils from '../Did.utils.js'
-import { decodeDeposit } from '../Did.chain.js'
+import { depositFromChain } from '../Did.chain.js'
 
 /**
  * Web3Name is the type of a nickname for a DID.
@@ -24,7 +24,7 @@ export type Web3Name = string
  * @param encoded The value returned by `api.query.web3Names.names()`.
  * @returns The registered web3name for this DID if any.
  */
-export function decodeWeb3Name(encoded: Option<Bytes>): Web3Name {
+export function web3NameFromChain(encoded: Option<Bytes>): Web3Name {
   return encoded.unwrap().toUtf8()
 }
 
@@ -34,7 +34,7 @@ export function decodeWeb3Name(encoded: Option<Bytes>): Web3Name {
  * @param encoded The value returned by `api.query.web3Names.owner()`.
  * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
  */
-export function decodeWeb3NameOwner(
+export function web3NameOwnerFromChain(
   encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
 ): {
   owner: DidUri
@@ -44,7 +44,7 @@ export function decodeWeb3NameOwner(
   const { owner, deposit, claimedAt } = encoded.unwrap()
   return {
     owner: DidUtils.getFullDidUri(owner.toString() as KiltAddress),
-    deposit: decodeDeposit(deposit),
+    deposit: depositFromChain(deposit),
     claimedAt: claimedAt.toBn(),
   }
 }

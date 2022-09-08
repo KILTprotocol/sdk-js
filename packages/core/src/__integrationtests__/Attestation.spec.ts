@@ -118,7 +118,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     if (ctypeExists) return
     const tx = await Did.authorizeExtrinsic(
       attester,
-      api.tx.ctype.add(CType.encode(driversLicenseCType)),
+      api.tx.ctype.add(CType.toChain(driversLicenseCType)),
       attesterKey.sign,
       tokenHolder.address
     )
@@ -423,7 +423,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       if (await isCtypeOnChain(officialLicenseAuthorityCType)) return
 
       const storeTx = api.tx.ctype.add(
-        CType.encode(officialLicenseAuthorityCType)
+        CType.toChain(officialLicenseAuthorityCType)
       )
       const authorizedStoreTx = await Did.authorizeExtrinsic(
         attester,

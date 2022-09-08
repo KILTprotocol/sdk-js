@@ -27,7 +27,7 @@ import type { EncodedDid } from '../Did.chain'
 import {
   generateDidAuthenticatedTx,
   queryServiceEndpoints,
-  decodeDid,
+  didFromChain,
 } from '../Did.chain'
 
 import * as Did from './index.js'
@@ -106,7 +106,7 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
 ]
 
 jest.mock('../Did.chain')
-jest.mocked(decodeDid).mockReturnValue(existingDidRecord)
+jest.mocked(didFromChain).mockReturnValue(existingDidRecord)
 jest.mocked(queryServiceEndpoints).mockResolvedValue(existingServiceEndpoints)
 jest
   .mocked(generateDidAuthenticatedTx)

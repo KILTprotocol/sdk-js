@@ -65,7 +65,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
       expect(
         await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.encodeDid(did.uri)
+          Did.Chain.didToChain(did.uri)
         )
       ).toStrictEqual([])
       expect(
@@ -97,14 +97,14 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
       expect(
-        AccountLinks.decodeConnectedDid(
+        AccountLinks.connectedDidFromChain(
           await AccountLinks.queryConnectedDid(paymentAccount.address)
         ).did
       ).toStrictEqual(did.uri)
       const encoded = await api.query.didLookup.connectedAccounts.keys(
-        Did.Chain.encodeDid(did.uri)
+        Did.Chain.didToChain(did.uri)
       )
-      expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+      expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
         paymentAccount.address,
       ])
       expect(
@@ -133,14 +133,14 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that account is linked to new DID
       expect(
-        AccountLinks.decodeConnectedDid(
+        AccountLinks.connectedDidFromChain(
           await AccountLinks.queryConnectedDid(paymentAccount.address)
         ).did
       ).toStrictEqual(newDid.uri)
       // Check that old DID has no accounts linked
       expect(
         await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.encodeDid(did.uri)
+          Did.Chain.didToChain(did.uri)
         )
       ).toStrictEqual([])
       expect(
@@ -148,9 +148,9 @@ describe('When there is an on-chain DID', () => {
       ).toBe(false)
       // Check that new DID has the account linked
       const encoded = await api.query.didLookup.connectedAccounts.keys(
-        Did.Chain.encodeDid(newDid.uri)
+        Did.Chain.didToChain(newDid.uri)
       )
-      expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+      expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
         paymentAccount.address,
       ])
       expect(
@@ -176,7 +176,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
       expect(
         await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.encodeDid(did.uri)
+          Did.Chain.didToChain(did.uri)
         )
       ).toStrictEqual([])
       expect(
@@ -237,7 +237,7 @@ describe('When there is an on-chain DID', () => {
             .toString()
         ).toMatchInlineSnapshot('"0"')
         expect(
-          AccountLinks.decodeConnectedDid(
+          AccountLinks.connectedDidFromChain(
             await AccountLinks.queryConnectedDid(keypair.address)
           ).did
         ).toStrictEqual(did.uri)
@@ -245,9 +245,9 @@ describe('When there is an on-chain DID', () => {
           (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
         ).toBe(true)
         const encoded = await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.encodeDid(did.uri)
+          Did.Chain.didToChain(did.uri)
         )
-        expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+        expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
           keypair.address,
         ])
         expect(
@@ -286,13 +286,13 @@ describe('When there is an on-chain DID', () => {
           (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
         ).toBe(true)
         expect(
-          AccountLinks.decodeConnectedDid(
+          AccountLinks.connectedDidFromChain(
             await AccountLinks.queryConnectedDid(keypair.address)
           ).did
         ).toStrictEqual(newDid.uri)
         expect(
           await api.query.didLookup.connectedAccounts.keys(
-            Did.Chain.encodeDid(did.uri)
+            Did.Chain.didToChain(did.uri)
           )
         ).toStrictEqual([])
         expect(
@@ -303,9 +303,9 @@ describe('When there is an on-chain DID', () => {
         ).toBe(false)
         // Check that new DID has the account linked
         const encoded = await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.encodeDid(newDid.uri)
+          Did.Chain.didToChain(newDid.uri)
         )
-        expect(AccountLinks.decodeConnectedAccounts(encoded)).toStrictEqual([
+        expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
           keypair.address,
         ])
         expect(
@@ -349,7 +349,7 @@ describe('When there is an on-chain DID', () => {
         ).toBe(true)
         expect(
           await api.query.didLookup.connectedAccounts.keys(
-            Did.Chain.encodeDid(newDid.uri)
+            Did.Chain.didToChain(newDid.uri)
           )
         ).toStrictEqual([])
         expect(
@@ -408,7 +408,7 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       expect(
-        AccountLinks.decodeConnectedDid(
+        AccountLinks.connectedDidFromChain(
           await AccountLinks.queryConnectedDid(genericAccount.address)
         ).did
       ).toStrictEqual(did.uri)
@@ -416,11 +416,11 @@ describe('When there is an on-chain DID', () => {
         (await AccountLinks.queryConnectedDid(paymentAccount.address)).isNone
       ).toBe(true)
       const encoded = await api.query.didLookup.connectedAccounts.keys(
-        Did.Chain.encodeDid(did.uri)
+        Did.Chain.didToChain(did.uri)
       )
       expect(
         // Wildcard substrate encoding. Account should match the generated one.
-        AccountLinks.decodeConnectedAccounts(encoded, 42)
+        AccountLinks.connectedAccountsFromChain(encoded, 42)
       ).toStrictEqual([genericAccount.address])
       expect(
         await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
@@ -441,7 +441,7 @@ describe('When there is an on-chain DID', () => {
       await submitExtrinsic(signedTx, paymentAccount)
 
       // Check that the Web3 name has been linked to the DID
-      const { owner } = Web3Names.decodeWeb3NameOwner(
+      const { owner } = Web3Names.web3NameOwnerFromChain(
         await api.query.web3Names.owner('test-name')
       )
       expect(owner).toStrictEqual(did.uri)
@@ -475,7 +475,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
       expect(
         await api.query.didLookup.connectedAccounts.keys(
-          Did.Chain.encodeDid(newDid.uri)
+          Did.Chain.didToChain(newDid.uri)
         )
       ).toStrictEqual([])
       expect(

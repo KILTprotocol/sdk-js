@@ -49,8 +49,8 @@ import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
-import { decodeWeb3Name, Web3Name } from './Web3Names.chain.js'
-import { decodeDeposit, encodeDid } from '../Did.chain.js'
+import { web3NameFromChain, Web3Name } from './Web3Names.chain.js'
+import { depositFromChain, didToChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -186,7 +186,7 @@ export async function queryConnectedDid(
  * @param encoded The output of `api.query.didLookup.connectedDids()`.
  * @returns The connection details.
  */
-export function decodeConnectedDid(
+export function connectedDidFromChain(
   encoded: Option<PalletDidLookupConnectionRecord>
 ): {
   did: DidUri
@@ -195,7 +195,7 @@ export function decodeConnectedDid(
   const { did, deposit } = encoded.unwrap()
   return {
     did: getFullDidUri(did.toString() as KiltAddress),
-    deposit: decodeDeposit(deposit),
+    deposit: depositFromChain(deposit),
   }
 }
 
@@ -212,7 +212,7 @@ function isLinkableAccountId(
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
  * @returns A list of addresses of accounts, encoded using `networkPrefix`.
  */
-export function decodeConnectedAccounts(
+export function connectedAccountsFromChain(
   encoded: Array<StorageKey<[AccountId32, AccountId32]>>,
   networkPrefix = ss58Format
 ): Array<KiltAddress | SubstrateAddress> {
@@ -245,8 +245,8 @@ export async function queryWeb3Name(
   if (encoded.isNone) {
     return null
   }
-  const { did } = decodeConnectedDid(encoded)
-  return decodeWeb3Name(await api.query.web3Names.names(encodeDid(did)))
+  const { did } = connectedDidFromChain(encoded)
+  return web3NameFromChain(await api.query.web3Names.names(didToChain(did)))
 }
 
 /**
@@ -265,14 +265,14 @@ export async function queryIsConnected(
     // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
     return !(
       await api.query.didLookup.connectedAccounts.hash(
-        encodeDid(did),
+        didToChain(did),
         encodeMultiAddress(account)
       )
     ).isEmpty
     // isEmpty returns true if there is no entry for the given key -> the function should return false.
   }
   return !(
-    await api.query.didLookup.connectedAccounts.hash(encodeDid(did), account)
+    await api.query.didLookup.connectedAccounts.hash(didToChain(did), account)
   ).isEmpty
 }
 
@@ -425,7 +425,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   )[0].type // get the type of the first key, which is the DidAddress
 
   const encoded = api
-    .createType(`(${DidAddress}, ${BlockNumber})`, [encodeDid(did), validTill])
+    .createType(`(${DidAddress}, ${BlockNumber})`, [didToChain(did), validTill])
     .toU8a()
 
   const isAccountId32 = decodeAddress(accountAddress).length > 20

@@ -62,15 +62,15 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 // ### RAW QUERYING (lowest layer)
 
-export function encodeDid(did: DidUri): KiltAddress {
+export function didToChain(did: DidUri): KiltAddress {
   return parseDidUri(did).address
 }
 
-export function encodeResourceId(id: UriFragment): string {
+export function resourceIdToChain(id: UriFragment): string {
   return stripFragment(id)
 }
 
-export function decodeDeletedDids(
+export function deletedDidsFromChain(
   encoded: Array<StorageKey<[AccountId32]>>
 ): DidUri[] {
   return encoded.map(({ args: [address] }) =>
@@ -78,7 +78,7 @@ export function decodeDeletedDids(
   )
 }
 
-export function decodeDeposit(deposit: KiltSupportDeposit): Deposit {
+export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   return {
     owner: deposit.owner.toString() as KiltAddress,
     amount: deposit.amount.toBn(),
@@ -92,7 +92,7 @@ async function queryAllServicesEncoded(
 ): Promise<DidServiceEndpointsDidEndpoint[]> {
   const api = ConfigService.get('api')
   const encodedEndpoints = await api.query.did.serviceEndpoints.entries(
-    encodeDid(did)
+    didToChain(did)
   )
   return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
 }
@@ -109,7 +109,7 @@ export type EncodedDid = Pick<
 
 // ### DECODED QUERYING (builds on top of raw querying)
 
-function decodeDidPublicKeyDetails(
+function didPublicKeyDetailsFromChain(
   keyId: Hash,
   keyDetails: ChainDidPublicKeyDetails
 ): DidKey {
@@ -123,7 +123,7 @@ function decodeDidPublicKeyDetails(
   }
 }
 
-export function decodeDid(encoded: Option<DidDidDetails>): EncodedDid {
+export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
   const {
     publicKeys,
     authenticationKey,
@@ -135,9 +135,11 @@ export function decodeDid(encoded: Option<DidDidDetails>): EncodedDid {
   } = encoded.unwrap()
 
   const keys: Record<string, DidKey> = [...publicKeys.entries()]
-    .map(([keyId, keyDetails]) => decodeDidPublicKeyDetails(keyId, keyDetails))
+    .map(([keyId, keyDetails]) =>
+      didPublicKeyDetailsFromChain(keyId, keyDetails)
+    )
     .reduce((res, key) => {
-      res[encodeResourceId(key.id)] = key
+      res[resourceIdToChain(key.id)] = key
       return res
     }, {})
 
@@ -184,7 +186,7 @@ function endpointToBlockchainEndpoint({
   serviceEndpoint,
 }: DidServiceEndpoint): BlockchainEndpoint {
   return {
-    id: encodeResourceId(id),
+    id: resourceIdToChain(id),
     serviceTypes: type,
     urls: serviceEndpoint,
   }
@@ -202,7 +204,7 @@ function blockchainEndpointToEndpoint({
   }
 }
 
-export function decodeServiceEndpoint({
+export function serviceEndpointFromChain({
   id,
   serviceTypes,
   urls,
@@ -224,7 +226,7 @@ export async function queryServiceEndpoints(
   did: DidUri
 ): Promise<DidServiceEndpoint[]> {
   const encoded = await queryAllServicesEncoded(did)
-  return encoded.map((e) => decodeServiceEndpoint(e))
+  return encoded.map((e) => serviceEndpointFromChain(e))
 }
 
 // ### EXTRINSICS types
@@ -239,10 +241,10 @@ export type AuthorizeCallInput = {
 
 // ### EXTRINSICS
 
-export function encodePublicKey(
+export function publicKeyToChain(
   key: NewDidVerificationKey
 ): EncodedVerificationKey
-export function encodePublicKey(key: NewDidEncryptionKey): EncodedEncryptionKey
+export function publicKeyToChain(key: NewDidEncryptionKey): EncodedEncryptionKey
 
 /**
  * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
@@ -250,7 +252,7 @@ export function encodePublicKey(key: NewDidEncryptionKey): EncodedEncryptionKey
  * @param key Object describing data associated with a public key.
  * @returns Data restructured to allow SCALE encoding by polkadot api.
  */
-export function encodePublicKey(
+export function publicKeyToChain(
   key: NewDidVerificationKey | NewDidEncryptionKey
 ): EncodedKey {
   // TypeScript can't infer type here, so we have to add a type assertion.
@@ -353,14 +355,14 @@ export async function getStoreTx(
   const newAttestationKey =
     assertionMethod &&
     assertionMethod.length > 0 &&
-    encodePublicKey(assertionMethod[0])
+    publicKeyToChain(assertionMethod[0])
 
   const newDelegationKey =
     capabilityDelegation &&
     capabilityDelegation.length > 0 &&
-    encodePublicKey(capabilityDelegation[0])
+    publicKeyToChain(capabilityDelegation[0])
 
-  const newKeyAgreementKeys = keyAgreement.map(encodePublicKey)
+  const newKeyAgreementKeys = keyAgreement.map(publicKeyToChain)
   const newServiceDetails = service.map(endpointToBlockchainEndpoint)
 
   const apiInput = {
@@ -436,7 +438,7 @@ export async function generateDidAuthenticatedTx({
       api.tx.did.submitDidCall.meta.args[0].type.toString(),
       {
         txCounter,
-        did: encodeDid(did),
+        did: didToChain(did),
         call,
         submitter,
         blockNumber: blockNumber ?? (await api.query.system.number()),
@@ -469,7 +471,7 @@ export async function generateDidAuthenticatedTx({
  * @param signature Object containing a signature generated with a full DID associated public key.
  * @returns Data restructured to allow SCALE encoding by polkadot api.
  */
-export function encodeDidSignature(
+export function didSignatureToChain(
   key: DidVerificationKey,
   signature: Pick<DidSignature, 'signature'>
 ): EncodedSignature {

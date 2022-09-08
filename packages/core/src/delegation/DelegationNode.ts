@@ -20,7 +20,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
-import { decode as decodeAttestation } from '../attestation/Attestation.chain.js'
+import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
 import {
   getAttestationHashes,
   getChildren,
@@ -212,7 +212,7 @@ export class DelegationNode implements IDelegationNode {
       attestationHashes.map(async (claimHash) => {
         const encoded = await api.query.attestation.attestations(claimHash)
         if (encoded.isNone) return undefined
-        return decodeAttestation(encoded, claimHash)
+        return attestationFromChain(encoded, claimHash)
       })
     )
 
@@ -272,7 +272,7 @@ export class DelegationNode implements IDelegationNode {
       sign,
       delegateDid.authentication[0].id
     )
-    return Did.Chain.encodeDidSignature(
+    return Did.Chain.didSignatureToChain(
       delegateDid.authentication[0],
       delegateSignature
     )

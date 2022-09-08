@@ -18,10 +18,10 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
 import {
-  decodeServiceEndpoint,
-  encodeDid,
-  encodeResourceId,
-  decodeDid,
+  serviceEndpointFromChain,
+  didToChain,
+  resourceIdToChain,
+  didFromChain,
 } from '../Did.chain.js'
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
@@ -54,7 +54,7 @@ export async function resolve(
       }
       // If not, check whether the DID has been deleted or simply does not exist.
       const isDeactivated = !(
-        await api.query.did.didBlacklist.hash(encodeDid(did))
+        await api.query.did.didBlacklist.hash(didToChain(did))
       ).isEmpty
 
       if (isDeactivated) {
@@ -76,7 +76,7 @@ export async function resolve(
         })
       }
 
-      const fullDid = await api.query.did.did(encodeDid(did))
+      const fullDid = await api.query.did.did(didToChain(did))
       // If a full DID with same subject is present, return the resolution metadata accordingly.
       if (fullDid.isSome) {
         return {
@@ -89,7 +89,7 @@ export async function resolve(
       }
       // If no full DID document is found but the full DID has been deleted, return the info in the resolution metadata.
       const isFullDidDeleted = !(
-        await api.query.did.didBlacklist.hash(encodeDid(did))
+        await api.query.did.didBlacklist.hash(didToChain(did))
       ).isEmpty
       if (isFullDidDeleted) {
         return {
@@ -132,8 +132,8 @@ export async function resolveKey(
 
   switch (type) {
     case 'full': {
-      const encoded = await api.query.did.did(encodeDid(didUri))
-      const key = encoded.isSome && Did.getKey(decodeDid(encoded), keyId)
+      const encoded = await api.query.did.did(didToChain(didUri))
+      const key = encoded.isSome && Did.getKey(didFromChain(encoded), keyId)
       if (key === undefined || key === false) {
         return null
       }
@@ -190,13 +190,13 @@ export async function resolveServiceEndpoint(
   switch (type) {
     case 'full': {
       const encoded = await api.query.did.serviceEndpoints(
-        encodeDid(serviceUri),
-        encodeResourceId(serviceId)
+        didToChain(serviceUri),
+        resourceIdToChain(serviceId)
       )
       if (encoded.isNone) {
         return null
       }
-      const serviceEndpoint = decodeServiceEndpoint(encoded.unwrap())
+      const serviceEndpoint = serviceEndpointFromChain(encoded.unwrap())
       return {
         id: serviceUri,
         type: serviceEndpoint.type,

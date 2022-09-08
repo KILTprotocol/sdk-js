@@ -20,7 +20,7 @@ import { getSchemaPropertiesForHash } from './CType.js'
  * @param ctype The CType to write on the blockchain.
  * @returns Encoded CType.
  */
-export function encode(ctype: ICType): string {
+export function toChain(ctype: ICType): string {
   return Crypto.encodeObjectAsStr(getSchemaPropertiesForHash(ctype.schema))
 }
 
@@ -30,6 +30,6 @@ export function encode(ctype: ICType): string {
  * @param encoded The data from the blockchain.
  * @returns The owner DID.
  */
-export function decode(encoded: Option<AccountId>): DidUri {
+export function fromChain(encoded: Option<AccountId>): DidUri {
   return DidUtils.getFullDidUri(encoded.unwrap().toString() as KiltAddress)
 }

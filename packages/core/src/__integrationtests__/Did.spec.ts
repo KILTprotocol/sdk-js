@@ -138,13 +138,13 @@ describe('write and didDeleteTx', () => {
     expect(await Did.Chain.queryServiceEndpoints(emptyDid)).toHaveLength(0)
 
     const encoded = await api.query.did.serviceEndpoints(
-      Did.Chain.encodeDid(emptyDid),
-      Did.Chain.encodeResourceId('#non-existing-service-id')
+      Did.Chain.didToChain(emptyDid),
+      Did.Chain.resourceIdToChain('#non-existing-service-id')
     )
     expect(encoded.isNone).toBe(true)
 
     const endpointsCount = await api.query.did.didEndpointsCount(
-      Did.Chain.encodeDid(emptyDid)
+      Did.Chain.didToChain(emptyDid)
     )
     expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
   })
@@ -199,7 +199,7 @@ describe('write and didDeleteTx', () => {
     )) as DidDocument
     expect(fullDid).not.toBeNull()
 
-    const encodedDid = Did.Chain.encodeDid(fullDid.uri)
+    const encodedDid = Did.Chain.didToChain(fullDid.uri)
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
       encodedDid
     )
@@ -214,7 +214,7 @@ describe('write and didDeleteTx', () => {
 
     // Check that DID is not blacklisted.
     expect(
-      Did.Chain.decodeDeletedDids(await api.query.did.didBlacklist.keys())
+      Did.Chain.deletedDidsFromChain(await api.query.did.didBlacklist.keys())
     ).not.toContain(fullDid.uri)
     expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
       true
@@ -226,7 +226,9 @@ describe('write and didDeleteTx', () => {
 
     // Check that DID is now blacklisted.
     expect(
-      await Did.Chain.decodeDeletedDids(await api.query.did.didBlacklist.keys())
+      await Did.Chain.deletedDidsFromChain(
+        await api.query.did.didBlacklist.keys()
+      )
     ).toContain(fullDid.uri)
     expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
       false
@@ -250,7 +252,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const newKey = makeSigningKeyTool()
 
   const updateAuthenticationKeyCall = api.tx.did.setAuthenticationKey(
-    Did.Chain.encodePublicKey(newKey.authentication[0])
+    Did.Chain.publicKeyToChain(newKey.authentication[0])
   )
   const tx2 = await Did.authorizeExtrinsic(
     fullDid,
@@ -285,16 +287,16 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitExtrinsic(tx3, paymentAccount)
 
   const encoded = await api.query.did.serviceEndpoints(
-    Did.Chain.encodeDid(fullDid.uri),
-    Did.Chain.encodeResourceId(newEndpoint.id)
+    Did.Chain.didToChain(fullDid.uri),
+    Did.Chain.resourceIdToChain(newEndpoint.id)
   )
-  expect(Did.Chain.decodeServiceEndpoint(encoded.unwrap())).toStrictEqual(
+  expect(Did.Chain.serviceEndpointFromChain(encoded.unwrap())).toStrictEqual(
     newEndpoint
   )
 
   // Delete the added service endpoint
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
-    Did.Chain.encodeResourceId(newEndpoint.id)
+    Did.Chain.resourceIdToChain(newEndpoint.id)
   )
   const tx4 = await Did.authorizeExtrinsic(
     fullDid,
@@ -306,27 +308,27 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   const encoded2 = await api.query.did.serviceEndpoints(
-    Did.Chain.encodeDid(fullDid.uri),
-    Did.Chain.encodeResourceId(newEndpoint.id)
+    Did.Chain.didToChain(fullDid.uri),
+    Did.Chain.resourceIdToChain(newEndpoint.id)
   )
   expect(encoded2.isNone).toBe(true)
 
   // Claim the deposit back
   const storedEndpointsCount = await api.query.did.didEndpointsCount(
-    Did.Chain.encodeDid(fullDid.uri)
+    Did.Chain.didToChain(fullDid.uri)
   )
   const reclaimDepositTx = api.tx.did.reclaimDeposit(
-    Did.Chain.encodeDid(fullDid.uri),
+    Did.Chain.didToChain(fullDid.uri),
     storedEndpointsCount
   )
   await submitExtrinsic(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
   expect(
-    (await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))).isNone
+    (await api.query.did.did(Did.Chain.didToChain(fullDid.uri))).isNone
   ).toBe(true)
   expect(await Did.Chain.queryServiceEndpoints(fullDid.uri)).toHaveLength(0)
   const newEndpointsCount = await api.query.did.didEndpointsCount(
-    Did.Chain.encodeDid(fullDid.uri)
+    Did.Chain.didToChain(fullDid.uri)
   )
   expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
 }, 80_000)
@@ -370,7 +372,8 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.Chain.encodeDid(migratedFullDid.uri))).isSome
+      (await api.query.did.did(Did.Chain.didToChain(migratedFullDid.uri)))
+        .isSome
     ).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -407,7 +410,8 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.Chain.encodeDid(migratedFullDid.uri))).isSome
+      (await api.query.did.did(Did.Chain.didToChain(migratedFullDid.uri)))
+        .isSome
     ).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -468,7 +472,7 @@ describe('DID migration', () => {
       ],
     })
 
-    const encodedDid = Did.Chain.encodeDid(migratedFullDid.uri)
+    const encodedDid = Did.Chain.didToChain(migratedFullDid.uri)
     expect((await api.query.did.did(encodedDid)).isSome).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -526,7 +530,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = api.tx.ctype.add(CType.encode(ctype))
+    const call = api.tx.ctype.add(CType.toChain(ctype))
     const tx = await Did.authorizeExtrinsic(
       did,
       call,
@@ -540,7 +544,7 @@ describe('DID authorization', () => {
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      Did.Chain.encodeDid(did.uri)
+      Did.Chain.didToChain(did.uri)
     )
     const deleteCall = api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeExtrinsic(
@@ -557,7 +561,7 @@ describe('DID authorization', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const call = api.tx.ctype.add(CType.encode(ctype))
+    const call = api.tx.ctype.add(CType.toChain(ctype))
     const tx2 = await Did.authorizeExtrinsic(
       did,
       call,
@@ -837,7 +841,7 @@ describe('DID management batching', () => {
             serviceEndpoint: ['x:url-1'],
           }),
           api.tx.did.setAuthenticationKey(
-            Did.Chain.encodePublicKey(newAuthKey)
+            Did.Chain.publicKeyToChain(newAuthKey)
           ),
           await Did.Chain.getAddEndpointExtrinsic({
             id: '#id-2',
@@ -894,7 +898,7 @@ describe('DID management batching', () => {
         did: fullDid,
         extrinsics: [
           api.tx.did.setAttestationKey(
-            Did.Chain.encodePublicKey(authentication[0])
+            Did.Chain.publicKeyToChain(authentication[0])
           ),
           await Did.Chain.getAddEndpointExtrinsic({
             id: '#id-1',
@@ -953,7 +957,7 @@ describe('DID management batching', () => {
         did: fullDid,
         extrinsics: [
           api.tx.did.setAttestationKey(
-            Did.Chain.encodePublicKey(authentication[0])
+            Did.Chain.publicKeyToChain(authentication[0])
           ),
           await Did.Chain.getAddEndpointExtrinsic({
             id: '#id-1',
@@ -1005,7 +1009,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeStoreTx = api.tx.ctype.add(CType.encode(ctype))
+    const ctypeStoreTx = api.tx.ctype.add(CType.toChain(ctype))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
@@ -1040,7 +1044,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctypeStoreTx = api.tx.ctype.add(CType.encode(ctype))
+    const ctypeStoreTx = api.tx.ctype.add(CType.toChain(ctype))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
@@ -1097,7 +1101,7 @@ describe('DID extrinsics batching', () => {
     expect(encoded1.isSome).toBe(false)
     // Test for correct creation of second web3 name
     const encoded2 = await api.query.web3Names.owner('test-2')
-    expect(Web3Names.decodeWeb3NameOwner(encoded2).owner).toStrictEqual(
+    expect(Web3Names.web3NameOwnerFromChain(encoded2).owner).toStrictEqual(
       fullDid.uri
     )
   }, 30_000)
@@ -1112,7 +1116,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype1Creation = api.tx.ctype.add(CType.encode(ctype1))
+    const ctype1Creation = api.tx.ctype.add(CType.toChain(ctype1))
     // Delegation key
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
@@ -1130,7 +1134,7 @@ describe('DID extrinsics batching', () => {
       type: 'object',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
-    const ctype2Creation = api.tx.ctype.add(CType.encode(ctype2))
+    const ctype2Creation = api.tx.ctype.add(CType.toChain(ctype2))
     // Delegation key
     const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)
 
@@ -1155,7 +1159,7 @@ describe('DID extrinsics batching', () => {
     const encoded = await api.query.web3Names.owner('test')
     expect(encoded.isSome).toBe(false)
 
-    const { owner } = Web3Names.decodeWeb3NameOwner(
+    const { owner } = Web3Names.web3NameOwnerFromChain(
       await api.query.web3Names.owner('test-2')
     )
     expect(owner).toStrictEqual(fullDid.uri)

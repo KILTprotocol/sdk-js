@@ -59,7 +59,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
     const { keypair, sign } = makeSigningKeyTool()
-    const storeTx = api.tx.ctype.add(CType.encode(ctype))
+    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -74,7 +74,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    const storeTx = api.tx.ctype.add(CType.encode(ctype))
+    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -83,7 +83,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    expect(CType.decode(await api.query.ctype.ctypes(ctype.hash))).toBe(
+    expect(CType.fromChain(await api.query.ctype.ctypes(ctype.hash))).toBe(
       ctypeCreator.uri
     )
     expect(await CType.verifyStored(ctype)).toBe(true)
@@ -94,7 +94,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    const storeTx = api.tx.ctype.add(CType.encode(ctype))
+    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx,
@@ -103,7 +103,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    const storeTx2 = api.tx.ctype.add(CType.encode(ctype))
+    const storeTx2 = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx2 = await Did.authorizeExtrinsic(
       ctypeCreator,
       storeTx2,
@@ -114,7 +114,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       submitExtrinsic(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
-    expect(CType.decode(await api.query.ctype.ctypes(ctype.hash))).toBe(
+    expect(CType.fromChain(await api.query.ctype.ctypes(ctype.hash))).toBe(
       ctypeCreator.uri
     )
   }, 45_000)

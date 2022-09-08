@@ -24,7 +24,7 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
  * @param claimHash The attestation claimHash.
  * @returns The attestation.
  */
-export function decode(
+export function fromChain(
   encoded: Option<AttestationAttestationsAttestationDetails>,
   claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
 ): IAttestation {

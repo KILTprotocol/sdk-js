@@ -13,7 +13,7 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { decodeDelegationNode } from './DelegationDecoder.js'
+import { delegationNodeFromChain } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
 
@@ -55,7 +55,7 @@ export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
   const api = ConfigService.get('api')
-  const decoded = decodeDelegationNode(
+  const decoded = delegationNodeFromChain(
     await api.query.delegation.delegationNodes(delegationId)
   )
   if (!decoded) {

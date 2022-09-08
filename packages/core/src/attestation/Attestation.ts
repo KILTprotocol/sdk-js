@@ -15,7 +15,7 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ConfigService } from '@kiltprotocol/config'
 import { DelegationNode } from '../delegation/DelegationNode.js'
-import { decode } from './Attestation.chain.js'
+import { fromChain } from './Attestation.chain.js'
 import * as Credential from '../credential/index.js'
 
 /**
@@ -140,7 +140,9 @@ export async function checkValidity(
   // Query attestation by claimHash. null if no attestation is found on-chain for this hash
   const api = ConfigService.get('api')
   const chainAttestation = await api.query.attestation.attestations(claimHash)
-  return chainAttestation.isSome && !decode(chainAttestation, claimHash).revoked
+  return (
+    chainAttestation.isSome && !fromChain(chainAttestation, claimHash).revoked
+  )
 }
 
 /**

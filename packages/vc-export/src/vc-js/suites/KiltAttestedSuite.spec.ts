@@ -46,7 +46,7 @@ const encodedAttestation = ApiMocks.mockChainQueryReturn(
 )
 mockedApi.query.attestation.attestations.mockResolvedValue(encodedAttestation)
 
-const spy = jest.spyOn(Attestation, 'decode').mockReturnValue(attestation)
+const spy = jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
 
 let suite: AttestationSuite
 let purpose: purposes.ProofPurpose

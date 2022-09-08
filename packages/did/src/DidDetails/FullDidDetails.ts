@@ -23,8 +23,8 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import {
-  decodeDid,
-  encodeDid,
+  didFromChain,
+  didToChain,
   generateDidAuthenticatedTx,
   queryServiceEndpoints,
 } from '../Did.chain.js'
@@ -55,9 +55,9 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
   }
 
   const api = ConfigService.get('api')
-  const encoded = await api.query.did.did(encodeDid(didUri))
+  const encoded = await api.query.did.did(didToChain(didUri))
   if (encoded.isNone) return null
-  const didRec = decodeDid(encoded)
+  const didRec = didFromChain(encoded)
 
   const did: DidDocument = {
     uri: didUri,
@@ -101,9 +101,9 @@ export function getKeysForExtrinsic(
  */
 export async function getNextNonce(did: DidDocument): Promise<BN> {
   const api = ConfigService.get('api')
-  const queried = await api.query.did.did(encodeDid(did.uri))
+  const queried = await api.query.did.did(didToChain(did.uri))
   const currentNonce = queried.isSome
-    ? decodeDid(queried).lastTxCounter
+    ? didFromChain(queried).lastTxCounter
     : new BN(0)
   return increaseNonce(currentNonce)
 }

@@ -25,7 +25,7 @@ import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ConfigService } from '@kiltprotocol/config'
 import type { HexString } from '@polkadot/util/types'
-import { decode } from './CType.chain.js'
+import { fromChain } from './CType.chain.js'
 import {
   CTypeModel,
   CTypeWrapperModel,
@@ -156,7 +156,7 @@ export async function verifyStored(ctype: ICType): Promise<boolean> {
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
   const api = ConfigService.get('api')
   const encoded = await api.query.ctype.ctypes(ctype.hash)
-  return encoded.isSome ? decode(encoded) === ctype.owner : false
+  return encoded.isSome ? fromChain(encoded) === ctype.owner : false
 }
 
 /**

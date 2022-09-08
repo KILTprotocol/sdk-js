@@ -54,7 +54,7 @@ async function checkDeleteFullDid(
   sign: SignCallback
 ): Promise<boolean> {
   storedEndpointsCount = await api.query.did.didEndpointsCount(
-    Did.Chain.encodeDid(fullDid.uri)
+    Did.Chain.didToChain(fullDid.uri)
   )
   const deleteDid = api.tx.did.delete(storedEndpointsCount)
 
@@ -64,8 +64,8 @@ async function checkDeleteFullDid(
     await api.query.system.account(identity.address)
   ).data
 
-  const didResult = Did.Chain.decodeDid(
-    await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))
+  const didResult = Did.Chain.didFromChain(
+    await api.query.did.did(Did.Chain.didToChain(fullDid.uri))
   )
   const didDeposit = didResult.deposit
 
@@ -85,10 +85,10 @@ async function checkReclaimFullDid(
   fullDid: DidDocument
 ): Promise<boolean> {
   storedEndpointsCount = await api.query.did.didEndpointsCount(
-    Did.Chain.encodeDid(fullDid.uri)
+    Did.Chain.didToChain(fullDid.uri)
   )
   tx = api.tx.did.reclaimDeposit(
-    Did.Chain.encodeDid(fullDid.uri),
+    Did.Chain.didToChain(fullDid.uri),
     storedEndpointsCount
   )
 
@@ -96,8 +96,8 @@ async function checkReclaimFullDid(
     await api.query.system.account(identity.address)
   ).data
 
-  const didResult = Did.Chain.decodeDid(
-    await api.query.did.did(Did.Chain.encodeDid(fullDid.uri))
+  const didResult = Did.Chain.didFromChain(
+    await api.query.did.did(Did.Chain.didToChain(fullDid.uri))
   )
   const didDeposit = didResult.deposit
 
@@ -235,7 +235,7 @@ async function checkDeletedDidReclaimAttestation(
   await submitExtrinsic(authorizedTx, identity)
 
   storedEndpointsCount = await api.query.did.didEndpointsCount(
-    Did.Chain.encodeDid(fullDid.uri)
+    Did.Chain.didToChain(fullDid.uri)
   )
 
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
@@ -325,7 +325,7 @@ beforeAll(async () => {
   if (!ctypeExists) {
     const extrinsic = await Did.authorizeExtrinsic(
       attester,
-      api.tx.ctype.add(CType.encode(driversLicenseCType)),
+      api.tx.ctype.add(CType.toChain(driversLicenseCType)),
       attesterKey.sign,
       devFaucet.address
     )
