@@ -234,7 +234,7 @@ describe('Claim', () => {
     )
 
     expect(() => Claim.verifyDataStructure(malformedAddress)).toThrowError(
-      SDKErrors.InvalidDidFormatError
+      SDKErrors.AddressInvalidError
     )
   })
 })
