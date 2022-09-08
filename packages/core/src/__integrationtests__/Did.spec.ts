@@ -226,9 +226,7 @@ describe('write and didDeleteTx', () => {
 
     // Check that DID is now blacklisted.
     expect(
-      await Did.Chain.deletedDidsFromChain(
-        await api.query.did.didBlacklist.keys()
-      )
+      Did.Chain.deletedDidsFromChain(await api.query.did.didBlacklist.keys())
     ).toContain(fullDid.uri)
     expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
       false

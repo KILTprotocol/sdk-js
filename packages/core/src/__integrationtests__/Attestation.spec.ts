@@ -96,7 +96,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 
   it('Attestation.getRemoveTx', async () => {
-    const draft = await api.tx.attestation.remove(claimHash, null)
+    const draft = api.tx.attestation.remove(claimHash, null)
     const authorized = await Did.authorizeExtrinsic(
       attester,
       draft,
@@ -390,10 +390,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
-      const removeTx = await api.tx.attestation.remove(
-        attestation.claimHash,
-        null
-      )
+      const removeTx = api.tx.attestation.remove(attestation.claimHash, null)
       const authorizedRemoveTx = await Did.authorizeExtrinsic(
         attester,
         removeTx,

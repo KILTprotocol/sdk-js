@@ -146,7 +146,7 @@ async function checkRemoveFullDidAttestation(
   ).data
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await api.tx.attestation.remove(attestation.claimHash, null)
+  tx = api.tx.attestation.remove(attestation.claimHash, null)
   authorizedTx = await Did.authorizeExtrinsic(
     fullDid,
     tx,
