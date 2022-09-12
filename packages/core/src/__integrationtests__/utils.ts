@@ -17,7 +17,6 @@ import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   ICType,
-  ISubmittableResult,
   KeyringPair,
   KiltAddress,
   KiltKeyringPair,
@@ -57,7 +56,7 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint)
   const api = await ApiPromise.create({ provider })
-  await init({ api })
+  await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
   return api
 }
 
@@ -137,7 +136,7 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
 export async function submitExtrinsic(
   extrinsic: SubmittableExtrinsic,
   submitter: KeyringPair,
-  resolveOn: SubscriptionPromise.ResultEvaluator = Blockchain.IS_IN_BLOCK
+  resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
   await Blockchain.signAndSubmitTx(extrinsic, submitter, {
     resolveOn,
@@ -147,7 +146,7 @@ export async function submitExtrinsic(
 export async function endowAccounts(
   faucet: KeyringPair,
   addresses: string[],
-  resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = Blockchain.IS_FINALIZED
+  resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
   const api = ConfigService.get('api')
   const transactions = await Promise.all(
