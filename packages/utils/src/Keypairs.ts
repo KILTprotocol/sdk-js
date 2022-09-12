@@ -59,7 +59,7 @@ const PairFromSeed: Record<string, (seed: Uint8Array) => Keypair> = {
 export function createKeypair(
   type: VerificationKeyType | EncryptionKeyType,
   mnemonicOrSeed: string | HexString,
-  derivationPath: string
+  derivationPath?: string
 ): Keypair {
   if (!Object.prototype.hasOwnProperty.call(PairFromSeed, type)) {
     throw new UnsupportedKeyError(type)
@@ -78,7 +78,7 @@ export function createKeypair(
   return pair
 }
 
-const keyring = new Keyring({ ss58Format: 38 })
+let keyring: Keyring
 
 /**
  * Creates a KeyringPair instance which can be used for signing.
@@ -92,6 +92,9 @@ export function createSigningKeyRingPair(
   type: VerificationKeyType
 ): KiltKeyringPair {
   if (!verificationKeyTypes.includes(type)) throw new UnsupportedKeyError(type)
+  if (typeof keyring === 'undefined') {
+    keyring = new Keyring({ ss58Format: 38 })
+  }
   return keyring.createFromPair(pair, undefined, type) as KiltKeyringPair
 }
 
