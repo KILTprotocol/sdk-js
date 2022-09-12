@@ -78,7 +78,15 @@ export function createKeypair(
   return pair
 }
 
-let keyring: Keyring
+let kr: Keyring
+const keyring = {
+  get instance() {
+    if (typeof keyring === 'undefined') {
+      kr = new Keyring({ ss58Format: 38 })
+    }
+    return kr
+  },
+}
 
 /**
  * Creates a KeyringPair instance which can be used for signing.
@@ -92,10 +100,11 @@ export function createSigningKeyRingPair(
   type: VerificationKeyType
 ): KiltKeyringPair {
   if (!verificationKeyTypes.includes(type)) throw new UnsupportedKeyError(type)
-  if (typeof keyring === 'undefined') {
-    keyring = new Keyring({ ss58Format: 38 })
-  }
-  return keyring.createFromPair(pair, undefined, type) as KiltKeyringPair
+  return keyring.instance.createFromPair(
+    pair,
+    undefined,
+    type
+  ) as KiltKeyringPair
 }
 
 /**
