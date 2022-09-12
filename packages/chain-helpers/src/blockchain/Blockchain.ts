@@ -97,12 +97,12 @@ function defaultResolveOn(): SubscriptionPromise.ResultEvaluator {
 /**
  * Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
- * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
+ * finalization or rejects if any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters or via the [[ConfigService]].
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
  * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts Partial optional [[SubscriptionPromise]]to be parsed: Criteria for resolving/rejecting the promise.
+ * @param opts Allows overwriting criteria for resolving/rejecting the transaction result subscription promise. These options take precedent over configuration via the ConfigService.
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  */
