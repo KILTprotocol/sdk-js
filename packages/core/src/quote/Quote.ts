@@ -16,24 +16,18 @@
  */
 
 import type {
-  IDidDetails,
+  DidDocument,
+  DidUri,
   IQuote,
-  IDidResolver,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  KeystoreSigner,
-  DidVerificationKey,
-  IRequestForAttestation,
+  ICredential,
+  SignCallback,
+  DidResolve,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import {
-  Utils as DidUtils,
-  DidResolver,
-  DidDetails,
-  DidKeySelectionCallback,
-  verifyDidSignature,
-} from '@kiltprotocol/did'
+import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
+import { resolve, verifyDidSignature } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -63,174 +57,129 @@ export function validateQuoteSchema(
   return result.valid
 }
 
-/**
- * Builds a [[Quote]] object, from a simple object with the same properties.
- *
- * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
- * @param options Optional settings.
- * @param options.resolver DidResolver used in the process of verifying the attester signature.
- * @throws [[ERROR_QUOTE_MALFORMED]] when the derived basicQuote can not be validated with the QuoteSchema.
- *
- * @returns A [[Quote]] object signed by an Attester.
- */
-export async function fromAttesterSignedInput(
-  deserializedQuote: IQuoteAttesterSigned,
-  {
-    resolver = DidResolver,
-  }: {
-    resolver?: IDidResolver
-  } = {}
-): Promise<IQuoteAttesterSigned> {
-  const { attesterSignature, ...basicQuote } = deserializedQuote
-  await verifyDidSignature({
-    signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
-    resolver,
-  })
-  const messages: string[] = []
-  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
-  }
-
-  return {
-    ...basicQuote,
-    attesterSignature,
-  }
-}
+// TODO: should have a "create quote" function.
 
 /**
- * Signs a [[Quote]] object as an Attester, created via [[fromQuoteDataAndIdentity]].
+ * Signs a [[Quote]] object as an Attester.
  *
  * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity The DID used to sign the object.
- * @param signer Signer callback to interface with the key store managing signing keys.
- * @param options Optional settings.
- * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
+ * @param sign The callback to sign with the private key.
  * @returns A signed [[Quote]] object.
  */
-export async function createAttesterSignature(
+export async function createAttesterSignedQuote(
   quoteInput: IQuote,
-  attesterIdentity: DidDetails,
-  signer: KeystoreSigner,
-  {
-    keySelection = DidUtils.defaultKeySelectionCallback,
-  }: {
-    keySelection?: DidKeySelectionCallback<DidVerificationKey>
-  } = {}
+  attesterIdentity: DidDocument,
+  sign: SignCallback
 ): Promise<IQuoteAttesterSigned> {
-  const authenticationKey = await keySelection(
-    attesterIdentity.getVerificationKeys(KeyRelationship.authentication)
-  )
-  if (!authenticationKey) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `The attester ${attesterIdentity.uri} does not have a valid authentication key.`
-    )
+  if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+    throw new SDKErrors.QuoteUnverifiableError()
   }
-  const signature = await attesterIdentity.signPayload(
+
+  const authenticationKeyId = attesterIdentity.authentication[0].id
+  const signature = await Did.signPayload(
+    attesterIdentity,
     Crypto.hashObjectAsStr(quoteInput),
-    signer,
-    authenticationKey.id
+    sign,
+    authenticationKeyId
   )
   return {
     ...quoteInput,
     attesterSignature: {
-      keyUri: attesterIdentity.assembleKeyUri(authenticationKey.id),
+      keyUri: `${attesterIdentity.uri}${authenticationKeyId}`,
       signature: signature.signature,
     },
   }
 }
 
 /**
- * Creates a [[Quote]] object signed by the given DID.
+ * Verifies a [[IQuoteAttesterSigned]] object.
  *
- * @param quoteInput A [[Quote]] object.
- * @param attesterIdentity The DID used to sign the object.
- * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param quote The object which to be verified.
  * @param options Optional settings.
- * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
- * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
- *
- * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
+ * @param options.didResolve Resolve function used in the process of verifying the attester signature.
  */
-export async function fromQuoteDataAndIdentity(
-  quoteInput: IQuote,
-  attesterIdentity: DidDetails,
-  signer: KeystoreSigner,
+export async function verifyAttesterSignedQuote(
+  quote: IQuoteAttesterSigned,
   {
-    keySelection = DidUtils.defaultKeySelectionCallback,
+    didResolve = resolve,
   }: {
-    keySelection?: DidKeySelectionCallback<DidVerificationKey>
+    didResolve?: DidResolve
   } = {}
-): Promise<IQuoteAttesterSigned> {
-  if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw new SDKErrors.ERROR_QUOTE_MALFORMED()
-  }
-  return createAttesterSignature(quoteInput, attesterIdentity, signer, {
-    keySelection,
+): Promise<void> {
+  const { attesterSignature, ...basicQuote } = quote
+  const result = await verifyDidSignature({
+    signature: attesterSignature,
+    message: Crypto.hashObjectAsStr(basicQuote),
+    expectedVerificationMethod: 'authentication',
+    didResolve,
   })
+
+  if (!result.verified) {
+    // TODO: should throw a "signature not verifiable" error, with the reason attached.
+    throw new SDKErrors.QuoteUnverifiableError()
+  }
+
+  const messages: string[] = []
+  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
+    throw new SDKErrors.QuoteUnverifiableError()
+  }
 }
 
 /**
  * Creates a [[Quote]] signed by the Attester and the Claimer.
  *
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
- * @param requestRootHash A root hash of the entire object.
+ * @param credentialRootHash A root hash of the entire object.
  * @param attesterIdentity The uri of the Attester DID.
  * @param claimerIdentity The DID of the Claimer in order to sign.
- * @param signer Signer callback to interface with the key store managing signing keys.
+ * @param sign The callback to sign with the private key.
  * @param options Optional settings.
- * @param options.keySelection Callback that receives all eligible public keys and returns the one to be used for signing.
- * @param options.resolver DidResolver used in the process of verifying the attester signature.
+ * @param options.didResolve Resolve function used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
-  requestRootHash: IRequestForAttestation['rootHash'],
-  attesterIdentity: IDidDetails['uri'],
-  claimerIdentity: DidDetails,
-  signer: KeystoreSigner,
+  credentialRootHash: ICredential['rootHash'],
+  attesterIdentity: DidUri,
+  claimerIdentity: DidDocument,
+  sign: SignCallback,
   {
-    keySelection = DidUtils.defaultKeySelectionCallback,
-    resolver = DidResolver,
+    didResolve = resolve,
   }: {
-    keySelection?: DidKeySelectionCallback<DidVerificationKey>
-    resolver?: IDidResolver
+    didResolve?: DidResolve
   } = {}
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   if (attesterIdentity !== attesterSignedQuote.attesterDid)
-    throw new SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
+    throw new SDKErrors.DidSubjectMismatchError(
       attesterIdentity,
       attesterSignedQuote.attesterDid
     )
 
-  await verifyDidSignature({
+  const { verified, reason } = await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    expectedVerificationMethod: KeyRelationship.authentication,
-    resolver,
+    expectedVerificationMethod: 'authentication',
+    didResolve,
   })
-
-  const claimerAuthenticationKey = await keySelection(
-    claimerIdentity.getVerificationKeys(KeyRelationship.authentication)
-  )
-  if (!claimerAuthenticationKey) {
-    throw new SDKErrors.ERROR_DID_ERROR(
-      `Claimer DID ${claimerIdentity.uri} does not have an authentication key.`
-    )
+  if (!verified && reason) {
+    throw new SDKErrors.SignatureUnverifiableError(reason)
   }
 
-  const signature = await claimerIdentity.signPayload(
+  const signature = await Did.signPayload(
+    claimerIdentity,
     Crypto.hashObjectAsStr(attesterSignedQuote),
-    signer,
-    claimerAuthenticationKey.id
+    sign,
+    claimerIdentity.authentication[0].id
   )
 
   return {
     ...attesterSignedQuote,
-    rootHash: requestRootHash,
+    rootHash: credentialRootHash,
     claimerSignature: signature,
   }
 }
+
+// TODO: Should have a `verifyQuoteAgreement` function

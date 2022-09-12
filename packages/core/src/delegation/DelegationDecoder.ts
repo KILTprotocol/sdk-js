@@ -16,17 +16,18 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type {
-  Deposit,
   IDelegationNode,
   IDelegationHierarchyDetails,
+  KiltAddress,
 } from '@kiltprotocol/types'
-import { Permission } from '@kiltprotocol/types'
+import { Permission, PermissionType } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
-import type { Struct, Vec } from '@polkadot/types/codec'
-import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
-import type { Bool, u32 } from '@polkadot/types/primitive'
-import { DecoderUtils } from '@kiltprotocol/utils'
+import type { Hash } from '@polkadot/types/interfaces/runtime'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+import type {
+  DelegationDelegationHierarchyDelegationHierarchyDetails,
+  DelegationDelegationHierarchyDelegationNode,
+} from '@kiltprotocol/augment-api'
 
 export type CodecWithId<C> = {
   id: string
@@ -40,16 +41,9 @@ export type DelegationHierarchyDetailsRecord = Pick<
 
 export type CtypeHash = Hash
 
-export interface IChainDelegationHierarchyDetails extends Struct {
-  readonly ctypeHash: CtypeHash
-}
-
 export function decodeDelegationHierarchyDetails(
-  encoded: Option<IChainDelegationHierarchyDetails>
+  encoded: Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
 ): DelegationHierarchyDetailsRecord | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<DelegationDelegationHierarchyDelegationHierarchyDetails>',
-  ])
   if (encoded.isNone) {
     return null
   }
@@ -66,14 +60,14 @@ export function decodeDelegationHierarchyDetails(
  * @param bitset The u32 number used as the bitset to encode permissions.
  * @returns The permission set.
  */
-function decodePermissions(bitset: number): Permission[] {
-  const permissions: Permission[] = []
+function decodePermissions(bitset: number): PermissionType[] {
+  const permissions: PermissionType[] = []
   // eslint-disable-next-line no-bitwise
-  if (bitset & Permission.ATTEST) {
+  if ((bitset & Permission.ATTEST) > 0) {
     permissions.push(Permission.ATTEST)
   }
   // eslint-disable-next-line no-bitwise
-  if (bitset & Permission.DELEGATE) {
+  if ((bitset & Permission.DELEGATE) > 0) {
     permissions.push(Permission.DELEGATE)
   }
   return permissions
@@ -83,32 +77,9 @@ export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 
 export type DelegationNodeId = Hash
 
-type DelegationOwnerIdentifier = AccountId
-
-interface IPermissions extends Struct {
-  bits: u32
-}
-
-export interface IChainDelegationDetails extends Struct {
-  readonly owner: DelegationOwnerIdentifier
-  readonly revoked: Bool
-  readonly permissions: IPermissions
-}
-
-export interface IChainDelegationNode extends Struct {
-  readonly hierarchyRootId: DelegationNodeId
-  readonly parent: Option<DelegationNodeId>
-  readonly children: Vec<DelegationNodeId>
-  readonly details: IChainDelegationDetails
-  readonly deposit: Deposit
-}
-
 export function decodeDelegationNode(
-  encoded: Option<IChainDelegationNode>
+  encoded: Option<DelegationDelegationHierarchyDelegationNode>
 ): DelegationNodeRecord | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<DelegationDelegationHierarchyDelegationNode>',
-  ])
   if (encoded.isNone) {
     return null
   }
@@ -120,9 +91,8 @@ export function decodeDelegationNode(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children].map((id) => id.toHex()),
-    account: DidUtils.getKiltDidFromIdentifier(
-      delegationNode.details.owner.toString(),
-      'full'
+    account: DidUtils.getFullDidUri(
+      delegationNode.details.owner.toString() as KiltAddress
     ),
     permissions: decodePermissions(
       delegationNode.details.permissions.bits.toNumber()

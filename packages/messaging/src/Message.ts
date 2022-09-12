@@ -5,338 +5,524 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  CompressedMessageBody,
-  IMessage,
-  ISubmitCredential,
-  IEncryptedMessage,
-  MessageBody,
-  ICType,
-  IDidResolver,
-  IEncryptedMessageContents,
-  NaclBoxCapable,
-  DidPublicKey,
-  MessageBodyType,
+import type {
+  DecryptCallback,
+  DidDocument,
   DidEncryptionKey,
+  DidResolveKey,
+  DidResourceUri,
+  EncryptCallback,
   EncryptionKeyType,
+  IEncryptedMessage,
+  IEncryptedMessageContents,
+  ICType,
+  IDelegationData,
+  IMessage,
+  MessageBody,
 } from '@kiltprotocol/types'
-import { SDKErrors, UUID } from '@kiltprotocol/utils'
+import { encryptionKeyTypes } from '@kiltprotocol/types'
 import {
-  DidDetails,
-  DidResolver,
-  Utils as DidUtils,
-  EncryptionAlgorithms,
-} from '@kiltprotocol/did'
-import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
+  Attestation,
+  Claim,
+  Credential,
+  CType,
+  Quote,
+} from '@kiltprotocol/core'
+import { DataUtils, SDKErrors, UUID } from '@kiltprotocol/utils'
+import * as Did from '@kiltprotocol/did'
 import {
-  compressMessage,
-  decompressMessage,
-  errorCheckMessage,
-  errorCheckMessageBody,
-  verifyRequiredCTypeProperties,
-} from './Message.utils.js'
+  hexToU8a,
+  stringToU8a,
+  u8aToHex,
+  u8aToString,
+  isHex,
+  isJsonObject,
+} from '@polkadot/util'
 
-export class Message implements IMessage {
-  /**
-   * [STATIC] Lists all possible body types of [[Message]].
-   */
-  public static readonly BodyType = MessageBodyType
+/**
+ * Checks if delegation data is well formed.
+ *
+ * @param delegationData Delegation data to check.
+ */
+export function verifyDelegationStructure(
+  delegationData: IDelegationData
+): void {
+  const { permissions, id, parentId, isPCR, account } = delegationData
 
-  /**
-   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
-   *
-   * @param message The [[Message]] object which needs to be decrypted.
-   * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
-   * @param message.sender The sender's DID taken from the [[IMessage]].
-   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender is not the same subject as the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
-   */
-  public static ensureOwnerIsSender({ body, sender }: IMessage): void {
-    switch (body.type) {
-      case Message.BodyType.REQUEST_ATTESTATION:
-        {
-          const requestAttestation = body
-          if (
-            !DidUtils.isSameSubject(
-              requestAttestation.content.requestForAttestation.claim.owner,
-              sender
-            )
-          ) {
-            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
-          }
-        }
-        break
-      case Message.BodyType.SUBMIT_ATTESTATION:
-        {
-          const submitAttestation = body
-          if (
-            !DidUtils.isSameSubject(
-              submitAttestation.content.attestation.owner,
-              sender
-            )
-          ) {
-            throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
-          }
-        }
-        break
-      case Message.BodyType.SUBMIT_CREDENTIAL:
-        {
-          const submitClaimsForCtype: ISubmitCredential = body
-          submitClaimsForCtype.content.forEach((claim) => {
-            if (!DidUtils.isSameSubject(claim.request.claim.owner, sender)) {
-              throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
-            }
-          })
-        }
-        break
-      default:
-    }
+  if (!id) {
+    throw new SDKErrors.DelegationIdMissingError()
+  } else if (typeof id !== 'string' || !isHex(id)) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
 
-  /**
-   * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
-   *
-   * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
-   *
-   * @param encrypted The encrypted message.
-   * @param keystore The keystore used to perform the cryptographic operations.
-   * @param receiverDetails The DID details of the receiver.
-   * @param decryptionOptions Options to perform the decryption operation.
-   * @param decryptionOptions.resolver The DID resolver to use.
-   *
-   * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
-   * @throws [[ERROR_PARSING_MESSAGE]] when the decoded message could not be parsed.
-   * @returns The original [[Message]].
-   */
-  public static async decrypt(
-    encrypted: IEncryptedMessage,
-    keystore: Pick<NaclBoxCapable, 'decrypt'>,
-    receiverDetails: DidDetails,
-    {
-      resolver = DidResolver,
-    }: {
-      resolver?: IDidResolver
-    } = {}
-  ): Promise<IMessage> {
-    const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
-      encrypted
+  if (!account) {
+    throw new SDKErrors.OwnerMissingError()
+  }
+  Did.Utils.validateKiltDidUri(account, 'Did')
 
-    const senderKeyDetails = await resolver.resolveKey(senderKeyUri)
-    if (!senderKeyDetails) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve sender encryption key ${senderKeyUri}`
-      )
+  if (typeof isPCR !== 'boolean') {
+    throw new TypeError('isPCR is expected to be a boolean')
+  }
+
+  if (permissions.length === 0 || permissions.length > 3) {
+    throw new SDKErrors.UnauthorizedError(
+      'Must have at least one permission and no more then two'
+    )
+  }
+
+  if (parentId && (typeof parentId !== 'string' || !isHex(parentId))) {
+    throw new SDKErrors.DelegationIdTypeError()
+  }
+}
+
+/**
+ * Checks if the message body is well-formed.
+ *
+ * @param body The message body.
+ */
+export function verifyMessageBody(body: MessageBody): void {
+  switch (body.type) {
+    case 'request-terms': {
+      Claim.verifyDataStructure(body.content)
+      break
     }
-    const { fragment } = DidUtils.parseDidUri(receiverKeyUri)
-    if (!fragment) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `No fragment for the receiver key ID ${receiverKeyUri}`
+    case 'submit-terms': {
+      Claim.verifyDataStructure(body.content.claim)
+      body.content.legitimations.forEach((credential) =>
+        Credential.verifyDataStructure(credential)
       )
+      if (body.content.delegationId) {
+        DataUtils.validateHash(
+          body.content.delegationId,
+          'Submit terms delegation id hash invalid'
+        )
+      }
+      if (body.content.quote) {
+        Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
+      }
+      if (body.content.cTypes) {
+        body.content.cTypes.forEach((val) => CType.verifyDataStructure(val))
+      }
+      break
     }
-    const receiverKeyDetails = receiverDetails.getKey(fragment)
-    if (!receiverKeyDetails || !DidUtils.isEncryptionKey(receiverKeyDetails)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Could not resolve receiver encryption key ${receiverKeyUri}`
+    case 'reject-terms': {
+      Claim.verifyDataStructure(body.content.claim)
+      if (body.content.delegationId) {
+        DataUtils.validateHash(
+          body.content.delegationId,
+          'Reject terms delegation id hash'
+        )
+      }
+      body.content.legitimations.forEach((val) =>
+        Credential.verifyDataStructure(val)
       )
+      break
     }
-    const receiverKeyAlgType =
-      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
-        receiverKeyDetails.type as EncryptionKeyType
+    case 'request-attestation': {
+      Credential.verifyDataStructure(body.content.credential)
+      if (body.content.quote) {
+        Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
+      }
+      break
+    }
+    case 'submit-attestation': {
+      Attestation.verifyDataStructure(body.content.attestation)
+      break
+    }
+    case 'reject-attestation': {
+      if (!isHex(body.content)) {
+        throw new SDKErrors.HashMalformedError()
+      }
+      break
+    }
+    case 'request-credential': {
+      body.content.cTypes.forEach(
+        ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
+          DataUtils.validateHash(
+            cTypeHash,
+            'request credential cTypeHash invalid'
+          )
+          trustedAttesters?.forEach((did) =>
+            Did.Utils.validateKiltDidUri(did, 'Did')
+          )
+          requiredProperties?.forEach((requiredProps) => {
+            if (typeof requiredProps !== 'string')
+              throw new TypeError(
+                'Required properties is expected to be a string'
+              )
+          })
+        }
       )
-    if (receiverKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
-        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
+      break
+    }
+    case 'submit-credential': {
+      body.content.forEach((presentation) => {
+        Credential.verifyDataStructure(presentation)
+        if (!Did.isDidSignature(presentation.claimerSignature)) {
+          throw new SDKErrors.SignatureMalformedError()
+        }
+      })
+      break
+    }
+    case 'accept-credential': {
+      body.content.forEach((cTypeHash) =>
+        DataUtils.validateHash(
+          cTypeHash,
+          'accept credential message ctype hash invalid'
+        )
       )
+      break
+    }
+    case 'reject-credential': {
+      body.content.forEach((cTypeHash) =>
+        DataUtils.validateHash(
+          cTypeHash,
+          'rejected credential ctype hashes invalid'
+        )
+      )
+      break
+    }
+    case 'request-accept-delegation': {
+      verifyDelegationStructure(body.content.delegationData)
+      if (!Did.isDidSignature(body.content.signatures.inviter)) {
+        throw new SDKErrors.SignatureMalformedError()
+      }
+      if (!isJsonObject(body.content.metaData)) {
+        throw new SDKErrors.ObjectUnverifiableError()
+      }
+      break
+    }
+    case 'submit-accept-delegation': {
+      verifyDelegationStructure(body.content.delegationData)
+      if (
+        !Did.isDidSignature(body.content.signatures.inviter) ||
+        !Did.isDidSignature(body.content.signatures.invitee)
+      ) {
+        throw new SDKErrors.SignatureMalformedError()
+      }
+      break
     }
 
-    const { data } = await keystore
-      .decrypt({
+    case 'reject-accept-delegation': {
+      verifyDelegationStructure(body.content)
+      break
+    }
+    case 'inform-create-delegation': {
+      DataUtils.validateHash(
+        body.content.delegationId,
+        'inform create delegation message delegation id invalid'
+      )
+      break
+    }
+
+    default:
+      throw new SDKErrors.UnknownMessageBodyTypeError()
+  }
+}
+
+/**
+ * Checks if the message object is well-formed.
+ *
+ * @param message The message object.
+ */
+export function verifyMessageEnvelope(message: IMessage): void {
+  const { messageId, createdAt, receiver, sender, receivedAt, inReplyTo } =
+    message
+  if (messageId !== undefined && typeof messageId !== 'string') {
+    throw new TypeError('Message id is expected to be a string')
+  }
+  if (createdAt !== undefined && typeof createdAt !== 'number') {
+    throw new TypeError('Created at is expected to be a number')
+  }
+  if (receivedAt !== undefined && typeof receivedAt !== 'number') {
+    throw new TypeError('Received at is expected to be a number')
+  }
+  Did.Utils.validateKiltDidUri(sender, 'Did')
+  Did.Utils.validateKiltDidUri(receiver, 'Did')
+  if (inReplyTo && typeof inReplyTo !== 'string') {
+    throw new TypeError('In reply to is expected to be a string')
+  }
+}
+
+/**
+ * Verifies required properties for a given [[CType]] before sending or receiving a message.
+ *
+ * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
+ * @param cType A [[CType]] used to verify the properties.
+ */
+export function verifyRequiredCTypeProperties(
+  requiredProperties: string[],
+  cType: ICType
+): void {
+  CType.verifyDataStructure(cType as ICType)
+
+  const unknownProperties = requiredProperties.find(
+    (property) => !(property in cType.schema.properties)
+  )
+  if (unknownProperties) {
+    throw new SDKErrors.CTypeUnknownPropertiesError()
+  }
+}
+
+/**
+ * Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's DIDs refer to the same subject.
+ *
+ * @param message The [[Message]] object which needs to be decrypted.
+ * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
+ * @param message.sender The sender's DID taken from the [[IMessage]].
+ */
+export function ensureOwnerIsSender({ body, sender }: IMessage): void {
+  switch (body.type) {
+    case 'request-attestation':
+      {
+        const requestAttestation = body
+        if (
+          !Did.Utils.isSameSubject(
+            requestAttestation.content.credential.claim.owner,
+            sender
+          )
+        ) {
+          throw new SDKErrors.IdentityMismatchError('Claim', 'Sender')
+        }
+      }
+      break
+    case 'submit-attestation':
+      {
+        const submitAttestation = body
+        if (
+          !Did.Utils.isSameSubject(
+            submitAttestation.content.attestation.owner,
+            sender
+          )
+        ) {
+          throw new SDKErrors.IdentityMismatchError('Attestation', 'Sender')
+        }
+      }
+      break
+    case 'submit-credential':
+      {
+        const submitClaimsForCtype = body
+        submitClaimsForCtype.content.forEach((presentation) => {
+          if (!Did.Utils.isSameSubject(presentation.claim.owner, sender)) {
+            throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
+          }
+        })
+      }
+      break
+    default:
+  }
+}
+
+/**
+ * Symmetrically decrypts the result of [[Message.encrypt]].
+ *
+ * @param encrypted The encrypted message.
+ * @param decryptCallback The callback to decrypt with the secret key.
+ * @param receiverDid The DID of the receiver.
+ * @param decryptionOptions Options to perform the decryption operation.
+ * @param decryptionOptions.resolveKey The DID key resolver to use.
+ * @returns The original [[Message]].
+ */
+export async function decrypt(
+  encrypted: IEncryptedMessage,
+  decryptCallback: DecryptCallback,
+  receiverDid: DidDocument,
+  {
+    resolveKey = Did.resolveKey,
+  }: {
+    resolveKey?: DidResolveKey
+  } = {}
+): Promise<IMessage> {
+  const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
+    encrypted
+
+  const senderKeyDetails = await resolveKey(senderKeyUri)
+  if (!senderKeyDetails) {
+    throw new SDKErrors.DidError(
+      `Could not resolve sender encryption key "${senderKeyUri}"`
+    )
+  }
+  const { fragment } = Did.Utils.parseDidUri(receiverKeyUri)
+  if (!fragment) {
+    throw new SDKErrors.DidError(
+      `No fragment for the receiver key ID "${receiverKeyUri}"`
+    )
+  }
+  const receiverKeyDetails = Did.getKey(receiverDid, fragment)
+  if (
+    !receiverKeyDetails ||
+    !encryptionKeyTypes.includes(receiverKeyDetails.type)
+  ) {
+    throw new SDKErrors.DidError(
+      `Could not resolve receiver encryption key "${receiverKeyUri}"`
+    )
+  }
+  const receiverKeyAlgType =
+    Did.Utils.encryptionAlgForKeyType[
+      receiverKeyDetails.type as EncryptionKeyType
+    ]
+  if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
+    throw new SDKErrors.EncryptionError(
+      'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
+    )
+  }
+
+  let data: Uint8Array
+  try {
+    data = (
+      await decryptCallback({
         publicKey: receiverKeyDetails.publicKey,
         alg: receiverKeyAlgType,
         peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
         nonce: hexToU8a(nonce),
       })
-      .catch(() => {
-        throw new SDKErrors.ERROR_DECODING_MESSAGE()
-      })
-
-    const decoded = u8aToString(data)
-
-    try {
-      const {
-        body,
-        createdAt,
-        messageId,
-        inReplyTo,
-        references,
-        sender,
-        receiver,
-      } = JSON.parse(decoded) as IEncryptedMessageContents
-      const decrypted: IMessage = {
-        receiver,
-        sender,
-        createdAt,
-        body,
-        messageId,
-        receivedAt,
-        inReplyTo,
-        references,
-      }
-
-      if (sender !== senderKeyDetails.controller) {
-        throw new SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
-      }
-
-      // checks the message body
-      errorCheckMessageBody(decrypted.body)
-
-      // checks the message structure
-      errorCheckMessage(decrypted)
-      // make sure the sender is the owner of the identity
-      Message.ensureOwnerIsSender(decrypted)
-
-      return decrypted
-    } catch (error) {
-      throw new SDKErrors.ERROR_PARSING_MESSAGE()
-    }
-  }
-
-  public messageId: string
-  public receivedAt?: number
-  public body: MessageBody
-  public createdAt: number
-  public receiver: IMessage['receiver']
-  public sender: IMessage['sender']
-  public inReplyTo?: IMessage['messageId']
-  public references?: Array<IMessage['messageId']>
-
-  /**
-   * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
-   *
-   * @param body The body of the message.
-   * @param sender The DID of the sender.
-   * @param receiver The DID of the receiver.
-   */
-  public constructor(
-    body: MessageBody | CompressedMessageBody,
-    sender: IMessage['sender'],
-    receiver: IMessage['receiver']
-  ) {
-    if (Array.isArray(body)) {
-      this.body = decompressMessage(body)
-    } else {
-      this.body = body
-    }
-    this.createdAt = Date.now()
-    this.receiver = receiver
-    this.sender = sender
-    this.messageId = UUID.generate()
-  }
-
-  /**
-   * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
-   *
-   * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
-   * @param senderDetails The sender's DID to use to fetch the right encryption key.
-   * @param keystore The keystore used to perform the cryptographic operations.
-   * @param receiverKeyUri The key URI of the receiver.
-   * @param encryptionOptions Options to perform the encryption operation.
-   * @param encryptionOptions.resolver The DID resolver to use.
-   *
-   * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
-   */
-  public async encrypt(
-    senderKeyId: DidEncryptionKey['id'],
-    senderDetails: DidDetails,
-    keystore: Pick<NaclBoxCapable, 'encrypt'>,
-    receiverKeyUri: DidPublicKey['uri'],
-    {
-      resolver = DidResolver,
-    }: {
-      resolver?: IDidResolver
-    } = {}
-  ): Promise<IEncryptedMessage> {
-    const receiverKey = await resolver.resolveKey(receiverKeyUri)
-    if (!receiverKey) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot resolve key ${receiverKeyUri}`
-      )
-    }
-    if (this.receiver !== receiverKey.controller) {
-      throw new SDKErrors.ERROR_IDENTITY_MISMATCH(
-        'receiver public key',
-        'receiver'
-      )
-    }
-    if (this.sender !== senderDetails.uri) {
-      throw new SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
-    }
-    const senderKey = senderDetails.getKey(senderKeyId)
-    if (!senderKey || !DidUtils.isEncryptionKey(senderKey)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot find key with ID ${senderKeyId} for the sender DID.`
-      )
-    }
-    const senderKeyAlgType =
-      DidUtils.getEncryptionAlgorithmForEncryptionKeyType(
-        senderKey.type as EncryptionKeyType
-      )
-    if (senderKeyAlgType !== EncryptionAlgorithms.NaclBox) {
-      throw new SDKErrors.ERROR_KEYSTORE_ERROR(
-        'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported.'
-      )
-    }
-
-    const toEncrypt: IEncryptedMessageContents = {
-      body: this.body,
-      createdAt: this.createdAt,
-      sender: this.sender,
-      receiver: this.receiver,
-      messageId: this.messageId,
-      inReplyTo: this.inReplyTo,
-      references: this.references,
-    }
-
-    const serialized = stringToU8a(JSON.stringify(toEncrypt))
-
-    const encrypted = await keystore.encrypt({
-      alg: senderKeyAlgType,
-      data: serialized,
-      publicKey: senderKey.publicKey,
-      peerPublicKey: receiverKey.publicKey,
+    ).data
+  } catch (cause) {
+    throw new SDKErrors.DecodingMessageError(undefined, {
+      cause: cause as Error,
     })
-    const ciphertext = u8aToHex(encrypted.data)
-    const nonce = u8aToHex(encrypted.nonce)
-
-    return {
-      receivedAt: this.receivedAt,
-      ciphertext,
-      nonce,
-      senderKeyUri: senderDetails.assembleKeyUri(senderKey.id),
-      receiverKeyUri: receiverKey.uri,
-    }
   }
 
-  /**
-   * Compresses a [[MessageBody]] depending on the message body type.
-   *
-   * @returns Returns the compressed message optimised for sending.
-   */
-  public compress(): CompressedMessageBody {
-    return compressMessage(this.body)
+  const decoded = u8aToString(data)
+
+  const {
+    body,
+    createdAt,
+    messageId,
+    inReplyTo,
+    references,
+    sender,
+    receiver,
+  } = JSON.parse(decoded) as IEncryptedMessageContents
+  const decrypted: IMessage = {
+    receiver,
+    sender,
+    createdAt,
+    body,
+    messageId,
+    receivedAt,
+    inReplyTo,
+    references,
   }
 
-  /**
-   * Verifies required properties for a given [[CType]] before sending or receiving a message.
-   *
-   * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
-   * @param cType A [[CType]] used to verify the properties.
-   * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
-   */
-  public static verifyRequiredCTypeProperties(
-    requiredProperties: string[],
-    cType: ICType
-  ): void {
-    verifyRequiredCTypeProperties(requiredProperties, cType)
+  if (sender !== senderKeyDetails.controller) {
+    throw new SDKErrors.IdentityMismatchError('Encryption key', 'Sender')
+  }
+
+  return decrypted
+}
+
+/**
+ * Checks the message structure and body contents (e.g. Hashes match, ensures the owner is the sender).
+ * Throws, if a check fails.
+ *
+ * @param decryptedMessage The decrypted message to check.
+ */
+export function verify(decryptedMessage: IMessage): void {
+  verifyMessageBody(decryptedMessage.body)
+  verifyMessageEnvelope(decryptedMessage)
+  ensureOwnerIsSender(decryptedMessage)
+}
+
+/**
+ * Constructs a message from a message body.
+ * This should be encrypted with [[Message.encrypt]] before sending to the receiver.
+ *
+ * @param body The body of the message.
+ * @param sender The DID of the sender.
+ * @param receiver The DID of the receiver.
+ * @returns The message created.
+ */
+export function fromBody(
+  body: MessageBody,
+  sender: IMessage['sender'],
+  receiver: IMessage['receiver']
+): IMessage {
+  return {
+    body,
+    createdAt: Date.now(),
+    receiver,
+    sender,
+    messageId: UUID.generate(),
+  }
+}
+
+/**
+ * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
+ *
+ * @param message The message to encrypt.
+ * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
+ * @param senderDid The sender's DID to use to fetch the right encryption key.
+ * @param encryptCallback The callback to encrypt with the secret key.
+ * @param receiverKeyUri The key URI of the receiver.
+ * @param encryptionOptions Options to perform the encryption operation.
+ * @param encryptionOptions.resolveKey The DID key resolver to use.
+ *
+ * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
+ */
+export async function encrypt(
+  message: IMessage,
+  senderKeyId: DidEncryptionKey['id'],
+  senderDid: DidDocument,
+  encryptCallback: EncryptCallback,
+  receiverKeyUri: DidResourceUri,
+  {
+    resolveKey = Did.resolveKey,
+  }: {
+    resolveKey?: DidResolveKey
+  } = {}
+): Promise<IEncryptedMessage> {
+  const receiverKey = await resolveKey(receiverKeyUri)
+  if (!receiverKey) {
+    throw new SDKErrors.DidError(`Cannot resolve key "${receiverKeyUri}"`)
+  }
+  if (message.receiver !== receiverKey.controller) {
+    throw new SDKErrors.IdentityMismatchError('receiver public key', 'receiver')
+  }
+  if (message.sender !== senderDid.uri) {
+    throw new SDKErrors.IdentityMismatchError('sender public key', 'sender')
+  }
+  const senderKey = Did.getKey(senderDid, senderKeyId)
+  if (!senderKey || !encryptionKeyTypes.includes(senderKey.type)) {
+    throw new SDKErrors.DidError(
+      `Cannot find key with ID "${senderKeyId}" for the sender DID`
+    )
+  }
+  const senderKeyAlgType =
+    Did.Utils.encryptionAlgForKeyType[senderKey.type as EncryptionKeyType]
+  if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
+    throw new SDKErrors.EncryptionError(
+      'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
+    )
+  }
+
+  const toEncrypt: IEncryptedMessageContents = {
+    body: message.body,
+    createdAt: message.createdAt,
+    sender: message.sender,
+    receiver: message.receiver,
+    messageId: message.messageId,
+    inReplyTo: message.inReplyTo,
+    references: message.references,
+  }
+
+  const serialized = stringToU8a(JSON.stringify(toEncrypt))
+
+  const encrypted = await encryptCallback({
+    alg: senderKeyAlgType,
+    data: serialized,
+    publicKey: senderKey.publicKey,
+    peerPublicKey: receiverKey.publicKey,
+  })
+  const ciphertext = u8aToHex(encrypted.data)
+  const nonce = u8aToHex(encrypted.nonce)
+
+  return {
+    receivedAt: message.receivedAt,
+    ciphertext,
+    nonce,
+    senderKeyUri: `${senderDid.uri}${senderKey.id}`,
+    receiverKeyUri: receiverKey.id,
   }
 }

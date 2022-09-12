@@ -18,7 +18,7 @@ import { validationContexts } from './context/index.js'
  */
 export async function documentLoader(url: Url): Promise<RemoteDocument> {
   const context = validationContexts[url]
-  if (context)
+  if (context !== undefined)
     return { contextUrl: undefined, documentUrl: url, document: context }
   return vcjs.defaultDocumentLoader(url)
 }

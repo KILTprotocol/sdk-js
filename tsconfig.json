@@ -15,8 +15,8 @@
       "@kiltprotocol/vc-export": ["vc-export/src"],
       "@kiltprotocol/did": ["did/src"],
       "@kiltprotocol/docs": ["docs/src"],
-      "@kiltprotocol/testing": ["testing/src"]
-    }
+      "@kiltprotocol/testing": ["testing/src"],
+      "@kiltprotocol/augment-api": ["augment-api/src"],
+      }
   },
-  "skipLibCheck": true,
 }

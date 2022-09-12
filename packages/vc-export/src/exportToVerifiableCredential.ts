@@ -7,8 +7,13 @@
 
 import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
-import { ClaimUtils } from '@kiltprotocol/core'
-import type { ICredential, ICType } from '@kiltprotocol/types'
+import { Claim, Credential } from '@kiltprotocol/core'
+import type {
+  ICType,
+  IAttestation,
+  ICredentialPresentation,
+  ICredential,
+} from '@kiltprotocol/types'
 import type { HexString } from '@polkadot/util/types'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
@@ -42,7 +47,7 @@ export function fromCredentialIRI(credentialId: string): HexString {
     : credentialId
   if (!isHex(hexString))
     throw new Error(
-      'credential id is not a valid identifier (could not extract base16 / hex encoded string)'
+      'Credential id is not a valid identifier (could not extract base16 / hex encoded string)'
     )
   return hexString
 }
@@ -58,7 +63,7 @@ export function toCredentialIRI(rootHash: string): string {
     return rootHash
   }
   if (!isHex(rootHash))
-    throw new Error('root hash is not a base16 / hex encoded string)')
+    throw new Error('Root hash is not a base16 / hex encoded string)')
   return KILT_CREDENTIAL_IRI_PREFIX + rootHash
 }
 
@@ -66,32 +71,27 @@ export function toCredentialIRI(rootHash: string): string {
  * Transforms a regular KILT credential to its VC representation.
  *
  * @param input The credential to transform.
+ * @param attestation The attestation corresponding to the credential.
  * @param ctype (optional) The full specification of the credential's CType. If specified, the CType will be included with the VC on its `credentialSchema` property.
  * @returns The VC representation of the KILT credential and optionally its CType.
  */
-export function fromCredential(
-  input: ICredential,
+export function fromCredentialAndAttestation(
+  input: ICredential | ICredentialPresentation,
+  attestation: IAttestation,
   ctype?: ICType
 ): VerifiableCredential {
-  const {
-    claimHashes,
-    legitimations,
-    delegationId,
-    rootHash,
-    claimerSignature,
-    claim,
-  } = input.request
+  const { claimHashes, legitimations, delegationId, rootHash, claim } = input
 
   // write root hash to id
   const id = toCredentialIRI(rootHash)
 
   // transform & annotate claim to be json-ld and VC conformant
-  const { credentialSubject } = ClaimUtils.toJsonLD(claim, false) as Record<
+  const { credentialSubject } = Claim.toJsonLD(claim, false) as Record<
     string,
     Record<string, AnyJson>
   >
 
-  const issuer = input.attestation.owner
+  const issuer = attestation.owner
 
   // add current date bc we have no issuance date on credential
   // TODO: could we get this from block time or something?
@@ -110,7 +110,7 @@ export function fromCredential(
     }
   }
 
-  const legitimationIds = legitimations.map((leg) => leg.request.rootHash)
+  const legitimationIds = legitimations.map((leg) => leg.rootHash)
 
   const proof: Proof[] = []
 
@@ -132,7 +132,8 @@ export function fromCredential(
   }
 
   // add self-signed proof
-  if (claimerSignature) {
+  if (Credential.isPresentation(input)) {
+    const { claimerSignature } = input
     const sSProof: SelfSignedProof = {
       type: KILT_SELF_SIGNED_PROOF_TYPE,
       proofPurpose: 'assertionMethod',
@@ -147,7 +148,7 @@ export function fromCredential(
   const attProof: AttestedProof = {
     type: KILT_ATTESTED_PROOF_TYPE,
     proofPurpose: 'assertionMethod',
-    attester: input.attestation.owner,
+    attester: attestation.owner,
   }
   VC.proof.push(attProof)
 
@@ -155,7 +156,7 @@ export function fromCredential(
   const cDProof: CredentialDigestProof = {
     type: KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
     proofPurpose: 'assertionMethod',
-    nonces: input.request.claimNonceMap,
+    nonces: input.claimNonceMap,
     claimHashes,
   }
   VC.proof.push(cDProof)

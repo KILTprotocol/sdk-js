@@ -6,7 +6,7 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types'
-import type { ICType, DidPublicKey } from '@kiltprotocol/types'
+import type { ICType, ConformingDidKey } from '@kiltprotocol/types'
 import type {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
@@ -24,11 +24,11 @@ export interface Proof {
   [key: string]: any
 }
 
-export type IPublicKeyRecord = DidPublicKey
+export type IPublicKeyRecord = ConformingDidKey
 
 export interface SelfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
-  verificationMethod: IPublicKeyRecord['uri'] | IPublicKeyRecord
+  verificationMethod: IPublicKeyRecord['id'] | IPublicKeyRecord
   signature: string
   challenge?: string
 }
@@ -66,9 +66,9 @@ export interface VerifiableCredential {
   issuer: string
   // when the credential was issued
   issuanceDate: string
-  // Ids / digests of claims that empower the issuer to provide judgment
+  // IDs / digests of claims that empower the issuer to provide judgment
   legitimationIds: string[]
-  // Id / digest that represents a delegation of authority to the issuer
+  // ID / digest that represents a delegation of authority to the issuer
   delegationId?: string
   // digital proof that makes the credential tamper-evident
   proof: Proof | Proof[]

@@ -13,15 +13,13 @@ import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
-import {
-  Blockchain,
-  BlockchainApiConnection,
-  BlockchainUtils,
-} from '@kiltprotocol/chain-helpers'
 
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type { Balances, KeyringPair } from '@kiltprotocol/types'
-import { Keyring } from '@kiltprotocol/utils'
+import { Keyring, ss58Format } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
+
 import {
   getBalances,
   listenToBalanceChanges,
@@ -30,18 +28,17 @@ import {
 import * as BalanceUtils from './Balance.utils'
 
 const mockedApi: any = ApiMocks.getMockedApi()
-const blockchain = new Blockchain(mockedApi)
-BlockchainApiConnection.setConnection(Promise.resolve(blockchain))
+ConfigService.set({ api: mockedApi })
 
 const BALANCE = 42
 const FEE = 30
 
 describe('Balance', () => {
-  const keyring = new Keyring({ type: 'sr25519', ss58Format: 38 })
+  const keyring = new Keyring({ type: 'sr25519', ss58Format })
   let alice: KeyringPair
   let bob: KeyringPair
 
-  const accountInfo = (balance: number): AccountInfo => {
+  function accountInfo(balance: number): AccountInfo {
     return {
       data: {
         free: new BN(balance),
@@ -55,7 +52,7 @@ describe('Balance', () => {
 
   mockedApi.query.system.account = jest.fn(
     (accountAddress, cb): AccountInfo => {
-      if (cb) {
+      if (typeof cb === 'function') {
         setTimeout(() => {
           cb(accountInfo(BALANCE))
         }, 1)
@@ -68,11 +65,11 @@ describe('Balance', () => {
     bob = keyring.addFromUri('//Bob')
   })
   it('should listen to balance changes', (done) => {
-    const listener = (
+    function listener(
       account: string,
       balances: Balances,
       changes: Balances
-    ): void => {
+    ): void {
       expect(account).toBe(bob.address)
       expect(balances.free.toNumber()).toBe(BALANCE)
       expect(changes.free.toNumber()).toBe(FEE)
@@ -84,16 +81,14 @@ describe('Balance', () => {
 
   it('should get the balance', async () => {
     const currentBalance = await getBalances(bob.address)
-    expect(currentBalance.free.toNumber()).toBeTruthy()
     expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
   })
 
   it('should make transfer', async () => {
-    const status = await getTransferTx(bob.address, new BN(100)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
-    )
+    const transferTx = await getTransferTx(bob.address, new BN(100))
+    const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(status).toBeInstanceOf(SubmittableResult)
-    expect(status.isFinalized).toBeTruthy()
+    expect(status.isFinalized).toBe(true)
   })
   it('should make transfer of amount with arbitrary exponent', async () => {
     const amount = new BN(10)
@@ -102,14 +97,13 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await getTransferTx(bob.address, amount, exponent).then(
-      (tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
-    )
+    const transferTx = await getTransferTx(bob.address, amount, exponent)
+    const status = await Blockchain.signAndSubmitTx(transferTx, alice)
     expect(mockedApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount
     )
     expect(status).toBeInstanceOf(SubmittableResult)
-    expect(status.isFinalized).toBeTruthy()
+    expect(status.isFinalized).toBe(true)
   })
 })

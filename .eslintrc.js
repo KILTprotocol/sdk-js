@@ -20,6 +20,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
+    project: './tsconfig.json',
   },
   plugins: [
     '@typescript-eslint',
@@ -73,6 +74,14 @@ module.exports = {
       },
     ],
     '@typescript-eslint/ban-ts-comment': 'warn',
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowNumber: false,
+        allowNullableString: true,
+        allowNullableBoolean: true,
+      },
+    ],
     'jsdoc/require-description': 'warn',
     'jsdoc/require-description-complete-sentence': 'warn',
     'jsdoc/no-types': 'warn',
@@ -143,10 +152,16 @@ module.exports = {
       },
     },
     {
-      files: ['**/__integrationtests__/*.ts'],
+      files: ['**/__integrationtests__/*.ts', '**/TestUtils.ts'],
       rules: {
         'import/extensions': 'off',
         'jsdoc/require-jsdoc': 'off',
+      },
+    },
+    {
+      files: ['**/augment-api/src/interfaces/**/*.ts'],
+      rules: {
+        'license-header/header': 'off',
       },
     },
     {

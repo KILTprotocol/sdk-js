@@ -6,20 +6,24 @@
  */
 
 import { BN } from '@polkadot/util'
+import { randomAsHex } from '@polkadot/util-crypto'
 
 import {
-  DidKey,
+  DidDocument,
   DidServiceEndpoint,
-  DidIdentifier,
-  KeyRelationship,
-  VerificationKeyType,
-  EncryptionKeyType,
+  DidUri,
+  KiltKeyringPair,
+  SignCallback,
 } from '@kiltprotocol/types'
+import {
+  ApiMocks,
+  createLocalDemoFullDidFromKeypair,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
 
-import type { IDidChainRecordJSON } from '../Did.chain'
-import { getKiltDidFromIdentifier } from '../Did.utils'
+import type { EncodedDid } from '../Did.chain'
 
-import { FullDidDetails } from './index.js'
+import * as Did from './index.js'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -27,92 +31,92 @@ import { FullDidDetails } from './index.js'
  * @group unit/did
  */
 
-const existingIdentifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
-const nonExistingIdentifier = '4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM'
+const mockApi = ApiMocks.createAugmentedApi()
 
-const existingDidDetails: IDidChainRecordJSON = {
-  authenticationKey: 'auth#1',
-  keyAgreementKeys: ['enc#1', 'enc#2'],
-  assertionMethodKey: 'att#1',
-  capabilityDelegationKey: 'del#1',
-  lastTxCounter: new BN('1'),
-  publicKeys: [
+const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
+const existingDid: DidUri = `did:kilt:${existingAddress}`
+const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
+
+const existingDidRecord: EncodedDid = {
+  authentication: [
     {
-      id: 'auth#1',
+      id: '#auth1',
       publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.Sr25519,
-      includedAt: new BN(0),
-    },
-    {
-      id: 'enc#1',
-      publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.X25519,
-      includedAt: new BN(0),
-    },
-    {
-      id: 'enc#2',
-      publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.X25519,
-      includedAt: new BN(0),
-    },
-    {
-      id: 'att#1',
-      publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.Ed25519,
-      includedAt: new BN(0),
-    },
-    {
-      id: 'del#1',
-      publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.Ecdsa,
+      type: 'sr25519',
       includedAt: new BN(0),
     },
   ],
+  keyAgreement: [
+    {
+      id: '#enc1',
+      publicKey: new Uint8Array(32).fill(1),
+      type: 'x25519',
+      includedAt: new BN(0),
+    },
+    {
+      id: '#enc2',
+      publicKey: new Uint8Array(32).fill(2),
+      type: 'x25519',
+      includedAt: new BN(0),
+    },
+  ],
+  assertionMethod: [
+    {
+      id: '#att1',
+      publicKey: new Uint8Array(32).fill(3),
+      type: 'ed25519',
+      includedAt: new BN(0),
+    },
+  ],
+  capabilityDelegation: [
+    {
+      id: '#del1',
+      publicKey: new Uint8Array(32).fill(4),
+      type: 'ecdsa',
+      includedAt: new BN(0),
+    },
+  ],
+  lastTxCounter: new BN('1'),
   deposit: {
     amount: new BN(2),
-    owner: existingIdentifier,
+    owner: existingAddress,
   },
 }
 
 const existingServiceEndpoints: DidServiceEndpoint[] = [
   {
-    id: 'service#1',
-    types: ['type-1'],
-    urls: ['url-1'],
+    id: '#service1',
+    type: ['type-1'],
+    serviceEndpoint: ['url-1'],
   },
   {
-    id: 'service#2',
-    types: ['type-2'],
-    urls: ['url-2'],
+    id: '#service2',
+    type: ['type-2'],
+    serviceEndpoint: ['url-2'],
   },
 ]
 
-jest.mock('../Did.chain.ts', () => {
-  return {
-    queryDetails: jest.fn(
-      async (
-        didIdentifier: DidIdentifier
-      ): Promise<IDidChainRecordJSON | null> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingDidDetails
-        }
-        return null
+jest.mock('../Did.chain.ts', () => ({
+  queryDetails: jest.fn(async (did: DidUri): Promise<EncodedDid | null> => {
+    if (did === existingDid) {
+      return existingDidRecord
+    }
+    return null
+  }),
+  queryServiceEndpoints: jest.fn(
+    async (did: DidUri): Promise<DidServiceEndpoint[]> => {
+      if (did === existingDid) {
+        return existingServiceEndpoints
       }
-    ),
-    queryServiceEndpoints: jest.fn(
-      async (didIdentifier: DidIdentifier): Promise<DidServiceEndpoint[]> => {
-        if (didIdentifier === existingIdentifier) {
-          return existingServiceEndpoints
-        }
-        return []
-      }
-    ),
-  }
-})
+      return []
+    }
+  ),
+  generateDidAuthenticatedTx: jest.fn().mockResolvedValue({}),
+}))
 
 /*
  * Functions tested:
- * - fromChainInfo
+ * - query
  *
  * Functions tested in integration tests:
  * - getKeysForExtrinsic
@@ -121,142 +125,207 @@ jest.mock('../Did.chain.ts', () => {
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(existingIdentifier, 'full')
-      )
+    const fullDid = await Did.query(existingDid)
 
-    expect(fullDidDetails).not.toBeNull()
+    expect(fullDid).not.toBeNull()
+    if (!fullDid) throw new Error('Cannot load created DID')
 
-    expect(fullDidDetails?.identifier).toStrictEqual(existingIdentifier)
-
-    const expectedDid = getKiltDidFromIdentifier(existingIdentifier, 'full')
-    expect(fullDidDetails?.uri).toStrictEqual(expectedDid)
-
-    expect(fullDidDetails?.getKey('auth#1')).toStrictEqual<DidKey>({
-      id: 'auth#1',
-      publicKey: new Uint8Array(32).fill(0),
-      type: VerificationKeyType.Sr25519,
-      includedAt: new BN(0),
+    expect(fullDid).toEqual(<DidDocument>{
+      uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+      authentication: [
+        {
+          id: '#auth1',
+          publicKey: new Uint8Array(32).fill(0),
+          type: 'sr25519',
+          includedAt: new BN(0),
+        },
+      ],
+      keyAgreement: [
+        {
+          id: '#enc1',
+          publicKey: new Uint8Array(32).fill(1),
+          type: 'x25519',
+          includedAt: new BN(0),
+        },
+        {
+          id: '#enc2',
+          publicKey: new Uint8Array(32).fill(2),
+          type: 'x25519',
+          includedAt: new BN(0),
+        },
+      ],
+      assertionMethod: [
+        {
+          id: '#att1',
+          publicKey: new Uint8Array(32).fill(3),
+          type: 'ed25519',
+          includedAt: new BN(0),
+        },
+      ],
+      capabilityDelegation: [
+        {
+          id: '#del1',
+          publicKey: new Uint8Array(32).fill(4),
+          type: 'ecdsa',
+          includedAt: new BN(0),
+        },
+      ],
+      service: [
+        {
+          id: '#service1',
+          type: ['type-1'],
+          serviceEndpoint: ['url-1'],
+        },
+        {
+          id: '#service2',
+          type: ['type-2'],
+          serviceEndpoint: ['url-2'],
+        },
+      ],
     })
-    expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.authentication)
-    ).toStrictEqual<DidKey[]>([
-      {
-        id: 'auth#1',
-        publicKey: new Uint8Array(32).fill(0),
-        type: VerificationKeyType.Sr25519,
-        includedAt: new BN(0),
-      },
-    ])
-    expect(fullDidDetails?.authenticationKey.id).toStrictEqual('auth#1')
-
-    expect(fullDidDetails?.getKey('enc#1')).toStrictEqual<DidKey>({
-      id: 'enc#1',
-      publicKey: new Uint8Array(32).fill(1),
-      type: EncryptionKeyType.X25519,
-      includedAt: new BN(0),
-    })
-    expect(fullDidDetails?.getKey('enc#2')).toStrictEqual<DidKey>({
-      id: 'enc#2',
-      publicKey: new Uint8Array(32).fill(2),
-      type: EncryptionKeyType.X25519,
-      includedAt: new BN(0),
-    })
-    expect(
-      fullDidDetails?.getEncryptionKeys(KeyRelationship.keyAgreement)
-    ).toStrictEqual<DidKey[]>([
-      {
-        id: 'enc#1',
-        publicKey: new Uint8Array(32).fill(1),
-        type: EncryptionKeyType.X25519,
-        includedAt: new BN(0),
-      },
-      {
-        id: 'enc#2',
-        publicKey: new Uint8Array(32).fill(2),
-        type: EncryptionKeyType.X25519,
-        includedAt: new BN(0),
-      },
-    ])
-    expect(fullDidDetails?.encryptionKey?.id).toStrictEqual('enc#1')
-
-    expect(fullDidDetails?.getKey('att#1')).toStrictEqual<DidKey>({
-      id: 'att#1',
-      publicKey: new Uint8Array(32).fill(3),
-      type: VerificationKeyType.Ed25519,
-      includedAt: new BN(0),
-    })
-    expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.assertionMethod)
-    ).toStrictEqual<DidKey[]>([
-      {
-        id: 'att#1',
-        publicKey: new Uint8Array(32).fill(3),
-        type: VerificationKeyType.Ed25519,
-        includedAt: new BN(0),
-      },
-    ])
-    expect(fullDidDetails?.attestationKey?.id).toStrictEqual('att#1')
-
-    expect(fullDidDetails?.getKey('del#1')).toStrictEqual<DidKey>({
-      id: 'del#1',
-      publicKey: new Uint8Array(32).fill(4),
-      type: VerificationKeyType.Ecdsa,
-      includedAt: new BN(0),
-    })
-    expect(
-      fullDidDetails?.getVerificationKeys(KeyRelationship.capabilityDelegation)
-    ).toStrictEqual<DidKey[]>([
-      {
-        id: 'del#1',
-        publicKey: new Uint8Array(32).fill(4),
-        type: VerificationKeyType.Ecdsa,
-        includedAt: new BN(0),
-      },
-    ])
-    expect(fullDidDetails?.delegationKey?.id).toStrictEqual('del#1')
-
-    expect(
-      fullDidDetails?.getEndpoint('service#1')
-    ).toStrictEqual<DidServiceEndpoint>({
-      id: 'service#1',
-      types: ['type-1'],
-      urls: ['url-1'],
-    })
-    expect(fullDidDetails?.getEndpoints('type-1')).toStrictEqual<
-      DidServiceEndpoint[]
-    >([
-      {
-        id: 'service#1',
-        types: ['type-1'],
-        urls: ['url-1'],
-      },
-    ])
-
-    expect(
-      fullDidDetails?.getEndpoint('service#2')
-    ).toStrictEqual<DidServiceEndpoint>({
-      id: 'service#2',
-      types: ['type-2'],
-      urls: ['url-2'],
-    })
-    expect(fullDidDetails?.getEndpoints('type-2')).toStrictEqual<
-      DidServiceEndpoint[]
-    >([
-      {
-        id: 'service#2',
-        types: ['type-2'],
-        urls: ['url-2'],
-      },
-    ])
   })
 
-  it('returns null if the identifier does not exist', async () => {
-    const fullDidDetails: FullDidDetails | null =
-      await FullDidDetails.fromChainInfo(
-        getKiltDidFromIdentifier(nonExistingIdentifier, 'full')
+  it('returns null if the DID does not exist', async () => {
+    const fullDid = await Did.query(nonExistingDid)
+    expect(fullDid).toBeNull()
+  })
+
+  describe('authorizeBatch', () => {
+    let keypair: KiltKeyringPair
+    let sign: SignCallback
+    let fullDid: DidDocument
+
+    beforeAll(async () => {
+      ;({ keypair, sign } = makeSigningKeyTool())
+      fullDid = await createLocalDemoFullDidFromKeypair(keypair)
+    })
+
+    describe('.addSingleExtrinsic()', () => {
+      it('fails if the extrinsic does not require a DID', async () => {
+        const extrinsic = mockApi.tx.indices.claim(1)
+        await expect(async () =>
+          Did.authorizeBatch({
+            did: fullDid,
+            batchFunction: mockApi.tx.utility.batchAll,
+            extrinsics: [extrinsic, extrinsic],
+            sign,
+            submitter: keypair.address,
+          })
+        ).rejects.toMatchInlineSnapshot(
+          '[DidBuilderError: Can only batch extrinsics that require a DID signature]'
+        )
+      })
+
+      it('fails if the extrinsic is a utility (batch) extrinsic containing valid extrinsics', async () => {
+        const extrinsic = mockApi.tx.utility.batch([
+          await mockApi.tx.ctype.add('test-ctype'),
+        ])
+        await expect(async () =>
+          Did.authorizeBatch({
+            did: fullDid,
+            batchFunction: mockApi.tx.utility.batchAll,
+            extrinsics: [extrinsic, extrinsic],
+            sign,
+            submitter: keypair.address,
+          })
+        ).rejects.toMatchInlineSnapshot(
+          '[DidBuilderError: Can only batch extrinsics that require a DID signature]'
+        )
+      })
+
+      it('fails if the DID does not have any key required to sign the batch', async () => {
+        // Full DID with only an authentication key.
+        const newFullDid: DidDocument = {
+          uri: fullDid.uri,
+          authentication: [fullDid.authentication[0]],
+        }
+        const extrinsic = await mockApi.tx.ctype.add('test-ctype')
+
+        await expect(async () =>
+          Did.authorizeBatch({
+            did: newFullDid,
+            batchFunction: mockApi.tx.utility.batchAll,
+            extrinsics: [extrinsic, extrinsic],
+            nonce: new BN(0),
+            sign,
+            submitter: keypair.address,
+          })
+        ).rejects.toMatchInlineSnapshot(
+          '[DidBuilderError: Found no key for relationship "assertionMethod"]'
+        )
+      })
+
+      it('adds different batches requiring different keys', async () => {
+        const ctype1Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+        const ctype2Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+        const delegationExtrinsic1 =
+          await mockApi.tx.delegation.createHierarchy(
+            randomAsHex(32),
+            randomAsHex(32)
+          )
+        const delegationExtrinsic2 =
+          await mockApi.tx.delegation.createHierarchy(
+            randomAsHex(32),
+            randomAsHex(32)
+          )
+        const ctype3Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+        const ctype4Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+
+        const batchFunction =
+          jest.fn() as unknown as typeof mockApi.tx.utility.batchAll
+        const extrinsics = [
+          ctype1Extrinsic,
+          ctype2Extrinsic,
+          delegationExtrinsic1,
+          delegationExtrinsic2,
+          ctype3Extrinsic,
+          ctype4Extrinsic,
+        ]
+        await Did.authorizeBatch({
+          did: fullDid,
+          batchFunction,
+          extrinsics,
+          nonce: new BN(0),
+          sign,
+          submitter: keypair.address,
+        })
+
+        expect(batchFunction).toHaveBeenCalledWith([
+          ctype1Extrinsic,
+          ctype2Extrinsic,
+        ])
+        expect(batchFunction).toHaveBeenCalledWith([
+          delegationExtrinsic1,
+          delegationExtrinsic2,
+        ])
+        expect(batchFunction).toHaveBeenCalledWith([
+          ctype3Extrinsic,
+          ctype4Extrinsic,
+        ])
+      })
+    })
+
+    // TODO: complete these tests once SDK has been refactored to work with generic api object
+    describe('.build()', () => {
+      it('throws if batch is empty', async () => {
+        await expect(async () =>
+          Did.authorizeBatch({
+            did: fullDid,
+            batchFunction: mockApi.tx.utility.batchAll,
+            extrinsics: [],
+            sign,
+            submitter: keypair.address,
+          })
+        ).rejects.toMatchInlineSnapshot(
+          '[DidBuilderError: Cannot build a batch with no transactions]'
+        )
+      })
+      it.todo('successfully create a batch with only 1 extrinsic')
+      it.todo('successfully create a batch with 1 extrinsic per required key')
+      it.todo('successfully create a batch with 2 extrinsics per required key')
+      it.todo(
+        'successfully create a batch with 1 extrinsic per required key, repeated two times'
       )
-    expect(fullDidDetails).toBeNull()
+    })
   })
 })

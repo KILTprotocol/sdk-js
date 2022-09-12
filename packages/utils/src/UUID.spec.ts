@@ -13,7 +13,7 @@ import * as UUID from './UUID'
 
 describe('UUID', () => {
   it('generate', () => {
-    const uuid: string = UUID.generate()
+    const uuid = UUID.generate()
     expect(uuid.substring(0, 2)).toEqual('0x')
     expect(uuid.substring(2)).toHaveLength(64)
   })

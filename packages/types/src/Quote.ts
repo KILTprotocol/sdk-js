@@ -6,8 +6,8 @@
  */
 
 import type { ICType } from './CType'
-import type { DidSignature, IDidDetails } from './DidDetails'
-import type { IRequestForAttestation } from './RequestForAttestation'
+import type { DidSignature, DidUri } from './DidDocument'
+import type { ICredential } from './Credential'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>
@@ -15,7 +15,7 @@ export interface ICostBreakdown {
   gross: number
 }
 export interface IQuote {
-  attesterDid: IDidDetails['uri']
+  attesterDid: DidUri
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
   currency: string
@@ -27,38 +27,6 @@ export interface IQuoteAttesterSigned extends IQuote {
 }
 
 export interface IQuoteAgreement extends IQuoteAttesterSigned {
-  rootHash: IRequestForAttestation['rootHash']
+  rootHash: ICredential['rootHash']
   claimerSignature: DidSignature
 }
-
-export type CompressedCostBreakdown = [
-  ICostBreakdown['gross'],
-  ICostBreakdown['net'],
-  ICostBreakdown['tax']
-]
-
-export type CompressedQuote = [
-  IQuote['attesterDid'],
-  IQuote['cTypeHash'],
-  CompressedCostBreakdown,
-  IQuote['currency'],
-  IQuote['termsAndConditions'],
-  IQuote['timeframe']
-]
-
-export type CompressedQuoteAttesterSigned = [
-  ...CompressedQuote,
-  [
-    IQuoteAttesterSigned['attesterSignature']['signature'],
-    IQuoteAttesterSigned['attesterSignature']['keyUri']
-  ]
-]
-
-export type CompressedQuoteAgreed = [
-  ...CompressedQuoteAttesterSigned,
-  [
-    IQuoteAgreement['claimerSignature']['signature'],
-    IQuoteAgreement['claimerSignature']['keyUri']
-  ],
-  IQuoteAgreement['rootHash']
-]

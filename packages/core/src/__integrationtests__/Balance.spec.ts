@@ -10,22 +10,25 @@
  */
 
 import { BN } from '@polkadot/util'
+
 import type { KeyringPair } from '@kiltprotocol/types'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
+
 import {
   getBalances,
-  listenToBalanceChanges,
   getTransferTx,
+  listenToBalanceChanges,
 } from '../balance/Balance.chain'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
-  EXISTENTIAL_DEPOSIT,
-  keypairFromRandom,
   devAlice,
   devBob,
   devFaucet,
+  EXISTENTIAL_DEPOSIT,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 
 beforeAll(async () => {
@@ -45,45 +48,42 @@ describe('when there is a dev chain with a faucet', () => {
 
   it('should have enough coins available on the faucet', async () => {
     const balance = await getBalances(faucet.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
   it('Bob has tokens', async () => {
     const balance = await getBalances(bob.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
   })
 
   it('Alice has tokens', async () => {
     const balance = await getBalances(alice.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
   })
 
   it('getBalances should return 0 for new address', async () => {
-    return expect(
-      getBalances(addressFromRandom()).then((n) => n.free.toNumber())
-    ).resolves.toEqual(0)
+    const { free } = await getBalances(addressFromRandom())
+    expect(free.toNumber()).toEqual(0)
   })
 
-  // Skipped because it is run in parallel with other tests and it fails because of the deposit taken
+  // Skipped because it is run in parallel with other tests, and it fails because of the deposit taken
   // in the other test cases.
   it('should be able to faucet coins to a new address', async () => {
-    const address: string = addressFromRandom()
-    const funny = jest.fn()
-    listenToBalanceChanges(address, funny)
+    const address = addressFromRandom()
+    const spy = jest.fn()
+    listenToBalanceChanges(address, spy)
     const balanceBefore = await getBalances(faucet.address)
-    await getTransferTx(address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, faucet)
-    )
-    const [balanceAfter, balanceIdent] = await Promise.all([
-      getBalances(faucet.address),
-      getBalances(address),
-    ])
+    const transferTx = await getTransferTx(address, EXISTENTIAL_DEPOSIT)
+    await submitExtrinsic(transferTx, faucet)
+    const balanceAfter = await getBalances(faucet.address)
+    const balanceIdent = await getBalances(address)
+
     expect(
       balanceBefore.free.sub(balanceAfter.free).gt(EXISTENTIAL_DEPOSIT)
-    ).toBeTruthy()
+    ).toBe(true)
     expect(balanceIdent.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
-    expect(funny).toBeCalled()
+    expect(spy).toBeCalled()
   }, 30_000)
 })
 
@@ -94,79 +94,80 @@ describe('When there are haves and have-nots', () => {
   let faucet: KeyringPair
 
   beforeAll(async () => {
-    bobbyBroke = keypairFromRandom()
+    bobbyBroke = makeSigningKeyTool().keypair
     richieRich = devAlice
     faucet = devFaucet
-    stormyD = keypairFromRandom()
+    stormyD = makeSigningKeyTool().keypair
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, richieRich)
-    )
+    const transferTx = await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT)
+    await submitExtrinsic(transferTx, richieRich)
     const balanceTo = await getBalances(stormyD.address)
     expect(balanceTo.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
   }, 40_000)
 
   it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = await getBalances(stormyD.address)
-    await expect(
-      getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        submitExtrinsicWithResign(tx, bobbyBroke)
-      )
-    ).rejects.toThrowError('1010: Invalid Transaction')
-    const [newBalance, zeroBalance] = await Promise.all([
-      getBalances(stormyD.address),
-      getBalances(bobbyBroke.address),
-    ])
+    const transferTx = await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT)
+    await expect(submitExtrinsic(transferTx, bobbyBroke)).rejects.toThrowError(
+      '1010: Invalid Transaction'
+    )
+
+    const newBalance = await getBalances(stormyD.address)
+    const zeroBalance = await getBalances(bobbyBroke.address)
     expect(newBalance.free.toNumber()).toBe(originalBalance.free.toNumber())
     expect(zeroBalance.free.toNumber()).toBe(0)
   }, 50_000)
 
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalances(richieRich.address)
-    await expect(
-      getTransferTx(bobbyBroke.address, RichieBalance.free).then((tx) =>
-        submitExtrinsicWithResign(tx, richieRich)
-      )
-    ).rejects.toThrowError()
-    const [newBalance, zeroBalance] = await Promise.all([
-      getBalances(richieRich.address),
-      getBalances(bobbyBroke.address),
-    ])
+    const transferTx = await getTransferTx(
+      bobbyBroke.address,
+      RichieBalance.free
+    )
+    await expect(submitExtrinsic(transferTx, richieRich)).rejects.toThrowError()
+
+    const newBalance = await getBalances(stormyD.address)
+    const zeroBalance = await getBalances(bobbyBroke.address)
     expect(zeroBalance.free.toString()).toEqual('0')
     expect(newBalance.free.lt(RichieBalance.free))
   }, 30_000)
 
   it('should be able to make a new transaction once the last is ready', async () => {
-    const listener = jest.fn()
-    listenToBalanceChanges(faucet.address, listener)
-    await getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, faucet)
-    )
-    await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, faucet)
-    )
+    const spy = jest.fn()
+    listenToBalanceChanges(faucet.address, spy)
 
-    expect(listener).toBeCalledWith(
+    const transferTx1 = await getTransferTx(
+      richieRich.address,
+      EXISTENTIAL_DEPOSIT
+    )
+    await submitExtrinsic(transferTx1, faucet)
+    const transferTx2 = await getTransferTx(
+      stormyD.address,
+      EXISTENTIAL_DEPOSIT
+    )
+    await submitExtrinsic(transferTx2, faucet)
+
+    expect(spy).toBeCalledWith(
       faucet.address,
       expect.anything(),
       expect.anything()
     )
-    expect(listener).toBeCalledTimes(3)
+    expect(spy).toBeCalledTimes(3)
   }, 30_000)
 
   it('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
-    await Promise.all([
-      getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        submitExtrinsicWithResign(tx, faucet)
-      ),
-      getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        submitExtrinsicWithResign(tx, faucet)
-      ),
+
+    const api = ConfigService.get('api')
+    const batch = api.tx.utility.batchAll([
+      await getTransferTx(richieRich.address, EXISTENTIAL_DEPOSIT),
+      await getTransferTx(stormyD.address, EXISTENTIAL_DEPOSIT),
     ])
+    await submitExtrinsic(batch, faucet)
+
     expect(listener).toBeCalledWith(
       faucet.address,
       expect.anything(),
@@ -175,6 +176,6 @@ describe('When there are haves and have-nots', () => {
   }, 50_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

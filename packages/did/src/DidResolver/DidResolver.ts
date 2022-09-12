@@ -6,159 +6,158 @@
  */
 
 import {
-  DidPublicKey,
-  DidPublicServiceEndpoint,
-  DidResolvedDetails,
+  DidDocument,
+  DidResolutionResult,
   DidResourceUri,
-  IDidDetails,
-  IDidResolver,
+  DidUri,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { LightDidDetails } from '../DidDetails/LightDidDetails.js'
-import { FullDidDetails } from '../DidDetails/FullDidDetails.js'
-import {
-  queryDetails,
-  queryDidDeletionStatus,
-  queryKey,
-  queryServiceEndpoint,
-} from '../Did.chain.js'
-import { getKiltDidFromIdentifier, parseDidUri } from '../Did.utils.js'
+import * as Did from '../index.js'
+import { queryDidDeletionStatus, queryServiceEndpoint } from '../Did.chain.js'
+import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
 /**
- * Resolve a DID URI to the details of the DID subject.
+ * Resolve a DID URI to the DID document and its metadata.
  *
  * The URI can also identify a key or a service, but it will be ignored during resolution.
  *
  * @param did The subject's DID.
  * @returns The details associated with the DID subject.
  */
-export async function resolveDoc(
-  did: IDidDetails['uri']
-): Promise<DidResolvedDetails | null> {
-  const { identifier, type } = parseDidUri(did)
+export async function resolve(
+  did: DidUri
+): Promise<DidResolutionResult | null> {
+  const { type } = parseDidUri(did)
 
-  switch (type) {
-    case 'full': {
-      const uriWithoutFragment = getKiltDidFromIdentifier(identifier, 'full')
-      const details = await FullDidDetails.fromChainInfo(uriWithoutFragment)
-      // If the details are found, return those details.
-      if (details) {
-        return {
-          details,
-          metadata: {
-            deactivated: false,
-          },
-        }
-      }
-      // If not, check whether the DID has been deleted or simply does not exist.
-      const isDeactivated = await queryDidDeletionStatus(identifier)
-      if (isDeactivated) {
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      }
-      return null
+  const document = await Did.query(getFullDidUri(did))
+  if (type === 'full' && document) {
+    return {
+      document,
+      metadata: {
+        deactivated: false,
+      },
     }
-    case 'light': {
-      let details: LightDidDetails
-      try {
-        details = LightDidDetails.fromUri(did, false)
-      } catch {
-        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(did)
-      }
+  }
 
-      const fullDidDetails = await queryDetails(details.identifier)
-      // If a full DID with same identifier is present, return the resolution metadata accordingly.
-      if (fullDidDetails) {
-        const fullDidUri = getKiltDidFromIdentifier(details.identifier, 'full')
-        return {
-          details,
-          metadata: {
-            canonicalId: fullDidUri,
-            deactivated: false,
-          },
-        }
-      }
-      // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
-      const isFullDidDeleted = await queryDidDeletionStatus(details.identifier)
-      if (isFullDidDeleted) {
-        return {
-          // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
-          metadata: {
-            deactivated: true,
-          },
-        }
-      }
-      // If no full DID details nor deletion info is found, the light DID is un-migrated.
-      // Metadata will simply contain `deactivated: false`.
-      return {
-        details,
-        metadata: {
-          deactivated: false,
-        },
-      }
+  // If the full DID has been deleted (or the light DID was upgraded and deleted),
+  // return the info in the resolution metadata.
+  const isFullDidDeleted = await queryDidDeletionStatus(did)
+  if (isFullDidDeleted) {
+    return {
+      // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
+      metadata: {
+        deactivated: true,
+      },
     }
-    default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(did)
+  }
+
+  if (type === 'full') {
+    return null
+  }
+
+  const lightDocument = Did.parseDocumentFromLightDid(did, false)
+  // If a full DID with same subject is present, return the resolution metadata accordingly.
+  if (document) {
+    return {
+      metadata: {
+        canonicalId: getFullDidUri(did),
+        deactivated: false,
+      },
+    }
+  }
+
+  // If no full DID details nor deletion info is found, the light DID is un-migrated.
+  // Metadata will simply contain `deactivated: false`.
+  return {
+    document: lightDocument,
+    metadata: {
+      deactivated: false,
+    },
+  }
+}
+
+type CompliantDidResolutionResult = Omit<DidResolutionResult, 'document'> & {
+  document?: DidDocument | { uri: DidUri }
+}
+
+/**
+ * Resolve a DID URI to the DID document and its metadata.
+ * This alternative to `resolve()` behaves closer to the DID specification
+ * when it resolves a light DID that has been upgraded to a full DID.
+ * In this case `strictResolve()` will return a `document` that only contains `uri`,
+ * while `resolve()` takes a more practical approach and does not return `document`.
+ *
+ * The URI can also identify a key or a service, but it will be ignored during resolution.
+ *
+ * @param did The subject's DID.
+ * @returns The details associated with the DID subject.
+ */
+export async function strictResolve(
+  did: DidUri
+): Promise<CompliantDidResolutionResult | null> {
+  const resolved = await resolve(did)
+
+  if (!resolved?.metadata.canonicalId) {
+    return resolved
+  }
+
+  return {
+    document: {
+      uri: did,
+    },
+    metadata: resolved.metadata,
   }
 }
 
 /**
  * Resolve a DID key URI to the key details.
  *
- * @param didUri The DID key URI.
+ * @param keyUri The DID key URI.
  * @returns The details associated with the key.
  */
 export async function resolveKey(
-  didUri: DidPublicKey['uri']
+  keyUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
-  const { did, identifier, fragment: keyId, type } = parseDidUri(didUri)
+  const { did, fragment: keyId } = parseDidUri(keyUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
-    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+    throw new SDKErrors.InvalidDidFormatError(keyUri)
   }
 
-  switch (type) {
-    case 'full': {
-      const key = await queryKey(identifier, keyId)
-      if (!key) {
-        return null
-      }
-      const result: ResolvedDidKey = {
-        controller: did,
-        uri: didUri,
-        publicKey: key.publicKey,
-        type: key.type,
-      }
-      if (key.includedAt) {
-        result.includedAt = key.includedAt
-      }
-      return result
-    }
-    case 'light': {
-      const resolvedDetails = await resolveDoc(didUri)
-      if (!resolvedDetails) {
-        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
-      }
-      const key = resolvedDetails.details?.getKey(keyId)
-      if (!key) {
-        return null
-      }
-      return {
-        controller: did,
-        uri: didUri,
-        publicKey: key.publicKey,
-        type: key.type,
-      }
-    }
-    default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
+  const resolved = await resolve(did)
+  if (!resolved) {
+    return null
+  }
+
+  const {
+    document,
+    metadata: { canonicalId },
+  } = resolved
+
+  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  if (canonicalId) {
+    return null
+  }
+  if (!document) {
+    return null
+  }
+
+  const key = Did.getKey(document, keyId)
+  if (!key) {
+    return null
+  }
+
+  const { includedAt } = key
+  return {
+    controller: did,
+    id: `${did}${keyId}`,
+    publicKey: key.publicKey,
+    type: key.type,
+    ...(includedAt && { includedAt }),
   }
 }
 
@@ -169,73 +168,51 @@ export async function resolveKey(
  * @returns The details associated with the service endpoint.
  */
 export async function resolveServiceEndpoint(
-  serviceUri: DidPublicServiceEndpoint['uri']
+  serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint | null> {
-  const { identifier, fragment: serviceId, type, did } = parseDidUri(serviceUri)
+  const { fragment: serviceId, did, type } = parseDidUri(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
-    throw new SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
+    throw new SDKErrors.InvalidDidFormatError(serviceUri)
   }
 
-  switch (type) {
-    case 'full': {
-      const serviceEndpoint = await queryServiceEndpoint(identifier, serviceId)
-      if (!serviceEndpoint) {
-        return null
-      }
-      return {
-        uri: serviceUri,
-        type: serviceEndpoint.types,
-        serviceEndpoint: serviceEndpoint.urls,
-      }
+  if (type === 'full') {
+    const endpoint = await queryServiceEndpoint(serviceUri, serviceId)
+    if (!endpoint) {
+      return null
     }
-    case 'light': {
-      const resolvedDetails = await resolveDoc(did)
-      if (!resolvedDetails) {
-        throw new SDKErrors.ERROR_INVALID_DID_FORMAT(serviceUri)
-      }
-      const serviceEndpoint = resolvedDetails.details?.getEndpoint(serviceId)
-      if (!serviceEndpoint) {
-        return null
-      }
-      return {
-        uri: serviceUri,
-        type: serviceEndpoint.types,
-        serviceEndpoint: serviceEndpoint.urls,
-      }
+    return {
+      ...endpoint,
+      id: serviceUri,
     }
-    default:
-      throw new SDKErrors.ERROR_UNSUPPORTED_DID(did)
   }
-}
 
-/**
- * Resolve a DID URI (including a key ID or a service ID).
- *
- * @param didUri The DID URI to resolve.
- * @returns The DID, key details or service details depending on the input URI. Null otherwise.
- */
-export async function resolve(
-  didUri: IDidDetails['uri']
-): Promise<
-  DidResolvedDetails | ResolvedDidKey | ResolvedDidServiceEndpoint | null
-> {
-  const { fragment, did } = parseDidUri(didUri)
-
-  if (fragment) {
-    return (
-      resolveKey(didUri as DidResourceUri) ||
-      resolveServiceEndpoint(didUri as DidResourceUri) ||
-      null
-    )
+  const resolved = await resolve(did)
+  if (!resolved) {
+    return null
   }
-  return resolveDoc(did)
-}
 
-export const DidResolver: IDidResolver = {
-  resolveDoc,
-  resolveKey,
-  resolve,
-  resolveServiceEndpoint,
+  const {
+    document,
+    metadata: { canonicalId },
+  } = resolved
+
+  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  if (canonicalId) {
+    return null
+  }
+  if (!document) {
+    return null
+  }
+
+  const endpoint = Did.getEndpoint(document, serviceId)
+  if (!endpoint) {
+    return null
+  }
+
+  return {
+    ...endpoint,
+    id: `${did}${serviceId}`,
+  }
 }

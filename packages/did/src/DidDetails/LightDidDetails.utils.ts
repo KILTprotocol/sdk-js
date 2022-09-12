@@ -8,120 +8,107 @@
 // This module is not part of the public-facing api.
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor'
+import { decode as cborDecode, encode as cborEncode } from 'cbor'
 
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 
 import type {
   DidServiceEndpoint,
+  LightDidSupportedVerificationKeyType,
   NewDidEncryptionKey,
-  SubmittableExtrinsic,
+  NewLightDidVerificationKey,
 } from '@kiltprotocol/types'
-import { EncryptionKeyType, VerificationKeyType } from '@kiltprotocol/types'
+import { encryptionKeyTypes } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { checkServiceEndpointSyntax } from '../Did.utils.js'
-import {
+import { checkServiceEndpointSyntax, stripFragment } from '../Did.utils.js'
+
+type LightDidEncoding = '00' | '01'
+
+export const verificationKeyTypeToLightDidEncoding: Record<
   LightDidSupportedVerificationKeyType,
-  NewLightDidAuthenticationKey,
-} from '../types.js'
-
-const ENCRYPTION_KEY_MAP_KEY = 'e'
-const SERVICES_KEY_MAP_KEY = 's'
-
-// Ecdsa not supported.
-export function getEncodingForVerificationKeyType(
-  type: VerificationKeyType
-): string | undefined {
-  switch (type) {
-    case VerificationKeyType.Sr25519:
-      return '00'
-    case VerificationKeyType.Ed25519:
-      return '01'
-    default:
-      return undefined
-  }
-}
-export function getVerificationKeyTypeForEncoding(
-  encoding: string
-): LightDidSupportedVerificationKeyType | undefined {
-  switch (encoding) {
-    case '00':
-      return VerificationKeyType.Sr25519
-    case '01':
-      return VerificationKeyType.Ed25519
-    default:
-      return undefined
-  }
+  LightDidEncoding
+> = {
+  sr25519: '00',
+  ed25519: '01',
 }
 
-const supportedEncryptionKeyTypes = new Set(Object.values(EncryptionKeyType))
+export const lightDidEncodingToVerificationKeyType: Record<
+  LightDidEncoding,
+  LightDidSupportedVerificationKeyType
+> = {
+  '00': 'sr25519',
+  '01': 'ed25519',
+}
 
 /**
  * The options that can be used to create a light DID.
  */
-export type LightDidCreationDetails = {
+export type CreateDocumentInput = {
   /**
    * The DID authentication key. This is mandatory and will be used as the first authentication key
    * of the full DID upon migration.
    */
-  authenticationKey: NewLightDidAuthenticationKey
+  authentication: [NewLightDidVerificationKey]
   /**
    * The optional DID encryption key. If present, it will be used as the first key agreement key
    * of the full DID upon migration.
    */
-  encryptionKey?: NewDidEncryptionKey
+  keyAgreement?: [NewDidEncryptionKey]
   /**
    * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
    * The service ID must not contain the DID prefix when used to create a new DID.
    */
-  serviceEndpoints?: DidServiceEndpoint[]
+  service?: DidServiceEndpoint[]
 }
 
-export type DidMigrationCallback = (
-  migrationExtrinsic: SubmittableExtrinsic
-) => Promise<void>
-
-export function checkLightDidCreationDetails(
-  details: LightDidCreationDetails
-): void {
+export function validateCreateDocumentInput(input: CreateDocumentInput): void {
   // Check authentication key type
-  const authenticationKeyTypeEncoding = getEncodingForVerificationKeyType(
-    details.authenticationKey.type
-  )
+  const authenticationKeyTypeEncoding =
+    verificationKeyTypeToLightDidEncoding[input.authentication[0].type]
+
   if (!authenticationKeyTypeEncoding) {
-    throw SDKErrors.ERROR_UNSUPPORTED_KEY
+    throw new SDKErrors.UnsupportedKeyError(input.authentication[0].type)
   }
 
-  if (details.encryptionKey?.type) {
-    if (!supportedEncryptionKeyTypes.has(details.encryptionKey.type)) {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Encryption key type ${details.encryptionKey.type} is not supported.`
-      )
-    }
+  if (
+    input.keyAgreement?.[0].type &&
+    !encryptionKeyTypes.includes(input.keyAgreement[0].type)
+  ) {
+    throw new SDKErrors.DidError(
+      `Encryption key type "${input.keyAgreement[0].type}" is not supported`
+    )
   }
 
   // Check service endpoints
-  if (!details.serviceEndpoints) {
+  if (!input.service) {
     return
   }
 
   // Checks that for all service IDs have regular strings as their ID and not a full DID.
   // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
   // when upgrading to a full DID.
-  details.serviceEndpoints?.forEach((service) => {
+  input.service?.forEach((service) => {
     // A service ID cannot have a reserved ID that is used for key IDs.
-    if (service.id === 'authentication' || service.id === 'encryption') {
-      throw new SDKErrors.ERROR_DID_ERROR(
-        `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
+    if (service.id === '#authentication' || service.id === '#encryption') {
+      throw new SDKErrors.DidError(
+        `Cannot specify a service ID with the name "${service.id}" as it is a reserved keyword`
       )
     }
     const [, errors] = checkServiceEndpointSyntax(service)
-    if (errors && errors.length) {
+    if (errors && errors.length > 0) {
       throw errors[0]
     }
   })
+}
+
+const KEY_AGREEMENT_MAP_KEY = 'e'
+const SERVICES_MAP_KEY = 's'
+
+interface SerializableStructure {
+  [KEY_AGREEMENT_MAP_KEY]?: NewDidEncryptionKey
+  [SERVICES_MAP_KEY]?: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>
 }
 
 /**
@@ -129,48 +116,58 @@ export function checkLightDidCreationDetails(
  * and encoding the result in Base58 format with a multibase prefix.
  *
  * @param details The light DID details to encode.
- * @param details.encryptionKey The DID encryption key.
- * @param details.serviceEndpoints The DID service endpoints.
+ * @param details.keyAgreement The DID encryption key.
+ * @param details.service The DID service endpoints.
  * @returns The Base58-encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({
-  encryptionKey,
-  serviceEndpoints,
-}: Pick<LightDidCreationDetails, 'encryptionKey' | 'serviceEndpoints'>):
-  | string
-  | null {
-  const objectToSerialize: Map<string, unknown> = new Map()
-  if (encryptionKey) {
-    objectToSerialize.set(ENCRYPTION_KEY_MAP_KEY, encryptionKey)
+  keyAgreement,
+  service,
+}: Pick<CreateDocumentInput, 'keyAgreement' | 'service'>): string | undefined {
+  const objectToSerialize: SerializableStructure = {}
+  if (keyAgreement) {
+    const key = keyAgreement[0]
+    objectToSerialize[KEY_AGREEMENT_MAP_KEY] = key
   }
-  if (serviceEndpoints && serviceEndpoints.length) {
-    objectToSerialize.set(SERVICES_KEY_MAP_KEY, serviceEndpoints)
-  }
-
-  if (!objectToSerialize.size) {
-    return null
+  if (service && service.length > 0) {
+    objectToSerialize[SERVICES_MAP_KEY] = service.map(({ id, ...rest }) => ({
+      id: stripFragment(id),
+      ...rest,
+    }))
   }
 
+  if (Object.keys(objectToSerialize).length === 0) {
+    return undefined
+  }
+
+  const serializationVersion = 0x0
   const serialized = cborEncode(objectToSerialize)
-  // Add a flag to recognize the serialization algorithm. (Currently only custom object + cbor)
-  return base58Encode([0x0, ...serialized], true)
+  return base58Encode([serializationVersion, ...serialized], true)
 }
 
 export function decodeAndDeserializeAdditionalLightDidDetails(
   rawInput: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   version = 1
-): Pick<LightDidCreationDetails, 'encryptionKey' | 'serviceEndpoints'> {
-  const decoded = base58Decode(rawInput, true)
-  const serializationFlag = decoded[0]
-  if (serializationFlag !== 0x0) {
-    throw new SDKErrors.ERROR_DID_ERROR('Serialization algorithm not supported')
+): Pick<CreateDocumentInput, 'keyAgreement' | 'service'> {
+  if (version !== 1) {
+    throw new SDKErrors.DidError('Serialization version not supported')
   }
-  const withoutFlag = decoded.slice(1)
-  const deserialized: Map<string, unknown> = cborDecode(withoutFlag)
 
+  const decoded = base58Decode(rawInput, true)
+  const serializationVersion = decoded[0]
+  const serialized = decoded.slice(1)
+
+  if (serializationVersion !== 0x0) {
+    throw new SDKErrors.DidError('Serialization algorithm not supported')
+  }
+  const deserialized: SerializableStructure = cborDecode(serialized)
+
+  const keyAgreement = deserialized[KEY_AGREEMENT_MAP_KEY]
   return {
-    encryptionKey: deserialized[ENCRYPTION_KEY_MAP_KEY],
-    serviceEndpoints: deserialized[SERVICES_KEY_MAP_KEY],
+    keyAgreement: keyAgreement && [keyAgreement],
+    service: deserialized[SERVICES_MAP_KEY]?.map(({ id, ...rest }) => ({
+      id: `#${id}`,
+      ...rest,
+    })),
   }
 }

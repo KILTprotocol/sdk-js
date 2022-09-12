@@ -8,30 +8,32 @@
 import { u8aToHex, isHex } from '@polkadot/util'
 
 import {
+  DidDocument,
+  DidResolve,
   DidResourceUri,
   DidSignature,
   DidVerificationKey,
-  IDidDetails,
-  IDidResolver,
+  UriFragment,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 
-import { DidResolver } from './DidResolver/index.js'
-import { parseDidUri, validateKiltDidUri } from './Did.utils.js'
+import { resolve } from './DidResolver/index.js'
+import { parseDidUri, isKiltDidUri } from './Did.utils.js'
+import * as Did from './index.js'
 
 type DidSignatureVerificationFromDetailsInput = {
   message: string | Uint8Array
   signature: string
   keyId: DidVerificationKey['id']
   expectedVerificationMethod?: VerificationKeyRelationship
-  details: IDidDetails
+  did: DidDocument
 }
 
 export type VerificationResult = {
   verified: boolean
   reason?: string
-  didDetails?: IDidDetails
+  did?: DidDocument
   key?: DidVerificationKey
 }
 
@@ -40,26 +42,23 @@ function verifyDidSignatureFromDetails({
   signature,
   keyId,
   expectedVerificationMethod,
-  details,
+  did,
 }: DidSignatureVerificationFromDetailsInput): VerificationResult {
-  const key = details.getKey(keyId)
+  const key = Did.getKey(did, keyId)
   if (!key) {
     return {
       verified: false,
-      reason: `No key with ID ${keyId} for the DID ${details.uri}`,
+      reason: `No key with ID "${keyId}" for the DID ${did.uri}`,
     }
   }
   // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
   if (
     expectedVerificationMethod &&
-    !details
-      .getVerificationKeys(expectedVerificationMethod)
-      .map((verKey) => verKey.id)
-      .includes(keyId)
+    !did[expectedVerificationMethod]?.map((verKey) => verKey.id).includes(keyId)
   ) {
     return {
       verified: false,
-      reason: `No key with ID ${keyId} for the verification method ${expectedVerificationMethod}`,
+      reason: `No key with ID "${keyId}" for the verification method "${expectedVerificationMethod}"`,
     }
   }
   const isSignatureValid = Crypto.verify(
@@ -75,7 +74,7 @@ function verifyDidSignatureFromDetails({
   }
   return {
     verified: true,
-    didDetails: details,
+    did,
     key: key as DidVerificationKey,
   }
 }
@@ -84,7 +83,7 @@ export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: DidSignature
   expectedVerificationMethod?: VerificationKeyRelationship
-  resolver?: IDidResolver
+  didResolve?: DidResolve
 }
 
 /**
@@ -95,16 +94,16 @@ export type DidSignatureVerificationInput = {
  * @param input.message The message that was signed.
  * @param input.signature An object containing signature and signer key.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
- * @param input.resolver Allows specifying a custom DID resolver. Defaults to the built-in [[DidResolver]].
+ * @param input.didResolve Allows specifying a custom DID resolve. Defaults to the built-in [[resolve]].
  * @returns Object indicating verification result and optionally reason for failure.
  */
 export async function verifyDidSignature({
   message,
   signature,
   expectedVerificationMethod,
-  resolver = DidResolver,
+  didResolve = resolve,
 }: DidSignatureVerificationInput): Promise<VerificationResult> {
-  let keyId: string
+  let keyId: UriFragment
   let keyUri: DidResourceUri
   try {
     // Add support for old signatures that had the `keyId` instead of the `keyUri`
@@ -118,45 +117,44 @@ export async function verifyDidSignature({
   } catch {
     return {
       verified: false,
-      reason: `Signature key URI ${signature.keyUri} invalid.`,
+      reason: `Signature key URI "${signature.keyUri}" invalid`,
     }
   }
-  const resolutionDetails = await resolver.resolveDoc(keyUri)
+  const resolutionDetails = await didResolve(keyUri)
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
     return {
       verified: false,
-      reason: `No result for provided key URI ${keyUri}`,
+      reason: `No result for provided key URI "${keyUri}"`,
     }
   }
   // Verification also fails if the DID has been deleted.
   if (resolutionDetails.metadata.deactivated) {
     return {
       verified: false,
-      reason: 'DID for provided key is deactivated.',
+      reason: 'DID for provided key is deactivated',
     }
   }
   // Verification also fails if the signer is a migrated light DID.
   if (resolutionDetails.metadata.canonicalId) {
     return {
       verified: false,
-      reason: 'DID for provided key has been migrated and not usable anymore.',
+      reason: 'DID for provided key has been migrated and not usable anymore',
     }
   }
-  // Otherwise, the details used are either the migrated full DID details or the light DID details.
-  const details = (
-    resolutionDetails.metadata.canonicalId
-      ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
-          ?.details
-      : resolutionDetails.details
-  ) as IDidDetails
+  // Otherwise, the document used is either the migrated full DID document or the light DID document.
+  const did = (
+    resolutionDetails.metadata.canonicalId !== undefined
+      ? (await didResolve(resolutionDetails.metadata.canonicalId))?.document
+      : resolutionDetails.document
+  ) as DidDocument
 
   return verifyDidSignatureFromDetails({
     message,
     signature: signature.signature,
     keyId,
     expectedVerificationMethod,
-    details,
+    did,
   })
 }
 
@@ -167,30 +165,23 @@ type OldDidSignature = Pick<DidSignature, 'signature'> & {
 }
 
 /**
- * Type guard assuring that a the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
+ * Type guard assuring that the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
  * Does not cryptographically verify the signature itself!
  *
  * @param input Arbitrary input.
  * @returns True if validation of form has passed.
- * @throws [[SDKError]] if validation fails.
  */
 export function isDidSignature(
   input: unknown
 ): input is DidSignature | OldDidSignature {
   const signature = input as DidSignature | OldDidSignature
   try {
-    if (
-      !isHex(signature.signature) ||
-      !validateKiltDidUri(
-        (signature as any).keyUri || (signature as any).keyId,
-        true
-      )
-    ) {
-      throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    const keyUri = 'keyUri' in signature ? signature.keyUri : signature.keyId
+    if (!isHex(signature.signature) || !isKiltDidUri(keyUri, 'ResourceUri')) {
+      return false
     }
     return true
-  } catch (e) {
-    // TODO: type guards shouldn't throw
-    throw new SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+  } catch (cause) {
+    return false
   }
 }

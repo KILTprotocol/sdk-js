@@ -16,7 +16,4 @@
  * @module @kiltprotocol/messaging
  */
 
-import '@polkadot/api-augment'
-
 export * from './Message.js'
-export * from './Message.utils.js'

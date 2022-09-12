@@ -9,8 +9,8 @@ import type { SubscriptionPromise } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 /**
- * Helps building a promise associated to a subscription callback through which updates can be pushed to the promise.
- * This promise is resolved with the value of latest update when a resolution criterion is met.
+ * Helps to build a promise associated to a subscription callback through which updates can be pushed to the promise.
+ * This promise is resolved with the value of the latest update when a resolution criterion is met.
  * It is rejected with a custom error/reason if a rejection criterion is met or on timeout (optional). Rejection takes precedent.
  *
  * @param terminationOptions .
@@ -28,7 +28,7 @@ export function makeSubscriptionPromise<SubscriptionType>(
   promise: Promise<SubscriptionType>
   subscription: (value: SubscriptionType) => void
 } {
-  const { resolveOn, rejectOn, timeout } = { ...terminationOptions }
+  const { resolveOn, rejectOn, timeout = 0 } = { ...terminationOptions }
   let resolve: (value: SubscriptionType) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reject: (reason: any) => void
@@ -39,21 +39,22 @@ export function makeSubscriptionPromise<SubscriptionType>(
   const subscription: (value: SubscriptionType) => void =
     typeof rejectOn === 'function'
       ? (value) => {
-          if (rejectOn(value)) reject(value)
-          if (resolveOn(value)) resolve(value)
+          // eslint-disable-next-line no-extra-boolean-cast
+          if (Boolean(rejectOn(value))) reject(value)
+          if (resolveOn(value) === true) resolve(value)
         }
       : (value) => {
-          if (resolveOn(value)) resolve(value)
+          if (resolveOn(value) === true) resolve(value)
         }
-  if (timeout)
+  if (timeout > 0)
     setTimeout(() => {
-      reject(new SDKErrors.ERROR_TIMEOUT())
+      reject(new SDKErrors.TimeoutError())
     }, timeout)
   return { promise, subscription }
 }
 
 /**
- * A wrapper around [[makeSubscriptionPromise]] that helps building multiple promises which listen to the same subscription.
+ * A wrapper around [[makeSubscriptionPromise]] that helps to build multiple promises which listen to the same subscription.
  *
  * @param args An array of objects each of which provides the arguments for creation of one promise.
  * @returns An object containing both a subscription callback
@@ -69,13 +70,15 @@ export function makeSubscriptionPromiseMulti<SubscriptionType>(
   const subscriptions: Array<(value: SubscriptionType) => void> = []
   args.forEach(
     (options: SubscriptionPromise.TerminationOptions<SubscriptionType>) => {
-      const { promise, subscription } = makeSubscriptionPromise(options)
+      const { promise, subscription: sub } = makeSubscriptionPromise(options)
       promises.push(promise)
-      subscriptions.push(subscription)
+      subscriptions.push(sub)
     }
   )
-  const subscription = (value: SubscriptionType): void => {
+
+  function subscription(value: SubscriptionType): void {
     subscriptions.forEach((s) => s(value))
   }
+
   return { promises, subscription }
 }

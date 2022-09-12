@@ -12,25 +12,13 @@
  * ```Kilt.connect('ws://localhost:9944');```.
  */
 
-import { ConfigService } from '@kiltprotocol/config'
-import {
-  BlockchainApiConnection,
-  Blockchain,
-} from '@kiltprotocol/chain-helpers'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
+import { ApiPromise, WsProvider } from '@polkadot/api'
+
+import { ConfigService } from '@kiltprotocol/config'
 
 /**
- * Connects to the KILT Blockchain and caches the connection.
- * When used again, the cached instance is returned.
- *
- * @returns An instance of [[Blockchain]].
- */
-export function connect(): Promise<Blockchain> {
-  return BlockchainApiConnection.getConnectionOrConnect()
-}
-
-/**
- * Allows setting global configuration such as the blockchain endpoint and log level.
+ * Allows setting global configuration such as the log level and the polkadot ApiPromise instance used throughout the sdk.
  *
  * @param configs Config options object.
  */
@@ -52,4 +40,31 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
   config(configs || {})
   await cryptoWaitReady()
 }
-export const { disconnect } = BlockchainApiConnection
+
+/**
+ * Connects to the KILT Blockchain using the api instance set with `init()`.
+ *
+ * @param blockchainRpcWsUrl WebSocket URL of the RPC endpoint exposed by a node that is part of the Kilt blockchain network you wish to connect to.
+ * @returns An instance of ApiPromise.
+ */
+export async function connect(blockchainRpcWsUrl: string): Promise<ApiPromise> {
+  const provider = new WsProvider(blockchainRpcWsUrl)
+  const api = await ApiPromise.create({
+    provider,
+  })
+  await init({ api })
+  return api.isReadyOrError
+}
+
+/**
+ * Disconnects the cached connection and clears the cache.
+ *
+ * @returns If there was a cached and connected connection, or not.
+ */
+export async function disconnect(): Promise<boolean> {
+  if (!ConfigService.isSet('api')) return false
+  const api = ConfigService.get('api')
+  ConfigService.unset('api')
+  await api.disconnect()
+  return true
+}

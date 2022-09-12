@@ -1,8 +1,8 @@
 /* eslint-disable */
 
 export function deepCompareStrict(a: any, b: any): boolean {
-  const typeofa = typeof a
-  if (typeofa !== typeof b) {
+  const typeofA = typeof a
+  if (typeofA !== typeof b) {
     return false
   }
   if (Array.isArray(a)) {
@@ -20,7 +20,7 @@ export function deepCompareStrict(a: any, b: any): boolean {
     }
     return true
   }
-  if (typeofa === 'object') {
+  if (typeofA === 'object') {
     if (!a || !b) {
       return a === b
     }

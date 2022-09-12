@@ -49,8 +49,8 @@ import type {
 } from '@polkadot/types/interfaces'
 import { GenericEventData, TypeRegistry, U64 } from '@polkadot/types'
 import type {
-  IIdentity,
   ISubmittableResult,
+  KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from './mockedApi.utils.js'
@@ -58,6 +58,7 @@ import { createRegistryFromMetadata } from './typeRegistry.js'
 
 export interface MockApiPromise extends ApiPromise {
   __queueResults(results: Array<Partial<ExtrinsicStatus>>): void
+
   __setDefaultResult(status: Partial<ExtrinsicStatus>): void
 }
 
@@ -70,30 +71,31 @@ class MockSubmittableExtrinsic {
   }
 
   nonce = { toHuman: (): number | undefined => undefined }
+
   constructor(result: ISubmittableResult) {
     this.result = result
   }
 
   public addSignature(): this {
-    const signature = this.signature.toHuman()
-      ? this.signature.toHuman()! + 1
-      : 0
+    const signature =
+      this.signature.toHuman() !== undefined ? this.signature.toHuman()! + 1 : 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() ? this.nonce.toHuman()! + 1 : 0
+    const nonce =
+      this.nonce.toHuman() !== undefined ? this.nonce.toHuman()! + 1 : 0
     this.nonce = { toHuman: () => nonce }
     return this
   }
 
   public signAsync(): this {
-    const signature = this.signature.toHuman() || 0
+    const signature = this.signature.toHuman() ?? 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() || 0
+    const nonce = this.nonce.toHuman() ?? 0
     this.nonce = { toHuman: () => nonce }
 
     return this
@@ -102,7 +104,7 @@ class MockSubmittableExtrinsic {
   public async send(
     callable: (...params: unknown[]) => void
   ): Promise<string | (() => void)> {
-    if (callable) {
+    if (typeof callable === 'function') {
       callable(this.result)
       return () => {}
     }
@@ -113,14 +115,14 @@ class MockSubmittableExtrinsic {
     a: any,
     callable: (...params: unknown[]) => void
   ): Promise<string | (() => void)> {
-    const signature = this.signature.toHuman() || 0
+    const signature = this.signature.toHuman() ?? 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() || 0
+    const nonce = this.nonce.toHuman() ?? 0
     this.nonce = { toHuman: () => nonce }
-    if (callable) {
+    if (typeof callable === 'function') {
       callable(this.result)
       return () => {
         // noop
@@ -163,9 +165,7 @@ function makeSubmittableResult(
           section: 'system',
           data: eventData,
           index: {
-            toHex: jest.fn(() => {
-              return '0x0000'
-            }),
+            toHex: jest.fn(() => '0x0000'),
           },
           // portablegabi checks if a transaction was successful
           method: 'ExtrinsicSuccess',
@@ -188,7 +188,7 @@ export function getMockedApi(): MockApiPromise {
   )
 
   function getMockSubmittableExtrinsic(): SubmittableExtrinsic {
-    const result: ISubmittableResult = TxResultsQueue.shift() || defaultTxResult
+    const result = TxResultsQueue.shift() || defaultTxResult
     return new MockSubmittableExtrinsic(result) as any as SubmittableExtrinsic
   }
 
@@ -217,45 +217,27 @@ export function getMockedApi(): MockApiPromise {
     },
     tx: {
       attestation: {
-        add: jest.fn((claimHash, _cTypeHash) => {
-          return getMockSubmittableExtrinsic()
-        }),
-        revoke: jest.fn((claimHash: string) => {
-          return getMockSubmittableExtrinsic()
-        }),
-        remove: jest.fn((claimHash: string) => {
-          return getMockSubmittableExtrinsic()
-        }),
-        reclaimDeposit: jest.fn((claimHash: string) => {
-          return getMockSubmittableExtrinsic()
-        }),
+        add: jest.fn((claimHash, _cTypeHash) => getMockSubmittableExtrinsic()),
+        revoke: jest.fn((claimHash: string) => getMockSubmittableExtrinsic()),
+        remove: jest.fn((claimHash: string) => getMockSubmittableExtrinsic()),
+        reclaimDeposit: jest.fn((claimHash: string) =>
+          getMockSubmittableExtrinsic()
+        ),
       },
       balances: {
         transfer: jest.fn(() => getMockSubmittableExtrinsic()),
       },
       ctype: {
-        add: jest.fn((hash, signature) => {
-          return getMockSubmittableExtrinsic()
-        }),
+        add: jest.fn((hash, signature) => getMockSubmittableExtrinsic()),
       },
       delegation: {
-        createHierarchy: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
-        addDelegation: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
-        revokeDelegation: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
+        createHierarchy: jest.fn(() => getMockSubmittableExtrinsic()),
+        addDelegation: jest.fn(() => getMockSubmittableExtrinsic()),
+        revokeDelegation: jest.fn(() => getMockSubmittableExtrinsic()),
       },
       did: {
-        add: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
-        remove: jest.fn(() => {
-          return getMockSubmittableExtrinsic()
-        }),
+        add: jest.fn(() => getMockSubmittableExtrinsic()),
+        remove: jest.fn(() => getMockSubmittableExtrinsic()),
       },
       portablegabi: {
         updateAccumulator: jest.fn((_acc) => {
@@ -270,10 +252,7 @@ export function getMockedApi(): MockApiPromise {
         // default return value decodes to BN(0)
         // default return value decodes to AccountInfo with all entries holding BN(0)
         account: jest.fn(
-          async (
-            address: IIdentity['address'],
-            cb
-          ): Promise<AccountInfoWithProviders> =>
+          async (address: KiltAddress, cb): Promise<AccountInfoWithProviders> =>
             TYPE_REGISTRY.createType('AccountInfoWithProviders')
         ),
       },
@@ -387,6 +366,7 @@ export function getMockedApi(): MockApiPromise {
       },
     },
     registry: TYPE_REGISTRY,
+    hasSubscriptions: true,
   }
   return MockedApi as MockApiPromise
 }

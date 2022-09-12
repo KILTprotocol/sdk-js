@@ -16,12 +16,15 @@
 
 import type { UnsubscribePromise } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
+
 import type {
   Balances,
   KeyringPair,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import { SDKErrors } from '@kiltprotocol/utils'
+
 import * as BalanceUtils from './Balance.utils.js'
 
 /**
@@ -34,9 +37,9 @@ import * as BalanceUtils from './Balance.utils.js'
 export async function getBalances(
   accountAddress: KeyringPair['address']
 ): Promise<Balances> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
-  return (await blockchain.api.query.system.account(accountAddress)).data
+  return (await api.query.system.account(accountAddress)).data
 }
 
 /**
@@ -45,7 +48,7 @@ export async function getBalances(
  *
  * @param accountAddress Address of the account on which to listen for all balance changes.
  * @param listener Listener to receive all balance change updates.
- * @returns A promise containing a function that let's you unsubscribe from all balance changes.
+ * @returns A promise containing a function that lets you unsubscribe from all balance changes.
  */
 export async function listenToBalanceChanges(
   accountAddress: KeyringPair['address'],
@@ -55,10 +58,14 @@ export async function listenToBalanceChanges(
     changes: Balances
   ) => void
 ): Promise<UnsubscribePromise> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
+  if (!api.hasSubscriptions) {
+    throw new SDKErrors.SubscriptionsNotSupportedError()
+  }
+
   let previousBalances = await getBalances(accountAddress)
 
-  return blockchain.api.query.system.account(
+  return api.query.system.account(
     accountAddress,
     ({ data: { free, reserved, miscFrozen, feeFrozen } }) => {
       const balancesChange = {
@@ -95,14 +102,13 @@ export async function getTransferTx(
   amount: BN,
   exponent = -15
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const cleanExponent =
     (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
-  const transfer = blockchain.api.tx.balances.transfer(
+  return api.tx.balances.transfer(
     accountAddressTo,
     cleanExponent === -15
       ? amount
       : BalanceUtils.convertToTxUnit(amount, cleanExponent)
   )
-  return transfer
 }

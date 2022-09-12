@@ -9,18 +9,16 @@
  * @group unit/did
  */
 
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 import { ApiMocks } from '@kiltprotocol/testing'
+
 import { getAddEndpointExtrinsic } from './Did.chain'
 
 let api: any
 
 beforeAll(() => {
   api = ApiMocks.createAugmentedApi()
-  BlockchainApiConnection.setConnection(Promise.resolve(new Blockchain(api)))
+  ConfigService.set({ api })
 })
 
 describe('services validation', () => {
@@ -59,26 +57,26 @@ describe('services validation', () => {
   it.each([...validTestURIs, ...unencodedTestUris.map(encodeURI)])(
     'allows adding services with valid URI "%s"',
     async (uri) => {
-      await expect(
-        getAddEndpointExtrinsic({
-          id: 'service_1',
-          types: [],
-          urls: [uri],
+      expect(
+        await getAddEndpointExtrinsic({
+          id: '#service_1',
+          type: [],
+          serviceEndpoint: [uri],
         })
-      ).resolves.toBeDefined()
+      ).toBeDefined()
     }
   )
 
   it.each([...validTestIds, ...invalidTestIds.map(encodeURIComponent)])(
     'allows adding services with valid id "%s"',
     async (id) => {
-      await expect(
-        getAddEndpointExtrinsic({
-          id,
-          types: [],
-          urls: [],
+      expect(
+        await getAddEndpointExtrinsic({
+          id: `#${id}`,
+          type: [],
+          serviceEndpoint: [],
         })
-      ).resolves.toBeDefined()
+      ).toBeDefined()
     }
   )
 
@@ -87,10 +85,10 @@ describe('services validation', () => {
     async (id) => {
       await expect(
         getAddEndpointExtrinsic({
-          id,
-          types: [],
-          urls: [],
-        }).then((r) => r.toHuman())
+          id: `#${id}`,
+          type: [],
+          serviceEndpoint: [],
+        })
       ).rejects.toThrow('ID')
     }
   )
@@ -100,10 +98,10 @@ describe('services validation', () => {
     async (uri) => {
       await expect(
         getAddEndpointExtrinsic({
-          id: 'service_1',
-          types: [],
-          urls: [uri],
-        }).then((r) => r.toHuman())
+          id: '#service_1',
+          type: [],
+          serviceEndpoint: [uri],
+        })
       ).rejects.toThrow('URI')
     }
   )

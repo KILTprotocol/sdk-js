@@ -12,42 +12,40 @@
 import { u8aToHex } from '@polkadot/util'
 
 import type {
+  DidDocument,
+  DidResolutionResult,
   IClaim,
-  ICType,
-  CompressedQuote,
-  CompressedQuoteAgreed,
-  CompressedQuoteAttesterSigned,
-  IDidResolver,
   ICostBreakdown,
+  ICType,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-  DidResolvedDetails,
+  ICredential,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import * as Did from '@kiltprotocol/did'
 import {
-  DemoKeystore,
-  DemoKeystoreUtils,
-  DidDetails,
-  Utils as DidUtils,
-  SigningAlgorithms,
-} from '@kiltprotocol/did'
-import { CType } from '../ctype/CType'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+  createLocalDemoFullDidFromKeypair,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import * as CType from '../ctype'
+import * as Credential from '../credential'
 import * as Quote from './Quote'
-import * as QuoteUtils from './Quote.utils'
 import { QuoteSchema } from './QuoteSchema'
 
-describe('Claim', () => {
-  let claimerIdentity: DidDetails
-  let attesterIdentity: DidDetails
-  let keystore: DemoKeystore
+describe('Quote', () => {
+  let claimerIdentity: DidDocument
+  const claimer = makeSigningKeyTool('ed25519')
+
+  let attesterIdentity: DidDocument
+  const attester = makeSigningKeyTool('ed25519')
+
   let invalidCost: ICostBreakdown
   let date: string
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
-  let request: RequestForAttestation
+  let credential: ICredential
   let invalidCostQuoteData: IQuote
   let invalidPropertiesQuoteData: IQuote
   let validQuoteData: IQuote
@@ -55,48 +53,26 @@ describe('Claim', () => {
   let quoteBothAgreed: IQuoteAgreement
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
-  let compressedQuote: CompressedQuote
-  let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
-  let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
-  const mockResolver: IDidResolver = (() => {
-    const resolve = async (
-      didUri: string
-    ): Promise<DidResolvedDetails | null> => {
-      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-      const didWithoutFragment = didUri.split('#')[0]
-      switch (didWithoutFragment) {
-        case claimerIdentity?.uri:
-          return { details: claimerIdentity, metadata: { deactivated: false } }
-        case attesterIdentity?.uri:
-          return { details: attesterIdentity, metadata: { deactivated: false } }
-        default:
-          return null
-      }
+  async function mockResolve(
+    didUri: string
+  ): Promise<DidResolutionResult | null> {
+    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+    const didWithoutFragment = didUri.split('#')[0]
+    switch (didWithoutFragment) {
+      case claimerIdentity?.uri:
+        return { document: claimerIdentity, metadata: { deactivated: false } }
+      case attesterIdentity?.uri:
+        return { document: attesterIdentity, metadata: { deactivated: false } }
+      default:
+        return null
     }
-    return {
-      resolve,
-      resolveDoc: resolve,
-    } as IDidResolver
-  })()
+  }
 
   beforeAll(async () => {
-    keystore = new DemoKeystore()
+    claimerIdentity = await createLocalDemoFullDidFromKeypair(claimer.keypair)
 
-    claimerIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Alice',
-      {
-        signingKeyType: SigningAlgorithms.Ed25519,
-      }
-    )
-    attesterIdentity = await DemoKeystoreUtils.createLocalDemoFullDidFromSeed(
-      keystore,
-      '//Bob',
-      {
-        signingKeyType: SigningAlgorithms.Ed25519,
-      }
-    )
+    attesterIdentity = await createLocalDemoFullDidFromKeypair(attester.keypair)
 
     invalidCost = {
       gross: 233,
@@ -122,8 +98,8 @@ describe('Claim', () => {
       owner: claimerIdentity.uri,
     }
 
-    // build request for attestation with legitimations
-    request = RequestForAttestation.fromClaim(claim)
+    // build credential with legitimations
+    credential = Credential.fromClaim(claim)
 
     // @ts-ignore
     invalidCostQuoteData = {
@@ -158,88 +134,37 @@ describe('Claim', () => {
       timeframe: new Date('12-04-2020').toISOString(),
       termsAndConditions: 'Lots of these',
     }
-    validAttesterSignedQuote = await Quote.createAttesterSignature(
+    validAttesterSignedQuote = await Quote.createAttesterSignedQuote(
       validQuoteData,
       attesterIdentity,
-      keystore
+      attester.sign
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
-      request.rootHash,
+      credential.rootHash,
       attesterIdentity.uri,
       claimerIdentity,
-      keystore,
+      claimer.sign,
       {
-        resolver: mockResolver,
+        didResolve: mockResolve,
       }
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
     invalidCostQuote = invalidCostQuoteData
-
-    compressedQuote = [
-      validQuoteData.attesterDid,
-      validQuoteData.cTypeHash,
-      [
-        validQuoteData.cost.gross,
-        validQuoteData.cost.net,
-        validQuoteData.cost.tax,
-      ],
-      validQuoteData.currency,
-      validQuoteData.termsAndConditions,
-      validQuoteData.timeframe,
-    ]
-
-    compressedResultAttesterSignedQuote = [
-      validQuoteData.attesterDid,
-      validQuoteData.cTypeHash,
-      [
-        validQuoteData.cost.gross,
-        validQuoteData.cost.net,
-        validQuoteData.cost.tax,
-      ],
-      validQuoteData.currency,
-      validQuoteData.termsAndConditions,
-      validQuoteData.timeframe,
-      [
-        validAttesterSignedQuote.attesterSignature.signature,
-        validAttesterSignedQuote.attesterSignature.keyUri,
-      ],
-    ]
-
-    compressedResultQuoteAgreement = [
-      validQuoteData.attesterDid,
-      validQuoteData.cTypeHash,
-      [
-        validQuoteData.cost.gross,
-        validQuoteData.cost.net,
-        validQuoteData.cost.tax,
-      ],
-      validQuoteData.currency,
-      validQuoteData.termsAndConditions,
-      validQuoteData.timeframe,
-      [
-        validAttesterSignedQuote.attesterSignature.signature,
-        validAttesterSignedQuote.attesterSignature.keyUri,
-      ],
-      [
-        quoteBothAgreed.claimerSignature.signature,
-        quoteBothAgreed.claimerSignature.keyUri,
-      ],
-      quoteBothAgreed.rootHash,
-    ]
   })
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    await expect(
-      claimerIdentity.signPayload(
+    expect(
+      await Did.signPayload(
+        claimerIdentity,
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        keystore,
-        claimerIdentity.authenticationKey.id
+        claimer.sign,
+        claimerIdentity.authentication[0].id
       )
-    ).resolves.toEqual(quoteBothAgreed.claimerSignature)
+    ).toEqual(quoteBothAgreed.claimerSignature)
 
-    const { fragment: attesterKeyId } = DidUtils.parseDidUri(
+    const { fragment: attesterKeyId } = Did.Utils.parseDidUri(
       validAttesterSignedQuote.attesterSignature.keyUri
     )
 
@@ -255,89 +180,27 @@ describe('Claim', () => {
         }),
         validAttesterSignedQuote.attesterSignature.signature,
         u8aToHex(
-          attesterIdentity.getKey(attesterKeyId!)?.publicKey || new Uint8Array()
+          Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
+            new Uint8Array()
         )
       )
-    ).toBeTruthy()
+    ).toBe(true)
+    await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
+      didResolve: mockResolve,
+    })
     expect(
-      await Quote.fromAttesterSignedInput(validAttesterSignedQuote, {
-        resolver: mockResolver,
-      })
-    ).toEqual(validAttesterSignedQuote)
-    expect(
-      await Quote.fromQuoteDataAndIdentity(
+      await Quote.createAttesterSignedQuote(
         validQuoteData,
         attesterIdentity,
-        keystore
+        attester.sign
       )
     ).toEqual(validAttesterSignedQuote)
   })
   it('validates created quotes against QuoteSchema', () => {
-    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBeTruthy()
-    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBeFalsy()
-    expect(
-      Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
-    ).toBeFalsy()
-  })
-
-  it('compresses and decompresses the quote object', () => {
-    expect(QuoteUtils.compressQuote(validQuoteData)).toEqual(compressedQuote)
-
-    expect(QuoteUtils.decompressQuote(compressedQuote)).toEqual(validQuoteData)
-
-    expect(
-      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
-    ).toEqual(compressedResultAttesterSignedQuote)
-
-    expect(
-      QuoteUtils.decompressAttesterSignedQuote(
-        compressedResultAttesterSignedQuote
-      )
-    ).toEqual(validAttesterSignedQuote)
-
-    expect(QuoteUtils.compressQuoteAgreement(quoteBothAgreed)).toEqual(
-      compressedResultQuoteAgreement
+    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBe(true)
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBe(false)
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)).toBe(
+      false
     )
-
-    expect(
-      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
-    ).toEqual(quoteBothAgreed)
-  })
-  it('Negative test for compresses and decompresses the quote object', () => {
-    // @ts-expect-error
-    delete validQuoteData.cTypeHash
-    compressedQuote.pop()
-    // @ts-expect-error
-    delete validAttesterSignedQuote.currency
-    compressedResultAttesterSignedQuote.pop()
-    // @ts-expect-error
-    delete quoteBothAgreed.currency
-    compressedResultQuoteAgreement.pop()
-
-    expect(() => {
-      QuoteUtils.compressQuote(validQuoteData)
-    }).toThrow()
-
-    expect(() => {
-      QuoteUtils.decompressQuote(compressedQuote)
-    }).toThrow()
-
-    expect(() => {
-      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
-    }).toThrow()
-
-    expect(() => {
-      QuoteUtils.decompressAttesterSignedQuote(
-        compressedResultAttesterSignedQuote
-      )
-    }).toThrow()
-
-    expect(() => {
-      QuoteUtils.compressQuoteAgreement(quoteBothAgreed)
-    }).toThrow()
-
-    expect(() => {
-      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
-    }).toThrow()
   })
 })

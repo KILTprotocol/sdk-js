@@ -6,57 +6,51 @@
  */
 
 import {
-  IDidDetails,
+  DidEncryptionKey,
+  DidResourceUri,
   DidServiceEndpoint,
-  VerificationKeyType,
-  EncryptionKeyType,
   DidUri,
-} from './DidDetails.js'
-
-export enum DidDocumentPublicKeyType {
-  Ed25519VerificationKey = 'Ed25519VerificationKey2018',
-  Sr25519VerificationKey = 'Sr25519VerificationKey2020',
-  EcdsaVerificationKey = 'EcdsaSecp256k1VerificationKey2019',
-  X25519EncryptionKey = 'X25519KeyAgreementKey2019',
-}
-
-export const VerificationKeyTypesMap: Record<
+  DidVerificationKey,
+  EncryptionKeyType,
   VerificationKeyType,
-  DidDocumentPublicKeyType
+} from './DidDocument.js'
+
+export type ConformingDidDocumentKeyType =
+  | 'Ed25519VerificationKey2018'
+  | 'Sr25519VerificationKey2020'
+  | 'EcdsaSecp256k1VerificationKey2019'
+  | 'X25519KeyAgreementKey2019'
+
+export const verificationKeyTypesMap: Record<
+  VerificationKeyType,
+  ConformingDidDocumentKeyType
 > = {
   // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
-  [VerificationKeyType.Sr25519]:
-    DidDocumentPublicKeyType.Sr25519VerificationKey,
+  sr25519: 'Sr25519VerificationKey2020',
   // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
-  [VerificationKeyType.Ed25519]:
-    DidDocumentPublicKeyType.Ed25519VerificationKey,
-  [VerificationKeyType.Ecdsa]: DidDocumentPublicKeyType.EcdsaVerificationKey,
+  ed25519: 'Ed25519VerificationKey2018',
+  ecdsa: 'EcdsaSecp256k1VerificationKey2019',
 }
 
-export const EncryptionKeyTypesMap: Record<
+export const encryptionKeyTypesMap: Record<
   EncryptionKeyType,
-  DidDocumentPublicKeyType
+  ConformingDidDocumentKeyType
 > = {
-  [EncryptionKeyType.X25519]: DidDocumentPublicKeyType.X25519EncryptionKey,
+  x25519: 'X25519KeyAgreementKey2019',
 }
-
-/**
- * URI for DID resources like public keys or service endpoints.
- */
-export type DidResourceUri = `${DidUri}#${string}`
 
 /**
  * A spec-compliant description of a DID key.
  */
-export type DidPublicKey = {
+export type ConformingDidKey = {
   /**
-   * The full key URI, in the form of <did_subject>#<key_identifier>.
+   * The full key URI, in the form of <did>#<key_id>.
    */
-  uri: DidResourceUri
+  id: DidResourceUri
   /**
    * The key controller, in the form of <did_subject>.
    */
-  controller: IDidDetails['uri']
+  controller: DidUri
   /**
    * The base58-encoded public component of the key.
    */
@@ -64,50 +58,33 @@ export type DidPublicKey = {
   /**
    * The signing/encryption algorithm type where the key can be used.
    */
-  type: DidDocumentPublicKeyType
+  type: ConformingDidDocumentKeyType
 }
 
 /**
  * A spec-compliant description of a DID endpoint.
  */
-export type DidPublicServiceEndpoint = {
+export type ConformingDidServiceEndpoint = Omit<DidServiceEndpoint, 'id'> & {
   /**
-   * The full service URI, in the form of <did_subject>#<service_identifier>.
+   * The full service URI, in the form of <did>#<service_id>.
    */
-  uri: DidResourceUri
-  /**
-   * The set of types for this endpoint.
-   */
-  type: DidServiceEndpoint['types']
-  /**
-   * The set of services exposed by this endpoint.
-   */
-  serviceEndpoint: DidServiceEndpoint['urls']
+  id: DidResourceUri
 }
 
 /**
  * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
  */
-export type DidDocument = {
-  id: IDidDetails['uri']
-  verificationMethod: DidPublicKey[]
-  authentication: DidPublicKey['uri']
-  assertionMethod?: DidPublicKey['uri']
-  keyAgreement?: DidPublicKey['uri']
-  capabilityDelegation?: DidPublicKey['uri']
-  service?: DidPublicServiceEndpoint[]
+export type ConformingDidDocument = {
+  id: DidUri
+  verificationMethod: ConformingDidKey[]
+  authentication: [DidVerificationKey['id']]
+  assertionMethod?: [DidVerificationKey['id']]
+  keyAgreement?: [DidEncryptionKey['id']]
+  capabilityDelegation?: [DidVerificationKey['id']]
+  service?: ConformingDidServiceEndpoint[]
 }
 
 /**
  * A JSON+LD DID Document that extends a traditional DID Document with additional semantic information.
  */
-export type JsonLDDidDocument = DidDocument & { '@context': string[] }
-
-/**
- * An interface for any DID Document exporter to implement.
- *
- * It is purposefully general with regard to the mime types supported, so that multiple exporters might support different encoding types.
- */
-export interface IDidDocumentExporter {
-  exportToDidDocument: (details: IDidDetails, mimeType: string) => DidDocument
-}
+export type JsonLDDidDocument = ConformingDidDocument & { '@context': string[] }

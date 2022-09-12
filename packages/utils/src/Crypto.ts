@@ -23,12 +23,17 @@ import {
   u8aToString,
   u8aToU8a,
 } from '@polkadot/util'
-import { blake2AsHex, signatureVerify } from '@polkadot/util-crypto'
-import { blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
+import {
+  blake2AsHex,
+  blake2AsU8a,
+  signatureVerify,
+} from '@polkadot/util-crypto'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
 import jsonabc from './jsonabc.js'
+
+export { naclBoxPairFromSecret } from '@polkadot/util-crypto'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
@@ -113,7 +118,7 @@ export function verify(
 export type BitLength = 64 | 128 | 256 | 384 | 512
 
 /**
- * Create the blake2b and return the result as a u8a with the specified `bitLength`.
+ * Create the blake2b and return the result as an u8a with the specified `bitLength`.
  *
  * @param value Value to be hashed.
  * @param bitLength Bit length of hash.
@@ -157,7 +162,7 @@ export function encodeObjectAsStr(
 }
 
 /**
- * Hashes numbers, booleans, and objects by stringifying them. Object keys are sorted to yield consistent hashing.
+ * Hashes numbers, booleans, and objects by stringify-ing them. Object keys are sorted to yield consistent hashing.
  *
  * @param value Object or value to be hashed.
  * @param nonce Optional nonce to obscure hashed values that could be guessed.
@@ -211,8 +216,8 @@ export function encryptAsymmetricAsStr(
   secretKeyB: CryptoInput
 ): EncryptedAsymmetricString {
   const encrypted = encryptAsymmetric(message, publicKeyA, secretKeyB)
-  const box: string = u8aToHex(encrypted.box)
-  const nonce: string = u8aToHex(encrypted.nonce)
+  const box = u8aToHex(encrypted.box)
+  const nonce = u8aToHex(encrypted.nonce)
   return { box, nonce }
 }
 
@@ -256,7 +261,7 @@ export function decryptAsymmetricAsStr(
     coToUInt8(publicKeyB),
     coToUInt8(secretKeyA)
   )
-  return result ? u8aToString(result) : false
+  return result !== false ? u8aToString(result) : false
 }
 
 /**
@@ -286,8 +291,9 @@ export interface HashingOptions {
  * @param nonce Optional nonce (as string) used to obscure hashed contents.
  * @returns 256 bit blake2 hash as hex string.
  */
-export const saltedBlake2b256: Hasher = (value, nonce) =>
-  blake2AsHex((nonce || '') + value, 256)
+export function saltedBlake2b256(value: string, nonce = ''): HexString {
+  return blake2AsHex(nonce + value, 256)
+}
 
 /**
  * Configurable computation of salted over an array of statements. Can be used to validate/reproduce salted hashes

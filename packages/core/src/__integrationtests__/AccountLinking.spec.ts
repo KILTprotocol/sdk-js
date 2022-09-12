@@ -9,78 +9,77 @@
  * @group integration/accountLinking
  */
 
+import { AccountLinks, Web3Names } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import {
-  AccountLinks,
-  DemoKeystore,
-  FullDidDetails,
-  Web3Names,
-} from '@kiltprotocol/did'
-import type { KeyringPair } from '@kiltprotocol/types'
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { ss58Format } from '@kiltprotocol/utils'
+import type {
+  DidDocument,
+  KeyringPair,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/keyring'
-import { BN, u8aToHex } from '@polkadot/util'
-import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
-import type { KeypairType } from '@polkadot/util-crypto/types'
+import { BN } from '@polkadot/util'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 import { Balance } from '../balance'
 import { convertToTxUnit } from '../balance/Balance.utils'
 import {
   createEndowedTestAccount,
-  createFullDidFromSeed,
   fundAccount,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitExtrinsic,
 } from './utils'
 import { disconnect } from '../kilt'
 
-let paymentAccount: KeyringPair
-let keystore: DemoKeystore
+let paymentAccount: KiltKeyringPair
 let linkDeposit: BN
-let keyring: Keyring
-let signingCallback: AccountLinks.LinkingSignerCallback
+let sign: AccountLinks.LinkingSignCallback
 
 beforeAll(async () => {
   await initializeApi()
   paymentAccount = await createEndowedTestAccount()
-  keystore = new DemoKeystore()
   linkDeposit = await AccountLinks.queryDepositAmount()
-  keyring = new Keyring({ ss58Format: 38 })
-  signingCallback = AccountLinks.defaultSignerCallback(keyring)
 }, 40_000)
 
 describe('When there is an on-chain DID', () => {
-  let did: FullDidDetails
-  let newDid: FullDidDetails
+  let did: DidDocument
+  let didKey: KeyTool
+  let newDid: DidDocument
+  let newDidKey: KeyTool
 
   describe('and a tx sender willing to link its account', () => {
     beforeAll(async () => {
-      ;[did, newDid] = await Promise.all([
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      ])
+      didKey = makeSigningKeyTool()
+      newDidKey = makeSigningKeyTool()
+      did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+      newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
     }, 40_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).resolves.toBeNull()
-      await expect(
-        AccountLinks.queryConnectedAccountsForDid(did.identifier)
-      ).resolves.toStrictEqual([])
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-      ).resolves.toBeFalsy()
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+      ).toBeNull()
+      expect(
+        await AccountLinks.queryConnectedAccountsForDid(did.uri)
+      ).toStrictEqual([])
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+      ).toBe(false)
 
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
-      const signedTx = await did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeExtrinsic(
+        did,
         associateSenderTx,
-        keystore,
+        didKey.sign,
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
-      await expect(submissionPromise).resolves.not.toThrow()
+      await submitExtrinsic(signedTx, paymentAccount)
+
       // Check that the deposit has been taken from the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
       // Lookup reserve - deposit == 0
@@ -91,112 +90,111 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).resolves.toStrictEqual(did.identifier)
-      await expect(
-        AccountLinks.queryConnectedAccountsForDid(did.identifier, 38)
-      ).resolves.toStrictEqual([paymentAccount.address])
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-      ).resolves.toBeTruthy()
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+      ).toStrictEqual(did.uri)
+      expect(
+        await AccountLinks.queryConnectedAccountsForDid(did.uri, ss58Format)
+      ).toStrictEqual([paymentAccount.address])
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+      ).toBe(true)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = await AccountLinks.getAssociateSenderExtrinsic()
-      const signedTx = await newDid.authorizeExtrinsic(
+      const signedTx = await Did.authorizeExtrinsic(
+        newDid,
         associateSenderTx,
-        keystore,
+        newDidKey.sign,
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
-      await expect(submissionPromise).resolves.not.toThrow()
+      await submitExtrinsic(signedTx, paymentAccount)
+
       // Reserve should not change when replacing the link
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
       expect(
         balanceAfter.reserved.sub(balanceBefore.reserved).toString()
       ).toMatchInlineSnapshot('"0"')
       // Check that account is linked to new DID
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).resolves.toStrictEqual(newDid.identifier)
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+      ).toStrictEqual(newDid.uri)
       // Check that old DID has no accounts linked
-      await expect(
-        AccountLinks.queryConnectedAccountsForDid(did.identifier)
-      ).resolves.toStrictEqual([])
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-      ).resolves.toBeFalsy()
+      expect(
+        await AccountLinks.queryConnectedAccountsForDid(did.uri)
+      ).toStrictEqual([])
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+      ).toBe(false)
       // Check that new DID has the account linked
-      await expect(
-        AccountLinks.queryConnectedAccountsForDid(newDid.identifier, 38)
-      ).resolves.toStrictEqual([paymentAccount.address])
-      await expect(
-        AccountLinks.queryIsConnected(newDid.identifier, paymentAccount.address)
-      ).resolves.toBeTruthy()
+      expect(
+        await AccountLinks.queryConnectedAccountsForDid(newDid.uri, ss58Format)
+      ).toStrictEqual([paymentAccount.address])
+      expect(
+        await AccountLinks.queryIsConnected(newDid.uri, paymentAccount.address)
+      ).toBe(true)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = await AccountLinks.getLinkRemovalByAccountTx()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        removeSenderTx,
-        paymentAccount
-      )
-      await expect(submissionPromise).resolves.not.toThrow()
+      await submitExtrinsic(removeSenderTx, paymentAccount)
+
       // Check that the deposit has been returned to the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).resolves.toBeNull()
-      await expect(
-        AccountLinks.queryConnectedAccountsForDid(did.identifier)
-      ).resolves.toStrictEqual([])
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-      ).resolves.toBeFalsy()
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+      ).toBeNull()
+      expect(
+        await AccountLinks.queryConnectedAccountsForDid(did.uri)
+      ).toStrictEqual([])
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+      ).toBe(false)
     })
   })
 
-  describe.each(['ed25519', 'sr25519', 'ecdsa'])(
+  describe.each(['ed25519', 'sr25519', 'ecdsa', 'ethereum'])(
     'and an %s account different than the sender to link',
-    (keytype) => {
+    (keyType) => {
+      // TODO: remove this line to test against ethereum linking enabled chains
+      const it = keyType === 'ethereum' ? test.skip : test
+
       let keypair: KeyringPair
       beforeAll(async () => {
-        keypair = keyring.addFromMnemonic(
-          mnemonicGenerate(),
-          undefined,
-          keytype as KeypairType
+        // TODO: remove this line to test against ethereum linking enabled chains
+        if (keyType === 'ethereum') return
+
+        const keyTool = makeSigningKeyTool(
+          Did.Utils.signatureAlgForKeyType[keyType]
         )
-        ;[did, newDid] = await Promise.all([
-          createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-          createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-        ])
+        keypair = keyTool.keypair
+        sign = AccountLinks.makeLinkingSignCallback(keypair)
+        didKey = makeSigningKeyTool()
+        newDidKey = makeSigningKeyTool()
+        did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+        newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
-        const linkAuthorisation =
+        const linkAuthorization =
           await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
             keypair.address,
-            did.identifier,
-            signingCallback
+            did.uri,
+            sign
           )
-        const signedTx = await did.authorizeExtrinsic(
-          linkAuthorisation,
-          keystore,
+        const signedTx = await Did.authorizeExtrinsic(
+          did,
+          linkAuthorization,
+          didKey.sign,
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
-        const submissionPromise = submitExtrinsicWithResign(
-          signedTx,
-          paymentAccount
-        )
-        await expect(submissionPromise).resolves.not.toThrow()
+        await submitExtrinsic(signedTx, paymentAccount)
+
         // Check that the deposit has been taken from the sender's balance.
         const balanceAfter = await Balance.getBalances(paymentAccount.address)
         // Lookup reserve - deposit == 0
@@ -206,110 +204,109 @@ describe('When there is an on-chain DID', () => {
             .sub(linkDeposit)
             .toString()
         ).toMatchInlineSnapshot('"0"')
-        await expect(
-          AccountLinks.queryConnectedDidForAccount(keypair.address)
-        ).resolves.toStrictEqual(did.identifier)
-        await expect(
-          AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-        ).resolves.toBeNull()
-        await expect(
-          AccountLinks.queryConnectedAccountsForDid(did.identifier, 38)
-        ).resolves.toStrictEqual([keypair.address])
-        await expect(
-          AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-        ).resolves.toBeFalsy()
-        await expect(
-          AccountLinks.queryIsConnected(did.identifier, keypair.address)
-        ).resolves.toBeTruthy()
+        expect(
+          await AccountLinks.queryConnectedDidForAccount(keypair.address)
+        ).toStrictEqual(did.uri)
+        expect(
+          await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+        ).toBeNull()
+        expect(
+          await AccountLinks.queryConnectedAccountsForDid(did.uri, ss58Format)
+        ).toStrictEqual([keypair.address])
+        expect(
+          await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+        ).toBe(false)
+        expect(
+          await AccountLinks.queryIsConnected(did.uri, keypair.address)
+        ).toBe(true)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
-        const linkAuthorisation =
+        const linkAuthorization =
           await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
             keypair.address,
-            newDid.identifier,
-            signingCallback
+            newDid.uri,
+            sign
           )
-        const signedTx = await newDid.authorizeExtrinsic(
-          linkAuthorisation,
-          keystore,
+        const signedTx = await Did.authorizeExtrinsic(
+          newDid,
+          linkAuthorization,
+          newDidKey.sign,
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
-        const submissionPromise = submitExtrinsicWithResign(
-          signedTx,
-          paymentAccount
-        )
-        await expect(submissionPromise).resolves.not.toThrow()
+        await submitExtrinsic(signedTx, paymentAccount)
+
         // Reserve should not change when replacing the link
         const balanceAfter = await Balance.getBalances(paymentAccount.address)
         expect(
           balanceAfter.reserved.sub(balanceBefore.reserved).toString()
         ).toMatchInlineSnapshot('"0"')
-        await expect(
-          AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-        ).resolves.toBeNull()
-        await expect(
-          AccountLinks.queryConnectedDidForAccount(keypair.address)
-        ).resolves.toStrictEqual(newDid.identifier)
-        await expect(
-          AccountLinks.queryConnectedAccountsForDid(did.identifier)
-        ).resolves.toStrictEqual([])
-        await expect(
-          AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-        ).resolves.toBeFalsy()
-        await expect(
-          AccountLinks.queryIsConnected(did.identifier, keypair.address)
-        ).resolves.toBeFalsy()
+        expect(
+          await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+        ).toBeNull()
+        expect(
+          await AccountLinks.queryConnectedDidForAccount(keypair.address)
+        ).toStrictEqual(newDid.uri)
+        expect(
+          await AccountLinks.queryConnectedAccountsForDid(did.uri)
+        ).toStrictEqual([])
+        expect(
+          await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+        ).toBe(false)
+        expect(
+          await AccountLinks.queryIsConnected(did.uri, keypair.address)
+        ).toBe(false)
         // Check that new DID has the account linked
-        await expect(
-          AccountLinks.queryConnectedAccountsForDid(newDid.identifier, 38)
-        ).resolves.toStrictEqual([keypair.address])
-        await expect(
-          AccountLinks.queryIsConnected(
-            newDid.identifier,
+        expect(
+          await AccountLinks.queryConnectedAccountsForDid(
+            newDid.uri,
+            ss58Format
+          )
+        ).toStrictEqual([keypair.address])
+        expect(
+          await AccountLinks.queryIsConnected(
+            newDid.uri,
             paymentAccount.address
           )
-        ).resolves.toBeFalsy()
-        await expect(
-          AccountLinks.queryIsConnected(newDid.identifier, keypair.address)
-        ).resolves.toBeTruthy()
+        ).toBe(false)
+        expect(
+          await AccountLinks.queryIsConnected(newDid.uri, keypair.address)
+        ).toBe(true)
       })
       it('should be possible for the DID to remove the link', async () => {
         const removeLinkTx = await AccountLinks.getLinkRemovalByDidExtrinsic(
           keypair.address
         )
-        const signedTx = await newDid.authorizeExtrinsic(
+        const signedTx = await Did.authorizeExtrinsic(
+          newDid,
           removeLinkTx,
-          keystore,
+          newDidKey.sign,
           paymentAccount.address
         )
         const balanceBefore = await Balance.getBalances(paymentAccount.address)
-        const submissionPromise = submitExtrinsicWithResign(
-          signedTx,
-          paymentAccount
-        )
-        await expect(submissionPromise).resolves.not.toThrow()
+        await submitExtrinsic(signedTx, paymentAccount)
+
         // Check that the deposit has been returned to the sender's balance.
         const balanceAfter = await Balance.getBalances(paymentAccount.address)
         expect(
           balanceBefore.reserved.sub(balanceAfter.reserved).toString()
         ).toStrictEqual(linkDeposit.toString())
         // Check that the link has been removed completely
-        await expect(
-          AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-        ).resolves.toBeNull()
-        await expect(
-          AccountLinks.queryConnectedDidForAccount(keypair.address)
-        ).resolves.toBeNull()
-        await expect(
-          AccountLinks.queryConnectedAccountsForDid(newDid.identifier)
-        ).resolves.toStrictEqual([])
-        await expect(
-          AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-        ).resolves.toBeFalsy()
-        await expect(
-          AccountLinks.queryIsConnected(did.identifier, keypair.address)
-        ).resolves.toBeFalsy()
+        expect(
+          await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+        ).toBeNull()
+        expect(
+          await AccountLinks.queryConnectedDidForAccount(keypair.address)
+        ).toBeNull()
+        expect(
+          await AccountLinks.queryConnectedAccountsForDid(newDid.uri)
+        ).toStrictEqual([])
+        expect(
+          await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+        ).toBe(false)
+        expect(
+          await AccountLinks.queryIsConnected(did.uri, keypair.address)
+        ).toBe(false)
       })
     }
   )
@@ -317,42 +314,35 @@ describe('When there is an on-chain DID', () => {
   describe('and a generic Ecdsa Substrate account different than the sender to link', () => {
     let genericAccount: KeyringPair
     beforeAll(async () => {
-      const genericKeyring = new Keyring()
-      // also testing that signing with type bitflag works, like the polkadot extension does it
-      signingCallback = async (payload, address) =>
-        u8aToHex(
-          genericKeyring.getPair(address).sign(payload, { withType: true })
-        )
-      genericAccount = genericKeyring.addFromMnemonic(
-        mnemonicGenerate(),
-        undefined,
-        'ecdsa'
+      genericAccount = new Keyring({ type: 'ecdsa' }).addFromMnemonic(
+        mnemonicGenerate()
       )
+      // also testing that signing with type bitflag works, like the polkadot extension does it
+      sign = async (payload) => genericAccount.sign(payload, { withType: true })
+
       await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
-      ;[did, newDid] = await Promise.all([
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-        createFullDidFromSeed(paymentAccount, keystore, randomAsHex(32)),
-      ])
+      didKey = makeSigningKeyTool()
+      newDidKey = makeSigningKeyTool()
+      did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
+      newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
-      const linkAuthorisation =
+      const linkAuthorization =
         await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
           genericAccount.address,
-          did.identifier,
-          signingCallback
+          did.uri,
+          sign
         )
-      const signedTx = await did.authorizeExtrinsic(
-        linkAuthorisation,
-        keystore,
+      const signedTx = await Did.authorizeExtrinsic(
+        did,
+        linkAuthorization,
+        didKey.sign,
         paymentAccount.address
       )
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
-      await expect(submissionPromise).resolves.not.toThrow()
+      await submitExtrinsic(signedTx, paymentAccount)
+
       // Check that the deposit has been taken from the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
       // Lookup reserve - deposit == 0
@@ -362,76 +352,71 @@ describe('When there is an on-chain DID', () => {
           .sub(linkDeposit)
           .toString()
       ).toMatchInlineSnapshot('"0"')
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(genericAccount.address)
-      ).resolves.toStrictEqual(did.identifier)
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).resolves.toBeNull()
-      await expect(
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(genericAccount.address)
+      ).toStrictEqual(did.uri)
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+      ).toBeNull()
+      expect(
         // Wildcard substrate encoding. Account should match the generated one.
-        AccountLinks.queryConnectedAccountsForDid(did.identifier, 42)
-      ).resolves.toStrictEqual([genericAccount.address])
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-      ).resolves.toBeFalsy()
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, genericAccount.address)
-      ).resolves.toBeTruthy()
+        await AccountLinks.queryConnectedAccountsForDid(did.uri, 42)
+      ).toStrictEqual([genericAccount.address])
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+      ).toBe(false)
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, genericAccount.address)
+      ).toBe(true)
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
       const web3NameClaimTx = await Web3Names.getClaimTx('test-name')
-      const signedTx = await did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeExtrinsic(
+        did,
         web3NameClaimTx,
-        keystore,
+        didKey.sign,
         paymentAccount.address
       )
-      const submissionPromise = submitExtrinsicWithResign(
-        signedTx,
-        paymentAccount
-      )
-      await expect(submissionPromise).resolves.not.toThrow()
+      await submitExtrinsic(signedTx, paymentAccount)
+
       // Check that the Web3 name has been linked to the DID
-      await expect(
-        Web3Names.queryDidIdentifierForWeb3Name('test-name')
-      ).resolves.toStrictEqual(did.identifier)
+      expect(await Web3Names.queryDidForWeb3Name('test-name')).toStrictEqual(
+        did.uri
+      )
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
-      await expect(
-        AccountLinks.queryWeb3Name(genericAccount.address)
-      ).resolves.toStrictEqual('test-name')
+      expect(
+        await AccountLinks.queryWeb3Name(genericAccount.address)
+      ).toStrictEqual('test-name')
     })
 
     it('should be possible for the sender to remove the link', async () => {
       // No need for DID-authorizing this.
       const reclaimDepositTx = await AccountLinks.getLinkRemovalByAccountTx()
       const balanceBefore = await Balance.getBalances(paymentAccount.address)
-      const submissionPromise = submitExtrinsicWithResign(
-        reclaimDepositTx,
-        genericAccount
-      )
-      await expect(submissionPromise).resolves.not.toThrow()
+      await submitExtrinsic(reclaimDepositTx, genericAccount)
+
       // Check that the deposit has been returned to the sender's balance.
       const balanceAfter = await Balance.getBalances(paymentAccount.address)
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
       // Check that the link has been removed completely
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
-      ).resolves.toBeNull()
-      await expect(
-        AccountLinks.queryConnectedDidForAccount(genericAccount.address)
-      ).resolves.toBeNull()
-      await expect(
-        AccountLinks.queryConnectedAccountsForDid(newDid.identifier)
-      ).resolves.toStrictEqual([])
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, paymentAccount.address)
-      ).resolves.toBeFalsy()
-      await expect(
-        AccountLinks.queryIsConnected(did.identifier, genericAccount.address)
-      ).resolves.toBeFalsy()
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(paymentAccount.address)
+      ).toBeNull()
+      expect(
+        await AccountLinks.queryConnectedDidForAccount(genericAccount.address)
+      ).toBeNull()
+      expect(
+        await AccountLinks.queryConnectedAccountsForDid(newDid.uri)
+      ).toStrictEqual([])
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, paymentAccount.address)
+      ).toBe(false)
+      expect(
+        await AccountLinks.queryIsConnected(did.uri, genericAccount.address)
+      ).toBe(false)
     })
   })
 })

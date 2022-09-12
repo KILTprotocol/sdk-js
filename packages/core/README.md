@@ -5,7 +5,7 @@
 
 # KILT Core
 
-This package provides the KILT credential core features and objects to make claims, request attestations and make attestations.
+This package provides the KILT credential core features and objects to make claims, build credentials and make attestations.
 It also includes ctypes, quotes, delegations and balance utilities.
 
 For more information, please visit our [official SDK documentation](https://docs.kilt.io/docs/sdk/introduction).

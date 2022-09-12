@@ -5,30 +5,26 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Enum, Option, Struct, U128 } from '@polkadot/types'
+import type { Option, U128 } from '@polkadot/types'
+import type { BN } from '@polkadot/util'
+
 import type {
   IAttestation,
-  Deposit,
+  ICredential,
+  KiltAddress,
   SubmittableExtrinsic,
-  IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import type { AccountId, H256, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import type { BN } from '@polkadot/util'
-import type { HexString } from '@polkadot/util/types'
-import { Attestation } from './Attestation.js'
-import type { DelegationNodeId } from '../delegation/DelegationDecoder.js'
+import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 /**
- * Generate the extrinsic to store the provided [[IAttestation]].
+ * Prepares an extrinsic to store the provided [[IAttestation]] on chain.
  *
- * @param attestation The attestation to write on the blockchain.
- * @returns The SubmittableExtrinsic for the `add` call.
+ * @param attestation The Attestation to write on the blockchain.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getStoreTx(
   attestation: IAttestation
@@ -36,87 +32,37 @@ export async function getStoreTx(
   const { claimHash, cTypeHash, delegationId } = attestation
   log.debug(() => `Create tx for 'attestation.add'`)
 
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
 
-  const authorizationArgName =
-    blockchain.api.tx.attestation.add.meta.args[2].name.toString()
-  switch (authorizationArgName) {
-    case 'delegationId':
-      // uses old attestation authorization
-      return blockchain.api.tx.attestation.add(
-        claimHash,
-        cTypeHash,
-        delegationId
-      )
-    case 'authorization':
-      // uses generalized attestation authorization
-      return blockchain.api.tx.attestation.add(
-        claimHash,
-        cTypeHash,
-        delegationId
-          ? { delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
-          : undefined
-      )
-    default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
-        'Failed to encode call: unknown authorization type'
-      )
-  }
+  return api.tx.attestation.add(
+    claimHash,
+    cTypeHash,
+    delegationId
+      ? { Delegation: { subjectNodeId: delegationId } } // maxChecks parameter is unused on the chain side and therefore omitted
+      : null
+  )
 }
-
-export interface AuthorizationId extends Enum {
-  readonly isDelegation: boolean
-  readonly asDelegation: H256
-}
-
-interface AttestationDetailsV1 extends Struct {
-  readonly ctypeHash: Hash
-  readonly attester: AccountId
-  readonly delegationId: Option<DelegationNodeId>
-  readonly revoked: boolean
-  readonly deposit: Deposit
-}
-
-interface AttestationDetailsV2
-  extends Omit<AttestationDetailsV1, 'delegationId'> {
-  readonly authorizationId: Option<AuthorizationId>
-}
-
-export type AttestationDetails = AttestationDetailsV2
 
 function decode(
-  encoded: Option<AttestationDetailsV1 | AttestationDetailsV2>,
-  claimHash: IRequestForAttestation['rootHash'] // all the other decoders do not use extra data; they just return partial types
-): Attestation | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
+  encoded: Option<AttestationAttestationsAttestationDetails>,
+  claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
+): IAttestation | null {
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
-    let delegationId: HexString | undefined
-    if ('authorizationId' in chainAttestation) {
-      delegationId = chainAttestation.authorizationId
-        .unwrapOr(undefined)
-        ?.value.toHex()
-    } else if ('delegationId' in chainAttestation) {
-      delegationId = chainAttestation.delegationId.unwrapOr(undefined)?.toHex()
-    } else {
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
-        'Failed to decode Attestation: unknown Codec type'
-      )
-    }
+    const delegationId = chainAttestation.authorizationId
+      .unwrapOr(undefined)
+      ?.value.toHex()
     const attestation: IAttestation = {
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toHex(),
-      owner: DidUtils.getKiltDidFromIdentifier(
-        chainAttestation.attester.toString(),
-        'full'
+      owner: DidUtils.getFullDidUri(
+        chainAttestation.attester.toString() as KiltAddress
       ),
       delegationId: delegationId || null,
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-    return Attestation.fromAttestation(attestation)
+    return attestation
   }
   return null
 }
@@ -128,118 +74,90 @@ function decode(
  * @returns An Option wrapping scale encoded attestation data.
  */
 export async function queryRaw(
-  claimHash: IRequestForAttestation['rootHash']
-): Promise<Option<AttestationDetails>> {
+  claimHash: ICredential['rootHash']
+): Promise<Option<AttestationAttestationsAttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const result = await blockchain.api.query.attestation.attestations<
-    Option<AttestationDetails>
-  >(claimHash)
-  return result
+  const api = ConfigService.get('api')
+  return api.query.attestation.attestations(claimHash)
 }
 
 /**
- * Query an attestation from the blockchain given the claim hash it attests.
+ * Queries an attestation from the blockchain given the claim hash it attests.
  *
  * @param claimHash The hash of the claim attested in the attestation.
- * @returns Either the retrieved [[Attestation]] or null.
+ * @returns A promise containing the retrieved [[Attestation]] or null.
  */
 export async function query(
-  claimHash: IRequestForAttestation['rootHash']
-): Promise<Attestation | null> {
+  claimHash: ICredential['rootHash'] | IAttestation['claimHash']
+): Promise<IAttestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }
 
 /**
- * Generate the extrinsic to revoke a given attestation. The submitter can be the owner of the attestation or an authorized delegator thereof.
+ * Prepares an extrinsic to revoke a given attestation.
+ * The submitter can be the owner of the attestation or an authorized delegator thereof.
  *
- * @param claimHash The attestation claim hash.
- * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
- * @returns The SubmittableExtrinsic for the `revoke` call.
+ * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
+ * @param maxParentChecks The number of levels to walk up the delegation hierarchy until the delegation node is found.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getRevokeTx(
-  claimHash: IRequestForAttestation['rootHash'],
+  claimHash: ICredential['rootHash'] | IAttestation['claimHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
-  const authorizationArgName =
-    blockchain.api.tx.attestation.revoke.meta.args[1].name.toString()
-  switch (authorizationArgName) {
-    case 'maxParentChecks':
-      // uses old attestation authorization
-      return blockchain.api.tx.attestation.revoke(claimHash, maxParentChecks)
-    case 'authorization':
-      // uses generalized attestation authorization
-      return blockchain.api.tx.attestation.revoke(
-        claimHash,
-        maxParentChecks
-          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
-          : undefined
-      )
-    default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
-        'Failed to encode call: unknown authorization type'
-      )
-  }
+  return api.tx.attestation.revoke(
+    claimHash,
+    maxParentChecks > 0
+      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : null
+  )
 }
 
 /**
- * Generate the extrinsic to remove a given attestation. The submitter can be the owner of the attestation or an authorized delegator thereof.
+ * Prepares an extrinsic to remove a given attestation.
+ * The submitter can be the owner of the attestation or an authorized delegator thereof.
  *
- * @param claimHash The attestation claim hash.
- * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the removal.
- * @returns The SubmittableExtrinsic for the `remove` call.
+ * @param claimHash The hash of the claim that corresponds to the attestation.
+ * @param maxParentChecks The number of levels to walk up the delegation hierarchy until the delegation node is found.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getRemoveTx(
-  claimHash: IRequestForAttestation['rootHash'],
+  claimHash: ICredential['rootHash'],
   maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
-  const authorizationArgName =
-    blockchain.api.tx.attestation.remove.meta.args[1].name.toString()
-  switch (authorizationArgName) {
-    case 'maxParentChecks':
-      // uses old attestation authorization
-      return blockchain.api.tx.attestation.remove(claimHash, maxParentChecks)
-    case 'authorization':
-      // uses generalized attestation authorization
-      return blockchain.api.tx.attestation.remove(
-        claimHash,
-        maxParentChecks
-          ? { delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
-          : undefined
-      )
-    default:
-      throw new SDKErrors.ERROR_CODEC_MISMATCH(
-        'Failed to encode call: unknown authorization type'
-      )
-  }
+  return api.tx.attestation.remove(
+    claimHash,
+    maxParentChecks > 0
+      ? { Delegation: { maxChecks: maxParentChecks } } // subjectNodeId parameter is unused on the chain side and therefore omitted
+      : null
+  )
 }
 
 /**
- * Generate the extrinsic to delete a given attestation and reclaim back its deposit. The submitter **must** be the KILT account that initially paid for the deposit.
+ * Prepares an extrinsic to reclaim the deposit of an attestation, deleting the attestation in the process.
+ * The submitter **must** be the KILT account that initially paid for the deposit.
  *
- * @param claimHash The attestation claim hash.
- * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
+ * @param claimHash The hash of the claim that corresponds to the attestation.
+ * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
  */
 export async function getReclaimDepositTx(
-  claimHash: IRequestForAttestation['rootHash']
+  claimHash: ICredential['rootHash']
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(
     () => `Claiming deposit for the attestation with claim hash ${claimHash}`
   )
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.attestation.reclaimDeposit(claimHash)
-  return tx
+  return api.tx.attestation.reclaimDeposit(claimHash)
 }
 
 async function queryDepositAmountEncoded(): Promise<U128> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.attestation.deposit as U128
+  const api = ConfigService.get('api')
+  return api.consts.attestation.deposit
 }
 
 /**

@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/utils",
-  "version": "0.28.2",
+  "version": "0.29.0-56",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -30,18 +30,15 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@kiltprotocol/testing": "workspace:*",
     "rimraf": "^3.0.2",
     "typescript": "^4.5.4"
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api-augment": "^8.12.0",
     "@polkadot/keyring": "^10.0.0",
-    "@polkadot/types": "^8.12.0",
     "@polkadot/util": "^10.0.0",
     "@polkadot/util-crypto": "^10.0.0",
     "tweetnacl": "^1.0.3",
-    "uuid": "^8.1.0"
+    "uuid": "^9.0.0"
   }
 }

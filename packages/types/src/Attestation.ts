@@ -5,23 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IDidDetails } from './DidDetails'
+import type { DidUri } from './DidDocument'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
-import type { IRequestForAttestation } from './RequestForAttestation'
+import type { ICredential } from './Credential'
 
 export interface IAttestation {
-  claimHash: IRequestForAttestation['rootHash']
+  claimHash: ICredential['rootHash']
   cTypeHash: ICType['hash']
-  owner: IDidDetails['uri']
+  owner: DidUri
   delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }
-
-export type CompressedAttestation = [
-  IAttestation['claimHash'],
-  IAttestation['cTypeHash'],
-  IAttestation['owner'],
-  IAttestation['revoked'],
-  IAttestation['delegationId']
-]
