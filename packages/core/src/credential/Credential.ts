@@ -334,7 +334,7 @@ export async function verifyCredential(
 /**
  * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
  *
- * Upon presentation of a credential, a verifier would call this [[verify]] function.
+ * Upon presentation of a credential, a verifier would call this function.
  *
  * @param presentation - The object to check.
  * @param options - Additional parameter for more verification steps.
