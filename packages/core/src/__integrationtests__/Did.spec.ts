@@ -30,6 +30,7 @@ import {
   NewDidVerificationKey,
   NewLightDidVerificationKey,
   Permission,
+  SignCallback,
 } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 
@@ -62,10 +63,12 @@ it('fetches the correct deposit amount', async () => {
 describe('write and didDeleteTx', () => {
   let did: DidDocument
   let key: KeyTool
+  let signCallback: SignCallback
 
   beforeAll(async () => {
     key = makeSigningKeyTool()
     did = await createMinimalLightDidFromKeypair(key.keypair)
+    signCallback = key.sign(did)
   })
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
@@ -162,9 +165,9 @@ describe('write and didDeleteTx', () => {
     let call = await Did.Chain.getDeleteDidExtrinsic(new BN(10))
 
     let submittable = await Did.authorizeExtrinsic(
-      fullDid,
+      fullDid.uri,
       call,
-      key.sign,
+      signCallback,
       // Use a different account than the submitter one
       otherAccount.address
     )
@@ -177,9 +180,9 @@ describe('write and didDeleteTx', () => {
     call = await Did.Chain.getDeleteDidExtrinsic(new BN(1))
 
     submittable = await Did.authorizeExtrinsic(
-      fullDid,
+      fullDid.uri,
       call,
-      key.sign,
+      signCallback,
       paymentAccount.address
     )
 
@@ -205,9 +208,9 @@ describe('write and didDeleteTx', () => {
     const call = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
 
     const submittable = await Did.authorizeExtrinsic(
-      fullDid,
+      fullDid.uri,
       call,
-      key.sign,
+      signCallback,
       paymentAccount.address
     )
 
@@ -249,9 +252,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     newKey.authentication[0]
   )
   const tx2 = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     updateAuthenticationKeyCall,
-    sign,
+    sign(fullDid),
     paymentAccount.address
   )
   await submitExtrinsic(tx2, paymentAccount)
@@ -273,9 +276,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
 
   const tx3 = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     updateEndpointCall,
-    newKey.sign,
+    newKey.sign(fullDid),
     paymentAccount.address
   )
   await submitExtrinsic(tx3, paymentAccount)
@@ -288,9 +291,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     newEndpoint.id
   )
   const tx4 = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     removeEndpointCall,
-    newKey.sign,
+    newKey.sign(fullDid),
     paymentAccount.address
   )
   await submitExtrinsic(tx4, paymentAccount)
@@ -506,9 +509,9 @@ describe('DID authorization', () => {
     })
     const call = await CType.getStoreTx(ctype)
     const tx = await Did.authorizeExtrinsic(
-      did,
+      did.uri,
       call,
-      sign,
+      sign(did),
       paymentAccount.address
     )
     await submitExtrinsic(tx, paymentAccount)
@@ -522,9 +525,9 @@ describe('DID authorization', () => {
       storedEndpointsCount
     )
     const tx = await Did.authorizeExtrinsic(
-      did,
+      did.uri,
       deleteCall,
-      sign,
+      sign(did),
       paymentAccount.address
     )
     await submitExtrinsic(tx, paymentAccount)
@@ -537,9 +540,9 @@ describe('DID authorization', () => {
     })
     const call = await CType.getStoreTx(ctype)
     const tx2 = await Did.authorizeExtrinsic(
-      did,
+      did.uri,
       call,
-      sign,
+      sign(did),
       paymentAccount.address
     )
     await expect(submitExtrinsic(tx2, paymentAccount)).rejects.toMatchObject({
@@ -753,7 +756,7 @@ describe('DID management batching', () => {
 
       const extrinsic = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batchAll,
-        did: initialFullDid,
+        did: initialFullDid.uri,
         extrinsics: [
           await api.tx.did.removeKeyAgreementKey(
             Did.Utils.stripFragment(encryptionKeys[0].id)
@@ -766,7 +769,7 @@ describe('DID management batching', () => {
           await api.tx.did.removeServiceEndpoint('id-1'),
           await api.tx.did.removeServiceEndpoint('id-2'),
         ],
-        sign,
+        sign: sign(initialFullDid),
         submitter: paymentAccount.address,
       })
       await submitExtrinsic(extrinsic, paymentAccount)
@@ -808,7 +811,7 @@ describe('DID management batching', () => {
 
       const extrinsic = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batchAll,
-        did: initialFullDid,
+        did: initialFullDid.uri,
         extrinsics: [
           await Did.Chain.getAddEndpointExtrinsic({
             id: '#id-1',
@@ -822,7 +825,7 @@ describe('DID management batching', () => {
             serviceEndpoint: ['x:url-2'],
           }),
         ],
-        sign,
+        sign: sign(initialFullDid),
         submitter: paymentAccount.address,
       })
 
@@ -868,7 +871,7 @@ describe('DID management batching', () => {
       // Try to set a new attestation key and a duplicate service endpoint
       const updateTx = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batch,
-        did: fullDid,
+        did: fullDid.uri,
         extrinsics: [
           await Did.Chain.getSetKeyExtrinsic(
             'assertionMethod',
@@ -880,7 +883,7 @@ describe('DID management batching', () => {
             serviceEndpoint: ['x:url-2'],
           }),
         ],
-        sign,
+        sign: sign(fullDid),
         submitter: paymentAccount.address,
       })
       // Now the second operation fails but the batch succeeds
@@ -928,7 +931,7 @@ describe('DID management batching', () => {
       // Use batchAll to set a new attestation key and a duplicate service endpoint
       const updateTx = await Did.authorizeBatch({
         batchFunction: api.tx.utility.batchAll,
-        did: fullDid,
+        did: fullDid.uri,
         extrinsics: [
           await Did.Chain.getSetKeyExtrinsic(
             'assertionMethod',
@@ -940,7 +943,7 @@ describe('DID management batching', () => {
             serviceEndpoint: ['x:url-2'],
           }),
         ],
-        sign,
+        sign: sign(fullDid),
         submitter: paymentAccount.address,
       })
 
@@ -994,14 +997,14 @@ describe('DID extrinsics batching', () => {
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
-      did: fullDid,
+      did: fullDid.uri,
       extrinsics: [
         ctypeStoreTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
         delegationStoreTx,
       ],
-      sign: key.sign,
+      sign: key.sign(fullDid),
       submitter: paymentAccount.address,
     })
 
@@ -1029,14 +1032,14 @@ describe('DID extrinsics batching', () => {
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batchAll,
-      did: fullDid,
+      did: fullDid.uri,
       extrinsics: [
         ctypeStoreTx,
         // Will fail since the delegation cannot be revoked before it is added
         delegationRevocationTx,
         delegationStoreTx,
       ],
-      sign: key.sign,
+      sign: key.sign(fullDid),
       submitter: paymentAccount.address,
     })
 
@@ -1053,9 +1056,9 @@ describe('DID extrinsics batching', () => {
   it('can batch extrinsics for the same required key type', async () => {
     const web3NameClaimTx = await Web3Names.getClaimTx('test-1')
     const authorizedTx = await Did.authorizeExtrinsic(
-      fullDid,
+      fullDid.uri,
       web3NameClaimTx,
-      key.sign,
+      key.sign(fullDid),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedTx, paymentAccount)
@@ -1064,9 +1067,9 @@ describe('DID extrinsics batching', () => {
     const web3Name2ClaimExt = await Web3Names.getClaimTx('test-2')
     const tx = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batch,
-      did: fullDid,
+      did: fullDid.uri,
       extrinsics: [web3Name1ReleaseExt, web3Name2ClaimExt],
-      sign: key.sign,
+      sign: key.sign(fullDid),
       submitter: paymentAccount.address,
     })
     await submitExtrinsic(tx, paymentAccount)
@@ -1113,7 +1116,7 @@ describe('DID extrinsics batching', () => {
 
     const batchedExtrinsics = await Did.authorizeBatch({
       batchFunction: api.tx.utility.batchAll,
-      did: fullDid,
+      did: fullDid.uri,
       extrinsics: [
         web3NameReleaseExt,
         ctype1Creation,
@@ -1122,7 +1125,7 @@ describe('DID extrinsics batching', () => {
         ctype2Creation,
         delegationHierarchyRemoval,
       ],
-      sign: key.sign,
+      sign: key.sign(fullDid),
       submitter: paymentAccount.address,
     })
 

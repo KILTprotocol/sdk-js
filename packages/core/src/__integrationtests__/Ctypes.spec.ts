@@ -60,9 +60,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const { keypair, sign } = makeSigningKeyTool()
     const storeTx = await CType.getStoreTx(ctype)
     const authorizedStoreTx = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx,
-      sign,
+      sign(ctypeCreator),
       keypair.address
     )
     await expect(
@@ -75,9 +75,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const storeTx = await CType.getStoreTx(ctype)
     const authorizedStoreTx = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx,
-      key.sign,
+      key.sign(ctypeCreator),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
@@ -93,18 +93,18 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const storeTx = await CType.getStoreTx(ctype)
     const authorizedStoreTx = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx,
-      key.sign,
+      key.sign(ctypeCreator),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
     const storeTx2 = await CType.getStoreTx(ctype)
     const authorizedStoreTx2 = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx2,
-      key.sign,
+      key.sign(ctypeCreator),
       paymentAccount.address
     )
     await expect(

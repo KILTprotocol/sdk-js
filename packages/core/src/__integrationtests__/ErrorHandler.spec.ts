@@ -64,9 +64,9 @@ it('records an extrinsic error when ctype does not exist', async () => {
   }
   const storeTx = await Attestation.getStoreTx(attestation)
   const tx = await Did.authorizeExtrinsic(
-    someDid,
+    someDid.uri,
     storeTx,
-    key.sign,
+    key.sign(someDid),
     paymentAccount.address
   )
   await expect(submitExtrinsic(tx, paymentAccount)).rejects.toMatchObject({
