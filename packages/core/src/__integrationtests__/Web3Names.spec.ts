@@ -73,9 +73,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const tx = await Web3Names.getClaimTx(nick)
     const bobbyBroke = makeSigningKeyTool().keypair
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.sign(w3nCreator),
       bobbyBroke.address
     )
 
@@ -87,9 +87,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should be possible to create a w3n name with enough tokens', async () => {
     const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.sign(w3nCreator),
       paymentAccount.address
     )
 
@@ -109,9 +109,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should not be possible to create the same w3n twice', async () => {
     const tx = await Web3Names.getClaimTx(nick)
     const authorizedTx = await Did.authorizeExtrinsic(
-      otherWeb3NameCreator,
+      otherWeb3NameCreator.uri,
       tx,
-      otherW3NCreatorKey.sign,
+      otherW3NCreatorKey.sign(otherWeb3NameCreator),
       paymentAccount.address
     )
 
@@ -126,9 +126,9 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should not be possible to create a second w3n for the same did', async () => {
     const tx = await Web3Names.getClaimTx('nick2')
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.sign(w3nCreator),
       paymentAccount.address
     )
 
@@ -158,18 +158,18 @@ describe('When there is an Web3NameCreator and a payer', () => {
     // prepare the w3n on chain
     const prepareTx = await Web3Names.getClaimTx(differentNick)
     const prepareAuthorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       prepareTx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.sign(w3nCreator),
       paymentAccount.address
     )
     await submitExtrinsic(prepareAuthorizedTx, paymentAccount)
 
     const tx = await Web3Names.getReleaseByOwnerTx()
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.sign(w3nCreator),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedTx, paymentAccount)
