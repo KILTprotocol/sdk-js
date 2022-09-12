@@ -23,6 +23,7 @@ import {
   LogGroupControlSettings,
 } from 'typescript-logging'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { SubscriptionPromise } from '@kiltprotocol/types'
 
 const DEFAULT_DEBUG_LEVEL =
   typeof process !== 'undefined' &&
@@ -34,6 +35,7 @@ const DEFAULT_DEBUG_LEVEL =
 export type configOpts = {
   api: ApiPromise
   logLevel: LogLevel
+  submitTxResolveOn: SubscriptionPromise.ResultEvaluator
 } & { [key: string]: any }
 
 /**
