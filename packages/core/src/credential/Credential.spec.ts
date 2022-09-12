@@ -257,9 +257,9 @@ describe('Credential', () => {
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialIncompleteClaimHashTree)
     ).toThrowError(SDKErrors.NoProofForStatementError)
-    expect(
-      Credential.isICredentialPresentation(builtCredentialMalformedSignature)
-    ).toBe(false)
+    expect(Credential.isPresentation(builtCredentialMalformedSignature)).toBe(
+      false
+    )
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialMalformedHashes)
     ).toThrowError(SDKErrors.NoProofForStatementError)
@@ -425,7 +425,7 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
   })
@@ -449,7 +449,7 @@ describe('Credential', () => {
 
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
   })
@@ -466,7 +466,7 @@ describe('Credential', () => {
     )
     const testCType = CType.fromSchema(rawCType)
     await expect(
-      Credential.verify(credential as ICredentialPresentation, {
+      Credential.verifyPresentation(credential as ICredentialPresentation, {
         ctype: testCType,
         didResolve: mockResolve,
       })
@@ -498,7 +498,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
     await expect(
-      Credential.verify(presentation, {
+      Credential.verifyPresentation(presentation, {
         didResolve: mockResolve,
       })
     ).rejects.toThrowError()
@@ -675,7 +675,7 @@ describe('create presentation', () => {
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -703,7 +703,7 @@ describe('create presentation', () => {
       claimerDid: unmigratedClaimerLightDid,
       challenge,
     })
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -733,7 +733,7 @@ describe('create presentation', () => {
       claimerDid: migratedClaimerFullDid,
       challenge,
     })
-    await Credential.verify(presentation, {
+    await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
@@ -765,7 +765,7 @@ describe('create presentation', () => {
       challenge,
     })
     await expect(
-      Credential.verify(att, {
+      Credential.verifyPresentation(att, {
         didResolve: mockResolve,
       })
     ).rejects.toThrow()
@@ -797,7 +797,7 @@ describe('create presentation', () => {
       challenge,
     })
     await expect(
-      Credential.verify(presentation, {
+      Credential.verifyPresentation(presentation, {
         didResolve: mockResolve,
       })
     ).rejects.toThrow()

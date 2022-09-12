@@ -157,7 +157,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimerDid: claimer,
     })
     expect(await Credential.verifySignature(presentation)).toBe(true)
-    await Credential.verify(presentation)
+    await Credential.verifyPresentation(presentation)
 
     const attestation = Attestation.fromCredentialAndDid(
       presentation,
@@ -292,7 +292,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await submitExtrinsic(authorizedStoreTx, tokenHolder)
 
-      await Credential.verify(presentation)
+      await Credential.verifyPresentation(presentation)
       const storedAttestation = await Attestation.query(attestation.claimHash)
       expect(storedAttestation).not.toBeNull()
       expect(storedAttestation?.revoked).toBe(false)

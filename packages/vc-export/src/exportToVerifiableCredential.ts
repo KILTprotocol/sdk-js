@@ -132,7 +132,7 @@ export function fromCredentialAndAttestation(
   }
 
   // add self-signed proof
-  if (Credential.isICredentialPresentation(input)) {
+  if (Credential.isPresentation(input)) {
     const { claimerSignature } = input
     const sSProof: SelfSignedProof = {
       type: KILT_SELF_SIGNED_PROOF_TYPE,

@@ -194,7 +194,7 @@ describe('and attestation rights have been delegated', () => {
     })
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
     expect(await Credential.verifySignature(presentation)).toBe(true)
-    await Credential.verify(presentation)
+    await Credential.verifyPresentation(presentation)
 
     const attestation = Attestation.fromCredentialAndDid(
       credential,

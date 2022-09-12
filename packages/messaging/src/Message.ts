@@ -156,9 +156,9 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'submit-credential': {
-      body.content.forEach((credential) => {
-        Credential.verifyDataStructure(credential)
-        if (!Did.isDidSignature(credential.claimerSignature)) {
+      body.content.forEach((presentation) => {
+        Credential.verifyDataStructure(presentation)
+        if (!Did.isDidSignature(presentation.claimerSignature)) {
           throw new SDKErrors.SignatureMalformedError()
         }
       })
@@ -302,8 +302,8 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
     case 'submit-credential':
       {
         const submitClaimsForCtype = body
-        submitClaimsForCtype.content.forEach((credential) => {
-          if (!Did.Utils.isSameSubject(credential.claim.owner, sender)) {
+        submitClaimsForCtype.content.forEach((presentation) => {
+          if (!Did.Utils.isSameSubject(presentation.claim.owner, sender)) {
             throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
           }
         })

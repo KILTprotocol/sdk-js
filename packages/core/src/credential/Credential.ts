@@ -26,7 +26,6 @@ import {
 import type {
   DidDocument,
   DidResolve,
-  DidVerificationKey,
   Hash,
   IAttestation,
   IClaim,
@@ -121,36 +120,6 @@ export function makeSigningData(
     ...Crypto.coToUInt8(input.rootHash),
     ...Crypto.coToUInt8(challenge),
   ])
-}
-
-/**
- * Adds a claimer signature to a Credential using a DID key.
- *
- * @param credential - The Credential to add the signature to.
- * @param signCallback - The signing callback.
- * @param did - The DID Document of the signer.
- * @param keyId - The DID key id to be used for the signing.
- * @param options - Optional parameters.
- * @param options.challenge - An optional challenge, which will be included in the signing process.
- */
-export async function sign(
-  credential: ICredential,
-  signCallback: SignCallback,
-  did: DidDocument,
-  keyId: DidVerificationKey['id'],
-  {
-    challenge,
-  }: {
-    challenge?: string
-  } = {}
-): Promise<ICredentialPresentation> {
-  const { signature, keyUri } = await signPayload(
-    did,
-    makeSigningData(credential, challenge),
-    signCallback,
-    keyId
-  )
-  return { ...credential, claimerSignature: { signature, keyUri, challenge } }
 }
 
 /**
@@ -363,7 +332,7 @@ export async function verifyCredential(
 }
 
 /**
- * Verifies data structure, data integrity and the claimer's signature.
+ * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
  *
  * Upon presentation of a credential, a verifier would call this [[verify]] function.
  *
@@ -373,7 +342,7 @@ export async function verifyCredential(
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  */
-export async function verify(
+export async function verifyPresentation(
   presentation: ICredentialPresentation,
   { ctype, challenge, didResolve = resolve }: VerifyOptions = {}
 ): Promise<void> {
@@ -409,7 +378,7 @@ export function isICredential(input: unknown): input is ICredential {
  *
  * @returns  Boolean whether input is of type ICredentialPresentation.
  */
-export function isICredentialPresentation(
+export function isPresentation(
   input: unknown
 ): input is ICredentialPresentation {
   return (
@@ -480,7 +449,12 @@ export async function createPresentation({
 
   const selectedKeyId = claimerDid.authentication[0].id
 
-  return sign(presentation, signCallback, claimerDid, selectedKeyId, {
-    challenge,
-  })
+  const { signature, keyUri } = await signPayload(
+    claimerDid,
+    makeSigningData(presentation, challenge),
+    signCallback,
+    selectedKeyId
+  )
+
+  return { ...credential, claimerSignature: { signature, keyUri, challenge } }
 }

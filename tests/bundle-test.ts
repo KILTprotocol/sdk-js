@@ -307,7 +307,7 @@ async function runAll() {
     signCallback: bobSign,
     claimerDid: bob,
   })
-  if (!Credential.isICredentialPresentation(presentation))
+  if (!Credential.isPresentation(presentation))
     throw new Error('Not a valid Presentation')
   if (await Credential.verifySignature(presentation))
     console.info('Presentation signature verified')
