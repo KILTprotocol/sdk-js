@@ -133,12 +133,12 @@ export function verifyRootHash(input: ICredential): boolean {
 }
 
 /**
- * Verifies the data of the [[Credential]] object; used to check that the data was not tampered with, by checking the data against hashes.
+ * Verifies the data of the [[Credential]] object; used to check that the data was not tampered with,
+ * by checking the data against hashes. Throws if invalid.
  *
  * @param input - The [[Credential]] for which to verify data.
- * @returns Whether the data is valid.
  */
-export function verifyDataIntegrity(input: ICredential): boolean {
+export function verifyDataIntegrity(input: ICredential): void {
   // check claim hash
   if (!verifyRootHash(input)) {
     throw new SDKErrors.RootHashUnverifiableError()
@@ -155,12 +155,8 @@ export function verifyDataIntegrity(input: ICredential): boolean {
 
   // check legitimations
   input.legitimations.forEach((legitimation) => {
-    if (!verifyDataIntegrity(legitimation)) {
-      throw new SDKErrors.LegitimationsUnverifiableError()
-    }
+    verifyDataIntegrity(legitimation)
   })
-
-  return true
 }
 
 /**
