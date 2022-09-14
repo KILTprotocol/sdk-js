@@ -41,7 +41,7 @@ function getKeyRelationshipForCall<A extends AnyTuple = AnyTuple>(
     call.args[0].toRawType() === 'Vec<Call>'
   ) {
     // map all calls to their VerificationKeyRelationship and deduplicate the items
-    return (call.args[0] as any as Array<CallBase<A>>)
+    return (call.args[0] as unknown as Array<CallBase<A>>)
       .map((innerCall: CallBase<A>) => {
         return getKeyRelationshipForCall(innerCall)
       })
