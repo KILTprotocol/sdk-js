@@ -11,7 +11,8 @@
 import { BN } from '@polkadot/util'
 
 import type { VerificationKeyRelationship } from '@kiltprotocol/types'
-import { AnyTuple, CallBase } from '@polkadot/types-codec/types'
+import { Extrinsic } from '@polkadot/types/interfaces/extrinsics'
+import { AnyTuple, CallBase } from '@polkadot/types/types'
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
@@ -28,7 +29,7 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   web3Names: 'authentication',
 }
 
-export function getKeyRelationshipForExtrinsic<A extends AnyTuple = AnyTuple>(
+function getKeyRelationshipForExtrinsicCall<A extends AnyTuple = AnyTuple>(
   call: CallBase<A>
 ): VerificationKeyRelationship | undefined {
   const { section, method } = call
@@ -40,19 +41,11 @@ export function getKeyRelationshipForExtrinsic<A extends AnyTuple = AnyTuple>(
     call.args[0].toRawType() === 'Vec<Call>'
   ) {
     // map all calls to their VerificationKeyRelationship and deduplicate the items
-    const keys = new Set(
-      (call.args[0] as any as Array<CallBase<A>>).map(
-        (innerExtrinsic: CallBase<A>) => {
-          return getKeyRelationshipForExtrinsic(innerExtrinsic)
-        }
-      )
-    )
-
-    // Multiple VerificationKeyRelationships are not allowed.
-    if (keys.size !== 1) {
-      return undefined
-    }
-    return [...keys][0]
+    return (call.args[0] as any as Array<CallBase<A>>)
+      .map((innerCall: CallBase<A>) => {
+        return getKeyRelationshipForExtrinsicCall(innerCall)
+      })
+      .reduce((prev, value) => (prev === value ? prev : undefined))
   }
 
   const signature = `${section}.${method}`
@@ -61,6 +54,12 @@ export function getKeyRelationshipForExtrinsic<A extends AnyTuple = AnyTuple>(
   }
 
   return methodMapping[section]
+}
+
+export function getKeyRelationshipForExtrinsic(
+  extrinsic: Extrinsic
+): VerificationKeyRelationship | undefined {
+  return getKeyRelationshipForExtrinsicCall(extrinsic.method)
 }
 
 // Max nonce value is (2^64) - 1

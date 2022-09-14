@@ -84,7 +84,7 @@ export function getKeysForExtrinsic(
   did: DidDocument,
   extrinsic: Extrinsic
 ): DidVerificationKey[] {
-  const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic.method)
+  const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
   return (keyRelationship && did[keyRelationship]) || []
 }
 
@@ -155,7 +155,7 @@ function groupExtrinsicsByKeyRelationship(
   extrinsics: Extrinsic[]
 ): GroupedExtrinsics {
   const [first, ...rest] = extrinsics.map((extrinsic) => {
-    const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic.method)
+    const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
     if (!keyRelationship) {
       throw new SDKErrors.DidBuilderError(
         'Can only batch extrinsics that require a DID signature'
