@@ -21,7 +21,7 @@ describe('When creating an instance from the chain', () => {
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
         null
-      ).method
+      )
     )
     expect(keyType).toBe('assertionMethod')
   })
@@ -38,7 +38,7 @@ describe('When creating an instance from the chain', () => {
           '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
           null
         ),
-      ]).method
+      ])
     )
     expect(keyType).toBe('assertionMethod')
   })
@@ -55,7 +55,7 @@ describe('When creating an instance from the chain', () => {
           '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
           null
         ),
-      ]).method
+      ])
     )
     expect(keyType).toBe('assertionMethod')
   })
@@ -72,7 +72,7 @@ describe('When creating an instance from the chain', () => {
           '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
           null
         ),
-      ]).method
+      ])
     )
     expect(keyType).toBe('assertionMethod')
   })
@@ -85,7 +85,7 @@ describe('When creating an instance from the chain', () => {
           null
         ),
         mockApi.tx.web3Names.claim('awesomename'),
-      ]).method
+      ])
     )
     expect(keyType).toBeUndefined()
   })
