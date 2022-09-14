@@ -187,15 +187,14 @@ describe('and attestation rights have been delegated', () => {
     const credential = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await Credential.sign(
+    const presentation = await Credential.createPresentation({
       credential,
-      claimerKey.sign,
-      claimer,
-      claimer.authentication[0].id
-    )
+      signCallback: claimerKey.sign,
+      claimerDid: claimer,
+    })
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    expect(await Credential.verifySignature(credential)).toBe(true)
-    await Credential.verify(credential)
+    expect(await Credential.verifySignature(presentation)).toBe(true)
+    await Credential.verifyPresentation(presentation)
 
     const attestation = Attestation.fromCredentialAndDid(
       credential,
@@ -210,7 +209,9 @@ describe('and attestation rights have been delegated', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
+    const storedAttestation = await Attestation.query(attestation.claimHash)
+    expect(storedAttestation).not.toBeNull()
+    expect(storedAttestation?.revoked).toBe(false)
 
     // revoke attestation through root
     const revokeTx = await Attestation.getRevokeTx(attestation.claimHash, 1)
@@ -221,7 +222,12 @@ describe('and attestation rights have been delegated', () => {
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx2, paymentAccount)
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
+
+    const storedAttestationAfter = await Attestation.query(
+      attestation.claimHash
+    )
+    expect(storedAttestationAfter).not.toBeNull()
+    expect(storedAttestationAfter?.revoked).toBe(true)
   }, 75_000)
 })
 

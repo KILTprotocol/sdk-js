@@ -26,12 +26,11 @@ import {
 import type {
   DidDocument,
   DidResolve,
-  DidResourceUri,
-  DidVerificationKey,
   Hash,
   IAttestation,
   IClaim,
   ICredential,
+  ICredentialPresentation,
   ICType,
   IDelegationNode,
   SignCallback,
@@ -124,60 +123,6 @@ export function makeSigningData(
 }
 
 /**
- * Add a claimer signature to a Credential.
- *
- * @param credential - The Credential to add the signature to.
- * @param sig - The signature to be added.
- * @param keyUri - The DID key uri of the key, which was used to make the signature.
- * @param options - Optional parameters.
- * @param options.challenge - An optional challenge, which was included in the signing process.
- */
-export async function addSignature(
-  credential: ICredential,
-  sig: string | Uint8Array,
-  keyUri: DidResourceUri,
-  {
-    challenge,
-  }: {
-    challenge?: string
-  } = {}
-): Promise<void> {
-  const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
-  // eslint-disable-next-line no-param-reassign
-  credential.claimerSignature = { signature, keyUri, challenge }
-}
-
-/**
- * Adds a claimer signature to a Credential using a DID key.
- *
- * @param credential - The Credential to add the signature to.
- * @param signCallback - The signing callback.
- * @param did - The DID Document of the signer.
- * @param keyId - The DID key id to be used for the signing.
- * @param options - Optional parameters.
- * @param options.challenge - An optional challenge, which will be included in the signing process.
- */
-export async function sign(
-  credential: ICredential,
-  signCallback: SignCallback,
-  did: DidDocument,
-  keyId: DidVerificationKey['id'],
-  {
-    challenge,
-  }: {
-    challenge?: string
-  } = {}
-): Promise<void> {
-  const { signature, keyUri: signatureKeyId } = await signPayload(
-    did,
-    makeSigningData(credential, challenge),
-    signCallback,
-    keyId
-  )
-  await addSignature(credential, signature, signatureKeyId, { challenge })
-}
-
-/**
  * Verifies if the credential hash matches the contents of it.
  *
  * @param input - The credential to check.
@@ -261,7 +206,6 @@ export function verifyDataStructure(input: ICredential): void {
   if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
   }
-  if (input.claimerSignature) isDidSignature(input.claimerSignature)
 }
 
 /**
@@ -285,19 +229,19 @@ export function verifyAgainstCType(
 }
 
 /**
- * Verifies the signature of the [[Credential]].
- * It supports migrated DIDs, meaning that if the original claim within the [[Credential]] included a light DID that was afterwards upgraded,
+ * Verifies the signature of the [[ICredentialPresentation]].
+ * It supports migrated DIDs, meaning that if the original claim within the [[ICredential]] included a light DID that was afterwards upgraded,
  * the signature over the presentation **must** be generated with the full DID in order for the verification to be successful.
  * On the other hand, a light DID that has been migrated and then deleted from the chain will not be allowed to generate valid presentations anymore.
  *
- * @param input - The [[Credential]].
+ * @param input - The [[ICredentialPresentation]].
  * @param verificationOpts Additional verification options.
  * @param verificationOpts.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  * @returns Whether the signature is correct.
  */
 export async function verifySignature(
-  input: ICredential,
+  input: ICredentialPresentation,
   {
     challenge,
     didResolve = resolve,
@@ -307,7 +251,7 @@ export async function verifySignature(
   } = {}
 ): Promise<boolean> {
   const { claimerSignature } = input
-  if (!claimerSignature) return false
+  if (!isDidSignature(claimerSignature)) return false
   if (challenge && challenge !== claimerSignature.challenge) return false
   const signingData = makeSigningData(input, claimerSignature.challenge)
   const { verified } = await verifyDidSignature({
@@ -346,7 +290,6 @@ export function fromClaim(
     delegationId,
   })
 
-  // signature will be added afterwards!
   const credential = {
     claim,
     legitimations,
@@ -363,29 +306,18 @@ type VerifyOptions = {
   ctype?: ICType
   challenge?: string
   didResolve?: DidResolve
-  allowUnsigned?: boolean
 }
 
 /**
- * Verifies data structure, data integrity and claimers signature.
- *
- * Upon presentation of a credential, a verifier would call this [[verify]] function.
+ * Verifies data structure & data integrity of a credential object.
  *
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
- * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.allowUnsigned - Wether to check the signature without a challenge being present.
- * @param options.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  */
-export async function verify(
+export async function verifyCredential(
   credential: ICredential,
-  {
-    ctype,
-    challenge,
-    didResolve = resolve,
-    allowUnsigned = false,
-  }: VerifyOptions = {}
+  { ctype }: VerifyOptions = {}
 ): Promise<void> {
   verifyDataStructure(credential)
   verifyDataIntegrity(credential)
@@ -397,25 +329,34 @@ export async function verify(
         'CType verification failed'
       )
   }
-
-  if (challenge || credential.claimerSignature) {
-    const isSignatureCorrect = await verifySignature(credential, {
-      challenge,
-      didResolve,
-    })
-    if (!isSignatureCorrect)
-      throw new SDKErrors.CredentialUnverifiableError(
-        'Signature not verifiable'
-      )
-  } else if (!allowUnsigned) {
-    throw new SDKErrors.CredentialUnverifiableError(
-      'Signature required, but not provided'
-    )
-  }
 }
 
 /**
- * Custom Type Guard to determine input being of type [[ICredential]]..
+ * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
+ *
+ * Upon presentation of a credential, a verifier would call this function.
+ *
+ * @param presentation - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
+ * @param options.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
+ */
+export async function verifyPresentation(
+  presentation: ICredentialPresentation,
+  { ctype, challenge, didResolve = resolve }: VerifyOptions = {}
+): Promise<void> {
+  await verifyCredential(presentation, { ctype })
+  const isSignatureCorrect = await verifySignature(presentation, {
+    challenge,
+    didResolve,
+  })
+  if (!isSignatureCorrect)
+    throw new SDKErrors.CredentialUnverifiableError('Signature not verifiable')
+}
+
+/**
+ * Type Guard to determine input being of type [[ICredential]].
  *
  * @param input - A potentially only partial [[ICredential]].
  *
@@ -428,6 +369,22 @@ export function isICredential(input: unknown): input is ICredential {
     return false
   }
   return true
+}
+
+/**
+ * Type Guard to determine input being of type [[ICredentialPresentation]].
+ *
+ * @param input - An [[ICredential]], [[ICredentialPresentation]], or other object.
+ *
+ * @returns  Boolean whether input is of type ICredentialPresentation.
+ */
+export function isPresentation(
+  input: unknown
+): input is ICredentialPresentation {
+  return (
+    isICredential(input) &&
+    isDidSignature((input as ICredentialPresentation).claimerSignature)
+  )
 }
 
 /**
@@ -476,7 +433,7 @@ export async function createPresentation({
   signCallback: SignCallback
   challenge?: string
   claimerDid: DidDocument
-}): Promise<ICredential> {
+}): Promise<ICredentialPresentation> {
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
     ? Array.from(getAttributes(credential)).filter(
@@ -492,9 +449,12 @@ export async function createPresentation({
 
   const selectedKeyId = claimerDid.authentication[0].id
 
-  await sign(presentation, signCallback, claimerDid, selectedKeyId, {
-    challenge,
-  })
+  const { signature, keyUri } = await signPayload(
+    claimerDid,
+    makeSigningData(presentation, challenge),
+    signCallback,
+    selectedKeyId
+  )
 
-  return presentation
+  return { ...credential, claimerSignature: { signature, keyUri, challenge } }
 }

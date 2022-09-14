@@ -7,6 +7,7 @@
 
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
+
 import { Crypto } from '@kiltprotocol/utils'
 import type {
   DidUri,
@@ -15,8 +16,8 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Utils as DidUtils } from '@kiltprotocol/did'
+
 import { getSchemaPropertiesForHash } from './CType.js'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
@@ -30,7 +31,7 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
  * @returns The SubmittableExtrinsic for the `add` call.
  */
 export async function getStoreTx(ctype: ICType): Promise<SubmittableExtrinsic> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   log.debug(() => `Create tx for 'ctype.add'`)
   const preparedSchema = Crypto.encodeObjectAsStr(
     getSchemaPropertiesForHash(ctype.schema)
@@ -53,7 +54,7 @@ function decode(encoded: Option<AccountId>): DidUri | null {
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<DidUri | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encoded = await api.query.ctype.ctypes(ctypeHash)
   return decode(encoded)
 }
@@ -65,7 +66,7 @@ export async function getOwner(
  * @returns True if a CType with the provided hash exists, false otherwise.
  */
 export async function isStored(ctypeHash: ICType['hash']): Promise<boolean> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const encoded = await api.query.ctype.ctypes(ctypeHash)
   return encoded.isSome
 }

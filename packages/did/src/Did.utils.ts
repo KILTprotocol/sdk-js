@@ -166,28 +166,69 @@ export type EncodedKey = EncodedVerificationKey | EncodedEncryptionKey
 export type EncodedSignature = EncodedVerificationKey
 
 /**
- * Type guard assuring that a string (or other input) is a valid KILT DID uri.
+ * Checks that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
+ * Throws otherwise.
  *
  * @param input Arbitrary input.
- * @param allowFragment Whether the uri is allowed to have a fragment (following '#').
- * @returns True if validation has passed.
+ * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
  */
 export function validateKiltDidUri(
   input: unknown,
-  allowFragment = false
-): input is DidUri | DidResourceUri {
+  expectType?: 'Did' | 'ResourceUri'
+): void {
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
   const { address, fragment } = parseDidUri(input as DidUri)
-  if (!allowFragment && fragment) {
-    throw new SDKErrors.InvalidDidFormatError(input)
+  switch (expectType) {
+    // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
+    // @ts-ignore
+    case false:
+    case 'Did':
+      if (fragment)
+        throw new SDKErrors.DidError(
+          'Expected a Kilt DidUri but got a DidResourceUri (containing a #fragment)'
+        )
+      break
+    case 'ResourceUri':
+      if (!fragment)
+        throw new SDKErrors.DidError(
+          'Expected a Kilt DidResourceUri (containing a #fragment) but got a DidUri'
+        )
+      break
+    default:
+      break
   }
+
   if (!isKiltAddress(address)) {
     throw new SDKErrors.AddressInvalidError(address, 'DID')
   }
+}
 
-  return true
+export function isKiltDidUri(
+  input: unknown,
+  expectType: 'ResourceUri'
+): input is DidResourceUri
+export function isKiltDidUri(input: unknown, expectType: 'Did'): input is DidUri
+export function isKiltDidUri(input: unknown): input is DidUri | DidResourceUri
+
+/**
+ * Type guard assuring that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
+ *
+ * @param input Arbitrary input.
+ * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
+ * @returns True if validation has passed, false otherwise.
+ */
+export function isKiltDidUri(
+  input: unknown,
+  expectType?: 'Did' | 'ResourceUri'
+): input is DidUri | DidResourceUri {
+  try {
+    validateKiltDidUri(input, expectType)
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**

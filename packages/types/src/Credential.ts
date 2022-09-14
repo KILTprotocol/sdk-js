@@ -21,8 +21,11 @@ export interface ICredential {
   claim: IClaim
   claimNonceMap: Record<Hash, string>
   claimHashes: Hash[]
-  claimerSignature?: DidSignature & { challenge?: string }
   delegationId: IDelegationNode['id'] | null
   legitimations: ICredential[]
   rootHash: Hash
+}
+
+export interface ICredentialPresentation extends ICredential {
+  claimerSignature: DidSignature & { challenge?: string }
 }

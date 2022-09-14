@@ -297,12 +297,11 @@ beforeAll(async () => {
   )
 
   credential = Credential.fromClaim(claim)
-  await Credential.sign(
+  await Credential.createPresentation({
     credential,
-    claimer.sign,
-    claimerLightDid,
-    claimerLightDid.authentication[0].id
-  )
+    signCallback: claimer.sign,
+    claimerDid: claimerLightDid,
+  })
 }, 120_000)
 
 describe('Different deposits scenarios', () => {

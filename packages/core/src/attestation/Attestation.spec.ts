@@ -11,6 +11,8 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import type { HexString } from '@polkadot/util/types'
+
 import type {
   IAttestation,
   DidUri,
@@ -19,10 +21,9 @@ import type {
   ICredential,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { HexString } from '@polkadot/util/types'
+import { ConfigService } from '@kiltprotocol/config'
+
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from '../credential'
@@ -32,7 +33,7 @@ let mockedApi: any
 
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  BlockchainApiConnection.setConnection(mockedApi)
+  ConfigService.set({ api: mockedApi })
 })
 
 describe('Attestation', () => {
@@ -66,57 +67,6 @@ describe('Attestation', () => {
       identityBob
     )
     credential = Credential.fromClaim(testClaim)
-  })
-
-  it('stores attestation', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
-        testCType.hash,
-        DidUtils.parseDidUri(identityAlice).address,
-        null,
-        false,
-        [DidUtils.parseDidUri(identityAlice).address, 10],
-      ])
-    )
-
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(true)
-  })
-
-  it('verify attestations not on chain', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations')
-    )
-
-    const attestation: IAttestation = {
-      claimHash: credential.rootHash,
-      cTypeHash: testCType.hash,
-      delegationId: null,
-      owner: identityAlice,
-      revoked: false,
-    }
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
-  })
-
-  it('verify attestation revoked', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
-        testCType.hash,
-        DidUtils.parseDidUri(identityAlice).address,
-        null,
-        true,
-        [DidUtils.parseDidUri(identityAlice).address, 10],
-      ])
-    )
-
-    const attestation = Attestation.fromCredentialAndDid(
-      credential,
-      identityAlice
-    )
-    expect(await Attestation.checkValidity(attestation.claimHash)).toBe(false)
   })
 
   it('error check should throw errors on faulty Attestations', () => {
