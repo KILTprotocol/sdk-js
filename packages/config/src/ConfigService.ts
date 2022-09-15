@@ -23,6 +23,7 @@ import {
   LogGroupControlSettings,
 } from 'typescript-logging'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { SubscriptionPromise } from '@kiltprotocol/types'
 
 const DEFAULT_DEBUG_LEVEL =
   typeof process !== 'undefined' &&
@@ -34,6 +35,7 @@ const DEFAULT_DEBUG_LEVEL =
 export type configOpts = {
   api: ApiPromise
   logLevel: LogLevel
+  submitTxResolveOn: SubscriptionPromise.ResultEvaluator
 } & { [key: string]: any }
 
 /**
@@ -111,6 +113,7 @@ export function unset<K extends keyof configOpts>(key: K): void {
  * Indicates whether a configuration option is set.
  *
  * @param key Key identifying the configuration option.
+ * @returns True if this value is set, false otherwise.
  */
 export function isSet<K extends keyof configOpts>(key: K): boolean {
   return typeof configuration[key] !== 'undefined'

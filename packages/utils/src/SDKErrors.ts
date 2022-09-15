@@ -94,8 +94,6 @@ export class ClaimContentsMalformedError extends SDKError {}
 
 export class ObjectUnverifiableError extends SDKError {}
 
-export class CTypeOwnerTypeError extends SDKError {}
-
 export class QuoteUnverifiableError extends SDKError {}
 
 export class ClaimNonceMapMalformedError extends SDKError {
@@ -129,12 +127,6 @@ export class HierarchyQueryError extends SDKError {
 export class InvalidDidFormatError extends SDKError {
   constructor(did: string, options?: ErrorOptions) {
     super(`Not a valid KILT DID "${did}"`, options)
-  }
-}
-
-export class UnsupportedDidError extends SDKError {
-  constructor(input: string) {
-    super(`The DID "${input}" is not supported`)
   }
 }
 

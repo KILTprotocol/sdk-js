@@ -9,7 +9,13 @@
  * @group unit/vc-export
  */
 
-import { DidUri, IAttestation, ICType, ICredential } from '@kiltprotocol/types'
+import {
+  DidUri,
+  IAttestation,
+  ICType,
+  ICredential,
+  ICredentialPresentation,
+} from '@kiltprotocol/types'
 import { Attestation } from '@kiltprotocol/core'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
@@ -52,7 +58,7 @@ const ctype: ICType = {
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
-const credential: ICredential = {
+const credential: ICredentialPresentation = {
   claim: {
     contents: {
       birthday: '1991-01-01',

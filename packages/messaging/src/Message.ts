@@ -58,7 +58,7 @@ export function verifyDelegationStructure(
   if (!account) {
     throw new SDKErrors.OwnerMissingError()
   }
-  Did.Utils.validateKiltDidUri(account)
+  Did.Utils.validateKiltDidUri(account, 'Did')
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
@@ -142,7 +142,9 @@ export function verifyMessageBody(body: MessageBody): void {
             cTypeHash,
             'request credential cTypeHash invalid'
           )
-          trustedAttesters?.forEach((did) => Did.Utils.validateKiltDidUri(did))
+          trustedAttesters?.forEach((did) =>
+            Did.Utils.validateKiltDidUri(did, 'Did')
+          )
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
@@ -154,9 +156,12 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'submit-credential': {
-      body.content.forEach((credential) =>
-        Credential.verifyDataStructure(credential)
-      )
+      body.content.forEach((presentation) => {
+        Credential.verifyDataStructure(presentation)
+        if (!Did.isDidSignature(presentation.claimerSignature)) {
+          throw new SDKErrors.SignatureMalformedError()
+        }
+      })
       break
     }
     case 'accept-credential': {
@@ -179,7 +184,9 @@ export function verifyMessageBody(body: MessageBody): void {
     }
     case 'request-accept-delegation': {
       verifyDelegationStructure(body.content.delegationData)
-      Did.isDidSignature(body.content.signatures.inviter)
+      if (!Did.isDidSignature(body.content.signatures.inviter)) {
+        throw new SDKErrors.SignatureMalformedError()
+      }
       if (!isJsonObject(body.content.metaData)) {
         throw new SDKErrors.ObjectUnverifiableError()
       }
@@ -187,8 +194,12 @@ export function verifyMessageBody(body: MessageBody): void {
     }
     case 'submit-accept-delegation': {
       verifyDelegationStructure(body.content.delegationData)
-      Did.isDidSignature(body.content.signatures.inviter)
-      Did.isDidSignature(body.content.signatures.invitee)
+      if (
+        !Did.isDidSignature(body.content.signatures.inviter) ||
+        !Did.isDidSignature(body.content.signatures.invitee)
+      ) {
+        throw new SDKErrors.SignatureMalformedError()
+      }
       break
     }
 
@@ -226,8 +237,8 @@ export function verifyMessageEnvelope(message: IMessage): void {
   if (receivedAt !== undefined && typeof receivedAt !== 'number') {
     throw new TypeError('Received at is expected to be a number')
   }
-  Did.Utils.validateKiltDidUri(receiver)
-  Did.Utils.validateKiltDidUri(sender)
+  Did.Utils.validateKiltDidUri(sender, 'Did')
+  Did.Utils.validateKiltDidUri(receiver, 'Did')
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }
@@ -291,8 +302,8 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
     case 'submit-credential':
       {
         const submitClaimsForCtype = body
-        submitClaimsForCtype.content.forEach((credential) => {
-          if (!Did.Utils.isSameSubject(credential.claim.owner, sender)) {
+        submitClaimsForCtype.content.forEach((presentation) => {
+          if (!Did.Utils.isSameSubject(presentation.claim.owner, sender)) {
             throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
           }
         })

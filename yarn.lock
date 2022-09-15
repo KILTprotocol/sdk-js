@@ -1267,6 +1267,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/config@workspace:packages/config"
   dependencies:
+    "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.0.0
     rimraf: ^3.0.2

@@ -10,10 +10,12 @@
  */
 
 import { BN } from '@polkadot/util'
-import type { KeyringPair } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
+
+import type { KeyringPair } from '@kiltprotocol/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
+
 import { toFemtoKilt } from '../balance/Balance.utils'
 import { devCharlie, devFaucet, initializeApi, submitExtrinsic } from './utils'
 import { disconnect } from '../kilt'
@@ -24,7 +26,6 @@ beforeAll(async () => {
 }, 30_000)
 
 describe('Chain returns specific errors, that we check for', () => {
-  const resolveOn = Blockchain.IS_IN_BLOCK
   let faucet: KeyringPair
   let testIdentity: KeyringPair
   let charlie: KeyringPair
@@ -75,10 +76,7 @@ describe('Chain returns specific errors, that we check for', () => {
       runtimeVersion: api.runtimeVersion,
       version: api.extrinsicVersion,
     })
-    await Blockchain.dispatchTx(
-      tx,
-      Blockchain.parseSubscriptionOptions({ resolveOn })
-    )
+    await Blockchain.dispatchTx(tx)
 
     const { signature: errorSignature } = api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
@@ -91,12 +89,9 @@ describe('Chain returns specific errors, that we check for', () => {
       errorSigner.toPayload()
     )
 
-    await expect(
-      Blockchain.dispatchTx(
-        errorTx,
-        Blockchain.parseSubscriptionOptions({ resolveOn })
-      )
-    ).rejects.toThrow(Blockchain.TxOutdated)
+    await expect(Blockchain.dispatchTx(errorTx)).rejects.toThrow(
+      Blockchain.TxOutdated
+    )
   }, 40000)
 
   it(`throws 'ERROR_TRANSACTION_USURPED' error if separate Tx was imported with identical nonce but higher priority while Tx is in pool`, async () => {
@@ -147,14 +142,8 @@ describe('Chain returns specific errors, that we check for', () => {
       errorSigner.toPayload()
     )
 
-    const promiseToFail = Blockchain.dispatchTx(
-      tx,
-      Blockchain.parseSubscriptionOptions({ resolveOn })
-    )
-    const promiseToUsurp = Blockchain.dispatchTx(
-      errorTx,
-      Blockchain.parseSubscriptionOptions({ resolveOn })
-    )
+    const promiseToFail = Blockchain.dispatchTx(tx)
+    const promiseToUsurp = Blockchain.dispatchTx(errorTx)
     await Promise.all([
       expect(promiseToFail).rejects.toHaveProperty('status.isUsurped', true),
       promiseToUsurp,

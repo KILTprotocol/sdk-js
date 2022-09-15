@@ -36,7 +36,7 @@ const {
   BalanceUtils,
 } = kilt
 
-const resolveOn = Blockchain.IS_IN_BLOCK
+kilt.config({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
 function makeSignCallback(keypair: KeyringPair): SignCallback {
   return async function sign<A extends SigningAlgorithms>({
@@ -139,7 +139,7 @@ async function createFullDidFromKeypair(
     payer.address,
     sign
   )
-  await Blockchain.signAndSubmitTx(storeTx, payer, { resolveOn })
+  await Blockchain.signAndSubmitTx(storeTx, payer)
 
   const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
   if (!fullDid) throw new Error('Cannot query created DID')
@@ -211,7 +211,7 @@ async function runAll() {
     payer.address,
     sign
   )
-  await Blockchain.signAndSubmitTx(didStoreTx, payer, { resolveOn })
+  await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
   const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
   if (!fullDid) throw new Error('Could not fetch created DID document')
@@ -234,7 +234,7 @@ async function runAll() {
     sign,
     payer.address
   )
-  await Blockchain.signAndSubmitTx(deleteTx, payer, { resolveOn })
+  await Blockchain.signAndSubmitTx(deleteTx, payer)
 
   const resolvedAgain = await Did.resolve(fullDid.uri)
   if (!resolvedAgain || resolvedAgain.metadata.deactivated) {
@@ -266,7 +266,7 @@ async function runAll() {
     aliceSign,
     payer.address
   )
-  await Blockchain.signAndSubmitTx(cTypeStoreTx, payer, { resolveOn })
+  await Blockchain.signAndSubmitTx(cTypeStoreTx, payer)
 
   const stored = await CType.verifyStored(DriversLicense)
   if (stored) {
@@ -294,19 +294,24 @@ async function runAll() {
     bob.uri
   )
   const credential = Credential.fromClaim(claim)
-  await Credential.sign(credential, bobSign, bob, bob.authentication[0].id)
   if (!Credential.isICredential(credential))
     throw new Error('Not a valid Credential')
-  else {
-    if (Credential.verifyDataIntegrity(credential))
-      console.info('Credential data verified')
-    else throw new Error('Credential not verifiable')
-    if (await Credential.verifySignature(credential))
-      console.info('Credential signature verified')
-    else throw new Error('Credential Signature mismatch')
-    if (credential.claim.contents !== content)
-      throw new Error('Claim content inside Credential mismatching')
-  }
+  if (Credential.verifyDataIntegrity(credential))
+    console.info('Credential data verified')
+  else throw new Error('Credential not verifiable')
+  if (credential.claim.contents !== content)
+    throw new Error('Claim content inside Credential mismatching')
+
+  const presentation = await Credential.createPresentation({
+    credential,
+    signCallback: bobSign,
+    claimerDid: bob,
+  })
+  if (!Credential.isPresentation(presentation))
+    throw new Error('Not a valid Presentation')
+  if (await Credential.verifySignature(presentation))
+    console.info('Presentation signature verified')
+  else throw new Error('Credential Signature mismatch')
 
   console.log('Test Messaging with encryption + decryption')
   const message = Message.fromBody(
@@ -347,7 +352,7 @@ async function runAll() {
     aliceSign,
     payer.address
   )
-  await Blockchain.signAndSubmitTx(attestationStoreTx, payer, { resolveOn })
+  await Blockchain.signAndSubmitTx(attestationStoreTx, payer)
   const storedAttestation = Attestation.fromChain(
     await api.query.attestation.attestations(credential.rootHash),
     credential.rootHash
