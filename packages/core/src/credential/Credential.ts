@@ -452,5 +452,5 @@ export async function createPresentation({
     selectedKeyId
   )
 
-  return { ...credential, claimerSignature: { signature, keyUri, challenge } }
+  return { ...presentation, claimerSignature: { signature, keyUri, challenge } }
 }
