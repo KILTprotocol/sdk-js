@@ -29,3 +29,14 @@ export interface ICredential {
 export interface ICredentialPresentation extends ICredential {
   claimerSignature: DidSignature & { challenge?: string }
 }
+
+export interface KiltPublishedCredentialV1 {
+  credential: ICredentialPresentation
+  metadata: {
+    label?: string
+    blockNumber?: number
+    txHash: HexString
+  }
+}
+
+export type KiltPublishedCredentialCollectionV1 = KiltPublishedCredentialV1[]
