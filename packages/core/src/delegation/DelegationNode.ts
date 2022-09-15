@@ -18,20 +18,14 @@ import type {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
-import { query as queryAttestation } from '../attestation/Attestation.chain.js'
+import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
 import {
-  getChildren,
+  addDelegationToChainArgs,
   getAttestationHashes,
+  getChildren,
   query,
-  queryDepositAmount,
-  getRemoveTx,
-  getRevokeTx,
-  getStoreAsDelegationTx,
-  getStoreAsRootTx,
-  getReclaimDepositTx,
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
@@ -212,8 +206,14 @@ export class DelegationNode implements IDelegationNode {
    */
   public async getAttestations(): Promise<IAttestation[]> {
     const attestationHashes = await this.getAttestationHashes()
+    const api = ConfigService.get('api')
+
     const attestations = await Promise.all(
-      attestationHashes.map((claimHash) => queryAttestation(claimHash))
+      attestationHashes.map(async (claimHash) => {
+        const encoded = await api.query.attestation.attestations(claimHash)
+        if (encoded.isNone) return undefined
+        return attestationFromChain(encoded, claimHash)
+      })
     )
 
     return attestations.filter((value): value is IAttestation => !!value)
@@ -272,7 +272,7 @@ export class DelegationNode implements IDelegationNode {
       sign,
       delegateDid.authentication[0].id
     )
-    return Did.Chain.encodeDidSignature(
+    return Did.Chain.didSignatureToChain(
       delegateDid.authentication[0],
       delegateSignature
     )
@@ -300,13 +300,21 @@ export class DelegationNode implements IDelegationNode {
   public async getStoreTx(
     signature?: Did.Utils.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
+    const api = ConfigService.get('api')
+
     if (this.isRoot()) {
-      return getStoreAsRootTx(this)
+      return api.tx.delegation.createHierarchy(
+        this.hierarchyId,
+        await this.getCTypeHash()
+      )
     }
     if (!signature) {
       throw new SDKErrors.DelegateSignatureMissingError()
     }
-    return getStoreAsDelegationTx(this, signature)
+
+    return api.tx.delegation.addDelegation(
+      ...addDelegationToChainArgs(this, signature)
+    )
   }
 
   isRoot(): boolean {
@@ -387,7 +395,8 @@ export class DelegationNode implements IDelegationNode {
     log.debug(
       `:: revoke(${this.id}) with maxRevocations=${childCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
     )
-    return getRevokeTx(this.id, steps, childCount)
+    const api = ConfigService.get('api')
+    return api.tx.delegation.revokeDelegation(this.id, steps, childCount)
   }
 
   /**
@@ -398,7 +407,8 @@ export class DelegationNode implements IDelegationNode {
   public async getRemoveTx(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
     log.debug(`:: remove(${this.id}) with maxRevocations=${childCount}`)
-    return getRemoveTx(this.id, childCount)
+    const api = ConfigService.get('api')
+    return api.tx.delegation.removeDelegation(this.id, childCount)
   }
 
   /**
@@ -413,7 +423,8 @@ export class DelegationNode implements IDelegationNode {
     log.debug(
       `:: getReclaimDepositTx(${this.id}) with maxRemovals=${childCount}`
     )
-    return getReclaimDepositTx(this.id, childCount)
+    const api = ConfigService.get('api')
+    return api.tx.delegation.reclaimDeposit(this.id, childCount)
   }
 
   /**
@@ -429,14 +440,5 @@ export class DelegationNode implements IDelegationNode {
     const result = await query(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
     return result
-  }
-
-  /**
-   * Query and return the amount of KILTs (in femto notation) needed to deposit in order to create a delegation.
-   *
-   * @returns The amount of femtoKILTs required to deposit to create the delegation.
-   */
-  public static queryDepositAmount(): Promise<BN> {
-    return queryDepositAmount()
   }
 }

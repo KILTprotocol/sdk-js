@@ -10,13 +10,13 @@
  */
 
 import { BN } from '@polkadot/util'
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 
 import type { KeyringPair } from '@kiltprotocol/types'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 
-import { getTransferTx } from '../balance/Balance.chain'
+import { toFemtoKilt } from '../balance/Balance.utils'
 import { devCharlie, devFaucet, initializeApi, submitExtrinsic } from './utils'
 import { disconnect } from '../kilt'
 
@@ -34,10 +34,9 @@ describe('Chain returns specific errors, that we check for', () => {
     testIdentity = makeSigningKeyTool().keypair
     charlie = devCharlie
 
-    const transferTx = await getTransferTx(
+    const transferTx = api.tx.balances.transfer(
       testIdentity.address,
-      new BN(10000),
-      0
+      toFemtoKilt(10000)
     )
     await submitExtrinsic(transferTx, faucet)
   }, 40000)

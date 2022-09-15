@@ -11,7 +11,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 
-import { decodeDelegationHierarchyDetails } from './DelegationDecoder.js'
+import { delegationHierarchyDetailsFromChain } from './DelegationDecoder.js'
 
 /**
  * Query a delegation hierarchy node from the blockchain given its identifier.
@@ -23,7 +23,7 @@ export async function query(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails | null> {
   const api = ConfigService.get('api')
-  const decoded = decodeDelegationHierarchyDetails(
+  const decoded = delegationHierarchyDetailsFromChain(
     await api.query.delegation.delegationHierarchies(rootId)
   )
   if (!decoded) {

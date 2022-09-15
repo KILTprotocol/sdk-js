@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
+import type {
   DidDocument,
   DidResolutionResult,
   DidResourceUri,
@@ -14,9 +14,14 @@ import {
   ResolvedDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
-import { queryDidDeletionStatus, queryServiceEndpoint } from '../Did.chain.js'
+import {
+  didToChain,
+  resourceIdToChain,
+  serviceEndpointFromChain,
+} from '../Did.chain.js'
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
 /**
@@ -31,6 +36,7 @@ export async function resolve(
   did: DidUri
 ): Promise<DidResolutionResult | null> {
   const { type } = parseDidUri(did)
+  const api = ConfigService.get('api')
 
   const document = await Did.query(getFullDidUri(did))
   if (type === 'full' && document) {
@@ -44,7 +50,9 @@ export async function resolve(
 
   // If the full DID has been deleted (or the light DID was upgraded and deleted),
   // return the info in the resolution metadata.
-  const isFullDidDeleted = await queryDidDeletionStatus(did)
+  const isFullDidDeleted = !(
+    await api.query.did.didBlacklist.hash(didToChain(did))
+  ).isEmpty
   if (isFullDidDeleted) {
     return {
       // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
@@ -176,14 +184,19 @@ export async function resolveServiceEndpoint(
   if (!serviceId) {
     throw new SDKErrors.InvalidDidFormatError(serviceUri)
   }
+  const api = ConfigService.get('api')
 
   if (type === 'full') {
-    const endpoint = await queryServiceEndpoint(serviceUri, serviceId)
-    if (!endpoint) {
+    const encoded = await api.query.did.serviceEndpoints(
+      didToChain(serviceUri),
+      resourceIdToChain(serviceId)
+    )
+    if (encoded.isNone) {
       return null
     }
+    const serviceEndpoint = serviceEndpointFromChain(encoded.unwrap())
     return {
-      ...endpoint,
+      ...serviceEndpoint,
       id: serviceUri,
     }
   }

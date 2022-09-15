@@ -41,7 +41,7 @@ export type DelegationHierarchyDetailsRecord = Pick<
 
 export type CtypeHash = Hash
 
-export function decodeDelegationHierarchyDetails(
+export function delegationHierarchyDetailsFromChain(
   encoded: Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
 ): DelegationHierarchyDetailsRecord | null {
   if (encoded.isNone) {
@@ -57,10 +57,13 @@ export function decodeDelegationHierarchyDetails(
  * Decode the permissions from the bitset encoded in the given `number`.
  * We use bitwise `AND` to check if a permission bit flag is set.
  *
- * @param bitset The u32 number used as the bitset to encode permissions.
+ * @param encoded The u32 number used as the bitset to encode permissions.
  * @returns The permission set.
  */
-function decodePermissions(bitset: number): PermissionType[] {
+function permissionsFromChain(
+  encoded: DelegationDelegationHierarchyDelegationNode['details']['permissions']
+): PermissionType[] {
+  const bitset = encoded.bits.toNumber()
   const permissions: PermissionType[] = []
   // eslint-disable-next-line no-bitwise
   if ((bitset & Permission.ATTEST) > 0) {
@@ -77,7 +80,7 @@ export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 
 export type DelegationNodeId = Hash
 
-export function decodeDelegationNode(
+export function delegationNodeFromChain(
   encoded: Option<DelegationDelegationHierarchyDelegationNode>
 ): DelegationNodeRecord | null {
   if (encoded.isNone) {
@@ -94,9 +97,7 @@ export function decodeDelegationNode(
     account: DidUtils.getFullDidUri(
       delegationNode.details.owner.toString() as KiltAddress
     ),
-    permissions: decodePermissions(
-      delegationNode.details.permissions.bits.toNumber()
-    ),
+    permissions: permissionsFromChain(delegationNode.details.permissions),
     revoked: delegationNode.details.revoked.valueOf(),
   }
 }

@@ -11,40 +11,29 @@ import {
   ethereumEncode,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import type { bool, Enum, Option, u64, U8aFixed } from '@polkadot/types'
+import type { Enum, Option, StorageKey, U8aFixed } from '@polkadot/types'
 import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import {
-  BN,
   stringToU8a,
   u8aConcatStrict,
   u8aToHex,
   u8aWrapBytes,
   U8A_WRAP_ETHEREUM,
 } from '@polkadot/util'
-import type {
-  AugmentedQuery,
-  AugmentedQueryDoubleMap,
-  AugmentedSubmittable,
-} from '@polkadot/api/types'
 import { ApiPromise } from '@polkadot/api'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import type {
-  Deposit,
-  DidUri,
-  KiltAddress,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
-import { queryWeb3NameForDid, Web3Name } from './Web3Names.chain.js'
-import { encodeDid } from '../Did.chain.js'
+import { Web3Name, web3NameFromChain } from './Web3Names.chain.js'
+import { depositFromChain, didToChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -77,75 +66,22 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
   readonly type: 'AccountId20' | 'AccountId32'
 }
 
-type AssociateAccountRequestValue = [
-  string | Uint8Array, // AccountId
-  string | Uint8Array | EncodedSignature // signature
-]
-
 /**
- * Type required for encoding Enum type for association request extrinsics.
- */
-type AssociateAccountRequest =
-  | { Dotsama: AssociateAccountRequestValue }
-  | { Ethereum: AssociateAccountRequestValue }
-
-/**
- * Api augmentation override for when the ethereum enabled pallet version has landed.
- */
-type WithEtherumSupport = {
-  tx: {
-    didLookup: {
-      associateAccount: AugmentedSubmittable<
-        (
-          req: AssociateAccountRequest,
-          expiration: u64 | AnyNumber | Uint8Array
-        ) => SubmittableExtrinsic
-      >
-      removeAccountAssociation: AugmentedSubmittable<
-        (account: EncodedMultiAddress) => SubmittableExtrinsic,
-        [PalletDidLookupLinkableAccountLinkableAccountId]
-      >
-    }
-  }
-  query: {
-    didLookup: {
-      connectedDids: AugmentedQuery<
-        'promise',
-        (arg: EncodedMultiAddress) => Option<PalletDidLookupConnectionRecord>,
-        [PalletDidLookupLinkableAccountLinkableAccountId]
-      >
-      connectedAccounts: AugmentedQueryDoubleMap<
-        'promise',
-        (
-          didId: string | Uint8Array,
-          accountId: EncodedMultiAddress
-        ) => Option<bool>,
-        [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]
-      >
-    }
-  }
-}
-
-/**
- * Detects whether api augmentation indicates presence of Ethereum linking enabled pallet.
+ * Detects whether api decoration indicates presence of Ethereum linking enabled pallet.
  *
  * @param api The api object.
  * @returns True if Ethereum linking is supported.
  */
-function isEthereumEnabled(api: unknown): api is WithEtherumSupport {
-  return (
-    api instanceof ApiPromise &&
-    ('isAccountId20' in
-      api.createType(
-        api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
-          'bool'
-      ) ||
-      'isEthereum' in
-        api.createType(
-          api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() ||
-            'bool'
-        ))
+function isEthereumEnabled(api: ApiPromise): boolean {
+  const removeType = api.createType(
+    api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
+      'bool'
   )
+  const associateType = api.createType(
+    api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() || 'bool'
+  )
+
+  return 'isAccountId20' in removeType || 'isEthereum' in associateType
 }
 
 /**
@@ -164,42 +100,34 @@ function encodeMultiAddress(address: Address): EncodedMultiAddress {
 
 /* ### QUERY ### */
 
-async function queryConnectedDid(
-  linkedAccount: Address
-): Promise<Option<PalletDidLookupConnectionRecord>> {
+export function accountToChain(account: Address): Address {
   const api = ConfigService.get('api')
-  if (isEthereumEnabled(api)) {
-    return api.query.didLookup.connectedDids(encodeMultiAddress(linkedAccount))
+  if (!isEthereumEnabled(api)) {
+    // No change for the old blockchain version
+    return account
   }
-  return api.query.didLookup.connectedDids(linkedAccount)
+  const encoded: EncodedMultiAddress = encodeMultiAddress(account)
+  // Force type cast to enable the old blockchain types to accept the future format
+  return encoded as unknown as Address
 }
 
 /**
- * Gets deposit information for a given account link.
+ * Decodes the information about the connection between an address and a DID.
  *
- * @param linkedAccount The linked account.
- * @returns Deposit info giving amount and owner of deposit, null if this account is not linked.
+ * @param encoded The output of `api.query.didLookup.connectedDids()`.
+ * @returns The connection details.
  */
-export async function queryAccountLinkDepositInfo(
-  linkedAccount: Address
-): Promise<Deposit | null> {
-  const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isSome ? connectedDid.unwrap().deposit : null
-}
-
-/**
- * Return the addresses of the DID linked to the provided account, if present.
- *
- * @param linkedAccount The account to use for the lookup.
- * @returns The linked DID if present, or null otherwise.
- */
-export async function queryConnectedDidForAccount(
-  linkedAccount: Address
-): Promise<DidUri | null> {
-  const connectedDid = await queryConnectedDid(linkedAccount)
-  return connectedDid.isNone
-    ? null
-    : getFullDidUri(connectedDid.unwrap().did.toString() as KiltAddress)
+export function connectedDidFromChain(
+  encoded: Option<PalletDidLookupConnectionRecord>
+): {
+  did: DidUri
+  deposit: Deposit
+} {
+  const { did, deposit } = encoded.unwrap()
+  return {
+    did: getFullDidUri(did.toString() as KiltAddress),
+    deposit: depositFromChain(deposit),
+  }
 }
 
 function isLinkableAccountId(
@@ -209,33 +137,28 @@ function isLinkableAccountId(
 }
 
 /**
- * Return all the accounts linked to the provided DID.
+ * Decodes the accounts linked to the provided DID.
  *
- * @param linkedDid The DID to use for the lookup.
+ * @param encoded The data returned by `api.query.didLookup.connectedAccounts.keys()`.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
- * @returns A list of addresses of accounts linked to the DID, encoded using `networkPrefix`.
+ * @returns A list of addresses of accounts, encoded using `networkPrefix`.
  */
-export async function queryConnectedAccountsForDid(
-  linkedDid: DidUri,
+export function connectedAccountsFromChain(
+  encoded: Array<StorageKey<[AccountId32, AccountId32]>>,
   networkPrefix = ss58Format
-): Promise<Array<KiltAddress | SubstrateAddress>> {
-  const api = ConfigService.get('api')
-  const connectedAccountsRecords =
-    await api.query.didLookup.connectedAccounts.keys(encodeDid(linkedDid))
-  return connectedAccountsRecords.map<string>(
-    ({ args: [, accountAddress] }) => {
-      if (isLinkableAccountId(accountAddress)) {
-        // linked account is substrate address (ethereum-enabled storage version)
-        if (accountAddress.isAccountId32)
-          return encodeAddress(accountAddress.asAccountId32, networkPrefix)
-        // linked account is ethereum address (ethereum-enabled storage version)
-        if (accountAddress.isAccountId20)
-          return ethereumEncode(accountAddress.asAccountId20)
-      }
-      // linked account is substrate account (legacy storage version)
-      return encodeAddress(accountAddress.toU8a(), networkPrefix)
+): Array<KiltAddress | SubstrateAddress> {
+  return encoded.map<string>(({ args: [, accountAddress] }) => {
+    if (isLinkableAccountId(accountAddress)) {
+      // linked account is substrate address (ethereum-enabled storage version)
+      if (accountAddress.isAccountId32)
+        return encodeAddress(accountAddress.asAccountId32, networkPrefix)
+      // linked account is ethereum address (ethereum-enabled storage version)
+      if (accountAddress.isAccountId20)
+        return ethereumEncode(accountAddress.asAccountId20)
     }
-  )
+    // linked account is substrate account (legacy storage version)
+    return encodeAddress(accountAddress.toU8a(), networkPrefix)
+  })
 }
 
 /**
@@ -247,98 +170,44 @@ export async function queryConnectedAccountsForDid(
 export async function queryWeb3Name(
   linkedAccount: Address
 ): Promise<Web3Name | null> {
+  const api = ConfigService.get('api')
   // TODO: Replace with custom RPC call when available.
-  const linkedDid = await queryConnectedDidForAccount(linkedAccount)
-  if (!linkedDid) {
+  const encoded = await api.query.didLookup.connectedDids(
+    accountToChain(linkedAccount)
+  )
+  if (encoded.isNone) {
     return null
   }
-  return queryWeb3NameForDid(linkedDid)
-}
-
-/**
- * Return true whether the provided account has been linked to the provided DID.
- *
- * @param did The DID to use for the lookup.
- * @param account The account to use for the lookup.
- * @returns True if the DID and account is linked, false otherwise.
- */
-export async function queryIsConnected(
-  did: DidUri,
-  account: Address
-): Promise<boolean> {
-  const api = ConfigService.get('api')
-  if (isEthereumEnabled(api)) {
-    // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
-    return !(
-      await api.query.didLookup.connectedAccounts.hash(
-        encodeDid(did),
-        encodeMultiAddress(account)
-      )
-    ).isEmpty
-    // isEmpty returns true if there is no entry for the given key -> the function should return false.
-  }
-  return !(
-    await api.query.didLookup.connectedAccounts.hash(encodeDid(did), account)
-  ).isEmpty
-}
-
-/**
- * Retrieves the deposit amount to link an account to a DID as currently stored in the runtime.
- *
- * @returns The deposit amount. The value is indicated in femto KILTs.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const api = ConfigService.get('api')
-  return api.consts.didLookup.deposit.toBn()
+  return web3NameFromChain(
+    await api.query.web3Names.names(encoded.unwrap().did)
+  )
 }
 
 /* ### EXTRINSICS ### */
 
-/**
- * Signing (authorizing) this extrinsic with a full DID and submitting it with an Account
- * will link Account to full DID and remove any pre-existing links of Account.
- * Account must hold balance to cover for submission fees and storage deposit.
- *
- * @returns An extrinsic that must be DID-authorized.
- */
-export async function getAssociateSenderExtrinsic(): Promise<Extrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.didLookup.associateSender()
-}
+type AssociateAccountToChainResult = [string, AnyNumber, EncodedSignature]
 
-/**
- * Signing (authorizing) this extrinsic with a full DID and submitting it with any Account
- * will link Account to full DID and remove any pre-existing links of Account.
- * Account must give permission by signing a Scale-encoded tuple consisting of the full DID address
- * and a block number representing the expiration block of the signature (after which it cannot be submitted anymore).
- * Account does not need to hold balance. The submitting account will pay and own the deposit for the link.
- *
- * @param account The account to link to the authorizing full DID.
- * @param signatureValidUntilBlock The link request will be rejected if submitted later than this block number.
- * @param signature Account's signature over `(DidAddress, BlockNumber).toU8a()`.
- * @param sigType The type of key/substrate account which produced the `signature`.
- * @returns An extrinsic that must be DID-authorized.
- */
-export async function getAccountSignedAssociationExtrinsic(
+function associateAccountToChainArgs(
   account: Address,
   signatureValidUntilBlock: AnyNumber,
   signature: Uint8Array | HexString,
   sigType: KeypairType
-): Promise<Extrinsic> {
+): AssociateAccountToChainResult {
   const proof = { [sigType]: signature } as EncodedSignature
 
   const api = ConfigService.get('api')
   if (isEthereumEnabled(api)) {
     if (sigType === 'ethereum') {
-      return api.tx.didLookup.associateAccount(
+      const result = [
         { Ethereum: [account, signature] },
-        signatureValidUntilBlock
-      )
+        signatureValidUntilBlock,
+      ]
+      // Force type cast to enable the old blockchain types to accept the future format
+      return result as unknown as AssociateAccountToChainResult
     }
-    return api.tx.didLookup.associateAccount(
-      { Dotsama: [account, proof] },
-      signatureValidUntilBlock
-    )
+    const result = [{ Dotsama: [account, proof] }, signatureValidUntilBlock]
+    // Force type cast to enable the old blockchain types to accept the future format
+    return result as unknown as AssociateAccountToChainResult
   }
 
   if (sigType === 'ethereum')
@@ -346,55 +215,7 @@ export async function getAccountSignedAssociationExtrinsic(
       'Ethereum linking is not yet supported by this chain'
     )
 
-  return api.tx.didLookup.associateAccount(
-    account,
-    signatureValidUntilBlock,
-    proof
-  )
-}
-
-/**
- * Returns an extrinsic to release an account link by the account that owns the deposit.
- * Must be signed and submitted by the deposit owner account.
- *
- * @param linkedAccount Account whose link should be released (not the deposit owner).
- * @returns The a submittable extrinsic for the `reclaimDeposit` call.
- */
-export async function getReclaimDepositTx(
-  linkedAccount: Address
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.didLookup.reclaimDeposit(linkedAccount)
-}
-
-/**
- * Allows the submitting account to unilaterally remove its link to a DID.
- * This is not DID-authorized, but directly submitted by the linked account.
- *
- * @returns A SubmittableExtrinsic that must be signed by the linked account.
- */
-export async function getLinkRemovalByAccountTx(): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.didLookup.removeSenderAssociation()
-}
-
-/**
- * Allows the authorizing full DID to unilaterally remove its link to a given account.
- * This must be DID-authorized, but can be submitted by any account.
- *
- * @param linkedAccount An account linked to the full DID which should be unlinked.
- * @returns An Extrinsic that must be DID-authorized by the full DID linked to `linkedAccount`.
- */
-export async function getLinkRemovalByDidExtrinsic(
-  linkedAccount: Address
-): Promise<Extrinsic> {
-  const api = ConfigService.get('api')
-  if (isEthereumEnabled(api)) {
-    return api.tx.didLookup.removeAccountAssociation(
-      encodeMultiAddress(linkedAccount)
-    )
-  }
-  return api.tx.didLookup.removeAccountAssociation(linkedAccount)
+  return [account, signatureValidUntilBlock, proof]
 }
 
 /* ### HELPERS ### */
@@ -478,7 +299,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
   )[0].type // get the type of the first key, which is the DidAddress
 
   const encoded = api
-    .createType(`(${DidAddress}, ${BlockNumber})`, [encodeDid(did), validTill])
+    .createType(`(${DidAddress}, ${BlockNumber})`, [didToChain(did), validTill])
     .toU8a()
 
   const isAccountId32 = decodeAddress(accountAddress).length > 20
@@ -495,10 +316,7 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
     accountAddress
   )
 
-  return getAccountSignedAssociationExtrinsic(
-    accountAddress,
-    validTill,
-    signature,
-    type
+  return api.tx.didLookup.associateAccount(
+    ...associateAccountToChainArgs(accountAddress, validTill, signature, type)
   )
 }
