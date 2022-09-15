@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { StorageKey, Option } from '@polkadot/types'
-import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { Option } from '@polkadot/types'
+import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
@@ -48,7 +48,6 @@ import {
   EncodedSignature,
   EncodedVerificationKey,
   getAddressByKey,
-  getFullDidUri,
   keyTypeForSignatureAlg,
   parseDidUri,
   signatureAlgForKeyType,
