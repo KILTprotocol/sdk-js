@@ -70,14 +70,6 @@ export function resourceIdToChain(id: UriFragment): string {
   return stripFragment(id)
 }
 
-export function deletedDidsFromChain(
-  encoded: Array<StorageKey<[AccountId32]>>
-): DidUri[] {
-  return encoded.map(({ args: [address] }) =>
-    getFullDidUri(address.toHuman() as KiltAddress)
-  )
-}
-
 export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   return {
     owner: deposit.owner.toString() as KiltAddress,
