@@ -178,8 +178,9 @@ export async function queryWeb3Name(
   if (encoded.isNone) {
     return null
   }
-  const { did } = connectedDidFromChain(encoded)
-  return web3NameFromChain(await api.query.web3Names.names(didToChain(did)))
+  return web3NameFromChain(
+    await api.query.web3Names.names(encoded.unwrap().did)
+  )
 }
 
 /* ### EXTRINSICS ### */
