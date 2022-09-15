@@ -35,7 +35,7 @@ export interface KiltPublishedCredentialV1 {
   metadata?: {
     label?: string
     blockNumber?: number
-    txHash: HexString
+    txHash?: HexString
   }
 }
 
