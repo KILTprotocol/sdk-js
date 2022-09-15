@@ -32,7 +32,7 @@ export interface ICredentialPresentation extends ICredential {
 
 export interface KiltPublishedCredentialV1 {
   credential: ICredentialPresentation
-  metadata: {
+  metadata?: {
     label?: string
     blockNumber?: number
     txHash: HexString
