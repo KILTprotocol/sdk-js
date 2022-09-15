@@ -67,7 +67,7 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
 }
 
 /**
- * Detects whether api augmentation indicates presence of Ethereum linking enabled pallet.
+ * Detects whether api decoration indicates presence of Ethereum linking enabled pallet.
  *
  * @param api The api object.
  * @returns True if Ethereum linking is supported.
