@@ -42,7 +42,7 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
 }
 
 /**
- * Connects to the KILT Blockchain using the api instance set with `init()`.
+ * Connects to the KILT Blockchain and passes the initialized api instance to `init()`, making it available for functions in the sdk.
  *
  * @param blockchainRpcWsUrl WebSocket URL of the RPC endpoint exposed by a node that is part of the Kilt blockchain network you wish to connect to.
  * @returns An instance of ApiPromise.
