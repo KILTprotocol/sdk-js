@@ -71,7 +71,7 @@ export function resourceIdToChain(id: UriFragment): string {
 
 export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   return {
-    owner: deposit.owner.toString() as KiltAddress,
+    owner: Crypto.encodeAddress(deposit.owner, ss58Format),
     amount: deposit.amount.toBn(),
   }
 }
@@ -139,10 +139,7 @@ export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
   const didRecord: EncodedDid = {
     authentication: [authentication],
     lastTxCounter: lastTxCounter.toBn(),
-    deposit: {
-      amount: deposit.amount.toBn(),
-      owner: deposit.owner.toString() as KiltAddress,
-    },
+    deposit: depositFromChain(deposit),
   }
   if (attestationKey.isSome) {
     const key = keys[attestationKey.unwrap().toHex()] as DidVerificationKey

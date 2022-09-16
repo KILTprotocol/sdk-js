@@ -18,8 +18,8 @@
 import type {
   IDelegationNode,
   IDelegationHierarchyDetails,
-  KiltAddress,
 } from '@kiltprotocol/types'
+import { Crypto, ss58Format } from '@kiltprotocol/utils'
 import { Permission, PermissionType } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { Hash } from '@polkadot/types/interfaces/runtime'
@@ -95,7 +95,7 @@ export function delegationNodeFromChain(
       : undefined,
     childrenIds: [...delegationNode.children].map((id) => id.toHex()),
     account: DidUtils.getFullDidUri(
-      delegationNode.details.owner.toString() as KiltAddress
+      Crypto.encodeAddress(delegationNode.details.owner, ss58Format)
     ),
     permissions: permissionsFromChain(delegationNode.details.permissions),
     revoked: delegationNode.details.revoked.valueOf(),

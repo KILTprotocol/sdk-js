@@ -26,7 +26,7 @@ import {
 } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
 
-import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
@@ -125,7 +125,7 @@ export function connectedDidFromChain(
 } {
   const { did, deposit } = encoded.unwrap()
   return {
-    did: getFullDidUri(did.toString() as KiltAddress),
+    did: getFullDidUri(Crypto.encodeAddress(did, ss58Format)),
     deposit: depositFromChain(deposit),
   }
 }

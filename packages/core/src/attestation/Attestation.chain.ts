@@ -6,11 +6,8 @@
  */
 
 import type { Option } from '@polkadot/types'
-import type {
-  IAttestation,
-  ICredential,
-  KiltAddress,
-} from '@kiltprotocol/types'
+import type { IAttestation, ICredential } from '@kiltprotocol/types'
+import { Crypto, ss58Format } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
@@ -36,7 +33,7 @@ export function fromChain(
     claimHash,
     cTypeHash: chainAttestation.ctypeHash.toHex(),
     owner: DidUtils.getFullDidUri(
-      chainAttestation.attester.toString() as KiltAddress
+      Crypto.encodeAddress(chainAttestation.attester, ss58Format)
     ),
     delegationId: delegationId || null,
     revoked: chainAttestation.revoked.valueOf(),
