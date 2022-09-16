@@ -244,8 +244,7 @@ function checkServiceEndpointInput(
   api: ApiPromise,
   endpoint: DidServiceEndpoint
 ): void {
-  const [, syntaxErrors] = checkServiceEndpointSyntax(endpoint)
-  if (syntaxErrors && syntaxErrors.length > 0) throw syntaxErrors[0]
+  checkServiceEndpointSyntax(endpoint)
   const [, sizeErrors] = checkServiceEndpointSizeConstraints(api, endpoint)
   if (sizeErrors && sizeErrors.length > 0) throw sizeErrors[0]
 }

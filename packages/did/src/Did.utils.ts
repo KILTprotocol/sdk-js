@@ -278,36 +278,26 @@ export function stripFragment(id: UriFragment): string {
  *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
  * @param endpoint A service endpoint object to check.
- * @returns Validation result and errors, if any.
  */
-export function checkServiceEndpointSyntax(
-  endpoint: DidServiceEndpoint
-): [boolean, Error[] | undefined] {
-  const errors: Error[] = []
-  if (endpoint.id.startsWith('did:kilt')) {
-    errors.push(
-      new SDKErrors.DidError(
-        `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${endpoint.id}"`
-      )
+export function checkServiceEndpointSyntax(endpoint: DidServiceEndpoint): void {
+  const { id, serviceEndpoint } = endpoint
+  if (id.startsWith('did:kilt')) {
+    throw new SDKErrors.DidError(
+      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
     )
   }
-  if (!isUriFragment(stripFragment(endpoint.id))) {
-    errors.push(
-      new SDKErrors.DidError(
-        `The service ID must be valid as a URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
-      )
+  if (!isUriFragment(stripFragment(id))) {
+    throw new SDKErrors.DidError(
+      `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
     )
   }
-  endpoint.serviceEndpoint.forEach((uri) => {
+  serviceEndpoint.forEach((uri) => {
     if (!isUri(uri)) {
-      errors.push(
-        new SDKErrors.DidError(
-          `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${endpoint.id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
-        )
+      throw new SDKErrors.DidError(
+        `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
       )
     }
   })
-  return errors.length > 0 ? [false, errors] : [true, undefined]
 }
 
 /**
