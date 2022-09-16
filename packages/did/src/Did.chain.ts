@@ -77,18 +77,6 @@ export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   }
 }
 
-// Query all services for a DID given the DID.
-// Interacts with the ServiceEndpoints storage double map.
-async function queryAllServicesEncoded(
-  did: DidUri
-): Promise<DidServiceEndpointsDidEndpoint[]> {
-  const api = ConfigService.get('api')
-  const encodedEndpoints = await api.query.did.serviceEndpoints.entries(
-    didToChain(did)
-  )
-  return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
-}
-
 // ### DECODED QUERYING types
 
 export type EncodedDid = Pick<
@@ -197,16 +185,29 @@ function blockchainEndpointToEndpoint({
   }
 }
 
-export function serviceEndpointFromChain({
-  id,
-  serviceTypes,
-  urls,
-}: DidServiceEndpointsDidEndpoint): DidServiceEndpoint {
+export function serviceEndpointFromChain(
+  encoded: Option<DidServiceEndpointsDidEndpoint>
+): DidServiceEndpoint {
+  const { id, serviceTypes, urls } = encoded.unwrap()
   return blockchainEndpointToEndpoint({
     id: id.toUtf8(),
     serviceTypes: serviceTypes.map((type) => type.toUtf8()),
     urls: urls.map((url) => url.toUtf8()),
   })
+}
+
+/**
+ * Decode service endpoint records associated with the full DID from the KILT blockchain.
+ *
+ * @param encoded The data returned by `api.query.did.serviceEndpoints.entries`.
+ * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
+ */
+export function servicesFromChain(
+  encoded: Array<[any, Option<DidServiceEndpointsDidEndpoint>]>
+): DidServiceEndpoint[] {
+  return encoded.map(([, encodedValue]) =>
+    serviceEndpointFromChain(encodedValue)
+  )
 }
 
 /**
@@ -218,8 +219,11 @@ export function serviceEndpointFromChain({
 export async function queryServiceEndpoints(
   did: DidUri
 ): Promise<DidServiceEndpoint[]> {
-  const encoded = await queryAllServicesEncoded(did)
-  return encoded.map((e) => serviceEndpointFromChain(e))
+  const api = ConfigService.get('api')
+  const encodedEndpoints = await api.query.did.serviceEndpoints.entries(
+    didToChain(did)
+  )
+  return servicesFromChain(encodedEndpoints)
 }
 
 // ### EXTRINSICS types

@@ -193,7 +193,7 @@ export async function resolveServiceEndpoint(
     if (encoded.isNone) {
       return null
     }
-    const serviceEndpoint = serviceEndpointFromChain(encoded.unwrap())
+    const serviceEndpoint = serviceEndpointFromChain(encoded)
     return {
       ...serviceEndpoint,
       id: serviceUri,

@@ -278,9 +278,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     Did.Chain.didToChain(fullDid.uri),
     Did.Chain.resourceIdToChain(newEndpoint.id)
   )
-  expect(Did.Chain.serviceEndpointFromChain(encoded.unwrap())).toStrictEqual(
-    newEndpoint
-  )
+  expect(Did.Chain.serviceEndpointFromChain(encoded)).toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
