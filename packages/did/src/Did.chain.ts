@@ -159,11 +159,11 @@ interface BlockchainEndpoint {
   urls: DidServiceEndpoint['serviceEndpoint']
 }
 
-function endpointToBlockchainEndpoint({
-  id,
-  type,
-  serviceEndpoint,
-}: DidServiceEndpoint): BlockchainEndpoint {
+function endpointToBlockchainEndpoint(
+  endpoint: DidServiceEndpoint
+): BlockchainEndpoint {
+  checkServiceEndpointSyntax(endpoint)
+  const { id, type, serviceEndpoint } = endpoint
   return {
     id: resourceIdToChain(id),
     serviceTypes: type,
@@ -314,10 +314,6 @@ export async function getStoreTx(
     )
   }
 
-  service.forEach((endpoint) => {
-    checkServiceEndpointSyntax(endpoint)
-  })
-
   const [authenticationKey] = authentication
   const did = getAddressByKey(authenticationKey)
 
@@ -372,7 +368,6 @@ export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const api = ConfigService.get('api')
-  checkServiceEndpointSyntax(endpoint)
   return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
 }
 
