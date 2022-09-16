@@ -159,9 +159,7 @@ interface BlockchainEndpoint {
   urls: DidServiceEndpoint['serviceEndpoint']
 }
 
-function endpointToBlockchainEndpoint(
-  endpoint: DidServiceEndpoint
-): BlockchainEndpoint {
+function serviceToChain(endpoint: DidServiceEndpoint): BlockchainEndpoint {
   checkServiceEndpointSyntax(endpoint)
   const { id, type, serviceEndpoint } = endpoint
   return {
@@ -171,27 +169,15 @@ function endpointToBlockchainEndpoint(
   }
 }
 
-function blockchainEndpointToEndpoint({
-  id,
-  serviceTypes,
-  urls,
-}: BlockchainEndpoint): DidServiceEndpoint {
-  return {
-    id: `#${id}`,
-    type: serviceTypes,
-    serviceEndpoint: urls,
-  }
-}
-
-export function serviceEndpointFromChain(
+export function serviceFromChain(
   encoded: Option<DidServiceEndpointsDidEndpoint>
 ): DidServiceEndpoint {
   const { id, serviceTypes, urls } = encoded.unwrap()
-  return blockchainEndpointToEndpoint({
-    id: id.toUtf8(),
-    serviceTypes: serviceTypes.map((type) => type.toUtf8()),
-    urls: urls.map((url) => url.toUtf8()),
-  })
+  return {
+    id: `#${id.toUtf8()}`,
+    type: serviceTypes.map((type) => type.toUtf8()),
+    serviceEndpoint: urls.map((url) => url.toUtf8()),
+  }
 }
 
 /**
@@ -203,9 +189,7 @@ export function serviceEndpointFromChain(
 export function servicesFromChain(
   encoded: Array<[any, Option<DidServiceEndpointsDidEndpoint>]>
 ): DidServiceEndpoint[] {
-  return encoded.map(([, encodedValue]) =>
-    serviceEndpointFromChain(encodedValue)
-  )
+  return encoded.map(([, encodedValue]) => serviceFromChain(encodedValue))
 }
 
 // ### EXTRINSICS types
@@ -328,7 +312,7 @@ export async function getStoreTx(
     publicKeyToChain(capabilityDelegation[0])
 
   const newKeyAgreementKeys = keyAgreement.map(publicKeyToChain)
-  const newServiceDetails = service.map(endpointToBlockchainEndpoint)
+  const newServiceDetails = service.map(serviceToChain)
 
   const apiInput = {
     did,
@@ -368,7 +352,7 @@ export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const api = ConfigService.get('api')
-  return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
+  return api.tx.did.addServiceEndpoint(serviceToChain(endpoint))
 }
 
 /**

@@ -28,7 +28,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
 import {
   didFromChain,
-  serviceEndpointFromChain,
+  serviceFromChain,
   servicesFromChain,
 } from '../Did.chain.js'
 
@@ -144,7 +144,7 @@ jest.mocked(didFromChain).mockReturnValue({
   },
 })
 jest
-  .mocked(serviceEndpointFromChain)
+  .mocked(serviceFromChain)
   .mockReturnValue(generateServiceEndpoint('#service-1'))
 jest
   .mocked(servicesFromChain)
