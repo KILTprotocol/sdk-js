@@ -8,11 +8,8 @@
 import { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
 import type { Bytes, Option } from '@polkadot/types-codec'
 import type { Deposit, DidUri } from '@kiltprotocol/types'
-import { Crypto, ss58Format } from '@kiltprotocol/utils'
 import type { BN } from '@polkadot/util'
-
-import * as DidUtils from '../Did.utils.js'
-import { depositFromChain } from '../Did.chain.js'
+import { depositFromChain, uriFromChain } from '../Did.chain.js'
 
 /**
  * Web3Name is the type of a nickname for a DID.
@@ -44,7 +41,7 @@ export function web3NameOwnerFromChain(
 } {
   const { owner, deposit, claimedAt } = encoded.unwrap()
   return {
-    owner: DidUtils.getFullDidUri(Crypto.encodeAddress(owner, ss58Format)),
+    owner: uriFromChain(owner),
     deposit: depositFromChain(deposit),
     claimedAt: claimedAt.toBn(),
   }

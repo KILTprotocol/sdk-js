@@ -6,7 +6,7 @@
  */
 
 import type { Option } from '@polkadot/types'
-import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
@@ -48,6 +48,7 @@ import {
   EncodedSignature,
   EncodedVerificationKey,
   getAddressByKey,
+  getFullDidUri,
   keyTypeForSignatureAlg,
   parseDidUri,
   signatureAlgForKeyType,
@@ -112,6 +113,10 @@ function didPublicKeyDetailsFromChain(
     type: key.type.toLowerCase() as DidKey['type'],
     publicKey: key.value.toU8a(),
   }
+}
+
+export function uriFromChain(encoded: AccountId32): DidUri {
+  return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
 export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {

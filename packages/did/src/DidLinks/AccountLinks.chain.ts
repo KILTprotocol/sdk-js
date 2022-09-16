@@ -26,14 +26,14 @@ import {
 } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
 
-import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
 
-import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
+import { EncodedSignature } from '../Did.utils.js'
 import { Web3Name, web3NameFromChain } from './Web3Names.chain.js'
-import { depositFromChain, didToChain } from '../Did.chain.js'
+import { depositFromChain, didToChain, uriFromChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -125,7 +125,7 @@ export function connectedDidFromChain(
 } {
   const { did, deposit } = encoded.unwrap()
   return {
-    did: getFullDidUri(Crypto.encodeAddress(did, ss58Format)),
+    did: uriFromChain(did),
     deposit: depositFromChain(deposit),
   }
 }
