@@ -159,7 +159,9 @@ interface BlockchainEndpoint {
   urls: DidServiceEndpoint['serviceEndpoint']
 }
 
-function serviceToChain(endpoint: DidServiceEndpoint): BlockchainEndpoint {
+export function serviceToChain(
+  endpoint: DidServiceEndpoint
+): BlockchainEndpoint {
   checkServiceEndpointSyntax(endpoint)
   const { id, type, serviceEndpoint } = endpoint
   return {
@@ -336,23 +338,6 @@ export async function getStoreTx(
   })
   const encodedSignature = { [type]: signature.data } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
-}
-
-/**
- * Generate an extrinsic to add the provided [[DidServiceEndpoint]] to the authorizing DID.
- *
- * @param endpoint The new service endpoint to include in the extrinsic.
- * The service endpoint must respect the following conditions:
- *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
- *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
- * @returns An extrinsic that must be authorized (signed) by the full DID with which the service endpoint should be associated.
- */
-export async function getAddEndpointExtrinsic(
-  endpoint: DidServiceEndpoint
-): Promise<Extrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.did.addServiceEndpoint(serviceToChain(endpoint))
 }
 
 /**

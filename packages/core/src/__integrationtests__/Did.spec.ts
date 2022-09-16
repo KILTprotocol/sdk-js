@@ -262,8 +262,8 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     type: ['new-type'],
     serviceEndpoint: ['x:new-url'],
   }
-  const updateEndpointCall = await Did.Chain.getAddEndpointExtrinsic(
-    newEndpoint
+  const updateEndpointCall = api.tx.did.addServiceEndpoint(
+    Did.Chain.serviceToChain(newEndpoint)
   )
 
   const tx3 = await Did.authorizeExtrinsic(
@@ -279,7 +279,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     encodedDid,
     Did.Chain.resourceIdToChain(newEndpoint.id)
   )
-  expect(Did.Chain.serviceEndpointFromChain(encoded)).toStrictEqual(newEndpoint)
+  expect(Did.Chain.serviceFromChain(encoded)).toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
@@ -816,19 +816,23 @@ describe('DID management batching', () => {
         batchFunction: api.tx.utility.batchAll,
         did: initialFullDid,
         extrinsics: [
-          await Did.Chain.getAddEndpointExtrinsic({
-            id: '#id-1',
-            type: ['type-1'],
-            serviceEndpoint: ['x:url-1'],
-          }),
+          api.tx.did.addServiceEndpoint(
+            Did.Chain.serviceToChain({
+              id: '#id-1',
+              type: ['type-1'],
+              serviceEndpoint: ['x:url-1'],
+            })
+          ),
           api.tx.did.setAuthenticationKey(
             Did.Chain.publicKeyToChain(newAuthKey)
           ),
-          await Did.Chain.getAddEndpointExtrinsic({
-            id: '#id-2',
-            type: ['type-2'],
-            serviceEndpoint: ['x:url-2'],
-          }),
+          api.tx.did.addServiceEndpoint(
+            Did.Chain.serviceToChain({
+              id: '#id-2',
+              type: ['type-2'],
+              serviceEndpoint: ['x:url-2'],
+            })
+          ),
         ],
         sign,
         submitter: paymentAccount.address,
@@ -881,11 +885,13 @@ describe('DID management batching', () => {
           api.tx.did.setAttestationKey(
             Did.Chain.publicKeyToChain(authentication[0])
           ),
-          await Did.Chain.getAddEndpointExtrinsic({
-            id: '#id-1',
-            type: ['type-2'],
-            serviceEndpoint: ['x:url-2'],
-          }),
+          api.tx.did.addServiceEndpoint(
+            Did.Chain.serviceToChain({
+              id: '#id-1',
+              type: ['type-2'],
+              serviceEndpoint: ['x:url-2'],
+            })
+          ),
         ],
         sign,
         submitter: paymentAccount.address,
@@ -940,11 +946,13 @@ describe('DID management batching', () => {
           api.tx.did.setAttestationKey(
             Did.Chain.publicKeyToChain(authentication[0])
           ),
-          await Did.Chain.getAddEndpointExtrinsic({
-            id: '#id-1',
-            type: ['type-2'],
-            serviceEndpoint: ['x:url-2'],
-          }),
+          api.tx.did.addServiceEndpoint(
+            Did.Chain.serviceToChain({
+              id: '#id-1',
+              type: ['type-2'],
+              serviceEndpoint: ['x:url-2'],
+            })
+          ),
         ],
         sign,
         submitter: paymentAccount.address,
@@ -1424,20 +1432,20 @@ describe('Runtime constraints', () => {
 
   describe('Service endpoint addition', () => {
     it('should not be possible to add a service endpoint that is too long', async () => {
-      await Did.Chain.getAddEndpointExtrinsic({
+      Did.Chain.serviceToChain({
         // Maximum is 50
         id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         type: ['type-a'],
         serviceEndpoint: ['x:url-a'],
       })
-      await expect(
-        Did.Chain.getAddEndpointExtrinsic({
+      expect(
+        Did.Chain.serviceToChain({
           // One more than maximum
           id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           type: ['type-a'],
           serviceEndpoint: ['x:url-a'],
         })
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
+      ).toThrowErrorMatchingInlineSnapshot(
         `"The service ID \\"#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
       )
     }, 30_000)
@@ -1449,12 +1457,12 @@ describe('Runtime constraints', () => {
         type: Array(1).map((_, index): string => `type-${index}`),
         serviceEndpoint: ['x:url-1'],
       }
-      await Did.Chain.getAddEndpointExtrinsic(newEndpoint)
+      Did.Chain.serviceToChain(newEndpoint)
       // One more than the maximum
       newEndpoint.type.push('new-type')
-      await expect(
-        Did.Chain.getAddEndpointExtrinsic(newEndpoint)
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
+      expect(
+        Did.Chain.serviceToChain(newEndpoint)
+      ).toThrowErrorMatchingInlineSnapshot(
         `"The service with ID \\"#id-1\\" has too many types (2). Max number of types allowed per service is 1."`
       )
     }, 30_000)
@@ -1466,37 +1474,37 @@ describe('Runtime constraints', () => {
         type: ['type-1'],
         serviceEndpoint: Array(1).map((_, index): string => `x:url-${index}`),
       }
-      await Did.Chain.getAddEndpointExtrinsic(newEndpoint)
+      Did.Chain.serviceToChain(newEndpoint)
       // One more than the maximum
       newEndpoint.serviceEndpoint.push('x:new-url')
-      await expect(
-        Did.Chain.getAddEndpointExtrinsic(newEndpoint)
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
+      expect(
+        Did.Chain.serviceToChain(newEndpoint)
+      ).toThrowErrorMatchingInlineSnapshot(
         `"The service with ID \\"#id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
       )
     }, 30_000)
 
     it('should not be possible to add a service endpoint that has a type that is too long', async () => {
-      await Did.Chain.getAddEndpointExtrinsic({
+      Did.Chain.serviceToChain({
         id: '#id-1',
         // Maximum is 50
         type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
         serviceEndpoint: ['x:url-1'],
       })
-      await expect(
-        Did.Chain.getAddEndpointExtrinsic({
+      expect(
+        Did.Chain.serviceToChain({
           id: '#id-1',
           // One more than the maximum
           type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
           serviceEndpoint: ['x:url-1'],
         })
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
+      ).toThrowErrorMatchingInlineSnapshot(
         `"The service with ID \\"#id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
       )
     }, 30_000)
 
     it('should not be possible to add a service endpoint that has a URI that is too long', async () => {
-      await Did.Chain.getAddEndpointExtrinsic({
+      Did.Chain.serviceToChain({
         id: '#id-1',
         type: ['type-1'],
         // Maximum is 200
@@ -1504,8 +1512,8 @@ describe('Runtime constraints', () => {
           'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         ],
       })
-      await expect(
-        Did.Chain.getAddEndpointExtrinsic({
+      expect(
+        Did.Chain.serviceToChain({
           id: '#id-1',
           type: ['type-1'],
           // One more than the maximum
@@ -1513,7 +1521,7 @@ describe('Runtime constraints', () => {
             'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           ],
         })
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
+      ).toThrowErrorMatchingInlineSnapshot(
         `"The service with ID \\"#id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (201 bytes). Max number of bytes allowed for a service URI is 200."`
       )
     }, 30_000)
