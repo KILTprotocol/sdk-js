@@ -140,15 +140,9 @@ export function verifyAgainstCredential(
   attestation: IAttestation,
   credential: ICredential
 ): boolean {
-  try {
-    if (
-      credential.claim.cTypeHash !== attestation.cTypeHash ||
-      credential.rootHash !== attestation.claimHash
-    )
-      return false
+  return (
+    credential.claim.cTypeHash === attestation.cTypeHash &&
+    credential.rootHash === attestation.claimHash &&
     Credential.verifyDataIntegrity(credential)
-    return true
-  } catch {
-    return false
-  }
+  )
 }
