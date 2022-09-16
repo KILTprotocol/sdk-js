@@ -41,7 +41,6 @@ import type {
 } from '@kiltprotocol/augment-api'
 
 import {
-  checkServiceEndpointSizeConstraints,
   checkServiceEndpointSyntax,
   EncodedEncryptionKey,
   EncodedKey,
@@ -245,8 +244,6 @@ function checkServiceEndpointInput(
   endpoint: DidServiceEndpoint
 ): void {
   checkServiceEndpointSyntax(endpoint)
-  const [, sizeErrors] = checkServiceEndpointSizeConstraints(api, endpoint)
-  if (sizeErrors && sizeErrors.length > 0) throw sizeErrors[0]
 }
 
 interface GetStoreTxInput {
