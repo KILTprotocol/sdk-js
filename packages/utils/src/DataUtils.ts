@@ -8,24 +8,36 @@
 import type { KiltAddress } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import * as SDKErrors from './SDKErrors.js'
-import { verify } from './Crypto.js'
 import { ss58Format } from './ss58Format.js'
 
 /**
  * Validates a given address string against the External Address Format (SS58) with our Prefix of 38.
  *
- * @param address Address string to validate for correct Format.
+ * @param input Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @returns Boolean whether the given address string checks out against the Format.
  */
-export function validateAddress(address: KiltAddress, name: string): boolean {
-  if (typeof address !== 'string') {
+export function validateAddress(input: unknown, name?: string): void {
+  if (typeof input !== 'string') {
     throw new SDKErrors.AddressTypeError()
   }
-  if (!checkAddress(address, ss58Format)[0]) {
-    throw new SDKErrors.AddressInvalidError(address, name)
+  if (!checkAddress(input, ss58Format)[0]) {
+    throw new SDKErrors.AddressInvalidError(input, name)
   }
-  return true
+}
+
+/**
+ * Type guard to check whether input is an SS58 address with our prefix of 38.
+ *
+ * @param input Address string to validate for correct format.
+ * @returns True if input is a KiltAddress, false otherwise.
+ */
+export function isKiltAddress(input: unknown): input is KiltAddress {
+  try {
+    validateAddress(input)
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -33,9 +45,8 @@ export function validateAddress(address: KiltAddress, name: string): boolean {
  *
  * @param hash Hash string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @returns Boolean whether the given hash string checks out against the Format.
  */
-export function validateHash(hash: string, name: string): boolean {
+export function validateHash(hash: string, name: string): void {
   if (typeof hash !== 'string') {
     throw new SDKErrors.HashTypeError()
   }
@@ -43,31 +54,4 @@ export function validateHash(hash: string, name: string): boolean {
   if (!hash.match(blake2bPattern)) {
     throw new SDKErrors.HashMalformedError(hash, name)
   }
-  return true
-}
-
-/**
- * Validates the signature of the given signer address against the signed data.
- *
- * @param data The signed string of data.
- * @param signature The signature of the data to be validated.
- * @param signer Address of the signer identity.
- * @returns Boolean whether the signature is valid for the given data.
- */
-export function validateSignature(
-  data: string,
-  signature: string,
-  signer: KiltAddress
-): boolean {
-  if (
-    typeof data !== 'string' ||
-    typeof signature !== 'string' ||
-    typeof signer !== 'string'
-  ) {
-    throw new SDKErrors.SignatureMalformedError()
-  }
-  if (!verify(data, signature, signer)) {
-    throw new SDKErrors.SignatureUnverifiableError()
-  }
-  return true
 }

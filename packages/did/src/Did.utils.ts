@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { blake2AsU8a, checkAddress, encodeAddress } from '@polkadot/util-crypto'
+import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 import { stringToU8a } from '@polkadot/util'
 import type { ApiPromise } from '@polkadot/api'
 
@@ -21,7 +21,7 @@ import {
   VerificationKeyType,
   KiltAddress,
 } from '@kiltprotocol/types'
-import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { SDKErrors, ss58Format, DataUtils } from '@kiltprotocol/utils'
 
 /// The latest version for KILT light DIDs.
 export const LIGHT_DID_LATEST_VERSION = 1
@@ -46,10 +46,6 @@ const FULL_KILT_DID_REGEX =
 // - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
-
-function isKiltAddress(input: string): input is KiltAddress {
-  return checkAddress(input, ss58Format)[0]
-}
 
 export type IDidParsingResult = {
   did: DidUri
@@ -200,9 +196,7 @@ export function validateKiltDidUri(
       break
   }
 
-  if (!isKiltAddress(address)) {
-    throw new SDKErrors.AddressInvalidError(address, 'DID')
-  }
+  DataUtils.validateAddress(address, 'DID')
 }
 
 export function isKiltDidUri(
@@ -331,12 +325,12 @@ export function checkServiceEndpointSizeConstraints(
     maxServiceTypeLength,
     maxServiceUrlLength,
   ] = [
-    api.consts.did.maxServiceIdLength.toNumber(),
-    api.consts.did.maxNumberOfTypesPerService.toNumber(),
-    api.consts.did.maxNumberOfUrlsPerService.toNumber(),
-    api.consts.did.maxServiceTypeLength.toNumber(),
-    api.consts.did.maxServiceUrlLength.toNumber(),
-  ]
+      api.consts.did.maxServiceIdLength.toNumber(),
+      api.consts.did.maxNumberOfTypesPerService.toNumber(),
+      api.consts.did.maxNumberOfUrlsPerService.toNumber(),
+      api.consts.did.maxServiceTypeLength.toNumber(),
+      api.consts.did.maxServiceUrlLength.toNumber(),
+    ]
   const errors: Error[] = []
 
   const idEncodedLength = stringToU8a(stripFragment(endpoint.id)).length
@@ -413,7 +407,7 @@ export function getFullDidUri(
   didOrAddress: DidUri | KiltAddress,
   version = FULL_DID_LATEST_VERSION
 ): DidUri {
-  const address = isKiltAddress(didOrAddress)
+  const address = DataUtils.isKiltAddress(didOrAddress)
     ? didOrAddress
     : parseDidUri(didOrAddress as DidUri).address
   const versionString = version === 1 ? '' : `v${version}`

@@ -134,21 +134,18 @@ export function isIAttestation(input: unknown): input is IAttestation {
  *
  * @param attestation - The attestation to verify.
  * @param credential - The credential to verify against.
- * @returns Whether the data is valid.
  */
 export function verifyAgainstCredential(
   attestation: IAttestation,
   credential: ICredential
-): boolean {
-  try {
-    if (
-      credential.claim.cTypeHash !== attestation.cTypeHash ||
-      credential.rootHash !== attestation.claimHash
+): void {
+  if (
+    credential.claim.cTypeHash !== attestation.cTypeHash ||
+    credential.rootHash !== attestation.claimHash
+  ) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Attestation does not match credential'
     )
-      return false
-    Credential.verifyDataIntegrity(credential)
-    return true
-  } catch {
-    return false
   }
+  Credential.verifyDataIntegrity(credential)
 }

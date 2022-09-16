@@ -97,7 +97,12 @@ export function addressFromRandom(): KiltAddress {
 }
 
 export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
-  return CType.verifyStored(ctype)
+  try {
+    await CType.verifyStored(ctype)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export const driversLicenseCType = CType.fromSchema({

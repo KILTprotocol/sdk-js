@@ -108,17 +108,12 @@ export async function verifyAttesterSignedQuote(
   } = {}
 ): Promise<void> {
   const { attesterSignature, ...basicQuote } = quote
-  const result = await verifyDidSignature({
+  await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
-
-  if (!result.verified) {
-    // TODO: should throw a "signature not verifiable" error, with the reason attached.
-    throw new SDKErrors.QuoteUnverifiableError()
-  }
 
   const messages: string[] = []
   if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
@@ -158,15 +153,12 @@ export async function createQuoteAgreement(
       attesterSignedQuote.attesterDid
     )
 
-  const { verified, reason } = await verifyDidSignature({
+  await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
-  if (!verified && reason) {
-    throw new SDKErrors.SignatureUnverifiableError(reason)
-  }
 
   const signature = await Did.signPayload(
     claimerIdentity,
