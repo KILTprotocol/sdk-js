@@ -349,11 +349,9 @@ export function getMockedApi(): MockApiPromise {
         serviceEndpoints: jest.fn(async () =>
           mockChainQueryReturn('did', 'serviceEndpoints')
         ),
-        didBlacklist: {
-          hash: jest
-            .fn()
-            .mockReturnValue(mockChainQueryReturn('did', 'didBlacklist')),
-        },
+        didBlacklist: jest
+          .fn()
+          .mockReturnValue(mockChainQueryReturn('did', 'didBlacklist')),
       },
       portablegabi: {
         accumulatorList: jest.fn((address: string, index: number) =>

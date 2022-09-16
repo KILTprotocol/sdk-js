@@ -339,7 +339,7 @@ describe('When resolving a full DID', () => {
 
   it('correctly resolves a deleted DID', async () => {
     mockedApi.query.did.did.mockReturnValueOnce(didNotFound)
-    mockedApi.query.did.didBlacklist.hash.mockReturnValueOnce(didIsBlacklisted)
+    mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
     const { document, metadata } = (await resolve(
       deletedDid
@@ -472,7 +472,7 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {
-    mockedApi.query.did.didBlacklist.hash.mockReturnValueOnce(didIsBlacklisted)
+    mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
     const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
     const { document, metadata } = (await resolve(
