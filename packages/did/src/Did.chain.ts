@@ -210,22 +210,6 @@ export function servicesFromChain(
   )
 }
 
-/**
- * Query service endpoint records associated with the full DID from the KILT blockchain.
- *
- * @param did Full DID.
- * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
- */
-export async function queryServiceEndpoints(
-  did: DidUri
-): Promise<DidServiceEndpoint[]> {
-  const api = ConfigService.get('api')
-  const encodedEndpoints = await api.query.did.serviceEndpoints.entries(
-    didToChain(did)
-  )
-  return servicesFromChain(encodedEndpoints)
-}
-
 // ### EXTRINSICS types
 
 export type AuthorizeCallInput = {

@@ -134,18 +134,18 @@ describe('write and didDeleteTx', () => {
       makeSigningKeyTool().authentication[0]
     )
 
-    expect(await Did.Chain.queryServiceEndpoints(emptyDid)).toBeDefined()
-    expect(await Did.Chain.queryServiceEndpoints(emptyDid)).toHaveLength(0)
+    const encodedDid = Did.Chain.didToChain(emptyDid)
+    expect(
+      await api.query.did.serviceEndpoints.entries(encodedDid)
+    ).toHaveLength(0)
 
     const encoded = await api.query.did.serviceEndpoints(
-      Did.Chain.didToChain(emptyDid),
+      encodedDid,
       Did.Chain.resourceIdToChain('#non-existing-service-id')
     )
     expect(encoded.isNone).toBe(true)
 
-    const endpointsCount = await api.query.did.didEndpointsCount(
-      Did.Chain.didToChain(emptyDid)
-    )
+    const endpointsCount = await api.query.did.didEndpointsCount(encodedDid)
     expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
   })
 
@@ -274,8 +274,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
   await submitExtrinsic(tx3, paymentAccount)
 
+  const encodedDid = Did.Chain.didToChain(fullDid.uri)
   const encoded = await api.query.did.serviceEndpoints(
-    Did.Chain.didToChain(fullDid.uri),
+    encodedDid,
     Did.Chain.resourceIdToChain(newEndpoint.id)
   )
   expect(Did.Chain.serviceEndpointFromChain(encoded)).toStrictEqual(newEndpoint)
@@ -294,28 +295,24 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   const encoded2 = await api.query.did.serviceEndpoints(
-    Did.Chain.didToChain(fullDid.uri),
+    encodedDid,
     Did.Chain.resourceIdToChain(newEndpoint.id)
   )
   expect(encoded2.isNone).toBe(true)
 
   // Claim the deposit back
-  const storedEndpointsCount = await api.query.did.didEndpointsCount(
-    Did.Chain.didToChain(fullDid.uri)
-  )
+  const storedEndpointsCount = await api.query.did.didEndpointsCount(encodedDid)
   const reclaimDepositTx = api.tx.did.reclaimDeposit(
-    Did.Chain.didToChain(fullDid.uri),
+    encodedDid,
     storedEndpointsCount
   )
   await submitExtrinsic(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
-  expect(
-    (await api.query.did.did(Did.Chain.didToChain(fullDid.uri))).isNone
-  ).toBe(true)
-  expect(await Did.Chain.queryServiceEndpoints(fullDid.uri)).toHaveLength(0)
-  const newEndpointsCount = await api.query.did.didEndpointsCount(
-    Did.Chain.didToChain(fullDid.uri)
+  expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
+  expect(await api.query.did.serviceEndpoints.entries(encodedDid)).toHaveLength(
+    0
   )
+  const newEndpointsCount = await api.query.did.didEndpointsCount(encodedDid)
   expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
 }, 80_000)
 
@@ -478,7 +475,7 @@ describe('DID migration', () => {
 
     expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
     expect(
-      await Did.Chain.queryServiceEndpoints(migratedFullDid.uri)
+      await api.query.did.serviceEndpoints.entries(encodedDid)
     ).toStrictEqual([])
     expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
   }, 60_000)
