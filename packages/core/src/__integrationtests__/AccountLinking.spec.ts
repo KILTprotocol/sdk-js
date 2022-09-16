@@ -74,11 +74,11 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual([])
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             paymentAccountChain
           )
-        ).isEmpty
+        ).isNone
       ).toBe(true)
 
       const associateSenderTx = api.tx.didLookup.associateSender()
@@ -116,12 +116,12 @@ describe('When there is an on-chain DID', () => {
       ])
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             paymentAccountChain
           )
-        ).isEmpty
-      ).toBe(false)
+        ).isSome
+      ).toBe(true)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = api.tx.didLookup.associateSender()
@@ -155,11 +155,11 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual([])
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             paymentAccountChain
           )
-        ).isEmpty
+        ).isNone
       ).toBe(true)
       // Check that new DID has the account linked
       const encoded = await api.query.didLookup.connectedAccounts.keys(
@@ -170,12 +170,12 @@ describe('When there is an on-chain DID', () => {
       ])
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             newDidChain,
             paymentAccountChain
           )
-        ).isEmpty
-      ).toBe(false)
+        ).isSome
+      ).toBe(true)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = api.tx.didLookup.removeSenderAssociation()
@@ -199,11 +199,11 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual([])
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             paymentAccountChain
           )
-        ).isEmpty
+        ).isNone
       ).toBe(true)
     })
   })
@@ -279,20 +279,16 @@ describe('When there is an on-chain DID', () => {
         ])
         expect(
           (
-            await api.query.didLookup.connectedAccounts.hash(
+            await api.query.didLookup.connectedAccounts(
               didChain,
               paymentAccountChain
             )
-          ).isEmpty
+          ).isNone
         ).toBe(true)
         expect(
-          (
-            await api.query.didLookup.connectedAccounts.hash(
-              didChain,
-              keypairChain
-            )
-          ).isEmpty
-        ).toBe(false)
+          (await api.query.didLookup.connectedAccounts(didChain, keypairChain))
+            .isSome
+        ).toBe(true)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
         const linkAuthorization =
@@ -332,19 +328,15 @@ describe('When there is an on-chain DID', () => {
         ).toStrictEqual([])
         expect(
           (
-            await api.query.didLookup.connectedAccounts.hash(
+            await api.query.didLookup.connectedAccounts(
               didChain,
               paymentAccountChain
             )
-          ).isEmpty
+          ).isNone
         ).toBe(true)
         expect(
-          (
-            await api.query.didLookup.connectedAccounts.hash(
-              didChain,
-              keypairChain
-            )
-          ).isEmpty
+          (await api.query.didLookup.connectedAccounts(didChain, keypairChain))
+            .isNone
         ).toBe(true)
         // Check that new DID has the account linked
         const encoded = await api.query.didLookup.connectedAccounts.keys(
@@ -355,20 +347,20 @@ describe('When there is an on-chain DID', () => {
         ])
         expect(
           (
-            await api.query.didLookup.connectedAccounts.hash(
+            await api.query.didLookup.connectedAccounts(
               newDidChain,
               paymentAccountChain
             )
-          ).isEmpty
+          ).isNone
         ).toBe(true)
         expect(
           (
-            await api.query.didLookup.connectedAccounts.hash(
+            await api.query.didLookup.connectedAccounts(
               newDidChain,
               keypairChain
             )
-          ).isEmpty
-        ).toBe(false)
+          ).isSome
+        ).toBe(true)
       })
       it('should be possible for the DID to remove the link', async () => {
         const removeLinkTx = await api.tx.didLookup.removeAccountAssociation(
@@ -404,19 +396,15 @@ describe('When there is an on-chain DID', () => {
         ).toStrictEqual([])
         expect(
           (
-            await api.query.didLookup.connectedAccounts.hash(
+            await api.query.didLookup.connectedAccounts(
               didChain,
               paymentAccountChain
             )
-          ).isEmpty
+          ).isNone
         ).toBe(true)
         expect(
-          (
-            await api.query.didLookup.connectedAccounts.hash(
-              didChain,
-              keypairChain
-            )
-          ).isEmpty
+          (await api.query.didLookup.connectedAccounts(didChain, keypairChain))
+            .isNone
         ).toBe(true)
       })
     }
@@ -487,20 +475,20 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual([genericAccount.address])
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             paymentAccountChain
           )
-        ).isEmpty
+        ).isNone
       ).toBe(true)
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             genericAccountChain
           )
-        ).isEmpty
-      ).toBe(false)
+        ).isSome
+      ).toBe(true)
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
@@ -551,19 +539,19 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual([])
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             paymentAccountChain
           )
-        ).isEmpty
+        ).isNone
       ).toBe(true)
       expect(
         (
-          await api.query.didLookup.connectedAccounts.hash(
+          await api.query.didLookup.connectedAccounts(
             didChain,
             genericAccountChain
           )
-        ).isEmpty
+        ).isNone
       ).toBe(true)
     })
   })

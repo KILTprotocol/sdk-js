@@ -213,18 +213,14 @@ describe('write and didDeleteTx', () => {
     )
 
     // Check that DID is not blacklisted.
-    expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
-      true
-    )
+    expect((await api.query.did.didBlacklist(encodedDid)).isNone).toBe(true)
 
     await submitExtrinsic(submittable, paymentAccount)
 
     expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
 
     // Check that DID is now blacklisted.
-    expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
-      false
-    )
+    expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
   }, 60_000)
 })
 
@@ -486,9 +482,7 @@ describe('DID migration', () => {
     expect(
       await Did.Chain.queryServiceEndpoints(migratedFullDid.uri)
     ).toStrictEqual([])
-    expect((await api.query.did.didBlacklist.hash(encodedDid)).isEmpty).toBe(
-      false
-    )
+    expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
   }, 60_000)
 })
 
