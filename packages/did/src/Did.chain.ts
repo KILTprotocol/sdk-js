@@ -9,7 +9,6 @@ import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToU8a } from '@polkadot/util'
-import type { ApiPromise } from '@polkadot/api'
 
 import type {
   Deposit,
@@ -239,13 +238,6 @@ export function publicKeyToChain(
   return { [key.type]: key.publicKey } as EncodedKey
 }
 
-function checkServiceEndpointInput(
-  api: ApiPromise,
-  endpoint: DidServiceEndpoint
-): void {
-  checkServiceEndpointSyntax(endpoint)
-}
-
 interface GetStoreTxInput {
   authentication: [NewDidVerificationKey]
   assertionMethod?: [NewDidVerificationKey]
@@ -323,7 +315,7 @@ export async function getStoreTx(
   }
 
   service.forEach((endpoint) => {
-    checkServiceEndpointInput(api, endpoint)
+    checkServiceEndpointSyntax(endpoint)
   })
 
   const [authenticationKey] = authentication
@@ -380,7 +372,7 @@ export async function getAddEndpointExtrinsic(
   endpoint: DidServiceEndpoint
 ): Promise<Extrinsic> {
   const api = ConfigService.get('api')
-  checkServiceEndpointInput(api, endpoint)
+  checkServiceEndpointSyntax(endpoint)
   return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
 }
 
