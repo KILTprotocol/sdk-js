@@ -160,7 +160,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
     }
 }
 
-export type StoreDidCallback = Parameters<typeof Did.Chain.getStoreTx>['2']
+type StoreDidCallback = Parameters<typeof Did.Chain.getStoreTx>['2']
 
 /**
  * Generates a callback that can be used for signing.
