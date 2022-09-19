@@ -83,7 +83,7 @@ describe('services validation', () => {
   it.each(invalidTestIds)(
     'disallows adding services with invalid id "%s"',
     (id) => {
-      expect(
+      expect(() =>
         serviceToChain({
           id: `#${id}`,
           type: [],
@@ -96,7 +96,7 @@ describe('services validation', () => {
   it.each([...malformedTestUris, ...unencodedTestUris])(
     'disallows adding services with invalid URI "%s"',
     (uri) => {
-      expect(
+      expect(() =>
         serviceToChain({
           id: '#service_1',
           type: [],
