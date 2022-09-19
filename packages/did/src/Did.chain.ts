@@ -387,15 +387,6 @@ export async function generateDidAuthenticatedTx({
     data: signableCall.toU8a(),
     keyRelationship,
     did,
-    meta: {
-      method: call.method.toHex(),
-      version: call.version,
-      specVersion: api.runtimeVersion.specVersion.toString(),
-      transactionVersion: api.runtimeVersion.transactionVersion.toString(),
-      genesisHash: api.genesisHash.toHex(),
-      nonce: signableCall.txCounter.toHex(),
-      address: Crypto.encodeAddress(signableCall.did, ss58Format),
-    },
   })
   const encodedSignature = {
     [signature.keyType]: signature.data,

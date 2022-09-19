@@ -5,8 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { SignerPayloadJSON } from '@polkadot/types/types'
-import {
+import type {
   DidResourceUri,
   DidUri,
   DidVerificationKey,
@@ -27,11 +26,7 @@ export interface SignRequestData {
    * Data to be signed.
    */
   data: Uint8Array
-  /**
-   * Info for extensions to display to user.
-   * Available when signing extrinsics.
-   */
-  meta?: Partial<SignerPayloadJSON>
+
   /**
    * The did key relationship to be used.
    */
