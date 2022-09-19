@@ -6,7 +6,6 @@
  */
 
 import { BN } from '@polkadot/util'
-import Keyring from '@polkadot/keyring'
 
 import type {
   DidEncryptionKey,
@@ -21,7 +20,7 @@ import type {
   ResolvedDidServiceEndpoint,
   UriFragment,
 } from '@kiltprotocol/types'
-import { ss58Format } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import { ApiMocks, makeSigningKeyTool } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 
@@ -366,9 +365,8 @@ describe('When resolving a full DID', () => {
 })
 
 describe('When resolving a light DID', () => {
-  const keyring = new Keyring({ ss58Format })
-  const authKey = keyring.addFromMnemonic('auth')
-  const encryptionKey = keyring.addFromMnemonic('enc')
+  const authKey = Crypto.makeKeypairFromSeed()
+  const encryptionKey = Crypto.makeEncryptionKeyFromSeed()
 
   beforeEach(() => {
     mockedApi.query.did.did.mockReturnValue(didNotFound)
