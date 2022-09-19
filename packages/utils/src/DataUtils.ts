@@ -11,17 +11,16 @@ import * as SDKErrors from './SDKErrors.js'
 import { ss58Format } from './ss58Format.js'
 
 /**
- * Validates a given address string against the External Address Format (SS58) with our Prefix of 38.
+ * Verifies a given address string against the External Address Format (SS58) with our Prefix of 38.
  *
  * @param input Address string to validate for correct Format.
- * @param name Contextual name of the address, e.g. "claim owner".
  */
-export function validateAddress(input: unknown, name?: string): void {
+export function verifyKiltAddress(input: unknown): void {
   if (typeof input !== 'string') {
     throw new SDKErrors.AddressTypeError()
   }
   if (!checkAddress(input, ss58Format)[0]) {
-    throw new SDKErrors.AddressInvalidError(input, name)
+    throw new SDKErrors.AddressInvalidError(input)
   }
 }
 
@@ -33,7 +32,7 @@ export function validateAddress(input: unknown, name?: string): void {
  */
 export function isKiltAddress(input: unknown): input is KiltAddress {
   try {
-    validateAddress(input)
+    verifyKiltAddress(input)
     return true
   } catch {
     return false
@@ -41,17 +40,25 @@ export function isKiltAddress(input: unknown): input is KiltAddress {
 }
 
 /**
- * Validates the format of the given blake2b hash via regex.
+ * Validates the format of a hex string via regex.
  *
- * @param hash Hash string to validate for correct Format.
- * @param name Contextual name of the address, e.g. "claim owner".
+ * @param input Hex string to validate for correct format.
+ * @param byteLength Expected length of hex in bytes. Defaults to 32.
+ * @param prefixed Whether the hex string is expected to be prefixed with '0x'. Defaults to true.
  */
-export function validateHash(hash: string, name: string): void {
-  if (typeof hash !== 'string') {
+export function verifyIsHex(
+  input: unknown,
+  byteLength = 32,
+  prefixed = true
+): void {
+  if (typeof input !== 'string') {
     throw new SDKErrors.HashTypeError()
   }
-  const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-  if (!hash.match(blake2bPattern)) {
-    throw new SDKErrors.HashMalformedError(hash, name)
+  const hexStringPattern = new RegExp(
+    `^${prefixed ? '0x' : ''}[A-F0-9]{${Math.round(byteLength) * 2}}$`,
+    'i'
+  )
+  if (!input.match(hexStringPattern)) {
+    throw new SDKErrors.HashMalformedError(input)
   }
 }

@@ -36,12 +36,12 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
-  DataUtils.validateHash(input.cTypeHash, 'CType')
+  DataUtils.verifyIsHex(input.cTypeHash, 32)
 
   if (!input.claimHash) {
     throw new SDKErrors.ClaimHashMissingError()
   }
-  DataUtils.validateHash(input.claimHash, 'Claim')
+  DataUtils.verifyIsHex(input.claimHash, 32)
 
   if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()

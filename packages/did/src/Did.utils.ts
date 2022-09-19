@@ -196,7 +196,7 @@ export function validateKiltDidUri(
       break
   }
 
-  DataUtils.validateAddress(address, 'DID')
+  DataUtils.verifyKiltAddress(address)
 }
 
 export function isKiltDidUri(

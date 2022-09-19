@@ -28,13 +28,19 @@ export type DidSignatureVerificationInput = {
   didResolve?: DidResolve
 }
 
+// Used solely for retro-compatibility with previously-generated DID signatures.
+// It is reasonable to think that it will be removed at some point in the future.
+type OldDidSignature = Pick<DidSignature, 'signature'> & {
+  keyId: DidSignature['keyUri']
+}
+
 /**
  * Checks whether the input is a valid DidSignature object, consisting of a signature as hex and the uri of the signing key.
  * Does not cryptographically verify the signature itself!
  *
  * @param input Arbitrary input.
  */
- export function verifyDidSignatureDataStructure(
+export function verifyDidSignatureDataStructure(
   input: DidSignature | OldDidSignature
 ): void {
   const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
@@ -115,12 +121,6 @@ export async function verifyDidSignature({
     )
   }
   Crypto.verify(message, signature.signature, u8aToHex(key.publicKey))
-}
-
-// Used solely for retro-compatibility with previously-generated DID signatures.
-// It is reasonable to think that it will be removed at some point in the future.
-type OldDidSignature = Pick<DidSignature, 'signature'> & {
-  keyId: DidSignature['keyUri']
 }
 
 /**
