@@ -20,7 +20,7 @@ import * as Did from '../index.js'
 import {
   didToChain,
   resourceIdToChain,
-  serviceEndpointFromChain,
+  serviceFromChain,
 } from '../Did.chain.js'
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
@@ -193,7 +193,7 @@ export async function resolveServiceEndpoint(
     if (encoded.isNone) {
       return null
     }
-    const serviceEndpoint = serviceEndpointFromChain(encoded.unwrap())
+    const serviceEndpoint = serviceFromChain(encoded)
     return {
       ...serviceEndpoint,
       id: serviceUri,

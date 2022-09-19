@@ -6,8 +6,6 @@
  */
 
 import { blake2AsU8a, checkAddress, encodeAddress } from '@polkadot/util-crypto'
-import { stringToU8a } from '@polkadot/util'
-import type { ApiPromise } from '@polkadot/api'
 
 import {
   DidResourceUri,
@@ -278,110 +276,26 @@ export function stripFragment(id: UriFragment): string {
  *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
  *
  * @param endpoint A service endpoint object to check.
- * @returns Validation result and errors, if any.
  */
-export function checkServiceEndpointSyntax(
-  endpoint: DidServiceEndpoint
-): [boolean, Error[] | undefined] {
-  const errors: Error[] = []
-  if (endpoint.id.startsWith('did:kilt')) {
-    errors.push(
-      new SDKErrors.DidError(
-        `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${endpoint.id}"`
-      )
+export function checkServiceEndpointSyntax(endpoint: DidServiceEndpoint): void {
+  const { id, serviceEndpoint } = endpoint
+  if (id.startsWith('did:kilt')) {
+    throw new SDKErrors.DidError(
+      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
     )
   }
-  if (!isUriFragment(stripFragment(endpoint.id))) {
-    errors.push(
-      new SDKErrors.DidError(
-        `The service ID must be valid as a URI fragment according to RFC#3986, which "${endpoint.id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
-      )
+  if (!isUriFragment(stripFragment(id))) {
+    throw new SDKErrors.DidError(
+      `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
     )
   }
-  endpoint.serviceEndpoint.forEach((uri) => {
+  serviceEndpoint.forEach((uri) => {
     if (!isUri(uri)) {
-      errors.push(
-        new SDKErrors.DidError(
-          `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${endpoint.id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
-        )
+      throw new SDKErrors.DidError(
+        `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
       )
     }
   })
-  return errors.length > 0 ? [false, errors] : [true, undefined]
-}
-
-/**
- * Performs size checks on service endpoint data, making sure that the following conditions are met:
- *   - The `endpoint.id` is at most 50 ASCII characters long.
- *   - The `endpoint.types` array has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *   - The `endpoint.uris` array has at most 1 URI, with a value that is at most 200 ASCII characters long.
- *
- * @param api An api instance required for reading up-to-date size constraints from the blockchain runtime.
- * @param endpoint A service endpoint object to check.
- * @returns Validation result and errors, if any.
- */
-export function checkServiceEndpointSizeConstraints(
-  api: ApiPromise,
-  endpoint: DidServiceEndpoint
-): [boolean, Error[] | undefined] {
-  const [
-    maxServiceIdLength,
-    maxNumberOfTypesPerService,
-    maxNumberOfUrlsPerService,
-    maxServiceTypeLength,
-    maxServiceUrlLength,
-  ] = [
-    api.consts.did.maxServiceIdLength.toNumber(),
-    api.consts.did.maxNumberOfTypesPerService.toNumber(),
-    api.consts.did.maxNumberOfUrlsPerService.toNumber(),
-    api.consts.did.maxServiceTypeLength.toNumber(),
-    api.consts.did.maxServiceUrlLength.toNumber(),
-  ]
-  const errors: Error[] = []
-
-  const idEncodedLength = stringToU8a(stripFragment(endpoint.id)).length
-  if (idEncodedLength > maxServiceIdLength) {
-    errors.push(
-      new SDKErrors.DidError(
-        `The service ID "${endpoint.id}" is too long (${idEncodedLength} bytes). Max number of bytes allowed for a service ID is ${maxServiceIdLength}.`
-      )
-    )
-  }
-  if (endpoint.type.length > maxNumberOfTypesPerService) {
-    errors.push(
-      new SDKErrors.DidError(
-        `The service with ID "${endpoint.id}" has too many types (${endpoint.type.length}). Max number of types allowed per service is ${maxNumberOfTypesPerService}.`
-      )
-    )
-  }
-  if (endpoint.serviceEndpoint.length > maxNumberOfUrlsPerService) {
-    errors.push(
-      new SDKErrors.DidError(
-        `The service with ID "${endpoint.id}" has too many URIs (${endpoint.serviceEndpoint.length}). Max number of URIs allowed per service is ${maxNumberOfUrlsPerService}.`
-      )
-    )
-  }
-  endpoint.type.forEach((type) => {
-    const typeEncodedLength = stringToU8a(type).length
-    if (typeEncodedLength > maxServiceTypeLength) {
-      errors.push(
-        new SDKErrors.DidError(
-          `The service with ID "${endpoint.id}" has the type "${type}" that is too long (${typeEncodedLength} bytes). Max number of bytes allowed for a service type is ${maxServiceTypeLength}.`
-        )
-      )
-    }
-  })
-  endpoint.serviceEndpoint.forEach((uri) => {
-    const uriEncodedLength = stringToU8a(uri).length
-    if (uriEncodedLength > maxServiceUrlLength) {
-      errors.push(
-        new SDKErrors.DidError(
-          `The service with ID "${endpoint.id}" has the URI "${uri}" that is too long (${uriEncodedLength} bytes). Max number of bytes allowed for a service URI is ${maxServiceUrlLength}.`
-        )
-      )
-    }
-  })
-  return errors.length > 0 ? [false, errors] : [true, undefined]
 }
 
 export function getAddressByKey({

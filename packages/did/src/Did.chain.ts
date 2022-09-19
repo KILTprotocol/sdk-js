@@ -9,7 +9,6 @@ import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import { BN, hexToU8a } from '@polkadot/util'
-import type { ApiPromise } from '@polkadot/api'
 
 import type {
   Deposit,
@@ -41,7 +40,6 @@ import type {
 } from '@kiltprotocol/augment-api'
 
 import {
-  checkServiceEndpointSizeConstraints,
   checkServiceEndpointSyntax,
   EncodedEncryptionKey,
   EncodedKey,
@@ -75,18 +73,6 @@ export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
     owner: Crypto.encodeAddress(deposit.owner, ss58Format),
     amount: deposit.amount.toBn(),
   }
-}
-
-// Query all services for a DID given the DID.
-// Interacts with the ServiceEndpoints storage double map.
-async function queryAllServicesEncoded(
-  did: DidUri
-): Promise<DidServiceEndpointsDidEndpoint[]> {
-  const api = ConfigService.get('api')
-  const encodedEndpoints = await api.query.did.serviceEndpoints.entries(
-    didToChain(did)
-  )
-  return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
 }
 
 // ### DECODED QUERYING types
@@ -173,11 +159,11 @@ interface BlockchainEndpoint {
   urls: DidServiceEndpoint['serviceEndpoint']
 }
 
-function endpointToBlockchainEndpoint({
-  id,
-  type,
-  serviceEndpoint,
-}: DidServiceEndpoint): BlockchainEndpoint {
+export function serviceToChain(
+  endpoint: DidServiceEndpoint
+): BlockchainEndpoint {
+  checkServiceEndpointSyntax(endpoint)
+  const { id, type, serviceEndpoint } = endpoint
   return {
     id: resourceIdToChain(id),
     serviceTypes: type,
@@ -185,41 +171,27 @@ function endpointToBlockchainEndpoint({
   }
 }
 
-function blockchainEndpointToEndpoint({
-  id,
-  serviceTypes,
-  urls,
-}: BlockchainEndpoint): DidServiceEndpoint {
+export function serviceFromChain(
+  encoded: Option<DidServiceEndpointsDidEndpoint>
+): DidServiceEndpoint {
+  const { id, serviceTypes, urls } = encoded.unwrap()
   return {
-    id: `#${id}`,
-    type: serviceTypes,
-    serviceEndpoint: urls,
+    id: `#${id.toUtf8()}`,
+    type: serviceTypes.map((type) => type.toUtf8()),
+    serviceEndpoint: urls.map((url) => url.toUtf8()),
   }
 }
 
-export function serviceEndpointFromChain({
-  id,
-  serviceTypes,
-  urls,
-}: DidServiceEndpointsDidEndpoint): DidServiceEndpoint {
-  return blockchainEndpointToEndpoint({
-    id: id.toUtf8(),
-    serviceTypes: serviceTypes.map((type) => type.toUtf8()),
-    urls: urls.map((url) => url.toUtf8()),
-  })
-}
-
 /**
- * Query service endpoint records associated with the full DID from the KILT blockchain.
+ * Decode service endpoint records associated with the full DID from the KILT blockchain.
  *
- * @param did Full DID.
+ * @param encoded The data returned by `api.query.did.serviceEndpoints.entries`.
  * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
  */
-export async function queryServiceEndpoints(
-  did: DidUri
-): Promise<DidServiceEndpoint[]> {
-  const encoded = await queryAllServicesEncoded(did)
-  return encoded.map((e) => serviceEndpointFromChain(e))
+export function servicesFromChain(
+  encoded: Array<[any, Option<DidServiceEndpointsDidEndpoint>]>
+): DidServiceEndpoint[] {
+  return encoded.map(([, encodedValue]) => serviceFromChain(encodedValue))
 }
 
 // ### EXTRINSICS types
@@ -250,16 +222,6 @@ export function publicKeyToChain(
 ): EncodedKey {
   // TypeScript can't infer type here, so we have to add a type assertion.
   return { [key.type]: key.publicKey } as EncodedKey
-}
-
-function checkServiceEndpointInput(
-  api: ApiPromise,
-  endpoint: DidServiceEndpoint
-): void {
-  const [, syntaxErrors] = checkServiceEndpointSyntax(endpoint)
-  if (syntaxErrors && syntaxErrors.length > 0) throw syntaxErrors[0]
-  const [, sizeErrors] = checkServiceEndpointSizeConstraints(api, endpoint)
-  if (sizeErrors && sizeErrors.length > 0) throw sizeErrors[0]
 }
 
 interface GetStoreTxInput {
@@ -338,10 +300,6 @@ export async function getStoreTx(
     )
   }
 
-  service.forEach((endpoint) => {
-    checkServiceEndpointInput(api, endpoint)
-  })
-
   const [authenticationKey] = authentication
   const did = getAddressByKey(authenticationKey)
 
@@ -356,7 +314,7 @@ export async function getStoreTx(
     publicKeyToChain(capabilityDelegation[0])
 
   const newKeyAgreementKeys = keyAgreement.map(publicKeyToChain)
-  const newServiceDetails = service.map(endpointToBlockchainEndpoint)
+  const newServiceDetails = service.map(serviceToChain)
 
   const apiInput = {
     did,
@@ -380,24 +338,6 @@ export async function getStoreTx(
   })
   const encodedSignature = { [type]: signature.data } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
-}
-
-/**
- * Generate an extrinsic to add the provided [[DidServiceEndpoint]] to the authorizing DID.
- *
- * @param endpoint The new service endpoint to include in the extrinsic.
- * The service endpoint must respect the following conditions:
- *     - The service endpoint ID is at most 50 ASCII characters long and is a valid URI fragment according to RFC#3986.
- *     - The service endpoint has at most 1 service type, with a value that is at most 50 ASCII characters long.
- *     - The service endpoint has at most 1 URI, with a value that is at most 200 ASCII characters long, and which is a valid URI according to RFC#3986.
- * @returns An extrinsic that must be authorized (signed) by the full DID with which the service endpoint should be associated.
- */
-export async function getAddEndpointExtrinsic(
-  endpoint: DidServiceEndpoint
-): Promise<Extrinsic> {
-  const api = ConfigService.get('api')
-  checkServiceEndpointInput(api, endpoint)
-  return api.tx.did.addServiceEndpoint(endpointToBlockchainEndpoint(endpoint))
 }
 
 /**

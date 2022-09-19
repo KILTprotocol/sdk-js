@@ -235,15 +235,14 @@ describe('When there is an on-chain DID', () => {
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
-        const linkAuthorization =
-          await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
-            keypair.address,
-            did.uri,
-            sign
-          )
+        const args = await AccountLinks.associateAccountToChainArgs(
+          keypair.address,
+          did.uri,
+          sign
+        )
         const signedTx = await Did.authorizeExtrinsic(
           did,
-          linkAuthorization,
+          api.tx.didLookup.associateAccount(...args),
           didKey.sign,
           paymentAccount.address
         )
@@ -291,15 +290,14 @@ describe('When there is an on-chain DID', () => {
         ).toBe(true)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
-        const linkAuthorization =
-          await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
-            keypair.address,
-            newDid.uri,
-            sign
-          )
+        const args = await AccountLinks.associateAccountToChainArgs(
+          keypair.address,
+          newDid.uri,
+          sign
+        )
         const signedTx = await Did.authorizeExtrinsic(
           newDid,
-          linkAuthorization,
+          api.tx.didLookup.associateAccount(...args),
           newDidKey.sign,
           paymentAccount.address
         )
@@ -363,9 +361,8 @@ describe('When there is an on-chain DID', () => {
         ).toBe(true)
       })
       it('should be possible for the DID to remove the link', async () => {
-        const removeLinkTx = await api.tx.didLookup.removeAccountAssociation(
-          keypairChain
-        )
+        const removeLinkTx =
+          api.tx.didLookup.removeAccountAssociation(keypairChain)
         const signedTx = await Did.authorizeExtrinsic(
           newDid,
           removeLinkTx,
@@ -432,15 +429,14 @@ describe('When there is an on-chain DID', () => {
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
-      const linkAuthorization =
-        await AccountLinks.getAuthorizeLinkWithAccountExtrinsic(
-          genericAccount.address,
-          did.uri,
-          sign
-        )
+      const args = await AccountLinks.associateAccountToChainArgs(
+        genericAccount.address,
+        did.uri,
+        sign
+      )
       const signedTx = await Did.authorizeExtrinsic(
         did,
-        linkAuthorization,
+        api.tx.didLookup.associateAccount(...args),
         didKey.sign,
         paymentAccount.address
       )
