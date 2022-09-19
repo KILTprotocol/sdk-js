@@ -14,7 +14,11 @@
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
-import type { KeyringPair } from '@kiltprotocol/types'
+import type {
+  EncryptionKeyType,
+  KeyringPair,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 import {
   isString,
   stringToU8a,
@@ -26,12 +30,16 @@ import {
 import {
   blake2AsHex,
   blake2AsU8a,
+  naclBoxPairFromSecret,
+  randomAsU8a,
   signatureVerify,
 } from '@polkadot/util-crypto'
+import { Keyring } from '@polkadot/api'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
 import jsonabc from './jsonabc.js'
+import { ss58Format } from './ss58Format.js'
 
 export { naclBoxPairFromSecret } from '@polkadot/util-crypto'
 
@@ -336,4 +344,29 @@ export function hashStatements(
     const saltedHash = hasher(digest, nonce)
     return { digest, saltedHash, nonce, statement }
   })
+}
+
+export function makeKeypairFromSeed<
+  KeyType extends KiltKeyringPair['type'] = 'ed25519'
+>(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
+  const keyring = new Keyring({ ss58Format, type })
+  return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
+}
+
+export function makeKeypairFromUri<
+  KeyType extends KiltKeyringPair['type'] = 'ed25519'
+>(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
+  const keyring = new Keyring({ ss58Format, type })
+  return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
+}
+
+export function makeEncryptionKeyFromSeed(seed = randomAsU8a(32)): {
+  secretKey: Uint8Array
+  publicKey: Uint8Array
+  type: EncryptionKeyType
+} {
+  return {
+    ...naclBoxPairFromSecret(seed),
+    type: 'x25519',
+  }
 }

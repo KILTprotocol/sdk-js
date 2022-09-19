@@ -845,7 +845,10 @@ describe('DID management batching', () => {
 
       expect(finalFullDid).not.toBeNull()
 
-      expect(finalFullDid.authentication[0]).toMatchObject(newAuthKey)
+      expect(finalFullDid.authentication[0]).toMatchObject({
+        publicKey: newAuthKey.publicKey,
+        type: newAuthKey.type,
+      })
 
       expect(finalFullDid.keyAgreement).toBeUndefined()
       expect(finalFullDid.assertionMethod).toBeUndefined()

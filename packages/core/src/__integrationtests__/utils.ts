@@ -12,7 +12,7 @@ import { BN } from '@polkadot/util'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Keyring, ss58Format } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
@@ -80,17 +80,15 @@ export async function initializeApi(): Promise<ApiPromise> {
   return api
 }
 
-const keyring = new Keyring({ ss58Format, type: 'ed25519' })
-
 // Dev Faucet account seed phrase
 const faucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 // endowed accounts on development chain spec
 // ids are ed25519 because the endowed accounts are
-export const devFaucet = keyring.createFromUri(faucetSeed) as KiltKeyringPair
-export const devAlice = keyring.createFromUri('//Alice') as KiltKeyringPair
-export const devBob = keyring.createFromUri('//Bob') as KiltKeyringPair
-export const devCharlie = keyring.createFromUri('//Charlie') as KiltKeyringPair
+export const devFaucet = Crypto.makeKeypairFromUri(faucetSeed)
+export const devAlice = Crypto.makeKeypairFromUri('//Alice')
+export const devBob = Crypto.makeKeypairFromUri('//Bob')
+export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
 export function addressFromRandom(): KiltAddress {
   return makeSigningKeyTool('ed25519').keypair.address

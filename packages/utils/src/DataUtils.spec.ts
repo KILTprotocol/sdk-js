@@ -10,8 +10,8 @@
  */
 
 import { encodeAddress } from '@polkadot/keyring'
-import type { KiltAddress, KiltKeyringPair } from '@kiltprotocol/types'
-import { Keyring, SDKErrors, ss58Format } from './index'
+import type { KiltAddress } from '@kiltprotocol/types'
+import { SDKErrors, ss58Format } from './index'
 import { validateAddress, validateHash, validateSignature } from './DataUtils'
 import * as Crypto from './Crypto'
 
@@ -85,11 +85,7 @@ it('throws if hash is no string', () => {
 
 describe('validate signature util', () => {
   const data = 'data'
-  const keyring = new Keyring({
-    type: 'ed25519',
-    ss58Format,
-  })
-  const signer = keyring.addFromUri('//Alice') as KiltKeyringPair
+  const signer = Crypto.makeKeypairFromUri('//Alice')
   const signature = Crypto.signStr('data', signer)
 
   it('verifies when inputs are strings and signature checks out', () => {
