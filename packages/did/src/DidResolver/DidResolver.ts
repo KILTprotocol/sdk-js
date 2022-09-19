@@ -20,7 +20,7 @@ import * as Did from '../index.js'
 import {
   didToChain,
   resourceIdToChain,
-  serviceEndpointFromChain,
+  serviceFromChain,
 } from '../Did.chain.js'
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
@@ -50,9 +50,8 @@ export async function resolve(
 
   // If the full DID has been deleted (or the light DID was upgraded and deleted),
   // return the info in the resolution metadata.
-  const isFullDidDeleted = !(
-    await api.query.did.didBlacklist.hash(didToChain(did))
-  ).isEmpty
+  const isFullDidDeleted = (await api.query.did.didBlacklist(didToChain(did)))
+    .isSome
   if (isFullDidDeleted) {
     return {
       // No canonicalId and no details are returned as we consider this DID deactivated/deleted.
@@ -194,7 +193,7 @@ export async function resolveServiceEndpoint(
     if (encoded.isNone) {
       return null
     }
-    const serviceEndpoint = serviceEndpointFromChain(encoded.unwrap())
+    const serviceEndpoint = serviceFromChain(encoded)
     return {
       ...serviceEndpoint,
       id: serviceUri,

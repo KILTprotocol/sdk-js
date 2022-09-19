@@ -26,8 +26,8 @@ import { ConfigService } from '@kiltprotocol/config'
 import type { EncodedDid } from '../Did.chain'
 import {
   generateDidAuthenticatedTx,
-  queryServiceEndpoints,
   didFromChain,
+  servicesFromChain,
 } from '../Did.chain'
 
 import * as Did from './index.js'
@@ -107,7 +107,7 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
 
 jest.mock('../Did.chain')
 jest.mocked(didFromChain).mockReturnValue(existingDidRecord)
-jest.mocked(queryServiceEndpoints).mockResolvedValue(existingServiceEndpoints)
+jest.mocked(servicesFromChain).mockReturnValue(existingServiceEndpoints)
 jest
   .mocked(generateDidAuthenticatedTx)
   .mockResolvedValue({} as SubmittableExtrinsic)

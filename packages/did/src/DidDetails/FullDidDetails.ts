@@ -26,7 +26,7 @@ import {
   didFromChain,
   didToChain,
   generateDidAuthenticatedTx,
-  queryServiceEndpoints,
+  servicesFromChain,
 } from '../Did.chain.js'
 import { parseDidUri, signatureAlgForKeyType } from '../Did.utils.js'
 
@@ -67,7 +67,9 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
     keyAgreement: didRec.keyAgreement,
   }
 
-  const service = await queryServiceEndpoints(didUri)
+  const service = servicesFromChain(
+    await api.query.did.serviceEndpoints.entries(didToChain(didUri))
+  )
   if (service.length > 0) {
     did.service = service
   }

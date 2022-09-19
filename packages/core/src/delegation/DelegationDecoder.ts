@@ -18,12 +18,11 @@
 import type {
   IDelegationNode,
   IDelegationHierarchyDetails,
-  KiltAddress,
 } from '@kiltprotocol/types'
 import { Permission, PermissionType } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { Hash } from '@polkadot/types/interfaces/runtime'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import { Chain as DidChain } from '@kiltprotocol/did'
 import type {
   DelegationDelegationHierarchyDelegationHierarchyDetails,
   DelegationDelegationHierarchyDelegationNode,
@@ -94,9 +93,7 @@ export function delegationNodeFromChain(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children].map((id) => id.toHex()),
-    account: DidUtils.getFullDidUri(
-      delegationNode.details.owner.toString() as KiltAddress
-    ),
+    account: DidChain.uriFromChain(delegationNode.details.owner),
     permissions: permissionsFromChain(delegationNode.details.permissions),
     revoked: delegationNode.details.revoked.valueOf(),
   }

@@ -12,7 +12,7 @@ import {
   signatureVerify,
 } from '@polkadot/util-crypto'
 import type { Enum, Option, StorageKey, U8aFixed } from '@polkadot/types'
-import type { AccountId32, Extrinsic } from '@polkadot/types/interfaces'
+import type { AccountId32 } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
@@ -31,9 +31,9 @@ import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
 import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
 
-import { EncodedSignature, getFullDidUri } from '../Did.utils.js'
+import { EncodedSignature } from '../Did.utils.js'
 import { Web3Name, web3NameFromChain } from './Web3Names.chain.js'
-import { depositFromChain, didToChain } from '../Did.chain.js'
+import { depositFromChain, didToChain, uriFromChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -125,7 +125,7 @@ export function connectedDidFromChain(
 } {
   const { did, deposit } = encoded.unwrap()
   return {
-    did: getFullDidUri(did.toString() as KiltAddress),
+    did: uriFromChain(did),
     deposit: depositFromChain(deposit),
   }
 }
@@ -187,37 +187,6 @@ export async function queryWeb3Name(
 
 type AssociateAccountToChainResult = [string, AnyNumber, EncodedSignature]
 
-function associateAccountToChainArgs(
-  account: Address,
-  signatureValidUntilBlock: AnyNumber,
-  signature: Uint8Array | HexString,
-  sigType: KeypairType
-): AssociateAccountToChainResult {
-  const proof = { [sigType]: signature } as EncodedSignature
-
-  const api = ConfigService.get('api')
-  if (isEthereumEnabled(api)) {
-    if (sigType === 'ethereum') {
-      const result = [
-        { Ethereum: [account, signature] },
-        signatureValidUntilBlock,
-      ]
-      // Force type cast to enable the old blockchain types to accept the future format
-      return result as unknown as AssociateAccountToChainResult
-    }
-    const result = [{ Dotsama: [account, proof] }, signatureValidUntilBlock]
-    // Force type cast to enable the old blockchain types to accept the future format
-    return result as unknown as AssociateAccountToChainResult
-  }
-
-  if (sigType === 'ethereum')
-    throw new SDKErrors.CodecMismatchError(
-      'Ethereum linking is not yet supported by this chain'
-    )
-
-  return [account, signatureValidUntilBlock, proof]
-}
-
 /* ### HELPERS ### */
 
 /**
@@ -265,7 +234,7 @@ function getUnprefixedSignature(
 }
 
 /**
- * Builds an extrinsic to link `account` to a `did` where the fees and deposit are covered by some third account.
+ * Builds the parameters for an extrinsic to link the `account` to the `did` where the fees and deposit are covered by some third account.
  * This extrinsic must be authorized using the same full DID.
  * Note that in addition to the signing account and DID used here, the submitting account will also be able to dissolve the link via reclaiming its deposit!
  *
@@ -273,14 +242,14 @@ function getUnprefixedSignature(
  * @param did Full DID to be linked.
  * @param sign The sign callback that generates the account signature over the encoded (DidAddress, BlockNumber) tuple.
  * @param nBlocksValid The link request will be rejected if submitted later than (current block number + nBlocksValid)?
- * @returns An Extrinsic that must be DID-authorized by the full DID used.
+ * @returns An array of parameters for `api.tx.didLookup.associateAccount` that must be DID-authorized by the full DID used.
  */
-export async function getAuthorizeLinkWithAccountExtrinsic(
+export async function associateAccountToChainArgs(
   accountAddress: Address,
   did: DidUri,
   sign: LinkingSignCallback,
   nBlocksValid = 10
-): Promise<Extrinsic> {
+): Promise<AssociateAccountToChainResult> {
   const api = ConfigService.get('api')
 
   const blockNo = await api.query.system.number()
@@ -316,7 +285,23 @@ export async function getAuthorizeLinkWithAccountExtrinsic(
     accountAddress
   )
 
-  return api.tx.didLookup.associateAccount(
-    ...associateAccountToChainArgs(accountAddress, validTill, signature, type)
-  )
+  const proof = { [type]: signature } as EncodedSignature
+
+  if (isEthereumEnabled(api)) {
+    if (type === 'ethereum') {
+      const result = [{ Ethereum: [accountAddress, signature] }, validTill]
+      // Force type cast to enable the old blockchain types to accept the future format
+      return result as unknown as AssociateAccountToChainResult
+    }
+    const result = [{ Dotsama: [accountAddress, proof] }, validTill]
+    // Force type cast to enable the old blockchain types to accept the future format
+    return result as unknown as AssociateAccountToChainResult
+  }
+
+  if (type === 'ethereum')
+    throw new SDKErrors.CodecMismatchError(
+      'Ethereum linking is not yet supported by this chain'
+    )
+
+  return [accountAddress, validTill, proof]
 }

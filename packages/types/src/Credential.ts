@@ -31,7 +31,7 @@ export interface ICredentialPresentation extends ICredential {
 }
 
 export interface KiltPublishedCredentialV1 {
-  credential: ICredentialPresentation
+  credential: ICredential
   metadata?: {
     label?: string
     blockNumber?: number
@@ -40,3 +40,6 @@ export interface KiltPublishedCredentialV1 {
 }
 
 export type KiltPublishedCredentialCollectionV1 = KiltPublishedCredentialV1[]
+
+export const KiltPublishedCredentialCollectionV1Type =
+  'KiltPublishedCredentialCollectionV1'
