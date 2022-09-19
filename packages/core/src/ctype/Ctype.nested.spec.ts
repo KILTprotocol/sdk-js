@@ -153,7 +153,7 @@ describe('Nested CTypes', () => {
   })
 
   it('verify json-schema validator', () => {
-    expect(() => 
+    expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         nestedCType.schema,
         [passport.schema, kyc.schema],
@@ -170,7 +170,7 @@ describe('Nested CTypes', () => {
         didAlice
       )
     ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
-    expect(() => 
+    expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],
@@ -178,7 +178,7 @@ describe('Nested CTypes', () => {
       )
     ).not.toThrow()
     ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
-    expect(()=> 
+    expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],

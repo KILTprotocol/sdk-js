@@ -366,7 +366,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claimerDid: claimer,
       })
 
-      expect(() => 
+      expect(() =>
         Attestation.verifyAgainstCredential(attestation, fakeCredential)
       ).toThrow()
     }, 15_000)

@@ -325,12 +325,12 @@ export function checkServiceEndpointSizeConstraints(
     maxServiceTypeLength,
     maxServiceUrlLength,
   ] = [
-      api.consts.did.maxServiceIdLength.toNumber(),
-      api.consts.did.maxNumberOfTypesPerService.toNumber(),
-      api.consts.did.maxNumberOfUrlsPerService.toNumber(),
-      api.consts.did.maxServiceTypeLength.toNumber(),
-      api.consts.did.maxServiceUrlLength.toNumber(),
-    ]
+    api.consts.did.maxServiceIdLength.toNumber(),
+    api.consts.did.maxNumberOfTypesPerService.toNumber(),
+    api.consts.did.maxNumberOfUrlsPerService.toNumber(),
+    api.consts.did.maxServiceTypeLength.toNumber(),
+    api.consts.did.maxServiceUrlLength.toNumber(),
+  ]
   const errors: Error[] = []
 
   const idEncodedLength = stringToU8a(stripFragment(endpoint.id)).length

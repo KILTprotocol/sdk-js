@@ -83,7 +83,7 @@ describe('CType', () => {
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
     ).not.toThrow()
     claim.contents.name = 123
-    expect(() => 
+    expect(() =>
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
     ).toThrow()
   })
