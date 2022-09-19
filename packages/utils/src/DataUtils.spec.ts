@@ -19,13 +19,12 @@ const key = Buffer.from([0, 0, 7, 0])
 
 it('validates address with prefix 38', () => {
   expect(() => verifyKiltAddress(encodeAddress(key, ss58Format))).not.toThrow()
-  expect(verifyKiltAddress(encodeAddress(key, ss58Format))).toBe(true)
 })
 
 it('throws on address with other prefix', () => {
   expect(() =>
     verifyKiltAddress(encodeAddress(key, 42) as KiltAddress)
-  ).toThrow('test')
+  ).toThrow()
 })
 
 it('throws for random strings', () => {
@@ -52,7 +51,7 @@ it('throws if address is no string', () => {
 it('validates hash', () => {
   ;['wurst', 'a', '1'].forEach((value) => {
     const hash = Crypto.hashStr(value)
-    expect(verifyIsHex(hash)).toBe(true)
+    expect(() => verifyIsHex(hash)).not.toThrow()
   })
 })
 

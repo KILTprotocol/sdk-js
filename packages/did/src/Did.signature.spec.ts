@@ -26,11 +26,7 @@ import {
 import { ss58Format } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import * as Did from './index.js'
-import {
-  VerificationResult,
-  verifyDidSignature,
-  isDidSignature,
-} from './Did.signature'
+import { verifyDidSignature, isDidSignature } from './Did.signature'
 import { resolve } from './DidResolver'
 
 jest.mock('./DidResolver')
@@ -72,17 +68,13 @@ describe('light DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('verifies old did signature (with `keyId` property) over string', async () => {
@@ -110,11 +102,7 @@ describe('light DID', () => {
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).resolves.toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('verifies did signature over bytes', async () => {
@@ -125,17 +113,13 @@ describe('light DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(
+      verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('fails if relationship does not match', async () => {
@@ -146,16 +130,13 @@ describe('light DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'assertionMethod',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/verification method/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('fails if key id does not match', async () => {
@@ -167,16 +148,13 @@ describe('light DID', () => {
       did.authentication[0].id
     )
     signature.keyUri += '1a'
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/no key with id/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('fails if signature does not match', async () => {
@@ -187,16 +165,13 @@ describe('light DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/invalid signature/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('fails if key id malformed', async () => {
@@ -209,16 +184,13 @@ describe('light DID', () => {
     )
     // @ts-expect-error
     signature.keyUri = signature.keyUri.replace('#', '?')
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/Signature key URI .+ invalid/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('does not verify if migrated to Full DID', async () => {
@@ -236,16 +208,13 @@ describe('light DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/migrated/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('typeguard accepts legal signature objects', () => {
@@ -302,17 +271,13 @@ describe('full DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('verifies did signature over bytes', async () => {
@@ -323,17 +288,13 @@ describe('full DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(
+      verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('does not verify if deactivated', async () => {
@@ -350,16 +311,13 @@ describe('full DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/deactivated/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('does not verify if not on chain', async () => {
@@ -371,16 +329,13 @@ describe('full DID', () => {
       sign,
       did.authentication[0].id
     )
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/no result/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('typeguard accepts legal signature objects', () => {

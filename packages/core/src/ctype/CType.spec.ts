@@ -31,11 +31,6 @@ const encodedAliceDid = ApiMocks.mockChainQueryReturn(
   'cTYPEs',
   '4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 )
-const encodedBobDid = ApiMocks.mockChainQueryReturn(
-  'ctype',
-  'cTYPEs',
-  '4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
-)
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 
@@ -84,13 +79,13 @@ describe('CType', () => {
   })
 
   it('verifies the claim structure', () => {
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBe(true)
+    ).not.toThrow()
     claim.contents.name = 123
-    expect(
+    expect(() => 
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBe(false)
+    ).toThrow()
   })
 
   it('throws error on faulty input', () => {
@@ -147,20 +142,10 @@ describe('CType', () => {
   })
 
   it('verifies whether a ctype is registered on chain ', async () => {
-    expect(await CType.verifyStored(claimCtype)).toBe(false)
+    await expect(CType.verifyStored(claimCtype)).rejects.toThrow()
 
     mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedAliceDid)
-    expect(await CType.verifyStored(claimCtype)).toBe(true)
-  })
-
-  it('verifies ctype owner on chain', async () => {
-    expect(await CType.verifyOwner(claimCtype)).toBe(false)
-
-    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedAliceDid)
-    expect(await CType.verifyOwner(claimCtype)).toBe(true)
-
-    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedBobDid)
-    expect(await CType.verifyOwner(claimCtype)).toBe(false)
+    await expect(CType.verifyStored(claimCtype)).resolves.not.toThrow()
   })
 })
 
@@ -254,23 +239,23 @@ describe('CType verification', () => {
     'third-property': true,
   }
   it('verifies claims', () => {
-    expect(CType.verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)).toBe(
-      true
-    )
-    expect(CType.verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)).toBe(
-      false
-    )
-    expect(
+    expect(() =>
+      CType.verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)
+    ).not.toThrow()
+    expect(() =>
+      CType.verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)
+    ).toThrow()
+    expect(() =>
       CType.verifyObjectAgainstSchema(badClaim, CTypeWrapperModel, [])
-    ).toBe(false)
+    ).toThrow()
     expect(() => {
       CType.verifyClaimAgainstSchema(badClaim, ctypeInput)
     }).toThrow(SDKErrors.ObjectUnverifiableError)
   })
   it('verifies ctypes', () => {
-    expect(CType.verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)).toBe(
-      true
-    )
+    expect(() =>
+      CType.verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)
+    ).not.toThrow()
   })
 })
 
@@ -288,12 +273,7 @@ describe('CType registration verification', () => {
   describe('when CType is not registered', () => {
     it('does not verify registration when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBe(false)
-    })
-
-    it('does not verify owner when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBe(false)
+      await expect(CType.verifyStored(ctype)).rejects.toThrow()
     })
   })
 
@@ -304,27 +284,17 @@ describe('CType registration verification', () => {
 
     it('verifies registration when owner not set', async () => {
       const ctype = CType.fromSchema(rawCType)
-      expect(await CType.verifyStored(ctype)).toBe(true)
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner matches', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBe(true)
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner does not match', async () => {
       const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyStored(ctype)).toBe(true)
-    })
-
-    it('verifies owner when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBe(true)
-    })
-
-    it('does not verify owner when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyOwner(ctype)).toBe(false)
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
   })
 })
