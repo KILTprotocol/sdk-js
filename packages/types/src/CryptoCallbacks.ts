@@ -71,7 +71,7 @@ export type SignCallback = (
 /**
  * Base interface for encryption requests.
  */
-export interface EncryptionRequestData {
+export interface EncryptRequestData {
   /**
    * Data to be encrypted.
    */
@@ -89,7 +89,7 @@ export interface EncryptionRequestData {
 /**
  * Base interface for responses to encryption requests.
  */
-export interface EncryptionResponseData {
+export interface EncryptResponseData {
   /**
    * Result of the encryption.
    */
@@ -111,7 +111,7 @@ export interface EncryptionResponseData {
  * @returns [[EncryptionResponseData]] which additionally to the data contains a `nonce` randomly generated in the encryption process (required for decryption).
  */
 export interface EncryptCallback {
-  (requestData: EncryptionRequestData): Promise<EncryptionResponseData>
+  (requestData: EncryptRequestData): Promise<EncryptResponseData>
 }
 
 export interface DecryptRequestData {
