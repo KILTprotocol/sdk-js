@@ -69,13 +69,6 @@ export type SignCallback = (
 ) => Promise<SignResponseData>
 
 /**
- * A callback function to sign data without an existing DID.
- */
-export type SignWithoutDidCallback = (
-  signData: Omit<SignRequestData, 'did'>
-) => Promise<Omit<SignResponseData, 'keyUri'>>
-
-/**
  * Base interface for encryption requests.
  */
 export interface EncryptionRequestData {

@@ -19,7 +19,6 @@ import type {
   NewDidEncryptionKey,
   SignCallback,
   SigningAlgorithms,
-  SignWithoutDidCallback,
 } from '@kiltprotocol/types'
 
 const { kilt } = window
@@ -55,10 +54,9 @@ function makeSignCallback(
     }
   }
 }
+type StoreDidCallback = Parameters<typeof Did.Chain.getStoreTx>['2']
 
-function makeSignWithoutDidCallback(
-  keypair: KiltKeyringPair
-): SignWithoutDidCallback {
+function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
@@ -74,7 +72,7 @@ function makeSigningKeypair(
 ): {
   keypair: KiltKeyringPair
   sign: (didDocument: DidDocument) => SignCallback
-  signWithoutDid: SignWithoutDidCallback
+  signStoreDid: StoreDidCallback
 } {
   const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
     ed25519: 'ed25519',
@@ -88,12 +86,12 @@ function makeSigningKeypair(
     type
   ) as KiltKeyringPair
   const sign = makeSignCallback(keypair)
-  const signWithoutDid = makeSignWithoutDidCallback(keypair)
+  const signStoreDid = makeStoreDidCallback(keypair)
 
   return {
     keypair,
     sign,
-    signWithoutDid,
+    signStoreDid,
   }
 }
 
@@ -156,7 +154,7 @@ async function createFullDidFromKeypair(
   keypair: KiltKeyringPair,
   encryptionKey: NewDidEncryptionKey
 ) {
-  const sign = makeSignWithoutDidCallback(keypair)
+  const sign = makeStoreDidCallback(keypair)
 
   const storeTx = await Did.Chain.getStoreTx(
     {
@@ -233,15 +231,12 @@ async function runAll() {
 
   // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
-  const { keypair, sign, signWithoutDid } = makeSigningKeypair(
-    '//Foo',
-    'ed25519'
-  )
+  const { keypair, sign, signStoreDid } = makeSigningKeypair('//Foo', 'ed25519')
 
   const didStoreTx = await Did.Chain.getStoreTx(
     { authentication: [keypair] },
     payer.address,
-    signWithoutDid
+    signStoreDid
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer, { resolveOn })
 

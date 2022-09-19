@@ -24,7 +24,8 @@ import type {
   NewDidEncryptionKey,
   NewDidVerificationKey,
   SignCallback,
-  SignWithoutDidCallback,
+  SignRequestData,
+  SignResponseData,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -386,6 +387,10 @@ interface GetStoreTxInput {
   service?: DidServiceEndpoint[]
 }
 
+type GetStoreTxSignCallback = (
+  signData: Omit<SignRequestData, 'did'>
+) => Promise<Omit<SignResponseData, 'keyUri'>>
+
 /**
  * Create a DID creation operation which includes the information provided.
  *
@@ -406,7 +411,7 @@ interface GetStoreTxInput {
 export async function getStoreTx(
   input: GetStoreTxInput | DidDocument,
   submitter: KiltAddress,
-  sign: SignWithoutDidCallback
+  sign: GetStoreTxSignCallback
 ): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
 
