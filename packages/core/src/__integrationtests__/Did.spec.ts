@@ -1249,282 +1249,35 @@ describe('Runtime constraints', () => {
     }, 30_000)
 
     it('should not be possible to create a DID with a service endpoint that is too long', async () => {
-      await Did.Chain.getStoreTx(
-        {
-          authentication: [testAuthKey],
-          service: [
-            {
-              // Maximum is 50
-              id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-              type: ['type-a'],
-              serviceEndpoint: ['x:url-a'],
-            },
-          ],
-        },
-        paymentAccount.address,
-        sign
-      )
-      await expect(
-        Did.Chain.getStoreTx(
-          {
-            authentication: [testAuthKey],
-            service: [
-              {
-                // One more than the maximum
-                id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                type: ['type-a'],
-                serviceEndpoint: ['x:url-a'],
-              },
-            ],
-          },
-
-          paymentAccount.address,
-          sign
-        )
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service ID \\"#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
-      )
-    }, 30_000)
+      const serviceId = '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const limit = api.consts.did.maxServiceIdLength.toNumber()
+      expect(serviceId.length).toBeGreaterThan(limit)
+    })
 
     it('should not be possible to create a DID with a service endpoint that has too many types', async () => {
-      const newEndpoint: DidServiceEndpoint = {
-        id: '#id-1',
-        // Maximum is 1
-        type: Array(1).map((_, index): string => `type-${index}`),
-        serviceEndpoint: ['x:url-1'],
-      }
-      await Did.Chain.getStoreTx(
-        {
-          authentication: [testAuthKey],
-          service: [newEndpoint],
-        },
-        paymentAccount.address,
-        sign
-      )
-      // One more than the maximum
-      newEndpoint.type.push('new-type')
-      await expect(
-        Did.Chain.getStoreTx(
-          {
-            authentication: [testAuthKey],
-            service: [newEndpoint],
-          },
-          paymentAccount.address,
-          sign
-        )
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has too many types (2). Max number of types allowed per service is 1."`
-      )
-    }, 30_000)
+      const types = ['type-1', 'type-2']
+      const limit = api.consts.did.maxNumberOfTypesPerService.toNumber()
+      expect(types.length).toBeGreaterThan(limit)
+    })
 
     it('should not be possible to create a DID with a service endpoint that has too many URIs', async () => {
-      const newEndpoint: DidServiceEndpoint = {
-        id: '#id-1',
-        // Maximum is 1
-        type: ['type-1'],
-        serviceEndpoint: Array(1).map((_, index): string => `x:url-${index}`),
-      }
-      await Did.Chain.getStoreTx(
-        {
-          authentication: [testAuthKey],
-          service: [newEndpoint],
-        },
-        paymentAccount.address,
-        sign
-      )
-      // One more than the maximum
-      newEndpoint.serviceEndpoint.push('x:new-url')
-      await expect(
-        Did.Chain.getStoreTx(
-          {
-            authentication: [testAuthKey],
-            service: [newEndpoint],
-          },
-
-          paymentAccount.address,
-          sign
-        )
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
-      )
-    }, 30_000)
+      const uris = ['x:url-1', 'x:url-2']
+      const limit = api.consts.did.maxNumberOfUrlsPerService.toNumber()
+      expect(uris.length).toBeGreaterThan(limit)
+    })
 
     it('should not be possible to create a DID with a service endpoint that has a type that is too long', async () => {
-      await Did.Chain.getStoreTx(
-        {
-          authentication: [testAuthKey],
-          service: [
-            {
-              id: '#id-1',
-              // Maximum is 50
-              type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-              serviceEndpoint: ['x:url-1'],
-            },
-          ],
-        },
-        paymentAccount.address,
-        sign
-      )
-      await expect(
-        Did.Chain.getStoreTx(
-          {
-            authentication: [testAuthKey],
-            service: [
-              {
-                id: '#id-1',
-                // One more than the maximum
-                type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-                serviceEndpoint: ['x:url-1'],
-              },
-            ],
-          },
-
-          paymentAccount.address,
-          sign
-        )
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
-      )
-    }, 30_000)
+      const type = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const limit = api.consts.did.maxServiceTypeLength.toNumber()
+      expect(type.length).toBeGreaterThan(limit)
+    })
 
     it('should not be possible to create a DID with a service endpoint that has a URI that is too long', async () => {
-      await Did.Chain.getStoreTx(
-        {
-          authentication: [testAuthKey],
-          service: [
-            {
-              id: '#id-1',
-              type: ['type-1'],
-              // Maximum is 200
-              serviceEndpoint: [
-                'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-              ],
-            },
-          ],
-        },
-        paymentAccount.address,
-        sign
-      )
-      await expect(
-        Did.Chain.getStoreTx(
-          {
-            authentication: [testAuthKey],
-            service: [
-              {
-                id: '#id-1',
-                type: ['type-1'],
-                // One more than the maximum
-                serviceEndpoint: [
-                  'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                ],
-              },
-            ],
-          },
-
-          paymentAccount.address,
-          sign
-        )
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (202 bytes). Max number of bytes allowed for a service URI is 200."`
-      )
-    }, 30_000)
-  })
-
-  describe('Service endpoint addition', () => {
-    it('should not be possible to add a service endpoint that is too long', async () => {
-      Did.Chain.serviceToChain({
-        // Maximum is 50
-        id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        type: ['type-a'],
-        serviceEndpoint: ['x:url-a'],
-      })
-      expect(
-        Did.Chain.serviceToChain({
-          // One more than maximum
-          id: '#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          type: ['type-a'],
-          serviceEndpoint: ['x:url-a'],
-        })
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"The service ID \\"#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is too long (51 bytes). Max number of bytes allowed for a service ID is 50."`
-      )
-    }, 30_000)
-
-    it('should not be possible to add a service endpoint that has too many types', async () => {
-      const newEndpoint: DidServiceEndpoint = {
-        id: '#id-1',
-        // Maximum is 1
-        type: Array(1).map((_, index): string => `type-${index}`),
-        serviceEndpoint: ['x:url-1'],
-      }
-      Did.Chain.serviceToChain(newEndpoint)
-      // One more than the maximum
-      newEndpoint.type.push('new-type')
-      expect(
-        Did.Chain.serviceToChain(newEndpoint)
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has too many types (2). Max number of types allowed per service is 1."`
-      )
-    }, 30_000)
-
-    it('should not be possible to add a service endpoint that has too many URIs', async () => {
-      const newEndpoint: DidServiceEndpoint = {
-        id: '#id-1',
-        // Maximum is 1
-        type: ['type-1'],
-        serviceEndpoint: Array(1).map((_, index): string => `x:url-${index}`),
-      }
-      Did.Chain.serviceToChain(newEndpoint)
-      // One more than the maximum
-      newEndpoint.serviceEndpoint.push('x:new-url')
-      expect(
-        Did.Chain.serviceToChain(newEndpoint)
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has too many URIs (2). Max number of URIs allowed per service is 1."`
-      )
-    }, 30_000)
-
-    it('should not be possible to add a service endpoint that has a type that is too long', async () => {
-      Did.Chain.serviceToChain({
-        id: '#id-1',
-        // Maximum is 50
-        type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-        serviceEndpoint: ['x:url-1'],
-      })
-      expect(
-        Did.Chain.serviceToChain({
-          id: '#id-1',
-          // One more than the maximum
-          type: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
-          serviceEndpoint: ['x:url-1'],
-        })
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has the type \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (51 bytes). Max number of bytes allowed for a service type is 50."`
-      )
-    }, 30_000)
-
-    it('should not be possible to add a service endpoint that has a URI that is too long', async () => {
-      Did.Chain.serviceToChain({
-        id: '#id-1',
-        type: ['type-1'],
-        // Maximum is 200
-        serviceEndpoint: [
-          'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        ],
-      })
-      expect(
-        Did.Chain.serviceToChain({
-          id: '#id-1',
-          type: ['type-1'],
-          // One more than the maximum
-          serviceEndpoint: [
-            'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          ],
-        })
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"The service with ID \\"#id-1\\" has the URI \\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" that is too long (201 bytes). Max number of bytes allowed for a service URI is 200."`
-      )
-    }, 30_000)
+      const uri =
+        'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const limit = api.consts.did.maxServiceUrlLength.toNumber()
+      expect(uri.length).toBeGreaterThan(limit)
+    })
   })
 })
 
