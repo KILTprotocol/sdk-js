@@ -8,20 +8,27 @@
 import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 
-import {
+import type {
   DidDocument,
   DidServiceEndpoint,
   DidUri,
   KiltKeyringPair,
   SignCallback,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import {
   ApiMocks,
   createLocalDemoFullDidFromKeypair,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
 
 import type { EncodedDid } from '../Did.chain'
+import {
+  generateDidAuthenticatedTx,
+  didFromChain,
+  servicesFromChain,
+} from '../Did.chain'
 
 import * as Did from './index.js'
 
@@ -31,7 +38,9 @@ import * as Did from './index.js'
  * @group unit/did
  */
 
-const mockApi = ApiMocks.createAugmentedApi()
+const augmentedApi = ApiMocks.createAugmentedApi()
+const mockedApi: any = ApiMocks.getMockedApi()
+ConfigService.set({ api: mockedApi })
 
 const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
 const existingDid: DidUri = `did:kilt:${existingAddress}`
@@ -96,23 +105,24 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
   },
 ]
 
-jest.mock('../Did.chain.ts', () => ({
-  queryDetails: jest.fn(async (did: DidUri): Promise<EncodedDid | null> => {
-    if (did === existingDid) {
-      return existingDidRecord
-    }
-    return null
-  }),
-  queryServiceEndpoints: jest.fn(
-    async (did: DidUri): Promise<DidServiceEndpoint[]> => {
-      if (did === existingDid) {
-        return existingServiceEndpoints
-      }
-      return []
-    }
-  ),
-  generateDidAuthenticatedTx: jest.fn().mockResolvedValue({}),
-}))
+jest.mock('../Did.chain')
+jest.mocked(didFromChain).mockReturnValue(existingDidRecord)
+jest.mocked(servicesFromChain).mockReturnValue(existingServiceEndpoints)
+jest
+  .mocked(generateDidAuthenticatedTx)
+  .mockResolvedValue({} as SubmittableExtrinsic)
+
+mockedApi.query.did.did.mockReturnValue(
+  ApiMocks.mockChainQueryReturn('did', 'did', [
+    '01234567890123456789012345678901',
+    [],
+    undefined,
+    undefined,
+    [],
+    '123',
+    [existingAddress, '0'],
+  ])
+)
 
 /*
  * Functions tested:
@@ -186,6 +196,10 @@ describe('When creating an instance from the chain', () => {
   })
 
   it('returns null if the DID does not exist', async () => {
+    mockedApi.query.did.did.mockReturnValueOnce(
+      ApiMocks.mockChainQueryReturn('did', 'did')
+    )
+
     const fullDid = await Did.query(nonExistingDid)
     expect(fullDid).toBeNull()
   })
@@ -204,11 +218,11 @@ describe('When creating an instance from the chain', () => {
 
     describe('.addSingleExtrinsic()', () => {
       it('fails if the extrinsic does not require a DID', async () => {
-        const extrinsic = mockApi.tx.indices.claim(1)
+        const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
           Did.authorizeBatch({
             did: fullDid.uri,
-            batchFunction: mockApi.tx.utility.batchAll,
+            batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
             submitter: keypair.address,
@@ -219,13 +233,13 @@ describe('When creating an instance from the chain', () => {
       })
 
       it('fails if the extrinsic is a utility (batch) extrinsic containing valid extrinsics', async () => {
-        const extrinsic = mockApi.tx.utility.batch([
-          await mockApi.tx.ctype.add('test-ctype'),
+        const extrinsic = augmentedApi.tx.utility.batch([
+          await augmentedApi.tx.ctype.add('test-ctype'),
         ])
         await expect(async () =>
           Did.authorizeBatch({
             did: fullDid.uri,
-            batchFunction: mockApi.tx.utility.batchAll,
+            batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
             submitter: keypair.address,
@@ -236,23 +250,23 @@ describe('When creating an instance from the chain', () => {
       })
 
       it('adds different batches requiring different keys', async () => {
-        const ctype1Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
-        const ctype2Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+        const ctype1Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
+        const ctype2Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
         const delegationExtrinsic1 =
-          await mockApi.tx.delegation.createHierarchy(
+          await augmentedApi.tx.delegation.createHierarchy(
             randomAsHex(32),
             randomAsHex(32)
           )
         const delegationExtrinsic2 =
-          await mockApi.tx.delegation.createHierarchy(
+          await augmentedApi.tx.delegation.createHierarchy(
             randomAsHex(32),
             randomAsHex(32)
           )
-        const ctype3Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
-        const ctype4Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+        const ctype3Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
+        const ctype4Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
 
         const batchFunction =
-          jest.fn() as unknown as typeof mockApi.tx.utility.batchAll
+          jest.fn() as unknown as typeof augmentedApi.tx.utility.batchAll
         const extrinsics = [
           ctype1Extrinsic,
           ctype2Extrinsic,
@@ -291,7 +305,7 @@ describe('When creating an instance from the chain', () => {
         await expect(async () =>
           Did.authorizeBatch({
             did: fullDid.uri,
-            batchFunction: mockApi.tx.utility.batchAll,
+            batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [],
             sign,
             submitter: keypair.address,

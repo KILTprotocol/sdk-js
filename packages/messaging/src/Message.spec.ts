@@ -49,6 +49,7 @@ import type {
   ITerms,
   MessageBody,
   PartialClaim,
+  ICredentialPresentation,
 } from '@kiltprotocol/types'
 import {
   Quote,
@@ -239,11 +240,17 @@ describe('Messaging', () => {
   })
 
   it('verifies the message with sender is the owner (as full DID)', async () => {
-    const content = Credential.fromClaim({
+    const credential = Credential.fromClaim({
       cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceFullDid.uri,
       contents: {},
     })
+
+    const presentation = await Credential.createPresentation({
+      credential,
+      signCallback: aliceSign(aliceFullDid),
+    })
+
     const date = new Date(2019, 11, 10).toISOString()
 
     const quoteData: IQuote = {
@@ -264,14 +271,14 @@ describe('Messaging', () => {
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
-      content.rootHash,
+      credential.rootHash,
       aliceSign(aliceFullDid),
       aliceFullDid.uri,
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
-        credential: content,
+        credential,
         quote: bothSigned,
       },
       type: 'request-attestation',
@@ -361,7 +368,7 @@ describe('Messaging', () => {
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const submitClaimsForCTypeBody: ISubmitCredential = {
-      content: [content],
+      content: [presentation],
       type: 'submit-credential',
     }
 
@@ -402,10 +409,15 @@ describe('Messaging', () => {
 
   it('verifies the message with sender is the owner (as light DID)', async () => {
     // Create request for attestation to the light DID with no encoded details
-    const content = Credential.fromClaim({
+    const credential = Credential.fromClaim({
       cTypeHash: `${Crypto.hashStr('0x12345678')}`,
       owner: aliceLightDid.uri,
       contents: {},
+    })
+
+    const presentation = await Credential.createPresentation({
+      credential,
+      signCallback: aliceSign(aliceLightDid),
     })
 
     const date = new Date(2019, 11, 10).toISOString()
@@ -427,24 +439,27 @@ describe('Messaging', () => {
     )
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
-      content.rootHash,
+      credential.rootHash,
       aliceSign(aliceLightDid),
       aliceLightDid.uri,
       { didResolve }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
-        credential: content,
+        credential,
         quote: bothSigned,
       },
       type: 'request-attestation',
     }
 
     // Create request for attestation to the light DID with encoded details
-    const contentWithEncodedDetails = Credential.fromClaim({
-      cTypeHash: `${Crypto.hashStr('0x12345678')}`,
-      owner: aliceLightDidWithDetails.uri,
-      contents: {},
+    const contentWithEncodedDetails = await Credential.createPresentation({
+      credential: Credential.fromClaim({
+        cTypeHash: `${Crypto.hashStr('0x12345678')}`,
+        owner: aliceLightDidWithDetails.uri,
+        contents: {},
+      }),
+      signCallback: aliceSign(aliceLightDidWithDetails),
     })
 
     const quoteDataEncodedDetails: IQuote = {
@@ -466,7 +481,7 @@ describe('Messaging', () => {
       )
     const bothSignedEncodedDetails = await Quote.createQuoteAgreement(
       quoteAttesterSignedEncodedDetails,
-      content.rootHash,
+      credential.rootHash,
       aliceSign(aliceLightDidWithDetails),
       aliceLightDidWithDetails.uri,
       { didResolve }
@@ -620,7 +635,7 @@ describe('Messaging', () => {
     ).toThrowError(SDKErrors.IdentityMismatchError)
 
     const submitClaimsForCTypeBody: ISubmitCredential = {
-      content: [content],
+      content: [presentation],
       type: 'submit-credential',
     }
 
@@ -759,7 +774,7 @@ describe('Error checking / Verification', () => {
   let requestCredentialBody: IRequestCredential
   let requestCredentialContent: IRequestCredentialContent
   let submitCredentialBody: ISubmitCredential
-  let submitCredentialContent: ICredential[]
+  let submitCredentialContent: ICredentialPresentation[]
   let acceptCredentialBody: IAcceptCredential
   let rejectCredentialBody: IRejectCredential
   let requestAcceptDelegationBody: IRequestAcceptDelegation
@@ -937,7 +952,15 @@ describe('Error checking / Verification', () => {
       challenge: '1234',
     }
     // Submit Credential content
-    submitCredentialContent = [legitimation]
+    submitCredentialContent = [
+      {
+        ...legitimation,
+        claimerSignature: {
+          signature: '0x1234',
+          keyUri: `${legitimation.claim.owner}#0x1234`,
+        },
+      },
+    ]
     // Request Accept delegation content
     requestAcceptDelegationContent = {
       delegationData: {
@@ -1294,14 +1317,12 @@ describe('Error checking / Verification', () => {
     expect(() => Message.verifyMessageBody(rejectTermsBody)).toThrowError(
       SDKErrors.CTypeHashMissingError
     )
-    requestAttestationBody.content.credential.claimerSignature = {
+    submitCredentialBody.content[0].claimerSignature = {
       signature: 'this is not the claimers signature',
       // @ts-ignore
       keyUri: 'this is not a key id',
     }
-    expect(() =>
-      Message.verifyMessageBody(requestAttestationBody)
-    ).toThrowError()
+    expect(() => Message.verifyMessageBody(submitCredentialBody)).toThrowError()
     // @ts-ignore
     submitAttestationBody.content.attestation.claimHash =
       'this is not the claim hash'

@@ -5,127 +5,44 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
+import { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
+import type { Bytes, Option } from '@polkadot/types-codec'
+import type { Deposit, DidUri } from '@kiltprotocol/types'
 import type { BN } from '@polkadot/util'
-
-import type {
-  SubmittableExtrinsic,
-  DidUri,
-  KiltAddress,
-} from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
-
-import * as DidUtils from '../Did.utils.js'
-import { encodeDid } from '../Did.chain.js'
+import { depositFromChain, uriFromChain } from '../Did.chain.js'
 
 /**
  * Web3Name is the type of a nickname for a DID.
  */
 export type Web3Name = string
 
-function checkWeb3NameInputConstraints(
-  api: ApiPromise,
-  web3Name: Web3Name
-): void {
-  const [minLength, maxLength] = [
-    api.consts.web3Names.minNameLength.toNumber(),
-    api.consts.web3Names.maxNameLength.toNumber(),
-  ]
-
-  if (web3Name.length < minLength) {
-    throw new SDKErrors.Web3NameError(
-      `The provided name "${web3Name}" is shorter than the minimum number of characters allowed, which is ${minLength}`
-    )
-  }
-  if (web3Name.length > maxLength) {
-    throw new SDKErrors.Web3NameError(
-      `The provided name "${web3Name}" is longer than the maximum number of characters allowed, which is ${maxLength}`
-    )
-  }
-}
-
 /**
- * Returns an extrinsic to claim a new web3name.
+ * Decodes the web3name of a DID.
  *
- * @param name Web3Name that should be claimed.
- * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The SubmittableExtrinsic for the `claim` call.
- */
-export async function getClaimTx(
-  name: Web3Name
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  checkWeb3NameInputConstraints(api, name)
-  return api.tx.web3Names.claim(name)
-}
-
-/**
- * Returns an extrinsic to release a web3name by its owner.
- *
- * @returns The SubmittableExtrinsic for the `releaseByOwner` call.
- */
-export async function getReleaseByOwnerTx(): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.web3Names.releaseByOwner()
-}
-
-/**
- * Returns an extrinsic to release a web3name by the account that owns the deposit.
- *
- * @param name Web3Name that should be released.
- * The name must only contain ASCII characters and have a length in the inclusive range [3, 32].
- * @returns The SubmittableExtrinsic for the `reclaimDeposit` call.
- */
-export async function getReclaimDepositTx(
-  name: Web3Name
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  checkWeb3NameInputConstraints(api, name)
-  return api.tx.web3Names.reclaimDeposit(name)
-}
-
-/**
- * Retrieve the Web3Name for a specific DID uri.
- *
- * @param did DID of the web3name owner, i.e. 'did:kilt:4abc...'.
+ * @param encoded The value returned by `api.query.web3Names.names()`.
  * @returns The registered web3name for this DID if any.
  */
-export async function queryWeb3NameForDid(
-  did: DidUri
-): Promise<Web3Name | null> {
-  const api = ConfigService.get('api')
-  const encoded = await api.query.web3Names.names(encodeDid(did))
-  return encoded.isSome ? encoded.unwrap().toUtf8() : null
+export function web3NameFromChain(encoded: Option<Bytes>): Web3Name {
+  return encoded.unwrap().toUtf8()
 }
 
 /**
- * Retrieve the DID uri for a specific web3 name.
+ * Decodes the DID of the owner of web3name.
  *
- * @param name Web3 name that should be looked up.
+ * @param encoded The value returned by `api.query.web3Names.owner()`.
  * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
  */
-export async function queryDidForWeb3Name(
-  name: Web3Name
-): Promise<DidUri | null> {
-  const api = ConfigService.get('api')
-  const encoded = await api.query.web3Names.owner(name)
-
-  const address = encoded.isSome
-    ? (encoded.unwrap().owner.toString() as KiltAddress)
-    : null
-  if (address === null) {
-    return null
+export function web3NameOwnerFromChain(
+  encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
+): {
+  owner: DidUri
+  deposit: Deposit
+  claimedAt: BN
+} {
+  const { owner, deposit, claimedAt } = encoded.unwrap()
+  return {
+    owner: uriFromChain(owner),
+    deposit: depositFromChain(deposit),
+    claimedAt: claimedAt.toBn(),
   }
-  return DidUtils.getFullDidUri(address)
-}
-
-/**
- * Retrieves the deposit amount to claim a web3 name as currently stored in the runtime.
- *
- * @returns The deposit amount. The value is indicated in femto KILTs.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const api = ConfigService.get('api')
-  return api.consts.web3Names.deposit.toBn()
 }

@@ -88,53 +88,45 @@ export function EXTRINSIC_FAILED(result: ISubmittableResult): boolean {
   return ErrorHandler.extrinsicFailed(result)
 }
 
-/**
- * Parses potentially incomplete or undefined options and returns complete [[Options]].
- *
- * @param opts Potentially undefined or partial [[Options]] .
- * @returns Complete [[Options]], with potentially defaulted values.
- */
-export function parseSubscriptionOptions(
-  opts?: Partial<SubscriptionPromise.Options>
-): SubscriptionPromise.Options {
-  const {
-    resolveOn = IS_FINALIZED,
-    rejectOn = (result: ISubmittableResult) =>
-      EXTRINSIC_FAILED(result) || IS_ERROR(result),
-    timeout,
-  } = { ...opts }
-
-  return {
-    resolveOn,
-    rejectOn,
-    timeout,
-  }
+function defaultResolveOn(): SubscriptionPromise.ResultEvaluator {
+  return ConfigService.isSet('submitTxResolveOn')
+    ? ConfigService.get('submitTxResolveOn')
+    : IS_FINALIZED
 }
 
 /**
  * Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
- * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
+ * finalization or rejects if any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters or via the [[ConfigService]].
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
  * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts Partial optional [[SubscriptionPromise]]to be parsed: Criteria for resolving/rejecting the promise.
+ * @param opts Allows overwriting criteria for resolving/rejecting the transaction result subscription promise. These options take precedent over configuration via the ConfigService.
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  opts?: Partial<SubscriptionPromise.Options>
+  opts: Partial<SubscriptionPromise.Options> = {}
 ): Promise<ISubmittableResult> {
+  const {
+    resolveOn = defaultResolveOn(),
+    rejectOn = (result: ISubmittableResult) =>
+      EXTRINSIC_FAILED(result) || IS_ERROR(result),
+  } = opts
+
   const api = ConfigService.get('api')
   if (!api.hasSubscriptions) {
     throw new SDKErrors.SubscriptionsNotSupportedError()
   }
 
   log.info(`Submitting ${tx.method}`)
-  const options = parseSubscriptionOptions(opts)
-  const { promise, subscription } = makeSubscriptionPromise(options)
+  const { promise, subscription } = makeSubscriptionPromise({
+    ...opts,
+    resolveOn,
+    rejectOn,
+  })
 
   let latestResult: SubmittableResult | undefined
   const unsubscribe = await tx.send((result) => {

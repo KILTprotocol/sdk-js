@@ -12,7 +12,7 @@ import type { PartialClaim } from './Claim.js'
 import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
 import type { IQuoteAgreement } from './Quote.js'
-import type { ICredential } from './Credential.js'
+import type { ICredential, ICredentialPresentation } from './Credential.js'
 import type { ITerms } from './Terms.js'
 import type { DidResourceUri } from './index.js'
 
@@ -81,7 +81,7 @@ export interface IRejectTerms extends IMessageBodyBase {
 }
 
 export interface ISubmitCredential extends IMessageBodyBase {
-  content: ICredential[]
+  content: ICredentialPresentation[]
   type: 'submit-credential'
 }
 

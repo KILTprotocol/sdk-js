@@ -18,12 +18,11 @@
 import type {
   IDelegationNode,
   IDelegationHierarchyDetails,
-  KiltAddress,
 } from '@kiltprotocol/types'
 import { Permission, PermissionType } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { Hash } from '@polkadot/types/interfaces/runtime'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import { Chain as DidChain } from '@kiltprotocol/did'
 import type {
   DelegationDelegationHierarchyDelegationHierarchyDetails,
   DelegationDelegationHierarchyDelegationNode,
@@ -41,7 +40,7 @@ export type DelegationHierarchyDetailsRecord = Pick<
 
 export type CtypeHash = Hash
 
-export function decodeDelegationHierarchyDetails(
+export function delegationHierarchyDetailsFromChain(
   encoded: Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
 ): DelegationHierarchyDetailsRecord | null {
   if (encoded.isNone) {
@@ -57,10 +56,13 @@ export function decodeDelegationHierarchyDetails(
  * Decode the permissions from the bitset encoded in the given `number`.
  * We use bitwise `AND` to check if a permission bit flag is set.
  *
- * @param bitset The u32 number used as the bitset to encode permissions.
+ * @param encoded The u32 number used as the bitset to encode permissions.
  * @returns The permission set.
  */
-function decodePermissions(bitset: number): PermissionType[] {
+function permissionsFromChain(
+  encoded: DelegationDelegationHierarchyDelegationNode['details']['permissions']
+): PermissionType[] {
+  const bitset = encoded.bits.toNumber()
   const permissions: PermissionType[] = []
   // eslint-disable-next-line no-bitwise
   if ((bitset & Permission.ATTEST) > 0) {
@@ -77,7 +79,7 @@ export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 
 export type DelegationNodeId = Hash
 
-export function decodeDelegationNode(
+export function delegationNodeFromChain(
   encoded: Option<DelegationDelegationHierarchyDelegationNode>
 ): DelegationNodeRecord | null {
   if (encoded.isNone) {
@@ -91,12 +93,8 @@ export function decodeDelegationNode(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children].map((id) => id.toHex()),
-    account: DidUtils.getFullDidUri(
-      delegationNode.details.owner.toString() as KiltAddress
-    ),
-    permissions: decodePermissions(
-      delegationNode.details.permissions.bits.toNumber()
-    ),
+    account: DidChain.uriFromChain(delegationNode.details.owner),
+    permissions: permissionsFromChain(delegationNode.details.permissions),
     revoked: delegationNode.details.revoked.valueOf(),
   }
 }

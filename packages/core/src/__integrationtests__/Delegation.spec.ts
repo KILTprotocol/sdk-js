@@ -23,6 +23,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as Did from '@kiltprotocol/did'
+import { ApiPromise } from '@polkadot/api'
 import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
@@ -38,10 +39,9 @@ import {
   isCtypeOnChain,
   submitExtrinsic,
 } from './utils'
-import {
-  getAttestationHashes,
-  getRevokeTx,
-} from '../delegation/DelegationNode.chain'
+import { getAttestationHashes } from '../delegation/DelegationNode.chain'
+
+let api: ApiPromise
 
 let paymentAccount: KiltKeyringPair
 let root: DidDocument
@@ -104,7 +104,7 @@ async function addDelegation(
 }
 
 beforeAll(async () => {
-  await initializeApi()
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {
@@ -118,7 +118,7 @@ beforeAll(async () => {
 
   if (await isCtypeOnChain(driversLicenseCType)) return
 
-  const storeTx = await CType.getStoreTx(driversLicenseCType)
+  const storeTx = api.tx.ctype.add(CType.toChain(driversLicenseCType))
   const authorizedStoreTx = await Did.authorizeExtrinsic(
     attester.uri,
     storeTx,
@@ -129,7 +129,7 @@ beforeAll(async () => {
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
-  const depositAmount = await DelegationNode.queryDepositAmount()
+  const depositAmount = api.consts.delegation.deposit.toBn()
   expect(depositAmount.toString()).toMatchInlineSnapshot('"1000000000000000"')
 })
 
@@ -187,16 +187,23 @@ describe('and attestation rights have been delegated', () => {
     const credential = Credential.fromClaim(claim, {
       delegationId: delegatedNode.id,
     })
-    await Credential.sign(credential, claimerKey.sign(claimer))
+    const presentation = await Credential.createPresentation({
+      credential,
+      signCallback: claimerKey.sign(claimer),
+    })
     expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    expect(await Credential.verifySignature(credential)).toBe(true)
-    await Credential.verify(credential)
+    expect(await Credential.verifySignature(presentation)).toBe(true)
+    await Credential.verifyPresentation(presentation)
 
     const attestation = Attestation.fromCredentialAndDid(
       credential,
       attester.uri
     )
-    const storeTx = await Attestation.getStoreTx(attestation)
+    const storeTx = api.tx.attestation.add(
+      attestation.claimHash,
+      attestation.cTypeHash,
+      { Delegation: { subjectNodeId: delegatedNode.id } }
+    )
     const authorizedStoreTx = await Did.authorizeExtrinsic(
       attester.uri,
       storeTx,
@@ -205,12 +212,17 @@ describe('and attestation rights have been delegated', () => {
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
-    const storedAttestation = await Attestation.query(attestation.claimHash)
+    const storedAttestation = Attestation.fromChain(
+      await api.query.attestation.attestations(attestation.claimHash),
+      attestation.claimHash
+    )
     expect(storedAttestation).not.toBeNull()
     expect(storedAttestation?.revoked).toBe(false)
 
     // revoke attestation through root
-    const revokeTx = await Attestation.getRevokeTx(attestation.claimHash, 1)
+    const revokeTx = api.tx.attestation.revoke(attestation.claimHash, {
+      Delegation: { maxChecks: 1 },
+    })
     const authorizedStoreTx2 = await Did.authorizeExtrinsic(
       root.uri,
       revokeTx,
@@ -219,7 +231,8 @@ describe('and attestation rights have been delegated', () => {
     )
     await submitExtrinsic(authorizedStoreTx2, paymentAccount)
 
-    const storedAttestationAfter = await Attestation.query(
+    const storedAttestationAfter = Attestation.fromChain(
+      await api.query.attestation.attestations(attestation.claimHash),
       attestation.claimHash
     )
     expect(storedAttestationAfter).not.toBeNull()
@@ -306,7 +319,7 @@ describe('revocation', () => {
       delegatorSign,
       firstDelegateSign
     )
-    const revokeTx = await getRevokeTx(delegationRoot.id, 1, 1)
+    const revokeTx = api.tx.delegation.revokeDelegation(delegationRoot.id, 1, 1)
     const authorizedRevokeTx = await Did.authorizeExtrinsic(
       firstDelegate.uri,
       revokeTx,
