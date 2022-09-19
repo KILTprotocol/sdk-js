@@ -54,7 +54,7 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint)
-  const api = await ApiPromise.create({ provider })
+  const api = new ApiPromise({ provider })
   await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
   return api
 }
