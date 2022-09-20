@@ -55,7 +55,7 @@ describe('When creating an instance from the chain', () => {
     )
     expect(keyRelationship).toBe('assertionMethod')
   })
-  it('Should return correct KeyRelationship for forcedBatch call', () => {
+  it('Should return correct KeyRelationship for forceBatch call', () => {
     const keyRelationship = getKeyRelationshipForExtrinsic(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
