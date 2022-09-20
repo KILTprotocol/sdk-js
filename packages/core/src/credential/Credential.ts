@@ -149,9 +149,7 @@ export function verifyDataIntegrity(input: ICredential): void {
   })
 
   // check legitimations
-  input.legitimations.forEach((legitimation) => {
-    verifyDataIntegrity(legitimation)
-  })
+  input.legitimations.forEach(verifyDataIntegrity)
 }
 
 /**

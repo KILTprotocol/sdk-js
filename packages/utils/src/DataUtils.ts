@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { isHex } from '@polkadot/util'
 import type { KiltAddress } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import * as SDKErrors from './SDKErrors.js'
@@ -39,26 +40,17 @@ export function isKiltAddress(input: unknown): input is KiltAddress {
   }
 }
 
+// re-exporting isHex
+export { isHex } from '@polkadot/util'
+
 /**
  * Validates the format of a hex string via regex.
  *
  * @param input Hex string to validate for correct format.
  * @param byteLength Expected length of hex in bytes. Defaults to 32.
- * @param prefixed Whether the hex string is expected to be prefixed with '0x'. Defaults to true.
  */
-export function verifyIsHex(
-  input: unknown,
-  byteLength = 32,
-  prefixed = true
-): void {
-  if (typeof input !== 'string') {
-    throw new SDKErrors.HashTypeError()
-  }
-  const hexStringPattern = new RegExp(
-    `^${prefixed ? '0x' : ''}[A-F0-9]{${Math.round(byteLength) * 2}}$`,
-    'i'
-  )
-  if (!input.match(hexStringPattern)) {
-    throw new SDKErrors.HashMalformedError(input)
+export function verifyIsHex(input: unknown, byteLength = 32): void {
+  if (!isHex(input, byteLength * 8)) {
+    throw new SDKErrors.HashMalformedError(`${input}`)
   }
 }

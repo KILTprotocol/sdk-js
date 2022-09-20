@@ -105,18 +105,17 @@ export function verifyObjectAgainstSchema(
   if (schema.$id !== CTypeModel.$id) {
     validator.addSchema(CTypeModel)
   }
-  const result = validator.validate(object)
-  if (!result.valid) {
-    if (messages) {
-      result.errors.forEach((error) => {
-        messages.push(error.error)
-      })
-    }
-    throw new SDKErrors.ObjectUnverifiableError(
-      'JSON schema verification failed for object',
-      { cause: result.errors }
-    )
+  const { valid, errors } = validator.validate(object)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
+      messages.push(error.error)
+    })
   }
+  throw new SDKErrors.ObjectUnverifiableError(
+    'JSON schema verification failed for object',
+    { cause: errors }
+  )
 }
 
 /**
@@ -190,17 +189,16 @@ export function verifyClaimAgainstNestedSchemas(
     validator.addSchema(ctype)
   })
   validator.addSchema(CTypeModel)
-  const result = validator.validate(claimContents)
-  if (!result.valid) {
-    if (messages) {
-      result.errors.forEach((error) => {
-        messages.push(error.error)
-      })
-    }
-    throw new SDKErrors.NestedClaimUnverifiableError(undefined, {
-      cause: result.errors,
+  const { valid, errors } = validator.validate(claimContents)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
+      messages.push(error.error)
     })
   }
+  throw new SDKErrors.NestedClaimUnverifiableError(undefined, {
+    cause: errors,
+  })
 }
 
 /**
