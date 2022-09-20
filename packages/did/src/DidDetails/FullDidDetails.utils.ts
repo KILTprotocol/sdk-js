@@ -29,7 +29,7 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   web3Names: 'authentication',
 }
 
-function getKeyRelationshipForCall<Arguments extends AnyTuple = AnyTuple>(
+function getKeyRelationshipForMethod<Arguments extends AnyTuple = AnyTuple>(
   call: CallBase<Arguments>
 ): VerificationKeyRelationship | undefined {
   const { section, method } = call
@@ -42,7 +42,7 @@ function getKeyRelationshipForCall<Arguments extends AnyTuple = AnyTuple>(
   ) {
     // map all calls to their VerificationKeyRelationship and deduplicate the items
     return (call.args[0] as unknown as Array<CallBase<Arguments>>)
-      .map(getKeyRelationshipForCall)
+      .map(getKeyRelationshipForMethod)
       .reduce((prev, value) => (prev === value ? prev : undefined))
   }
 
@@ -57,7 +57,7 @@ function getKeyRelationshipForCall<Arguments extends AnyTuple = AnyTuple>(
 export function getKeyRelationshipForExtrinsic(
   extrinsic: Extrinsic
 ): VerificationKeyRelationship | undefined {
-  return getKeyRelationshipForCall(extrinsic.method)
+  return getKeyRelationshipForMethod(extrinsic.method)
 }
 
 // Max nonce value is (2^64) - 1
