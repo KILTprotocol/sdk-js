@@ -37,14 +37,12 @@ function getKeyRelationshipForCall<A extends AnyTuple = AnyTuple>(
   // get the VerificationKeyRelationship of a batched call
   if (
     section === 'utility' &&
-    (method === 'batch' || method === 'batchAll' || method === 'forceBatch') &&
+    (['batch', 'batchAll', 'forceBatch'].includes(method)) &&
     call.args[0].toRawType() === 'Vec<Call>'
   ) {
     // map all calls to their VerificationKeyRelationship and deduplicate the items
     return (call.args[0] as unknown as Array<CallBase<A>>)
-      .map((innerCall: CallBase<A>) => {
-        return getKeyRelationshipForCall(innerCall)
-      })
+      .map(getKeyRelationshipForCall)
       .reduce((prev, value) => (prev === value ? prev : undefined))
   }
 
