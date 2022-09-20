@@ -16,8 +16,6 @@ import type {
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 
-import { ConfigService } from '@kiltprotocol/config'
-
 import type { AttestedProof } from '../../types.js'
 import {
   verifyAttestedProof,
@@ -42,16 +40,9 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
   constructor(options: { KiltConnection: ApiPromise }) {
     // vc-js complains when there is no verificationMethod
     super({ type: KILT_ATTESTED_PROOF_TYPE, verificationMethod: '<none>' })
-    if (
-      !('KiltConnection' in options) ||
-      !(options.KiltConnection instanceof ApiPromise)
-    )
+    if (!('KiltConnection' in options))
       throw new TypeError('KiltConnection must be a Kilt blockchain connection')
     this.provider = options.KiltConnection
-  }
-
-  private setConnection(): void {
-    ConfigService.set({ api: this.provider })
   }
 
   /**
@@ -75,10 +66,10 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
         proof,
         options
       )
-      this.setConnection()
       const { verified, errors, status } = await verifyAttestedProof(
         compactedDoc,
-        compactedProof
+        compactedProof,
+        this.provider
       )
       if (errors.length > 0)
         return {

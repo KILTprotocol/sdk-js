@@ -96,10 +96,7 @@ export function validateCreateDocumentInput(input: CreateDocumentInput): void {
         `Cannot specify a service ID with the name "${service.id}" as it is a reserved keyword`
       )
     }
-    const [, errors] = checkServiceEndpointSyntax(service)
-    if (errors && errors.length > 0) {
-      throw errors[0]
-    }
+    checkServiceEndpointSyntax(service)
   })
 }
 

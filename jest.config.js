@@ -24,7 +24,6 @@ module.exports = {
     '!**/lib/**',
     '!**/test/**',
     '!**/kilt/*',
-    '!**/blockchainApiConnection/*',
     '!**/types/**/*',
     '!**/SDKErrors.ts',
     '!utils/src/json-schema/*',

@@ -332,8 +332,8 @@ export function getMockedApi(): MockApiPromise {
       },
       did: {
         // default return value decodes to null, represents dID not found
-        dIDs: jest.fn(async (address: string) =>
-          mockChainQueryReturn('did', 'dIDs')
+        did: jest.fn(async (address: string) =>
+          mockChainQueryReturn('did', 'did')
         ),
         /* example return value:
       new Option(
@@ -346,6 +346,12 @@ export function getMockedApi(): MockApiPromise {
         ]
       )
       */
+        serviceEndpoints: jest.fn(async () =>
+          mockChainQueryReturn('did', 'serviceEndpoints')
+        ),
+        didBlacklist: jest
+          .fn()
+          .mockReturnValue(mockChainQueryReturn('did', 'didBlacklist')),
       },
       portablegabi: {
         accumulatorList: jest.fn((address: string, index: number) =>
@@ -368,5 +374,6 @@ export function getMockedApi(): MockApiPromise {
     registry: TYPE_REGISTRY,
     hasSubscriptions: true,
   }
+  MockedApi.query.did.serviceEndpoints.entries = jest.fn().mockReturnValue([])
   return MockedApi as MockApiPromise
 }

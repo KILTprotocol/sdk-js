@@ -23,8 +23,9 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
-import { HexString } from '@polkadot/util/types'
-import { getOwner, isStored } from './CType.chain.js'
+import { ConfigService } from '@kiltprotocol/config'
+import type { HexString } from '@polkadot/util/types'
+import { fromChain } from './CType.chain.js'
 import {
   CTypeModel,
   CTypeWrapperModel,
@@ -141,7 +142,9 @@ export function verifyClaimAgainstSchema(
  * @returns Whether or not the CType is registered on-chain.
  */
 export async function verifyStored(ctype: ICType): Promise<boolean> {
-  return isStored(ctype.hash)
+  const api = ConfigService.get('api')
+  const encoded = await api.query.ctype.ctypes(ctype.hash)
+  return encoded.isSome
 }
 
 /**
@@ -151,8 +154,9 @@ export async function verifyStored(ctype: ICType): Promise<boolean> {
  * @returns Whether or not the CType is registered on-chain to `ctype.owner`.
  */
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
-  const owner = await getOwner(ctype.hash)
-  return owner ? owner === ctype.owner : false
+  const api = ConfigService.get('api')
+  const encoded = await api.query.ctype.ctypes(ctype.hash)
+  return encoded.isSome ? fromChain(encoded) === ctype.owner : false
 }
 
 /**

@@ -148,7 +148,7 @@ async function createFullDidFromKeypair(
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  await kilt.connect('ws://127.0.0.1:9944')
+  const api = await kilt.connect('ws://127.0.0.1:9944')
 
   // Accounts
   console.log('Account setup started')
@@ -230,7 +230,7 @@ async function runAll() {
 
   const deleteTx = await Did.authorizeExtrinsic(
     fullDid,
-    await Did.Chain.getDeleteDidExtrinsic(BalanceUtils.toFemtoKilt(0)),
+    api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
     sign,
     payer.address
   )
@@ -262,7 +262,7 @@ async function runAll() {
 
   const cTypeStoreTx = await Did.authorizeExtrinsic(
     alice,
-    await CType.getStoreTx(DriversLicense),
+    api.tx.ctype.add(CType.toChain(DriversLicense)),
     aliceSign,
     payer.address
   )
@@ -348,12 +348,15 @@ async function runAll() {
 
   const attestationStoreTx = await Did.authorizeExtrinsic(
     alice,
-    await Attestation.getStoreTx(attestation),
+    api.tx.attestation.add(attestation.claimHash, attestation.cTypeHash, null),
     aliceSign,
     payer.address
   )
   await Blockchain.signAndSubmitTx(attestationStoreTx, payer)
-  const storedAttestation = await Attestation.query(credential.rootHash)
+  const storedAttestation = Attestation.fromChain(
+    await api.query.attestation.attestations(credential.rootHash),
+    credential.rootHash
+  )
   if (storedAttestation?.revoked === false) {
     console.info('Attestation verified with chain')
   } else {
