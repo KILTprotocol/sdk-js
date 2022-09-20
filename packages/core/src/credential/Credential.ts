@@ -24,7 +24,6 @@ import {
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  DidDocument,
   DidResolve,
   Hash,
   IAttestation,
@@ -387,24 +386,21 @@ function getAttributes(credential: ICredential): Set<string> {
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
  * @param presentationOptions.signCallback The callback to sign the presentation.
- * @param presentationOptions.claimerDid The DID document of the presenter.
- * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+ * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
  * @returns A deep copy of the Credential with all but `publicAttributes` removed.
  */
 export async function createPresentation({
   credential,
-  selectedAttributes,
   signCallback,
+  selectedAttributes,
   challenge,
-  claimerDid,
 }: {
   credential: ICredential
-  selectedAttributes?: string[]
   signCallback: SignCallback
+  selectedAttributes?: string[]
   challenge?: string
-  claimerDid: DidDocument
 }): Promise<ICredentialPresentation> {
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
@@ -419,13 +415,10 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const selectedKeyId = claimerDid.authentication[0].id
-
   const { signature, keyUri } = await signPayload(
-    claimerDid,
+    credential.claim.owner,
     makeSigningData(presentation, challenge),
-    signCallback,
-    selectedKeyId
+    signCallback
   )
 
   return { ...credential, claimerSignature: { signature, keyUri, challenge } }

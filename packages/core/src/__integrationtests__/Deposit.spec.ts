@@ -58,7 +58,12 @@ async function checkDeleteFullDid(
   )
   const deleteDid = api.tx.did.delete(storedEndpointsCount)
 
-  tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
+  tx = await Did.authorizeExtrinsic(
+    fullDid.uri,
+    deleteDid,
+    sign,
+    identity.address
+  )
 
   const balanceBeforeDeleting = (
     await api.query.system.account(identity.address)
@@ -126,7 +131,7 @@ async function checkRemoveFullDidAttestation(
     null
   )
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -148,7 +153,7 @@ async function checkRemoveFullDidAttestation(
 
   tx = api.tx.attestation.remove(attestation.claimHash, null)
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -179,7 +184,7 @@ async function checkReclaimFullDidAttestation(
     null
   )
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -226,7 +231,7 @@ async function checkDeletedDidReclaimAttestation(
     null
   )
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -241,7 +246,12 @@ async function checkDeletedDidReclaimAttestation(
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   const deleteDid = api.tx.did.delete(storedEndpointsCount)
-  tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
+  tx = await Did.authorizeExtrinsic(
+    fullDid.uri,
+    deleteDid,
+    sign,
+    identity.address
+  )
 
   await submitExtrinsic(tx, identity)
 
@@ -263,7 +273,7 @@ async function checkWeb3Deposit(
   const depositAmount = api.consts.web3Names.deposit.toBn()
   const claimTx = api.tx.web3Names.claim(web3Name)
   let didAuthorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     claimTx,
     sign,
     identity.address
@@ -282,7 +292,7 @@ async function checkWeb3Deposit(
 
   const releaseTx = api.tx.web3Names.releaseByOwner()
   didAuthorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     releaseTx,
     sign,
     identity.address
@@ -324,9 +334,9 @@ beforeAll(async () => {
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
     const extrinsic = await Did.authorizeExtrinsic(
-      attester,
+      attester.uri,
       api.tx.ctype.add(CType.toChain(driversLicenseCType)),
-      attesterKey.sign,
+      attesterKey.getSignCallback(attester),
       devFaucet.address
     )
     await submitExtrinsic(extrinsic, devFaucet)
@@ -346,8 +356,7 @@ beforeAll(async () => {
   credential = Credential.fromClaim(claim)
   await Credential.createPresentation({
     credential,
-    signCallback: claimer.sign,
-    claimerDid: claimerLightDid,
+    signCallback: claimer.getSignCallback(claimerLightDid),
   })
 }, 120_000)
 
@@ -389,27 +398,27 @@ describe('Different deposits scenarios', () => {
     testFullDidFive = await createFullDidFromLightDid(
       keys[4].keypair,
       testDidFive,
-      keys[4].sign
+      keys[4].storeDidCallback
     )
     testFullDidSix = await createFullDidFromLightDid(
       keys[5].keypair,
       testDidSix,
-      keys[5].sign
+      keys[5].storeDidCallback
     )
     testFullDidSeven = await createFullDidFromLightDid(
       keys[6].keypair,
       testDidSeven,
-      keys[6].sign
+      keys[6].storeDidCallback
     )
     testFullDidEight = await createFullDidFromLightDid(
       keys[7].keypair,
       testDidEight,
-      keys[7].sign
+      keys[7].storeDidCallback
     )
     testFullDidNine = await createFullDidFromLightDid(
       keys[8].keypair,
       testDidNine,
-      keys[8].sign
+      keys[8].storeDidCallback
     )
     testFullDidTen = await createFullDidFromSeed(
       keys[9].keypair,
@@ -419,7 +428,11 @@ describe('Different deposits scenarios', () => {
 
   it('Check if deleting full DID returns deposit', async () => {
     expect(
-      await checkDeleteFullDid(keys[0].keypair, testFullDidOne, keys[0].sign)
+      await checkDeleteFullDid(
+        keys[0].keypair,
+        testFullDidOne,
+        keys[0].getSignCallback(testFullDidOne)
+      )
     ).toBe(true)
   }, 45_000)
   it('Check if reclaiming full DID returns deposit', async () => {
@@ -432,7 +445,7 @@ describe('Different deposits scenarios', () => {
       await checkRemoveFullDidAttestation(
         keys[2].keypair,
         testFullDidThree,
-        keys[2].sign,
+        keys[2].getSignCallback(testFullDidThree),
         credential
       )
     ).toBe(true)
@@ -442,14 +455,18 @@ describe('Different deposits scenarios', () => {
       await checkReclaimFullDidAttestation(
         keys[3].keypair,
         testFullDidFour,
-        keys[3].sign,
+        keys[3].getSignCallback(testFullDidFour),
         credential
       )
     ).toBe(true)
   }, 90_000)
   it('Check if deleting from a migrated light DID to a full DID returns deposit', async () => {
     expect(
-      await checkDeleteFullDid(keys[4].keypair, testFullDidFive, keys[4].sign)
+      await checkDeleteFullDid(
+        keys[4].keypair,
+        testFullDidFive,
+        keys[4].getSignCallback(testFullDidFive)
+      )
     ).toBe(true)
   }, 90_000)
   it('Check if reclaiming from a migrated light DID to a full DID returns deposit', async () => {
@@ -462,7 +479,7 @@ describe('Different deposits scenarios', () => {
       await checkRemoveFullDidAttestation(
         keys[6].keypair,
         testFullDidSeven,
-        keys[6].sign,
+        keys[6].getSignCallback(testFullDidSeven),
         credential
       )
     ).toBe(true)
@@ -472,7 +489,7 @@ describe('Different deposits scenarios', () => {
       await checkReclaimFullDidAttestation(
         keys[7].keypair,
         testFullDidEight,
-        keys[7].sign,
+        keys[7].getSignCallback(testFullDidEight),
         credential
       )
     ).toBe(true)
@@ -481,13 +498,17 @@ describe('Different deposits scenarios', () => {
     await checkDeletedDidReclaimAttestation(
       keys[8].keypair,
       testFullDidNine,
-      keys[8].sign,
+      keys[8].getSignCallback(testFullDidNine),
       credential
     )
   }, 120_000)
   it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
     expect(
-      await checkWeb3Deposit(keys[9].keypair, testFullDidTen, keys[9].sign)
+      await checkWeb3Deposit(
+        keys[9].keypair,
+        testFullDidTen,
+        keys[9].getSignCallback(testFullDidTen)
+      )
     ).toBe(true)
   }, 120_000)
 })

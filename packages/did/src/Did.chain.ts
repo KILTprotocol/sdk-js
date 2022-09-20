@@ -23,9 +23,11 @@ import type {
   NewDidEncryptionKey,
   NewDidVerificationKey,
   SignCallback,
-  SigningOptions,
+  SignRequestData,
+  SignResponseData,
   SubmittableExtrinsic,
   UriFragment,
+  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { verificationKeyTypes } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
@@ -47,9 +49,7 @@ import {
   EncodedVerificationKey,
   getAddressByKey,
   getFullDidUri,
-  keyTypeForSignatureAlg,
   parseDidUri,
-  signatureAlgForKeyType,
   stripFragment,
 } from './Did.utils.js'
 
@@ -233,6 +233,10 @@ interface GetStoreTxInput {
   service?: DidServiceEndpoint[]
 }
 
+type GetStoreTxSignCallback = (
+  signData: Omit<SignRequestData, 'did'>
+) => Promise<Omit<SignResponseData, 'keyUri'>>
+
 /**
  * Create a DID creation operation which includes the information provided.
  *
@@ -246,14 +250,14 @@ interface GetStoreTxInput {
  *
  * @param input The DID keys and services to store, also accepts DidDocument, so you can store a light DID for example.
  * @param submitter The KILT address authorized to submit the creation operation.
- * @param sign The sign callback.
+ * @param sign The sign callback. The authentication key has to be used.
  *
  * @returns The SubmittableExtrinsic for the DID creation operation.
  */
 export async function getStoreTx(
   input: GetStoreTxInput | DidDocument,
   submitter: KiltAddress,
-  sign: SignCallback
+  sign: GetStoreTxSignCallback
 ): Promise<SubmittableExtrinsic> {
   const api = ConfigService.get('api')
 
@@ -329,15 +333,19 @@ export async function getStoreTx(
     .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
     .toU8a()
 
-  const { publicKey, type } = authenticationKey
   const signature = await sign({
     data: encoded,
-    meta: {},
-    publicKey,
-    alg: signatureAlgForKeyType[type],
+    keyRelationship: 'authentication',
   })
-  const encodedSignature = { [type]: signature.data } as EncodedSignature
+  const encodedSignature = {
+    [signature.keyType]: signature.data,
+  } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
+}
+
+export interface SigningOptions {
+  sign: SignCallback
+  keyRelationship: VerificationKeyRelationship
 }
 
 /**
@@ -346,8 +354,7 @@ export async function getStoreTx(
  *
  * @param params Object wrapping all input to the function.
  * @param params.did Full DID.
- * @param params.signingPublicKey Public key of the keypair to be used for authorization as hex string or Uint8Array.
- * @param params.alg The cryptographic signing algorithm to be used.
+ * @param params.keyRelationship DID key relationship to be used for authorization.
  * @param params.sign The callback to interface with the key store managing the private key to be used.
  * @param params.call The call or extrinsic to be authorized.
  * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing full DID.
@@ -357,8 +364,7 @@ export async function getStoreTx(
  */
 export async function generateDidAuthenticatedTx({
   did,
-  signingPublicKey,
-  alg,
+  keyRelationship,
   sign,
   call,
   txCounter,
@@ -379,20 +385,12 @@ export async function generateDidAuthenticatedTx({
     )
   const signature = await sign({
     data: signableCall.toU8a(),
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
-    meta: {
-      method: call.method.toHex(),
-      version: call.version,
-      specVersion: api.runtimeVersion.specVersion.toString(),
-      transactionVersion: api.runtimeVersion.transactionVersion.toString(),
-      genesisHash: api.genesisHash.toHex(),
-      nonce: signableCall.txCounter.toHex(),
-      address: Crypto.encodeAddress(signableCall.did, ss58Format),
-    },
+    keyRelationship,
+    did,
   })
-  const keyType = keyTypeForSignatureAlg[signature.alg]
-  const encodedSignature = { [keyType]: signature.data } as EncodedSignature
+  const encodedSignature = {
+    [signature.keyType]: signature.data,
+  } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
 

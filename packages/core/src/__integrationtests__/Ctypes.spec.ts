@@ -58,12 +58,12 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
-    const { keypair, sign } = makeSigningKeyTool()
+    const { keypair, getSignCallback } = makeSigningKeyTool()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx,
-      sign,
+      getSignCallback(ctypeCreator),
       keypair.address
     )
     await expect(
@@ -76,9 +76,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx,
-      key.sign,
+      key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
@@ -96,18 +96,18 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx,
-      key.sign,
+      key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedStoreTx, paymentAccount)
 
     const storeTx2 = api.tx.ctype.add(CType.toChain(ctype))
     const authorizedStoreTx2 = await Did.authorizeExtrinsic(
-      ctypeCreator,
+      ctypeCreator.uri,
       storeTx2,
-      key.sign,
+      key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
     await expect(

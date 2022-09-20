@@ -8,7 +8,6 @@
 import type {
   DecryptCallback,
   DidDocument,
-  DidEncryptionKey,
   DidResolveKey,
   DidResourceUri,
   EncryptCallback,
@@ -349,11 +348,10 @@ export async function decrypt(
   try {
     data = (
       await decryptCallback({
-        publicKey: receiverKeyDetails.publicKey,
-        alg: receiverKeyAlgType,
         peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
         nonce: hexToU8a(nonce),
+        keyUri: receiverKeyUri,
       })
     ).data
   } catch (cause) {
@@ -430,8 +428,6 @@ export function fromBody(
  * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
  *
  * @param message The message to encrypt.
- * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
- * @param senderDid The sender's DID to use to fetch the right encryption key.
  * @param encryptCallback The callback to encrypt with the secret key.
  * @param receiverKeyUri The key URI of the receiver.
  * @param encryptionOptions Options to perform the encryption operation.
@@ -441,8 +437,6 @@ export function fromBody(
  */
 export async function encrypt(
   message: IMessage,
-  senderKeyId: DidEncryptionKey['id'],
-  senderDid: DidDocument,
   encryptCallback: EncryptCallback,
   receiverKeyUri: DidResourceUri,
   {
@@ -458,22 +452,6 @@ export async function encrypt(
   if (message.receiver !== receiverKey.controller) {
     throw new SDKErrors.IdentityMismatchError('receiver public key', 'receiver')
   }
-  if (message.sender !== senderDid.uri) {
-    throw new SDKErrors.IdentityMismatchError('sender public key', 'sender')
-  }
-  const senderKey = Did.getKey(senderDid, senderKeyId)
-  if (!senderKey || !encryptionKeyTypes.includes(senderKey.type)) {
-    throw new SDKErrors.DidError(
-      `Cannot find key with ID "${senderKeyId}" for the sender DID`
-    )
-  }
-  const senderKeyAlgType =
-    Did.Utils.encryptionAlgForKeyType[senderKey.type as EncryptionKeyType]
-  if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
-    throw new SDKErrors.EncryptionError(
-      'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
-    )
-  }
 
   const toEncrypt: IEncryptedMessageContents = {
     body: message.body,
@@ -488,11 +466,11 @@ export async function encrypt(
   const serialized = stringToU8a(JSON.stringify(toEncrypt))
 
   const encrypted = await encryptCallback({
-    alg: senderKeyAlgType,
+    did: message.sender,
     data: serialized,
-    publicKey: senderKey.publicKey,
     peerPublicKey: receiverKey.publicKey,
   })
+
   const ciphertext = u8aToHex(encrypted.data)
   const nonce = u8aToHex(encrypted.nonce)
 
@@ -500,7 +478,7 @@ export async function encrypt(
     receivedAt: message.receivedAt,
     ciphertext,
     nonce,
-    senderKeyUri: `${senderDid.uri}${senderKey.id}`,
+    senderKeyUri: encrypted.keyUri,
     receiverKeyUri: receiverKey.id,
   }
 }
