@@ -12,7 +12,6 @@ import { BN } from '@polkadot/util'
 
 import type { VerificationKeyRelationship } from '@kiltprotocol/types'
 import { Extrinsic } from '@polkadot/types/interfaces/extrinsics'
-import { AnyTuple, CallBase } from '@polkadot/types/types'
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
@@ -29,8 +28,8 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   web3Names: 'authentication',
 }
 
-function getKeyRelationshipForMethod<Arguments extends AnyTuple = AnyTuple>(
-  call: CallBase<Arguments>
+function getKeyRelationshipForMethod(
+  call: Extrinsic['method']
 ): VerificationKeyRelationship | undefined {
   const { section, method } = call
 
@@ -41,7 +40,7 @@ function getKeyRelationshipForMethod<Arguments extends AnyTuple = AnyTuple>(
     call.args[0].toRawType() === 'Vec<Call>'
   ) {
     // map all calls to their VerificationKeyRelationship and deduplicate the items
-    return (call.args[0] as unknown as Array<CallBase<Arguments>>)
+    return (call.args[0] as unknown as Array<Extrinsic['method']>)
       .map(getKeyRelationshipForMethod)
       .reduce((prev, value) => (prev === value ? prev : undefined))
   }
