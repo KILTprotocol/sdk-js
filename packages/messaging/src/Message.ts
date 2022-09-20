@@ -92,7 +92,7 @@ export function verifyMessageBody(body: MessageBody): void {
         Credential.verifyDataStructure(credential)
       )
       if (body.content.delegationId) {
-        DataUtils.verifyIsHex(body.content.delegationId, 32)
+        DataUtils.verifyIsHex(body.content.delegationId)
       }
       if (body.content.quote) {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
@@ -105,7 +105,7 @@ export function verifyMessageBody(body: MessageBody): void {
     case 'reject-terms': {
       Claim.verifyDataStructure(body.content.claim)
       if (body.content.delegationId) {
-        DataUtils.verifyIsHex(body.content.delegationId, 32)
+        DataUtils.verifyIsHex(body.content.delegationId)
       }
       body.content.legitimations.forEach((val) =>
         Credential.verifyDataStructure(val)
@@ -132,7 +132,7 @@ export function verifyMessageBody(body: MessageBody): void {
     case 'request-credential': {
       body.content.cTypes.forEach(
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
-          DataUtils.verifyIsHex(cTypeHash, 32)
+          DataUtils.verifyIsHex(cTypeHash)
           trustedAttesters?.forEach((did) =>
             Did.Utils.validateKiltDidUri(did, 'Did')
           )
@@ -156,11 +156,11 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'accept-credential': {
-      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash, 32))
+      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash))
       break
     }
     case 'reject-credential': {
-      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash, 32))
+      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash))
       break
     }
     case 'request-accept-delegation': {
@@ -189,7 +189,7 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'inform-create-delegation': {
-      DataUtils.verifyIsHex(body.content.delegationId, 32)
+      DataUtils.verifyIsHex(body.content.delegationId)
       break
     }
 
