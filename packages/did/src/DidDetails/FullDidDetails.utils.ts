@@ -29,19 +29,19 @@ const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
   web3Names: 'authentication',
 }
 
-function getKeyRelationshipForCall<A extends AnyTuple = AnyTuple>(
-  call: CallBase<A>
+function getKeyRelationshipForCall<Arguments extends AnyTuple = AnyTuple>(
+  call: CallBase<Arguments>
 ): VerificationKeyRelationship | undefined {
   const { section, method } = call
 
   // get the VerificationKeyRelationship of a batched call
   if (
     section === 'utility' &&
-    (['batch', 'batchAll', 'forceBatch'].includes(method)) &&
+    ['batch', 'batchAll', 'forceBatch'].includes(method) &&
     call.args[0].toRawType() === 'Vec<Call>'
   ) {
     // map all calls to their VerificationKeyRelationship and deduplicate the items
-    return (call.args[0] as unknown as Array<CallBase<A>>)
+    return (call.args[0] as unknown as Array<CallBase<Arguments>>)
       .map(getKeyRelationshipForCall)
       .reduce((prev, value) => (prev === value ? prev : undefined))
   }
