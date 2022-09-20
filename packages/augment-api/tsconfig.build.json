@@ -4,7 +4,18 @@
     "module": "CommonJS",
     "outDir": "./lib/cjs",
     "skipLibCheck": true,
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "paths": {
+      "@kiltprotocol/augment-api/*": [
+        "./src/*"
+      ],
+      "@polkadot/api/augment": [
+        "./src/interfaces/augment-api.ts"
+      ],
+      "@polkadot/types/augment": [
+        "./src/interfaces/augment-types.ts"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts",
@@ -14,5 +25,5 @@
     "coverage",
     "**/*.spec.ts",
     "src/**/definitions.ts",
-  ]
+  ],
 }

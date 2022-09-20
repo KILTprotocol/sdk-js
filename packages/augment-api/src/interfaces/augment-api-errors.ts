@@ -370,6 +370,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       VotesExist: AugmentedError<ApiType>;
       /**
+       * Voting period too low
+       **/
+      VotingPeriodLow: AugmentedError<ApiType>;
+      /**
        * Invalid upper bound.
        **/
       WrongUpperBound: AugmentedError<ApiType>;
@@ -524,6 +528,8 @@ declare module '@polkadot/api-base/types/errors' {
        * The message index given is unknown.
        **/
       Unknown: AugmentedError<ApiType>;
+    };
+    dynFilter: {
     };
     indices: {
       /**
@@ -848,6 +854,8 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unproxyable: AugmentedError<ApiType>;
     };
+    relayMigration: {
+    };
     scheduler: {
       /**
        * Failed to schedule a call
@@ -969,6 +977,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Not a member.
        **/
       NotMember: AugmentedError<ApiType>;
+      /**
+       * Too many members.
+       **/
+      TooManyMembers: AugmentedError<ApiType>;
     };
     tips: {
       /**
@@ -1005,8 +1017,17 @@ declare module '@polkadot/api-base/types/errors' {
        * Not a member.
        **/
       NotMember: AugmentedError<ApiType>;
+      /**
+       * Too many members.
+       **/
+      TooManyMembers: AugmentedError<ApiType>;
     };
     treasury: {
+      /**
+       * The spend origin is valid but the amount it is allowed to spend is lower than the
+       * amount to be spent.
+       **/
+      InsufficientPermission: AugmentedError<ApiType>;
       /**
        * Proposer's balance is too low.
        **/

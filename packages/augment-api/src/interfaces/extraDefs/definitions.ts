@@ -1,5 +1,9 @@
 /* eslint-disable */
-// add any additional definitions (rpc etc) here
+
+import { latest, runtime } from '@kiltprotocol/type-definitions'
+
+// Only types and runtime calls can be exported from here.
 export default {
-  types: {},
+  types: latest,
+  runtime
 }
