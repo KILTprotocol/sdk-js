@@ -25,7 +25,6 @@ import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ConfigService } from '@kiltprotocol/config'
 import type { HexString } from '@polkadot/util/types'
-import { fromChain } from './CType.chain.js'
 import {
   CTypeModel,
   CTypeWrapperModel,
@@ -96,24 +95,27 @@ export function getIdForSchema(
  * @param object Data to be verified against schema.
  * @param schema Schema to verify against.
  * @param messages Optional empty array. If passed, this receives all verification errors.
- * @returns Whether or not verification was successful.
  */
 export function verifyObjectAgainstSchema(
   object: Record<string, any>,
   schema: Record<string, any>,
   messages?: string[]
-): boolean {
+): void {
   const validator = new JsonSchema.Validator(schema, '7', false)
   if (schema.$id !== CTypeModel.$id) {
     validator.addSchema(CTypeModel)
   }
-  const result = validator.validate(object)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
+  const { valid, errors } = validator.validate(object)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
       messages.push(error.error)
     })
   }
-  return result.valid
+  throw new SDKErrors.ObjectUnverifiableError(
+    'JSON schema verification failed for object',
+    { cause: errors }
+  )
 }
 
 /**
@@ -122,41 +124,28 @@ export function verifyObjectAgainstSchema(
  * @param claimContents IClaim['contents'] to be verified against the schema.
  * @param schema ICType['schema'] to be verified against the [CTypeModel].
  * @param messages An array, which will be filled by schema errors.
- * @returns Boolean whether both claimContents and schema could be verified.
  */
 export function verifyClaimAgainstSchema(
   claimContents: IClaim['contents'],
   schema: ICType['schema'],
   messages?: string[]
-): boolean {
-  if (!verifyObjectAgainstSchema(schema, CTypeModel)) {
-    throw new SDKErrors.ObjectUnverifiableError()
-  }
-  return verifyObjectAgainstSchema(claimContents, schema, messages)
+): void {
+  verifyObjectAgainstSchema(schema, CTypeModel)
+  verifyObjectAgainstSchema(claimContents, schema, messages)
 }
 
 /**
  * Checks on the KILT blockchain whether a CType is registered.
  *
  * @param ctype CType data.
- * @returns Whether or not the CType is registered on-chain.
  */
-export async function verifyStored(ctype: ICType): Promise<boolean> {
+export async function verifyStored(ctype: ICType): Promise<void> {
   const api = ConfigService.get('api')
   const encoded = await api.query.ctype.ctypes(ctype.hash)
-  return encoded.isSome
-}
-
-/**
- * Checks on the KILT blockchain whether a CType is registered to the owner listed in the CType record.
- *
- * @param ctype CType data.
- * @returns Whether or not the CType is registered on-chain to `ctype.owner`.
- */
-export async function verifyOwner(ctype: ICType): Promise<boolean> {
-  const api = ConfigService.get('api')
-  const encoded = await api.query.ctype.ctypes(ctype.hash)
-  return encoded.isSome ? fromChain(encoded) === ctype.owner : false
+  if (encoded.isNone)
+    throw new SDKErrors.CTypeHashMissingError(
+      `CType with hash ${ctype.hash} is not registered on chain`
+    )
 }
 
 /**
@@ -166,9 +155,7 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
  * @param input The potentially only partial ICType.
  */
 export function verifyDataStructure(input: ICType): void {
-  if (!verifyObjectAgainstSchema(input, CTypeWrapperModel)) {
-    throw new SDKErrors.ObjectUnverifiableError()
-  }
+  verifyObjectAgainstSchema(input, CTypeWrapperModel)
   if (!('schema' in input) || getHashForSchema(input.schema) !== input.hash) {
     throw new SDKErrors.HashMalformedError(input.hash, 'CType')
   }
@@ -190,27 +177,28 @@ export function verifyDataStructure(input: ICType): void {
  * @param nestedCTypes - An array of [[CType]] schemas.
  * @param claimContents - The contents of a [[Claim]] to be validated.
  * @param messages - Optional empty array. If passed, this receives all verification errors.
- *
- * @returns Whether the contents is valid.
  */
 export function verifyClaimAgainstNestedSchemas(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,
   claimContents: Record<string, any>,
   messages?: string[]
-): boolean {
+): void {
   const validator = new JsonSchema.Validator(cType, '7', false)
   nestedCTypes.forEach((ctype) => {
     validator.addSchema(ctype)
   })
   validator.addSchema(CTypeModel)
-  const result = validator.validate(claimContents)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
+  const { valid, errors } = validator.validate(claimContents)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
       messages.push(error.error)
     })
   }
-  return result.valid
+  throw new SDKErrors.NestedClaimUnverifiableError(undefined, {
+    cause: errors,
+  })
 }
 
 /**
@@ -219,9 +207,7 @@ export function verifyClaimAgainstNestedSchemas(
  * @param metadata [[ICTypeMetadata]] that is to be instantiated.
  */
 export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
-  if (!verifyObjectAgainstSchema(metadata, MetadataModel)) {
-    throw new SDKErrors.ObjectUnverifiableError()
-  }
+  verifyObjectAgainstSchema(metadata, MetadataModel)
 }
 
 /**

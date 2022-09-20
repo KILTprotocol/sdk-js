@@ -145,8 +145,8 @@ describe('DelegationNode', () => {
         } as DelegationNode,
       }
 
-      expect(
-        await new DelegationNode({
+      await expect(
+        new DelegationNode({
           id: successId,
           hierarchyId,
           account: didAlice,
@@ -155,10 +155,10 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).toBe(true)
+      ).resolves.not.toThrow()
 
-      expect(
-        await new DelegationNode({
+      await expect(
+        new DelegationNode({
           id: failureId,
           hierarchyId,
           account: didAlice,
@@ -167,7 +167,7 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).toBe(false)
+      ).rejects.toThrow()
     })
 
     it('get delegation root', async () => {

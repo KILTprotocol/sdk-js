@@ -520,7 +520,7 @@ describe('DID authorization', () => {
     )
     await submitExtrinsic(tx, paymentAccount)
 
-    expect(await CType.verifyStored(ctype)).toEqual(true)
+    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
@@ -554,7 +554,7 @@ describe('DID authorization', () => {
       name: 'DidNotPresent',
     })
 
-    expect(await CType.verifyStored(ctype)).toEqual(false)
+    await expect(CType.verifyStored(ctype)).rejects.toThrow()
   }, 60_000)
 })
 
@@ -1023,7 +1023,7 @@ describe('DID extrinsics batching', () => {
     await submitExtrinsic(tx, paymentAccount)
 
     // The ctype has been created, even though the delegation operations failed.
-    expect(await CType.verifyStored(ctype)).toBe(true)
+    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   })
 
   it('batchAll fails if any extrinsics fail', async () => {
@@ -1061,7 +1061,7 @@ describe('DID extrinsics batching', () => {
     })
 
     // The ctype has not been created, since atomicity ensures the whole batch is reverted in case of failure.
-    expect(await CType.verifyStored(ctype)).toBe(false)
+    await expect(CType.verifyStored(ctype)).rejects.toThrow()
   })
 
   it('can batch extrinsics for the same required key type', async () => {
@@ -1154,8 +1154,8 @@ describe('DID extrinsics batching', () => {
     expect(owner).toStrictEqual(fullDid.uri)
 
     // Test correct use of attestation keys
-    expect(await CType.verifyStored(ctype1)).toBe(true)
-    expect(await CType.verifyStored(ctype2)).toBe(true)
+    await expect(CType.verifyStored(ctype1)).resolves.not.toThrow()
+    await expect(CType.verifyStored(ctype2)).resolves.not.toThrow()
 
     // Test correct use of delegation keys
     const node = await DelegationNode.query(rootNode.id)

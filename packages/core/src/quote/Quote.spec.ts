@@ -168,7 +168,7 @@ describe('Quote', () => {
       validAttesterSignedQuote.attesterSignature.keyUri
     )
 
-    expect(
+    expect(() =>
       Crypto.verify(
         Crypto.hashObjectAsStr({
           attesterDid: validQuoteData.attesterDid,
@@ -184,7 +184,7 @@ describe('Quote', () => {
             new Uint8Array()
         )
       )
-    ).toBe(true)
+    ).not.toThrow()
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
       didResolve: mockResolve,
     })

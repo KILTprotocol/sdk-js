@@ -92,10 +92,7 @@ export function verifyMessageBody(body: MessageBody): void {
         Credential.verifyDataStructure(credential)
       )
       if (body.content.delegationId) {
-        DataUtils.validateHash(
-          body.content.delegationId,
-          'Submit terms delegation id hash invalid'
-        )
+        DataUtils.verifyIsHex(body.content.delegationId)
       }
       if (body.content.quote) {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
@@ -108,10 +105,7 @@ export function verifyMessageBody(body: MessageBody): void {
     case 'reject-terms': {
       Claim.verifyDataStructure(body.content.claim)
       if (body.content.delegationId) {
-        DataUtils.validateHash(
-          body.content.delegationId,
-          'Reject terms delegation id hash'
-        )
+        DataUtils.verifyIsHex(body.content.delegationId)
       }
       body.content.legitimations.forEach((val) =>
         Credential.verifyDataStructure(val)
@@ -138,10 +132,7 @@ export function verifyMessageBody(body: MessageBody): void {
     case 'request-credential': {
       body.content.cTypes.forEach(
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
-          DataUtils.validateHash(
-            cTypeHash,
-            'request credential cTypeHash invalid'
-          )
+          DataUtils.verifyIsHex(cTypeHash)
           trustedAttesters?.forEach((did) =>
             Did.Utils.validateKiltDidUri(did, 'Did')
           )
@@ -165,21 +156,11 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'accept-credential': {
-      body.content.forEach((cTypeHash) =>
-        DataUtils.validateHash(
-          cTypeHash,
-          'accept credential message ctype hash invalid'
-        )
-      )
+      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash))
       break
     }
     case 'reject-credential': {
-      body.content.forEach((cTypeHash) =>
-        DataUtils.validateHash(
-          cTypeHash,
-          'rejected credential ctype hashes invalid'
-        )
-      )
+      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash))
       break
     }
     case 'request-accept-delegation': {
@@ -208,10 +189,7 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'inform-create-delegation': {
-      DataUtils.validateHash(
-        body.content.delegationId,
-        'inform create delegation message delegation id invalid'
-      )
+      DataUtils.verifyIsHex(body.content.delegationId)
       break
     }
 
