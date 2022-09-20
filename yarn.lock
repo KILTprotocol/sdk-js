@@ -1258,7 +1258,7 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/keyring": ^10.0.0
-    "@polkadot/types": ^9.0.0
+    "@polkadot/types": ^9.4.1
     rimraf: ^3.0.2
     typescript: ^4.5.4
   languageName: unknown
@@ -1291,7 +1291,7 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/keyring": ^10.0.0
-    "@polkadot/types": ^9.0.0
+    "@polkadot/types": ^9.4.1
     "@polkadot/util": ^10.0.0
     "@polkadot/util-crypto": ^10.0.0
     "@types/uuid": ^8.0.0
@@ -1312,8 +1312,8 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/keyring": ^10.0.0
-    "@polkadot/types": ^9.0.0
-    "@polkadot/types-codec": ^9.0.0
+    "@polkadot/types": ^9.4.1
+    "@polkadot/types-codec": ^9.4.1
     "@polkadot/util": ^10.0.0
     "@polkadot/util-crypto": ^10.0.0
     cbor: ^8.0.2
@@ -1373,7 +1373,7 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/keyring": ^10.0.0
-    "@polkadot/types": ^9.0.0
+    "@polkadot/types": ^9.4.1
     "@polkadot/util": ^10.0.0
     "@polkadot/util-crypto": ^10.0.0
     rimraf: ^3.0.2
@@ -1402,7 +1402,7 @@ __metadata:
     "@kiltprotocol/augment-api": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/keyring": ^10.0.0
-    "@polkadot/types": ^9.0.0
+    "@polkadot/types": ^9.4.1
     "@polkadot/util": ^10.0.0
     "@polkadot/util-crypto": ^10.0.0
     rimraf: ^3.0.2
@@ -1437,7 +1437,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
-    "@polkadot/types": ^9.0.0
+    "@polkadot/types": ^9.4.1
     "@polkadot/util": ^10.0.0
     "@polkadot/util-crypto": ^10.0.0
     "@types/jsonld": 1.5.1
@@ -1742,7 +1742,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-codec@npm:9.4.1, @polkadot/types-codec@npm:^9.0.0":
+"@polkadot/types-codec@npm:9.4.1, @polkadot/types-codec@npm:^9.4.1":
   version: 9.4.1
   resolution: "@polkadot/types-codec@npm:9.4.1"
   dependencies:
@@ -1788,7 +1788,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:9.4.1, @polkadot/types@npm:^9.0.0":
+"@polkadot/types@npm:9.4.1, @polkadot/types@npm:^9.4.1":
   version: 9.4.1
   resolution: "@polkadot/types@npm:9.4.1"
   dependencies:
