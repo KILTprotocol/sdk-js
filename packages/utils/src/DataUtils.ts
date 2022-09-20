@@ -51,6 +51,8 @@ export { isHex } from '@polkadot/util'
  */
 export function verifyIsHex(input: unknown, bitLength?: number): void {
   if (!isHex(input, bitLength)) {
-    throw new SDKErrors.HashMalformedError(`${input}`)
+    throw new SDKErrors.HashMalformedError(
+      typeof input === 'string' ? input : undefined
+    )
   }
 }

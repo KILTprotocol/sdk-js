@@ -61,7 +61,7 @@ it('throws on broken hashes', () => {
     verifyIsHex(hash.substr(2))
   }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
-    verifyIsHex(hash.substr(0, 60))
+    verifyIsHex(hash.substr(0, 60), 256)
   }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
     verifyIsHex(hash.replace('0', 'O'))
@@ -76,6 +76,6 @@ it('throws on broken hashes', () => {
 
 it('throws if hash is no string', () => {
   expect(() => verifyIsHex(Buffer.from([0, 0, 7]) as any)).toThrowError(
-    SDKErrors.HashTypeError
+    SDKErrors.HashMalformedError
   )
 })
