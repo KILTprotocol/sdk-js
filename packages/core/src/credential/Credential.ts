@@ -178,7 +178,7 @@ export function verifyDataStructure(input: ICredential): void {
   if (typeof input.claimNonceMap !== 'object')
     throw new SDKErrors.ClaimNonceMapMalformedError()
   Object.entries(input.claimNonceMap).forEach(([digest, nonce]) => {
-    DataUtils.verifyIsHex(digest, 32)
+    DataUtils.verifyIsHex(digest, 256)
     if (!digest || typeof nonce !== 'string' || !nonce)
       throw new SDKErrors.ClaimNonceMapMalformedError()
   })

@@ -47,10 +47,10 @@ export { isHex } from '@polkadot/util'
  * Validates the format of a hex string via regex.
  *
  * @param input Hex string to validate for correct format.
- * @param byteLength Expected length of hex in bytes. Defaults to 32.
+ * @param bitLength Expected length of hex in bits.
  */
-export function verifyIsHex(input: unknown, byteLength = 32): void {
-  if (!isHex(input, byteLength * 8)) {
+export function verifyIsHex(input: unknown, bitLength?: number): void {
+  if (!isHex(input, bitLength)) {
     throw new SDKErrors.HashMalformedError(`${input}`)
   }
 }

@@ -212,7 +212,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
       }
     })
   }
-  DataUtils.verifyIsHex(input.cTypeHash, 32)
+  DataUtils.verifyIsHex(input.cTypeHash, 256)
 }
 
 function verifyAgainstCType(
