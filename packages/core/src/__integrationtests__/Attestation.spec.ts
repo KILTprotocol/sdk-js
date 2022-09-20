@@ -137,8 +137,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       credential,
       signCallback: claimerKey.sign(claimer),
     })
-    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
-    expect(await Credential.verifySignature(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
+    await expect(
+      Credential.verifySignature(presentation)
+    ).resolves.not.toThrow()
     expect(credential.claim.contents).toMatchObject(content)
   })
 
@@ -151,13 +153,15 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.uri
     )
     const credential = Credential.fromClaim(claim)
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
 
     const presentation = await Credential.createPresentation({
       credential,
       signCallback: claimerKey.sign(claimer),
     })
-    expect(await Credential.verifySignature(presentation)).toBe(true)
+    await expect(
+      Credential.verifySignature(presentation)
+    ).resolves.not.toThrow()
     await Credential.verifyPresentation(presentation)
 
     const attestation = Attestation.fromCredentialAndDid(
@@ -202,13 +206,15 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       claimer.uri
     )
     const credential = Credential.fromClaim(claim)
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
 
     const presentation = await Credential.createPresentation({
       credential,
       signCallback: claimerKey.sign(claimer),
     })
-    expect(await Credential.verifySignature(presentation)).toBe(true)
+    await expect(
+      Credential.verifySignature(presentation)
+    ).resolves.not.toThrow()
 
     const attestation = Attestation.fromCredentialAndDid(
       presentation,
@@ -355,9 +361,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         signCallback: claimerKey.sign(claimer),
       })
 
-      expect(
+      expect(() =>
         Attestation.verifyAgainstCredential(attestation, fakeCredential)
-      ).toBe(false)
+      ).toThrow()
     }, 15_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
@@ -518,24 +524,25 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       expect(storedAttLicense).not.toBeNull()
       expect(storedAttLicense?.revoked).toBe(false)
 
-      const storedAttAuthorized = Attestation.fromChain(
-        await api.query.attestation.attestations(
-          licenseAuthorizationGranted.claimHash
-        ),
+      const queried = await api.query.attestation.attestations(
         licenseAuthorizationGranted.claimHash
       )
-      expect(storedAttAuthorized).not.toBeNull()
-      expect(storedAttAuthorized?.revoked).toBe(false)
+      expect(queried.isSome).toBe(true)
+      const storedAttAuthorized = Attestation.fromChain(
+        queried,
+        licenseAuthorizationGranted.claimHash
+      )
+      expect(storedAttAuthorized.revoked).toBe(false)
 
-      expect(
+      expect(() =>
         Attestation.verifyAgainstCredential(licenseGranted, credential2)
-      ).toBe(true)
-      expect(
+      ).not.toThrow()
+      expect(() =>
         Attestation.verifyAgainstCredential(
           licenseAuthorizationGranted,
           credential1
         )
-      ).toBe(true)
+      ).not.toThrow()
     }, 70_000)
   })
 })

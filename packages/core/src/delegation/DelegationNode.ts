@@ -335,12 +335,14 @@ export class DelegationNode implements IDelegationNode {
 
   /**
    * Verifies the delegation node by querying it from chain and checking its revocation status.
-   *
-   * @returns Promise containing a boolean flag.
    */
-  public async verify(): Promise<boolean> {
+  public async verify(): Promise<void> {
     const node = await query(this.id)
-    return node !== null && !node.revoked
+    if (!node || node.revoked !== false) {
+      throw new SDKErrors.InvalidDelegationNodeError(
+        'Delegation node not found or revoked'
+      )
+    }
   }
 
   /**

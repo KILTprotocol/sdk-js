@@ -69,7 +69,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await expect(
       submitExtrinsic(authorizedStoreTx, keypair)
     ).rejects.toThrowError()
-    expect(await CType.verifyStored(ctype)).toBe(false)
+    await expect(CType.verifyStored(ctype)).rejects.toThrow()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
@@ -86,10 +86,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     expect(CType.fromChain(await api.query.ctype.ctypes(ctype.hash))).toBe(
       ctypeCreator.uri
     )
-    expect(await CType.verifyStored(ctype)).toBe(true)
+    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
 
     ctype.owner = ctypeCreator.uri
-    expect(await CType.verifyStored(ctype)).toBe(true)
+    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
@@ -143,13 +143,13 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctypeCreator.uri
     )
 
-    expect(await CType.verifyStored(iAmNotThere)).toBe(false)
+    await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
     expect((await api.query.ctype.ctypes(iAmNotThere.hash)).isNone).toBe(true)
 
     const fakeHash = Crypto.hashStr('abcdefg')
     expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
 
-    expect(await CType.verifyStored(iAmNotThereWithOwner)).toBe(false)
+    await expect(CType.verifyStored(iAmNotThereWithOwner)).rejects.toThrow()
   })
 })
 

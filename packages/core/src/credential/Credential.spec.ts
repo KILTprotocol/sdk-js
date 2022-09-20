@@ -92,7 +92,7 @@ describe('Credential', () => {
       [legitimation]
     )
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
     const testCType = CType.fromSchema(rawCType)
     await Credential.verifyCredential(credential, {
       ctype: testCType,
@@ -101,7 +101,7 @@ describe('Credential', () => {
     // just deleting a field will result in a wrong proof
     delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
     expect(() => Credential.verifyDataIntegrity(credential)).toThrowError(
-      SDKErrors.NoProofForStatementError
+      SDKErrors.ClaimUnverifiableError
     )
   })
 
@@ -131,8 +131,8 @@ describe('Credential', () => {
       newCredential.claimHashes.length - 1
     )
     expect((newCredential.claim.contents as any).b).toBe('b')
-    expect(Credential.verifyDataIntegrity(newCredential)).toBe(true)
-    expect(Credential.verifyRootHash(newCredential)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(newCredential)).not.toThrow()
+    expect(() => Credential.verifyRootHash(newCredential)).not.toThrow()
   })
 
   it('should throw error on faulty constructor input', async () => {
@@ -256,13 +256,13 @@ describe('Credential', () => {
     ).toThrowError(SDKErrors.RootHashUnverifiableError)
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialIncompleteClaimHashTree)
-    ).toThrowError(SDKErrors.NoProofForStatementError)
+    ).toThrowError(SDKErrors.ClaimUnverifiableError)
     expect(Credential.isPresentation(builtCredentialMalformedSignature)).toBe(
       false
     )
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialMalformedHashes)
-    ).toThrowError(SDKErrors.NoProofForStatementError)
+    ).toThrowError(SDKErrors.ClaimUnverifiableError)
     expect(() => Credential.verifyDataStructure(builtCredential)).not.toThrow()
     expect(() => {
       Credential.verifyDataStructure(builtCredentialWithLegitimation)
@@ -296,11 +296,13 @@ describe('Credential', () => {
       },
       []
     )
-    expect(Credential.verifyAgainstCType(builtCredential, testCType)).toBe(true)
+    expect(() =>
+      Credential.verifyAgainstCType(builtCredential, testCType)
+    ).not.toThrow()
     builtCredential.claim.contents.name = 123
-    expect(Credential.verifyAgainstCType(builtCredential, testCType)).toBe(
-      false
-    )
+    expect(() =>
+      Credential.verifyAgainstCType(builtCredential, testCType)
+    ).toThrow()
   })
 })
 
@@ -423,7 +425,7 @@ describe('Credential', () => {
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
@@ -447,7 +449,7 @@ describe('Credential', () => {
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
@@ -495,7 +497,7 @@ describe('Credential', () => {
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
         didResolve: mockResolve,
@@ -524,9 +526,9 @@ describe('Credential', () => {
       [],
       keyAlice.sign(identityAlice)
     )
-    expect(Attestation.verifyAgainstCredential(attestation, credential)).toBe(
-      true
-    )
+    expect(() =>
+      Attestation.verifyAgainstCredential(attestation, credential)
+    ).not.toThrow()
     const { cTypeHash } = attestation
     // @ts-ignore
     attestation.cTypeHash = [
@@ -534,9 +536,9 @@ describe('Credential', () => {
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
       cTypeHash.slice(16),
     ].join('')
-    expect(Attestation.verifyAgainstCredential(attestation, credential)).toBe(
-      false
-    )
+    expect(() =>
+      Attestation.verifyAgainstCredential(attestation, credential)
+    ).toThrow()
   })
   it('returns Claim Hash of the attestation', async () => {
     const [credential, attestation] = await buildPresentation(
@@ -800,9 +802,9 @@ describe('create presentation', () => {
   })
 
   it('should verify the credential claims structure against the ctype', () => {
-    expect(Credential.verifyAgainstCType(credential, ctype)).toBe(true)
+    expect(() => Credential.verifyAgainstCType(credential, ctype)).not.toThrow()
     credential.claim.contents.name = 123
 
-    expect(Credential.verifyAgainstCType(credential, ctype)).toBe(false)
+    expect(() => Credential.verifyAgainstCType(credential, ctype)).toThrow()
   })
 })

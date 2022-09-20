@@ -54,9 +54,9 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint)
-  const api = await ApiPromise.create({ provider })
+  const api = new ApiPromise({ provider })
   await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
-  return api
+  return api.isReadyOrError
 }
 
 export async function initializeApi(): Promise<ApiPromise> {
@@ -97,7 +97,12 @@ export function addressFromRandom(): KiltAddress {
 }
 
 export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
-  return CType.verifyStored(ctype)
+  try {
+    await CType.verifyStored(ctype)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export const driversLicenseCType = CType.fromSchema({

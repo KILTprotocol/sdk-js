@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.30.0-8",
+  "version": "0.30.0-10",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -33,7 +33,7 @@
     "@kiltprotocol/testing": "workspace:*",
     "@types/jsonld": "1.5.1",
     "rimraf": "^3.0.2",
-    "typescript": "^4.5.4"
+    "typescript": "^4.8.3"
   },
   "dependencies": {
     "@kiltprotocol/augment-api": "workspace:*",

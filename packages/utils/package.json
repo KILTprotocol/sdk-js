@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/utils",
-  "version": "0.30.0-8",
+  "version": "0.30.0-10",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "typescript": "^4.5.4"
+    "typescript": "^4.8.3"
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",

@@ -147,8 +147,8 @@ it('should be possible to delegate attestation rights', async () => {
     rootKey.sign(root),
     attesterKey.sign(attester)
   )
-  expect(await rootNode.verify()).toBe(true)
-  expect(await delegatedNode.verify()).toBe(true)
+  await expect(rootNode.verify()).resolves.not.toThrow()
+  await expect(delegatedNode.verify()).resolves.not.toThrow()
 }, 60_000)
 
 describe('and attestation rights have been delegated', () => {
@@ -170,8 +170,8 @@ describe('and attestation rights have been delegated', () => {
       attesterKey.sign(attester)
     )
 
-    expect(await rootNode.verify()).toBe(true)
-    expect(await delegatedNode.verify()).toBe(true)
+    await expect(rootNode.verify()).resolves.not.toThrow()
+    await expect(delegatedNode.verify()).resolves.not.toThrow()
   }, 75_000)
 
   it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
@@ -191,8 +191,10 @@ describe('and attestation rights have been delegated', () => {
       credential,
       signCallback: claimerKey.sign(claimer),
     })
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
-    expect(await Credential.verifySignature(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
+    await expect(
+      Credential.verifySignature(presentation)
+    ).resolves.not.toThrow()
     await Credential.verifyPresentation(presentation)
 
     const attestation = Attestation.fromCredentialAndDid(
@@ -281,7 +283,7 @@ describe('revocation', () => {
       paymentAccount.address
     )
     await submitExtrinsic(authorizedRevokeTx, paymentAccount)
-    expect(await delegationA.verify()).toBe(false)
+    await expect(delegationA.verify()).rejects.toThrow()
 
     // Delegation removal can only be done by either the delegation owner themselves via DID call
     // or the deposit owner as a regular signed call.
@@ -301,7 +303,7 @@ describe('revocation', () => {
     })
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
-    expect(await delegationA.verify()).toBe(false)
+    await expect(delegationA.verify()).rejects.toThrow()
     expect(await DelegationNode.query(delegationA.id)).not.toBeNull()
   }, 60_000)
 
@@ -332,7 +334,7 @@ describe('revocation', () => {
       section: 'delegation',
       name: 'UnauthorizedRevocation',
     })
-    expect(await delegationRoot.verify()).toBe(true)
+    await expect(delegationRoot.verify()).resolves.not.toThrow()
 
     const revokeTx2 = await delegationA.getRevokeTx(firstDelegate.uri)
     const authorizedRevokeTx2 = await Did.authorizeExtrinsic(
@@ -342,7 +344,7 @@ describe('revocation', () => {
       paymentAccount.address
     )
     await submitExtrinsic(authorizedRevokeTx2, paymentAccount)
-    expect(await delegationA.verify()).toBe(false)
+    await expect(delegationA.verify()).rejects.toThrow()
   }, 60_000)
 
   it('delegator can revoke root, revoking all delegations in tree', async () => {
@@ -377,9 +379,9 @@ describe('revocation', () => {
     )
     await submitExtrinsic(authorizedRevokeTx, paymentAccount)
 
-    expect(await delegationRoot.verify()).toBe(false)
-    expect(await delegationA.verify()).toBe(false)
-    expect(await delegationB.verify()).toBe(false)
+    await expect(delegationRoot.verify()).rejects.toThrow()
+    await expect(delegationA.verify()).rejects.toThrow()
+    await expect(delegationB.verify()).rejects.toThrow()
   }, 60_000)
 })
 

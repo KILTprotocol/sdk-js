@@ -236,17 +236,17 @@ describe('When creating an instance from the chain', () => {
         const extrinsic = augmentedApi.tx.utility.batch([
           await augmentedApi.tx.ctype.add('test-ctype'),
         ])
-        await expect(async () =>
-          Did.authorizeBatch({
-            did: fullDid.uri,
-            batchFunction: augmentedApi.tx.utility.batchAll,
-            extrinsics: [extrinsic, extrinsic],
-            sign,
-            submitter: keypair.address,
-          })
-        ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Can only batch extrinsics that require a DID signature]'
-        )
+        const batchFunction =
+          jest.fn() as unknown as typeof mockedApi.tx.utility.batchAll
+        await Did.authorizeBatch({
+          did: fullDid.uri,
+          batchFunction,
+          extrinsics: [extrinsic, extrinsic],
+          sign,
+          submitter: keypair.address,
+        })
+
+        expect(batchFunction).toHaveBeenCalledWith([extrinsic, extrinsic])
       })
 
       it('adds different batches requiring different keys', async () => {

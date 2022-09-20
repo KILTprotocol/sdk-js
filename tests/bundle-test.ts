@@ -295,22 +295,8 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(cTypeStoreTx, payer)
 
-  const stored = await CType.verifyStored(DriversLicense)
-  if (stored) {
-    console.info('CType successfully stored on chain')
-  } else {
-    throw new Error('CType not stored')
-  }
-
-  const result = await CType.verifyOwner({
-    ...DriversLicense,
-    owner: alice.uri,
-  })
-  if (result) {
-    console.info('Owner verified')
-  } else {
-    throw new Error('CType owner does not match ctype creator DID')
-  }
+  await CType.verifyStored(DriversLicense)
+  console.info('CType successfully stored on chain')
 
   // Attestation workflow
   console.log('Attestation workflow started')
@@ -323,9 +309,8 @@ async function runAll() {
   const credential = Credential.fromClaim(claim)
   if (!Credential.isICredential(credential))
     throw new Error('Not a valid Credential')
-  if (Credential.verifyDataIntegrity(credential))
-    console.info('Credential data verified')
-  else throw new Error('Credential not verifiable')
+  Credential.verifyDataIntegrity(credential)
+  console.info('Credential data verified')
   if (credential.claim.contents !== content)
     throw new Error('Claim content inside Credential mismatching')
 
@@ -335,9 +320,8 @@ async function runAll() {
   })
   if (!Credential.isPresentation(presentation))
     throw new Error('Not a valid Presentation')
-  if (await Credential.verifySignature(presentation))
-    console.info('Presentation signature verified')
-  else throw new Error('Credential Signature mismatch')
+  await Credential.verifySignature(presentation)
+  console.info('Presentation signature verified')
 
   console.log('Test Messaging with encryption + decryption')
   const message = Message.fromBody(
@@ -366,9 +350,8 @@ async function runAll() {
   }
 
   const attestation = Attestation.fromCredentialAndDid(credential, alice.uri)
-  if (Attestation.verifyAgainstCredential(attestation, credential))
-    console.info('Attestation Data verified')
-  else throw new Error('Attestation Claim data not verifiable')
+  Attestation.verifyAgainstCredential(attestation, credential)
+  console.info('Attestation Data verified')
 
   const attestationStoreTx = await Did.authorizeExtrinsic(
     alice.uri,
