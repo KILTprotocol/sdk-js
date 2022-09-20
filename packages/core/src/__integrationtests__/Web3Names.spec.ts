@@ -78,7 +78,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeExtrinsic(
       w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign(w3nCreator),
+      w3nCreatorKey.getSignCallback(w3nCreator),
       bobbyBroke.address
     )
 
@@ -92,7 +92,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeExtrinsic(
       w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign(w3nCreator),
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
 
@@ -118,7 +118,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeExtrinsic(
       otherWeb3NameCreator.uri,
       tx,
-      otherW3NCreatorKey.sign(otherWeb3NameCreator),
+      otherW3NCreatorKey.getSignCallback(otherWeb3NameCreator),
       paymentAccount.address
     )
 
@@ -135,7 +135,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeExtrinsic(
       w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign(w3nCreator),
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
 
@@ -167,7 +167,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const prepareAuthorizedTx = await Did.authorizeExtrinsic(
       w3nCreator.uri,
       prepareTx,
-      w3nCreatorKey.sign(w3nCreator),
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
     await submitExtrinsic(prepareAuthorizedTx, paymentAccount)
@@ -176,7 +176,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
     const authorizedTx = await Did.authorizeExtrinsic(
       w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign(w3nCreator),
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedTx, paymentAccount)

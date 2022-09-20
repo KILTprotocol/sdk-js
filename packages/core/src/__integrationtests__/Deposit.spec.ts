@@ -336,7 +336,7 @@ beforeAll(async () => {
     const extrinsic = await Did.authorizeExtrinsic(
       attester.uri,
       api.tx.ctype.add(CType.toChain(driversLicenseCType)),
-      attesterKey.sign(attester),
+      attesterKey.getSignCallback(attester),
       devFaucet.address
     )
     await submitExtrinsic(extrinsic, devFaucet)
@@ -356,7 +356,7 @@ beforeAll(async () => {
   credential = Credential.fromClaim(claim)
   await Credential.createPresentation({
     credential,
-    signCallback: claimer.sign(claimerLightDid),
+    signCallback: claimer.getSignCallback(claimerLightDid),
   })
 }, 120_000)
 
@@ -398,27 +398,27 @@ describe('Different deposits scenarios', () => {
     testFullDidFive = await createFullDidFromLightDid(
       keys[4].keypair,
       testDidFive,
-      keys[4].signWithoutDid
+      keys[4].storeDidCallback
     )
     testFullDidSix = await createFullDidFromLightDid(
       keys[5].keypair,
       testDidSix,
-      keys[5].signWithoutDid
+      keys[5].storeDidCallback
     )
     testFullDidSeven = await createFullDidFromLightDid(
       keys[6].keypair,
       testDidSeven,
-      keys[6].signWithoutDid
+      keys[6].storeDidCallback
     )
     testFullDidEight = await createFullDidFromLightDid(
       keys[7].keypair,
       testDidEight,
-      keys[7].signWithoutDid
+      keys[7].storeDidCallback
     )
     testFullDidNine = await createFullDidFromLightDid(
       keys[8].keypair,
       testDidNine,
-      keys[8].signWithoutDid
+      keys[8].storeDidCallback
     )
     testFullDidTen = await createFullDidFromSeed(
       keys[9].keypair,
@@ -431,7 +431,7 @@ describe('Different deposits scenarios', () => {
       await checkDeleteFullDid(
         keys[0].keypair,
         testFullDidOne,
-        keys[0].sign(testFullDidOne)
+        keys[0].getSignCallback(testFullDidOne)
       )
     ).toBe(true)
   }, 45_000)
@@ -445,7 +445,7 @@ describe('Different deposits scenarios', () => {
       await checkRemoveFullDidAttestation(
         keys[2].keypair,
         testFullDidThree,
-        keys[2].sign(testFullDidThree),
+        keys[2].getSignCallback(testFullDidThree),
         credential
       )
     ).toBe(true)
@@ -455,7 +455,7 @@ describe('Different deposits scenarios', () => {
       await checkReclaimFullDidAttestation(
         keys[3].keypair,
         testFullDidFour,
-        keys[3].sign(testFullDidFour),
+        keys[3].getSignCallback(testFullDidFour),
         credential
       )
     ).toBe(true)
@@ -465,7 +465,7 @@ describe('Different deposits scenarios', () => {
       await checkDeleteFullDid(
         keys[4].keypair,
         testFullDidFive,
-        keys[4].sign(testFullDidFive)
+        keys[4].getSignCallback(testFullDidFive)
       )
     ).toBe(true)
   }, 90_000)
@@ -479,7 +479,7 @@ describe('Different deposits scenarios', () => {
       await checkRemoveFullDidAttestation(
         keys[6].keypair,
         testFullDidSeven,
-        keys[6].sign(testFullDidSeven),
+        keys[6].getSignCallback(testFullDidSeven),
         credential
       )
     ).toBe(true)
@@ -489,7 +489,7 @@ describe('Different deposits scenarios', () => {
       await checkReclaimFullDidAttestation(
         keys[7].keypair,
         testFullDidEight,
-        keys[7].sign(testFullDidEight),
+        keys[7].getSignCallback(testFullDidEight),
         credential
       )
     ).toBe(true)
@@ -498,7 +498,7 @@ describe('Different deposits scenarios', () => {
     await checkDeletedDidReclaimAttestation(
       keys[8].keypair,
       testFullDidNine,
-      keys[8].sign(testFullDidNine),
+      keys[8].getSignCallback(testFullDidNine),
       credential
     )
   }, 120_000)
@@ -507,7 +507,7 @@ describe('Different deposits scenarios', () => {
       await checkWeb3Deposit(
         keys[9].keypair,
         testFullDidTen,
-        keys[9].sign(testFullDidTen)
+        keys[9].getSignCallback(testFullDidTen)
       )
     ).toBe(true)
   }, 120_000)

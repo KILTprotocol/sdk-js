@@ -188,8 +188,8 @@ const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
 
 export interface KeyTool {
   keypair: KiltKeyringPair
-  sign: KeyToolSignCallback
-  signWithoutDid: StoreDidCallback
+  getSignCallback: KeyToolSignCallback
+  storeDidCallback: StoreDidCallback
   authentication: [NewLightDidVerificationKey]
 }
 
@@ -209,8 +209,8 @@ export function makeSigningKeyTool(
     {},
     type
   ) as KiltKeyringPair
-  const sign = makeSignCallback(keypair)
-  const signWithoutDid = makeStoreDidCallback(keypair)
+  const getSignCallback = makeSignCallback(keypair)
+  const storeDidCallback = makeStoreDidCallback(keypair)
 
   const authenticationKey = {
     publicKey: keypair.publicKey,
@@ -219,8 +219,8 @@ export function makeSigningKeyTool(
 
   return {
     keypair,
-    sign,
-    signWithoutDid,
+    getSignCallback,
+    storeDidCallback,
     authentication: [authenticationKey],
   }
 }

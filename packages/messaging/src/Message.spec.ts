@@ -141,7 +141,7 @@ describe('Messaging', () => {
 
   beforeAll(async () => {
     const aliceAuthKey = makeSigningKeyTool('ed25519')
-    aliceSign = aliceAuthKey.sign
+    aliceSign = aliceAuthKey.getSignCallback
     aliceLightDid = Did.createLightDidDocument({
       authentication: aliceAuthKey.authentication,
       keyAgreement: aliceEncKey.keyAgreement,
@@ -156,7 +156,7 @@ describe('Messaging', () => {
     aliceFullDid = await createLocalDemoFullDidFromLightDid(aliceLightDid)
 
     const bobAuthKey = makeSigningKeyTool('ed25519')
-    bobSign = bobAuthKey.sign
+    bobSign = bobAuthKey.getSignCallback
     bobLightDid = Did.createLightDidDocument({
       authentication: bobAuthKey.authentication,
       keyAgreement: bobEncKey.keyAgreement,
@@ -891,13 +891,13 @@ describe('Error checking / Verification', () => {
     // Quote signed by attester
     quoteAttesterSigned = await Quote.createAttesterSignedQuote(
       quoteData,
-      keyAlice.sign(identityAlice)
+      keyAlice.getSignCallback(identityAlice)
     )
     // Quote agreement
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       legitimation.rootHash,
-      keyBob.sign(identityBob),
+      keyBob.getSignCallback(identityBob),
       identityBob.uri,
       { didResolve }
     )
@@ -975,7 +975,7 @@ describe('Error checking / Verification', () => {
         inviter: await Did.signPayload(
           identityAlice.uri,
           'signature',
-          keyAlice.sign(identityAlice)
+          keyAlice.getSignCallback(identityAlice)
         ),
       },
     }
@@ -992,12 +992,12 @@ describe('Error checking / Verification', () => {
         inviter: await Did.signPayload(
           identityAlice.uri,
           'signature',
-          keyAlice.sign(identityAlice)
+          keyAlice.getSignCallback(identityAlice)
         ),
         invitee: await Did.signPayload(
           identityBob.uri,
           'signature',
-          keyBob.sign(identityBob)
+          keyBob.getSignCallback(identityBob)
         ),
       },
     }

@@ -136,12 +136,12 @@ describe('Quote', () => {
     }
     validAttesterSignedQuote = await Quote.createAttesterSignedQuote(
       validQuoteData,
-      attester.sign(attesterIdentity)
+      attester.getSignCallback(attesterIdentity)
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       credential.rootHash,
-      claimer.sign(claimerIdentity),
+      claimer.getSignCallback(claimerIdentity),
       claimerIdentity.uri,
       {
         didResolve: mockResolve,
@@ -157,7 +157,7 @@ describe('Quote', () => {
       await Did.signPayload(
         claimerIdentity.uri,
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimer.sign(claimerIdentity)
+        claimer.getSignCallback(claimerIdentity)
       )
     ).toEqual(quoteBothAgreed.claimerSignature)
 
@@ -188,7 +188,7 @@ describe('Quote', () => {
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,
-        attester.sign(attesterIdentity)
+        attester.getSignCallback(attesterIdentity)
       )
     ).toEqual(validAttesterSignedQuote)
   })

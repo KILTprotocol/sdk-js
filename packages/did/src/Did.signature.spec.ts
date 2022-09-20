@@ -41,7 +41,7 @@ describe('light DID', () => {
     did = Did.createLightDidDocument({
       authentication: keyTool.authentication,
     })
-    sign = keyTool.sign(did)
+    sign = keyTool.getSignCallback(did)
   })
 
   beforeEach(() => {

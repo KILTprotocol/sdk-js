@@ -213,7 +213,7 @@ describe('When creating an instance from the chain', () => {
       const keyTool = makeSigningKeyTool()
       keypair = keyTool.keypair
       fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
-      sign = keyTool.sign(fullDid)
+      sign = keyTool.getSignCallback(fullDid)
     })
 
     describe('.addSingleExtrinsic()', () => {
