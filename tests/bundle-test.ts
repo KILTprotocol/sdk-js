@@ -71,8 +71,8 @@ function makeSigningKeypair(
   alg: SigningAlgorithms = 'sr25519'
 ): {
   keypair: KiltKeyringPair
-  sign: (didDocument: DidDocument) => SignCallback
-  signStoreDid: StoreDidCallback
+  getSignCallback: (didDocument: DidDocument) => SignCallback
+  storeDidCallback: StoreDidCallback
 } {
   const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
     ed25519: 'ed25519',
@@ -85,13 +85,13 @@ function makeSigningKeypair(
     {},
     type
   ) as KiltKeyringPair
-  const sign = makeSignCallback(keypair)
-  const signStoreDid = makeStoreDidCallback(keypair)
+  const getSignCallback = makeSignCallback(keypair)
+  const storeDidCallback = makeStoreDidCallback(keypair)
 
   return {
     keypair,
-    sign,
-    signStoreDid,
+    getSignCallback,
+    storeDidCallback,
   }
 }
 
@@ -185,7 +185,7 @@ async function runAll() {
     FaucetSeed
   ) as KiltKeyringPair
 
-  const { keypair: aliceKeypair, sign: aliceSign } =
+  const { keypair: aliceKeypair, getSignCallback: aliceSign } =
     makeSigningKeypair('//Alice')
   const aliceEncryptionKey = makeEncryptionKeypair('//Alice//enc')
   const aliceDecryptCallback = makeDecryptCallback(aliceEncryptionKey)
@@ -198,7 +198,8 @@ async function runAll() {
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const { keypair: bobKeypair, sign: bobSign } = makeSigningKeypair('//Bob')
+  const { keypair: bobKeypair, getSignCallback: bobSign } =
+    makeSigningKeypair('//Bob')
   const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
   const bobEncryptCallback = makeEncryptCallback(bobEncryptionKey)
   const bob = await createFullDidFromKeypair(
@@ -231,12 +232,15 @@ async function runAll() {
 
   // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
-  const { keypair, sign, signStoreDid } = makeSigningKeypair('//Foo', 'ed25519')
+  const { keypair, getSignCallback, storeDidCallback } = makeSigningKeypair(
+    '//Foo',
+    'ed25519'
+  )
 
   const didStoreTx = await Did.Chain.getStoreTx(
     { authentication: [keypair] },
     payer.address,
-    signStoreDid
+    storeDidCallback
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
@@ -258,7 +262,7 @@ async function runAll() {
   const deleteTx = await Did.authorizeExtrinsic(
     fullDid.uri,
     api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
-    sign(fullDid),
+    getSignCallback(fullDid),
     payer.address
   )
   await Blockchain.signAndSubmitTx(deleteTx, payer)
