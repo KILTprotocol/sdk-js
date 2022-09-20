@@ -14,6 +14,7 @@ import type {
   DidSignature,
   DidUri,
   SignCallback,
+  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
@@ -68,17 +69,19 @@ export function getEndpoint(
  * @param did The DID to be used.
  * @param payload The byte array or HEX-encoded payload to sign.
  * @param sign The sign callback to use for the signing operation.
+ * @param keyRelationship (optional) The key relationship, that should be used. Defaults to 'authentication'.
  *
  * @returns The resulting [[DidSignature]].
  */
 export async function signPayload(
   did: DidUri,
   payload: Uint8Array | string,
-  sign: SignCallback
+  sign: SignCallback,
+  keyRelationship: VerificationKeyRelationship = 'authentication'
 ): Promise<DidSignature> {
   const { data: signature, keyUri } = await sign({
     data: Crypto.coToUInt8(payload),
-    keyRelationship: 'authentication',
+    keyRelationship,
     did,
   })
 
