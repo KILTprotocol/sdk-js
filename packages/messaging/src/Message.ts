@@ -57,7 +57,7 @@ export function verifyDelegationStructure(
   if (!account) {
     throw new SDKErrors.OwnerMissingError()
   }
-  Did.validateKiltDidUri(account, 'Did')
+  Did.validateUri(account, 'Did')
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
@@ -132,7 +132,7 @@ export function verifyMessageBody(body: MessageBody): void {
       body.content.cTypes.forEach(
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
           DataUtils.verifyIsHex(cTypeHash)
-          trustedAttesters?.forEach((did) => Did.validateKiltDidUri(did, 'Did'))
+          trustedAttesters?.forEach((did) => Did.validateUri(did, 'Did'))
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
@@ -212,8 +212,8 @@ export function verifyMessageEnvelope(message: IMessage): void {
   if (receivedAt !== undefined && typeof receivedAt !== 'number') {
     throw new TypeError('Received at is expected to be a number')
   }
-  Did.validateKiltDidUri(sender, 'Did')
-  Did.validateKiltDidUri(receiver, 'Did')
+  Did.validateUri(sender, 'Did')
+  Did.validateUri(receiver, 'Did')
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }

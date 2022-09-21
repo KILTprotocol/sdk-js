@@ -166,7 +166,7 @@ export function verifyDataStructure(input: ICType): void {
     )
   }
   if (input.owner !== null) {
-    Did.validateKiltDidUri(input.owner, 'Did')
+    Did.validateUri(input.owner, 'Did')
   }
 }
 

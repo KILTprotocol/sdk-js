@@ -50,7 +50,7 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  Did.validateKiltDidUri(input.owner, 'Did')
+  Did.validateUri(input.owner, 'Did')
 
   if (typeof input.revoked !== 'boolean') {
     throw new SDKErrors.RevokedTypeError()

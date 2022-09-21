@@ -164,7 +164,7 @@ export type EncodedSignature = EncodedVerificationKey
  * @param input Arbitrary input.
  * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
  */
-export function validateKiltDidUri(
+export function validateUri(
   input: unknown,
   expectType?: 'Did' | 'ResourceUri'
 ): void {
@@ -214,7 +214,7 @@ export function isKiltDidUri(
   expectType?: 'Did' | 'ResourceUri'
 ): input is DidUri | DidResourceUri {
   try {
-    validateKiltDidUri(input, expectType)
+    validateUri(input, expectType)
     return true
   } catch {
     return false

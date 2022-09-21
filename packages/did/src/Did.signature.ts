@@ -18,7 +18,7 @@ import {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { resolve } from './DidResolver/index.js'
-import { parse, validateKiltDidUri } from './Did.utils.js'
+import { parse, validateUri } from './Did.utils.js'
 import * as Did from './index.js'
 
 export type DidSignatureVerificationInput = {
@@ -49,7 +49,7 @@ export function verifyDidSignatureDataStructure(
       `Expected signature as a hex string, got ${input.signature}`
     )
   }
-  validateKiltDidUri(keyUri, 'ResourceUri')
+  validateUri(keyUri, 'ResourceUri')
 }
 
 /**
