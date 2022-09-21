@@ -5,4 +5,3 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as AccountLinks from './AccountLinks.chain.js'
