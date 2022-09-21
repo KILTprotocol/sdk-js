@@ -19,7 +19,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { latest, rpc, runtime } from '@kiltprotocol/type-definitions'
 
 /**
- * Prepares crypto modules (required e.g. For identity creation) and calls ConfigService.set().
+ * Prepares crypto modules (required e.g. for identity creation) and calls ConfigService.set().
  *
  * @param configs Arguments to pass on to ConfigService.set().
  * @returns Promise that must be awaited to assure crypto is ready.
