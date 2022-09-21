@@ -42,7 +42,7 @@ import type {
 } from '@kiltprotocol/augment-api'
 
 import {
-  checkServiceEndpointSyntax,
+  validateService,
   EncodedEncryptionKey,
   EncodedKey,
   EncodedSignature,
@@ -162,7 +162,7 @@ interface ChainEndpoint {
 }
 
 export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
-  checkServiceEndpointSyntax(endpoint)
+  validateService(endpoint)
   const { id, type, serviceEndpoint } = endpoint
   return {
     id: resourceIdToChain(id),

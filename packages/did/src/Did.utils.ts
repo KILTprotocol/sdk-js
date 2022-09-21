@@ -269,7 +269,7 @@ export function stripFragment(id: UriFragment): string {
  *
  * @param endpoint A service endpoint object to check.
  */
-export function checkServiceEndpointSyntax(endpoint: DidServiceEndpoint): void {
+export function validateService(endpoint: DidServiceEndpoint): void {
   const { id, serviceEndpoint } = endpoint
   if (id.startsWith('did:kilt')) {
     throw new SDKErrors.DidError(

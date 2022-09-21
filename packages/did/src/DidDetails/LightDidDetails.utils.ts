@@ -22,7 +22,7 @@ import { encryptionKeyTypes } from '@kiltprotocol/types'
 
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { checkServiceEndpointSyntax, stripFragment } from '../Did.utils.js'
+import { validateService, stripFragment } from '../Did.utils.js'
 
 type LightDidEncoding = '00' | '01'
 
@@ -96,7 +96,7 @@ export function validateCreateDocumentInput(input: CreateDocumentInput): void {
         `Cannot specify a service ID with the name "${service.id}" as it is a reserved keyword`
       )
     }
-    checkServiceEndpointSyntax(service)
+    validateService(service)
   })
 }
 
