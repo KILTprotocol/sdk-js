@@ -1601,7 +1601,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:9.4.1, @polkadot/api@npm:^9.4.1":
+"@polkadot/api@npm:9.4.1, @polkadot/api@npm:^9.0.0, @polkadot/api@npm:^9.4.1":
   version: 9.4.1
   resolution: "@polkadot/api@npm:9.4.1"
   dependencies:
