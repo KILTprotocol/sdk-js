@@ -284,10 +284,7 @@ export class DelegationNode implements IDelegationNode {
         `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
       )
     }
-    return Did.Chain.didSignatureToChain(
-      key as DidVerificationKey,
-      delegateSignature
-    )
+    return Did.didSignatureToChain(key as DidVerificationKey, delegateSignature)
   }
 
   /**

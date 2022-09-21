@@ -73,7 +73,7 @@ describe('write and didDeleteTx', () => {
 
   it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
     const otherAccount = devBob
-    const tx = await Did.Chain.getStoreTx(
+    const tx = await Did.getStoreTx(
       did,
       otherAccount.address,
       key.storeDidCallback
@@ -101,7 +101,7 @@ describe('write and didDeleteTx', () => {
       ],
     })
 
-    const tx = await Did.Chain.getStoreTx(
+    const tx = await Did.getStoreTx(
       newDid,
       paymentAccount.address,
       key.storeDidCallback
@@ -141,14 +141,14 @@ describe('write and didDeleteTx', () => {
       makeSigningKeyTool().authentication[0]
     )
 
-    const encodedDid = Did.Chain.didToChain(emptyDid)
+    const encodedDid = Did.didToChain(emptyDid)
     expect(
       await api.query.did.serviceEndpoints.entries(encodedDid)
     ).toHaveLength(0)
 
     const encoded = await api.query.did.serviceEndpoints(
       encodedDid,
-      Did.Chain.resourceIdToChain('#non-existing-service-id')
+      Did.resourceIdToChain('#non-existing-service-id')
     )
     expect(encoded.isNone).toBe(true)
 
@@ -206,7 +206,7 @@ describe('write and didDeleteTx', () => {
     )) as DidDocument
     expect(fullDid).not.toBeNull()
 
-    const encodedDid = Did.Chain.didToChain(fullDid.uri)
+    const encodedDid = Did.didToChain(fullDid.uri)
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
       encodedDid
     )
@@ -235,7 +235,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { keypair, getSignCallback, storeDidCallback } = makeSigningKeyTool()
   const newDid = await createMinimalLightDidFromKeypair(keypair)
 
-  const tx = await Did.Chain.getStoreTx(
+  const tx = await Did.getStoreTx(
     newDid,
     paymentAccount.address,
     storeDidCallback
@@ -251,7 +251,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const newKey = makeSigningKeyTool()
 
   const updateAuthenticationKeyCall = api.tx.did.setAuthenticationKey(
-    Did.Chain.publicKeyToChain(newKey.authentication[0])
+    Did.publicKeyToChain(newKey.authentication[0])
   )
   const tx2 = await Did.authorizeExtrinsic(
     fullDid.uri,
@@ -274,7 +274,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     serviceEndpoint: ['x:new-url'],
   }
   const updateEndpointCall = api.tx.did.addServiceEndpoint(
-    Did.Chain.serviceToChain(newEndpoint)
+    Did.serviceToChain(newEndpoint)
   )
 
   const tx3 = await Did.authorizeExtrinsic(
@@ -285,16 +285,16 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
   await submitExtrinsic(tx3, paymentAccount)
 
-  const encodedDid = Did.Chain.didToChain(fullDid.uri)
+  const encodedDid = Did.didToChain(fullDid.uri)
   const encoded = await api.query.did.serviceEndpoints(
     encodedDid,
-    Did.Chain.resourceIdToChain(newEndpoint.id)
+    Did.resourceIdToChain(newEndpoint.id)
   )
-  expect(Did.Chain.serviceFromChain(encoded)).toStrictEqual(newEndpoint)
+  expect(Did.serviceFromChain(encoded)).toStrictEqual(newEndpoint)
 
   // Delete the added service endpoint
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
-    Did.Chain.resourceIdToChain(newEndpoint.id)
+    Did.resourceIdToChain(newEndpoint.id)
   )
   const tx4 = await Did.authorizeExtrinsic(
     fullDid.uri,
@@ -307,7 +307,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // There should not be any endpoint with the given ID now.
   const encoded2 = await api.query.did.serviceEndpoints(
     encodedDid,
-    Did.Chain.resourceIdToChain(newEndpoint.id)
+    Did.resourceIdToChain(newEndpoint.id)
   )
   expect(encoded2.isNone).toBe(true)
 
@@ -338,7 +338,7 @@ describe('DID migration', () => {
       keyAgreement,
     })
 
-    const storeTx = await Did.Chain.getStoreTx(
+    const storeTx = await Did.getStoreTx(
       lightDid,
       paymentAccount.address,
       storeDidCallback
@@ -366,8 +366,7 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.Chain.didToChain(migratedFullDid.uri)))
-        .isSome
+      (await api.query.did.did(Did.didToChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -382,7 +381,7 @@ describe('DID migration', () => {
       authentication,
     })
 
-    const storeTx = await Did.Chain.getStoreTx(
+    const storeTx = await Did.getStoreTx(
       lightDid,
       paymentAccount.address,
       storeDidCallback
@@ -404,8 +403,7 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.Chain.didToChain(migratedFullDid.uri)))
-        .isSome
+      (await api.query.did.did(Did.didToChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -432,7 +430,7 @@ describe('DID migration', () => {
       service,
     })
 
-    const storeTx = await Did.Chain.getStoreTx(
+    const storeTx = await Did.getStoreTx(
       lightDid,
       paymentAccount.address,
       storeDidCallback
@@ -466,7 +464,7 @@ describe('DID migration', () => {
       ],
     })
 
-    const encodedDid = Did.Chain.didToChain(migratedFullDid.uri)
+    const encodedDid = Did.didToChain(migratedFullDid.uri)
     expect((await api.query.did.did(encodedDid)).isSome).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -499,7 +497,7 @@ describe('DID authorization', () => {
     makeSigningKeyTool('ed25519')
 
   beforeAll(async () => {
-    const createTx = await Did.Chain.getStoreTx(
+    const createTx = await Did.getStoreTx(
       {
         authentication,
         assertionMethod: authentication,
@@ -537,7 +535,7 @@ describe('DID authorization', () => {
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      Did.Chain.didToChain(did.uri)
+      Did.didToChain(did.uri)
     )
     const deleteCall = api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeExtrinsic(
@@ -574,7 +572,7 @@ describe('DID management batching', () => {
   describe('FullDidCreationBuilder', () => {
     it('Build a complete full DID', async () => {
       const { keypair, storeDidCallback, authentication } = makeSigningKeyTool()
-      const extrinsic = await Did.Chain.getStoreTx(
+      const extrinsic = await Did.getStoreTx(
         {
           authentication,
           assertionMethod: [
@@ -694,7 +692,7 @@ describe('DID management batching', () => {
         type: 'ecdsa',
       }
 
-      const extrinsic = await Did.Chain.getStoreTx(
+      const extrinsic = await Did.getStoreTx(
         { authentication: [didAuthKey] },
         paymentAccount.address,
         storeDidCallback
@@ -720,7 +718,7 @@ describe('DID management batching', () => {
       const { keypair, getSignCallback, storeDidCallback, authentication } =
         makeSigningKeyTool()
 
-      const createTx = await Did.Chain.getStoreTx(
+      const createTx = await Did.getStoreTx(
         {
           authentication,
           keyAgreement: [
@@ -815,7 +813,7 @@ describe('DID management batching', () => {
         authentication: [newAuthKey],
       } = makeSigningKeyTool('ed25519')
 
-      const createTx = await Did.Chain.getStoreTx(
+      const createTx = await Did.getStoreTx(
         { authentication },
         paymentAccount.address,
         storeDidCallback
@@ -832,17 +830,15 @@ describe('DID management batching', () => {
         did: initialFullDid.uri,
         extrinsics: [
           api.tx.did.addServiceEndpoint(
-            Did.Chain.serviceToChain({
+            Did.serviceToChain({
               id: '#id-1',
               type: ['type-1'],
               serviceEndpoint: ['x:url-1'],
             })
           ),
-          api.tx.did.setAuthenticationKey(
-            Did.Chain.publicKeyToChain(newAuthKey)
-          ),
+          api.tx.did.setAuthenticationKey(Did.publicKeyToChain(newAuthKey)),
           api.tx.did.addServiceEndpoint(
-            Did.Chain.serviceToChain({
+            Did.serviceToChain({
               id: '#id-2',
               type: ['type-2'],
               serviceEndpoint: ['x:url-2'],
@@ -870,7 +866,7 @@ describe('DID management batching', () => {
     it('simple `batch` succeeds despite failures of some extrinsics', async () => {
       const { authentication, getSignCallback, storeDidCallback } =
         makeSigningKeyTool()
-      const tx = await Did.Chain.getStoreTx(
+      const tx = await Did.getStoreTx(
         {
           authentication,
           service: [
@@ -898,11 +894,9 @@ describe('DID management batching', () => {
         batchFunction: api.tx.utility.batch,
         did: fullDid.uri,
         extrinsics: [
-          api.tx.did.setAttestationKey(
-            Did.Chain.publicKeyToChain(authentication[0])
-          ),
+          api.tx.did.setAttestationKey(Did.publicKeyToChain(authentication[0])),
           api.tx.did.addServiceEndpoint(
-            Did.Chain.serviceToChain({
+            Did.serviceToChain({
               id: '#id-1',
               type: ['type-2'],
               serviceEndpoint: ['x:url-2'],
@@ -933,7 +927,7 @@ describe('DID management batching', () => {
     it('batchAll fails if any extrinsics fails', async () => {
       const { authentication, getSignCallback, storeDidCallback } =
         makeSigningKeyTool()
-      const createTx = await Did.Chain.getStoreTx(
+      const createTx = await Did.getStoreTx(
         {
           authentication,
           service: [
@@ -960,11 +954,9 @@ describe('DID management batching', () => {
         batchFunction: api.tx.utility.batchAll,
         did: fullDid.uri,
         extrinsics: [
-          api.tx.did.setAttestationKey(
-            Did.Chain.publicKeyToChain(authentication[0])
-          ),
+          api.tx.did.setAttestationKey(Did.publicKeyToChain(authentication[0])),
           api.tx.did.addServiceEndpoint(
-            Did.Chain.serviceToChain({
+            Did.serviceToChain({
               id: '#id-1',
               type: ['type-2'],
               serviceEndpoint: ['x:url-2'],
@@ -1199,7 +1191,7 @@ describe('Runtime constraints', () => {
           type: 'x25519',
         })
       )
-      await Did.Chain.getStoreTx(
+      await Did.getStoreTx(
         {
           authentication: [testAuthKey],
           keyAgreement: newKeyAgreementKeys,
@@ -1213,7 +1205,7 @@ describe('Runtime constraints', () => {
         type: 'x25519',
       })
       await expect(
-        Did.Chain.getStoreTx(
+        Did.getStoreTx(
           {
             authentication: [testAuthKey],
             keyAgreement: newKeyAgreementKeys,
@@ -1236,7 +1228,7 @@ describe('Runtime constraints', () => {
           serviceEndpoint: [`x:url-${index}`],
         })
       )
-      await Did.Chain.getStoreTx(
+      await Did.getStoreTx(
         {
           authentication: [testAuthKey],
           service: newServiceEndpoints,
@@ -1251,7 +1243,7 @@ describe('Runtime constraints', () => {
         serviceEndpoint: ['x:url-100'],
       })
       await expect(
-        Did.Chain.getStoreTx(
+        Did.getStoreTx(
           {
             authentication: [testAuthKey],
             service: newServiceEndpoints,

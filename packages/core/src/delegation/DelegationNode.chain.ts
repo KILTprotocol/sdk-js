@@ -12,7 +12,8 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils, Chain as DidChain } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
+import { Utils as DidUtils } from '@kiltprotocol/did'
 import { delegationNodeFromChain } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
@@ -39,7 +40,7 @@ export function addDelegationToChainArgs(
   return [
     delegation.id,
     delegation.parentId || '',
-    DidChain.didToChain(delegation.account),
+    Did.didToChain(delegation.account),
     permissionsAsBitset(delegation),
     signature,
   ]

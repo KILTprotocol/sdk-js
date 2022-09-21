@@ -160,7 +160,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
     }
 }
 
-type StoreDidCallback = Parameters<typeof Did.Chain.getStoreTx>['2']
+type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 /**
  * Generates a callback that can be used for signing.
@@ -340,7 +340,7 @@ export async function createFullDidFromLightDid(
   sign: StoreDidCallback
 ): Promise<DidDocument> {
   const { authentication, uri } = lightDidForId
-  const tx = await Did.Chain.getStoreTx(
+  const tx = await Did.getStoreTx(
     {
       authentication,
       assertionMethod: authentication,

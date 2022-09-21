@@ -107,7 +107,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
     const resolved = Did.web3NameFromChain(
-      await api.query.web3Names.names(Did.Chain.didToChain(w3nCreator.uri))
+      await api.query.web3Names.names(Did.didToChain(w3nCreator.uri))
     )
     expect(resolved).toBe(nick)
   }, 30_000)
