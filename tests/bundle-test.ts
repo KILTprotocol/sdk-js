@@ -78,7 +78,7 @@ function makeSigningKeypair(
     'ecdsa-secp256k1': 'ecdsa',
   }
   const type = keypairTypeForAlg[alg]
-  const keypair = Crypto.makeKeypairFromUri('seed', type)
+  const keypair = Crypto.makeKeypairFromUri(seed, type)
   const getSignCallback = makeSignCallback(keypair)
   const storeDidCallback = makeStoreDidCallback(keypair)
 
