@@ -41,11 +41,12 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
+    "@kiltprotocol/type-definitions": "0.2.0",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.0.0",
+    "@polkadot/api": "^9.4.1",
     "@polkadot/keyring": "^10.0.0",
-    "@polkadot/types": "^9.0.0",
+    "@polkadot/types": "^9.4.1",
     "@polkadot/util": "^10.0.0",
     "@polkadot/util-crypto": "^10.0.0"
   }
