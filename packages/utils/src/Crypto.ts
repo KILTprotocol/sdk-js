@@ -42,7 +42,11 @@ import jsonabc from './jsonabc.js'
 import * as SDKErrors from './SDKErrors.js'
 import { ss58Format } from './ss58Format.js'
 
-export { naclBoxPairFromSecret } from '@polkadot/util-crypto'
+export {
+  naclBoxPairFromSecret,
+  mnemonicGenerate,
+  mnemonicToMiniSecret,
+} from '@polkadot/util-crypto'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
