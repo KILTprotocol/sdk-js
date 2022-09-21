@@ -26,6 +26,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
+  makeDidSignature,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as CType from '../ctype'
@@ -153,15 +154,12 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    const signature = await claimer.getSignCallback(claimerIdentity)({
-      data: Crypto.coToUInt8(Crypto.hashObjectAsStr(validAttesterSignedQuote)),
-      did: claimerIdentity.uri,
-      keyRelationship: 'authentication',
-    })
-    expect(signature.signature).toEqual(
-      quoteBothAgreed.claimerSignature.signature
+    const signature = await makeDidSignature(
+      Crypto.hashObjectAsStr(validAttesterSignedQuote),
+      claimerIdentity.uri,
+      claimer.getSignCallback(claimerIdentity)
     )
-    expect(signature.keyUri).toEqual(quoteBothAgreed.claimerSignature.keyUri)
+    expect(signature).toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = Did.Utils.parseDidUri(
       validAttesterSignedQuote.attesterSignature.keyUri
