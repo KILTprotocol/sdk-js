@@ -218,7 +218,7 @@ export async function resolveServiceEndpoint(
     return null
   }
 
-  const endpoint = Did.getEndpoint(document, serviceId)
+  const endpoint = Did.getService(document, serviceId)
   if (!endpoint) {
     return null
   }

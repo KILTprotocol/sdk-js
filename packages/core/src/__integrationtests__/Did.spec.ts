@@ -906,7 +906,7 @@ describe('DID management batching', () => {
       expect(updatedFullDid.assertionMethod?.[0]).toBeDefined()
       // The service endpoint will match the one manually added, and not the one set in the batch
       expect(
-        Did.getEndpoint(updatedFullDid, '#id-1')
+        Did.getService(updatedFullDid, '#id-1')
       ).toStrictEqual<DidServiceEndpoint>({
         id: '#id-1',
         type: ['type-1'],
@@ -971,7 +971,7 @@ describe('DID management batching', () => {
       expect(updatedFullDid.assertionMethod).toBeUndefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.
       expect(
-        Did.getEndpoint(updatedFullDid, '#id-1')
+        Did.getService(updatedFullDid, '#id-1')
       ).toStrictEqual<DidServiceEndpoint>({
         id: '#id-1',
         type: ['type-1'],
