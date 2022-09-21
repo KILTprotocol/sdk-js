@@ -174,7 +174,7 @@ export async function resolveKey(
  * @param serviceUri The DID service URI.
  * @returns The details associated with the service endpoint.
  */
-export async function resolveServiceEndpoint(
+export async function resolveService(
   serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint | null> {
   const { fragment: serviceId, did, type } = parseDidUri(serviceUri)

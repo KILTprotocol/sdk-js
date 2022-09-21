@@ -35,7 +35,7 @@ import {
 import {
   resolve,
   resolveKey,
-  resolveServiceEndpoint,
+  resolveService,
   strictResolve,
 } from './index.js'
 import * as Did from '../index.js'
@@ -191,7 +191,7 @@ describe('When resolving a service endpoint', () => {
     const serviceIdUri: DidResourceUri = `${fullDid}#service-1`
 
     expect(
-      await resolveServiceEndpoint(serviceIdUri)
+      await resolveService(serviceIdUri)
     ).toStrictEqual<ResolvedDidServiceEndpoint>({
       id: serviceIdUri,
       type: [`type-service-1`],
@@ -209,22 +209,22 @@ describe('When resolving a service endpoint', () => {
 
     let serviceIdUri: DidResourceUri = `${deletedDid}#service-1`
 
-    expect(await resolveServiceEndpoint(serviceIdUri)).toBeNull()
+    expect(await resolveService(serviceIdUri)).toBeNull()
 
     const didWithNoServiceEndpoints = didWithAuthenticationKey
     serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
 
-    expect(await resolveServiceEndpoint(serviceIdUri)).toBeNull()
+    expect(await resolveService(serviceIdUri)).toBeNull()
   })
 
   it('throws for invalid URIs', async () => {
     const uriWithoutFragment = deletedDid
     await expect(
-      resolveServiceEndpoint(uriWithoutFragment as DidResourceUri)
+      resolveService(uriWithoutFragment as DidResourceUri)
     ).rejects.toThrow()
 
     const invalidUri = 'invalid-uri' as DidResourceUri
-    await expect(resolveServiceEndpoint(invalidUri)).rejects.toThrow()
+    await expect(resolveService(invalidUri)).rejects.toThrow()
   })
 })
 
