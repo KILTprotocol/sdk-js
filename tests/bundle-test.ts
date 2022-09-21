@@ -35,7 +35,7 @@ const {
   BalanceUtils,
 } = kilt
 
-kilt.config({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+kilt.ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
 function makeSignCallback(
   keypair: KeyringPair
