@@ -15,7 +15,7 @@ import type {
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import { getAddressByKey, KILT_DID_PREFIX, parseDidUri } from '../Did.utils.js'
+import { getAddressByKey, KILT_DID_PREFIX, parse } from '../Did.utils.js'
 
 import {
   validateCreateDocumentInput,
@@ -111,7 +111,7 @@ export function parseDocumentFromLightDid(
     fragment,
     type,
     authKeyTypeEncoding,
-  } = parseDidUri(uri)
+  } = parse(uri)
 
   if (type !== 'light') {
     throw new SDKErrors.DidError(

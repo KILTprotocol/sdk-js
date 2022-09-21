@@ -317,7 +317,7 @@ export async function decrypt(
       `Could not resolve sender encryption key "${senderKeyUri}"`
     )
   }
-  const { fragment } = Did.parseDidUri(receiverKeyUri)
+  const { fragment } = Did.parse(receiverKeyUri)
   if (!fragment) {
     throw new SDKErrors.DidError(
       `No fragment for the receiver key ID "${receiverKeyUri}"`

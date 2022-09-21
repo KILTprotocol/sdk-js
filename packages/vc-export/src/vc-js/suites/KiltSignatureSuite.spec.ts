@@ -46,7 +46,7 @@ beforeAll(async () => {
   })
   documentLoader = async (uri) => {
     if (uri.startsWith('did:kilt:')) {
-      const { address, fragment, did } = Did.parseDidUri(uri as DidUri)
+      const { address, fragment, did } = Did.parse(uri as DidUri)
       const key: IPublicKeyRecord = {
         id: uri as DidResourceUri,
         publicKeyBase58: base58Encode(Crypto.decodeAddress(address)),

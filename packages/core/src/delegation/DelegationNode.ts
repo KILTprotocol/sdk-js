@@ -272,7 +272,7 @@ export class DelegationNode implements IDelegationNode {
       this.generateHash(),
       sign
     )
-    const { fragment } = Did.parseDidUri(delegateSignature.keyUri)
+    const { fragment } = Did.parse(delegateSignature.keyUri)
     if (!fragment) {
       throw new SDKErrors.DidError(
         `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`

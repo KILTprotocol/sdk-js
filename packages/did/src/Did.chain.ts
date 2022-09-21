@@ -49,7 +49,7 @@ import {
   EncodedVerificationKey,
   getAddressByKey,
   getFullDidUri,
-  parseDidUri,
+  parse,
   stripFragment,
 } from './Did.utils.js'
 
@@ -61,7 +61,7 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 // ### RAW QUERYING (lowest layer)
 
 export function toChain(did: DidUri): KiltAddress {
-  return parseDidUri(did).address
+  return parse(did).address
 }
 
 export function resourceIdToChain(id: UriFragment): string {

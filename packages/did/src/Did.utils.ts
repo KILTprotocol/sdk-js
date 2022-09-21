@@ -61,9 +61,7 @@ export type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parseDidUri(
-  didUri: DidUri | DidResourceUri
-): IDidParsingResult {
+export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
@@ -115,7 +113,7 @@ export function parseDidUri(
  * @returns Whether didA and didB refer to the same DID subject.
  */
 export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
-  return parseDidUri(didA).address === parseDidUri(didB).address
+  return parse(didA).address === parse(didB).address
 }
 
 export const signatureAlgForKeyType: Record<
@@ -173,7 +171,7 @@ export function validateKiltDidUri(
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, fragment } = parseDidUri(input as DidUri)
+  const { address, fragment } = parse(input as DidUri)
   switch (expectType) {
     // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
     // @ts-ignore
@@ -323,7 +321,7 @@ export function getFullDidUri(
 ): DidUri {
   const address = DataUtils.isKiltAddress(didOrAddress)
     ? didOrAddress
-    : parseDidUri(didOrAddress as DidUri).address
+    : parse(didOrAddress as DidUri).address
   const versionString = version === 1 ? '' : `v${version}`
   return `${KILT_DID_PREFIX}${versionString}${address}` as DidUri
 }

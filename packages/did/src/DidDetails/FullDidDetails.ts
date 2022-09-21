@@ -28,7 +28,7 @@ import {
   generateDidAuthenticatedTx,
   servicesFromChain,
 } from '../Did.chain.js'
-import { parseDidUri } from '../Did.utils.js'
+import { parse } from '../Did.utils.js'
 
 import {
   getKeyRelationshipForExtrinsic,
@@ -44,7 +44,7 @@ import {
  * @returns The fetched [[DidDocument]], or null if DID does not exist.
  */
 export async function query(didUri: DidUri): Promise<DidDocument | null> {
-  const { fragment, type } = parseDidUri(didUri)
+  const { fragment, type } = parse(didUri)
   if (fragment) {
     throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)
   }
@@ -132,7 +132,7 @@ export async function authorizeExtrinsic(
     txCounter?: BN
   } = {}
 ): Promise<SubmittableExtrinsic> {
-  if (parseDidUri(did).type === 'light') {
+  if (parse(did).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
@@ -227,7 +227,7 @@ export async function authorizeBatch({
     )
   }
 
-  if (parseDidUri(did).type === 'light') {
+  if (parse(did).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )

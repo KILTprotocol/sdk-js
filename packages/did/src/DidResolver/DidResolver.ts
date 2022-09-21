@@ -18,7 +18,7 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
 import { toChain, resourceIdToChain, serviceFromChain } from '../Did.chain.js'
-import { getFullDidUri, parseDidUri } from '../Did.utils.js'
+import { getFullDidUri, parse } from '../Did.utils.js'
 
 /**
  * Resolve a DID URI to the DID document and its metadata.
@@ -31,7 +31,7 @@ import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 export async function resolve(
   did: DidUri
 ): Promise<DidResolutionResult | null> {
-  const { type } = parseDidUri(did)
+  const { type } = parse(did)
   const api = ConfigService.get('api')
 
   const document = await Did.query(getFullDidUri(did))
@@ -124,7 +124,7 @@ export async function strictResolve(
 export async function resolveKey(
   keyUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
-  const { did, fragment: keyId } = parseDidUri(keyUri)
+  const { did, fragment: keyId } = parse(keyUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
@@ -173,7 +173,7 @@ export async function resolveKey(
 export async function resolveService(
   serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint | null> {
-  const { fragment: serviceId, did, type } = parseDidUri(serviceUri)
+  const { fragment: serviceId, did, type } = parse(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {

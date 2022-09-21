@@ -321,7 +321,7 @@ describe('Credential', () => {
     didUri: DidUri
   ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.parseDidUri(didUri)
+    const { did } = Did.parse(didUri)
     switch (did) {
       case identityAlice?.uri:
         return { document: identityAlice, metadata: { deactivated: false } }
@@ -583,7 +583,7 @@ describe('create presentation', () => {
     didUri: DidUri
   ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.parseDidUri(didUri)
+    const { did } = Did.parse(didUri)
     switch (did) {
       case migratedClaimerLightDid?.uri:
         return {

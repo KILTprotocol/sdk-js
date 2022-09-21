@@ -232,7 +232,7 @@ describe('proofs', () => {
       id: keyId,
       type: 'Ed25519VerificationKey2018',
       publicKeyBase58: base58Encode(
-        Crypto.decodeAddress(Did.parseDidUri(keyId).address)
+        Crypto.decodeAddress(Did.parse(keyId).address)
       ),
       controller: VC.credentialSubject['@id'] as DidUri,
     }

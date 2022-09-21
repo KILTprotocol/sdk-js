@@ -161,7 +161,7 @@ describe('Quote', () => {
       )
     ).toEqual(quoteBothAgreed.claimerSignature)
 
-    const { fragment: attesterKeyId } = Did.parseDidUri(
+    const { fragment: attesterKeyId } = Did.parse(
       validAttesterSignedQuote.attesterSignature.keyUri
     )
 
