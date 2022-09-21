@@ -12,6 +12,7 @@
 import '@kiltprotocol/augment-api'
 
 export * from '@kiltprotocol/core'
+export { ConfigService } from '@kiltprotocol/config'
 export * as Message from '@kiltprotocol/messaging'
 export { Blockchain } from '@kiltprotocol/chain-helpers'
 export * as ChainHelpers from '@kiltprotocol/chain-helpers'
