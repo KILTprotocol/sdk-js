@@ -23,8 +23,8 @@ import {
   randomAsHex,
   randomAsU8a,
 } from '@polkadot/util-crypto'
-import { ss58Format } from '@kiltprotocol/utils'
-import { makeSigningKeyTool } from '@kiltprotocol/testing'
+import { Crypto, ss58Format } from '@kiltprotocol/utils'
+import { makeSigningKeyTool, makeDidSignature } from '@kiltprotocol/testing'
 import * as Did from './index.js'
 import { verifyDidSignature, isDidSignature } from './Did.signature'
 import { resolve } from './DidResolver'
@@ -62,7 +62,7 @@ describe('light DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
@@ -74,7 +74,7 @@ describe('light DID', () => {
 
   it('verifies old did signature (with `keyId` property) over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     const oldSignature: any = {
       ...signature,
       keyId: signature.keyUri,
@@ -97,7 +97,11 @@ describe('light DID', () => {
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const signature = await Did.signPayload(did.uri, SIGNED_BYTES, sign)
+    const signature = await makeDidSignature(
+      Crypto.u8aToHex(SIGNED_BYTES),
+      did.uri,
+      sign
+    )
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
@@ -109,7 +113,7 @@ describe('light DID', () => {
 
   it('fails if relationship does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     await expect(() =>
       verifyDidSignature({
         message: SIGNED_STRING,
@@ -121,7 +125,7 @@ describe('light DID', () => {
 
   it('fails if key id does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     signature.keyUri += '1a'
     await expect(() =>
       verifyDidSignature({
@@ -134,7 +138,7 @@ describe('light DID', () => {
 
   it('fails if signature does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     await expect(() =>
       verifyDidSignature({
         message: SIGNED_STRING.substring(1),
@@ -146,7 +150,7 @@ describe('light DID', () => {
 
   it('fails if key id malformed', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     // @ts-expect-error
     signature.keyUri = signature.keyUri.replace('#', '?')
     await expect(() =>
@@ -167,7 +171,7 @@ describe('light DID', () => {
       },
     })
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     await expect(() =>
       verifyDidSignature({
         message: SIGNED_STRING,
@@ -205,7 +209,7 @@ describe('full DID', () => {
       ],
     }
     sign = async ({ data }) => ({
-      data: keypair.sign(data),
+      signature: keypair.sign(data),
       keyUri: `${did.uri}#0x12345`,
       keyType: 'sr25519',
     })
@@ -229,7 +233,7 @@ describe('full DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
@@ -241,7 +245,11 @@ describe('full DID', () => {
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const signature = await Did.signPayload(did.uri, SIGNED_BYTES, sign)
+    const signature = await makeDidSignature(
+      Crypto.u8aToHex(SIGNED_BYTES),
+      did.uri,
+      sign
+    )
     await expect(
       verifyDidSignature({
         message: SIGNED_BYTES,
@@ -259,7 +267,7 @@ describe('full DID', () => {
       },
     })
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     await expect(() =>
       verifyDidSignature({
         message: SIGNED_STRING,
@@ -272,7 +280,7 @@ describe('full DID', () => {
   it('does not verify if not on chain', async () => {
     jest.mocked(resolve).mockResolvedValue(null)
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    const signature = await makeDidSignature(SIGNED_STRING, did.uri, sign)
     await expect(() =>
       verifyDidSignature({
         message: SIGNED_STRING,

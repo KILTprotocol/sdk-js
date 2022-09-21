@@ -8,7 +8,7 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import { BN, hexToU8a } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 
 import type {
   Deposit,
@@ -16,7 +16,6 @@ import type {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidSignature,
   DidUri,
   DidVerificationKey,
   KiltAddress,
@@ -338,7 +337,7 @@ export async function getStoreTx(
     keyRelationship: 'authentication',
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
@@ -389,7 +388,7 @@ export async function generateDidAuthenticatedTx({
     did,
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
@@ -404,7 +403,7 @@ export async function generateDidAuthenticatedTx({
  */
 export function didSignatureToChain(
   key: DidVerificationKey,
-  signature: Pick<DidSignature, 'signature'>
+  signature: Uint8Array
 ): EncodedSignature {
   if (!verificationKeyTypes.includes(key.type)) {
     throw new SDKErrors.DidError(
@@ -412,5 +411,5 @@ export function didSignatureToChain(
     )
   }
 
-  return { [key.type]: hexToU8a(signature.signature) } as EncodedSignature
+  return { [key.type]: signature } as EncodedSignature
 }

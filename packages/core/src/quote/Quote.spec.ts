@@ -153,13 +153,15 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    expect(
-      await Did.signPayload(
-        claimerIdentity.uri,
-        Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimer.getSignCallback(claimerIdentity)
-      )
-    ).toEqual(quoteBothAgreed.claimerSignature)
+    const signature = await claimer.getSignCallback(claimerIdentity)({
+      data: Crypto.coToUInt8(Crypto.hashObjectAsStr(validAttesterSignedQuote)),
+      did: claimerIdentity.uri,
+      keyRelationship: 'authentication',
+    })
+    expect(signature.signature).toEqual(
+      quoteBothAgreed.claimerSignature.signature
+    )
+    expect(signature.keyUri).toEqual(quoteBothAgreed.claimerSignature.keyUri)
 
     const { fragment: attesterKeyId } = Did.Utils.parseDidUri(
       validAttesterSignedQuote.attesterSignature.keyUri

@@ -26,7 +26,6 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { resolve, verifyDidSignature } from '@kiltprotocol/did'
-import * as Did from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -74,16 +73,16 @@ export async function createAttesterSignedQuote(
     throw new SDKErrors.QuoteUnverifiableError()
   }
 
-  const signature = await Did.signPayload(
-    quoteInput.attesterDid,
-    Crypto.hashObjectAsStr(quoteInput),
-    sign
-  )
+  const signature = await sign({
+    data: Crypto.coToUInt8(Crypto.hashObjectAsStr(quoteInput)),
+    did: quoteInput.attesterDid,
+    keyRelationship: 'authentication',
+  })
   return {
     ...quoteInput,
     attesterSignature: {
       keyUri: signature.keyUri,
-      signature: signature.signature,
+      signature: Crypto.u8aToHex(signature.signature),
     },
   }
 }
@@ -148,16 +147,19 @@ export async function createQuoteAgreement(
     didResolve,
   })
 
-  const signature = await Did.signPayload(
-    claimerDid,
-    Crypto.hashObjectAsStr(attesterSignedQuote),
-    sign
-  )
+  const { signature, keyUri } = await sign({
+    data: Crypto.coToUInt8(Crypto.hashObjectAsStr(attesterSignedQuote)),
+    did: claimerDid,
+    keyRelationship: 'authentication',
+  })
 
   return {
     ...attesterSignedQuote,
     rootHash: credentialRootHash,
-    claimerSignature: signature,
+    claimerSignature: {
+      signature: Crypto.u8aToHex(signature),
+      keyUri,
+    },
   }
 }
 

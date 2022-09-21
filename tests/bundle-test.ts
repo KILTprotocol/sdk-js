@@ -50,7 +50,11 @@ function makeSignCallback(
         )
       }
       const signature = keypair.sign(data, { withType: false })
-      return { data: signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
+      return {
+        signature: signature,
+        keyUri: `${didDocument.uri}${keyId}`,
+        keyType,
+      }
     }
   }
 }
@@ -60,7 +64,7 @@ function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
-      data: signature,
+      signature,
       keyType: keypair.type,
     }
   }

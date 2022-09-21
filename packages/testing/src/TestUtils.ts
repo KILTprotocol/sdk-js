@@ -19,6 +19,8 @@ import {
   DidDocument,
   DidKey,
   DidServiceEndpoint,
+  DidSignature,
+  DidUri,
   DidVerificationKey,
   EncryptCallback,
   EncryptionKeyType,
@@ -153,7 +155,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
       const signature = keypair.sign(data, { withType: false })
 
       return {
-        data: signature,
+        signature,
         keyUri: `${didDocument.uri}${keyId}`,
         keyType,
       }
@@ -174,7 +176,7 @@ export function makeStoreDidCallback(
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
-      data: signature,
+      signature,
       keyType: keypair.type,
     }
   }
@@ -364,4 +366,20 @@ export async function createFullDidFromSeed(
   const lightDid = await createMinimalLightDidFromKeypair(keypair)
   const sign = makeStoreDidCallback(keypair)
   return createFullDidFromLightDid(payer, lightDid, sign)
+}
+
+export async function makeDidSignature(
+  data: string,
+  didUri: DidUri,
+  signCallback: SignCallback
+): Promise<DidSignature> {
+  const { signature, keyUri } = await signCallback({
+    data: Crypto.coToUInt8(data),
+    did: didUri,
+    keyRelationship: 'authentication',
+  })
+  return {
+    signature: Crypto.u8aToHex(signature),
+    keyUri,
+  }
 }
