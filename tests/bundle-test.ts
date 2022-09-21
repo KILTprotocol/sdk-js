@@ -169,7 +169,7 @@ async function createFullDidFromKeypair(
   )
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
-  const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
+  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
   if (!fullDid) throw new Error('Cannot query created DID')
   return fullDid
 }
@@ -245,7 +245,7 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
-  const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
+  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
   if (!fullDid) throw new Error('Could not fetch created DID document')
 
   const resolved = await Did.resolve(fullDid.uri)

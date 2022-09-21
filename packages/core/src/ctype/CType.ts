@@ -22,7 +22,7 @@ import type {
   ICTypeMetadata,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { ConfigService } from '@kiltprotocol/config'
 import type { HexString } from '@polkadot/util/types'
 import {
@@ -166,7 +166,7 @@ export function verifyDataStructure(input: ICType): void {
     )
   }
   if (input.owner !== null) {
-    DidUtils.validateKiltDidUri(input.owner, 'Did')
+    Did.validateKiltDidUri(input.owner, 'Did')
   }
 }
 

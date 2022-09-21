@@ -254,7 +254,7 @@ function makeDidKeyFromKeypair({
   return {
     id: computeKeyId(publicKey),
     publicKey,
-    type: Did.Utils.keyTypeForSignatureAlg[type as SigningAlgorithms],
+    type: Did.keyTypeForSignatureAlg[type as SigningAlgorithms],
   }
 }
 
@@ -283,7 +283,7 @@ export async function createLocalDemoFullDidFromKeypair(
   } = {}
 ): Promise<DidDocument> {
   const authKey = makeDidKeyFromKeypair(keypair)
-  const uri = Did.Utils.getFullDidUriFromKey(authKey)
+  const uri = Did.getFullDidUriFromKey(authKey)
 
   const result: DidDocument = {
     uri,
@@ -325,7 +325,7 @@ export async function createLocalDemoFullDidFromLightDid(
   const { uri, authentication } = lightDid
 
   return {
-    uri: Did.Utils.getFullDidUri(uri),
+    uri: Did.getFullDidUri(uri),
     authentication,
     assertionMethod: authentication,
     capabilityDelegation: authentication,
@@ -352,7 +352,7 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const fullDid = await Did.query(Did.Utils.getFullDidUri(uri))
+  const fullDid = await Did.query(Did.getFullDidUri(uri))
   if (!fullDid) throw new Error('Could not fetch created DID document')
   return fullDid
 }

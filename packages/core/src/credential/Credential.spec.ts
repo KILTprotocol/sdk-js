@@ -321,7 +321,7 @@ describe('Credential', () => {
     didUri: DidUri
   ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.Utils.parseDidUri(didUri)
+    const { did } = Did.parseDidUri(didUri)
     switch (did) {
       case identityAlice?.uri:
         return { document: identityAlice, metadata: { deactivated: false } }
@@ -480,7 +480,7 @@ describe('Credential', () => {
       authentication: migratedAndDeleted.authentication,
     })
     migratedAndDeletedFullDid = {
-      uri: Did.Utils.getFullDidUri(migratedAndDeletedLightDid.uri),
+      uri: Did.getFullDidUri(migratedAndDeletedLightDid.uri),
       authentication: [migratedAndDeletedLightDid.authentication[0]],
     }
 
@@ -570,7 +570,7 @@ describe('create presentation', () => {
     lightDidForId: DidDocument,
     newAuthenticationKey?: DidVerificationKey
   ): DidDocument {
-    const uri = Did.Utils.getFullDidUri(lightDidForId.uri)
+    const uri = Did.getFullDidUri(lightDidForId.uri)
     const authKey = newAuthenticationKey || lightDidForId.authentication[0]
 
     return {
@@ -583,7 +583,7 @@ describe('create presentation', () => {
     didUri: DidUri
   ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.Utils.parseDidUri(didUri)
+    const { did } = Did.parseDidUri(didUri)
     switch (did) {
       case migratedClaimerLightDid?.uri:
         return {

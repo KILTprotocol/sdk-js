@@ -21,7 +21,7 @@ import { hexToBn } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
 import type { DidUri, IClaim, ICType, PartialClaim } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import * as CType from '../ctype/index.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
@@ -199,7 +199,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
     throw new SDKErrors.CTypeHashMissingError()
   }
   if (input.owner) {
-    DidUtils.validateKiltDidUri(input.owner, 'Did')
+    Did.validateKiltDidUri(input.owner, 'Did')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {

@@ -57,7 +57,7 @@ export function verifyDelegationStructure(
   if (!account) {
     throw new SDKErrors.OwnerMissingError()
   }
-  Did.Utils.validateKiltDidUri(account, 'Did')
+  Did.validateKiltDidUri(account, 'Did')
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
@@ -132,9 +132,7 @@ export function verifyMessageBody(body: MessageBody): void {
       body.content.cTypes.forEach(
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
           DataUtils.verifyIsHex(cTypeHash)
-          trustedAttesters?.forEach((did) =>
-            Did.Utils.validateKiltDidUri(did, 'Did')
-          )
+          trustedAttesters?.forEach((did) => Did.validateKiltDidUri(did, 'Did'))
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
@@ -214,8 +212,8 @@ export function verifyMessageEnvelope(message: IMessage): void {
   if (receivedAt !== undefined && typeof receivedAt !== 'number') {
     throw new TypeError('Received at is expected to be a number')
   }
-  Did.Utils.validateKiltDidUri(sender, 'Did')
-  Did.Utils.validateKiltDidUri(receiver, 'Did')
+  Did.validateKiltDidUri(sender, 'Did')
+  Did.validateKiltDidUri(receiver, 'Did')
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }
@@ -254,7 +252,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
       {
         const requestAttestation = body
         if (
-          !Did.Utils.isSameSubject(
+          !Did.isSameSubject(
             requestAttestation.content.credential.claim.owner,
             sender
           )
@@ -267,7 +265,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
       {
         const submitAttestation = body
         if (
-          !Did.Utils.isSameSubject(
+          !Did.isSameSubject(
             submitAttestation.content.attestation.owner,
             sender
           )
@@ -280,7 +278,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
       {
         const submitClaimsForCtype = body
         submitClaimsForCtype.content.forEach((presentation) => {
-          if (!Did.Utils.isSameSubject(presentation.claim.owner, sender)) {
+          if (!Did.isSameSubject(presentation.claim.owner, sender)) {
             throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
           }
         })
@@ -319,7 +317,7 @@ export async function decrypt(
       `Could not resolve sender encryption key "${senderKeyUri}"`
     )
   }
-  const { fragment } = Did.Utils.parseDidUri(receiverKeyUri)
+  const { fragment } = Did.parseDidUri(receiverKeyUri)
   if (!fragment) {
     throw new SDKErrors.DidError(
       `No fragment for the receiver key ID "${receiverKeyUri}"`
@@ -335,9 +333,7 @@ export async function decrypt(
     )
   }
   const receiverKeyAlgType =
-    Did.Utils.encryptionAlgForKeyType[
-      receiverKeyDetails.type as EncryptionKeyType
-    ]
+    Did.encryptionAlgForKeyType[receiverKeyDetails.type as EncryptionKeyType]
   if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
     throw new SDKErrors.EncryptionError(
       'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'

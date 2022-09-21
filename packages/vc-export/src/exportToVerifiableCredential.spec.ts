@@ -17,7 +17,7 @@ import {
   ICredentialPresentation,
 } from '@kiltprotocol/types'
 import { Attestation } from '@kiltprotocol/core'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { DocumentLoader } from 'jsonld-signatures'
@@ -232,7 +232,7 @@ describe('proofs', () => {
       id: keyId,
       type: 'Ed25519VerificationKey2018',
       publicKeyBase58: base58Encode(
-        Crypto.decodeAddress(DidUtils.parseDidUri(keyId).address)
+        Crypto.decodeAddress(Did.parseDidUri(keyId).address)
       ),
       controller: VC.credentialSubject['@id'] as DidUri,
     }

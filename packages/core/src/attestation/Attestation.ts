@@ -12,7 +12,7 @@ import type {
   DidUri,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import * as Credential from '../credential/index.js'
 
@@ -50,7 +50,7 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  DidUtils.validateKiltDidUri(input.owner, 'Did')
+  Did.validateKiltDidUri(input.owner, 'Did')
 
   if (typeof input.revoked !== 'boolean') {
     throw new SDKErrors.RevokedTypeError()

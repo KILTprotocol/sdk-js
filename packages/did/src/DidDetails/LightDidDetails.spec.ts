@@ -97,9 +97,7 @@ describe('When creating an instance from the details', () => {
     }
     const lightDid = Did.createLightDidDocument(validInput)
 
-    expect(Did.Utils.parseDidUri(lightDid.uri).address).toStrictEqual(
-      authKey.address
-    )
+    expect(Did.parseDidUri(lightDid.uri).address).toStrictEqual(authKey.address)
 
     expect(lightDid).toEqual({
       uri: `did:kilt:light:01${authKey.address}:z1Ac9CMtYCTRWjetJfJqJoV7FcP9zdFudqUaupQkBCERoCQcnu2SUS5CGHdCXhWoxbihovMVymRperWSPpRc7mJ`,
@@ -178,7 +176,7 @@ describe('When creating an instance from a URI', () => {
     // We are sure this is correct because of the described case above
     const expectedLightDid = Did.createLightDidDocument(creationInput)
 
-    const { address } = Did.Utils.parseDidUri(expectedLightDid.uri)
+    const { address } = Did.parseDidUri(expectedLightDid.uri)
     const builtLightDid = Did.parseDocumentFromLightDid(expectedLightDid.uri)
 
     expect(builtLightDid).toStrictEqual(expectedLightDid)

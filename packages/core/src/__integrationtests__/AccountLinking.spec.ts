@@ -219,9 +219,7 @@ describe('When there is an on-chain DID', () => {
         // TODO: remove this line to test against ethereum linking enabled chains
         if (keyType === 'ethereum') return
 
-        const keyTool = makeSigningKeyTool(
-          Did.Utils.signatureAlgForKeyType[keyType]
-        )
+        const keyTool = makeSigningKeyTool(Did.signatureAlgForKeyType[keyType])
         keypair = keyTool.keypair
         keypairChain = Did.accountToChain(keypair.address)
         sign = Did.makeLinkingSignCallback(keypair)

@@ -13,7 +13,6 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
-import { Utils as DidUtils } from '@kiltprotocol/did'
 import { delegationNodeFromChain } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
@@ -29,13 +28,13 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
  */
 export function addDelegationToChainArgs(
   delegation: DelegationNode,
-  signature: DidUtils.EncodedSignature
+  signature: Did.EncodedSignature
 ): [
   DelegationNode['id'],
   string,
   KiltAddress,
   Uint8Array,
-  DidUtils.EncodedSignature
+  Did.EncodedSignature
 ] {
   return [
     delegation.id,

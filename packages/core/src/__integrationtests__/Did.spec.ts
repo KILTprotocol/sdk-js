@@ -109,7 +109,7 @@ describe('write and didDeleteTx', () => {
 
     await submitExtrinsic(tx, paymentAccount)
 
-    const fullDidUri = Did.Utils.getFullDidUri(newDid.uri)
+    const fullDidUri = Did.getFullDidUri(newDid.uri)
     const fullDid = (await Did.query(fullDidUri)) as DidDocument
 
     expect(fullDid).toMatchObject(<DidDocument>{
@@ -137,7 +137,7 @@ describe('write and didDeleteTx', () => {
   }, 60_000)
 
   it('should return no results for empty accounts', async () => {
-    const emptyDid = Did.Utils.getFullDidUriFromKey(
+    const emptyDid = Did.getFullDidUriFromKey(
       makeSigningKeyTool().authentication[0]
     )
 
@@ -158,9 +158,7 @@ describe('write and didDeleteTx', () => {
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     // We verify that the DID to delete is on chain.
-    const fullDid = (await Did.query(
-      Did.Utils.getFullDidUri(did.uri)
-    )) as DidDocument
+    const fullDid = (await Did.query(Did.getFullDidUri(did.uri))) as DidDocument
     expect(fullDid).not.toBeNull()
 
     const otherAccount = devBob
@@ -201,9 +199,7 @@ describe('write and didDeleteTx', () => {
 
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
-    const fullDid = (await Did.query(
-      Did.Utils.getFullDidUri(did.uri)
-    )) as DidDocument
+    const fullDid = (await Did.query(Did.getFullDidUri(did.uri))) as DidDocument
     expect(fullDid).not.toBeNull()
 
     const encodedDid = Did.didToChain(fullDid.uri)
@@ -244,9 +240,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitExtrinsic(tx, paymentAccount)
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  let fullDid = (await Did.query(
-    Did.Utils.getFullDidUri(newDid.uri)
-  )) as DidDocument
+  let fullDid = (await Did.query(Did.getFullDidUri(newDid.uri))) as DidDocument
 
   const newKey = makeSigningKeyTool()
 
@@ -263,9 +257,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // Authentication key changed, so did must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  fullDid = (await Did.query(
-    Did.Utils.getFullDidUri(newDid.uri)
-  )) as DidDocument
+  fullDid = (await Did.query(Did.getFullDidUri(newDid.uri))) as DidDocument
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
@@ -345,7 +337,7 @@ describe('DID migration', () => {
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDid.uri)
+    const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
@@ -388,7 +380,7 @@ describe('DID migration', () => {
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDid.uri)
+    const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
@@ -437,7 +429,7 @@ describe('DID migration', () => {
     )
 
     await submitExtrinsic(storeTx, paymentAccount)
-    const migratedFullDidUri = Did.Utils.getFullDidUri(lightDid.uri)
+    const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDid = await Did.query(migratedFullDidUri)
     if (!migratedFullDid) throw new Error('Cannot query created DID')
 
@@ -508,7 +500,7 @@ describe('DID authorization', () => {
     )
     await submitExtrinsic(createTx, paymentAccount)
     const optional = await Did.query(
-      Did.Utils.getFullDidUriFromKey(authentication[0])
+      Did.getFullDidUriFromKey(authentication[0])
     )
     if (!optional) throw new Error('Cannot query created DID')
     did = optional
@@ -625,7 +617,7 @@ describe('DID management batching', () => {
       await submitExtrinsic(extrinsic, paymentAccount)
 
       const fullDid = await Did.query(
-        Did.Utils.getFullDidUriFromKey(authentication[0])
+        Did.getFullDidUriFromKey(authentication[0])
       )
 
       expect(fullDid).not.toBeNull()
@@ -699,9 +691,7 @@ describe('DID management batching', () => {
       )
       await submitExtrinsic(extrinsic, paymentAccount)
 
-      const fullDid = await Did.query(
-        Did.Utils.getFullDidUriFromKey(didAuthKey)
-      )
+      const fullDid = await Did.query(Did.getFullDidUriFromKey(didAuthKey))
 
       expect(fullDid).not.toBeNull()
       expect(fullDid?.authentication).toMatchObject<NewDidVerificationKey[]>([
@@ -762,7 +752,7 @@ describe('DID management batching', () => {
       await submitExtrinsic(createTx, paymentAccount)
 
       const initialFullDid = await Did.query(
-        Did.Utils.getFullDidUriFromKey(authentication[0])
+        Did.getFullDidUriFromKey(authentication[0])
       )
       if (!initialFullDid) throw new Error('Cannot query created DID')
 
@@ -774,10 +764,10 @@ describe('DID management batching', () => {
         did: initialFullDid.uri,
         extrinsics: [
           api.tx.did.removeKeyAgreementKey(
-            Did.Utils.stripFragment(encryptionKeys[0].id)
+            Did.stripFragment(encryptionKeys[0].id)
           ),
           api.tx.did.removeKeyAgreementKey(
-            Did.Utils.stripFragment(encryptionKeys[1].id)
+            Did.stripFragment(encryptionKeys[1].id)
           ),
           api.tx.did.removeAttestationKey(),
           api.tx.did.removeDelegationKey(),
@@ -821,7 +811,7 @@ describe('DID management batching', () => {
       await submitExtrinsic(createTx, paymentAccount)
 
       const initialFullDid = await Did.query(
-        Did.Utils.getFullDidUriFromKey(authentication[0])
+        Did.getFullDidUriFromKey(authentication[0])
       )
       if (!initialFullDid) throw new Error('Cannot query created DID')
 
@@ -883,7 +873,7 @@ describe('DID management batching', () => {
       // Create the full DID with a service endpoint
       await submitExtrinsic(tx, paymentAccount)
       const fullDid = await Did.query(
-        Did.Utils.getFullDidUriFromKey(authentication[0])
+        Did.getFullDidUriFromKey(authentication[0])
       )
       if (!fullDid) throw new Error('Cannot query created DID')
 
@@ -943,7 +933,7 @@ describe('DID management batching', () => {
       )
       await submitExtrinsic(createTx, paymentAccount)
       const fullDid = await Did.query(
-        Did.Utils.getFullDidUriFromKey(authentication[0])
+        Did.getFullDidUriFromKey(authentication[0])
       )
       if (!fullDid) throw new Error('Cannot query created DID')
 

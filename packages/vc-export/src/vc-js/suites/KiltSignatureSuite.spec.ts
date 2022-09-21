@@ -16,7 +16,7 @@ import jsonld from 'jsonld'
 import { base58Encode, randomAsHex } from '@polkadot/util-crypto'
 
 import { DidResourceUri, DidUri } from '@kiltprotocol/types'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 
 import { KiltSignatureSuite as Suite } from './KiltSignatureSuite'
@@ -46,7 +46,7 @@ beforeAll(async () => {
   })
   documentLoader = async (uri) => {
     if (uri.startsWith('did:kilt:')) {
-      const { address, fragment, did } = DidUtils.parseDidUri(uri as DidUri)
+      const { address, fragment, did } = Did.parseDidUri(uri as DidUri)
       const key: IPublicKeyRecord = {
         id: uri as DidResourceUri,
         publicKeyBase58: base58Encode(Crypto.decodeAddress(address)),
