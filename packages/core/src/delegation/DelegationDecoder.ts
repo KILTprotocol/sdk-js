@@ -93,7 +93,7 @@ export function delegationNodeFromChain(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children].map((id) => id.toHex()),
-    account: Did.uriFromChain(delegationNode.details.owner),
+    account: Did.fromChain(delegationNode.details.owner),
     permissions: permissionsFromChain(delegationNode.details.permissions),
     revoked: delegationNode.details.revoked.valueOf(),
   }

@@ -33,7 +33,7 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature } from '../Did.utils.js'
 import { Web3Name, web3NameFromChain } from './Web3Names.chain.js'
-import { depositFromChain, toChain, uriFromChain } from '../Did.chain.js'
+import { depositFromChain, toChain, fromChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -125,7 +125,7 @@ export function connectedDidFromChain(
 } {
   const { did, deposit } = encoded.unwrap()
   return {
-    did: uriFromChain(did),
+    did: fromChain(did),
     deposit: depositFromChain(deposit),
   }
 }

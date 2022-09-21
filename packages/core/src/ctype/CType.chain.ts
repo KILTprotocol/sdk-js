@@ -31,5 +31,5 @@ export function toChain(ctype: ICType): string {
  * @returns The owner DID.
  */
 export function fromChain(encoded: Option<AccountId>): DidUri {
-  return Did.uriFromChain(encoded.unwrap())
+  return Did.fromChain(encoded.unwrap())
 }

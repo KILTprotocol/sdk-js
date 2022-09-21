@@ -101,7 +101,7 @@ function didPublicKeyDetailsFromChain(
   }
 }
 
-export function uriFromChain(encoded: AccountId32): DidUri {
+export function fromChain(encoded: AccountId32): DidUri {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 

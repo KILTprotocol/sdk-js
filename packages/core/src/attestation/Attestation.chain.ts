@@ -31,7 +31,7 @@ export function fromChain(
   const attestation: IAttestation = {
     claimHash,
     cTypeHash: chainAttestation.ctypeHash.toHex(),
-    owner: Did.uriFromChain(chainAttestation.attester),
+    owner: Did.fromChain(chainAttestation.attester),
     delegationId: delegationId || null,
     revoked: chainAttestation.revoked.valueOf(),
   }
