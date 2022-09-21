@@ -106,7 +106,7 @@ describe('DelegationNode', () => {
         revoked: false,
       })
       const hash = node.generateHash()
-      expect(hash).toBe(
+      expect(Crypto.u8aToHex(hash)).toBe(
         '0x3f3dc0df7527013f2373f18f55cf87847df3249526e9b1d5aa75df8eeb5b7d6e'
       )
     })
@@ -632,7 +632,7 @@ describe('DelegationHierarchy', () => {
       account: didAlice,
       permissions: [Permission.ATTEST],
     })
-    expect(node.generateHash()).toMatchInlineSnapshot(
+    expect(Crypto.u8aToHex(node.generateHash())).toMatchInlineSnapshot(
       `"0xa344dddae169b49af834d22e6f148e019a12bd7ed929978713faf38221ae8504"`
     )
   })
