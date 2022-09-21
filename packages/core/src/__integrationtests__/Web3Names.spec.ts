@@ -21,7 +21,6 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
 import type { ApiPromise } from '@polkadot/api'
 import { disconnect } from '../kilt'
@@ -45,8 +44,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let otherWeb3NameCreator: DidDocument
   let paymentAccount: KiltKeyringPair
   let otherPaymentAccount: KeyringPair
-  let nick: Web3Names.Web3Name
-  let differentNick: Web3Names.Web3Name
+  let nick: Did.Web3Name
+  let differentNick: Did.Web3Name
 
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
@@ -100,14 +99,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to lookup the DID uri with the given nick', async () => {
-    const { owner } = Web3Names.web3NameOwnerFromChain(
+    const { owner } = Did.web3NameOwnerFromChain(
       await api.query.web3Names.owner(nick)
     )
     expect(owner).toBe(w3nCreator.uri)
   }, 30_000)
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
-    const resolved = Web3Names.web3NameFromChain(
+    const resolved = Did.web3NameFromChain(
       await api.query.web3Names.names(Did.Chain.didToChain(w3nCreator.uri))
     )
     expect(resolved).toBe(nick)

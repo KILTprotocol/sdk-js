@@ -9,8 +9,8 @@
  * @group integration/accountLinking
  */
 
-import { AccountLinks, Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
+import { AccountLinks } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   KeyTool,
@@ -498,7 +498,7 @@ describe('When there is an on-chain DID', () => {
       await submitExtrinsic(signedTx, paymentAccount)
 
       // Check that the Web3 name has been linked to the DID
-      const { owner } = Web3Names.web3NameOwnerFromChain(
+      const { owner } = Did.web3NameOwnerFromChain(
         await api.query.web3Names.owner('test-name')
       )
       expect(owner).toStrictEqual(did.uri)

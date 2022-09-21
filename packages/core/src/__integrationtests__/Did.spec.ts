@@ -13,7 +13,7 @@ import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import * as Did from '@kiltprotocol/did'
-import { resolve, Web3Names } from '@kiltprotocol/did'
+import { resolve } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
@@ -1107,7 +1107,7 @@ describe('DID extrinsics batching', () => {
     expect(encoded1.isSome).toBe(false)
     // Test for correct creation of second web3 name
     const encoded2 = await api.query.web3Names.owner('test-2')
-    expect(Web3Names.web3NameOwnerFromChain(encoded2).owner).toStrictEqual(
+    expect(Did.web3NameOwnerFromChain(encoded2).owner).toStrictEqual(
       fullDid.uri
     )
   }, 30_000)
@@ -1165,7 +1165,7 @@ describe('DID extrinsics batching', () => {
     const encoded = await api.query.web3Names.owner('test')
     expect(encoded.isSome).toBe(false)
 
-    const { owner } = Web3Names.web3NameOwnerFromChain(
+    const { owner } = Did.web3NameOwnerFromChain(
       await api.query.web3Names.owner('test-2')
     )
     expect(owner).toStrictEqual(fullDid.uri)
