@@ -136,15 +136,13 @@ describe('Quote', () => {
     }
     validAttesterSignedQuote = await Quote.createAttesterSignedQuote(
       validQuoteData,
-      attesterIdentity,
-      attester.sign
+      attester.getSignCallback(attesterIdentity)
     )
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       credential.rootHash,
-      attesterIdentity.uri,
-      claimerIdentity,
-      claimer.sign,
+      claimer.getSignCallback(claimerIdentity),
+      claimerIdentity.uri,
       {
         didResolve: mockResolve,
       }
@@ -157,10 +155,9 @@ describe('Quote', () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
     expect(
       await Did.signPayload(
-        claimerIdentity,
+        claimerIdentity.uri,
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimer.sign,
-        claimerIdentity.authentication[0].id
+        claimer.getSignCallback(claimerIdentity)
       )
     ).toEqual(quoteBothAgreed.claimerSignature)
 
@@ -168,7 +165,7 @@ describe('Quote', () => {
       validAttesterSignedQuote.attesterSignature.keyUri
     )
 
-    expect(
+    expect(() =>
       Crypto.verify(
         Crypto.hashObjectAsStr({
           attesterDid: validQuoteData.attesterDid,
@@ -184,15 +181,14 @@ describe('Quote', () => {
             new Uint8Array()
         )
       )
-    ).toBe(true)
+    ).not.toThrow()
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
       didResolve: mockResolve,
     })
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,
-        attesterIdentity,
-        attester.sign
+        attester.getSignCallback(attesterIdentity)
       )
     ).toEqual(validAttesterSignedQuote)
   })

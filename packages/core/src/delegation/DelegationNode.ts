@@ -8,6 +8,7 @@
 import type {
   DidDocument,
   DidUri,
+  DidVerificationKey,
   IAttestation,
   ICType,
   IDelegationHierarchyDetails,
@@ -267,13 +268,24 @@ export class DelegationNode implements IDelegationNode {
     sign: SignCallback
   ): Promise<Did.Utils.EncodedSignature> {
     const delegateSignature = await Did.signPayload(
-      delegateDid,
+      delegateDid.uri,
       this.generateHash(),
-      sign,
-      delegateDid.authentication[0].id
+      sign
     )
+    const { fragment } = Did.Utils.parseDidUri(delegateSignature.keyUri)
+    if (!fragment) {
+      throw new SDKErrors.DidError(
+        `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`
+      )
+    }
+    const key = Did.getKey(delegateDid, fragment)
+    if (!key) {
+      throw new SDKErrors.DidError(
+        `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
+      )
+    }
     return Did.Chain.didSignatureToChain(
-      delegateDid.authentication[0],
+      key as DidVerificationKey,
       delegateSignature
     )
   }
@@ -323,12 +335,14 @@ export class DelegationNode implements IDelegationNode {
 
   /**
    * Verifies the delegation node by querying it from chain and checking its revocation status.
-   *
-   * @returns Promise containing a boolean flag.
    */
-  public async verify(): Promise<boolean> {
+  public async verify(): Promise<void> {
     const node = await query(this.id)
-    return node !== null && !node.revoked
+    if (!node || node.revoked !== false) {
+      throw new SDKErrors.InvalidDelegationNodeError(
+        'Delegation node not found or revoked'
+      )
+    }
   }
 
   /**

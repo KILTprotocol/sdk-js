@@ -24,7 +24,6 @@ import {
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  DidDocument,
   DidResolve,
   Hash,
   IAttestation,
@@ -126,41 +125,30 @@ export function makeSigningData(
  * Verifies if the credential hash matches the contents of it.
  *
  * @param input - The credential to check.
- * @returns Whether they match or not.
  */
-export function verifyRootHash(input: ICredential): boolean {
-  return input.rootHash === calculateRootHash(input)
+export function verifyRootHash(input: ICredential): void {
+  if (input.rootHash !== calculateRootHash(input))
+    throw new SDKErrors.RootHashUnverifiableError()
 }
 
 /**
- * Verifies the data of the [[Credential]] object; used to check that the data was not tampered with, by checking the data against hashes.
+ * Verifies the data of the [[Credential]] object; used to check that the data was not tampered with,
+ * by checking the data against hashes. Throws if invalid.
  *
  * @param input - The [[Credential]] for which to verify data.
- * @returns Whether the data is valid.
  */
-export function verifyDataIntegrity(input: ICredential): boolean {
+export function verifyDataIntegrity(input: ICredential): void {
   // check claim hash
-  if (!verifyRootHash(input)) {
-    throw new SDKErrors.RootHashUnverifiableError()
-  }
+  verifyRootHash(input)
 
   // verify properties against selective disclosure proof
-  const { errors, verified } = Claim.verifyDisclosedAttributes(input.claim, {
+  Claim.verifyDisclosedAttributes(input.claim, {
     nonces: input.claimNonceMap,
     hashes: input.claimHashes,
   })
-  // TODO: how do we want to deal with multiple errors during claim verification?
-  if (!verified)
-    throw errors.length > 0 ? errors[0] : new SDKErrors.ClaimUnverifiableError()
 
   // check legitimations
-  input.legitimations.forEach((legitimation) => {
-    if (!verifyDataIntegrity(legitimation)) {
-      throw new SDKErrors.LegitimationsUnverifiableError()
-    }
-  })
-
-  return true
+  input.legitimations.forEach(verifyDataIntegrity)
 }
 
 /**
@@ -186,18 +174,13 @@ export function verifyDataStructure(input: ICredential): void {
   if (!('claimNonceMap' in input)) {
     throw new SDKErrors.ClaimNonceMapMissingError()
   }
-  if (
-    typeof input.claimNonceMap !== 'object' ||
-    Object.entries(input.claimNonceMap).some(
-      ([digest, nonce]) =>
-        !digest ||
-        !DataUtils.validateHash(digest, 'statement digest') ||
-        typeof nonce !== 'string' ||
-        !nonce
-    )
-  ) {
+  if (typeof input.claimNonceMap !== 'object')
     throw new SDKErrors.ClaimNonceMapMalformedError()
-  }
+  Object.entries(input.claimNonceMap).forEach(([digest, nonce]) => {
+    DataUtils.verifyIsHex(digest, 256)
+    if (!digest || typeof nonce !== 'string' || !nonce)
+      throw new SDKErrors.ClaimNonceMapMalformedError()
+  })
 
   if (!('claimHashes' in input)) {
     throw new SDKErrors.DataStructureError('claim hashes not provided')
@@ -213,19 +196,13 @@ export function verifyDataStructure(input: ICredential): void {
  *
  * @param credential A [[Credential]] for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
- *
- * @returns A boolean if the [[Claim]] structure in the [[Credential]] is valid.
  */
 export function verifyAgainstCType(
   credential: ICredential,
   ctype: ICType
-): boolean {
-  try {
-    verifyDataStructure(credential)
-  } catch {
-    return false
-  }
-  return verifyClaimAgainstSchema(credential.claim.contents, ctype.schema)
+): void {
+  verifyDataStructure(credential)
+  verifyClaimAgainstSchema(credential.claim.contents, ctype.schema)
 }
 
 /**
@@ -238,7 +215,6 @@ export function verifyAgainstCType(
  * @param verificationOpts Additional verification options.
  * @param verificationOpts.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
- * @returns Whether the signature is correct.
  */
 export async function verifySignature(
   input: ICredentialPresentation,
@@ -249,18 +225,19 @@ export async function verifySignature(
     challenge?: string
     didResolve?: DidResolve
   } = {}
-): Promise<boolean> {
+): Promise<void> {
   const { claimerSignature } = input
-  if (!isDidSignature(claimerSignature)) return false
-  if (challenge && challenge !== claimerSignature.challenge) return false
+  if (challenge && challenge !== claimerSignature.challenge)
+    throw new SDKErrors.SignatureUnverifiableError(
+      'Challenge differs from expected'
+    )
   const signingData = makeSigningData(input, claimerSignature.challenge)
-  const { verified } = await verifyDidSignature({
+  await verifyDidSignature({
     signature: claimerSignature,
     message: signingData,
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
-  return verified
 }
 
 export type Options = {
@@ -323,11 +300,7 @@ export async function verifyCredential(
   verifyDataIntegrity(credential)
 
   if (ctype) {
-    const isSchemaValid = verifyAgainstCType(credential, ctype)
-    if (!isSchemaValid)
-      throw new SDKErrors.CredentialUnverifiableError(
-        'CType verification failed'
-      )
+    verifyAgainstCType(credential, ctype)
   }
 }
 
@@ -347,12 +320,10 @@ export async function verifyPresentation(
   { ctype, challenge, didResolve = resolve }: VerifyOptions = {}
 ): Promise<void> {
   await verifyCredential(presentation, { ctype })
-  const isSignatureCorrect = await verifySignature(presentation, {
+  await verifySignature(presentation, {
     challenge,
     didResolve,
   })
-  if (!isSignatureCorrect)
-    throw new SDKErrors.CredentialUnverifiableError('Signature not verifiable')
 }
 
 /**
@@ -415,24 +386,21 @@ function getAttributes(credential: ICredential): Set<string> {
  * @param presentationOptions The additional options to use upon presentation generation.
  * @param presentationOptions.credential The credential to create the presentation for.
  * @param presentationOptions.signCallback The callback to sign the presentation.
- * @param presentationOptions.claimerDid The DID document of the presenter.
- * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+ * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
  * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
  * @returns A deep copy of the Credential with all but `publicAttributes` removed.
  */
 export async function createPresentation({
   credential,
-  selectedAttributes,
   signCallback,
+  selectedAttributes,
   challenge,
-  claimerDid,
 }: {
   credential: ICredential
-  selectedAttributes?: string[]
   signCallback: SignCallback
+  selectedAttributes?: string[]
   challenge?: string
-  claimerDid: DidDocument
 }): Promise<ICredentialPresentation> {
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
@@ -447,13 +415,10 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const selectedKeyId = claimerDid.authentication[0].id
-
   const { signature, keyUri } = await signPayload(
-    claimerDid,
+    credential.claim.owner,
     makeSigningData(presentation, challenge),
-    signCallback,
-    selectedKeyId
+    signCallback
   )
 
   return { ...credential, claimerSignature: { signature, keyUri, challenge } }

@@ -16,14 +16,13 @@
  */
 
 import type {
-  DidDocument,
-  DidUri,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
   ICredential,
   SignCallback,
   DidResolve,
+  DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { resolve, verifyDidSignature } from '@kiltprotocol/did'
@@ -69,24 +68,21 @@ export function validateQuoteSchema(
  */
 export async function createAttesterSignedQuote(
   quoteInput: IQuote,
-  attesterIdentity: DidDocument,
   sign: SignCallback
 ): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
     throw new SDKErrors.QuoteUnverifiableError()
   }
 
-  const authenticationKeyId = attesterIdentity.authentication[0].id
   const signature = await Did.signPayload(
-    attesterIdentity,
+    quoteInput.attesterDid,
     Crypto.hashObjectAsStr(quoteInput),
-    sign,
-    authenticationKeyId
+    sign
   )
   return {
     ...quoteInput,
     attesterSignature: {
-      keyUri: `${attesterIdentity.uri}${authenticationKeyId}`,
+      keyUri: signature.keyUri,
       signature: signature.signature,
     },
   }
@@ -108,17 +104,12 @@ export async function verifyAttesterSignedQuote(
   } = {}
 ): Promise<void> {
   const { attesterSignature, ...basicQuote } = quote
-  const result = await verifyDidSignature({
+  await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
-
-  if (!result.verified) {
-    // TODO: should throw a "signature not verifiable" error, with the reason attached.
-    throw new SDKErrors.QuoteUnverifiableError()
-  }
 
   const messages: string[] = []
   if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
@@ -131,9 +122,8 @@ export async function verifyAttesterSignedQuote(
  *
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param credentialRootHash A root hash of the entire object.
- * @param attesterIdentity The uri of the Attester DID.
- * @param claimerIdentity The DID of the Claimer in order to sign.
  * @param sign The callback to sign with the private key.
+ * @param claimerDid The DID of the Claimer, who has to sign.
  * @param options Optional settings.
  * @param options.didResolve Resolve function used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
@@ -141,9 +131,8 @@ export async function verifyAttesterSignedQuote(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   credentialRootHash: ICredential['rootHash'],
-  attesterIdentity: DidUri,
-  claimerIdentity: DidDocument,
   sign: SignCallback,
+  claimerDid: DidUri,
   {
     didResolve = resolve,
   }: {
@@ -152,27 +141,17 @@ export async function createQuoteAgreement(
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
-  if (attesterIdentity !== attesterSignedQuote.attesterDid)
-    throw new SDKErrors.DidSubjectMismatchError(
-      attesterIdentity,
-      attesterSignedQuote.attesterDid
-    )
-
-  const { verified, reason } = await verifyDidSignature({
+  await verifyDidSignature({
     signature: attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
-  if (!verified && reason) {
-    throw new SDKErrors.SignatureUnverifiableError(reason)
-  }
 
   const signature = await Did.signPayload(
-    claimerIdentity,
+    claimerDid,
     Crypto.hashObjectAsStr(attesterSignedQuote),
-    sign,
-    claimerIdentity.authentication[0].id
+    sign
   )
 
   return {

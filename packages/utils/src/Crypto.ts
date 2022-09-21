@@ -39,6 +39,7 @@ import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
 import jsonabc from './jsonabc.js'
+import * as SDKErrors from './SDKErrors.js'
 import { ss58Format } from './ss58Format.js'
 
 export { naclBoxPairFromSecret } from '@polkadot/util-crypto'
@@ -113,14 +114,14 @@ export function signStr(
  * @param message Original signed message to be verified.
  * @param signature Signature as hex string or byte array.
  * @param address Substrate address or public key of the signer.
- * @returns Whether the signature could be verified.
  */
 export function verify(
   message: CryptoInput,
   signature: CryptoInput,
   address: Address
-): boolean {
-  return signatureVerify(message, signature, address).isValid === true
+): void {
+  if (signatureVerify(message, signature, address).isValid !== true)
+    throw new SDKErrors.SignatureUnverifiableError()
 }
 
 export type BitLength = 64 | 128 | 256 | 384 | 512

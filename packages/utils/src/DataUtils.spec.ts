@@ -12,116 +12,70 @@
 import { encodeAddress } from '@polkadot/keyring'
 import type { KiltAddress } from '@kiltprotocol/types'
 import { SDKErrors, ss58Format } from './index'
-import { validateAddress, validateHash, validateSignature } from './DataUtils'
+import { verifyKiltAddress, verifyIsHex } from './DataUtils'
 import * as Crypto from './Crypto'
 
 const key = Buffer.from([0, 0, 7, 0])
 
 it('validates address with prefix 38', () => {
-  expect(() =>
-    validateAddress(encodeAddress(key, ss58Format), 'test')
-  ).not.toThrow()
-  expect(validateAddress(encodeAddress(key, ss58Format), 'test')).toBe(true)
+  expect(() => verifyKiltAddress(encodeAddress(key, ss58Format))).not.toThrow()
 })
 
 it('throws on address with other prefix', () => {
   expect(() =>
-    validateAddress(encodeAddress(key, 42) as KiltAddress, 'test')
-  ).toThrow('test')
+    verifyKiltAddress(encodeAddress(key, 42) as KiltAddress)
+  ).toThrow()
 })
 
 it('throws for random strings', () => {
-  expect(() => validateAddress('' as KiltAddress, 'test')).toThrowError(
+  expect(() => verifyKiltAddress('' as KiltAddress)).toThrowError(
     SDKErrors.AddressInvalidError
   )
-  expect(() => validateAddress('0x123' as KiltAddress, 'test')).toThrowError(
+  expect(() => verifyKiltAddress('0x123' as KiltAddress)).toThrowError(
+    SDKErrors.AddressInvalidError
+  )
+  expect(() => verifyKiltAddress('bananenbabara' as KiltAddress)).toThrowError(
     SDKErrors.AddressInvalidError
   )
   expect(() =>
-    validateAddress('bananenbabara' as KiltAddress, 'test')
-  ).toThrowError(SDKErrors.AddressInvalidError)
-  expect(() =>
-    validateAddress('ax843zoidsfho38290rdusa' as KiltAddress, 'test')
+    verifyKiltAddress('ax843zoidsfho38290rdusa' as KiltAddress)
   ).toThrowError(SDKErrors.AddressInvalidError)
 })
 
 it('throws if address is no string', () => {
-  expect(() =>
-    validateAddress(Buffer.from([0, 0, 7]) as any, 'test')
-  ).toThrowError(SDKErrors.AddressTypeError)
+  expect(() => verifyKiltAddress(Buffer.from([0, 0, 7]) as any)).toThrowError(
+    SDKErrors.AddressTypeError
+  )
 })
 
 it('validates hash', () => {
   ;['wurst', 'a', '1'].forEach((value) => {
     const hash = Crypto.hashStr(value)
-    expect(validateHash(hash, 'test')).toBe(true)
+    expect(() => verifyIsHex(hash)).not.toThrow()
   })
 })
 
 it('throws on broken hashes', () => {
   const hash = Crypto.hashStr('test')
   expect(() => {
-    validateHash(hash.substr(2), 'test')
+    verifyIsHex(hash.substr(2))
   }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
-    validateHash(hash.substr(0, 60), 'test')
+    verifyIsHex(hash.substr(0, 60), 256)
   }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
-    validateHash(hash.replace('0', 'O'), 'test')
+    verifyIsHex(hash.replace('0', 'O'))
   }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
-    validateHash(`${hash.substr(0, hash.length - 1)}ß`, 'test')
+    verifyIsHex(`${hash.substr(0, hash.length - 1)}ß`)
   }).toThrowError(SDKErrors.HashMalformedError)
   expect(() => {
-    validateHash(hash.replace(/\w/i, 'P'), 'test')
+    verifyIsHex(hash.replace(/\w/i, 'P'))
   }).toThrowError(SDKErrors.HashMalformedError)
 })
 
 it('throws if hash is no string', () => {
-  expect(() =>
-    validateHash(Buffer.from([0, 0, 7]) as any, 'test')
-  ).toThrowError(SDKErrors.HashTypeError)
-})
-
-describe('validate signature util', () => {
-  const data = 'data'
-  const signer = Crypto.makeKeypairFromUri('//Alice')
-  const signature = Crypto.signStr('data', signer)
-
-  it('verifies when inputs are strings and signature checks out', () => {
-    expect(validateSignature(data, signature, signer.address)).toBe(true)
-  })
-
-  it('throws when signature does not check out', () => {
-    expect(() =>
-      validateSignature('dörte', signature, signer.address)
-    ).toThrowError(SDKErrors.SignatureUnverifiableError)
-  })
-
-  it('throws non-sdk error if input is bogus', () => {
-    expect(() =>
-      validateSignature('dörte', 'signature', 'signer' as KiltAddress)
-    ).toThrowErrorMatchingInlineSnapshot(
-      `"Invalid signature length, expected [64..66] bytes, found 9"`
-    )
-  })
-
-  it('throws when input is incomplete', () => {
-    expect(() =>
-      validateSignature('data', null as any, 'signer' as KiltAddress)
-    ).toThrowError(SDKErrors.SignatureMalformedError)
-    expect(() =>
-      validateSignature('data', 'signature', undefined as any)
-    ).toThrowError(SDKErrors.SignatureMalformedError)
-    expect(() =>
-      validateSignature(
-        { key: ['value'] } as any,
-        'signature',
-        'signer' as KiltAddress
-      )
-    ).toThrowError(SDKErrors.SignatureMalformedError)
-    expect(() => (validateSignature as any)()).toThrowError(
-      SDKErrors.SignatureMalformedError
-    )
-  })
+  expect(() => verifyIsHex(Buffer.from([0, 0, 7]) as any)).toThrowError(
+    SDKErrors.HashMalformedError
+  )
 })

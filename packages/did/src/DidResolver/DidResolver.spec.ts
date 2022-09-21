@@ -27,8 +27,8 @@ import { ConfigService } from '@kiltprotocol/config'
 import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
 import {
   didFromChain,
-  serviceEndpointFromChain,
-  queryServiceEndpoints,
+  serviceFromChain,
+  servicesFromChain,
 } from '../Did.chain.js'
 
 import {
@@ -143,11 +143,11 @@ jest.mocked(didFromChain).mockReturnValue({
   },
 })
 jest
-  .mocked(serviceEndpointFromChain)
+  .mocked(serviceFromChain)
   .mockReturnValue(generateServiceEndpoint('#service-1'))
 jest
-  .mocked(queryServiceEndpoints)
-  .mockResolvedValue([generateServiceEndpoint('#service-1')])
+  .mocked(servicesFromChain)
+  .mockReturnValue([generateServiceEndpoint('#service-1')])
 
 describe('When resolving a key', () => {
   it('correctly resolves it for a full DID if both the DID and the key exist', async () => {
@@ -299,8 +299,8 @@ describe('When resolving a full DID', () => {
 
   it('correctly resolves the document with service endpoints', async () => {
     jest
-      .mocked(queryServiceEndpoints)
-      .mockResolvedValue([
+      .mocked(servicesFromChain)
+      .mockReturnValue([
         generateServiceEndpoint('#id-1'),
         generateServiceEndpoint('#id-2'),
       ])

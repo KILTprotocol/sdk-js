@@ -16,6 +16,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 
 import { ConfigService } from '@kiltprotocol/config'
+import { latest, rpc, runtime } from '@kiltprotocol/type-definitions'
 
 /**
  * Allows setting global configuration such as the log level and the polkadot ApiPromise instance used throughout the sdk.
@@ -51,6 +52,9 @@ export async function connect(blockchainRpcWsUrl: string): Promise<ApiPromise> {
   const provider = new WsProvider(blockchainRpcWsUrl)
   const api = await ApiPromise.create({
     provider,
+    types: latest,
+    rpc,
+    runtime,
   })
   await init({ api })
   return api.isReadyOrError

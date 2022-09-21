@@ -26,8 +26,8 @@ import { ConfigService } from '@kiltprotocol/config'
 import type { EncodedDid } from '../Did.chain'
 import {
   generateDidAuthenticatedTx,
-  queryServiceEndpoints,
   didFromChain,
+  servicesFromChain,
 } from '../Did.chain'
 
 import * as Did from './index.js'
@@ -107,7 +107,7 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
 
 jest.mock('../Did.chain')
 jest.mocked(didFromChain).mockReturnValue(existingDidRecord)
-jest.mocked(queryServiceEndpoints).mockResolvedValue(existingServiceEndpoints)
+jest.mocked(servicesFromChain).mockReturnValue(existingServiceEndpoints)
 jest
   .mocked(generateDidAuthenticatedTx)
   .mockResolvedValue({} as SubmittableExtrinsic)
@@ -210,8 +210,10 @@ describe('When creating an instance from the chain', () => {
     let fullDid: DidDocument
 
     beforeAll(async () => {
-      ;({ keypair, sign } = makeSigningKeyTool())
-      fullDid = await createLocalDemoFullDidFromKeypair(keypair)
+      const keyTool = makeSigningKeyTool()
+      keypair = keyTool.keypair
+      fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
+      sign = keyTool.getSignCallback(fullDid)
     })
 
     describe('.addSingleExtrinsic()', () => {
@@ -219,7 +221,7 @@ describe('When creating an instance from the chain', () => {
         const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid,
+            did: fullDid.uri,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
@@ -234,39 +236,17 @@ describe('When creating an instance from the chain', () => {
         const extrinsic = augmentedApi.tx.utility.batch([
           await augmentedApi.tx.ctype.add('test-ctype'),
         ])
-        await expect(async () =>
-          Did.authorizeBatch({
-            did: fullDid,
-            batchFunction: augmentedApi.tx.utility.batchAll,
-            extrinsics: [extrinsic, extrinsic],
-            sign,
-            submitter: keypair.address,
-          })
-        ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Can only batch extrinsics that require a DID signature]'
-        )
-      })
+        const batchFunction =
+          jest.fn() as unknown as typeof mockedApi.tx.utility.batchAll
+        await Did.authorizeBatch({
+          did: fullDid.uri,
+          batchFunction,
+          extrinsics: [extrinsic, extrinsic],
+          sign,
+          submitter: keypair.address,
+        })
 
-      it('fails if the DID does not have any key required to sign the batch', async () => {
-        // Full DID with only an authentication key.
-        const newFullDid: DidDocument = {
-          uri: fullDid.uri,
-          authentication: [fullDid.authentication[0]],
-        }
-        const extrinsic = await augmentedApi.tx.ctype.add('test-ctype')
-
-        await expect(async () =>
-          Did.authorizeBatch({
-            did: newFullDid,
-            batchFunction: augmentedApi.tx.utility.batchAll,
-            extrinsics: [extrinsic, extrinsic],
-            nonce: new BN(0),
-            sign,
-            submitter: keypair.address,
-          })
-        ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Found no key for relationship "assertionMethod"]'
-        )
+        expect(batchFunction).toHaveBeenCalledWith([extrinsic, extrinsic])
       })
 
       it('adds different batches requiring different keys', async () => {
@@ -296,7 +276,7 @@ describe('When creating an instance from the chain', () => {
           ctype4Extrinsic,
         ]
         await Did.authorizeBatch({
-          did: fullDid,
+          did: fullDid.uri,
           batchFunction,
           extrinsics,
           nonce: new BN(0),
@@ -324,7 +304,7 @@ describe('When creating an instance from the chain', () => {
       it('throws if batch is empty', async () => {
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid,
+            did: fullDid.uri,
             batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [],
             sign,
