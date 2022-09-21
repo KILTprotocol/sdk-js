@@ -33,7 +33,7 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature } from '../Did.utils.js'
 import { Web3Name, web3NameFromChain } from './Web3Names.chain.js'
-import { depositFromChain, didToChain, uriFromChain } from '../Did.chain.js'
+import { depositFromChain, toChain, uriFromChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -268,7 +268,7 @@ export async function associateAccountToChainArgs(
   )[0].type // get the type of the first key, which is the DidAddress
 
   const encoded = api
-    .createType(`(${DidAddress}, ${BlockNumber})`, [didToChain(did), validTill])
+    .createType(`(${DidAddress}, ${BlockNumber})`, [toChain(did), validTill])
     .toU8a()
 
   const isAccountId32 = decodeAddress(accountAddress).length > 20

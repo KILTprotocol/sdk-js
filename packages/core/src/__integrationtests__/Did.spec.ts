@@ -141,7 +141,7 @@ describe('write and didDeleteTx', () => {
       makeSigningKeyTool().authentication[0]
     )
 
-    const encodedDid = Did.didToChain(emptyDid)
+    const encodedDid = Did.toChain(emptyDid)
     expect(
       await api.query.did.serviceEndpoints.entries(encodedDid)
     ).toHaveLength(0)
@@ -202,7 +202,7 @@ describe('write and didDeleteTx', () => {
     const fullDid = (await Did.query(Did.getFullDidUri(did.uri))) as DidDocument
     expect(fullDid).not.toBeNull()
 
-    const encodedDid = Did.didToChain(fullDid.uri)
+    const encodedDid = Did.toChain(fullDid.uri)
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
       encodedDid
     )
@@ -277,7 +277,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   )
   await submitExtrinsic(tx3, paymentAccount)
 
-  const encodedDid = Did.didToChain(fullDid.uri)
+  const encodedDid = Did.toChain(fullDid.uri)
   const encoded = await api.query.did.serviceEndpoints(
     encodedDid,
     Did.resourceIdToChain(newEndpoint.id)
@@ -358,7 +358,7 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.didToChain(migratedFullDid.uri))).isSome
+      (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -395,7 +395,7 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.didToChain(migratedFullDid.uri))).isSome
+      (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -456,7 +456,7 @@ describe('DID migration', () => {
       ],
     })
 
-    const encodedDid = Did.didToChain(migratedFullDid.uri)
+    const encodedDid = Did.toChain(migratedFullDid.uri)
     expect((await api.query.did.did(encodedDid)).isSome).toBe(true)
 
     const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
@@ -527,7 +527,7 @@ describe('DID authorization', () => {
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      Did.didToChain(did.uri)
+      Did.toChain(did.uri)
     )
     const deleteCall = api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeExtrinsic(

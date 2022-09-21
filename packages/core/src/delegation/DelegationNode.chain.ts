@@ -39,7 +39,7 @@ export function addDelegationToChainArgs(
   return [
     delegation.id,
     delegation.parentId || '',
-    Did.didToChain(delegation.account),
+    Did.toChain(delegation.account),
     permissionsAsBitset(delegation),
     signature,
   ]

@@ -24,7 +24,7 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import {
   didFromChain,
-  didToChain,
+  toChain,
   generateDidAuthenticatedTx,
   servicesFromChain,
 } from '../Did.chain.js'
@@ -55,7 +55,7 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
   }
 
   const api = ConfigService.get('api')
-  const encoded = await api.query.did.did(didToChain(didUri))
+  const encoded = await api.query.did.did(toChain(didUri))
   if (encoded.isNone) return null
   const didRec = didFromChain(encoded)
 
@@ -68,7 +68,7 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
   }
 
   const service = servicesFromChain(
-    await api.query.did.serviceEndpoints.entries(didToChain(didUri))
+    await api.query.did.serviceEndpoints.entries(toChain(didUri))
   )
   if (service.length > 0) {
     did.service = service
@@ -103,7 +103,7 @@ export function getKeysForExtrinsic(
  */
 export async function getNextNonce(did: DidUri): Promise<BN> {
   const api = ConfigService.get('api')
-  const queried = await api.query.did.did(didToChain(did))
+  const queried = await api.query.did.did(toChain(did))
   const currentNonce = queried.isSome
     ? didFromChain(queried).lastTxCounter
     : new BN(0)

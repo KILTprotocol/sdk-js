@@ -59,9 +59,9 @@ describe('When there is an on-chain DID', () => {
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
-      didChain = Did.didToChain(did.uri)
+      didChain = Did.toChain(did.uri)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-      newDidChain = Did.didToChain(newDid.uri)
+      newDidChain = Did.toChain(newDid.uri)
     }, 40_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
@@ -226,9 +226,9 @@ describe('When there is an on-chain DID', () => {
         didKey = makeSigningKeyTool()
         newDidKey = makeSigningKeyTool()
         did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
-        didChain = Did.didToChain(did.uri)
+        didChain = Did.toChain(did.uri)
         newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-        newDidChain = Did.didToChain(newDid.uri)
+        newDidChain = Did.toChain(newDid.uri)
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
@@ -420,9 +420,9 @@ describe('When there is an on-chain DID', () => {
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
-      didChain = Did.didToChain(did.uri)
+      didChain = Did.toChain(did.uri)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-      newDidChain = Did.didToChain(newDid.uri)
+      newDidChain = Did.toChain(newDid.uri)
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {

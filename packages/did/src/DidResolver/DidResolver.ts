@@ -17,11 +17,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
-import {
-  didToChain,
-  resourceIdToChain,
-  serviceFromChain,
-} from '../Did.chain.js'
+import { toChain, resourceIdToChain, serviceFromChain } from '../Did.chain.js'
 import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 
 /**
@@ -50,7 +46,7 @@ export async function resolve(
 
   // If the full DID has been deleted (or the light DID was upgraded and deleted),
   // return the info in the resolution metadata.
-  const isFullDidDeleted = (await api.query.did.didBlacklist(didToChain(did)))
+  const isFullDidDeleted = (await api.query.did.didBlacklist(toChain(did)))
     .isSome
   if (isFullDidDeleted) {
     return {
@@ -187,7 +183,7 @@ export async function resolveService(
 
   if (type === 'full') {
     const encoded = await api.query.did.serviceEndpoints(
-      didToChain(serviceUri),
+      toChain(serviceUri),
       resourceIdToChain(serviceId)
     )
     if (encoded.isNone) {

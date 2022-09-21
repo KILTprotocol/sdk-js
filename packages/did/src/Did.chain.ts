@@ -60,7 +60,7 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 // ### RAW QUERYING (lowest layer)
 
-export function didToChain(did: DidUri): KiltAddress {
+export function toChain(did: DidUri): KiltAddress {
   return parseDidUri(did).address
 }
 
@@ -377,7 +377,7 @@ export async function generateDidAuthenticatedTx({
       api.tx.did.submitDidCall.meta.args[0].type.toString(),
       {
         txCounter,
-        did: didToChain(did),
+        did: toChain(did),
         call,
         submitter,
         blockNumber: blockNumber ?? (await api.query.system.number()),
