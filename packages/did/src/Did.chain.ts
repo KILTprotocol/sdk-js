@@ -77,7 +77,7 @@ export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
 
 // ### DECODED QUERYING types
 
-export type EncodedDid = Pick<
+type ChainDocument = Pick<
   DidDocument,
   'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
 > & {
@@ -105,7 +105,9 @@ export function uriFromChain(encoded: AccountId32): DidUri {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
-export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
+export function documentFromChain(
+  encoded: Option<DidDidDetails>
+): ChainDocument {
   const {
     publicKeys,
     authenticationKey,
@@ -127,7 +129,7 @@ export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
 
   const authentication = keys[authenticationKey.toHex()] as DidVerificationKey
 
-  const didRecord: EncodedDid = {
+  const didRecord: ChainDocument = {
     authentication: [authentication],
     lastTxCounter: lastTxCounter.toBn(),
     deposit: depositFromChain(deposit),
@@ -153,15 +155,13 @@ export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
   return didRecord
 }
 
-interface BlockchainEndpoint {
+interface ChainEndpoint {
   id: string
   serviceTypes: DidServiceEndpoint['type']
   urls: DidServiceEndpoint['serviceEndpoint']
 }
 
-export function serviceToChain(
-  endpoint: DidServiceEndpoint
-): BlockchainEndpoint {
+export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
   checkServiceEndpointSyntax(endpoint)
   const { id, type, serviceEndpoint } = endpoint
   return {

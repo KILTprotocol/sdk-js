@@ -23,10 +23,9 @@ import {
 } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 
-import type { EncodedDid } from '../Did.chain'
 import {
+  documentFromChain,
   generateDidAuthenticatedTx,
-  didFromChain,
   servicesFromChain,
 } from '../Did.chain'
 
@@ -46,7 +45,21 @@ const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
 const existingDid: DidUri = `did:kilt:${existingAddress}`
 const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
 
-const existingDidRecord: EncodedDid = {
+const existingServiceEndpoints: DidServiceEndpoint[] = [
+  {
+    id: '#service1',
+    type: ['type-1'],
+    serviceEndpoint: ['url-1'],
+  },
+  {
+    id: '#service2',
+    type: ['type-2'],
+    serviceEndpoint: ['url-2'],
+  },
+]
+
+jest.mock('../Did.chain')
+jest.mocked(documentFromChain).mockReturnValue({
   authentication: [
     {
       id: '#auth1',
@@ -90,23 +103,7 @@ const existingDidRecord: EncodedDid = {
     amount: new BN(2),
     owner: existingAddress,
   },
-}
-
-const existingServiceEndpoints: DidServiceEndpoint[] = [
-  {
-    id: '#service1',
-    type: ['type-1'],
-    serviceEndpoint: ['url-1'],
-  },
-  {
-    id: '#service2',
-    type: ['type-2'],
-    serviceEndpoint: ['url-2'],
-  },
-]
-
-jest.mock('../Did.chain')
-jest.mocked(didFromChain).mockReturnValue(existingDidRecord)
+})
 jest.mocked(servicesFromChain).mockReturnValue(existingServiceEndpoints)
 jest
   .mocked(generateDidAuthenticatedTx)

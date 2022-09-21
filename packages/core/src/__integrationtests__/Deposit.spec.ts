@@ -69,7 +69,7 @@ async function checkDeleteFullDid(
     await api.query.system.account(identity.address)
   ).data
 
-  const didResult = Did.didFromChain(
+  const didResult = Did.documentFromChain(
     await api.query.did.did(Did.toChain(fullDid.uri))
   )
   const didDeposit = didResult.deposit
@@ -98,7 +98,7 @@ async function checkReclaimFullDid(
     await api.query.system.account(identity.address)
   ).data
 
-  const didResult = Did.didFromChain(
+  const didResult = Did.documentFromChain(
     await api.query.did.did(Did.toChain(fullDid.uri))
   )
   const didDeposit = didResult.deposit

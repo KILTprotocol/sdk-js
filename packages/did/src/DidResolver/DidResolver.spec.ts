@@ -27,17 +27,12 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
 import {
-  didFromChain,
+  documentFromChain,
   serviceFromChain,
   servicesFromChain,
 } from '../Did.chain.js'
 
-import {
-  resolve,
-  resolveKey,
-  resolveService,
-  strictResolve,
-} from './index.js'
+import { resolve, resolveKey, resolveService, strictResolve } from './index.js'
 import * as Did from '../index.js'
 
 /**
@@ -135,7 +130,7 @@ function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
 
 jest.mock('../Did.chain.js')
 
-jest.mocked(didFromChain).mockReturnValue({
+jest.mocked(documentFromChain).mockReturnValue({
   authentication: [generateAuthenticationKey()],
   lastTxCounter: new BN(0),
   deposit: {
@@ -250,7 +245,7 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves the document with all keys', async () => {
-    jest.mocked(didFromChain).mockReturnValueOnce({
+    jest.mocked(documentFromChain).mockReturnValueOnce({
       authentication: [generateAuthenticationKey()],
       keyAgreement: [generateEncryptionKey()],
       assertionMethod: [generateAttestationKey()],
