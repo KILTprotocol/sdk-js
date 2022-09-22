@@ -69,7 +69,8 @@ export function createLightDidDocument({
     authentication: [
       {
         id: authenticationKeyId, // Authentication key always has the #authentication ID.
-        ...authentication[0],
+        type: authentication[0].type,
+        publicKey: authentication[0].publicKey,
       },
     ],
     service,
@@ -79,7 +80,8 @@ export function createLightDidDocument({
     did.keyAgreement = [
       {
         id: encryptionKeyId, // Encryption key always has the #encryption ID.
-        ...keyAgreement[0],
+        type: keyAgreement[0].type,
+        publicKey: keyAgreement[0].publicKey,
       },
     ]
   }
