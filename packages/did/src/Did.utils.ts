@@ -192,32 +192,6 @@ export function validateUri(
   DataUtils.verifyKiltAddress(address)
 }
 
-export function isKiltDidUri(
-  input: unknown,
-  expectType: 'ResourceUri'
-): input is DidResourceUri
-export function isKiltDidUri(input: unknown, expectType: 'Did'): input is DidUri
-export function isKiltDidUri(input: unknown): input is DidUri | DidResourceUri
-
-/**
- * Type guard assuring that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
- *
- * @param input Arbitrary input.
- * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
- * @returns True if validation has passed, false otherwise.
- */
-export function isKiltDidUri(
-  input: unknown,
-  expectType?: 'Did' | 'ResourceUri'
-): input is DidUri | DidResourceUri {
-  try {
-    validateUri(input, expectType)
-    return true
-  } catch {
-    return false
-  }
-}
-
 export function getAddressByKey({
   publicKey,
   type,
