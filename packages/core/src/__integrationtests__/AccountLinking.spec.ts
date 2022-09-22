@@ -495,10 +495,9 @@ describe('When there is an on-chain DID', () => {
       )
       expect(owner).toStrictEqual(did.uri)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
-      const data = await api.rpc.did.queryByAccount(
-        Did.accountToChain(genericAccount.address)
+      expect(await Did.queryWeb3Name(genericAccount.address)).toStrictEqual(
+        'test-name'
       )
-      expect(Did.queryByAccountFromChain(data).did).toStrictEqual('test-name')
     })
 
     it('should be possible for the sender to remove the link', async () => {
