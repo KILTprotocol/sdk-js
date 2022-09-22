@@ -764,10 +764,10 @@ describe('DID management batching', () => {
         did: initialFullDid.uri,
         extrinsics: [
           api.tx.did.removeKeyAgreementKey(
-            Did.stripFragment(encryptionKeys[0].id)
+            Did.resourceIdToChain(encryptionKeys[0].id)
           ),
           api.tx.did.removeKeyAgreementKey(
-            Did.stripFragment(encryptionKeys[1].id)
+            Did.resourceIdToChain(encryptionKeys[1].id)
           ),
           api.tx.did.removeAttestationKey(),
           api.tx.did.removeDelegationKey(),

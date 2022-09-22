@@ -220,16 +220,6 @@ export function isKiltDidUri(
   }
 }
 
-/**
- * Remove the `#` prefix from the UriFragment string, typically an ID.
- *
- * @param id The input ID to strip.
- * @returns The string without the prefix.
- */
-export function stripFragment(id: UriFragment): string {
-  return id.replace(/^#/, '')
-}
-
 export function getAddressByKey({
   publicKey,
   type,

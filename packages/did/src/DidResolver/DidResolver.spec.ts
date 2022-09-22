@@ -24,9 +24,10 @@ import { Crypto } from '@kiltprotocol/utils'
 import { ApiMocks, makeSigningKeyTool } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 
-import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
+import { getFullDidUriFromKey } from '../Did.utils'
 import {
   documentFromChain,
+  resourceIdToChain,
   serviceFromChain,
   servicesFromChain,
 } from '../Did.chain.js'
@@ -119,7 +120,7 @@ function generateDelegationKey(): DidVerificationKey {
 }
 
 function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
-  const fragment = stripFragment(serviceId)
+  const fragment = serviceId.substring(1)
   return {
     id: serviceId,
     type: [`type-${fragment}`],
@@ -143,6 +144,9 @@ jest
 jest
   .mocked(servicesFromChain)
   .mockReturnValue([generateServiceEndpoint('#service-1')])
+jest
+  .mocked(resourceIdToChain)
+  .mockImplementation((id: string) => id.substring(1))
 
 describe('When resolving a key', () => {
   it('correctly resolves it for a full DID if both the DID and the key exist', async () => {

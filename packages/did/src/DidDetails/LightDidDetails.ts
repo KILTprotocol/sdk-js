@@ -24,13 +24,8 @@ import { encryptionKeyTypes } from '@kiltprotocol/types'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import {
-  getAddressByKey,
-  KILT_DID_PREFIX,
-  parse,
-  stripFragment,
-} from '../Did.utils.js'
-import { validateService } from '../Did.chain.js'
+import { getAddressByKey, KILT_DID_PREFIX, parse } from '../Did.utils.js'
+import { resourceIdToChain, validateService } from '../Did.chain.js'
 
 const authenticationKeyId = '#authentication'
 const encryptionKeyId = '#encryption'
@@ -139,7 +134,7 @@ function serializeAndEncodeAdditionalLightDidDetails({
   }
   if (service && service.length > 0) {
     objectToSerialize[SERVICES_MAP_KEY] = service.map(({ id, ...rest }) => ({
-      id: stripFragment(id),
+      id: resourceIdToChain(id),
       ...rest,
     }))
   }

@@ -51,7 +51,6 @@ import {
   getAddressByKey,
   getFullDidUri,
   parse,
-  stripFragment,
 } from './Did.utils.js'
 
 // ### Chain type definitions
@@ -66,7 +65,7 @@ export function toChain(did: DidUri): KiltAddress {
 }
 
 export function resourceIdToChain(id: UriFragment): string {
-  return stripFragment(id)
+  return id.replace(/^#/, '')
 }
 
 export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
