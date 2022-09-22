@@ -11,8 +11,6 @@ import {
   DidResourceUri,
   DidUri,
   DidVerificationKey,
-  EncryptionAlgorithms,
-  EncryptionKeyType,
   KiltAddress,
   UriFragment,
 } from '@kiltprotocol/types'
@@ -110,20 +108,6 @@ export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
 export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
   return parse(didA).address === parse(didB).address
 }
-
-export const encryptionAlgForKeyType: Record<
-  EncryptionKeyType,
-  EncryptionAlgorithms
-> = Object.freeze({
-  x25519: 'x25519-xsalsa20-poly1305',
-})
-
-export const keyTypeForEncryptionAlg: Record<
-  EncryptionAlgorithms,
-  EncryptionKeyType
-> = Object.freeze({
-  'x25519-xsalsa20-poly1305': 'x25519',
-})
 
 export type EncodedVerificationKey =
   | { sr25519: Uint8Array }

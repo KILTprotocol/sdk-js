@@ -331,9 +331,7 @@ export async function decrypt(
       `Could not resolve receiver encryption key "${receiverKeyUri}"`
     )
   }
-  const receiverKeyAlgType =
-    Did.encryptionAlgForKeyType[receiverKeyDetails.type]
-  if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
+  if (receiverKeyDetails.type !== 'x25519') {
     throw new SDKErrors.EncryptionError(
       'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
     )

@@ -12,8 +12,6 @@ import type {
   VerificationKeyRelationship,
 } from './DidDocument.js'
 
-export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
-
 /**
  * Base interface for all signing requests.
  */
