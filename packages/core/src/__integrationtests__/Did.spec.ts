@@ -677,8 +677,7 @@ describe('DID management batching', () => {
     })
 
     it('Build a minimal full DID with an Ecdsa key', async () => {
-      const { keypair, storeDidCallback } =
-        makeSigningKeyTool('ecdsa-secp256k1')
+      const { keypair, storeDidCallback } = makeSigningKeyTool('ecdsa')
       const didAuthKey: NewDidVerificationKey = {
         publicKey: keypair.publicKey,
         type: 'ecdsa',
