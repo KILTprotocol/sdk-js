@@ -36,7 +36,6 @@ import { disconnect } from '../kilt'
 let paymentAccount: KiltKeyringPair
 let paymentAccountChain: string
 let linkDeposit: BN
-let sign: Did.LinkingSignCallback
 let api: ApiPromise
 
 beforeAll(async () => {
@@ -222,7 +221,6 @@ describe('When there is an on-chain DID', () => {
         const keyTool = makeSigningKeyTool(keyType as KiltKeyringPair['type'])
         keypair = keyTool.keypair
         keypairChain = Did.accountToChain(keypair.address)
-        sign = Did.makeLinkingSignCallback(keypair)
         didKey = makeSigningKeyTool()
         newDidKey = makeSigningKeyTool()
         did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
@@ -235,7 +233,7 @@ describe('When there is an on-chain DID', () => {
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
           did.uri,
-          sign
+          async (payload) => keypair.sign(payload, { withType: false })
         )
         const signedTx = await Did.authorizeExtrinsic(
           did.uri,
@@ -290,7 +288,7 @@ describe('When there is an on-chain DID', () => {
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
           newDid.uri,
-          sign
+          async (payload) => keypair.sign(payload, { withType: false })
         )
         const signedTx = await Did.authorizeExtrinsic(
           newDid.uri,
@@ -413,9 +411,6 @@ describe('When there is an on-chain DID', () => {
         mnemonicGenerate()
       )
       genericAccountChain = Did.accountToChain(genericAccount.address)
-      // also testing that signing with type bitflag works, like the polkadot extension does it
-      sign = async (payload) => genericAccount.sign(payload, { withType: true })
-
       await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
@@ -429,7 +424,7 @@ describe('When there is an on-chain DID', () => {
       const args = await Did.associateAccountToChainArgs(
         genericAccount.address,
         did.uri,
-        sign
+        async (payload) => genericAccount.sign(payload, { withType: true })
       )
       const signedTx = await Did.authorizeExtrinsic(
         did.uri,
