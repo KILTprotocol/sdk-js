@@ -28,7 +28,10 @@ import { ApiPromise } from '@polkadot/api'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
-import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
+import type {
+  DidLinkedInfo,
+  PalletDidLookupConnectionRecord,
+} from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature } from '../Did.utils.js'
@@ -132,6 +135,21 @@ function isLinkableAccountId(
   return 'isAccountId32' in arg && 'isAccountId20' in arg
 }
 
+function accountFromChain(
+  account: AccountId32,
+  networkPrefix = ss58Format
+): KiltAddress | SubstrateAddress {
+  if (isLinkableAccountId(account)) {
+    // linked account is substrate address (ethereum-enabled storage version)
+    if (account.isAccountId32)
+      return encodeAddress(account.asAccountId32, networkPrefix)
+    // linked account is ethereum address (ethereum-enabled storage version)
+    if (account.isAccountId20) return ethereumEncode(account.asAccountId20)
+  }
+  // linked account is substrate account (legacy storage version)
+  return encodeAddress(account.toU8a(), networkPrefix)
+}
+
 /**
  * Decodes the accounts linked to the provided DID.
  *
@@ -143,18 +161,34 @@ export function connectedAccountsFromChain(
   encoded: Array<StorageKey<[AccountId32, AccountId32]>>,
   networkPrefix = ss58Format
 ): Array<KiltAddress | SubstrateAddress> {
-  return encoded.map<string>(({ args: [, accountAddress] }) => {
-    if (isLinkableAccountId(accountAddress)) {
-      // linked account is substrate address (ethereum-enabled storage version)
-      if (accountAddress.isAccountId32)
-        return encodeAddress(accountAddress.asAccountId32, networkPrefix)
-      // linked account is ethereum address (ethereum-enabled storage version)
-      if (accountAddress.isAccountId20)
-        return ethereumEncode(accountAddress.asAccountId20)
-    }
-    // linked account is substrate account (legacy storage version)
-    return encodeAddress(accountAddress.toU8a(), networkPrefix)
-  })
+  return encoded.map<string>(({ args: [, accountAddress] }) =>
+    accountFromChain(accountAddress, networkPrefix)
+  )
+}
+
+/**
+ * Decodes accounts, DID, and web3name linked to the provided account.
+ *
+ * @param encoded The data returned by `api.rpc.did.queryByAccount()`.
+ * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
+ * @returns The accounts, DID, and web3name.
+ */
+export function queryByAccountFromChain(
+  encoded: Option<DidLinkedInfo>,
+  networkPrefix = ss58Format
+): {
+  did: DidUri
+  accounts: Array<KiltAddress | SubstrateAddress>
+  web3name?: Web3Name
+} {
+  const { accounts, identifier, w3n } = encoded.unwrap()
+  return {
+    did: fromChain(identifier),
+    accounts: accounts.map((account) =>
+      accountFromChain(account, networkPrefix)
+    ),
+    web3name: w3n.isSome ? w3n.unwrap().toString() : undefined,
+  }
 }
 
 /**
