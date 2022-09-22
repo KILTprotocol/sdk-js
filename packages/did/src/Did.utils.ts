@@ -14,9 +14,7 @@ import {
   EncryptionAlgorithms,
   EncryptionKeyType,
   KiltAddress,
-  SigningAlgorithms,
   UriFragment,
-  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
@@ -112,22 +110,6 @@ export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
 export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
   return parse(didA).address === parse(didB).address
 }
-
-export const signatureAlgForKeyType: Record<
-  VerificationKeyType,
-  SigningAlgorithms
-> = Object.freeze({
-  ed25519: 'ed25519',
-  sr25519: 'sr25519',
-  ecdsa: 'ecdsa-secp256k1',
-})
-
-export const keyTypeForSignatureAlg = Object.freeze(
-  Object.entries(signatureAlgForKeyType).reduce(
-    (obj, [key, value]) => ({ ...obj, [value]: key }),
-    {}
-  )
-) as Record<SigningAlgorithms, VerificationKeyType>
 
 export const encryptionAlgForKeyType: Record<
   EncryptionKeyType,

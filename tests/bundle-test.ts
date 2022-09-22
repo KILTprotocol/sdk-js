@@ -16,7 +16,6 @@ import type {
   KiltKeyringPair,
   NewDidEncryptionKey,
   SignCallback,
-  SigningAlgorithms,
 } from '@kiltprotocol/types'
 
 const { kilt } = window
@@ -67,18 +66,12 @@ function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
 
 function makeSigningKeypair(
   seed: string,
-  alg: SigningAlgorithms = 'sr25519'
+  type: KiltKeyringPair['type'] = 'sr25519'
 ): {
   keypair: KiltKeyringPair
   getSignCallback: (didDocument: DidDocument) => SignCallback
   storeDidCallback: StoreDidCallback
 } {
-  const keypairTypeForAlg: Record<SigningAlgorithms, KiltKeyringPair['type']> = {
-    ed25519: 'ed25519',
-    sr25519: 'sr25519',
-    'ecdsa-secp256k1': 'ecdsa',
-  }
-  const type = keypairTypeForAlg[alg]
   const keypair = Crypto.makeKeypairFromUri(seed, type)
   const getSignCallback = makeSignCallback(keypair)
   const storeDidCallback = makeStoreDidCallback(keypair)
