@@ -29,8 +29,8 @@ import {
   KILT_DID_PREFIX,
   parse,
   stripFragment,
-  validateService,
 } from '../Did.utils.js'
+import { validateService } from '../Did.chain.js'
 
 const authenticationKeyId = '#authentication'
 const encryptionKeyId = '#encryption'

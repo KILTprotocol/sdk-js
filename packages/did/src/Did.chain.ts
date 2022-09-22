@@ -44,7 +44,6 @@ import type {
 } from '@kiltprotocol/augment-api'
 
 import {
-  validateService,
   EncodedEncryptionKey,
   EncodedKey,
   EncodedSignature,
@@ -161,6 +160,65 @@ interface ChainEndpoint {
   id: string
   serviceTypes: DidServiceEndpoint['type']
   urls: DidServiceEndpoint['serviceEndpoint']
+}
+
+/**
+ * Checks if a string is a valid URI according to RFC#3986.
+ *
+ * @param str String to be checked.
+ * @returns Whether `str` is a valid URI.
+ */
+function isUri(str: string): boolean {
+  try {
+    const url = new URL(str) // this actually accepts any URI but throws if it can't be parsed
+    return url.href === str || encodeURI(decodeURI(str)) === str // make sure our URI has not been converted implicitly by URL
+  } catch {
+    return false
+  }
+}
+
+const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
+
+/**
+ * Checks if a string is a valid URI fragment according to RFC#3986.
+ *
+ * @param str String to be checked.
+ * @returns Whether `str` is a valid URI fragment.
+ */
+function isUriFragment(str: string): boolean {
+  try {
+    return UriFragmentRegex.test(str) && !!decodeURIComponent(str)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
+ *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
+ *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
+ *
+ * @param endpoint A service endpoint object to check.
+ */
+export function validateService(endpoint: DidServiceEndpoint): void {
+  const { id, serviceEndpoint } = endpoint
+  if (id.startsWith('did:kilt')) {
+    throw new SDKErrors.DidError(
+      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
+    )
+  }
+  if (!isUriFragment(resourceIdToChain(id))) {
+    throw new SDKErrors.DidError(
+      `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
+    )
+  }
+  serviceEndpoint.forEach((uri) => {
+    if (!isUri(uri)) {
+      throw new SDKErrors.DidError(
+        `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
+      )
+    }
+  })
 }
 
 export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
