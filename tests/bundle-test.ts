@@ -7,8 +7,6 @@
 
 /// <reference lib="dom" />
 
-import type { KeypairType } from '@polkadot/util-crypto/types'
-
 import type {
   DecryptCallback,
   DidDocument,
@@ -30,12 +28,12 @@ const {
   CType,
   Did,
   Blockchain,
-  Utils: { Crypto, Keyring, ss58Format },
+  Utils: { Crypto, ss58Format },
   Message,
   BalanceUtils,
 } = kilt
 
-kilt.config({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+kilt.ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
 function makeSignCallback(
   keypair: KeyringPair
@@ -75,17 +73,13 @@ function makeSigningKeypair(
   getSignCallback: (didDocument: DidDocument) => SignCallback
   storeDidCallback: StoreDidCallback
 } {
-  const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
+  const keypairTypeForAlg: Record<SigningAlgorithms, KiltKeyringPair['type']> = {
     ed25519: 'ed25519',
     sr25519: 'sr25519',
     'ecdsa-secp256k1': 'ecdsa',
   }
   const type = keypairTypeForAlg[alg]
-  const keypair = new Keyring({ type }).addFromUri(
-    seed,
-    {},
-    type
-  ) as KiltKeyringPair
+  const keypair = Crypto.makeKeypairFromUri(seed, type)
   const getSignCallback = makeSignCallback(keypair)
   const storeDidCallback = makeStoreDidCallback(keypair)
 
@@ -182,9 +176,7 @@ async function runAll() {
   console.log('Account setup started')
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const payer = new Keyring({ ss58Format, type: 'ed25519' }).createFromUri(
-    FaucetSeed
-  ) as KiltKeyringPair
+  const payer = Crypto.makeKeypairFromUri(FaucetSeed)
 
   const { keypair: aliceKeypair, getSignCallback: aliceSign } =
     makeSigningKeypair('//Alice')

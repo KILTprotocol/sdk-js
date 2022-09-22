@@ -19,5 +19,5 @@ export * as CType from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
 export * as Quote from './quote/index.js'
 
-export { connect, disconnect, config, init } from './kilt/index.js'
+export { connect, disconnect, init } from './kilt/index.js'
 export { SDKErrors } from '@kiltprotocol/utils'

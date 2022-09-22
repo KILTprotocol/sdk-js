@@ -9,12 +9,10 @@
  * @group unit/blockchain
  */
 
-import Keyring from '@polkadot/keyring'
-
 import { ApiMocks } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 import type { KeyringPair } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import {
   IS_FINALIZED,
@@ -35,7 +33,7 @@ describe('Blockchain', () => {
     let pair: KeyringPair
 
     beforeAll(async () => {
-      pair = new Keyring().addFromUri('//Alice')
+      pair = Crypto.makeKeypairFromUri('//Alice')
     })
 
     it('allows waiting for finalization', async () => {

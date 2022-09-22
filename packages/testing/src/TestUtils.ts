@@ -5,14 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  blake2AsHex,
-  blake2AsU8a,
-  naclBoxPairFromSecret,
-  randomAsHex,
-} from '@polkadot/util-crypto'
-import { KeypairType } from '@polkadot/util-crypto/types'
-import { Keyring } from '@polkadot/keyring'
+import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
 import {
   DecryptCallback,
@@ -30,7 +23,7 @@ import {
   SignCallback,
   SigningAlgorithms,
 } from '@kiltprotocol/types'
-import { Crypto, ss58Format } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
@@ -115,12 +108,7 @@ export interface EncryptionKeyTool {
  * @returns Object with secret and public key and the key type.
  */
 export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
-  const { secretKey, publicKey } = naclBoxPairFromSecret(blake2AsU8a(seed, 256))
-  const keypair = {
-    secretKey,
-    publicKey,
-    type: 'x25519' as EncryptionKeyType,
-  }
+  const keypair = Crypto.makeEncryptionKeyFromSeed(blake2AsU8a(seed, 256))
 
   const encrypt = makeEncryptCallback(keypair)
   const decrypt = makeDecryptCallback(keypair)
@@ -180,7 +168,7 @@ export function makeStoreDidCallback(
   }
 }
 
-const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
+const keypairTypeForAlg: Record<SigningAlgorithms, KiltKeyringPair['type']> = {
   ed25519: 'ed25519',
   sr25519: 'sr25519',
   'ecdsa-secp256k1': 'ecdsa',
@@ -202,26 +190,15 @@ export interface KeyTool {
 export function makeSigningKeyTool(
   alg: SigningAlgorithms = 'sr25519'
 ): KeyTool {
-  const type = keypairTypeForAlg[alg]
-  const seed = randomAsHex(32)
-  const keypair = new Keyring({ type, ss58Format }).addFromUri(
-    seed,
-    {},
-    type
-  ) as KiltKeyringPair
+  const keypair = Crypto.makeKeypairFromSeed(undefined, keypairTypeForAlg[alg])
   const getSignCallback = makeSignCallback(keypair)
   const storeDidCallback = makeStoreDidCallback(keypair)
-
-  const authenticationKey = {
-    publicKey: keypair.publicKey,
-    type: keypair.type as LightDidSupportedVerificationKeyType,
-  }
 
   return {
     keypair,
     getSignCallback,
     storeDidCallback,
-    authentication: [authenticationKey],
+    authentication: [keypair as NewLightDidVerificationKey],
   }
 }
 
