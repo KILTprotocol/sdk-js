@@ -24,16 +24,11 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import {
   documentFromChain,
-  toChain,
   generateDidAuthenticatedTx,
   servicesFromChain,
+  toChain,
 } from '../Did.chain.js'
 import { parse } from '../Did.utils.js'
-
-import {
-  getKeyRelationshipForExtrinsic,
-  increaseNonce,
-} from './FullDidDetails.utils.js'
 
 /**
  * Fetches [[DidDocument]] from the blockchain. [[resolve]] provides more detailed output.
@@ -75,6 +70,63 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
   }
 
   return did
+}
+
+// Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
+// in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
+// TODO: Should have an RPC or something similar to avoid inconsistencies in the future.
+const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
+  attestation: 'assertionMethod',
+  ctype: 'assertionMethod',
+  delegation: 'capabilityDelegation',
+  did: 'authentication',
+  'did.create': undefined,
+  'did.reclaimDeposit': undefined,
+  'did.submitDidCall': undefined,
+  didLookup: 'authentication',
+  web3Names: 'authentication',
+}
+
+function getKeyRelationshipForMethod(
+  call: Extrinsic['method']
+): VerificationKeyRelationship | undefined {
+  const { section, method } = call
+
+  // get the VerificationKeyRelationship of a batched call
+  if (
+    section === 'utility' &&
+    ['batch', 'batchAll', 'forceBatch'].includes(method) &&
+    call.args[0].toRawType() === 'Vec<Call>'
+  ) {
+    // map all calls to their VerificationKeyRelationship and deduplicate the items
+    return (call.args[0] as unknown as Array<Extrinsic['method']>)
+      .map(getKeyRelationshipForMethod)
+      .reduce((prev, value) => (prev === value ? prev : undefined))
+  }
+
+  const signature = `${section}.${method}`
+  if (signature in methodMapping) {
+    return methodMapping[signature]
+  }
+
+  return methodMapping[section]
+}
+
+export function getKeyRelationshipForExtrinsic(
+  extrinsic: Extrinsic
+): VerificationKeyRelationship | undefined {
+  return getKeyRelationshipForMethod(extrinsic.method)
+}
+
+// Max nonce value is (2^64) - 1
+const maxNonceValue = new BN(2).pow(new BN(64)).subn(1)
+
+function increaseNonce(currentNonce: BN, increment = 1): BN {
+  // Wrap around the max u64 value when reached.
+  // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
+  return currentNonce.eq(maxNonceValue)
+    ? new BN(increment)
+    : currentNonce.addn(increment)
 }
 
 /**
