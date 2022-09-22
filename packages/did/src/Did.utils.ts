@@ -42,7 +42,7 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
 
-export type IDidParsingResult = {
+type IDidParsingResult = {
   did: DidUri
   version: number
   type: 'light' | 'full'
