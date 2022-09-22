@@ -20,11 +20,11 @@ import {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-/// The latest version for KILT light DIDs.
-export const LIGHT_DID_LATEST_VERSION = 1
+// The latest version for KILT light DIDs.
+const LIGHT_DID_LATEST_VERSION = 1
 
-/// The latest version for KILT full DIDs.
-export const FULL_DID_LATEST_VERSION = 1
+// The latest version for KILT full DIDs.
+const FULL_DID_LATEST_VERSION = 1
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
