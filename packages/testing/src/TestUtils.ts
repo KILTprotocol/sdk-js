@@ -21,7 +21,6 @@ import {
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
   SignCallback,
-  SigningAlgorithms,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
@@ -148,7 +147,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
     }
 }
 
-type StoreDidCallback = Parameters<typeof Did.Chain.getStoreTx>['2']
+type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 /**
  * Generates a callback that can be used for signing.
@@ -168,12 +167,6 @@ export function makeStoreDidCallback(
   }
 }
 
-const keypairTypeForAlg: Record<SigningAlgorithms, KiltKeyringPair['type']> = {
-  ed25519: 'ed25519',
-  sr25519: 'sr25519',
-  'ecdsa-secp256k1': 'ecdsa',
-}
-
 export interface KeyTool {
   keypair: KiltKeyringPair
   getSignCallback: KeyToolSignCallback
@@ -184,13 +177,13 @@ export interface KeyTool {
 /**
  * Generates a keypair usable for signing and a few related values.
  *
- * @param alg The algorithm to use for the keypair.
+ * @param type The type to use for the keypair.
  * @returns The keypair, matching sign callback, a key usable as DID authentication key.
  */
 export function makeSigningKeyTool(
-  alg: SigningAlgorithms = 'sr25519'
+  type: KiltKeyringPair['type'] = 'sr25519'
 ): KeyTool {
-  const keypair = Crypto.makeKeypairFromSeed(undefined, keypairTypeForAlg[alg])
+  const keypair = Crypto.makeKeypairFromSeed(undefined, type)
   const getSignCallback = makeSignCallback(keypair)
   const storeDidCallback = makeStoreDidCallback(keypair)
 
@@ -227,11 +220,11 @@ export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
 function makeDidKeyFromKeypair({
   publicKey,
   type,
-}: KeyringPair): DidVerificationKey {
+}: KiltKeyringPair): DidVerificationKey {
   return {
     id: computeKeyId(publicKey),
     publicKey,
-    type: Did.Utils.keyTypeForSignatureAlg[type as SigningAlgorithms],
+    type,
   }
 }
 
@@ -246,7 +239,7 @@ function makeDidKeyFromKeypair({
  * @returns A promise resolving to a [[DidDocument]] object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoFullDidFromKeypair(
-  keypair: KeyringPair,
+  keypair: KiltKeyringPair,
   {
     keyRelationships = new Set([
       'assertionMethod',
@@ -260,7 +253,7 @@ export async function createLocalDemoFullDidFromKeypair(
   } = {}
 ): Promise<DidDocument> {
   const authKey = makeDidKeyFromKeypair(keypair)
-  const uri = Did.Utils.getFullDidUriFromKey(authKey)
+  const uri = Did.getFullDidUriFromKey(authKey)
 
   const result: DidDocument = {
     uri,
@@ -278,11 +271,15 @@ export async function createLocalDemoFullDidFromKeypair(
     result.keyAgreement = [encKey]
   }
   if (keyRelationships.has('assertionMethod')) {
-    const attKey = makeDidKeyFromKeypair(keypair.derive('//att'))
+    const attKey = makeDidKeyFromKeypair(
+      keypair.derive('//att') as KiltKeyringPair
+    )
     result.assertionMethod = [attKey]
   }
   if (keyRelationships.has('capabilityDelegation')) {
-    const delKey = makeDidKeyFromKeypair(keypair.derive('//del'))
+    const delKey = makeDidKeyFromKeypair(
+      keypair.derive('//del') as KiltKeyringPair
+    )
     result.capabilityDelegation = [delKey]
   }
 
@@ -302,7 +299,7 @@ export async function createLocalDemoFullDidFromLightDid(
   const { uri, authentication } = lightDid
 
   return {
-    uri: Did.Utils.getFullDidUri(uri),
+    uri: Did.getFullDidUri(uri),
     authentication,
     assertionMethod: authentication,
     capabilityDelegation: authentication,
@@ -317,7 +314,7 @@ export async function createFullDidFromLightDid(
   sign: StoreDidCallback
 ): Promise<DidDocument> {
   const { authentication, uri } = lightDidForId
-  const tx = await Did.Chain.getStoreTx(
+  const tx = await Did.getStoreTx(
     {
       authentication,
       assertionMethod: authentication,
@@ -329,7 +326,7 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const fullDid = await Did.query(Did.Utils.getFullDidUri(uri))
+  const fullDid = await Did.query(Did.getFullDidUri(uri))
   if (!fullDid) throw new Error('Could not fetch created DID document')
   return fullDid
 }

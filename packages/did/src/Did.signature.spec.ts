@@ -157,7 +157,7 @@ describe('light DID', () => {
     jest.mocked(resolve).mockResolvedValue({
       document: did,
       metadata: {
-        canonicalId: Did.Utils.getFullDidUri(did.uri),
+        canonicalId: Did.getFullDidUri(did.uri),
         deactivated: false,
       },
     })

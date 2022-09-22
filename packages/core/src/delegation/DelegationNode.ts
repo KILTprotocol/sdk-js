@@ -266,13 +266,13 @@ export class DelegationNode implements IDelegationNode {
   public async delegateSign(
     delegateDid: DidDocument,
     sign: SignCallback
-  ): Promise<Did.Utils.EncodedSignature> {
+  ): Promise<Did.EncodedSignature> {
     const delegateSignature = await Did.signPayload(
       delegateDid.uri,
       this.generateHash(),
       sign
     )
-    const { fragment } = Did.Utils.parseDidUri(delegateSignature.keyUri)
+    const { fragment } = Did.parse(delegateSignature.keyUri)
     if (!fragment) {
       throw new SDKErrors.DidError(
         `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`
@@ -284,10 +284,7 @@ export class DelegationNode implements IDelegationNode {
         `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
       )
     }
-    return Did.Chain.didSignatureToChain(
-      key as DidVerificationKey,
-      delegateSignature
-    )
+    return Did.didSignatureToChain(key as DidVerificationKey, delegateSignature)
   }
 
   /**
@@ -310,7 +307,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async getStoreTx(
-    signature?: Did.Utils.EncodedSignature
+    signature?: Did.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
     const api = ConfigService.get('api')
 

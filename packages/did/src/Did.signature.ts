@@ -18,7 +18,7 @@ import {
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { resolve } from './DidResolver/index.js'
-import { parseDidUri, validateKiltDidUri } from './Did.utils.js'
+import { parse, validateUri } from './Did.utils.js'
 import * as Did from './index.js'
 
 export type DidSignatureVerificationInput = {
@@ -40,7 +40,7 @@ type OldDidSignature = Pick<DidSignature, 'signature'> & {
  *
  * @param input Arbitrary input.
  */
-export function verifyDidSignatureDataStructure(
+function verifyDidSignatureDataStructure(
   input: DidSignature | OldDidSignature
 ): void {
   const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
@@ -49,7 +49,7 @@ export function verifyDidSignatureDataStructure(
       `Expected signature as a hex string, got ${input.signature}`
     )
   }
-  validateKiltDidUri(keyUri, 'ResourceUri')
+  validateUri(keyUri, 'ResourceUri')
 }
 
 /**
@@ -72,7 +72,7 @@ export async function verifyDidSignature({
   // Add support for old signatures that had the `keyId` instead of the `keyUri`
   const inputUri = signature.keyUri || (signature as any).keyId
   // Verification fails if the signature key URI is not valid
-  const { fragment } = parseDidUri(inputUri)
+  const { fragment } = parse(inputUri)
   if (!fragment)
     throw new SDKErrors.SignatureMalformedError(
       `Signature key URI "${signature.keyUri}" invalid`

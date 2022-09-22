@@ -8,8 +8,6 @@
 import { DidDocument, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 
-import { CreateDocumentInput } from './LightDidDetails.utils'
-
 import * as Did from '../index.js'
 
 /**
@@ -42,12 +40,12 @@ describe('When creating an instance from the details', () => {
         serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const validInput: CreateDocumentInput = {
+
+    const lightDid = Did.createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service,
-    }
-    const lightDid = Did.createLightDidDocument(validInput)
+    })
 
     expect(lightDid).toEqual(<DidDocument>{
       uri: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
@@ -83,15 +81,13 @@ describe('When creating an instance from the details', () => {
   it('correctly assign the right ed25519 authentication key and encryption key', () => {
     const authKey = Crypto.makeKeypairFromSeed()
     const encKey = Crypto.makeEncryptionKeyFromSeed(new Uint8Array(32).fill(1))
-    const validInput: CreateDocumentInput = {
+
+    const lightDid = Did.createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
-    }
-    const lightDid = Did.createLightDidDocument(validInput)
+    })
 
-    expect(Did.Utils.parseDidUri(lightDid.uri).address).toStrictEqual(
-      authKey.address
-    )
+    expect(Did.parse(lightDid.uri).address).toStrictEqual(authKey.address)
 
     expect(lightDid).toEqual({
       uri: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
@@ -119,7 +115,9 @@ describe('When creating an instance from the details', () => {
       authentication: [authKey],
     }
     expect(() =>
-      Did.createLightDidDocument(invalidInput as unknown as CreateDocumentInput)
+      Did.createLightDidDocument(
+        invalidInput as unknown as Did.CreateDocumentInput
+      )
     ).toThrowError()
   })
 
@@ -132,7 +130,9 @@ describe('When creating an instance from the details', () => {
       keyAgreement: [{ publicKey: encKey.publicKey, type: 'bls' }],
     }
     expect(() =>
-      Did.createLightDidDocument(invalidInput as unknown as CreateDocumentInput)
+      Did.createLightDidDocument(
+        invalidInput as unknown as Did.CreateDocumentInput
+      )
     ).toThrowError()
   })
 })
@@ -153,15 +153,14 @@ describe('When creating an instance from a URI', () => {
         serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const creationInput: CreateDocumentInput = {
+    // We are sure this is correct because of the described case above
+    const expectedLightDid = Did.createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service: endpoints,
-    }
-    // We are sure this is correct because of the described case above
-    const expectedLightDid = Did.createLightDidDocument(creationInput)
+    })
 
-    const { address } = Did.Utils.parseDidUri(expectedLightDid.uri)
+    const { address } = Did.parse(expectedLightDid.uri)
     const builtLightDid = Did.parseDocumentFromLightDid(expectedLightDid.uri)
 
     expect(builtLightDid).toStrictEqual(expectedLightDid)
@@ -211,13 +210,13 @@ describe('When creating an instance from a URI', () => {
         serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const creationInput: CreateDocumentInput = {
+
+    // We are sure this is correct because of the described case above
+    const expectedLightDid = Did.createLightDidDocument({
       authentication: [authKey],
       keyAgreement: [encKey],
       service,
-    }
-    // We are sure this is correct because of the described case above
-    const expectedLightDid = Did.createLightDidDocument(creationInput)
+    })
 
     const uriWithFragment: DidUri = `${expectedLightDid.uri}#authentication`
 

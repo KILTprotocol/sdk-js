@@ -7,7 +7,7 @@
 
 import { DidDocument, DidKey, DidServiceEndpoint } from '@kiltprotocol/types'
 
-import { getEndpoint, getKey, getKeys } from './DidDetails'
+import { getService, getKey, getKeys } from './DidDetails'
 
 /**
  * @group unit/did
@@ -111,16 +111,16 @@ describe('DidDetais', () => {
       expect(getKey(minimalDid, '#capabilityDelegation')).toEqual(undefined)
     })
   })
-  describe('getEndpoint', () => {
+  describe('getService', () => {
     it('should get endpoint by ID', async () => {
-      expect(getEndpoint(maximalDid, '#service')).toEqual(<DidServiceEndpoint>{
+      expect(getService(maximalDid, '#service')).toEqual(<DidServiceEndpoint>{
         id: '#service',
         serviceEndpoint: ['https://example.com/'],
         type: ['foo'],
       })
     })
     it('should return undefined when key not found', async () => {
-      expect(getEndpoint(minimalDid, '#service')).toEqual(undefined)
+      expect(getService(minimalDid, '#service')).toEqual(undefined)
     })
   })
 })

@@ -5,29 +5,175 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { decodeAddress } from '@polkadot/util-crypto'
+import { decode as cborDecode, encode as cborEncode } from 'cbor'
+import {
+  base58Decode,
+  base58Encode,
+  decodeAddress,
+} from '@polkadot/util-crypto'
 
 import type {
   DidDocument,
+  DidServiceEndpoint,
   DidUri,
+  LightDidSupportedVerificationKeyType,
+  NewDidEncryptionKey,
   NewLightDidVerificationKey,
 } from '@kiltprotocol/types'
+import { encryptionKeyTypes } from '@kiltprotocol/types'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import { getAddressByKey, KILT_DID_PREFIX, parseDidUri } from '../Did.utils.js'
-
-import {
-  validateCreateDocumentInput,
-  decodeAndDeserializeAdditionalLightDidDetails,
-  CreateDocumentInput,
-  serializeAndEncodeAdditionalLightDidDetails,
-  verificationKeyTypeToLightDidEncoding,
-  lightDidEncodingToVerificationKeyType,
-} from './LightDidDetails.utils.js'
+import { getAddressByKey, parse } from '../Did.utils.js'
+import { resourceIdToChain, validateService } from '../Did.chain.js'
 
 const authenticationKeyId = '#authentication'
 const encryptionKeyId = '#encryption'
+
+type LightDidEncoding = '00' | '01'
+
+const verificationKeyTypeToLightDidEncoding: Record<
+  LightDidSupportedVerificationKeyType,
+  LightDidEncoding
+> = {
+  sr25519: '00',
+  ed25519: '01',
+}
+
+const lightDidEncodingToVerificationKeyType: Record<
+  LightDidEncoding,
+  LightDidSupportedVerificationKeyType
+> = {
+  '00': 'sr25519',
+  '01': 'ed25519',
+}
+
+/**
+ * The options that can be used to create a light DID.
+ */
+export type CreateDocumentInput = {
+  /**
+   * The DID authentication key. This is mandatory and will be used as the first authentication key
+   * of the full DID upon migration.
+   */
+  authentication: [NewLightDidVerificationKey]
+  /**
+   * The optional DID encryption key. If present, it will be used as the first key agreement key
+   * of the full DID upon migration.
+   */
+  keyAgreement?: [NewDidEncryptionKey]
+  /**
+   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
+   * The service ID must not contain the DID prefix when used to create a new DID.
+   */
+  service?: DidServiceEndpoint[]
+}
+
+function validateCreateDocumentInput(input: CreateDocumentInput): void {
+  // Check authentication key type
+  const authenticationKeyTypeEncoding =
+    verificationKeyTypeToLightDidEncoding[input.authentication[0].type]
+
+  if (!authenticationKeyTypeEncoding) {
+    throw new SDKErrors.UnsupportedKeyError(input.authentication[0].type)
+  }
+
+  if (
+    input.keyAgreement?.[0].type &&
+    !encryptionKeyTypes.includes(input.keyAgreement[0].type)
+  ) {
+    throw new SDKErrors.DidError(
+      `Encryption key type "${input.keyAgreement[0].type}" is not supported`
+    )
+  }
+
+  // Check service endpoints
+  if (!input.service) {
+    return
+  }
+
+  // Checks that for all service IDs have regular strings as their ID and not a full DID.
+  // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
+  // when upgrading to a full DID.
+  input.service?.forEach((service) => {
+    // A service ID cannot have a reserved ID that is used for key IDs.
+    if (service.id === '#authentication' || service.id === '#encryption') {
+      throw new SDKErrors.DidError(
+        `Cannot specify a service ID with the name "${service.id}" as it is a reserved keyword`
+      )
+    }
+    validateService(service)
+  })
+}
+
+const KEY_AGREEMENT_MAP_KEY = 'e'
+const SERVICES_MAP_KEY = 's'
+
+interface SerializableStructure {
+  [KEY_AGREEMENT_MAP_KEY]?: NewDidEncryptionKey
+  [SERVICES_MAP_KEY]?: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>
+}
+
+/**
+ * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm
+ * and encoding the result in Base58 format with a multibase prefix.
+ *
+ * @param details The light DID details to encode.
+ * @param details.keyAgreement The DID encryption key.
+ * @param details.service The DID service endpoints.
+ * @returns The Base58-encoded and CBOR-serialized off-chain DID optional details.
+ */
+function serializeAndEncodeAdditionalLightDidDetails({
+  keyAgreement,
+  service,
+}: Pick<CreateDocumentInput, 'keyAgreement' | 'service'>): string | undefined {
+  const objectToSerialize: SerializableStructure = {}
+  if (keyAgreement) {
+    const key = keyAgreement[0]
+    objectToSerialize[KEY_AGREEMENT_MAP_KEY] = key
+  }
+  if (service && service.length > 0) {
+    objectToSerialize[SERVICES_MAP_KEY] = service.map(({ id, ...rest }) => ({
+      id: resourceIdToChain(id),
+      ...rest,
+    }))
+  }
+
+  if (Object.keys(objectToSerialize).length === 0) {
+    return undefined
+  }
+
+  const serializationVersion = 0x0
+  const serialized = cborEncode(objectToSerialize)
+  return base58Encode([serializationVersion, ...serialized], true)
+}
+
+function decodeAndDeserializeAdditionalLightDidDetails(
+  rawInput: string,
+  version = 1
+): Pick<CreateDocumentInput, 'keyAgreement' | 'service'> {
+  if (version !== 1) {
+    throw new SDKErrors.DidError('Serialization version not supported')
+  }
+
+  const decoded = base58Decode(rawInput, true)
+  const serializationVersion = decoded[0]
+  const serialized = decoded.slice(1)
+
+  if (serializationVersion !== 0x0) {
+    throw new SDKErrors.DidError('Serialization algorithm not supported')
+  }
+  const deserialized: SerializableStructure = cborDecode(serialized)
+
+  const keyAgreement = deserialized[KEY_AGREEMENT_MAP_KEY]
+  return {
+    keyAgreement: keyAgreement && [keyAgreement],
+    service: deserialized[SERVICES_MAP_KEY]?.map(({ id, ...rest }) => ({
+      id: `#${id}`,
+      ...rest,
+    })),
+  }
+}
 
 /**
  * Create [[DidDocument]] of a light DID using the provided keys and endpoints.
@@ -62,7 +208,7 @@ export function createLightDidDocument({
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   const uri =
-    `${KILT_DID_PREFIX}light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
+    `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
 
   const did: DidDocument = {
     uri,
@@ -113,7 +259,7 @@ export function parseDocumentFromLightDid(
     fragment,
     type,
     authKeyTypeEncoding,
-  } = parseDidUri(uri)
+  } = parse(uri)
 
   if (type !== 'light') {
     throw new SDKErrors.DidError(

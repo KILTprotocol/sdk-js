@@ -16,7 +16,6 @@ import type {
   KiltKeyringPair,
   NewDidEncryptionKey,
   SignCallback,
-  SigningAlgorithms,
 } from '@kiltprotocol/types'
 
 const { kilt } = window
@@ -52,7 +51,8 @@ function makeSignCallback(
     }
   }
 }
-type StoreDidCallback = Parameters<typeof Did.Chain.getStoreTx>['2']
+
+type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   return async function sign({ data }) {
@@ -66,18 +66,12 @@ function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
 
 function makeSigningKeypair(
   seed: string,
-  alg: SigningAlgorithms = 'sr25519'
+  type: KiltKeyringPair['type'] = 'sr25519'
 ): {
   keypair: KiltKeyringPair
   getSignCallback: (didDocument: DidDocument) => SignCallback
   storeDidCallback: StoreDidCallback
 } {
-  const keypairTypeForAlg: Record<SigningAlgorithms, KiltKeyringPair['type']> = {
-    ed25519: 'ed25519',
-    sr25519: 'sr25519',
-    'ecdsa-secp256k1': 'ecdsa',
-  }
-  const type = keypairTypeForAlg[alg]
   const keypair = Crypto.makeKeypairFromUri(seed, type)
   const getSignCallback = makeSignCallback(keypair)
   const storeDidCallback = makeStoreDidCallback(keypair)
@@ -150,7 +144,7 @@ async function createFullDidFromKeypair(
 ) {
   const sign = makeStoreDidCallback(keypair)
 
-  const storeTx = await Did.Chain.getStoreTx(
+  const storeTx = await Did.getStoreTx(
     {
       authentication: [keypair],
       assertionMethod: [keypair],
@@ -162,7 +156,7 @@ async function createFullDidFromKeypair(
   )
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
-  const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
+  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
   if (!fullDid) throw new Error('Cannot query created DID')
   return fullDid
 }
@@ -229,14 +223,14 @@ async function runAll() {
     'ed25519'
   )
 
-  const didStoreTx = await Did.Chain.getStoreTx(
+  const didStoreTx = await Did.getStoreTx(
     { authentication: [keypair] },
     payer.address,
     storeDidCallback
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
-  const fullDid = await Did.query(Did.Utils.getFullDidUriFromKey(keypair))
+  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
   if (!fullDid) throw new Error('Could not fetch created DID document')
 
   const resolved = await Did.resolve(fullDid.uri)

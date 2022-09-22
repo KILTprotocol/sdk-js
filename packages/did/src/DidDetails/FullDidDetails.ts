@@ -23,17 +23,12 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import {
-  didFromChain,
-  didToChain,
+  documentFromChain,
   generateDidAuthenticatedTx,
   servicesFromChain,
+  toChain,
 } from '../Did.chain.js'
-import { parseDidUri } from '../Did.utils.js'
-
-import {
-  getKeyRelationshipForExtrinsic,
-  increaseNonce,
-} from './FullDidDetails.utils.js'
+import { parse } from '../Did.utils.js'
 
 /**
  * Fetches [[DidDocument]] from the blockchain. [[resolve]] provides more detailed output.
@@ -44,7 +39,7 @@ import {
  * @returns The fetched [[DidDocument]], or null if DID does not exist.
  */
 export async function query(didUri: DidUri): Promise<DidDocument | null> {
-  const { fragment, type } = parseDidUri(didUri)
+  const { fragment, type } = parse(didUri)
   if (fragment) {
     throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)
   }
@@ -55,9 +50,9 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
   }
 
   const api = ConfigService.get('api')
-  const encoded = await api.query.did.did(didToChain(didUri))
+  const encoded = await api.query.did.did(toChain(didUri))
   if (encoded.isNone) return null
-  const didRec = didFromChain(encoded)
+  const didRec = documentFromChain(encoded)
 
   const did: DidDocument = {
     uri: didUri,
@@ -68,13 +63,70 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
   }
 
   const service = servicesFromChain(
-    await api.query.did.serviceEndpoints.entries(didToChain(didUri))
+    await api.query.did.serviceEndpoints.entries(toChain(didUri))
   )
   if (service.length > 0) {
     did.service = service
   }
 
   return did
+}
+
+// Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
+// in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
+// TODO: Should have an RPC or something similar to avoid inconsistencies in the future.
+const methodMapping: Record<string, VerificationKeyRelationship | undefined> = {
+  attestation: 'assertionMethod',
+  ctype: 'assertionMethod',
+  delegation: 'capabilityDelegation',
+  did: 'authentication',
+  'did.create': undefined,
+  'did.reclaimDeposit': undefined,
+  'did.submitDidCall': undefined,
+  didLookup: 'authentication',
+  web3Names: 'authentication',
+}
+
+function getKeyRelationshipForMethod(
+  call: Extrinsic['method']
+): VerificationKeyRelationship | undefined {
+  const { section, method } = call
+
+  // get the VerificationKeyRelationship of a batched call
+  if (
+    section === 'utility' &&
+    ['batch', 'batchAll', 'forceBatch'].includes(method) &&
+    call.args[0].toRawType() === 'Vec<Call>'
+  ) {
+    // map all calls to their VerificationKeyRelationship and deduplicate the items
+    return (call.args[0] as unknown as Array<Extrinsic['method']>)
+      .map(getKeyRelationshipForMethod)
+      .reduce((prev, value) => (prev === value ? prev : undefined))
+  }
+
+  const signature = `${section}.${method}`
+  if (signature in methodMapping) {
+    return methodMapping[signature]
+  }
+
+  return methodMapping[section]
+}
+
+export function getKeyRelationshipForExtrinsic(
+  extrinsic: Extrinsic
+): VerificationKeyRelationship | undefined {
+  return getKeyRelationshipForMethod(extrinsic.method)
+}
+
+// Max nonce value is (2^64) - 1
+const maxNonceValue = new BN(2).pow(new BN(64)).subn(1)
+
+function increaseNonce(currentNonce: BN, increment = 1): BN {
+  // Wrap around the max u64 value when reached.
+  // FIXME: can we do better than this? Maybe we could expose an RPC function for this, to keep it consistent over time.
+  return currentNonce.eq(maxNonceValue)
+    ? new BN(increment)
+    : currentNonce.addn(increment)
 }
 
 /**
@@ -101,11 +153,11 @@ export function getKeysForExtrinsic(
  * @param did The DID data.
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
-export async function getNextNonce(did: DidUri): Promise<BN> {
+async function getNextNonce(did: DidUri): Promise<BN> {
   const api = ConfigService.get('api')
-  const queried = await api.query.did.did(didToChain(did))
+  const queried = await api.query.did.did(toChain(did))
   const currentNonce = queried.isSome
-    ? didFromChain(queried).lastTxCounter
+    ? documentFromChain(queried).lastTxCounter
     : new BN(0)
   return increaseNonce(currentNonce)
 }
@@ -132,7 +184,7 @@ export async function authorizeExtrinsic(
     txCounter?: BN
   } = {}
 ): Promise<SubmittableExtrinsic> {
-  if (parseDidUri(did).type === 'light') {
+  if (parse(did).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
@@ -227,7 +279,7 @@ export async function authorizeBatch({
     )
   }
 
-  if (parseDidUri(did).type === 'light') {
+  if (parse(did).type === 'light') {
     throw new SDKErrors.DidError(
       `An extrinsic can only be authorized with a full DID, not with "${did}"`
     )
