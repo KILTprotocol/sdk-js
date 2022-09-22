@@ -33,7 +33,6 @@ module.exports = {
     '!**/*.chain.ts',
     '!did/src/Did.chain.ts',
     '!did/src/Did.utils.ts',
-    '!did/src/DidDetails/LightDidDetails.utils.ts',
     '!utils/src/jsonabc.ts',
   ],
   resolver: "ts-jest-resolver",
