@@ -153,7 +153,7 @@ export function getKeysForExtrinsic(
  * @param did The DID data.
  * @returns The next valid nonce, i.e., the nonce currently stored on the blockchain + 1, wrapping around the max value when reached.
  */
-export async function getNextNonce(did: DidUri): Promise<BN> {
+async function getNextNonce(did: DidUri): Promise<BN> {
   const api = ConfigService.get('api')
   const queried = await api.query.did.did(toChain(did))
   const currentNonce = queried.isSome
