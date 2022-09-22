@@ -40,7 +40,7 @@ type OldDidSignature = Pick<DidSignature, 'signature'> & {
  *
  * @param input Arbitrary input.
  */
-export function verifyDidSignatureDataStructure(
+function verifyDidSignatureDataStructure(
   input: DidSignature | OldDidSignature
 ): void {
   const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
