@@ -26,8 +26,6 @@ const LIGHT_DID_LATEST_VERSION = 1
 // The latest version for KILT full DIDs.
 const FULL_DID_LATEST_VERSION = 1
 
-export const KILT_DID_PREFIX = 'did:kilt:'
-
 // NOTICE: The following regex patterns must be kept in sync with DidUri type in @kiltprotocol/types
 
 // Matches the following full DIDs
@@ -253,7 +251,7 @@ export function getFullDidUri(
     ? didOrAddress
     : parse(didOrAddress as DidUri).address
   const versionString = version === 1 ? '' : `v${version}`
-  return `${KILT_DID_PREFIX}${versionString}${address}` as DidUri
+  return `did:kilt:${versionString}${address}` as DidUri
 }
 
 /**

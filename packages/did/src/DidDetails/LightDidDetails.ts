@@ -24,7 +24,7 @@ import { encryptionKeyTypes } from '@kiltprotocol/types'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-import { getAddressByKey, KILT_DID_PREFIX, parse } from '../Did.utils.js'
+import { getAddressByKey, parse } from '../Did.utils.js'
 import { resourceIdToChain, validateService } from '../Did.chain.js'
 
 const authenticationKeyId = '#authentication'
@@ -208,7 +208,7 @@ export function createLightDidDocument({
 
   const encodedDetailsString = encodedDetails ? `:${encodedDetails}` : ''
   const uri =
-    `${KILT_DID_PREFIX}light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
+    `did:kilt:light:${authenticationKeyTypeEncoding}${address}${encodedDetailsString}` as DidUri
 
   const did: DidDocument = {
     uri,
