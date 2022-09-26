@@ -34,7 +34,13 @@ export async function resolve(
   const { type } = parse(did)
   const api = ConfigService.get('api')
 
-  const document = await Did.query(getFullDidUri(did))
+  let document: DidDocument | undefined
+  try {
+    document = await Did.query(getFullDidUri(did))
+  } catch {
+    // ignore errors
+  }
+
   if (type === 'full' && document) {
     return {
       document,

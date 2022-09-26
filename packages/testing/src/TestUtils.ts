@@ -315,9 +315,7 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const fullDid = await Did.query(Did.getFullDidUri(uri))
-  if (!fullDid) throw new Error('Could not fetch created DID document')
-  return fullDid
+  return Did.query(Did.getFullDidUri(uri))
 }
 
 export async function createFullDidFromSeed(

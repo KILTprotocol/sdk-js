@@ -135,8 +135,6 @@ describe('When creating an instance from the chain', () => {
     const fullDid = await Did.query(existingDid)
 
     expect(fullDid).not.toBeNull()
-    if (!fullDid) throw new Error('Cannot load created DID')
-
     expect(fullDid).toEqual(<DidDocument>{
       uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
       authentication: [
@@ -197,8 +195,7 @@ describe('When creating an instance from the chain', () => {
       ApiMocks.mockChainQueryReturn('did', 'did')
     )
 
-    const fullDid = await Did.query(nonExistingDid)
-    expect(fullDid).toBeNull()
+    await expect(Did.query(nonExistingDid)).rejects.toThrow()
   })
 
   describe('authorizeBatch', () => {
