@@ -7,7 +7,6 @@
 
 import type {
   DecryptCallback,
-  DidDocument,
   DidResolveKey,
   DidResourceUri,
   EncryptCallback,
@@ -18,7 +17,6 @@ import type {
   IMessage,
   MessageBody,
 } from '@kiltprotocol/types'
-import { encryptionKeyTypes } from '@kiltprotocol/types'
 import {
   Attestation,
   Claim,
@@ -292,7 +290,6 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
  *
  * @param encrypted The encrypted message.
  * @param decryptCallback The callback to decrypt with the secret key.
- * @param receiverDid The DID of the receiver.
  * @param decryptionOptions Options to perform the decryption operation.
  * @param decryptionOptions.resolveKey The DID key resolver to use.
  * @returns The original [[Message]].
@@ -300,7 +297,6 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
 export async function decrypt(
   encrypted: IEncryptedMessage,
   decryptCallback: DecryptCallback,
-  receiverDid: DidDocument,
   {
     resolveKey = Did.resolveKey,
   }: {
@@ -320,20 +316,6 @@ export async function decrypt(
   if (!fragment) {
     throw new SDKErrors.DidError(
       `No fragment for the receiver key ID "${receiverKeyUri}"`
-    )
-  }
-  const receiverKeyDetails = Did.getKey(receiverDid, fragment)
-  if (
-    !receiverKeyDetails ||
-    !encryptionKeyTypes.includes(receiverKeyDetails.type)
-  ) {
-    throw new SDKErrors.DidError(
-      `Could not resolve receiver encryption key "${receiverKeyUri}"`
-    )
-  }
-  if (receiverKeyDetails.type !== 'x25519') {
-    throw new SDKErrors.EncryptionError(
-      'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
     )
   }
 

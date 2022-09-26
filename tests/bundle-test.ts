@@ -332,8 +332,7 @@ async function runAll() {
 
   const decryptedMessage = await Message.decrypt(
     encryptedMessage,
-    aliceDecryptCallback,
-    alice
+    aliceDecryptCallback
   )
   if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
     throw new Error('Original and decrypted message are not the same')
