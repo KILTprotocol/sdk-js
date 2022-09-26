@@ -12,12 +12,6 @@ import type {
   VerificationKeyRelationship,
 } from './DidDocument.js'
 
-const signingAlgorithmsC = ['ed25519', 'sr25519', 'ecdsa-secp256k1'] as const
-export const signingAlgorithms = signingAlgorithmsC as unknown as string[]
-export type SigningAlgorithms = typeof signingAlgorithmsC[number]
-
-export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
-
 /**
  * Base interface for all signing requests.
  */

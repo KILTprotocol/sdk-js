@@ -125,7 +125,7 @@ describe('Messaging', () => {
   async function resolveKey(
     keyUri: DidResourceUri
   ): Promise<ResolvedDidKey | null> {
-    const { fragment, did } = Did.Utils.parseDidUri(keyUri)
+    const { fragment, did } = Did.parse(keyUri)
     const { document } = (await didResolve(
       did as DidUri
     )) as DidResolutionResult
@@ -807,7 +807,7 @@ describe('Error checking / Verification', () => {
     async function didResolve(
       didUri: DidUri
     ): Promise<DidResolutionResult | null> {
-      const { did } = Did.Utils.parseDidUri(didUri)
+      const { did } = Did.parse(didUri)
       if (did === identityAlice.uri) {
         return {
           metadata: {

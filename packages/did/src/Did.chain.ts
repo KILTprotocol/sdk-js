@@ -8,6 +8,8 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
+import type { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
+import type { Bytes } from '@polkadot/types-codec'
 import { BN, hexToU8a } from '@polkadot/util'
 
 import type {
@@ -42,15 +44,13 @@ import type {
 } from '@kiltprotocol/augment-api'
 
 import {
-  checkServiceEndpointSyntax,
   EncodedEncryptionKey,
   EncodedKey,
   EncodedSignature,
   EncodedVerificationKey,
   getAddressByKey,
   getFullDidUri,
-  parseDidUri,
-  stripFragment,
+  parse,
 } from './Did.utils.js'
 
 // ### Chain type definitions
@@ -60,12 +60,12 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 // ### RAW QUERYING (lowest layer)
 
-export function didToChain(did: DidUri): KiltAddress {
-  return parseDidUri(did).address
+export function toChain(did: DidUri): KiltAddress {
+  return parse(did).address
 }
 
 export function resourceIdToChain(id: UriFragment): string {
-  return stripFragment(id)
+  return id.replace(/^#/, '')
 }
 
 export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
@@ -77,7 +77,7 @@ export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
 
 // ### DECODED QUERYING types
 
-export type EncodedDid = Pick<
+type ChainDocument = Pick<
   DidDocument,
   'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
 > & {
@@ -101,11 +101,13 @@ function didPublicKeyDetailsFromChain(
   }
 }
 
-export function uriFromChain(encoded: AccountId32): DidUri {
+export function fromChain(encoded: AccountId32): DidUri {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
-export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
+export function documentFromChain(
+  encoded: Option<DidDidDetails>
+): ChainDocument {
   const {
     publicKeys,
     authenticationKey,
@@ -127,7 +129,7 @@ export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
 
   const authentication = keys[authenticationKey.toHex()] as DidVerificationKey
 
-  const didRecord: EncodedDid = {
+  const didRecord: ChainDocument = {
     authentication: [authentication],
     lastTxCounter: lastTxCounter.toBn(),
     deposit: depositFromChain(deposit),
@@ -153,16 +155,73 @@ export function didFromChain(encoded: Option<DidDidDetails>): EncodedDid {
   return didRecord
 }
 
-interface BlockchainEndpoint {
+interface ChainEndpoint {
   id: string
   serviceTypes: DidServiceEndpoint['type']
   urls: DidServiceEndpoint['serviceEndpoint']
 }
 
-export function serviceToChain(
-  endpoint: DidServiceEndpoint
-): BlockchainEndpoint {
-  checkServiceEndpointSyntax(endpoint)
+/**
+ * Checks if a string is a valid URI according to RFC#3986.
+ *
+ * @param str String to be checked.
+ * @returns Whether `str` is a valid URI.
+ */
+function isUri(str: string): boolean {
+  try {
+    const url = new URL(str) // this actually accepts any URI but throws if it can't be parsed
+    return url.href === str || encodeURI(decodeURI(str)) === str // make sure our URI has not been converted implicitly by URL
+  } catch {
+    return false
+  }
+}
+
+const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
+
+/**
+ * Checks if a string is a valid URI fragment according to RFC#3986.
+ *
+ * @param str String to be checked.
+ * @returns Whether `str` is a valid URI fragment.
+ */
+function isUriFragment(str: string): boolean {
+  try {
+    return UriFragmentRegex.test(str) && !!decodeURIComponent(str)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
+ *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
+ *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
+ *
+ * @param endpoint A service endpoint object to check.
+ */
+export function validateService(endpoint: DidServiceEndpoint): void {
+  const { id, serviceEndpoint } = endpoint
+  if (id.startsWith('did:kilt')) {
+    throw new SDKErrors.DidError(
+      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
+    )
+  }
+  if (!isUriFragment(resourceIdToChain(id))) {
+    throw new SDKErrors.DidError(
+      `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
+    )
+  }
+  serviceEndpoint.forEach((uri) => {
+    if (!isUri(uri)) {
+      throw new SDKErrors.DidError(
+        `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
+      )
+    }
+  })
+}
+
+export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
+  validateService(endpoint)
   const { id, type, serviceEndpoint } = endpoint
   return {
     id: resourceIdToChain(id),
@@ -377,7 +436,7 @@ export async function generateDidAuthenticatedTx({
       api.tx.did.submitDidCall.meta.args[0].type.toString(),
       {
         txCounter,
-        did: didToChain(did),
+        did: toChain(did),
         call,
         submitter,
         blockNumber: blockNumber ?? (await api.query.system.number()),
@@ -413,4 +472,40 @@ export function didSignatureToChain(
   }
 
   return { [key.type]: hexToU8a(signature.signature) } as EncodedSignature
+}
+
+/**
+ * Web3Name is the type of nickname for a DID.
+ */
+export type Web3Name = string
+
+/**
+ * Decodes the web3name of a DID.
+ *
+ * @param encoded The value returned by `api.query.web3Names.names()`.
+ * @returns The registered web3name for this DID if any.
+ */
+export function web3NameFromChain(encoded: Option<Bytes>): Web3Name {
+  return encoded.unwrap().toUtf8()
+}
+
+/**
+ * Decodes the DID of the owner of web3name.
+ *
+ * @param encoded The value returned by `api.query.web3Names.owner()`.
+ * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
+ */
+export function web3NameOwnerFromChain(
+  encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
+): {
+  owner: DidUri
+  deposit: Deposit
+  claimedAt: BN
+} {
+  const { owner, deposit, claimedAt } = encoded.unwrap()
+  return {
+    owner: fromChain(owner),
+    deposit: depositFromChain(deposit),
+    claimedAt: claimedAt.toBn(),
+  }
 }

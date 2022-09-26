@@ -9,25 +9,18 @@ import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto'
 
 import {
   DidResourceUri,
-  DidServiceEndpoint,
   DidUri,
   DidVerificationKey,
-  EncryptionAlgorithms,
-  EncryptionKeyType,
-  SigningAlgorithms,
-  UriFragment,
-  VerificationKeyType,
   KiltAddress,
+  UriFragment,
 } from '@kiltprotocol/types'
-import { SDKErrors, ss58Format, DataUtils } from '@kiltprotocol/utils'
+import { DataUtils, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 
-/// The latest version for KILT light DIDs.
-export const LIGHT_DID_LATEST_VERSION = 1
+// The latest version for KILT light DIDs.
+const LIGHT_DID_LATEST_VERSION = 1
 
-/// The latest version for KILT full DIDs.
-export const FULL_DID_LATEST_VERSION = 1
-
-export const KILT_DID_PREFIX = 'did:kilt:'
+// The latest version for KILT full DIDs.
+const FULL_DID_LATEST_VERSION = 1
 
 // NOTICE: The following regex patterns must be kept in sync with DidUri type in @kiltprotocol/types
 
@@ -45,7 +38,7 @@ const FULL_KILT_DID_REGEX =
 const LIGHT_KILT_DID_REGEX =
   /^did:kilt:light:(?<authKeyType>[0-9]{2})(?<address>4[1-9a-km-zA-HJ-NP-Z]{47,48})(:(?<encodedDetails>.+?))?(?<fragment>#[^#\n]+)?$/
 
-export type IDidParsingResult = {
+type IDidParsingResult = {
   did: DidUri
   version: number
   type: 'light' | 'full'
@@ -61,9 +54,7 @@ export type IDidParsingResult = {
  * @param didUri A KILT DID uri as a string.
  * @returns Object containing information extracted from the DID uri.
  */
-export function parseDidUri(
-  didUri: DidUri | DidResourceUri
-): IDidParsingResult {
+export function parse(didUri: DidUri | DidResourceUri): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUri)?.groups
   if (matches) {
     const { version: versionString, fragment } = matches
@@ -115,38 +106,8 @@ export function parseDidUri(
  * @returns Whether didA and didB refer to the same DID subject.
  */
 export function isSameSubject(didA: DidUri, didB: DidUri): boolean {
-  return parseDidUri(didA).address === parseDidUri(didB).address
+  return parse(didA).address === parse(didB).address
 }
-
-export const signatureAlgForKeyType: Record<
-  VerificationKeyType,
-  SigningAlgorithms
-> = Object.freeze({
-  ed25519: 'ed25519',
-  sr25519: 'sr25519',
-  ecdsa: 'ecdsa-secp256k1',
-})
-
-export const keyTypeForSignatureAlg = Object.freeze(
-  Object.entries(signatureAlgForKeyType).reduce(
-    (obj, [key, value]) => ({ ...obj, [value]: key }),
-    {}
-  )
-) as Record<SigningAlgorithms, VerificationKeyType>
-
-export const encryptionAlgForKeyType: Record<
-  EncryptionKeyType,
-  EncryptionAlgorithms
-> = Object.freeze({
-  x25519: 'x25519-xsalsa20-poly1305',
-})
-
-export const keyTypeForEncryptionAlg: Record<
-  EncryptionAlgorithms,
-  EncryptionKeyType
-> = Object.freeze({
-  'x25519-xsalsa20-poly1305': 'x25519',
-})
 
 export type EncodedVerificationKey =
   | { sr25519: Uint8Array }
@@ -166,14 +127,14 @@ export type EncodedSignature = EncodedVerificationKey
  * @param input Arbitrary input.
  * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
  */
-export function validateKiltDidUri(
+export function validateUri(
   input: unknown,
   expectType?: 'Did' | 'ResourceUri'
 ): void {
   if (typeof input !== 'string') {
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { address, fragment } = parseDidUri(input as DidUri)
+  const { address, fragment } = parse(input as DidUri)
   switch (expectType) {
     // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
     // @ts-ignore
@@ -195,101 +156,6 @@ export function validateKiltDidUri(
   }
 
   DataUtils.verifyKiltAddress(address)
-}
-
-export function isKiltDidUri(
-  input: unknown,
-  expectType: 'ResourceUri'
-): input is DidResourceUri
-export function isKiltDidUri(input: unknown, expectType: 'Did'): input is DidUri
-export function isKiltDidUri(input: unknown): input is DidUri | DidResourceUri
-
-/**
- * Type guard assuring that a string (or other input) is a valid KILT DID uri with or without a URI fragment.
- *
- * @param input Arbitrary input.
- * @param expectType `ResourceUri` if the URI is expected to have a fragment (following '#'), `Did` if it is expected not to have one. Default allows both.
- * @returns True if validation has passed, false otherwise.
- */
-export function isKiltDidUri(
-  input: unknown,
-  expectType?: 'Did' | 'ResourceUri'
-): input is DidUri | DidResourceUri {
-  try {
-    validateKiltDidUri(input, expectType)
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * Checks if a string is a valid URI according to RFC#3986.
- *
- * @param str String to be checked.
- * @returns Whether `str` is a valid URI.
- */
-export function isUri(str: string): boolean {
-  try {
-    const url = new URL(str) // this actually accepts any URI but throws if it can't be parsed
-    return url.href === str || encodeURI(decodeURI(str)) === str // make sure our URI has not been converted implicitly by URL
-  } catch {
-    return false
-  }
-}
-
-const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
-
-/**
- * Checks if a string is a valid URI fragment according to RFC#3986.
- *
- * @param str String to be checked.
- * @returns Whether `str` is a valid URI fragment.
- */
-export function isUriFragment(str: string): boolean {
-  try {
-    return UriFragmentRegex.test(str) && !!decodeURIComponent(str)
-  } catch {
-    return false
-  }
-}
-
-/**
- * Remove the `#` prefix from the UriFragment string, typically an ID.
- *
- * @param id The input ID to strip.
- * @returns The string without the prefix.
- */
-export function stripFragment(id: UriFragment): string {
-  return id.replace(/^#/, '')
-}
-
-/**
- * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
- *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
- *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
- *
- * @param endpoint A service endpoint object to check.
- */
-export function checkServiceEndpointSyntax(endpoint: DidServiceEndpoint): void {
-  const { id, serviceEndpoint } = endpoint
-  if (id.startsWith('did:kilt')) {
-    throw new SDKErrors.DidError(
-      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
-    )
-  }
-  if (!isUriFragment(stripFragment(id))) {
-    throw new SDKErrors.DidError(
-      `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
-    )
-  }
-  serviceEndpoint.forEach((uri) => {
-    if (!isUri(uri)) {
-      throw new SDKErrors.DidError(
-        `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
-      )
-    }
-  })
 }
 
 export function getAddressByKey({
@@ -323,9 +189,9 @@ export function getFullDidUri(
 ): DidUri {
   const address = DataUtils.isKiltAddress(didOrAddress)
     ? didOrAddress
-    : parseDidUri(didOrAddress as DidUri).address
+    : parse(didOrAddress as DidUri).address
   const versionString = version === 1 ? '' : `v${version}`
-  return `${KILT_DID_PREFIX}${versionString}${address}` as DidUri
+  return `did:kilt:${versionString}${address}` as DidUri
 }
 
 /**

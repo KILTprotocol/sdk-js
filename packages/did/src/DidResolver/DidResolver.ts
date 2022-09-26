@@ -17,12 +17,8 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
-import {
-  didToChain,
-  resourceIdToChain,
-  serviceFromChain,
-} from '../Did.chain.js'
-import { getFullDidUri, parseDidUri } from '../Did.utils.js'
+import { toChain, resourceIdToChain, serviceFromChain } from '../Did.chain.js'
+import { getFullDidUri, parse } from '../Did.utils.js'
 
 /**
  * Resolve a DID URI to the DID document and its metadata.
@@ -35,7 +31,7 @@ import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 export async function resolve(
   did: DidUri
 ): Promise<DidResolutionResult | null> {
-  const { type } = parseDidUri(did)
+  const { type } = parse(did)
   const api = ConfigService.get('api')
 
   const document = await Did.query(getFullDidUri(did))
@@ -50,7 +46,7 @@ export async function resolve(
 
   // If the full DID has been deleted (or the light DID was upgraded and deleted),
   // return the info in the resolution metadata.
-  const isFullDidDeleted = (await api.query.did.didBlacklist(didToChain(did)))
+  const isFullDidDeleted = (await api.query.did.didBlacklist(toChain(did)))
     .isSome
   if (isFullDidDeleted) {
     return {
@@ -128,7 +124,7 @@ export async function strictResolve(
 export async function resolveKey(
   keyUri: DidResourceUri
 ): Promise<ResolvedDidKey | null> {
-  const { did, fragment: keyId } = parseDidUri(keyUri)
+  const { did, fragment: keyId } = parse(keyUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
@@ -174,10 +170,10 @@ export async function resolveKey(
  * @param serviceUri The DID service URI.
  * @returns The details associated with the service endpoint.
  */
-export async function resolveServiceEndpoint(
+export async function resolveService(
   serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint | null> {
-  const { fragment: serviceId, did, type } = parseDidUri(serviceUri)
+  const { fragment: serviceId, did, type } = parse(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
@@ -187,7 +183,7 @@ export async function resolveServiceEndpoint(
 
   if (type === 'full') {
     const encoded = await api.query.did.serviceEndpoints(
-      didToChain(serviceUri),
+      toChain(serviceUri),
       resourceIdToChain(serviceId)
     )
     if (encoded.isNone) {
@@ -218,7 +214,7 @@ export async function resolveServiceEndpoint(
     return null
   }
 
-  const endpoint = Did.getEndpoint(document, serviceId)
+  const endpoint = Did.getService(document, serviceId)
   if (!endpoint) {
     return null
   }
