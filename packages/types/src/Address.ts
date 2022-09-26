@@ -10,6 +10,12 @@ import type { HexString } from '@polkadot/util/types'
 import '@polkadot/keyring' // TS needs this for the augmentation below
 import type { KeyringPair } from './index.js'
 
+export interface KiltEncryptionKeypair {
+  secretKey: Uint8Array
+  publicKey: Uint8Array
+  type: 'x25519'
+}
+
 export interface KiltKeyringPair extends KeyringPair {
   address: `4${string}`
   type: Exclude<KeyringPair['type'], 'ethereum'>

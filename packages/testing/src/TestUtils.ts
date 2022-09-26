@@ -7,16 +7,16 @@
 
 import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
-import {
+import type {
   DecryptCallback,
   DidDocument,
   DidKey,
   DidServiceEndpoint,
   DidVerificationKey,
   EncryptCallback,
-  EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
+  KiltEncryptionKeypair,
   KiltKeyringPair,
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
@@ -40,9 +40,7 @@ export type EncryptionKeyToolCallback = (
  */
 export function makeEncryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-}): EncryptionKeyToolCallback {
+}: KiltEncryptionKeypair): EncryptionKeyToolCallback {
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
       const keyId = didDocument.keyAgreement?.[0].id
@@ -73,10 +71,7 @@ export function makeEncryptCallback({
  */
 export function makeDecryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: 'x25519'
-}): DecryptCallback {
+}: KiltEncryptionKeypair): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
@@ -89,13 +84,7 @@ export function makeDecryptCallback({
 }
 
 export interface EncryptionKeyTool {
-  keyAgreement: [
-    {
-      secretKey: Uint8Array
-      publicKey: Uint8Array
-      type: EncryptionKeyType
-    }
-  ]
+  keyAgreement: [KiltEncryptionKeypair]
   encrypt: EncryptionKeyToolCallback
   decrypt: DecryptCallback
 }

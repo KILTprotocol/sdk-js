@@ -15,7 +15,7 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import type {
-  EncryptionKeyType,
+  KiltEncryptionKeypair,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
@@ -365,11 +365,9 @@ export function makeKeypairFromUri<
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
 }
 
-export function makeEncryptionKeyFromSeed(seed = randomAsU8a(32)): {
-  secretKey: Uint8Array
-  publicKey: Uint8Array
-  type: EncryptionKeyType
-} {
+export function makeEncryptionKeyFromSeed(
+  seed = randomAsU8a(32)
+): KiltEncryptionKeypair {
   return {
     ...naclBoxPairFromSecret(seed),
     type: 'x25519',
