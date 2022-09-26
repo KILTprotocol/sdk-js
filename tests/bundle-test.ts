@@ -11,8 +11,8 @@ import type {
   DecryptCallback,
   DidDocument,
   EncryptCallback,
-  EncryptionKeyType,
   KeyringPair,
+  KiltEncryptionKeypair,
   KiltKeyringPair,
   NewDidEncryptionKey,
   SignCallback,
@@ -83,11 +83,7 @@ function makeSigningKeypair(
   }
 }
 
-function makeEncryptionKeypair(seed: string): {
-  secretKey: Uint8Array
-  publicKey: Uint8Array
-  type: EncryptionKeyType
-} {
+function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
   const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
     Crypto.hash(seed, 256)
   )
@@ -100,10 +96,7 @@ function makeEncryptionKeypair(seed: string): {
 
 function makeEncryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): (didDocument: DidDocument) => EncryptCallback {
+}: KiltEncryptionKeypair): (didDocument: DidDocument) => EncryptCallback {
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
       const keyId = didDocument.keyAgreement?.[0].id
@@ -122,10 +115,7 @@ function makeEncryptCallback({
 
 function makeDecryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): DecryptCallback {
+}: KiltEncryptionKeypair): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
