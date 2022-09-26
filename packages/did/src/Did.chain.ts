@@ -397,7 +397,7 @@ export async function getStoreTx(
     keyRelationship: 'authentication',
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
@@ -448,7 +448,7 @@ export async function generateDidAuthenticatedTx({
     did,
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }

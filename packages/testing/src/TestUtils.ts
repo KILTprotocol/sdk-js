@@ -140,7 +140,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
       const signature = keypair.sign(data, { withType: false })
 
       return {
-        data: signature,
+        signature,
         keyUri: `${didDocument.uri}${keyId}`,
         keyType,
       }
@@ -161,7 +161,7 @@ export function makeStoreDidCallback(
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
-      data: signature,
+      signature,
       keyType: keypair.type,
     }
   }

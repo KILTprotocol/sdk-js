@@ -39,7 +39,7 @@ export interface SignResponseData {
   /**
    * Result of the signing.
    */
-  data: Uint8Array
+  signature: Uint8Array
   /**
    * The did key uri used for signing.
    */
