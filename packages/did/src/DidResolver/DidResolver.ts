@@ -129,7 +129,7 @@ export async function strictResolve(
  */
 export async function resolveKey(
   keyUri: DidResourceUri
-): Promise<ResolvedDidKey | null> {
+): Promise<ResolvedDidKey> {
   const { did, fragment: keyId } = parse(keyUri)
 
   // A fragment (keyId) IS expected to resolve a key.
@@ -139,7 +139,7 @@ export async function resolveKey(
 
   const resolved = await resolve(did)
   if (!resolved) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const {
@@ -149,15 +149,15 @@ export async function resolveKey(
 
   // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
   if (!document) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const key = Did.getKey(document, keyId)
   if (!key) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const { includedAt } = key

@@ -164,12 +164,12 @@ describe('When resolving a key', () => {
   it('returns null if either the DID or the key do not exist', async () => {
     let keyIdUri: DidResourceUri = `${deletedDid}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
 
     const didWithNoEncryptionKey = didWithAuthenticationKey
     keyIdUri = `${didWithNoEncryptionKey}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
