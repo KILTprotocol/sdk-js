@@ -24,7 +24,7 @@ import type {
   KiltAddress,
   NewDidEncryptionKey,
   NewDidVerificationKey,
-  SignCallback,
+  SignExtrinsicCallback,
   SignRequestData,
   SignResponseData,
   SubmittableExtrinsic,
@@ -292,7 +292,7 @@ interface GetStoreTxInput {
   service?: DidServiceEndpoint[]
 }
 
-type GetStoreTxSignCallback = (
+export type GetStoreTxSignCallback = (
   signData: Omit<SignRequestData, 'did'>
 ) => Promise<Omit<SignResponseData, 'keyUri'>>
 
@@ -397,13 +397,13 @@ export async function getStoreTx(
     keyRelationship: 'authentication',
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
 
 export interface SigningOptions {
-  sign: SignCallback
+  sign: SignExtrinsicCallback
   keyRelationship: VerificationKeyRelationship
 }
 
@@ -448,7 +448,7 @@ export async function generateDidAuthenticatedTx({
     did,
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
