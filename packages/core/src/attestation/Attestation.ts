@@ -87,9 +87,9 @@ export function fromCredentialAndDid(
  */
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation
-): Promise<IDelegationHierarchyDetails | null> {
+): Promise<IDelegationHierarchyDetails> {
   if (input === null) {
-    return null
+    throw new SDKErrors.HierarchyQueryError('null')
   }
 
   let delegationId: IAttestation['delegationId']
@@ -101,13 +101,10 @@ export async function getDelegationDetails(
   }
 
   if (!delegationId) {
-    return null
+    throw new SDKErrors.HierarchyQueryError('null')
   }
 
   const delegationNode = await DelegationNode.query(delegationId)
-  if (!delegationNode) {
-    return null
-  }
   return delegationNode.getHierarchyDetails()
 }
 
