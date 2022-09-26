@@ -178,7 +178,7 @@ export async function resolveKey(
  */
 export async function resolveService(
   serviceUri: DidResourceUri
-): Promise<ResolvedDidServiceEndpoint | null> {
+): Promise<ResolvedDidServiceEndpoint> {
   const { fragment: serviceId, did, type } = parse(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
@@ -193,7 +193,7 @@ export async function resolveService(
       resourceIdToChain(serviceId)
     )
     if (encoded.isNone) {
-      return null
+      throw new SDKErrors.DidNotFoundError()
     }
     const serviceEndpoint = serviceFromChain(encoded)
     return {
@@ -204,7 +204,7 @@ export async function resolveService(
 
   const resolved = await resolve(did)
   if (!resolved) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const {
@@ -214,15 +214,15 @@ export async function resolveService(
 
   // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
   if (!document) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const endpoint = Did.getService(document, serviceId)
   if (!endpoint) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   return {

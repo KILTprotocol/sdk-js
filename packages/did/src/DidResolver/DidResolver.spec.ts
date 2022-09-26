@@ -207,12 +207,12 @@ describe('When resolving a service endpoint', () => {
 
     let serviceIdUri: DidResourceUri = `${deletedDid}#service-1`
 
-    expect(await resolveService(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
 
     const didWithNoServiceEndpoints = didWithAuthenticationKey
     serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
 
-    expect(await resolveService(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
