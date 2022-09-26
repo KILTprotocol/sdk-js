@@ -173,15 +173,6 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Fetches the parent node of this delegation node.
-   *
-   * @returns Promise containing the parent as [[DelegationNode]] or [null].
-   */
-  public async getParent(): Promise<DelegationNode | null> {
-    return this.parentId ? query(this.parentId) : null
-  }
-
-  /**
    * Fetches the children nodes of this delegation node.
    *
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
@@ -348,15 +339,22 @@ export class DelegationNode implements IDelegationNode {
         node: this,
       }
     }
-    const parent = await this.getParent()
-    if (parent) {
+    if (!this.parentId) {
+      return {
+        steps: 0,
+        node: null,
+      }
+    }
+    try {
+      const parent = await query(this.parentId)
       const result = await parent.findAncestorOwnedBy(did)
       result.steps += 1
       return result
-    }
-    return {
-      steps: 0,
-      node: null,
+    } catch {
+      return {
+        steps: 0,
+        node: null,
+      }
     }
   }
 
