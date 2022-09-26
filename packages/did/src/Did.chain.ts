@@ -292,7 +292,7 @@ interface GetStoreTxInput {
   service?: DidServiceEndpoint[]
 }
 
-type GetStoreTxSignCallback = (
+export type GetStoreTxSignCallback = (
   signData: Omit<SignRequestData, 'did'>
 ) => Promise<Omit<SignResponseData, 'keyUri'>>
 
