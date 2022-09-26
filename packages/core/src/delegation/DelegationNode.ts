@@ -167,12 +167,7 @@ export class DelegationNode implements IDelegationNode {
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
-      const hierarchyDetails = await queryDetails(this.hierarchyId)
-      if (!hierarchyDetails) {
-        throw new SDKErrors.HierarchyQueryError(this.hierarchyId)
-      }
-      this.hierarchyDetails = hierarchyDetails
-      return hierarchyDetails
+      this.hierarchyDetails = await queryDetails(this.hierarchyId)
     }
     return this.hierarchyDetails
   }

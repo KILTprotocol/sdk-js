@@ -10,6 +10,7 @@ import type {
   IDelegationNode,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import { delegationHierarchyDetailsFromChain } from './DelegationDecoder.js'
 
@@ -21,16 +22,14 @@ import { delegationHierarchyDetailsFromChain } from './DelegationDecoder.js'
  */
 export async function query(
   rootId: IDelegationNode['id']
-): Promise<IDelegationHierarchyDetails | null> {
+): Promise<IDelegationHierarchyDetails> {
   const api = ConfigService.get('api')
-  const decoded = delegationHierarchyDetailsFromChain(
-    await api.query.delegation.delegationHierarchies(rootId)
-  )
-  if (!decoded) {
-    return null
+  const chain = await api.query.delegation.delegationHierarchies(rootId)
+  if (chain.isNone) {
+    throw new SDKErrors.HierarchyQueryError(rootId)
   }
   return {
-    ...decoded,
+    ...delegationHierarchyDetailsFromChain(chain),
     id: rootId,
   }
 }
