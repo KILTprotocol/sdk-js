@@ -426,14 +426,14 @@ describe('Deposit claiming', () => {
     // Test removal success with the right account.
     await submitExtrinsic(depositClaimTx, paymentAccount)
 
-    expect(await DelegationNode.query(delegatedNode.id)).toBeNull()
-    expect(await DelegationNode.query(subDelegatedNode.id)).toBeNull()
+    await expect(DelegationNode.query(delegatedNode.id)).rejects.toThrow()
+    await expect(DelegationNode.query(subDelegatedNode.id)).rejects.toThrow()
   }, 80_000)
 })
 
 describe('handling queries to data not on chain', () => {
   it('DelegationNode query on empty', async () => {
-    expect(await DelegationNode.query(randomAsHex(32))).toBeNull()
+    await expect(DelegationNode.query(randomAsHex(32))).rejects.toThrow()
   })
 
   it('getAttestationHashes on empty', async () => {

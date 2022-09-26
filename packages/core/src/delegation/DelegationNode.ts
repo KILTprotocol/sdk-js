@@ -192,10 +192,11 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
-    const refreshedNodeDetails = await query(this.id)
-    // Updates the children info with the latest information available on chain.
-    if (refreshedNodeDetails) {
-      this.childrenIdentifiers = refreshedNodeDetails.childrenIds
+    try {
+      // Updates the children info with the latest information available on chain.
+      this.childrenIdentifiers = (await query(this.id)).childrenIds
+    } catch {
+      // ignore missing
     }
     return getChildren(this)
   }
@@ -293,11 +294,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
   public async getLatestState(): Promise<DelegationNode> {
-    const newNodeState = await query(this.id)
-    if (!newNodeState) {
-      throw new SDKErrors.DelegationIdMissingError()
-    }
-    return newNodeState
+    return query(this.id)
   }
 
   /**
@@ -335,10 +332,8 @@ export class DelegationNode implements IDelegationNode {
    */
   public async verify(): Promise<void> {
     const node = await query(this.id)
-    if (!node || node.revoked !== false) {
-      throw new SDKErrors.InvalidDelegationNodeError(
-        'Delegation node not found or revoked'
-      )
+    if (node.revoked !== false) {
+      throw new SDKErrors.InvalidDelegationNodeError('Delegation node revoked')
     }
   }
 
@@ -446,7 +441,7 @@ export class DelegationNode implements IDelegationNode {
    */
   public static async query(
     delegationId: IDelegationNode['id']
-  ): Promise<DelegationNode | null> {
+  ): Promise<DelegationNode> {
     log.info(`:: query('${delegationId}')`)
     const result = await query(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)

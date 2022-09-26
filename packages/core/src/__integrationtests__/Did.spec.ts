@@ -1145,7 +1145,7 @@ describe('DID extrinsics batching', () => {
 
     // Test correct use of delegation keys
     const node = await DelegationNode.query(rootNode.id)
-    expect(node?.revoked).toBe(true)
+    expect(node.revoked).toBe(true)
   })
 })
 

@@ -588,19 +588,14 @@ describe('DelegationHierarchy', () => {
     await rootDelegation.getStoreTx()
 
     const rootNode = await DelegationNode.query(ROOT_IDENTIFIER)
-    if (rootNode) {
-      expect(rootNode.id).toBe(ROOT_IDENTIFIER)
-    }
+    expect(rootNode.id).toBe(ROOT_IDENTIFIER)
   })
 
   it('query root delegation', async () => {
     const queriedDelegation = await DelegationNode.query(ROOT_IDENTIFIER)
-    expect(queriedDelegation).not.toBe(undefined)
-    if (queriedDelegation) {
-      expect(queriedDelegation.account).toBe(didAlice)
-      expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)
-      expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
-    }
+    expect(queriedDelegation.account).toBe(didAlice)
+    expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)
+    expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
   })
 
   it('root delegation verify', async () => {
@@ -614,7 +609,7 @@ describe('DelegationHierarchy', () => {
     })
     await aDelegationRootNode.getRevokeTx(didAlice)
     const node = await DelegationNode.query(ROOT_IDENTIFIER)
-    const fetchedNodeRevocationStatus = node?.revoked
+    const fetchedNodeRevocationStatus = node.revoked
     expect(fetchedNodeRevocationStatus).toEqual(true)
   })
 

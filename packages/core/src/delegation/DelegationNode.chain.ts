@@ -53,16 +53,14 @@ export function addDelegationToChainArgs(
  */
 export async function query(
   delegationId: IDelegationNode['id']
-): Promise<DelegationNode | null> {
+): Promise<DelegationNode> {
   const api = ConfigService.get('api')
-  const decoded = delegationNodeFromChain(
-    await api.query.delegation.delegationNodes(delegationId)
-  )
-  if (!decoded) {
-    return null
+  const chainNode = await api.query.delegation.delegationNodes(delegationId)
+  if (chainNode.isNone) {
+    throw new SDKErrors.DelegationIdMissingError()
   }
   return new DelegationNode({
-    ...decoded,
+    ...delegationNodeFromChain(chainNode),
     id: delegationId,
   })
 }
@@ -77,15 +75,7 @@ export async function getChildren(
   delegationNode: DelegationNode
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNode.id}')`)
-  const childrenNodes = await Promise.all(
-    delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
-      const childNode = await query(childId)
-      if (!childNode) {
-        throw new SDKErrors.DelegationIdMissingError()
-      }
-      return childNode
-    })
-  )
+  const childrenNodes = await Promise.all(delegationNode.childrenIds.map(query))
   log.info(`children: ${JSON.stringify(childrenNodes)}`)
   return childrenNodes
 }

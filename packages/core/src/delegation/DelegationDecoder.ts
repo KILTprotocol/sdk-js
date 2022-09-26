@@ -81,10 +81,7 @@ export type DelegationNodeId = Hash
 
 export function delegationNodeFromChain(
   encoded: Option<DelegationDelegationHierarchyDelegationNode>
-): DelegationNodeRecord | null {
-  if (encoded.isNone) {
-    return null
-  }
+): DelegationNodeRecord {
   const delegationNode = encoded.unwrap()
 
   return {
