@@ -5,68 +5,44 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { U128 } from '@polkadot/types'
-import type { BN } from '@polkadot/util'
-
 import type {
   IAttestation,
   IDelegationNode,
-  SubmittableExtrinsic,
+  KiltAddress,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
-
-import { decodeDelegationNode } from './DelegationDecoder.js'
+import * as Did from '@kiltprotocol/did'
+import { delegationNodeFromChain } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 /**
- * Generate the extrinsic to store a given delegation node as the root of a new delegation hierarchy.
- *
- * @param delegation The delegation node to store as hierarchy root.
- * @returns The SubmittableExtrinsic for the `createHierarchy` call.
- */
-export async function getStoreAsRootTx(
-  delegation: DelegationNode
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-
-  if (!delegation.isRoot()) {
-    throw new SDKErrors.InvalidRootNodeError()
-  }
-  return api.tx.delegation.createHierarchy(
-    delegation.hierarchyId,
-    await delegation.getCTypeHash()
-  )
-}
-
-/**
- * Generate the extrinsic to store a given delegation node under a given delegation hierarchy.
+ * Encodes the delegation and the signature for usage as arguments of `api.tx.delegation.addDelegation()`.
  *
  * @param delegation The delegation node to store under the hierarchy specified as part of the node.
  * @param signature The DID signature of the delegate owner of the new delegation node.
- * @returns The SubmittableExtrinsic for the `addDelegation` call.
+ * @returns The array of arguments for `addDelegation`.
  */
-export async function getStoreAsDelegationTx(
+export function addDelegationToChainArgs(
   delegation: DelegationNode,
-  signature: DidUtils.EncodedSignature
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-
-  if (delegation.isRoot()) {
-    throw new SDKErrors.InvalidDelegationNodeError()
-  }
-
-  return api.tx.delegation.addDelegation(
+  signature: Did.EncodedSignature
+): [
+  DelegationNode['id'],
+  string,
+  KiltAddress,
+  Uint8Array,
+  Did.EncodedSignature
+] {
+  return [
     delegation.id,
     delegation.parentId || '',
-    DidUtils.parseDidUri(delegation.account).address,
+    Did.toChain(delegation.account),
     permissionsAsBitset(delegation),
-    signature
-  )
+    signature,
+  ]
 }
 
 /**
@@ -79,7 +55,7 @@ export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
   const api = ConfigService.get('api')
-  const decoded = decodeDelegationNode(
+  const decoded = delegationNodeFromChain(
     await api.query.delegation.delegationNodes(delegationId)
   )
   if (!decoded) {
@@ -89,59 +65,6 @@ export async function query(
     ...decoded,
     id: delegationId,
   })
-}
-
-/**
- * Generate the extrinsic to revoke a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
- *
- * @param delegationId The identifier of the delegation node to revoke.
- * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorization of the caller to perform the revocation.
- * @param maxRevocations The max number of children nodes that will be revoked as part of the revocation operation. This value does not include the node itself being removed.
- * @returns The SubmittableExtrinsic for the `revokeDelegation` call.
- */
-export async function getRevokeTx(
-  delegationId: IDelegationNode['id'],
-  maxParentChecks: number,
-  maxRevocations: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.delegation.revokeDelegation(
-    delegationId,
-    maxParentChecks,
-    maxRevocations
-  )
-}
-
-/**
- * Generate the extrinsic to remove a given delegation node. The submitter can be the owner of the delegation node itself or an ancestor thereof.
- *
- * @param delegationId The identifier of the delegation node to remove.
- * @param maxRevocations The max number of children nodes that will be removed as part of the removal operation. This value does not include the node itself being removed.
- * @returns The SubmittableExtrinsic for the `removeDelegation` call.
- */
-export async function getRemoveTx(
-  delegationId: IDelegationNode['id'],
-  maxRevocations: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.delegation.removeDelegation(delegationId, maxRevocations)
-}
-
-/**
- * Generate the extrinsic to reclaim the deposit for a given delegation node.
- *
- * The generated extrinsic can only be successfully executed if the submitter is the original payer of the delegation deposit.
- *
- * @param delegationId The identifier of the delegation node to claim back deposit for.
- * @param maxRemovals The max number of children nodes that will be removed as part of the operation. This value does not include the node itself being removed.
- * @returns The SubmittableExtrinsic for the `getReclaimDepositTx` call.
- */
-export async function getReclaimDepositTx(
-  delegationId: IDelegationNode['id'],
-  maxRemovals: number
-): Promise<SubmittableExtrinsic> {
-  const api = ConfigService.get('api')
-  return api.tx.delegation.reclaimDeposit(delegationId, maxRemovals)
 }
 
 /**
@@ -184,19 +107,4 @@ export async function getAttestationHashes(
   })
   // extract claimHash from double map key & decode
   return entries.map((keys) => keys.args[1].toHex())
-}
-
-async function queryDepositAmountEncoded(): Promise<U128> {
-  const api = ConfigService.get('api')
-  return api.consts.delegation.deposit
-}
-
-/**
- * Gets the current deposit amount due for the creation of new delegation node.
- *
- * @returns Deposit amount in Femto Kilt as a BigNumber.
- */
-export async function queryDepositAmount(): Promise<BN> {
-  const encodedDeposit = await queryDepositAmountEncoded()
-  return encodedDeposit.toBn()
 }

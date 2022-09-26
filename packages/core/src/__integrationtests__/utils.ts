@@ -12,7 +12,7 @@ import { BN } from '@polkadot/util'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Keyring, ss58Format } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
@@ -26,7 +26,6 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as CType from '../ctype'
-import { Balance } from '../balance'
 import { init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
@@ -55,9 +54,9 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint)
-  const api = await ApiPromise.create({ provider })
+  const api = new ApiPromise({ provider })
   await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
-  return api
+  return api.isReadyOrError
 }
 
 export async function initializeApi(): Promise<ApiPromise> {
@@ -81,24 +80,27 @@ export async function initializeApi(): Promise<ApiPromise> {
   return api
 }
 
-const keyring = new Keyring({ ss58Format, type: 'ed25519' })
-
 // Dev Faucet account seed phrase
 const faucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 // endowed accounts on development chain spec
 // ids are ed25519 because the endowed accounts are
-export const devFaucet = keyring.createFromUri(faucetSeed) as KiltKeyringPair
-export const devAlice = keyring.createFromUri('//Alice') as KiltKeyringPair
-export const devBob = keyring.createFromUri('//Bob') as KiltKeyringPair
-export const devCharlie = keyring.createFromUri('//Charlie') as KiltKeyringPair
+export const devFaucet = Crypto.makeKeypairFromUri(faucetSeed)
+export const devAlice = Crypto.makeKeypairFromUri('//Alice')
+export const devBob = Crypto.makeKeypairFromUri('//Bob')
+export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
 export function addressFromRandom(): KiltAddress {
   return makeSigningKeyTool('ed25519').keypair.address
 }
 
 export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
-  return CType.verifyStored(ctype)
+  try {
+    await CType.verifyStored(ctype)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export const driversLicenseCType = CType.fromSchema({
@@ -150,7 +152,7 @@ export async function endowAccounts(
 ): Promise<void> {
   const api = ConfigService.get('api')
   const transactions = await Promise.all(
-    addresses.map((address) => Balance.getTransferTx(address, ENDOWMENT))
+    addresses.map((address) => api.tx.balances.transfer(address, ENDOWMENT))
   )
   const batch = api.tx.utility.batchAll(transactions)
   await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
@@ -160,7 +162,8 @@ export async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
-  const transferTx = await Balance.getTransferTx(address, amount)
+  const api = ConfigService.get('api')
+  const transferTx = api.tx.balances.transfer(address, amount)
   await submitExtrinsic(transferTx, devFaucet)
 }
 

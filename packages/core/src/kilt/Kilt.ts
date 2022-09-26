@@ -16,28 +16,18 @@ import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 
 import { ConfigService } from '@kiltprotocol/config'
+import { latest, rpc, runtime } from '@kiltprotocol/type-definitions'
 
 /**
- * Allows setting global configuration such as the log level and the polkadot ApiPromise instance used throughout the sdk.
+ * Prepares crypto modules (required e.g. for identity creation) and calls ConfigService.set().
  *
- * @param configs Config options object.
- */
-export function config<K extends Partial<ConfigService.configOpts>>(
-  configs: K
-): void {
-  ConfigService.set(configs)
-}
-
-/**
- * Prepares crypto modules (required e.g. For identity creation) and calls Kilt.config().
- *
- * @param configs Arguments to pass on to Kilt.config().
+ * @param configs Arguments to pass on to ConfigService.set().
  * @returns Promise that must be awaited to assure crypto is ready.
  */
 export async function init<K extends Partial<ConfigService.configOpts>>(
   configs?: K
 ): Promise<void> {
-  config(configs || {})
+  ConfigService.set(configs || {})
   await cryptoWaitReady()
 }
 
@@ -51,6 +41,9 @@ export async function connect(blockchainRpcWsUrl: string): Promise<ApiPromise> {
   const provider = new WsProvider(blockchainRpcWsUrl)
   const api = await ApiPromise.create({
     provider,
+    types: latest,
+    rpc,
+    runtime,
   })
   await init({ api })
   return api.isReadyOrError

@@ -12,7 +12,7 @@ import type {
   DidUri,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import * as Credential from '../credential/index.js'
 
@@ -36,12 +36,12 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
-  DataUtils.validateHash(input.cTypeHash, 'CType')
+  DataUtils.verifyIsHex(input.cTypeHash, 256)
 
   if (!input.claimHash) {
     throw new SDKErrors.ClaimHashMissingError()
   }
-  DataUtils.validateHash(input.claimHash, 'Claim')
+  DataUtils.verifyIsHex(input.claimHash, 256)
 
   if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()
@@ -50,7 +50,7 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  DidUtils.validateKiltDidUri(input.owner, 'Did')
+  Did.validateUri(input.owner, 'Did')
 
   if (typeof input.revoked !== 'boolean') {
     throw new SDKErrors.RevokedTypeError()
@@ -134,15 +134,18 @@ export function isIAttestation(input: unknown): input is IAttestation {
  *
  * @param attestation - The attestation to verify.
  * @param credential - The credential to verify against.
- * @returns Whether the data is valid.
  */
 export function verifyAgainstCredential(
   attestation: IAttestation,
   credential: ICredential
-): boolean {
-  return (
-    credential.claim.cTypeHash === attestation.cTypeHash &&
-    credential.rootHash === attestation.claimHash &&
-    Credential.verifyDataIntegrity(credential)
-  )
+): void {
+  if (
+    credential.claim.cTypeHash !== attestation.cTypeHash ||
+    credential.rootHash !== attestation.claimHash
+  ) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Attestation does not match credential'
+    )
+  }
+  Credential.verifyDataIntegrity(credential)
 }

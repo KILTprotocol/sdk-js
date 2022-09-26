@@ -10,6 +10,8 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
+import { ApiMocks } from '@kiltprotocol/testing'
 import type {
   ICType,
   CTypeSchemaWithoutId,
@@ -18,12 +20,17 @@ import type {
 } from '@kiltprotocol/types'
 import * as Claim from '../claim'
 import * as Credential from '../credential'
-import { getOwner, isStored } from './CType.chain'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CType.schemas'
 
-jest.mock('./CType.chain')
+const mockedApi: any = ApiMocks.getMockedApi()
+ConfigService.set({ api: mockedApi })
 
+const encodedAliceDid = ApiMocks.mockChainQueryReturn(
+  'ctype',
+  'cTYPEs',
+  '4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+)
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 
@@ -72,13 +79,13 @@ describe('CType', () => {
   })
 
   it('verifies the claim structure', () => {
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBe(true)
+    ).not.toThrow()
     claim.contents.name = 123
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBe(false)
+    ).toThrow()
   })
 
   it('throws error on faulty input', () => {
@@ -135,19 +142,10 @@ describe('CType', () => {
   })
 
   it('verifies whether a ctype is registered on chain ', async () => {
-    jest.mocked(isStored).mockResolvedValue(false)
-    expect(await CType.verifyStored(claimCtype)).toBe(false)
-    jest.mocked(isStored).mockResolvedValue(true)
-    expect(await CType.verifyStored(claimCtype)).toBe(true)
-  })
+    await expect(CType.verifyStored(claimCtype)).rejects.toThrow()
 
-  it('verifies ctype owner on chain', async () => {
-    jest.mocked(getOwner).mockResolvedValue(didBob)
-    expect(await CType.verifyOwner(claimCtype)).toBe(false)
-    jest.mocked(getOwner).mockResolvedValue(claimCtype.owner)
-    expect(await CType.verifyOwner(claimCtype)).toBe(true)
-    jest.mocked(getOwner).mockResolvedValue(null)
-    expect(await CType.verifyOwner(claimCtype)).toBe(false)
+    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedAliceDid)
+    await expect(CType.verifyStored(claimCtype)).resolves.not.toThrow()
   })
 })
 
@@ -241,23 +239,23 @@ describe('CType verification', () => {
     'third-property': true,
   }
   it('verifies claims', () => {
-    expect(CType.verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)).toBe(
-      true
-    )
-    expect(CType.verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)).toBe(
-      false
-    )
-    expect(
+    expect(() =>
+      CType.verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)
+    ).not.toThrow()
+    expect(() =>
+      CType.verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)
+    ).toThrow()
+    expect(() =>
       CType.verifyObjectAgainstSchema(badClaim, CTypeWrapperModel, [])
-    ).toBe(false)
+    ).toThrow()
     expect(() => {
       CType.verifyClaimAgainstSchema(badClaim, ctypeInput)
     }).toThrow(SDKErrors.ObjectUnverifiableError)
   })
   it('verifies ctypes', () => {
-    expect(CType.verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)).toBe(
-      true
-    )
+    expect(() =>
+      CType.verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)
+    ).not.toThrow()
   })
 })
 
@@ -273,51 +271,30 @@ describe('CType registration verification', () => {
   } as ICType['schema']
 
   describe('when CType is not registered', () => {
-    beforeAll(() => {
-      jest.mocked(getOwner).mockResolvedValue(null)
-      jest.mocked(isStored).mockResolvedValue(false)
-    })
-
     it('does not verify registration when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBe(false)
-    })
-
-    it('does not verify owner when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBe(false)
+      await expect(CType.verifyStored(ctype)).rejects.toThrow()
     })
   })
 
   describe('when CType is registered', () => {
     beforeAll(() => {
-      jest.mocked(getOwner).mockResolvedValue(didAlice)
-      jest.mocked(isStored).mockResolvedValue(true)
+      mockedApi.query.ctype.ctypes.mockResolvedValue(encodedAliceDid)
     })
 
     it('verifies registration when owner not set', async () => {
       const ctype = CType.fromSchema(rawCType)
-      expect(await CType.verifyStored(ctype)).toBe(true)
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner matches', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBe(true)
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner does not match', async () => {
       const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyStored(ctype)).toBe(true)
-    })
-
-    it('verifies owner when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBe(true)
-    })
-
-    it('does not verify owner when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyOwner(ctype)).toBe(false)
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
   })
 })

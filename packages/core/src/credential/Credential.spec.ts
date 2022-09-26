@@ -92,7 +92,7 @@ describe('Credential', () => {
       [legitimation]
     )
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(credential)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
     const testCType = CType.fromSchema(rawCType)
     await Credential.verifyCredential(credential, {
       ctype: testCType,
@@ -101,7 +101,7 @@ describe('Credential', () => {
     // just deleting a field will result in a wrong proof
     delete credential.claimNonceMap[Object.keys(credential.claimNonceMap)[0]]
     expect(() => Credential.verifyDataIntegrity(credential)).toThrowError(
-      SDKErrors.NoProofForStatementError
+      SDKErrors.ClaimUnverifiableError
     )
   })
 
@@ -131,8 +131,8 @@ describe('Credential', () => {
       newCredential.claimHashes.length - 1
     )
     expect((newCredential.claim.contents as any).b).toBe('b')
-    expect(Credential.verifyDataIntegrity(newCredential)).toBe(true)
-    expect(Credential.verifyRootHash(newCredential)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(newCredential)).not.toThrow()
+    expect(() => Credential.verifyRootHash(newCredential)).not.toThrow()
   })
 
   it('should throw error on faulty constructor input', async () => {
@@ -256,13 +256,13 @@ describe('Credential', () => {
     ).toThrowError(SDKErrors.RootHashUnverifiableError)
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialIncompleteClaimHashTree)
-    ).toThrowError(SDKErrors.NoProofForStatementError)
+    ).toThrowError(SDKErrors.ClaimUnverifiableError)
     expect(Credential.isPresentation(builtCredentialMalformedSignature)).toBe(
       false
     )
     expect(() =>
       Credential.verifyDataIntegrity(builtCredentialMalformedHashes)
-    ).toThrowError(SDKErrors.NoProofForStatementError)
+    ).toThrowError(SDKErrors.ClaimUnverifiableError)
     expect(() => Credential.verifyDataStructure(builtCredential)).not.toThrow()
     expect(() => {
       Credential.verifyDataStructure(builtCredentialWithLegitimation)
@@ -296,11 +296,13 @@ describe('Credential', () => {
       },
       []
     )
-    expect(Credential.verifyAgainstCType(builtCredential, testCType)).toBe(true)
+    expect(() =>
+      Credential.verifyAgainstCType(builtCredential, testCType)
+    ).not.toThrow()
     builtCredential.claim.contents.name = 123
-    expect(Credential.verifyAgainstCType(builtCredential, testCType)).toBe(
-      false
-    )
+    expect(() =>
+      Credential.verifyAgainstCType(builtCredential, testCType)
+    ).toThrow()
   })
 })
 
@@ -319,7 +321,7 @@ describe('Credential', () => {
     didUri: DidUri
   ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.Utils.parseDidUri(didUri)
+    const { did } = Did.parse(didUri)
     switch (did) {
       case identityAlice?.uri:
         return { document: identityAlice, metadata: { deactivated: false } }
@@ -380,7 +382,6 @@ describe('Credential', () => {
     const presentation = await Credential.createPresentation({
       credential,
       signCallback: sign,
-      claimerDid: claimer,
     })
     // build attestation
     const testAttestation = Attestation.fromCredentialAndDid(
@@ -406,7 +407,7 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.getSignCallback(identityAlice)
     )
   })
 
@@ -420,17 +421,17 @@ describe('Credential', () => {
         c: 'c',
       },
       [legitimation],
-      keyCharlie.sign
+      keyCharlie.getSignCallback(identityCharlie)
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
   })
   it('verify credentials signed by a light DID', async () => {
-    const { sign, authentication } = makeSigningKeyTool('ed25519')
+    const { getSignCallback, authentication } = makeSigningKeyTool('ed25519')
     identityDave = await Did.createLightDidDocument({
       authentication,
     })
@@ -444,11 +445,11 @@ describe('Credential', () => {
         c: 'c',
       },
       [legitimation],
-      sign
+      getSignCallback(identityDave)
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
       didResolve: mockResolve,
     })
@@ -479,7 +480,7 @@ describe('Credential', () => {
       authentication: migratedAndDeleted.authentication,
     })
     migratedAndDeletedFullDid = {
-      uri: Did.Utils.getFullDidUri(migratedAndDeletedLightDid.uri),
+      uri: Did.getFullDidUri(migratedAndDeletedLightDid.uri),
       authentication: [migratedAndDeletedLightDid.authentication[0]],
     }
 
@@ -492,11 +493,11 @@ describe('Credential', () => {
         c: 'c',
       },
       [legitimation],
-      migratedAndDeleted.sign
+      migratedAndDeleted.getSignCallback(migratedAndDeletedLightDid)
     )
 
     // check proof on complete data
-    expect(Credential.verifyDataIntegrity(presentation)).toBe(true)
+    expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
         didResolve: mockResolve,
@@ -510,7 +511,7 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.getSignCallback(identityAlice)
     )
     expect(Credential.isICredential(presentation)).toBe(true)
     delete (presentation as Partial<ICredential>).claimHashes
@@ -523,11 +524,11 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.getSignCallback(identityAlice)
     )
-    expect(Attestation.verifyAgainstCredential(attestation, credential)).toBe(
-      true
-    )
+    expect(() =>
+      Attestation.verifyAgainstCredential(attestation, credential)
+    ).not.toThrow()
     const { cTypeHash } = attestation
     // @ts-ignore
     attestation.cTypeHash = [
@@ -535,9 +536,9 @@ describe('Credential', () => {
       ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
       cTypeHash.slice(16),
     ].join('')
-    expect(Attestation.verifyAgainstCredential(attestation, credential)).toBe(
-      false
-    )
+    expect(() =>
+      Attestation.verifyAgainstCredential(attestation, credential)
+    ).toThrow()
   })
   it('returns Claim Hash of the attestation', async () => {
     const [credential, attestation] = await buildPresentation(
@@ -545,7 +546,7 @@ describe('Credential', () => {
       identityBob.uri,
       {},
       [],
-      keyAlice.sign
+      keyAlice.getSignCallback(identityAlice)
     )
     expect(Credential.getHash(credential)).toEqual(attestation.claimHash)
   })
@@ -569,7 +570,7 @@ describe('create presentation', () => {
     lightDidForId: DidDocument,
     newAuthenticationKey?: DidVerificationKey
   ): DidDocument {
-    const uri = Did.Utils.getFullDidUri(lightDidForId.uri)
+    const uri = Did.getFullDidUri(lightDidForId.uri)
     const authKey = newAuthenticationKey || lightDidForId.authentication[0]
 
     return {
@@ -582,7 +583,7 @@ describe('create presentation', () => {
     didUri: DidUri
   ): Promise<DidResolutionResult | null> {
     // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.Utils.parseDidUri(didUri)
+    const { did } = Did.parse(didUri)
     switch (did) {
       case migratedClaimerLightDid?.uri:
         return {
@@ -671,8 +672,9 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: newKeyForMigratedClaimerDid.sign,
-      claimerDid: migratedClaimerFullDid,
+      signCallback: newKeyForMigratedClaimerDid.getSignCallback(
+        migratedClaimerFullDid
+      ),
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
@@ -699,8 +701,9 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: unmigratedClaimerKey.sign,
-      claimerDid: unmigratedClaimerLightDid,
+      signCallback: unmigratedClaimerKey.getSignCallback(
+        unmigratedClaimerLightDid
+      ),
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
@@ -728,9 +731,10 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: newKeyForMigratedClaimerDid.sign,
       // Use of full DID to sign the presentation.
-      claimerDid: migratedClaimerFullDid,
+      signCallback: newKeyForMigratedClaimerDid.getSignCallback(
+        migratedClaimerFullDid
+      ),
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
@@ -759,9 +763,10 @@ describe('create presentation', () => {
     const att = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: newKeyForMigratedClaimerDid.sign,
       // Still using the light DID, which should fail since it has been migrated
-      claimerDid: migratedClaimerLightDid,
+      signCallback: newKeyForMigratedClaimerDid.getSignCallback(
+        migratedClaimerLightDid
+      ),
       challenge,
     })
     await expect(
@@ -791,9 +796,10 @@ describe('create presentation', () => {
     const presentation = await Credential.createPresentation({
       credential,
       selectedAttributes: ['name'],
-      signCallback: migratedThenDeletedKey.sign,
       // Still using the light DID, which should fail since it has been migrated and then deleted
-      claimerDid: migratedThenDeletedClaimerLightDid,
+      signCallback: migratedThenDeletedKey.getSignCallback(
+        migratedThenDeletedClaimerLightDid
+      ),
       challenge,
     })
     await expect(
@@ -804,9 +810,9 @@ describe('create presentation', () => {
   })
 
   it('should verify the credential claims structure against the ctype', () => {
-    expect(Credential.verifyAgainstCType(credential, ctype)).toBe(true)
+    expect(() => Credential.verifyAgainstCType(credential, ctype)).not.toThrow()
     credential.claim.contents.name = 123
 
-    expect(Credential.verifyAgainstCType(credential, ctype)).toBe(false)
+    expect(() => Credential.verifyAgainstCType(credential, ctype)).toThrow()
   })
 })

@@ -8,20 +8,26 @@
 import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 
-import {
+import type {
   DidDocument,
   DidServiceEndpoint,
   DidUri,
   KiltKeyringPair,
   SignCallback,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import {
   ApiMocks,
   createLocalDemoFullDidFromKeypair,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
 
-import type { EncodedDid } from '../Did.chain'
+import {
+  documentFromChain,
+  generateDidAuthenticatedTx,
+  servicesFromChain,
+} from '../Did.chain'
 
 import * as Did from './index.js'
 
@@ -31,13 +37,29 @@ import * as Did from './index.js'
  * @group unit/did
  */
 
-const mockApi = ApiMocks.createAugmentedApi()
+const augmentedApi = ApiMocks.createAugmentedApi()
+const mockedApi: any = ApiMocks.getMockedApi()
+ConfigService.set({ api: mockedApi })
 
 const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
 const existingDid: DidUri = `did:kilt:${existingAddress}`
 const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
 
-const existingDidRecord: EncodedDid = {
+const existingServiceEndpoints: DidServiceEndpoint[] = [
+  {
+    id: '#service1',
+    type: ['type-1'],
+    serviceEndpoint: ['url-1'],
+  },
+  {
+    id: '#service2',
+    type: ['type-2'],
+    serviceEndpoint: ['url-2'],
+  },
+]
+
+jest.mock('../Did.chain')
+jest.mocked(documentFromChain).mockReturnValue({
   authentication: [
     {
       id: '#auth1',
@@ -81,38 +103,23 @@ const existingDidRecord: EncodedDid = {
     amount: new BN(2),
     owner: existingAddress,
   },
-}
+})
+jest.mocked(servicesFromChain).mockReturnValue(existingServiceEndpoints)
+jest
+  .mocked(generateDidAuthenticatedTx)
+  .mockResolvedValue({} as SubmittableExtrinsic)
 
-const existingServiceEndpoints: DidServiceEndpoint[] = [
-  {
-    id: '#service1',
-    type: ['type-1'],
-    serviceEndpoint: ['url-1'],
-  },
-  {
-    id: '#service2',
-    type: ['type-2'],
-    serviceEndpoint: ['url-2'],
-  },
-]
-
-jest.mock('../Did.chain.ts', () => ({
-  queryDetails: jest.fn(async (did: DidUri): Promise<EncodedDid | null> => {
-    if (did === existingDid) {
-      return existingDidRecord
-    }
-    return null
-  }),
-  queryServiceEndpoints: jest.fn(
-    async (did: DidUri): Promise<DidServiceEndpoint[]> => {
-      if (did === existingDid) {
-        return existingServiceEndpoints
-      }
-      return []
-    }
-  ),
-  generateDidAuthenticatedTx: jest.fn().mockResolvedValue({}),
-}))
+mockedApi.query.did.did.mockReturnValue(
+  ApiMocks.mockChainQueryReturn('did', 'did', [
+    '01234567890123456789012345678901',
+    [],
+    undefined,
+    undefined,
+    [],
+    '123',
+    [existingAddress, '0'],
+  ])
+)
 
 /*
  * Functions tested:
@@ -186,6 +193,10 @@ describe('When creating an instance from the chain', () => {
   })
 
   it('returns null if the DID does not exist', async () => {
+    mockedApi.query.did.did.mockReturnValueOnce(
+      ApiMocks.mockChainQueryReturn('did', 'did')
+    )
+
     const fullDid = await Did.query(nonExistingDid)
     expect(fullDid).toBeNull()
   })
@@ -196,17 +207,19 @@ describe('When creating an instance from the chain', () => {
     let fullDid: DidDocument
 
     beforeAll(async () => {
-      ;({ keypair, sign } = makeSigningKeyTool())
-      fullDid = await createLocalDemoFullDidFromKeypair(keypair)
+      const keyTool = makeSigningKeyTool()
+      keypair = keyTool.keypair
+      fullDid = await createLocalDemoFullDidFromKeypair(keyTool.keypair)
+      sign = keyTool.getSignCallback(fullDid)
     })
 
     describe('.addSingleExtrinsic()', () => {
       it('fails if the extrinsic does not require a DID', async () => {
-        const extrinsic = mockApi.tx.indices.claim(1)
+        const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid,
-            batchFunction: mockApi.tx.utility.batchAll,
+            did: fullDid.uri,
+            batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [extrinsic, extrinsic],
             sign,
             submitter: keypair.address,
@@ -217,62 +230,40 @@ describe('When creating an instance from the chain', () => {
       })
 
       it('fails if the extrinsic is a utility (batch) extrinsic containing valid extrinsics', async () => {
-        const extrinsic = mockApi.tx.utility.batch([
-          await mockApi.tx.ctype.add('test-ctype'),
+        const extrinsic = augmentedApi.tx.utility.batch([
+          await augmentedApi.tx.ctype.add('test-ctype'),
         ])
-        await expect(async () =>
-          Did.authorizeBatch({
-            did: fullDid,
-            batchFunction: mockApi.tx.utility.batchAll,
-            extrinsics: [extrinsic, extrinsic],
-            sign,
-            submitter: keypair.address,
-          })
-        ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Can only batch extrinsics that require a DID signature]'
-        )
-      })
+        const batchFunction =
+          jest.fn() as unknown as typeof mockedApi.tx.utility.batchAll
+        await Did.authorizeBatch({
+          did: fullDid.uri,
+          batchFunction,
+          extrinsics: [extrinsic, extrinsic],
+          sign,
+          submitter: keypair.address,
+        })
 
-      it('fails if the DID does not have any key required to sign the batch', async () => {
-        // Full DID with only an authentication key.
-        const newFullDid: DidDocument = {
-          uri: fullDid.uri,
-          authentication: [fullDid.authentication[0]],
-        }
-        const extrinsic = await mockApi.tx.ctype.add('test-ctype')
-
-        await expect(async () =>
-          Did.authorizeBatch({
-            did: newFullDid,
-            batchFunction: mockApi.tx.utility.batchAll,
-            extrinsics: [extrinsic, extrinsic],
-            nonce: new BN(0),
-            sign,
-            submitter: keypair.address,
-          })
-        ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Found no key for relationship "assertionMethod"]'
-        )
+        expect(batchFunction).toHaveBeenCalledWith([extrinsic, extrinsic])
       })
 
       it('adds different batches requiring different keys', async () => {
-        const ctype1Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
-        const ctype2Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+        const ctype1Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
+        const ctype2Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
         const delegationExtrinsic1 =
-          await mockApi.tx.delegation.createHierarchy(
+          await augmentedApi.tx.delegation.createHierarchy(
             randomAsHex(32),
             randomAsHex(32)
           )
         const delegationExtrinsic2 =
-          await mockApi.tx.delegation.createHierarchy(
+          await augmentedApi.tx.delegation.createHierarchy(
             randomAsHex(32),
             randomAsHex(32)
           )
-        const ctype3Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
-        const ctype4Extrinsic = await mockApi.tx.ctype.add(randomAsHex(32))
+        const ctype3Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
+        const ctype4Extrinsic = await augmentedApi.tx.ctype.add(randomAsHex(32))
 
         const batchFunction =
-          jest.fn() as unknown as typeof mockApi.tx.utility.batchAll
+          jest.fn() as unknown as typeof augmentedApi.tx.utility.batchAll
         const extrinsics = [
           ctype1Extrinsic,
           ctype2Extrinsic,
@@ -282,7 +273,7 @@ describe('When creating an instance from the chain', () => {
           ctype4Extrinsic,
         ]
         await Did.authorizeBatch({
-          did: fullDid,
+          did: fullDid.uri,
           batchFunction,
           extrinsics,
           nonce: new BN(0),
@@ -310,8 +301,8 @@ describe('When creating an instance from the chain', () => {
       it('throws if batch is empty', async () => {
         await expect(async () =>
           Did.authorizeBatch({
-            did: fullDid,
-            batchFunction: mockApi.tx.utility.batchAll,
+            did: fullDid.uri,
+            batchFunction: augmentedApi.tx.utility.batchAll,
             extrinsics: [],
             sign,
             submitter: keypair.address,
@@ -327,5 +318,80 @@ describe('When creating an instance from the chain', () => {
         'successfully create a batch with 1 extrinsic per required key, repeated two times'
       )
     })
+  })
+})
+
+const mockApi = ApiMocks.createAugmentedApi()
+
+describe('When creating an instance from the chain', () => {
+  it('Should return correct KeyRelationship for single valid call', () => {
+    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+      mockApi.tx.attestation.add(new Uint8Array(32), new Uint8Array(32), null)
+    )
+    expect(keyRelationship).toBe('assertionMethod')
+  })
+  it('Should return correct KeyRelationship for batched call', () => {
+    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+      mockApi.tx.utility.batch([
+        mockApi.tx.attestation.add(
+          new Uint8Array(32),
+          new Uint8Array(32),
+          null
+        ),
+        mockApi.tx.attestation.add(
+          new Uint8Array(32),
+          new Uint8Array(32),
+          null
+        ),
+      ])
+    )
+    expect(keyRelationship).toBe('assertionMethod')
+  })
+  it('Should return correct KeyRelationship for batchAll call', () => {
+    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+      mockApi.tx.utility.batchAll([
+        mockApi.tx.attestation.add(
+          new Uint8Array(32),
+          new Uint8Array(32),
+          null
+        ),
+        mockApi.tx.attestation.add(
+          new Uint8Array(32),
+          new Uint8Array(32),
+          null
+        ),
+      ])
+    )
+    expect(keyRelationship).toBe('assertionMethod')
+  })
+  it('Should return correct KeyRelationship for forceBatch call', () => {
+    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+      mockApi.tx.utility.forceBatch([
+        mockApi.tx.attestation.add(
+          new Uint8Array(32),
+          new Uint8Array(32),
+          null
+        ),
+        mockApi.tx.attestation.add(
+          new Uint8Array(32),
+          new Uint8Array(32),
+          null
+        ),
+      ])
+    )
+    expect(keyRelationship).toBe('assertionMethod')
+  })
+  it('Should return undefined for batch with mixed KeyRelationship calls', () => {
+    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+      mockApi.tx.utility.forceBatch([
+        mockApi.tx.attestation.add(
+          new Uint8Array(32),
+          new Uint8Array(32),
+          null
+        ),
+        mockApi.tx.web3Names.claim('awesomename'),
+      ])
+    )
+    expect(keyRelationship).toBeUndefined()
   })
 })

@@ -21,8 +21,8 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
+import type { ApiPromise } from '@polkadot/api'
 import { disconnect } from '../kilt'
 import {
   createEndowedTestAccount,
@@ -30,8 +30,10 @@ import {
   submitExtrinsic,
 } from './utils'
 
+let api: ApiPromise
+
 beforeAll(async () => {
-  await initializeApi()
+  api = await initializeApi()
 }, 30_000)
 
 describe('When there is an Web3NameCreator and a payer', () => {
@@ -42,8 +44,8 @@ describe('When there is an Web3NameCreator and a payer', () => {
   let otherWeb3NameCreator: DidDocument
   let paymentAccount: KiltKeyringPair
   let otherPaymentAccount: KeyringPair
-  let nick: Web3Names.Web3Name
-  let differentNick: Web3Names.Web3Name
+  let nick: Did.Web3Name
+  let differentNick: Did.Web3Name
 
   beforeAll(async () => {
     nick = `nick_${randomAsHex(2)}`
@@ -70,12 +72,12 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 60_000)
 
   it('should not be possible to create a w3n name w/o tokens', async () => {
-    const tx = await Web3Names.getClaimTx(nick)
+    const tx = api.tx.web3Names.claim(nick)
     const bobbyBroke = makeSigningKeyTool().keypair
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.getSignCallback(w3nCreator),
       bobbyBroke.address
     )
 
@@ -85,11 +87,11 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to create a w3n name with enough tokens', async () => {
-    const tx = await Web3Names.getClaimTx(nick)
+    const tx = api.tx.web3Names.claim(nick)
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
 
@@ -97,21 +99,25 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to lookup the DID uri with the given nick', async () => {
-    const did = await Web3Names.queryDidForWeb3Name(nick)
-    expect(did).toBe(w3nCreator.uri)
+    const { owner } = Did.web3NameOwnerFromChain(
+      await api.query.web3Names.owner(nick)
+    )
+    expect(owner).toBe(w3nCreator.uri)
   }, 30_000)
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
-    const resolved = await Web3Names.queryWeb3NameForDid(w3nCreator.uri)
+    const resolved = Did.web3NameFromChain(
+      await api.query.web3Names.names(Did.toChain(w3nCreator.uri))
+    )
     expect(resolved).toBe(nick)
   }, 30_000)
 
   it('should not be possible to create the same w3n twice', async () => {
-    const tx = await Web3Names.getClaimTx(nick)
+    const tx = api.tx.web3Names.claim(nick)
     const authorizedTx = await Did.authorizeExtrinsic(
-      otherWeb3NameCreator,
+      otherWeb3NameCreator.uri,
       tx,
-      otherW3NCreatorKey.sign,
+      otherW3NCreatorKey.getSignCallback(otherWeb3NameCreator),
       paymentAccount.address
     )
 
@@ -124,11 +130,11 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should not be possible to create a second w3n for the same did', async () => {
-    const tx = await Web3Names.getClaimTx('nick2')
+    const tx = api.tx.web3Names.claim('nick2')
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
 
@@ -141,7 +147,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should not be possible to remove a w3n by another payment account', async () => {
-    const tx = await Web3Names.getReclaimDepositTx(nick)
+    const tx = api.tx.web3Names.reclaimDeposit(nick)
     const p = submitExtrinsic(tx, otherPaymentAccount)
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
@@ -150,26 +156,26 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to remove a w3n by the payment account', async () => {
-    const tx = await Web3Names.getReclaimDepositTx(nick)
+    const tx = api.tx.web3Names.reclaimDeposit(nick)
     await submitExtrinsic(tx, paymentAccount)
   }, 30_000)
 
   it('should be possible to remove a w3n by the owner did', async () => {
     // prepare the w3n on chain
-    const prepareTx = await Web3Names.getClaimTx(differentNick)
+    const prepareTx = api.tx.web3Names.claim(differentNick)
     const prepareAuthorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       prepareTx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
     await submitExtrinsic(prepareAuthorizedTx, paymentAccount)
 
-    const tx = await Web3Names.getReleaseByOwnerTx()
+    const tx = api.tx.web3Names.releaseByOwner()
     const authorizedTx = await Did.authorizeExtrinsic(
-      w3nCreator,
+      w3nCreator.uri,
       tx,
-      w3nCreatorKey.sign,
+      w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
     await submitExtrinsic(authorizedTx, paymentAccount)
@@ -177,49 +183,17 @@ describe('When there is an Web3NameCreator and a payer', () => {
 })
 
 describe('Runtime constraints', () => {
-  it('should not be possible to create a web3 name that is too short', async () => {
-    // Minimum is 3
-    await Web3Names.getClaimTx('aaa')
-    // One less than the minimum
-    await expect(
-      Web3Names.getClaimTx('aa')
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3"`
-    )
-  }, 30_000)
+  it('should not be possible to use a web3 name that is too short', async () => {
+    const minNameLength = api.consts.web3Names.minNameLength.toNumber()
+    const shortName = 'aa'
+    expect(shortName.length).toBeLessThan(minNameLength)
+  })
 
-  it('should not be possible to create a web3 name that is too long', async () => {
-    // Maximum is 32
-    await Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    // One more than the maximum
-    await expect(
-      Web3Names.getClaimTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32"`
-    )
-  }, 30_000)
-
-  it('should not be possible to claim deposit for a web3 name that is too short', async () => {
-    // Minimum is 3
-    await Web3Names.getReclaimDepositTx('aaa')
-    // One less than the minimum
-    await expect(
-      Web3Names.getReclaimDepositTx('aa')
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The provided name \\"aa\\" is shorter than the minimum number of characters allowed, which is 3"`
-    )
-  }, 30_000)
-
-  it('should not be possible to claim deposit for a web3 name that is too long', async () => {
-    // Maximum is 32
-    await Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    // One more than the maximum
-    await expect(
-      Web3Names.getReclaimDepositTx('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The provided name \\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\" is longer than the maximum number of characters allowed, which is 32"`
-    )
-  }, 30_000)
+  it('should not be possible to use a web3 name that is too long', async () => {
+    const maxNameLength = api.consts.web3Names.maxNameLength.toNumber()
+    const longName = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    expect(longName.length).toBeGreaterThan(maxNameLength)
+  })
 })
 
 afterAll(async () => {

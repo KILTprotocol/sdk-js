@@ -21,13 +21,8 @@ import { hexToBn } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
 import type { DidUri, IClaim, ICType, PartialClaim } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
-import {
-  getIdForCTypeHash,
-  isICType,
-  verifyClaimAgainstNestedSchemas,
-  verifyClaimAgainstSchema,
-} from '../ctype/index.js'
+import * as Did from '@kiltprotocol/did'
+import * as CType from '../ctype/index.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
@@ -45,7 +40,7 @@ function jsonLDcontents(
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
   if (!cTypeHash) throw new SDKErrors.CTypeHashMissingError()
-  const vocabulary = `${getIdForCTypeHash(cTypeHash)}#`
+  const vocabulary = `${CType.getIdForCTypeHash(cTypeHash)}#`
   const result: Record<string, unknown> = {}
   if (owner) result['@id'] = owner
   if (!expanded) {
@@ -79,7 +74,7 @@ export function toJsonLD(
     [`${prefix}credentialSubject`]: credentialSubject,
   }
   result[`${prefix}credentialSchema`] = {
-    '@id': getIdForCTypeHash(claim.cTypeHash),
+    '@id': CType.getIdForCTypeHash(claim.cTypeHash),
   }
   if (!expanded) result['@context'] = { '@vocab': VC_VOCAB }
   return result
@@ -143,7 +138,6 @@ export function hashClaimContents(
  * @param options Object containing optional parameters.
  * @param options.canonicalisation Canonicalisation routine that produces an array of statement strings from the [IClaim]. Default produces individual `{"key":"value"}` JSON representations where keys are transformed to expanded JSON-LD.
  * @param options.hasher The hasher to be used. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
- * @returns `verified` is a boolean indicating whether the proof is valid. `errors` is an array of all errors in case it is not.
  */
 export function verifyDisclosedAttributes(
   claim: PartialClaim,
@@ -154,7 +148,7 @@ export function verifyDisclosedAttributes(
   options: Pick<Crypto.HashingOptions, 'hasher'> & {
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
-): { verified: boolean; errors: Error[] } {
+): void {
   // apply defaults
   const defaults = { canonicalisation: makeStatementsJsonLD }
   const canonicalisation = options.canonicalisation || defaults.canonicalisation
@@ -165,7 +159,10 @@ export function verifyDisclosedAttributes(
   const hashed = Crypto.hashStatements(statements, { ...options, nonces })
   // check resulting hashes
   const digestsInProof = Object.keys(nonces)
-  return hashed.reduce<{ verified: boolean; errors: Error[] }>(
+  const { verified, errors } = hashed.reduce<{
+    verified: boolean
+    errors: Error[]
+  }>(
     (status, { saltedHash, statement, digest, nonce }) => {
       // check if the statement digest was contained in the proof and mapped it to a nonce
       if (!digestsInProof.includes(digest) || !nonce) {
@@ -183,6 +180,12 @@ export function verifyDisclosedAttributes(
     },
     { verified: true, errors: [] }
   )
+  if (verified !== true) {
+    throw new SDKErrors.ClaimUnverifiableError(
+      'One or more statements in the claim could not be verified',
+      { cause: errors }
+    )
+  }
 }
 
 /**
@@ -196,7 +199,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
     throw new SDKErrors.CTypeHashMissingError()
   }
   if (input.owner) {
-    DidUtils.validateKiltDidUri(input.owner, 'Did')
+    Did.validateUri(input.owner, 'Did')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
@@ -209,14 +212,14 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
       }
     })
   }
-  DataUtils.validateHash(input.cTypeHash, 'Claim CType')
+  DataUtils.verifyIsHex(input.cTypeHash, 256)
 }
 
 function verifyAgainstCType(
   claimContents: IClaim['contents'],
   cTypeSchema: ICType['schema']
-): boolean {
-  return verifyClaimAgainstSchema(claimContents, cTypeSchema)
+): void {
+  CType.verifyClaimAgainstSchema(claimContents, cTypeSchema)
 }
 
 /**
@@ -229,10 +232,7 @@ export function verify(
   claimInput: IClaim,
   cTypeSchema: ICType['schema']
 ): void {
-  if (!verifyAgainstCType(claimInput.contents, cTypeSchema)) {
-    throw new SDKErrors.ClaimUnverifiableError()
-  }
-
+  verifyAgainstCType(claimInput.contents, cTypeSchema)
   verifyDataStructure(claimInput)
 }
 
@@ -252,15 +252,12 @@ export function fromNestedCTypeClaim(
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  if (
-    !verifyClaimAgainstNestedSchemas(
-      cTypeInput.schema,
-      nestedCType,
-      claimContents
-    )
-  ) {
-    throw new SDKErrors.NestedClaimUnverifiableError()
-  }
+  CType.verifyClaimAgainstNestedSchemas(
+    cTypeInput.schema,
+    nestedCType,
+    claimContents
+  )
+
   const claim = {
     cTypeHash: cTypeInput.hash,
     contents: claimContents,
@@ -283,12 +280,8 @@ export function fromCTypeAndClaimContents(
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  if (
-    !isICType(ctypeInput) ||
-    !verifyAgainstCType(claimContents, ctypeInput.schema)
-  ) {
-    throw new SDKErrors.ClaimUnverifiableError()
-  }
+  CType.verifyDataStructure(ctypeInput)
+  verifyAgainstCType(claimContents, ctypeInput.schema)
   const claim = {
     cTypeHash: ctypeInput.hash,
     contents: claimContents,

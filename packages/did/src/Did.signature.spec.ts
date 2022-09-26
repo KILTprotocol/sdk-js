@@ -17,20 +17,11 @@ import {
   KiltKeyringPair,
   SignCallback,
 } from '@kiltprotocol/types'
-import Keyring from '@polkadot/keyring'
-import {
-  mnemonicGenerate,
-  randomAsHex,
-  randomAsU8a,
-} from '@polkadot/util-crypto'
-import { ss58Format } from '@kiltprotocol/utils'
+import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
+import { Crypto } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import * as Did from './index.js'
-import {
-  VerificationResult,
-  verifyDidSignature,
-  isDidSignature,
-} from './Did.signature'
+import { verifyDidSignature, isDidSignature } from './Did.signature'
 import { resolve } from './DidResolver'
 
 jest.mock('./DidResolver')
@@ -42,10 +33,10 @@ describe('light DID', () => {
   beforeAll(() => {
     const keyTool = makeSigningKeyTool()
     keypair = keyTool.keypair
-    sign = keyTool.sign
     did = Did.createLightDidDocument({
       authentication: keyTool.authentication,
     })
+    sign = keyTool.getSignCallback(did)
   })
 
   beforeEach(() => {
@@ -66,33 +57,19 @@ describe('light DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    await expect(
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('verifies old did signature (with `keyId` property) over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
     const oldSignature: any = {
       ...signature,
       keyId: signature.keyUri,
@@ -110,142 +87,89 @@ describe('light DID', () => {
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).resolves.toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_BYTES,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_BYTES, sign)
+    await expect(
+      verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('fails if relationship does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'assertionMethod',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/verification method/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('fails if key id does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
     signature.keyUri += '1a'
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/no key with id/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('fails if signature does not match', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/invalid signature/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('fails if key id malformed', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
     // @ts-expect-error
     signature.keyUri = signature.keyUri.replace('#', '?')
-    expect(
-      await verifyDidSignature({
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/Signature key URI .+ invalid/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('does not verify if migrated to Full DID', async () => {
     jest.mocked(resolve).mockResolvedValue({
       document: did,
       metadata: {
-        canonicalId: Did.Utils.getFullDidUri(did.uri),
+        canonicalId: Did.getFullDidUri(did.uri),
         deactivated: false,
       },
     })
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/migrated/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('typeguard accepts legal signature objects', () => {
@@ -262,9 +186,7 @@ describe('full DID', () => {
   let did: DidDocument
   let sign: SignCallback
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
-      mnemonicGenerate()
-    ) as KiltKeyringPair
+    keypair = Crypto.makeKeypairFromSeed()
     did = {
       uri: `did:kilt:${keypair.address}`,
       authentication: [
@@ -275,7 +197,11 @@ describe('full DID', () => {
         },
       ],
     }
-    sign = async ({ data, alg }) => ({ data: keypair.sign(data), alg })
+    sign = async ({ data }) => ({
+      data: keypair.sign(data),
+      keyUri: `${did.uri}#0x12345`,
+      keyType: 'sr25519',
+    })
   })
 
   beforeEach(() => {
@@ -296,44 +222,26 @@ describe('full DID', () => {
 
   it('verifies did signature over string', async () => {
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    await expect(
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_BYTES,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_BYTES, sign)
+    await expect(
+      verifyDidSignature({
         message: SIGNED_BYTES,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: true,
-      did,
-      key: did.authentication[0],
-    })
+    ).resolves.not.toThrow()
   })
 
   it('does not verify if deactivated', async () => {
@@ -344,43 +252,27 @@ describe('full DID', () => {
       },
     })
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/deactivated/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('does not verify if not on chain', async () => {
     jest.mocked(resolve).mockResolvedValue(null)
     const SIGNED_STRING = 'signed string'
-    const signature = await Did.signPayload(
-      did,
-      SIGNED_STRING,
-      sign,
-      did.authentication[0].id
-    )
-    expect(
-      await verifyDidSignature({
+    const signature = await Did.signPayload(did.uri, SIGNED_STRING, sign)
+    await expect(() =>
+      verifyDidSignature({
         message: SIGNED_STRING,
         signature,
         expectedVerificationMethod: 'authentication',
       })
-    ).toMatchObject<VerificationResult>({
-      verified: false,
-      reason: expect.stringMatching(/no result/i),
-    })
+    ).rejects.toThrow()
   })
 
   it('typeguard accepts legal signature objects', () => {
@@ -395,9 +287,7 @@ describe('full DID', () => {
 describe('type guard', () => {
   let keypair: KeyringPair
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
-      mnemonicGenerate()
-    )
+    keypair = Crypto.makeKeypairFromSeed()
   })
 
   it('rejects malformed key uri', () => {

@@ -21,6 +21,8 @@ import { documentLoader } from '../documentLoader'
 import type { AttestedProof } from '../../types'
 import { KILT_ATTESTED_PROOF_TYPE } from '../../constants'
 
+const mockedApi: any = ApiMocks.getMockedApi()
+
 const attestation: IAttestation = {
   claimHash:
     '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
@@ -31,17 +33,27 @@ const attestation: IAttestation = {
   revoked: false,
 }
 
-const spy = jest
-  .spyOn(Attestation, 'query')
-  .mockImplementation(async (): Promise<IAttestation | null> => attestation)
+const encodedAttestation = ApiMocks.mockChainQueryReturn(
+  'attestation',
+  'attestations',
+  [
+    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+    '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+    undefined,
+    false,
+    ['4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG', 0],
+  ]
+)
+mockedApi.query.attestation.attestations.mockResolvedValue(encodedAttestation)
+
+const spy = jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
 
 let suite: AttestationSuite
 let purpose: purposes.ProofPurpose
 let proof: AttestedProof
 
 beforeAll(async () => {
-  const KiltConnection = ApiMocks.createAugmentedApi()
-  suite = new AttestationSuite({ KiltConnection })
+  suite = new AttestationSuite({ KiltConnection: mockedApi })
   purpose = new purposes.AssertionProofPurpose()
   credential.proof.some((p) => {
     if (p.type === KILT_ATTESTED_PROOF_TYPE) {
@@ -85,7 +97,7 @@ describe('jsigs', () => {
 
   describe('attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<IAttestation> => attestation)
+      spy.mockReturnValue(attestation)
     })
 
     it('verifies Kilt Attestation Proof', async () => {
@@ -97,10 +109,7 @@ describe('jsigs', () => {
 
   describe('revoked', () => {
     beforeAll(() => {
-      const revoked = { ...attestation, revoked: true }
-      spy.mockImplementation(
-        async (): Promise<IAttestation> => revoked as IAttestation
-      )
+      spy.mockReturnValue({ ...attestation, revoked: true })
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {
@@ -111,10 +120,6 @@ describe('jsigs', () => {
   })
 
   describe('not attested', () => {
-    beforeAll(() => {
-      spy.mockImplementation(async (): Promise<IAttestation | null> => null)
-    })
-
     it('fails to verify Kilt Attestation Proof', async () => {
       expect(
         await jsigs.verify(credential, { suite, purpose, documentLoader })
@@ -126,7 +131,7 @@ describe('jsigs', () => {
 describe('vc-js', () => {
   describe('attested', () => {
     beforeAll(() => {
-      spy.mockImplementation(async (): Promise<IAttestation> => attestation)
+      spy.mockReturnValue(attestation)
     })
 
     it('verifies Kilt Attestation Proof', async () => {
@@ -143,10 +148,7 @@ describe('vc-js', () => {
 
   describe('revoked', () => {
     beforeAll(() => {
-      const revoked = { ...attestation, revoked: true }
-      spy.mockImplementation(
-        async (): Promise<IAttestation> => revoked as IAttestation
-      )
+      spy.mockReturnValue({ ...attestation, revoked: true })
     })
 
     it('fails to verify Kilt Attestation Proof', async () => {
@@ -162,10 +164,6 @@ describe('vc-js', () => {
   })
 
   describe('not attested', () => {
-    beforeAll(() => {
-      spy.mockImplementation(async (): Promise<IAttestation | null> => null)
-    })
-
     it('fails to verify Kilt Attestation Proof', async () => {
       expect(
         await vcjs.verifyCredential({

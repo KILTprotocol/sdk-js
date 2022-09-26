@@ -12,7 +12,7 @@
 import { ConfigService } from '@kiltprotocol/config'
 import { ApiMocks } from '@kiltprotocol/testing'
 
-import { getAddEndpointExtrinsic } from './Did.chain'
+import { serviceToChain } from './Did.chain'
 
 let api: any
 
@@ -56,9 +56,9 @@ describe('services validation', () => {
 
   it.each([...validTestURIs, ...unencodedTestUris.map(encodeURI)])(
     'allows adding services with valid URI "%s"',
-    async (uri) => {
+    (uri) => {
       expect(
-        await getAddEndpointExtrinsic({
+        serviceToChain({
           id: '#service_1',
           type: [],
           serviceEndpoint: [uri],
@@ -69,9 +69,9 @@ describe('services validation', () => {
 
   it.each([...validTestIds, ...invalidTestIds.map(encodeURIComponent)])(
     'allows adding services with valid id "%s"',
-    async (id) => {
+    (id) => {
       expect(
-        await getAddEndpointExtrinsic({
+        serviceToChain({
           id: `#${id}`,
           type: [],
           serviceEndpoint: [],
@@ -82,27 +82,27 @@ describe('services validation', () => {
 
   it.each(invalidTestIds)(
     'disallows adding services with invalid id "%s"',
-    async (id) => {
-      await expect(
-        getAddEndpointExtrinsic({
+    (id) => {
+      expect(() =>
+        serviceToChain({
           id: `#${id}`,
           type: [],
           serviceEndpoint: [],
         })
-      ).rejects.toThrow('ID')
+      ).toThrow('ID')
     }
   )
 
   it.each([...malformedTestUris, ...unencodedTestUris])(
     'disallows adding services with invalid URI "%s"',
-    async (uri) => {
-      await expect(
-        getAddEndpointExtrinsic({
+    (uri) => {
+      expect(() =>
+        serviceToChain({
           id: '#service_1',
           type: [],
           serviceEndpoint: [uri],
         })
-      ).rejects.toThrow('URI')
+      ).toThrow('URI')
     }
   )
 })

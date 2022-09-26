@@ -7,12 +7,9 @@
 
 import type {
   DecryptCallback,
-  DidDocument,
-  DidEncryptionKey,
   DidResolveKey,
   DidResourceUri,
   EncryptCallback,
-  EncryptionKeyType,
   IEncryptedMessage,
   IEncryptedMessageContents,
   ICType,
@@ -20,7 +17,6 @@ import type {
   IMessage,
   MessageBody,
 } from '@kiltprotocol/types'
-import { encryptionKeyTypes } from '@kiltprotocol/types'
 import {
   Attestation,
   Claim,
@@ -58,7 +54,7 @@ export function verifyDelegationStructure(
   if (!account) {
     throw new SDKErrors.OwnerMissingError()
   }
-  Did.Utils.validateKiltDidUri(account, 'Did')
+  Did.validateUri(account, 'Did')
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
@@ -92,10 +88,7 @@ export function verifyMessageBody(body: MessageBody): void {
         Credential.verifyDataStructure(credential)
       )
       if (body.content.delegationId) {
-        DataUtils.validateHash(
-          body.content.delegationId,
-          'Submit terms delegation id hash invalid'
-        )
+        DataUtils.verifyIsHex(body.content.delegationId)
       }
       if (body.content.quote) {
         Quote.validateQuoteSchema(Quote.QuoteSchema, body.content.quote)
@@ -108,10 +101,7 @@ export function verifyMessageBody(body: MessageBody): void {
     case 'reject-terms': {
       Claim.verifyDataStructure(body.content.claim)
       if (body.content.delegationId) {
-        DataUtils.validateHash(
-          body.content.delegationId,
-          'Reject terms delegation id hash'
-        )
+        DataUtils.verifyIsHex(body.content.delegationId)
       }
       body.content.legitimations.forEach((val) =>
         Credential.verifyDataStructure(val)
@@ -138,13 +128,8 @@ export function verifyMessageBody(body: MessageBody): void {
     case 'request-credential': {
       body.content.cTypes.forEach(
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
-          DataUtils.validateHash(
-            cTypeHash,
-            'request credential cTypeHash invalid'
-          )
-          trustedAttesters?.forEach((did) =>
-            Did.Utils.validateKiltDidUri(did, 'Did')
-          )
+          DataUtils.verifyIsHex(cTypeHash)
+          trustedAttesters?.forEach((did) => Did.validateUri(did, 'Did'))
           requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
@@ -165,21 +150,11 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'accept-credential': {
-      body.content.forEach((cTypeHash) =>
-        DataUtils.validateHash(
-          cTypeHash,
-          'accept credential message ctype hash invalid'
-        )
-      )
+      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash))
       break
     }
     case 'reject-credential': {
-      body.content.forEach((cTypeHash) =>
-        DataUtils.validateHash(
-          cTypeHash,
-          'rejected credential ctype hashes invalid'
-        )
-      )
+      body.content.forEach((cTypeHash) => DataUtils.verifyIsHex(cTypeHash))
       break
     }
     case 'request-accept-delegation': {
@@ -208,10 +183,7 @@ export function verifyMessageBody(body: MessageBody): void {
       break
     }
     case 'inform-create-delegation': {
-      DataUtils.validateHash(
-        body.content.delegationId,
-        'inform create delegation message delegation id invalid'
-      )
+      DataUtils.verifyIsHex(body.content.delegationId)
       break
     }
 
@@ -237,8 +209,8 @@ export function verifyMessageEnvelope(message: IMessage): void {
   if (receivedAt !== undefined && typeof receivedAt !== 'number') {
     throw new TypeError('Received at is expected to be a number')
   }
-  Did.Utils.validateKiltDidUri(sender, 'Did')
-  Did.Utils.validateKiltDidUri(receiver, 'Did')
+  Did.validateUri(sender, 'Did')
+  Did.validateUri(receiver, 'Did')
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('In reply to is expected to be a string')
   }
@@ -277,7 +249,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
       {
         const requestAttestation = body
         if (
-          !Did.Utils.isSameSubject(
+          !Did.isSameSubject(
             requestAttestation.content.credential.claim.owner,
             sender
           )
@@ -290,7 +262,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
       {
         const submitAttestation = body
         if (
-          !Did.Utils.isSameSubject(
+          !Did.isSameSubject(
             submitAttestation.content.attestation.owner,
             sender
           )
@@ -303,7 +275,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
       {
         const submitClaimsForCtype = body
         submitClaimsForCtype.content.forEach((presentation) => {
-          if (!Did.Utils.isSameSubject(presentation.claim.owner, sender)) {
+          if (!Did.isSameSubject(presentation.claim.owner, sender)) {
             throw new SDKErrors.IdentityMismatchError('Claims', 'Sender')
           }
         })
@@ -318,7 +290,6 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
  *
  * @param encrypted The encrypted message.
  * @param decryptCallback The callback to decrypt with the secret key.
- * @param receiverDid The DID of the receiver.
  * @param decryptionOptions Options to perform the decryption operation.
  * @param decryptionOptions.resolveKey The DID key resolver to use.
  * @returns The original [[Message]].
@@ -326,7 +297,6 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
 export async function decrypt(
   encrypted: IEncryptedMessage,
   decryptCallback: DecryptCallback,
-  receiverDid: DidDocument,
   {
     resolveKey = Did.resolveKey,
   }: {
@@ -342,28 +312,10 @@ export async function decrypt(
       `Could not resolve sender encryption key "${senderKeyUri}"`
     )
   }
-  const { fragment } = Did.Utils.parseDidUri(receiverKeyUri)
+  const { fragment } = Did.parse(receiverKeyUri)
   if (!fragment) {
     throw new SDKErrors.DidError(
       `No fragment for the receiver key ID "${receiverKeyUri}"`
-    )
-  }
-  const receiverKeyDetails = Did.getKey(receiverDid, fragment)
-  if (
-    !receiverKeyDetails ||
-    !encryptionKeyTypes.includes(receiverKeyDetails.type)
-  ) {
-    throw new SDKErrors.DidError(
-      `Could not resolve receiver encryption key "${receiverKeyUri}"`
-    )
-  }
-  const receiverKeyAlgType =
-    Did.Utils.encryptionAlgForKeyType[
-      receiverKeyDetails.type as EncryptionKeyType
-    ]
-  if (receiverKeyAlgType !== 'x25519-xsalsa20-poly1305') {
-    throw new SDKErrors.EncryptionError(
-      'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
     )
   }
 
@@ -371,11 +323,10 @@ export async function decrypt(
   try {
     data = (
       await decryptCallback({
-        publicKey: receiverKeyDetails.publicKey,
-        alg: receiverKeyAlgType,
         peerPublicKey: senderKeyDetails.publicKey,
         data: hexToU8a(ciphertext),
         nonce: hexToU8a(nonce),
+        keyUri: receiverKeyUri,
       })
     ).data
   } catch (cause) {
@@ -452,8 +403,6 @@ export function fromBody(
  * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
  *
  * @param message The message to encrypt.
- * @param senderKeyId The sender's encryption key ID, without the DID prefix and '#' symbol.
- * @param senderDid The sender's DID to use to fetch the right encryption key.
  * @param encryptCallback The callback to encrypt with the secret key.
  * @param receiverKeyUri The key URI of the receiver.
  * @param encryptionOptions Options to perform the encryption operation.
@@ -463,8 +412,6 @@ export function fromBody(
  */
 export async function encrypt(
   message: IMessage,
-  senderKeyId: DidEncryptionKey['id'],
-  senderDid: DidDocument,
   encryptCallback: EncryptCallback,
   receiverKeyUri: DidResourceUri,
   {
@@ -480,22 +427,6 @@ export async function encrypt(
   if (message.receiver !== receiverKey.controller) {
     throw new SDKErrors.IdentityMismatchError('receiver public key', 'receiver')
   }
-  if (message.sender !== senderDid.uri) {
-    throw new SDKErrors.IdentityMismatchError('sender public key', 'sender')
-  }
-  const senderKey = Did.getKey(senderDid, senderKeyId)
-  if (!senderKey || !encryptionKeyTypes.includes(senderKey.type)) {
-    throw new SDKErrors.DidError(
-      `Cannot find key with ID "${senderKeyId}" for the sender DID`
-    )
-  }
-  const senderKeyAlgType =
-    Did.Utils.encryptionAlgForKeyType[senderKey.type as EncryptionKeyType]
-  if (senderKeyAlgType !== 'x25519-xsalsa20-poly1305') {
-    throw new SDKErrors.EncryptionError(
-      'Only the "x25519-xsalsa20-poly1305" encryption algorithm currently supported'
-    )
-  }
 
   const toEncrypt: IEncryptedMessageContents = {
     body: message.body,
@@ -510,11 +441,11 @@ export async function encrypt(
   const serialized = stringToU8a(JSON.stringify(toEncrypt))
 
   const encrypted = await encryptCallback({
-    alg: senderKeyAlgType,
+    did: message.sender,
     data: serialized,
-    publicKey: senderKey.publicKey,
     peerPublicKey: receiverKey.publicKey,
   })
+
   const ciphertext = u8aToHex(encrypted.data)
   const nonce = u8aToHex(encrypted.nonce)
 
@@ -522,7 +453,7 @@ export async function encrypt(
     receivedAt: message.receivedAt,
     ciphertext,
     nonce,
-    senderKeyUri: `${senderDid.uri}${senderKey.id}`,
+    senderKeyUri: encrypted.keyUri,
     receiverKeyUri: receiverKey.id,
   }
 }

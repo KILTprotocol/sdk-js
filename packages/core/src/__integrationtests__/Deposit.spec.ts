@@ -9,7 +9,6 @@
  * @group integration/deposit
  */
 
-import { Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromLightDid,
@@ -18,7 +17,7 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import {
+import type {
   DidDocument,
   IAttestation,
   ICredential,
@@ -27,6 +26,7 @@ import {
   SignCallback,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 import {
   devFaucet,
@@ -36,14 +36,13 @@ import {
   isCtypeOnChain,
   submitExtrinsic,
 } from './utils'
-import { Balance } from '../balance'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as Credential from '../credential'
 import { disconnect } from '../kilt'
-import { queryRaw } from '../attestation/Attestation.chain'
 import * as CType from '../ctype'
 
+let api: ApiPromise
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
 let attestation: IAttestation
@@ -54,19 +53,32 @@ async function checkDeleteFullDid(
   fullDid: DidDocument,
   sign: SignCallback
 ): Promise<boolean> {
-  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
-  const deleteDid = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.toChain(fullDid.uri)
+  )
+  const deleteDid = api.tx.did.delete(storedEndpointsCount)
 
-  tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
+  tx = await Did.authorizeExtrinsic(
+    fullDid.uri,
+    deleteDid,
+    sign,
+    identity.address
+  )
 
-  const balanceBeforeDeleting = await Balance.getBalances(identity.address)
+  const balanceBeforeDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
-  const didResult = await Did.Chain.queryDetails(fullDid.uri)
-  const didDeposit = didResult!.deposit
+  const didResult = Did.documentFromChain(
+    await api.query.did.did(Did.toChain(fullDid.uri))
+  )
+  const didDeposit = didResult.deposit
 
   await submitExtrinsic(tx, identity)
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address)
+  const balanceAfterDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeDeleting.reserved
     .sub(didDeposit.amount)
@@ -77,20 +89,25 @@ async function checkReclaimFullDid(
   identity: KeyringPair,
   fullDid: DidDocument
 ): Promise<boolean> {
-  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
-  tx = await Did.Chain.getReclaimDepositExtrinsic(
-    fullDid.uri,
-    storedEndpointsCount
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.toChain(fullDid.uri)
   )
+  tx = api.tx.did.reclaimDeposit(Did.toChain(fullDid.uri), storedEndpointsCount)
 
-  const balanceBeforeRevoking = await Balance.getBalances(identity.address)
+  const balanceBeforeRevoking = (
+    await api.query.system.account(identity.address)
+  ).data
 
-  const didResult = await Did.Chain.queryDetails(fullDid.uri)
-  const didDeposit = didResult!.deposit
+  const didResult = Did.documentFromChain(
+    await api.query.did.did(Did.toChain(fullDid.uri))
+  )
+  const didDeposit = didResult.deposit
 
   await submitExtrinsic(tx, identity)
 
-  const balanceAfterRevoking = await Balance.getBalances(identity.address)
+  const balanceAfterRevoking = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeRevoking.reserved
     .sub(didDeposit.amount)
@@ -105,9 +122,13 @@ async function checkRemoveFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getStoreTx(attestation)
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -115,17 +136,21 @@ async function checkRemoveFullDidAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  const attestationResult = await queryRaw(attestation.claimHash)
+  const attestationResult = await api.query.attestation.attestations(
+    attestation.claimHash
+  )
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
-  const balanceBeforeRemoving = await Balance.getBalances(identity.address)
+  const balanceBeforeRemoving = (
+    await api.query.system.account(identity.address)
+  ).data
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getRemoveTx(attestation.claimHash, 0)
+  tx = api.tx.attestation.remove(attestation.claimHash, null)
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -133,7 +158,9 @@ async function checkRemoveFullDidAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  const balanceAfterRemoving = await Balance.getBalances(identity.address)
+  const balanceAfterRemoving = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeRemoving.reserved
     .sub(attestationDeposit)
@@ -148,9 +175,13 @@ async function checkReclaimFullDidAttestation(
 ): Promise<boolean> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getStoreTx(attestation)
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -158,19 +189,25 @@ async function checkReclaimFullDidAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
+  const balanceBeforeReclaiming = (
+    await api.query.system.account(identity.address)
+  ).data
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
+  tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
 
-  const attestationResult = await queryRaw(attestation.claimHash)
+  const attestationResult = await api.query.attestation.attestations(
+    attestation.claimHash
+  )
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
   await submitExtrinsic(tx, identity)
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address)
+  const balanceAfterDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeReclaiming.reserved
     .sub(attestationDeposit)
@@ -185,9 +222,13 @@ async function checkDeletedDidReclaimAttestation(
 ): Promise<void> {
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await Attestation.getStoreTx(attestation)
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
   authorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     tx,
     sign,
     identity.address
@@ -195,16 +236,23 @@ async function checkDeletedDidReclaimAttestation(
 
   await submitExtrinsic(authorizedTx, identity)
 
-  storedEndpointsCount = await Did.Chain.queryEndpointsCounts(fullDid.uri)
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.toChain(fullDid.uri)
+  )
 
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  const deleteDid = await Did.Chain.getDeleteDidExtrinsic(storedEndpointsCount)
-  tx = await Did.authorizeExtrinsic(fullDid, deleteDid, sign, identity.address)
+  const deleteDid = api.tx.did.delete(storedEndpointsCount)
+  tx = await Did.authorizeExtrinsic(
+    fullDid.uri,
+    deleteDid,
+    sign,
+    identity.address
+  )
 
   await submitExtrinsic(tx, identity)
 
-  tx = await Attestation.getReclaimDepositTx(attestation.claimHash)
+  tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
 
   await submitExtrinsic(tx, identity)
 }
@@ -215,18 +263,22 @@ async function checkWeb3Deposit(
   sign: SignCallback
 ): Promise<boolean> {
   const web3Name = 'test-web3name'
-  const balanceBeforeClaiming = await Balance.getBalances(identity.address)
-  const depositAmount = await Web3Names.queryDepositAmount()
+  const balanceBeforeClaiming = (
+    await api.query.system.account(identity.address)
+  ).data
 
-  const claimTx = await Web3Names.getClaimTx(web3Name)
+  const depositAmount = api.consts.web3Names.deposit.toBn()
+  const claimTx = api.tx.web3Names.claim(web3Name)
   let didAuthorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     claimTx,
     sign,
     identity.address
   )
   await submitExtrinsic(didAuthorizedTx, identity)
-  const balanceAfterClaiming = await Balance.getBalances(identity.address)
+  const balanceAfterClaiming = (
+    await api.query.system.account(identity.address)
+  ).data
   if (
     !balanceAfterClaiming.reserved
       .sub(balanceBeforeClaiming.reserved)
@@ -235,15 +287,17 @@ async function checkWeb3Deposit(
     return false
   }
 
-  const releaseTx = await Web3Names.getReleaseByOwnerTx()
+  const releaseTx = api.tx.web3Names.releaseByOwner()
   didAuthorizedTx = await Did.authorizeExtrinsic(
-    fullDid,
+    fullDid.uri,
     releaseTx,
     sign,
     identity.address
   )
   await submitExtrinsic(didAuthorizedTx, identity)
-  const balanceAfterReleasing = await Balance.getBalances(identity.address)
+  const balanceAfterReleasing = (
+    await api.query.system.account(identity.address)
+  ).data
 
   if (!balanceAfterReleasing.reserved.eq(balanceBeforeClaiming.reserved)) {
     return false
@@ -256,7 +310,7 @@ let keys: KeyTool[]
 let credential: ICredential
 
 beforeAll(async () => {
-  await initializeApi()
+  api = await initializeApi()
 }, 30_000)
 
 beforeAll(async () => {
@@ -277,9 +331,9 @@ beforeAll(async () => {
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
     const extrinsic = await Did.authorizeExtrinsic(
-      attester,
-      await CType.getStoreTx(driversLicenseCType),
-      attesterKey.sign,
+      attester.uri,
+      api.tx.ctype.add(CType.toChain(driversLicenseCType)),
+      attesterKey.getSignCallback(attester),
       devFaucet.address
     )
     await submitExtrinsic(extrinsic, devFaucet)
@@ -299,8 +353,7 @@ beforeAll(async () => {
   credential = Credential.fromClaim(claim)
   await Credential.createPresentation({
     credential,
-    signCallback: claimer.sign,
-    claimerDid: claimerLightDid,
+    signCallback: claimer.getSignCallback(claimerLightDid),
   })
 }, 120_000)
 
@@ -342,27 +395,27 @@ describe('Different deposits scenarios', () => {
     testFullDidFive = await createFullDidFromLightDid(
       keys[4].keypair,
       testDidFive,
-      keys[4].sign
+      keys[4].storeDidCallback
     )
     testFullDidSix = await createFullDidFromLightDid(
       keys[5].keypair,
       testDidSix,
-      keys[5].sign
+      keys[5].storeDidCallback
     )
     testFullDidSeven = await createFullDidFromLightDid(
       keys[6].keypair,
       testDidSeven,
-      keys[6].sign
+      keys[6].storeDidCallback
     )
     testFullDidEight = await createFullDidFromLightDid(
       keys[7].keypair,
       testDidEight,
-      keys[7].sign
+      keys[7].storeDidCallback
     )
     testFullDidNine = await createFullDidFromLightDid(
       keys[8].keypair,
       testDidNine,
-      keys[8].sign
+      keys[8].storeDidCallback
     )
     testFullDidTen = await createFullDidFromSeed(
       keys[9].keypair,
@@ -372,7 +425,11 @@ describe('Different deposits scenarios', () => {
 
   it('Check if deleting full DID returns deposit', async () => {
     expect(
-      await checkDeleteFullDid(keys[0].keypair, testFullDidOne, keys[0].sign)
+      await checkDeleteFullDid(
+        keys[0].keypair,
+        testFullDidOne,
+        keys[0].getSignCallback(testFullDidOne)
+      )
     ).toBe(true)
   }, 45_000)
   it('Check if reclaiming full DID returns deposit', async () => {
@@ -385,7 +442,7 @@ describe('Different deposits scenarios', () => {
       await checkRemoveFullDidAttestation(
         keys[2].keypair,
         testFullDidThree,
-        keys[2].sign,
+        keys[2].getSignCallback(testFullDidThree),
         credential
       )
     ).toBe(true)
@@ -395,14 +452,18 @@ describe('Different deposits scenarios', () => {
       await checkReclaimFullDidAttestation(
         keys[3].keypair,
         testFullDidFour,
-        keys[3].sign,
+        keys[3].getSignCallback(testFullDidFour),
         credential
       )
     ).toBe(true)
   }, 90_000)
   it('Check if deleting from a migrated light DID to a full DID returns deposit', async () => {
     expect(
-      await checkDeleteFullDid(keys[4].keypair, testFullDidFive, keys[4].sign)
+      await checkDeleteFullDid(
+        keys[4].keypair,
+        testFullDidFive,
+        keys[4].getSignCallback(testFullDidFive)
+      )
     ).toBe(true)
   }, 90_000)
   it('Check if reclaiming from a migrated light DID to a full DID returns deposit', async () => {
@@ -415,7 +476,7 @@ describe('Different deposits scenarios', () => {
       await checkRemoveFullDidAttestation(
         keys[6].keypair,
         testFullDidSeven,
-        keys[6].sign,
+        keys[6].getSignCallback(testFullDidSeven),
         credential
       )
     ).toBe(true)
@@ -425,7 +486,7 @@ describe('Different deposits scenarios', () => {
       await checkReclaimFullDidAttestation(
         keys[7].keypair,
         testFullDidEight,
-        keys[7].sign,
+        keys[7].getSignCallback(testFullDidEight),
         credential
       )
     ).toBe(true)
@@ -434,13 +495,17 @@ describe('Different deposits scenarios', () => {
     await checkDeletedDidReclaimAttestation(
       keys[8].keypair,
       testFullDidNine,
-      keys[8].sign,
+      keys[8].getSignCallback(testFullDidNine),
       credential
     )
   }, 120_000)
   it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
     expect(
-      await checkWeb3Deposit(keys[9].keypair, testFullDidTen, keys[9].sign)
+      await checkWeb3Deposit(
+        keys[9].keypair,
+        testFullDidTen,
+        keys[9].getSignCallback(testFullDidTen)
+      )
     ).toBe(true)
   }, 120_000)
 })
