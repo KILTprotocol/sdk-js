@@ -58,6 +58,13 @@ export type SignCallback = (
 ) => Promise<SignResponseData>
 
 /**
+ * A callback function to sign extrinsics.
+ */
+export type SignExtrinsicCallback = (
+  signData: SignRequestData
+) => Promise<Omit<SignResponseData, 'keyUri'>>
+
+/**
  * Base interface for encryption requests.
  */
 export interface EncryptRequestData {

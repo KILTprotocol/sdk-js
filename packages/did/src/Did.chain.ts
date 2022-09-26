@@ -24,7 +24,7 @@ import type {
   KiltAddress,
   NewDidEncryptionKey,
   NewDidVerificationKey,
-  SignCallback,
+  SignExtrinsicCallback,
   SignRequestData,
   SignResponseData,
   SubmittableExtrinsic,
@@ -403,7 +403,7 @@ export async function getStoreTx(
 }
 
 export interface SigningOptions {
-  sign: SignCallback
+  sign: SignExtrinsicCallback
   keyRelationship: VerificationKeyRelationship
 }
 
