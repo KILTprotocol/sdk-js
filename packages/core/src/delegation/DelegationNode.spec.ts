@@ -38,11 +38,11 @@ jest.mock('./DelegationNode.chain', () => ({
   getChildren: jest.fn(async (node: DelegationNode) =>
     node.childrenIds.map((id) => (id in nodes ? nodes[id] : null))
   ),
-  query: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
+  fetch: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
 }))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
-  query: jest.fn(async (id: string) =>
+  fetch: jest.fn(async (id: string) =>
     id in hierarchiesDetails ? hierarchiesDetails[id] : null
   ),
 }))
