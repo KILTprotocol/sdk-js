@@ -163,7 +163,7 @@ export function connectedAccountsFromChain(
  * @param linkedAccount The account to use for the lookup.
  * @returns The Web3 name linked to the given account, or throws Error otherwise.
  */
-export async function queryWeb3Name(linkedAccount: Address): Promise<Web3Name> {
+export async function fetchWeb3Name(linkedAccount: Address): Promise<Web3Name> {
   const api = ConfigService.get('api')
   // TODO: Replace with custom RPC call when available.
   const encoded = await api.query.didLookup.connectedDids(
