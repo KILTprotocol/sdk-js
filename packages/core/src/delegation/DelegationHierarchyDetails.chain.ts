@@ -15,12 +15,12 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { delegationHierarchyDetailsFromChain } from './DelegationDecoder.js'
 
 /**
- * Query a delegation hierarchy node from the blockchain given its identifier.
+ * Fetch a delegation hierarchy node from the blockchain given its identifier.
  *
- * @param rootId The root delegation node ID to query.
- * @returns Either the retrieved [[IDelegationHierarchyDetails]] or null.
+ * @param rootId The root delegation node ID to fetch.
+ * @returns The retrieved [[IDelegationHierarchyDetails]].
  */
-export async function query(
+export async function fetch(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails> {
   const api = ConfigService.get('api')

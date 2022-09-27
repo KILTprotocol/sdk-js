@@ -28,7 +28,7 @@ import {
   getChildren,
   fetch,
 } from './DelegationNode.chain.js'
-import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
+import { fetch as fetchDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
@@ -167,7 +167,7 @@ export class DelegationNode implements IDelegationNode {
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
-      this.hierarchyDetails = await queryDetails(this.hierarchyId)
+      this.hierarchyDetails = await fetchDetails(this.hierarchyId)
     }
     return this.hierarchyDetails
   }
