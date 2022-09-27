@@ -314,7 +314,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Verifies the delegation node by querying it from chain and checking its revocation status.
+   * Verifies the delegation node by fetching it from chain and checking its revocation status.
    */
   public async verify(): Promise<void> {
     const node = await fetch(this.id)
@@ -430,7 +430,7 @@ export class DelegationNode implements IDelegationNode {
    * Queries the delegation node with its [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
-   * @returns Promise containing the [[DelegationNode]] or [null].
+   * @returns Promise containing the [[DelegationNode]].
    */
   public static async fetch(
     delegationId: IDelegationNode['id']

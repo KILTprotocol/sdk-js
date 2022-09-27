@@ -123,7 +123,7 @@ mockedApi.query.did.did.mockReturnValue(
 
 /*
  * Functions tested:
- * - query
+ * - fetch
  *
  * Functions tested in integration tests:
  * - getKeysForExtrinsic

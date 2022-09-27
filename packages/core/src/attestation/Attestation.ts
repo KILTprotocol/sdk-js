@@ -80,10 +80,10 @@ export function fromCredentialAndDid(
 }
 
 /**
- * Tries to query the delegationId and if successful query the rootId.
+ * Tries to fetch the delegationId and if successful fetch the rootId.
  *
  * @param input - The ID of the Delegation stored in [[Attestation]] , or the whole Attestation object.
- * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
+ * @returns A promise of the affiliated [[DelegationNode]].
  */
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation

@@ -591,7 +591,7 @@ describe('DelegationHierarchy', () => {
     expect(rootNode.id).toBe(ROOT_IDENTIFIER)
   })
 
-  it('query root delegation', async () => {
+  it('fetch root delegation', async () => {
     const queriedDelegation = await DelegationNode.fetch(ROOT_IDENTIFIER)
     expect(queriedDelegation.account).toBe(didAlice)
     expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)

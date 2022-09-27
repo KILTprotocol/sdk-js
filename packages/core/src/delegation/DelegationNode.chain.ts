@@ -48,7 +48,7 @@ export function addDelegationToChainArgs(
 /**
  * Fetch a delegation node from the blockchain given its identifier.
  *
- * @param delegationId The delegation node ID to query.
+ * @param delegationId The delegation node ID to fetch.
  * @returns The retrieved [[DelegationNode]].
  */
 export async function fetch(

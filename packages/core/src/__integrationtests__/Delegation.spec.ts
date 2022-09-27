@@ -432,7 +432,7 @@ describe('Deposit claiming', () => {
 })
 
 describe('handling queries to data not on chain', () => {
-  it('DelegationNode query on empty', async () => {
+  it('DelegationNode fetch on empty', async () => {
     await expect(DelegationNode.fetch(randomAsHex(32))).rejects.toThrow()
   })
 
