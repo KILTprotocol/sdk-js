@@ -104,7 +104,7 @@ export async function getDelegationDetails(
     throw new SDKErrors.HierarchyQueryError('null')
   }
 
-  const delegationNode = await DelegationNode.query(delegationId)
+  const delegationNode = await DelegationNode.fetch(delegationId)
   return delegationNode.getHierarchyDetails()
 }
 

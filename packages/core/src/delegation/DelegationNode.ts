@@ -432,7 +432,7 @@ export class DelegationNode implements IDelegationNode {
    * @param delegationId The unique identifier of the desired delegation.
    * @returns Promise containing the [[DelegationNode]] or [null].
    */
-  public static async query(
+  public static async fetch(
     delegationId: IDelegationNode['id']
   ): Promise<DelegationNode> {
     log.info(`:: query('${delegationId}')`)

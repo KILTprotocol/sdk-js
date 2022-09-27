@@ -304,7 +304,7 @@ describe('revocation', () => {
 
     // Check that delegation fails to verify but that it is still on the blockchain (i.e., not removed)
     await expect(delegationA.verify()).rejects.toThrow()
-    expect(await DelegationNode.query(delegationA.id)).not.toBeNull()
+    expect(await DelegationNode.fetch(delegationA.id)).not.toBeNull()
   }, 60_000)
 
   it('delegate cannot revoke root but can revoke own delegation', async () => {
@@ -410,8 +410,8 @@ describe('Deposit claiming', () => {
       rootKey.getSignCallback(root)
     )
 
-    expect(await DelegationNode.query(delegatedNode.id)).not.toBeNull()
-    expect(await DelegationNode.query(subDelegatedNode.id)).not.toBeNull()
+    expect(await DelegationNode.fetch(delegatedNode.id)).not.toBeNull()
+    expect(await DelegationNode.fetch(subDelegatedNode.id)).not.toBeNull()
 
     const depositClaimTx = await delegatedNode.getReclaimDepositTx()
 
@@ -426,14 +426,14 @@ describe('Deposit claiming', () => {
     // Test removal success with the right account.
     await submitExtrinsic(depositClaimTx, paymentAccount)
 
-    await expect(DelegationNode.query(delegatedNode.id)).rejects.toThrow()
-    await expect(DelegationNode.query(subDelegatedNode.id)).rejects.toThrow()
+    await expect(DelegationNode.fetch(delegatedNode.id)).rejects.toThrow()
+    await expect(DelegationNode.fetch(subDelegatedNode.id)).rejects.toThrow()
   }, 80_000)
 })
 
 describe('handling queries to data not on chain', () => {
   it('DelegationNode query on empty', async () => {
-    await expect(DelegationNode.query(randomAsHex(32))).rejects.toThrow()
+    await expect(DelegationNode.fetch(randomAsHex(32))).rejects.toThrow()
   })
 
   it('getAttestationHashes on empty', async () => {

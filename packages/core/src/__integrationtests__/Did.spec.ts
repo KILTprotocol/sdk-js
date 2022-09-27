@@ -1144,7 +1144,7 @@ describe('DID extrinsics batching', () => {
     await expect(CType.verifyStored(ctype2)).resolves.not.toThrow()
 
     // Test correct use of delegation keys
-    const node = await DelegationNode.query(rootNode.id)
+    const node = await DelegationNode.fetch(rootNode.id)
     expect(node.revoked).toBe(true)
   })
 })

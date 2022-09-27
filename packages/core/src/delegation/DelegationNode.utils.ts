@@ -48,7 +48,7 @@ export async function countNodeDepth(
   if (attestation.owner !== attester && attestation.delegationId !== null) {
     delegationTreeTraversalSteps += 1
     try {
-      const delegationNode = await DelegationNode.query(
+      const delegationNode = await DelegationNode.fetch(
         attestation.delegationId
       )
       const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
