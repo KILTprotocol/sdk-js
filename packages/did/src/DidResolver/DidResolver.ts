@@ -149,15 +149,15 @@ export async function resolveKey(
 
   // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    throw new SDKErrors.DidNotFoundError()
+    throw new SDKErrors.DidResolveUpgradedDidError()
   }
   if (!document) {
-    throw new SDKErrors.DidNotFoundError()
+    throw new SDKErrors.DidDeactivatedError()
   }
 
   const key = Did.getKey(document, keyId)
   if (!key) {
-    throw new SDKErrors.DidNotFoundError()
+    throw new SDKErrors.DidNotFoundError('Key not found in DID')
   }
 
   const { includedAt } = key
@@ -188,16 +188,15 @@ export async function resolveService(
   const api = ConfigService.get('api')
 
   if (type === 'full') {
-    const encoded = await api.query.did.serviceEndpoints(
+    const chainService = await api.query.did.serviceEndpoints(
       toChain(serviceUri),
       resourceIdToChain(serviceId)
     )
-    if (encoded.isNone) {
-      throw new SDKErrors.DidNotFoundError()
+    if (chainService.isNone) {
+      throw new SDKErrors.DidNotFoundError('Service not found in DID')
     }
-    const serviceEndpoint = serviceFromChain(encoded)
     return {
-      ...serviceEndpoint,
+      ...serviceFromChain(chainService),
       id: serviceUri,
     }
   }
@@ -214,19 +213,19 @@ export async function resolveService(
 
   // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    throw new SDKErrors.DidNotFoundError()
+    throw new SDKErrors.DidResolveUpgradedDidError()
   }
   if (!document) {
-    throw new SDKErrors.DidNotFoundError()
+    throw new SDKErrors.DidDeactivatedError()
   }
 
-  const endpoint = Did.getService(document, serviceId)
-  if (!endpoint) {
-    throw new SDKErrors.DidNotFoundError()
+  const service = Did.getService(document, serviceId)
+  if (!service) {
+    throw new SDKErrors.DidNotFoundError('Service not found in DID')
   }
 
   return {
-    ...endpoint,
+    ...service,
     id: `${did}${serviceId}`,
   }
 }
