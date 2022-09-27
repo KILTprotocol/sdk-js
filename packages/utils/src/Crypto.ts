@@ -351,6 +351,13 @@ export function hashStatements(
   })
 }
 
+/**
+ * Generate typed KILT blockchain keypair from a seed or random data.
+ *
+ * @param seed The keypair seed, only optional in the tests.
+ * @param type Optional type of the keypair.
+ * @returns The keypair.
+ */
 export function makeKeypairFromSeed<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
@@ -358,6 +365,13 @@ export function makeKeypairFromSeed<
   return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
 }
 
+/**
+ * Generate typed KILT blockchain keypair from a polkadot keypair URI.
+ *
+ * @param uri The URI.
+ * @param type Optional type of the keypair.
+ * @returns The keypair.
+ */
 export function makeKeypairFromUri<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
@@ -365,7 +379,13 @@ export function makeKeypairFromUri<
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
 }
 
-export function makeEncryptionKeyFromSeed(
+/**
+ * Generate from a seed a x25519 keypair to be used as DID encryption key.
+ *
+ * @param seed The keypair seed, only optional in the tests.
+ * @returns The keypair.
+ */
+export function makeEncryptionKeypairFromSeed(
   seed = randomAsU8a(32)
 ): KiltEncryptionKeypair {
   return {

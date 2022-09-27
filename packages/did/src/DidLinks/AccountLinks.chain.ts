@@ -96,6 +96,12 @@ function encodeMultiAddress(address: Address): EncodedMultiAddress {
 
 /* ### QUERY ### */
 
+/**
+ * Format a blockchain address to be used as a parameter for the blockchain API functions.
+ *
+ * @param account The account to format.
+ * @returns The blockchain-formatted account.
+ */
 export function accountToChain(account: Address): Address {
   const api = ConfigService.get('api')
   if (!isEthereumEnabled(api)) {

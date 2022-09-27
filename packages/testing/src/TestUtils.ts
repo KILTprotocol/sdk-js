@@ -66,7 +66,6 @@ export function makeEncryptCallback({
  *
  * @param secretKey The options parameter.
  * @param secretKey.secretKey The key to use for decryption.
- * @param secretKey.type The X25519 type, only this one is supported.
  * @returns The callback.
  */
 export function makeDecryptCallback({
@@ -96,7 +95,7 @@ export interface EncryptionKeyTool {
  * @returns Object with secret and public key and the key type.
  */
 export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
-  const keypair = Crypto.makeEncryptionKeyFromSeed(blake2AsU8a(seed, 256))
+  const keypair = Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))
 
   const encrypt = makeEncryptCallback(keypair)
   const decrypt = makeDecryptCallback(keypair)

@@ -60,14 +60,32 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 // ### RAW QUERYING (lowest layer)
 
+/**
+ * Format a DID to be used as a parameter for the blockchain API functions.
+
+ * @param did The DID to format.
+ * @returns The blockchain-formatted DID.
+ */
 export function toChain(did: DidUri): KiltAddress {
   return parse(did).address
 }
 
+/**
+ * Format a DID resource ID to be used as a parameter for the blockchain API functions.
+
+ * @param id The DID resource ID to format.
+ * @returns The blockchain-formatted ID.
+ */
 export function resourceIdToChain(id: UriFragment): string {
   return id.replace(/^#/, '')
 }
 
+/**
+ * Convert the deposit data coming from the blockchain to JS object.
+ *
+ * @param deposit The blockchain-formatted deposit data.
+ * @returns The deposit data.
+ */
 export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   return {
     owner: Crypto.encodeAddress(deposit.owner, ss58Format),
@@ -101,10 +119,22 @@ function didPublicKeyDetailsFromChain(
   }
 }
 
+/**
+ * Convert the DID data from blockchain format to the DID URI.
+ *
+ * @param encoded The chain-formatted DID.
+ * @returns The DID URI.
+ */
 export function fromChain(encoded: AccountId32): DidUri {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
+/**
+ * Convert the DID Document data from the blockchain format to a JS object.
+ *
+ * @param encoded The chain-formatted DID Document.
+ * @returns The DID Document.
+ */
 export function documentFromChain(
   encoded: Option<DidDidDetails>
 ): ChainDocument {
@@ -220,9 +250,15 @@ export function validateService(endpoint: DidServiceEndpoint): void {
   })
 }
 
-export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
-  validateService(endpoint)
-  const { id, type, serviceEndpoint } = endpoint
+/**
+ * Format the DID service to be used as a parameter for the blockchain API functions.
+ *
+ * @param service The DID service to format.
+ * @returns The blockchain-formatted DID service.
+ */
+export function serviceToChain(service: DidServiceEndpoint): ChainEndpoint {
+  validateService(service)
+  const { id, type, serviceEndpoint } = service
   return {
     id: resourceIdToChain(id),
     serviceTypes: type,
@@ -230,6 +266,12 @@ export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
   }
 }
 
+/**
+ * Convert the DID service data coming from the blockchain to JS object.
+ *
+ * @param encoded The blockchain-formatted DID service data.
+ * @returns The DID service.
+ */
 export function serviceFromChain(
   encoded: Option<DidServiceEndpointsDidEndpoint>
 ): DidServiceEndpoint {
