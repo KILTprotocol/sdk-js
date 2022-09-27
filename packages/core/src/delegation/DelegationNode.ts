@@ -26,7 +26,7 @@ import {
   addDelegationToChainArgs,
   getAttestationHashes,
   getChildren,
-  query,
+  fetch,
 } from './DelegationNode.chain.js'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
@@ -180,7 +180,7 @@ export class DelegationNode implements IDelegationNode {
   public async getChildren(): Promise<DelegationNode[]> {
     try {
       // Updates the children info with the latest information available on chain.
-      this.childrenIdentifiers = (await query(this.id)).childrenIds
+      this.childrenIdentifiers = (await fetch(this.id)).childrenIds
     } catch {
       // ignore missing
     }
@@ -280,7 +280,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
   public async getLatestState(): Promise<DelegationNode> {
-    return query(this.id)
+    return fetch(this.id)
   }
 
   /**
@@ -317,7 +317,7 @@ export class DelegationNode implements IDelegationNode {
    * Verifies the delegation node by querying it from chain and checking its revocation status.
    */
   public async verify(): Promise<void> {
-    const node = await query(this.id)
+    const node = await fetch(this.id)
     if (node.revoked !== false) {
       throw new SDKErrors.InvalidDelegationNodeError('Delegation node revoked')
     }
@@ -346,7 +346,7 @@ export class DelegationNode implements IDelegationNode {
       }
     }
     try {
-      const parent = await query(this.parentId)
+      const parent = await fetch(this.parentId)
       const result = await parent.findAncestorOwnedBy(did)
       result.steps += 1
       return result
@@ -436,7 +436,7 @@ export class DelegationNode implements IDelegationNode {
     delegationId: IDelegationNode['id']
   ): Promise<DelegationNode> {
     log.info(`:: query('${delegationId}')`)
-    const result = await query(delegationId)
+    const result = await fetch(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
     return result
   }

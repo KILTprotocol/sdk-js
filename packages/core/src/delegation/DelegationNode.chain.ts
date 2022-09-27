@@ -46,12 +46,12 @@ export function addDelegationToChainArgs(
 }
 
 /**
- * Query a delegation node from the blockchain given its identifier.
+ * Fetch a delegation node from the blockchain given its identifier.
  *
  * @param delegationId The delegation node ID to query.
- * @returns Either the retrieved [[DelegationNode]] or null.
+ * @returns The retrieved [[DelegationNode]].
  */
-export async function query(
+export async function fetch(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode> {
   const api = ConfigService.get('api')
@@ -75,7 +75,7 @@ export async function getChildren(
   delegationNode: DelegationNode
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNode.id}')`)
-  const childrenNodes = await Promise.all(delegationNode.childrenIds.map(query))
+  const childrenNodes = await Promise.all(delegationNode.childrenIds.map(fetch))
   log.info(`children: ${JSON.stringify(childrenNodes)}`)
   return childrenNodes
 }
