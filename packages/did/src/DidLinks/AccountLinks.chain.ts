@@ -161,7 +161,7 @@ export function connectedAccountsFromChain(
  * Return the Web3 name associated with the given account, if present.
  *
  * @param linkedAccount The account to use for the lookup.
- * @returns The Web3 name linked to the given account, or `null` otherwise.
+ * @returns The Web3 name linked to the given account, or throws Error otherwise.
  */
 export async function queryWeb3Name(linkedAccount: Address): Promise<Web3Name> {
   const api = ConfigService.get('api')

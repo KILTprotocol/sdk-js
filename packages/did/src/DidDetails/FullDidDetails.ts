@@ -36,7 +36,7 @@ import { parse } from '../Did.utils.js'
  *
  * @param didUri The URI of the DID to fetch.
  *
- * @returns The fetched [[DidDocument]], or null if DID does not exist.
+ * @returns The fetched [[DidDocument]], or throws Error if DID does not exist.
  */
 export async function query(didUri: DidUri): Promise<DidDocument> {
   const { fragment, type } = parse(didUri)
