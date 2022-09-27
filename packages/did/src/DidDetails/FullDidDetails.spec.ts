@@ -132,7 +132,7 @@ mockedApi.query.did.did.mockReturnValue(
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDid = await Did.query(existingDid)
+    const fullDid = await Did.fetch(existingDid)
 
     expect(fullDid).not.toBeNull()
     expect(fullDid).toEqual(<DidDocument>{
@@ -195,7 +195,7 @@ describe('When creating an instance from the chain', () => {
       ApiMocks.mockChainQueryReturn('did', 'did')
     )
 
-    await expect(Did.query(nonExistingDid)).rejects.toThrow()
+    await expect(Did.fetch(nonExistingDid)).rejects.toThrow()
   })
 
   describe('authorizeBatch', () => {

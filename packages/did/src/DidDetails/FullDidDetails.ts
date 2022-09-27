@@ -38,7 +38,7 @@ import { parse } from '../Did.utils.js'
  *
  * @returns The fetched [[DidDocument]], or throws Error if DID does not exist.
  */
-export async function query(didUri: DidUri): Promise<DidDocument> {
+export async function fetch(didUri: DidUri): Promise<DidDocument> {
   const { fragment, type } = parse(didUri)
   if (fragment) {
     throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)

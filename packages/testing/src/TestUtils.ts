@@ -315,7 +315,7 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  return Did.query(Did.getFullDidUri(uri))
+  return Did.fetch(Did.getFullDidUri(uri))
 }
 
 export async function createFullDidFromSeed(

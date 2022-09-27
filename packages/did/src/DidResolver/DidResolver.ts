@@ -36,7 +36,7 @@ export async function resolve(
 
   let document: DidDocument | undefined
   try {
-    document = await Did.query(getFullDidUri(did))
+    document = await Did.fetch(getFullDidUri(did))
   } catch {
     // ignore errors
   }
