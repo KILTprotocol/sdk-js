@@ -435,7 +435,7 @@ export class DelegationNode implements IDelegationNode {
   public static async fetch(
     delegationId: IDelegationNode['id']
   ): Promise<DelegationNode> {
-    log.info(`:: query('${delegationId}')`)
+    log.info(`:: fetch('${delegationId}')`)
     const result = await fetch(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
     return result
