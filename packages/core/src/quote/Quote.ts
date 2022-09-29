@@ -62,7 +62,6 @@ export function validateQuoteSchema(
  * Signs a [[Quote]] object as an Attester.
  *
  * @param quoteInput A [[Quote]] object.
- * @param attesterIdentity The DID used to sign the object.
  * @param sign The callback to sign with the private key.
  * @returns A signed [[Quote]] object.
  */

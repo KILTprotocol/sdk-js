@@ -365,7 +365,7 @@ describe('When resolving a full DID', () => {
 
 describe('When resolving a light DID', () => {
   const authKey = Crypto.makeKeypairFromSeed()
-  const encryptionKey = Crypto.makeEncryptionKeyFromSeed()
+  const encryptionKey = Crypto.makeEncryptionKeypairFromSeed()
 
   beforeEach(() => {
     mockedApi.query.did.did.mockReturnValue(didNotFound)

@@ -12,7 +12,6 @@ import { BN } from '@polkadot/util'
 import type {
   DidDocument,
   DidUri,
-  DidVerificationKey,
   KiltAddress,
   SignExtrinsicCallback,
   SubmittableExtrinsic,
@@ -112,6 +111,12 @@ function getKeyRelationshipForMethod(
   return methodMapping[section]
 }
 
+/**
+ * Detect the key relationship for a key which should be used to DID-authorize the provided extrinsic.
+ *
+ * @param extrinsic The unsigned extrinsic to inspect.
+ * @returns The key relationship.
+ */
 export function getKeyRelationshipForExtrinsic(
   extrinsic: Extrinsic
 ): VerificationKeyRelationship | undefined {
@@ -127,23 +132,6 @@ function increaseNonce(currentNonce: BN, increment = 1): BN {
   return currentNonce.eq(maxNonceValue)
     ? new BN(increment)
     : currentNonce.addn(increment)
-}
-
-/**
- * Returns all the DID keys that could be used to sign the provided extrinsic for submission.
- * This function should never be used directly by SDK users, who should rather call [[Did.authorizeExtrinsic]].
- *
- * @param did The DID data.
- * @param extrinsic The unsigned extrinsic to perform the lookup.
- *
- * @returns All the keys under the full DID that could be used to generate valid signatures to submit the provided extrinsic.
- */
-export function getKeysForExtrinsic(
-  did: DidDocument,
-  extrinsic: Extrinsic
-): DidVerificationKey[] {
-  const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
-  return (keyRelationship && did[keyRelationship]) || []
 }
 
 /**
