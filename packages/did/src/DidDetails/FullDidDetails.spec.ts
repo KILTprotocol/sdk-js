@@ -225,7 +225,7 @@ describe('When creating an instance from the chain', () => {
             submitter: keypair.address,
           })
         ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Can only batch extrinsics that require a DID signature]'
+          '[DidBatchError: Can only batch extrinsics that require a DID signature]'
         )
       })
 
@@ -308,7 +308,7 @@ describe('When creating an instance from the chain', () => {
             submitter: keypair.address,
           })
         ).rejects.toMatchInlineSnapshot(
-          '[DidBuilderError: Cannot build a batch with no transactions]'
+          '[DidBatchError: Cannot build a batch with no transactions]'
         )
       })
       it.todo('successfully create a batch with only 1 extrinsic')

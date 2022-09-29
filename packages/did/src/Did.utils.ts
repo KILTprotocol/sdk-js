@@ -162,18 +162,14 @@ export function getAddressByKey({
   publicKey,
   type,
 }: Pick<DidVerificationKey, 'publicKey' | 'type'>): KiltAddress {
-  switch (type) {
-    case 'ed25519':
-    case 'sr25519':
-      return encodeAddress(publicKey, ss58Format)
-    case 'ecdsa': {
-      // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
-      const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
-      return encodeAddress(pk, ss58Format)
-    }
-    default:
-      throw new SDKErrors.DidBuilderError(`Unsupported key type "${type}"`)
+  if (type === 'ed25519' || type === 'sr25519') {
+    return encodeAddress(publicKey, ss58Format)
   }
+
+  // Otherwise it’s ecdsa.
+  // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
+  const address = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+  return encodeAddress(address, ss58Format)
 }
 
 /**
