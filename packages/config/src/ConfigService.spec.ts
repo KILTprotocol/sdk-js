@@ -10,8 +10,11 @@
  */
 
 /* eslint-disable dot-notation */
+import { ApiPromise, WsProvider } from '@polkadot/api'
 import { LogLevel, Logger } from 'typescript-logging'
+
 import { SDKErrors } from '@kiltprotocol/utils'
+
 import * as ConfigService from './ConfigService'
 
 describe('Log Configuration', () => {
@@ -44,14 +47,16 @@ describe('Log Configuration', () => {
 describe('Configuration Service', () => {
   it('has configuration Object with default values', () => {
     expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
-    expect(() => ConfigService.get('address')).toThrowError(
-      SDKErrors.ERROR_WS_ADDRESS_NOT_SET
+    expect(() => ConfigService.get('api')).toThrowError(
+      SDKErrors.BlockchainApiMissingError
     )
   })
-  describe('set function for host address, logLevel and any custom configuration prop', () => {
-    it('host address', () => {
-      ConfigService.set({ address: 'host' })
-      expect(ConfigService.get('address')).toEqual('host')
+  describe('set function for api instance, logLevel and any custom configuration prop', () => {
+    it('api instance', () => {
+      const provider = new WsProvider(undefined, false)
+      const api = new ApiPromise({ provider })
+      ConfigService.set({ api })
+      expect(ConfigService.get('api')).toEqual(api)
     })
     it('logLevel setting', () => {
       ConfigService.set({ logLevel: LogLevel.Warn })
@@ -62,19 +67,11 @@ describe('Configuration Service', () => {
       expect(ConfigService.get('testProp')).toEqual('test')
     })
   })
-  describe('get function for host address, logLevel and any other injected configuration prop', () => {
-    it('returns address property', () => {
-      ConfigService.set({ address: 'host' })
-      expect(ConfigService.get('address')).toEqual('host')
-    })
-    it('throws if address not set', () => {
-      ConfigService.set({ address: '' })
-      expect(() => ConfigService.get('address')).toThrowError(
-        SDKErrors.ERROR_WS_ADDRESS_NOT_SET
-      )
-      ConfigService.set({ address: undefined })
-      expect(() => ConfigService.get('address')).toThrowError(
-        SDKErrors.ERROR_WS_ADDRESS_NOT_SET
+  describe('get function for api instance, logLevel and any other injected configuration prop', () => {
+    it('throws if api not set', () => {
+      ConfigService.unset('api')
+      expect(() => ConfigService.get('api')).toThrowError(
+        SDKErrors.BlockchainApiMissingError
       )
     })
     it('returns logLevel property', () => {

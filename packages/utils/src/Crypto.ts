@@ -14,7 +14,11 @@
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
-import type { KeyringPair } from '@kiltprotocol/types'
+import type {
+  KiltEncryptionKeypair,
+  KeyringPair,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 import {
   isString,
   stringToU8a,
@@ -26,14 +30,23 @@ import {
 import {
   blake2AsHex,
   blake2AsU8a,
+  naclBoxPairFromSecret,
+  randomAsU8a,
   signatureVerify,
 } from '@polkadot/util-crypto'
+import { Keyring } from '@polkadot/api'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import type { HexString } from '@polkadot/util/types'
-import jsonabc from './jsonabc.cjs'
+import jsonabc from './jsonabc.js'
+import * as SDKErrors from './SDKErrors.js'
+import { ss58Format } from './ss58Format.js'
 
-export { naclBoxPairFromSecret } from '@polkadot/util-crypto'
+export {
+  naclBoxPairFromSecret,
+  mnemonicGenerate,
+  mnemonicToMiniSecret,
+} from '@polkadot/util-crypto'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
@@ -105,14 +118,14 @@ export function signStr(
  * @param message Original signed message to be verified.
  * @param signature Signature as hex string or byte array.
  * @param address Substrate address or public key of the signer.
- * @returns Whether the signature could be verified.
  */
 export function verify(
   message: CryptoInput,
   signature: CryptoInput,
   address: Address
-): boolean {
-  return signatureVerify(message, signature, address).isValid === true
+): void {
+  if (signatureVerify(message, signature, address).isValid !== true)
+    throw new SDKErrors.SignatureUnverifiableError()
 }
 
 export type BitLength = 64 | 128 | 256 | 384 | 512
@@ -261,7 +274,7 @@ export function decryptAsymmetricAsStr(
     coToUInt8(publicKeyB),
     coToUInt8(secretKeyA)
   )
-  return result ? u8aToString(result) : false
+  return result !== false ? u8aToString(result) : false
 }
 
 /**
@@ -336,4 +349,47 @@ export function hashStatements(
     const saltedHash = hasher(digest, nonce)
     return { digest, saltedHash, nonce, statement }
   })
+}
+
+/**
+ * Generate typed KILT blockchain keypair from a seed or random data.
+ *
+ * @param seed The keypair seed, only optional in the tests.
+ * @param type Optional type of the keypair.
+ * @returns The keypair.
+ */
+export function makeKeypairFromSeed<
+  KeyType extends KiltKeyringPair['type'] = 'ed25519'
+>(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
+  const keyring = new Keyring({ ss58Format, type })
+  return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
+}
+
+/**
+ * Generate typed KILT blockchain keypair from a polkadot keypair URI.
+ *
+ * @param uri The URI.
+ * @param type Optional type of the keypair.
+ * @returns The keypair.
+ */
+export function makeKeypairFromUri<
+  KeyType extends KiltKeyringPair['type'] = 'ed25519'
+>(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
+  const keyring = new Keyring({ ss58Format, type })
+  return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
+}
+
+/**
+ * Generate from a seed a x25519 keypair to be used as DID encryption key.
+ *
+ * @param seed The keypair seed, only optional in the tests.
+ * @returns The keypair.
+ */
+export function makeEncryptionKeypairFromSeed(
+  seed = randomAsU8a(32)
+): KiltEncryptionKeypair {
+  return {
+    ...naclBoxPairFromSecret(seed),
+    type: 'x25519',
+  }
 }

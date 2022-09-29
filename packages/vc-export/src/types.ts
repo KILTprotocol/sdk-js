@@ -6,7 +6,7 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types'
-import type { ICType, DidPublicKey } from '@kiltprotocol/types'
+import type { ICType, ConformingDidKey } from '@kiltprotocol/types'
 import type {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
@@ -24,11 +24,11 @@ export interface Proof {
   [key: string]: any
 }
 
-export type IPublicKeyRecord = DidPublicKey
+export type IPublicKeyRecord = ConformingDidKey
 
 export interface SelfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
-  verificationMethod: IPublicKeyRecord['uri'] | IPublicKeyRecord
+  verificationMethod: IPublicKeyRecord['id'] | IPublicKeyRecord
   signature: string
   challenge?: string
 }

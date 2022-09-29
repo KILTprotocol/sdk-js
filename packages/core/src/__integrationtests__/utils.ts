@@ -9,29 +9,29 @@
 /* eslint-disable no-console */
 
 import { BN } from '@polkadot/util'
+import { ApiPromise, WsProvider } from '@polkadot/api'
+import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Keyring, ss58Format } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
-import { DidMigrationCallback } from '@kiltprotocol/did'
-import {
-  Blockchain,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
   ICType,
-  IIdentity,
-  ISubmittableResult,
   KeyringPair,
+  KiltAddress,
+  KiltKeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
+import { ConfigService } from '@kiltprotocol/config'
+
 import * as CType from '../ctype'
-import { Balance } from '../balance'
-import { connect, init } from '../kilt'
+import { init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
+
+const WS_PORT = 9944
 
 async function getStartedTestContainer(): Promise<StartedTestContainer> {
   try {
@@ -39,9 +39,9 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
       process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
     console.log(`using testcontainer with image ${image}`)
     const testcontainer = new GenericContainer(image)
-      .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
-      .withExposedPorts(9944)
-      .withWaitStrategy(Wait.forLogMessage(/idle/i))
+      .withCmd(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
+      .withExposedPorts(WS_PORT)
+      .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
     const started = await testcontainer.start()
     return started
   } catch (error) {
@@ -52,7 +52,14 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
   }
 }
 
-export async function initializeApi(): Promise<void> {
+async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
+  const provider = new WsProvider(wsEndpoint)
+  const api = new ApiPromise({ provider })
+  await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+  return api.isReadyOrError
+}
+
+export async function initializeApi(): Promise<ApiPromise> {
   const { TEST_WS_ADDRESS, JEST_WORKER_ID } = process.env
   if (TEST_WS_ADDRESS) {
     if (JEST_WORKER_ID !== '1') {
@@ -61,39 +68,39 @@ export async function initializeApi(): Promise<void> {
       )
     }
     console.log(`connecting to node ${TEST_WS_ADDRESS}`)
-    await init({ address: TEST_WS_ADDRESS })
-    connect()
-  } else {
-    const started = await getStartedTestContainer()
-    const port = started.getMappedPort(9944)
-    const host = started.getHost()
-    const WS_ADDRESS = `ws://${host}:${port}`
-    console.log(`connecting to node ${WS_ADDRESS}`)
-    await init({ address: WS_ADDRESS })
-    connect().then((api) =>
-      api.once('disconnected', () => started.stop().catch())
-    )
+    return buildConnection(TEST_WS_ADDRESS)
   }
+  const started = await getStartedTestContainer()
+  const port = started.getMappedPort(9944)
+  const host = started.getHost()
+  const WS_ADDRESS = `ws://${host}:${port}`
+  console.log(`connecting to test container at ${WS_ADDRESS}`)
+  const api = await buildConnection(WS_ADDRESS)
+  api.once('disconnected', () => started.stop().catch())
+  return api
 }
-
-const keyring = new Keyring({ ss58Format, type: 'ed25519' })
 
 // Dev Faucet account seed phrase
 const faucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 // endowed accounts on development chain spec
 // ids are ed25519 because the endowed accounts are
-export const devFaucet = keyring.createFromUri(faucetSeed)
-export const devAlice = keyring.createFromUri('//Alice')
-export const devBob = keyring.createFromUri('//Bob')
-export const devCharlie = keyring.createFromUri('//Charlie')
+export const devFaucet = Crypto.makeKeypairFromUri(faucetSeed)
+export const devAlice = Crypto.makeKeypairFromUri('//Alice')
+export const devBob = Crypto.makeKeypairFromUri('//Bob')
+export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
-export function addressFromRandom(): IIdentity['address'] {
+export function addressFromRandom(): KiltAddress {
   return makeSigningKeyTool('ed25519').keypair.address
 }
 
 export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
-  return CType.verifyStored(ctype)
+  try {
+    await CType.verifyStored(ctype)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export const driversLicenseCType = CType.fromSchema({
@@ -131,7 +138,7 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
 export async function submitExtrinsic(
   extrinsic: SubmittableExtrinsic,
   submitter: KeyringPair,
-  resolveOn: SubscriptionPromise.ResultEvaluator = Blockchain.IS_IN_BLOCK
+  resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
   await Blockchain.signAndSubmitTx(extrinsic, submitter, {
     resolveOn,
@@ -141,11 +148,11 @@ export async function submitExtrinsic(
 export async function endowAccounts(
   faucet: KeyringPair,
   addresses: string[],
-  resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = Blockchain.IS_FINALIZED
+  resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
+  const api = ConfigService.get('api')
   const transactions = await Promise.all(
-    addresses.map((address) => Balance.getTransferTx(address, ENDOWMENT))
+    addresses.map((address) => api.tx.balances.transfer(address, ENDOWMENT))
   )
   const batch = api.tx.utility.batchAll(transactions)
   await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
@@ -155,34 +162,15 @@ export async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
-  const transferTx = await Balance.getTransferTx(address, amount)
+  const api = ConfigService.get('api')
+  const transferTx = api.tx.balances.transfer(address, amount)
   await submitExtrinsic(transferTx, devFaucet)
 }
 
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
-): Promise<KeyringPair> {
+): Promise<KiltKeyringPair> {
   const { keypair } = makeSigningKeyTool()
   await fundAccount(keypair.address, amount)
   return keypair
-}
-
-export function getDefaultMigrationCallback(
-  submitter: KeyringPair
-): DidMigrationCallback {
-  return async (e) => {
-    await Blockchain.signAndSubmitTx(e, submitter, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
-  }
-}
-
-export function getDefaultSubmitCallback(
-  submitter: KeyringPair
-): DidMigrationCallback {
-  return async (e) => {
-    await Blockchain.signAndSubmitTx(e, submitter, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
-  }
 }

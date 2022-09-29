@@ -11,29 +11,29 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import type { HexString } from '@polkadot/util/types'
+
 import type {
   IAttestation,
-  CompressedAttestation,
   DidUri,
   ICType,
   IClaim,
-  IRequestForAttestation,
+  ICredential,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { HexString } from '@polkadot/util/types'
+import { ConfigService } from '@kiltprotocol/config'
+
 import * as Claim from '../claim'
 import * as CType from '../ctype'
-import * as RequestForAttestation from '../requestforattestation'
+import * as Credential from '../credential'
 import * as Attestation from './Attestation'
 
 let mockedApi: any
 
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
-  BlockchainApiConnection.setConnection(mockedApi)
+  ConfigService.set({ api: mockedApi })
 })
 
 describe('Attestation', () => {
@@ -45,7 +45,7 @@ describe('Attestation', () => {
   let testCType: ICType
   let testContents: any
   let testClaim: IClaim
-  let requestForAttestation: IRequestForAttestation
+  let credential: ICredential
 
   beforeAll(async () => {
     rawCTypeSchema = {
@@ -66,104 +66,9 @@ describe('Attestation', () => {
       testContents,
       identityBob
     )
-    requestForAttestation = RequestForAttestation.fromClaim(testClaim)
+    credential = Credential.fromClaim(testClaim)
   })
 
-  it('stores attestation', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
-        testCType.hash,
-        DidUtils.getIdentifierFromKiltDid(identityAlice),
-        null,
-        false,
-        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
-      ])
-    )
-
-    const attestation = Attestation.fromRequestAndDid(
-      requestForAttestation,
-      identityAlice
-    )
-    expect(await Attestation.checkValidity(attestation)).toBeTruthy()
-  })
-
-  it('verify attestations not on chain', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations')
-    )
-
-    const attestation: IAttestation = {
-      claimHash: requestForAttestation.rootHash,
-      cTypeHash: testCType.hash,
-      delegationId: null,
-      owner: identityAlice,
-      revoked: false,
-    }
-    expect(await Attestation.checkValidity(attestation)).toBeFalsy()
-  })
-
-  it('verify attestation revoked', async () => {
-    mockedApi.query.attestation.attestations.mockReturnValue(
-      ApiMocks.mockChainQueryReturn('attestation', 'attestations', [
-        testCType.hash,
-        DidUtils.getIdentifierFromKiltDid(identityAlice),
-        null,
-        true,
-        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
-      ])
-    )
-
-    const attestation = Attestation.fromRequestAndDid(
-      requestForAttestation,
-      identityAlice
-    )
-    expect(await Attestation.checkValidity(attestation)).toBeFalsy()
-  })
-
-  it('compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromRequestAndDid(
-      requestForAttestation,
-      identityAlice
-    )
-
-    const compressedAttestation: CompressedAttestation = [
-      attestation.claimHash,
-      attestation.cTypeHash,
-      attestation.owner,
-      attestation.revoked,
-      attestation.delegationId,
-    ]
-
-    expect(Attestation.compress(attestation)).toEqual(compressedAttestation)
-
-    expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
-  })
-
-  it('Negative test for compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromRequestAndDid(
-      requestForAttestation,
-      identityAlice
-    )
-
-    const compressedAttestation: CompressedAttestation = [
-      attestation.claimHash,
-      attestation.cTypeHash,
-      attestation.owner,
-      attestation.revoked,
-      attestation.delegationId,
-    ]
-    compressedAttestation.pop()
-    // @ts-ignore
-    delete attestation.claimHash
-
-    expect(() => {
-      Attestation.decompress(compressedAttestation)
-    }).toThrow()
-
-    expect(() => {
-      Attestation.compress(attestation)
-    }).toThrow()
-  })
   it('error check should throw errors on faulty Attestations', () => {
     const cTypeHash: HexString =
       '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff'
@@ -239,43 +144,43 @@ describe('Attestation', () => {
     } as IAttestation
 
     expect(() => Attestation.verifyDataStructure(noClaimHash)).toThrowError(
-      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
+      SDKErrors.ClaimHashMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(noCTypeHash)).toThrowError(
-      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+      SDKErrors.CTypeHashMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(malformedOwner)).toThrowError(
-      SDKErrors.ERROR_OWNER_NOT_PROVIDED
+      SDKErrors.OwnerMissingError
     )
 
     expect(() => Attestation.verifyDataStructure(noRevocationBit)).toThrowError(
-      SDKErrors.ERROR_REVOCATION_BIT_MISSING
+      SDKErrors.RevokedTypeError
     )
 
     expect(() => Attestation.verifyDataStructure(everything)).not.toThrow()
 
     expect(() =>
       Attestation.verifyDataStructure(malformedClaimHash)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     expect(() =>
       Attestation.verifyDataStructure(malformedCTypeHash)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED)
+    ).toThrowError(SDKErrors.HashMalformedError)
 
     expect(() =>
       Attestation.verifyDataStructure(malformedAddress)
-    ).toThrowError(SDKErrors.ERROR_INVALID_DID_FORMAT)
+    ).toThrowError(SDKErrors.InvalidDidFormatError)
   })
   it('Typeguard should return true on complete Attestations', () => {
-    const attestation = Attestation.fromRequestAndDid(
-      requestForAttestation,
+    const attestation = Attestation.fromCredentialAndDid(
+      credential,
       identityAlice
     )
-    expect(Attestation.isIAttestation(attestation)).toBeTruthy()
-    expect(
-      Attestation.isIAttestation({ ...attestation, owner: '' })
-    ).toBeFalsy()
+    expect(Attestation.isIAttestation(attestation)).toBe(true)
+    expect(Attestation.isIAttestation({ ...attestation, owner: '' })).toBe(
+      false
+    )
   })
 })

@@ -7,21 +7,16 @@
 
 /// <reference lib="dom" />
 
-import type { ApiPromise } from '@polkadot/api'
 import type {
   DecryptCallback,
+  DidDocument,
   EncryptCallback,
-  EncryptionKeyType,
   KeyringPair,
-  LightDidSupportedVerificationKeyType,
+  KiltEncryptionKeypair,
+  KiltKeyringPair,
   NewDidEncryptionKey,
-  ResponseData,
   SignCallback,
-  SigningAlgorithms,
-  SigningData,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import type { KeypairType } from '@polkadot/util-crypto/types'
 
 const { kilt } = window
 
@@ -30,59 +25,65 @@ const {
   Attestation,
   Credential,
   CType,
-  RequestForAttestation,
   Did,
   Blockchain,
-  Utils: { Crypto, Keyring, ss58Format },
+  Utils: { Crypto, ss58Format },
   Message,
   BalanceUtils,
 } = kilt
 
-function getDefaultMigrationHandler(submitter: KeyringPair) {
-  return async (e: SubmittableExtrinsic) => {
-    await Blockchain.signAndSubmitTx(e, submitter, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
+kilt.ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+
+function makeSignCallback(
+  keypair: KeyringPair
+): (didDocument: DidDocument) => SignCallback {
+  return (didDocument) => {
+    return async function sign({ data, keyRelationship }) {
+      const keyId = didDocument[keyRelationship]?.[0].id
+      const keyType = didDocument[keyRelationship]?.[0].type
+      if (keyId === undefined || keyType === undefined) {
+        throw new Error(
+          `Key for purpose "${keyRelationship}" not found in did "${didDocument.uri}"`
+        )
+      }
+      const signature = keypair.sign(data, { withType: false })
+      return { signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
+    }
   }
 }
 
-function makeSignCallback(keypair: KeyringPair): SignCallback {
-  return async function sign<A extends SigningAlgorithms>({
-    alg,
-    data,
-  }: SigningData<A>): Promise<ResponseData<A>> {
+type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
+
+function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
+  return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
-    return { alg, data: signature }
+    return {
+      signature,
+      keyType: keypair.type,
+    }
   }
 }
 
 function makeSigningKeypair(
   seed: string,
-  alg: SigningAlgorithms = 'sr25519'
+  type: KiltKeyringPair['type'] = 'sr25519'
 ): {
-  keypair: KeyringPair
-  sign: SignCallback
+  keypair: KiltKeyringPair
+  getSignCallback: (didDocument: DidDocument) => SignCallback
+  storeDidCallback: StoreDidCallback
 } {
-  const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
-    ed25519: 'ed25519',
-    sr25519: 'sr25519',
-    'ecdsa-secp256k1': 'ecdsa',
-  }
-  const type = keypairTypeForAlg[alg]
-  const keypair = new Keyring({ type }).addFromUri(seed, {}, type)
-  const sign = makeSignCallback(keypair)
+  const keypair = Crypto.makeKeypairFromUri(seed, type)
+  const getSignCallback = makeSignCallback(keypair)
+  const storeDidCallback = makeStoreDidCallback(keypair)
 
   return {
     keypair,
-    sign,
+    getSignCallback,
+    storeDidCallback,
   }
 }
 
-function makeEncryptionKeypair(seed: string): {
-  secretKey: Uint8Array
-  publicKey: Uint8Array
-  type: EncryptionKeyType
-} {
+function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
   const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
     Crypto.hash(seed, 256)
   )
@@ -95,108 +96,98 @@ function makeEncryptionKeypair(seed: string): {
 
 function makeEncryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): EncryptCallback {
-  return async function encryptCallback({ data, peerPublicKey, alg }) {
-    const { box, nonce } = Crypto.encryptAsymmetric(
-      data,
-      peerPublicKey,
-      secretKey
-    )
-    return { alg, nonce, data: box }
+}: KiltEncryptionKeypair): (didDocument: DidDocument) => EncryptCallback {
+  return (didDocument) => {
+    return async function encryptCallback({ data, peerPublicKey }) {
+      const keyId = didDocument.keyAgreement?.[0].id
+      if (!keyId) {
+        throw new Error(`Encryption key not found in did "${didDocument.uri}"`)
+      }
+      const { box, nonce } = Crypto.encryptAsymmetric(
+        data,
+        peerPublicKey,
+        secretKey
+      )
+      return { nonce, data: box, keyUri: `${didDocument.uri}${keyId}` }
+    }
   }
 }
 
 function makeDecryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): DecryptCallback {
-  return async function decryptCallback({ data, nonce, peerPublicKey, alg }) {
+}: KiltEncryptionKeypair): DecryptCallback {
+  return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
       peerPublicKey,
       secretKey
     )
-    if (!decrypted) throw new Error('Decryption failed')
-    return { data: decrypted, alg }
+    if (decrypted === false) throw new Error('Decryption failed')
+    return { data: decrypted }
   }
 }
 
 async function createFullDidFromKeypair(
-  payer: KeyringPair,
-  keypair: KeyringPair,
-  encryptionKey: NewDidEncryptionKey,
-  api: ApiPromise
+  payer: KiltKeyringPair,
+  keypair: KiltKeyringPair,
+  encryptionKey: NewDidEncryptionKey
 ) {
-  const lightDid = Did.LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: keypair.publicKey,
-      type: keypair.type as LightDidSupportedVerificationKeyType,
+  const sign = makeStoreDidCallback(keypair)
+
+  const storeTx = await Did.getStoreTx(
+    {
+      authentication: [keypair],
+      assertionMethod: [keypair],
+      capabilityDelegation: [keypair],
+      keyAgreement: [encryptionKey],
     },
-    encryptionKey,
-  })
-
-  const sign = makeSignCallback(keypair)
-
-  const fullDid = await lightDid.migrate(
     payer.address,
-    sign,
-    getDefaultMigrationHandler(payer)
+    sign
   )
+  await Blockchain.signAndSubmitTx(storeTx, payer)
 
-  const updatedFullDid = await new Did.FullDidUpdateBuilder(api, fullDid)
-    .setAttestationKey(fullDid.authenticationKey)
-    .setDelegationKey(fullDid.authenticationKey)
-    .buildAndSubmit(sign, payer.address, getDefaultMigrationHandler(payer))
-
-  return updatedFullDid
+  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
+  if (!fullDid) throw new Error('Cannot query created DID')
+  return fullDid
 }
 
 async function runAll() {
   // init sdk kilt config and connect to chain
-  await kilt.init({ address: 'ws://127.0.0.1:9944' })
-  const api = await kilt.connect()
+  const api = await kilt.connect('ws://127.0.0.1:9944')
 
-  if (!api) console.error('No blockchain connection established')
-  const keyring = new Keyring({ ss58Format, type: 'ed25519' })
   // Accounts
   console.log('Account setup started')
   const FaucetSeed =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const devFaucet = keyring.createFromUri(FaucetSeed)
+  const payer = Crypto.makeKeypairFromUri(FaucetSeed)
 
-  const { keypair: aliceKeypair, sign: aliceSign } =
+  const { keypair: aliceKeypair, getSignCallback: aliceSign } =
     makeSigningKeypair('//Alice')
   const aliceEncryptionKey = makeEncryptionKeypair('//Alice//enc')
   const aliceDecryptCallback = makeDecryptCallback(aliceEncryptionKey)
   const alice = await createFullDidFromKeypair(
-    devFaucet,
+    payer,
     aliceKeypair,
-    aliceEncryptionKey,
-    api
+    aliceEncryptionKey
   )
-  if (!alice.encryptionKey)
+  if (!alice.keyAgreement?.[0])
     throw new Error('Impossible: alice has no encryptionKey')
   console.log('alice setup done')
 
-  const { keypair: bobKeypair, sign: bobSign } = makeSigningKeypair('//Bob')
+  const { keypair: bobKeypair, getSignCallback: bobSign } =
+    makeSigningKeypair('//Bob')
   const bobEncryptionKey = makeEncryptionKeypair('//Bob//enc')
   const bobEncryptCallback = makeEncryptCallback(bobEncryptionKey)
   const bob = await createFullDidFromKeypair(
-    devFaucet,
+    payer,
     bobKeypair,
-    bobEncryptionKey,
-    api
+    bobEncryptionKey
   )
-  if (!bob.encryptionKey)
+  if (!bob.keyAgreement?.[0])
     throw new Error('Impossible: bob has no encryptionKey')
   console.log('bob setup done')
 
-  // Light Did Account creation workflow
+  // Light DID Account creation workflow
   const authPublicKey = Crypto.coToUInt8(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   )
@@ -204,66 +195,59 @@ async function runAll() {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const address = Crypto.encodeAddress(authPublicKey, ss58Format)
-  const testDid = Did.LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: authPublicKey,
-      type: 'ed25519',
-    },
-    encryptionKey: {
-      publicKey: encPublicKey,
-      type: 'x25519',
-    },
+  const testDid = Did.createLightDidDocument({
+    authentication: [{ publicKey: authPublicKey, type: 'ed25519' }],
+    keyAgreement: [{ publicKey: encPublicKey, type: 'x25519' }],
   })
   if (
     testDid.uri !==
     `did:kilt:light:01${address}:z1Ac9CMtYCTRWjetJfJqJoV7FcPDD9nHPHDHry7t3KZmvYe1HQP1tgnBuoG3enuGaowpF8V88sCxytDPDy6ZxhW`
   ) {
-    throw new Error('Did Test Unsuccessful')
-  } else console.info(`light did successfully created`)
+    throw new Error('DID Test Unsuccessful')
+  } else console.info(`light DID successfully created`)
 
-  // Chain Did workflow -> creation & deletion
+  // Chain DID workflow -> creation & deletion
   console.log('DID workflow started')
-  const { keypair, sign } = makeSigningKeypair('//Foo', 'ed25519')
+  const { keypair, getSignCallback, storeDidCallback } = makeSigningKeypair(
+    '//Foo',
+    'ed25519'
+  )
 
-  const fullDid = await new Did.FullDidCreationBuilder(api, {
-    publicKey: keypair.publicKey,
-    type: 'ed25519',
-  }).buildAndSubmit(sign, devFaucet.address, async (tx) => {
-    await Blockchain.signAndSubmitTx(tx, devFaucet, {
-      resolveOn: Blockchain.IS_IN_BLOCK,
-    })
-  })
+  const didStoreTx = await Did.getStoreTx(
+    { authentication: [keypair] },
+    payer.address,
+    storeDidCallback
+  )
+  await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
-  const resolved = await Did.resolveDoc(fullDid.uri)
+  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
+  if (!fullDid) throw new Error('Could not fetch created DID document')
+
+  const resolved = await Did.resolve(fullDid.uri)
 
   if (
     resolved &&
     !resolved.metadata.deactivated &&
-    resolved.details?.uri === fullDid.uri
+    resolved.document?.uri === fullDid.uri
   ) {
-    console.info('Did matches!')
+    console.info('DID matches')
   } else {
-    throw new Error('Dids not matching!')
+    throw new Error('DIDs do not match')
   }
 
-  const extrinsic = await Did.Chain.getDeleteDidExtrinsic(
-    BalanceUtils.toFemtoKilt(0)
+  const deleteTx = await Did.authorizeExtrinsic(
+    fullDid.uri,
+    api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
+    getSignCallback(fullDid),
+    payer.address
   )
-  const deleteTx = await fullDid.authorizeExtrinsic(
-    extrinsic,
-    sign,
-    devFaucet.address
-  )
+  await Blockchain.signAndSubmitTx(deleteTx, payer)
 
-  await Blockchain.signAndSubmitTx(deleteTx, devFaucet, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
-
-  const resolvedAgain = await Did.resolveDoc(fullDid.uri)
-  if (resolvedAgain?.metadata.deactivated) {
-    console.info('Did successfully deleted!')
+  const resolvedAgain = await Did.resolve(fullDid.uri)
+  if (!resolvedAgain || resolvedAgain.metadata.deactivated) {
+    console.info('DID successfully deleted')
   } else {
-    throw new Error('Did not successfully deleted')
+    throw new Error('DID was not deleted')
   }
 
   // CType workflow
@@ -283,33 +267,16 @@ async function runAll() {
     type: 'object',
   })
 
-  const tx = await CType.getStoreTx(DriversLicense)
-  const authorizedTx = await alice.authorizeExtrinsic(
-    tx,
-    aliceSign,
-    devFaucet.address
+  const cTypeStoreTx = await Did.authorizeExtrinsic(
+    alice.uri,
+    api.tx.ctype.add(CType.toChain(DriversLicense)),
+    aliceSign(alice),
+    payer.address
   )
+  await Blockchain.signAndSubmitTx(cTypeStoreTx, payer)
 
-  await Blockchain.signAndSubmitTx(authorizedTx, devFaucet, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
-
-  const stored = await CType.verifyStored(DriversLicense)
-  if (stored) {
-    console.info('CType successfully stored onchain!')
-  } else {
-    throw new Error('ctype not stored!')
-  }
-
-  const result = await CType.verifyOwner({
-    ...DriversLicense,
-    owner: alice.uri,
-  })
-  if (result) {
-    console.info('owner verified')
-  } else {
-    throw new Error('ctype owner does not match ctype creator did')
-  }
+  await CType.verifyStored(DriversLicense)
+  console.info('CType successfully stored on chain')
 
   // Attestation workflow
   console.log('Attestation workflow started')
@@ -319,72 +286,67 @@ async function runAll() {
     content,
     bob.uri
   )
-  const request = RequestForAttestation.fromClaim(claim)
-  await RequestForAttestation.signWithDidKey(
-    request,
-    bobSign,
-    bob,
-    bob.authenticationKey.id
-  )
-  if (!RequestForAttestation.isIRequestForAttestation(request))
-    throw new Error('Not a valid Request!')
-  else {
-    if (RequestForAttestation.verifyDataIntegrity(request))
-      console.info('Req4Att data verified')
-    else throw new Error('Req4Att not verifiable')
-    if (await RequestForAttestation.verifySignature(request))
-      console.info('Req4Att signature verified')
-    else throw new Error('Req4Att Signature mismatch')
-    if (request.claim.contents !== content)
-      throw new Error('Claim content inside Req4Att mismatching')
-  }
+  const credential = Credential.fromClaim(claim)
+  if (!Credential.isICredential(credential))
+    throw new Error('Not a valid Credential')
+  Credential.verifyDataIntegrity(credential)
+  console.info('Credential data verified')
+  if (credential.claim.contents !== content)
+    throw new Error('Claim content inside Credential mismatching')
+
+  const presentation = await Credential.createPresentation({
+    credential,
+    signCallback: bobSign(bob),
+  })
+  if (!Credential.isPresentation(presentation))
+    throw new Error('Not a valid Presentation')
+  await Credential.verifySignature(presentation)
+  console.info('Presentation signature verified')
 
   console.log('Test Messaging with encryption + decryption')
-  const message = new Message(
+  const message = Message.fromBody(
     {
       content: {
-        requestForAttestation: request,
+        credential,
       },
       type: 'request-attestation',
     },
     bob.uri,
     alice.uri
   )
-  const encryptedMessage = await message.encrypt(
-    bob.encryptionKey.id,
-    bob,
-    bobEncryptCallback,
-    `${alice.uri}#${alice.encryptionKey.id}`
+  const encryptedMessage = await Message.encrypt(
+    message,
+    bobEncryptCallback(bob),
+    `${alice.uri}${alice.keyAgreement[0].id}`
   )
 
   const decryptedMessage = await Message.decrypt(
     encryptedMessage,
-    aliceDecryptCallback,
-    alice
+    aliceDecryptCallback
   )
   if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
-    throw new Error('original and decrypted message are not the same')
+    throw new Error('Original and decrypted message are not the same')
   }
 
-  const attestation = Attestation.fromRequestAndDid(request, alice.uri)
-  const credential = Credential.fromRequestAndAttestation(request, attestation)
-  if (Credential.verifyDataIntegrity(credential))
-    console.info('Attested Claim Data verified!')
-  else throw new Error('Attested Claim data not verifiable')
+  const attestation = Attestation.fromCredentialAndDid(credential, alice.uri)
+  Attestation.verifyAgainstCredential(attestation, credential)
+  console.info('Attestation Data verified')
 
-  const txAtt = await Attestation.getStoreTx(attestation)
-  const authorizedAttTx = await alice.authorizeExtrinsic(
-    txAtt,
-    aliceSign,
-    devFaucet.address
+  const attestationStoreTx = await Did.authorizeExtrinsic(
+    alice.uri,
+    api.tx.attestation.add(attestation.claimHash, attestation.cTypeHash, null),
+    aliceSign(alice),
+    payer.address
   )
-  await Blockchain.signAndSubmitTx(authorizedAttTx, devFaucet, {
-    resolveOn: Blockchain.IS_IN_BLOCK,
-  })
-  if (await Credential.verify(credential)) {
-    console.info('Attested Claim verified with chain.')
+  await Blockchain.signAndSubmitTx(attestationStoreTx, payer)
+  const storedAttestation = Attestation.fromChain(
+    await api.query.attestation.attestations(credential.rootHash),
+    credential.rootHash
+  )
+  if (storedAttestation?.revoked === false) {
+    console.info('Attestation verified with chain')
   } else {
-    throw new Error('attested Claim not verifiable with chain')
+    throw new Error('Attestation not verifiable with chain')
   }
 }
 

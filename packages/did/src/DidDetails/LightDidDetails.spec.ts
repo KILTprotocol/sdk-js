@@ -5,19 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Keyring } from '@polkadot/api'
+import { DidDocument, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 
-import { DidKey, DidServiceEndpoint, DidUri } from '@kiltprotocol/types'
-import { ss58Format } from '@kiltprotocol/utils'
-
-import { getKiltDidFromIdentifier } from '../Did.utils'
-import {
-  getEncodingForVerificationKeyType,
-  LightDidCreationDetails,
-  serializeAndEncodeAdditionalLightDidDetails,
-} from './LightDidDetails.utils'
-
-import { LightDidDetails } from './index.js'
+import * as Did from '../index.js'
 
 /**
  * @group unit/did
@@ -25,360 +16,227 @@ import { LightDidDetails } from './index.js'
 
 /*
  * Functions tested:
- * - fromDetails
- * - fromUri
- * - fromIdentifier
+ * - createLightDidDocument
+ * - parseDocumentFromLightDid
  *
  * Functions tested in integration tests:
  * - getKeysForExtrinsic
  * - authorizeExtrinsic
- * - migrate
  */
 
 describe('When creating an instance from the details', () => {
-  it('correctly assign the right ed25519 authentication key, x25519 encryption key, and service endpoints', () => {
-    const authKey = new Keyring({
-      type: 'sr25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-    const encKey = new Keyring().addFromMnemonic('enc')
-    const endpoints: DidServiceEndpoint[] = [
+  it('correctly assign the right sr25519 authentication key, x25519 encryption key, and service endpoints', () => {
+    const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
+    const encKey = Crypto.makeEncryptionKeypairFromSeed(
+      new Uint8Array(32).fill(1)
+    )
+    const service: DidServiceEndpoint[] = [
       {
-        id: 'service-1',
-        types: ['type-1'],
-        urls: ['x:url-1'],
+        id: '#service-1',
+        type: ['type-1'],
+        serviceEndpoint: ['x:url-1'],
       },
       {
-        id: 'service-2',
-        types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        id: '#service-2',
+        type: ['type-21', 'type-22'],
+        serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const validOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        type: 'sr25519',
-      },
-      encryptionKey: {
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-      serviceEndpoints: endpoints,
-    }
-    const lightDidDetails = LightDidDetails.fromDetails(validOptions)
 
-    expect(lightDidDetails?.identifier).toStrictEqual(authKey.address)
-
-    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
-      encryptionKey: {
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-      serviceEndpoints: endpoints,
-    })!
-    const expectedDid = getKiltDidFromIdentifier(
-      lightDidDetails.authKeyEncoding + authKey.address,
-      'light',
-      undefined,
-      encodedDetails
-    )
-    expect(lightDidDetails?.uri).toStrictEqual(expectedDid)
-    // Verify base58 encoding
-    expect(lightDidDetails?.uri).toStrictEqual(
-      `did:kilt:light:00${authKey.address}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
-    )
-
-    expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
-      id: 'authentication',
-      publicKey: authKey.publicKey,
-      type: 'sr25519',
+    const lightDid = Did.createLightDidDocument({
+      authentication: [authKey],
+      keyAgreement: [encKey],
+      service,
     })
-    expect(
-      lightDidDetails?.getVerificationKeys('authentication')
-    ).toStrictEqual<DidKey[]>([
-      {
-        id: 'authentication',
-        publicKey: authKey.publicKey,
-        type: 'sr25519',
-      },
-    ])
-    expect(lightDidDetails?.authenticationKey.id).toStrictEqual(
-      'authentication'
-    )
 
-    expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
-      id: 'encryption',
-      publicKey: encKey.publicKey,
-      type: 'x25519',
+    expect(lightDid).toEqual(<DidDocument>{
+      uri: `did:kilt:light:00${authKey.address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7`,
+      authentication: [
+        {
+          id: '#authentication',
+          publicKey: authKey.publicKey,
+          type: 'sr25519',
+        },
+      ],
+      keyAgreement: [
+        {
+          id: '#encryption',
+          publicKey: encKey.publicKey,
+          type: 'x25519',
+        },
+      ],
+      service: [
+        {
+          id: '#service-1',
+          type: ['type-1'],
+          serviceEndpoint: ['x:url-1'],
+        },
+        {
+          id: '#service-2',
+          type: ['type-21', 'type-22'],
+          serviceEndpoint: ['x:url-21', 'x:url-22'],
+        },
+      ],
     })
-    expect(lightDidDetails?.getEncryptionKeys('keyAgreement')).toStrictEqual<
-      DidKey[]
-    >([
-      {
-        id: 'encryption',
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-    ])
-    expect(lightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
-
-    expect(lightDidDetails?.attestationKey).toBeUndefined()
-    expect(lightDidDetails?.delegationKey).toBeUndefined()
-
-    expect(
-      lightDidDetails?.getEndpoint('service-1')
-    ).toStrictEqual<DidServiceEndpoint>({
-      id: 'service-1',
-      types: ['type-1'],
-      urls: ['x:url-1'],
-    })
-    expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
-      DidServiceEndpoint[]
-    >([
-      {
-        id: 'service-1',
-        types: ['type-1'],
-        urls: ['x:url-1'],
-      },
-    ])
-
-    expect(
-      lightDidDetails?.getEndpoint('service-2')
-    ).toStrictEqual<DidServiceEndpoint>({
-      id: 'service-2',
-      types: ['type-21', 'type-22'],
-      urls: ['x:url-21', 'x:url-22'],
-    })
-    expect(lightDidDetails?.getEndpoints('type-21')).toStrictEqual<
-      DidServiceEndpoint[]
-    >([
-      {
-        id: 'service-2',
-        types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
-      },
-    ])
   })
 
   it('correctly assign the right ed25519 authentication key and encryption key', () => {
-    const authKey = new Keyring({
-      type: 'ed25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-    const encKey = new Keyring().addFromMnemonic('enc')
-    const validOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        type: 'ed25519',
-      },
-      encryptionKey: {
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-    }
-    const lightDidDetails = LightDidDetails.fromDetails(validOptions)
-
-    expect(lightDidDetails?.identifier).toStrictEqual(authKey.address)
-
-    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
-      encryptionKey: {
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-    })!
-    const expectedDid = getKiltDidFromIdentifier(
-      lightDidDetails.authKeyEncoding + authKey.address,
-      'light',
-      undefined,
-      encodedDetails
-    )
-    expect(lightDidDetails?.uri).toStrictEqual(expectedDid)
-    // Verify base58 encoding
-    expect(lightDidDetails?.uri).toStrictEqual(
-      `did:kilt:light:01${authKey.address}:z1Ac9CMtYCTRWjetJfJqJoV7FcP9zdFudqUaupQkBCERoCQcnu2SUS5CGHdCXhWoxbihovMVymRperWSPpRc7mJ`
+    const authKey = Crypto.makeKeypairFromSeed()
+    const encKey = Crypto.makeEncryptionKeypairFromSeed(
+      new Uint8Array(32).fill(1)
     )
 
-    expect(lightDidDetails?.getKey('authentication')).toStrictEqual<DidKey>({
-      id: 'authentication',
-      publicKey: authKey.publicKey,
-      type: 'ed25519',
+    const lightDid = Did.createLightDidDocument({
+      authentication: [authKey],
+      keyAgreement: [encKey],
     })
-    expect(
-      lightDidDetails?.getVerificationKeys('authentication')
-    ).toStrictEqual<DidKey[]>([
-      {
-        id: 'authentication',
-        publicKey: authKey.publicKey,
-        type: 'ed25519',
-      },
-    ])
-    expect(lightDidDetails?.authenticationKey.id).toStrictEqual(
-      'authentication'
-    )
 
-    expect(lightDidDetails?.getKey('encryption')).toStrictEqual<DidKey>({
-      id: 'encryption',
-      publicKey: encKey.publicKey,
-      type: 'x25519',
+    expect(Did.parse(lightDid.uri).address).toStrictEqual(authKey.address)
+
+    expect(lightDid).toEqual({
+      uri: `did:kilt:light:01${authKey.address}:z15dZSRuzEPTFnBErPxqJie4CmmQH1gYKSQYxmwW5Qhgz5Sr7EYJA3J65KoC5YbgF3NGoBsTY2v6zwj1uDnZzgXzLy8R72Fhjmp8ujY81y2AJc8uQ6s2pVbAMZ6bnvaZ3GVe8bMjY5MiKFySS27qRi`,
+      authentication: [
+        {
+          id: '#authentication',
+          publicKey: authKey.publicKey,
+          type: 'ed25519',
+        },
+      ],
+      keyAgreement: [
+        {
+          id: '#encryption',
+          publicKey: encKey.publicKey,
+          type: 'x25519',
+        },
+      ],
     })
-    expect(lightDidDetails?.getEncryptionKeys('keyAgreement')).toStrictEqual<
-      DidKey[]
-    >([
-      {
-        id: 'encryption',
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-    ])
-    expect(lightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
-
-    expect(lightDidDetails?.attestationKey).toBeUndefined()
-    expect(lightDidDetails?.delegationKey).toBeUndefined()
-
-    expect(lightDidDetails?.getEndpoint('service-1')).toBeUndefined()
-
-    expect(lightDidDetails?.getEndpoints('type-1')).toStrictEqual<
-      DidServiceEndpoint[]
-    >([])
-    expect(lightDidDetails?.getEndpoints()).toStrictEqual<DidServiceEndpoint[]>(
-      []
-    )
   })
 
   it('throws for unsupported authentication key type', () => {
-    const authKey = new Keyring({
-      type: 'ed25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-    const invalidOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        // @ts-ignore Not an authentication key type
-        type: 'ecdsa',
-      },
+    const authKey = Crypto.makeKeypairFromSeed(undefined, 'ecdsa')
+    const invalidInput = {
+      // Not an authentication key type
+      authentication: [authKey],
     }
-    expect(() => LightDidDetails.fromDetails(invalidOptions)).toThrowError()
+    expect(() =>
+      Did.createLightDidDocument(
+        invalidInput as unknown as Did.CreateDocumentInput
+      )
+    ).toThrowError()
   })
 
   it('throws for unsupported encryption key type', () => {
-    const authKey = new Keyring({
-      type: 'ed25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-    const encKey = new Keyring().addFromMnemonic('enc')
-    const invalidOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        type: 'ed25519',
-      },
-      encryptionKey: {
-        publicKey: encKey.publicKey,
-        // @ts-ignore Not an encryption key type
-        type: 'bls',
-      },
+    const authKey = Crypto.makeKeypairFromSeed()
+    const encKey = Crypto.makeEncryptionKeypairFromSeed()
+    const invalidInput = {
+      authentication: [authKey],
+      // Not an encryption key type
+      keyAgreement: [{ publicKey: encKey.publicKey, type: 'bls' }],
     }
-    expect(() => LightDidDetails.fromDetails(invalidOptions)).toThrowError()
+    expect(() =>
+      Did.createLightDidDocument(
+        invalidInput as unknown as Did.CreateDocumentInput
+      )
+    ).toThrowError()
   })
 })
 
 describe('When creating an instance from a URI', () => {
   it('correctly assign the right authentication key, encryption key, and service endpoints', () => {
-    const authKey = new Keyring({
-      type: 'sr25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-    const encKey = new Keyring().addFromMnemonic('enc')
+    const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
+    const encKey = Crypto.makeEncryptionKeypairFromSeed(
+      new Uint8Array(32).fill(1)
+    )
     const endpoints: DidServiceEndpoint[] = [
       {
-        id: 'service-1',
-        types: ['type-1'],
-        urls: ['x:url-1'],
+        id: '#service-1',
+        type: ['type-1'],
+        serviceEndpoint: ['x:url-1'],
       },
       {
-        id: 'service-2',
-        types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        id: '#service-2',
+        type: ['type-21', 'type-22'],
+        serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const creationOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        type: 'sr25519',
-      },
-      encryptionKey: {
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-      serviceEndpoints: endpoints,
-    }
     // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
+    const expectedLightDid = Did.createLightDidDocument({
+      authentication: [authKey],
+      keyAgreement: [encKey],
+      service: endpoints,
+    })
 
-    const builtLightDidDetails = LightDidDetails.fromUri(
-      expectedLightDidDetails.uri
-    )
+    const { address } = Did.parse(expectedLightDid.uri)
+    const builtLightDid = Did.parseDocumentFromLightDid(expectedLightDid.uri)
 
-    expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
-      expectedLightDidDetails
-    )
-
-    // Verify base58 encoding
-    expect(builtLightDidDetails.uri).toStrictEqual(
-      `did:kilt:light:00${expectedLightDidDetails.identifier}:z14eMxMS7xSK8fMxpGvesppXFH9Ujjd1asWF2XxNRixGvQFeRsNriHen6CWAG66kWYWkUmAUkyqG9rKPP9xJ6A3uNHb9puJ6cq4nh4DARDhLA81QHHW4Jcvwe5WaynsZgvGhH1BEY2gdoFb8vGYdNA7VKyyicVuUj2kubvYNZ3Y5mRtYv68BECTw3jg9vqv8WSueTuRM9Tg4d4uLDKMDgFmVwZ7UZDhMErGZ1Zeq`
-    )
-    expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
-      'authentication'
-    )
-    expect(builtLightDidDetails?.encryptionKey?.id).toStrictEqual('encryption')
-    expect(builtLightDidDetails?.attestationKey).toBeUndefined()
-    expect(builtLightDidDetails?.delegationKey).toBeUndefined()
+    expect(builtLightDid).toStrictEqual(expectedLightDid)
+    expect(builtLightDid).toStrictEqual(<DidDocument>{
+      uri: `did:kilt:light:00${address}:z17GNCdxLqMYTMC5pnnDrPZGxLEFcXvDamtGNXeNkfSaFf8cktX6erFJiQy8S3ugL981NNys7Rz8DJiaNPZi98v1oeFVL7PjUGNTz1g3jgZo4VgQri2SYHBifZFX9foHZH4DreZXFN66k5dPrvAtBpFXaiG2WZkkxsnxNWxYpqWPPcxvbTE6pJbXxWKjRUd7rog1h9vjA93QA9jMDxm6BSGJHACFgSPUU3UTLk2kjNwT2bjZVvihVFu1zibxwHjowb7N6UQfieJ7ny9HnaQy64qJvGqh4NNtpwkhwm5DTYUoAeAhjt3a6TWyxmBgbFdZF7` as DidUri,
+      authentication: [
+        {
+          id: '#authentication',
+          publicKey: authKey.publicKey,
+          type: 'sr25519',
+        },
+      ],
+      keyAgreement: [
+        {
+          id: '#encryption',
+          publicKey: encKey.publicKey,
+          type: 'x25519',
+        },
+      ],
+      service: [
+        {
+          id: '#service-1',
+          type: ['type-1'],
+          serviceEndpoint: ['x:url-1'],
+        },
+        {
+          id: '#service-2',
+          type: ['type-21', 'type-22'],
+          serviceEndpoint: ['x:url-21', 'x:url-22'],
+        },
+      ],
+    })
   })
 
   it('fail if a fragment is present according to the options', () => {
-    const authKey = new Keyring({
-      type: 'sr25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-    const encKey = new Keyring().addFromMnemonic('enc')
-    const endpoints: DidServiceEndpoint[] = [
+    const authKey = Crypto.makeKeypairFromSeed()
+    const encKey = Crypto.makeEncryptionKeypairFromSeed()
+    const service: DidServiceEndpoint[] = [
       {
-        id: 'service-1',
-        types: ['type-1'],
-        urls: ['x:url-1'],
+        id: '#service-1',
+        type: ['type-1'],
+        serviceEndpoint: ['x:url-1'],
       },
       {
-        id: 'service-2',
-        types: ['type-21', 'type-22'],
-        urls: ['x:url-21', 'x:url-22'],
+        id: '#service-2',
+        type: ['type-21', 'type-22'],
+        serviceEndpoint: ['x:url-21', 'x:url-22'],
       },
     ]
-    const creationOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        type: 'sr25519',
-      },
-      encryptionKey: {
-        publicKey: encKey.publicKey,
-        type: 'x25519',
-      },
-      serviceEndpoints: endpoints,
-    }
+
     // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
+    const expectedLightDid = Did.createLightDidDocument({
+      authentication: [authKey],
+      keyAgreement: [encKey],
+      service,
+    })
 
-    const uriWithFragment: DidUri = `${expectedLightDidDetails.uri}#authentication`
+    const uriWithFragment: DidUri = `${expectedLightDid.uri}#authentication`
 
-    expect(() => LightDidDetails.fromUri(uriWithFragment, true)).toThrow()
-    expect(() => LightDidDetails.fromUri(uriWithFragment, false)).not.toThrow()
+    expect(() => Did.parseDocumentFromLightDid(uriWithFragment, true)).toThrow()
+    expect(() =>
+      Did.parseDocumentFromLightDid(uriWithFragment, false)
+    ).not.toThrow()
   })
 
   it('fail if the URI is not correct', () => {
-    const validKiltAddress = new Keyring({ ss58Format }).addFromMnemonic(
-      'random'
-    )
+    const validKiltAddress = Crypto.makeKeypairFromSeed()
     const incorrectURIs = [
       'did:kilt:light:sdasdsadas',
-      // @ts-ignore not a valid did uri
+      // @ts-ignore not a valid DID uri
       'random-uri',
       'did:kilt:light',
       'did:kilt:light:',
@@ -390,81 +248,7 @@ describe('When creating an instance from a URI', () => {
       `did:kilt:light:00${validKiltAddress}:randomdetails`,
     ]
     incorrectURIs.forEach((uri) => {
-      expect(() => LightDidDetails.fromUri(uri as DidUri)).toThrow()
+      expect(() => Did.parseDocumentFromLightDid(uri as DidUri)).toThrow()
     })
-  })
-})
-
-describe('When creating an instance from an identifier', () => {
-  it('correctly assign the right sr25519 authentication key', () => {
-    const authKey = new Keyring({
-      type: 'sr25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-
-    const creationOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        type: 'sr25519',
-      },
-    }
-
-    // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
-    // We are sure this is correct because of the described case above
-    const builtLightDidDetails = LightDidDetails.fromIdentifier(
-      authKey.address,
-      'sr25519'
-    )
-
-    expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
-      expectedLightDidDetails
-    )
-    expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
-      getEncodingForVerificationKeyType('sr25519')
-    )
-
-    expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
-      'authentication'
-    )
-    expect(builtLightDidDetails?.encryptionKey).toBeUndefined()
-    expect(builtLightDidDetails?.attestationKey).toBeUndefined()
-    expect(builtLightDidDetails?.delegationKey).toBeUndefined()
-  })
-
-  it('correctly assign the right ed25519 authentication key', () => {
-    const authKey = new Keyring({
-      type: 'ed25519',
-      ss58Format,
-    }).addFromMnemonic('auth')
-
-    const creationOptions: LightDidCreationDetails = {
-      authenticationKey: {
-        publicKey: authKey.publicKey,
-        type: 'ed25519',
-      },
-    }
-
-    // We are sure this is correct because of the described case above
-    const expectedLightDidDetails = LightDidDetails.fromDetails(creationOptions)
-    // We are sure this is correct because of the described case above
-    const builtLightDidDetails = LightDidDetails.fromIdentifier(
-      authKey.address,
-      'ed25519'
-    )
-
-    expect(builtLightDidDetails).toStrictEqual<LightDidDetails>(
-      expectedLightDidDetails
-    )
-    expect(builtLightDidDetails.authKeyEncoding).toStrictEqual(
-      getEncodingForVerificationKeyType('ed25519')
-    )
-
-    expect(builtLightDidDetails?.authenticationKey.id).toStrictEqual(
-      'authentication'
-    )
-    expect(builtLightDidDetails?.encryptionKey).toBeUndefined()
-    expect(builtLightDidDetails?.attestationKey).toBeUndefined()
-    expect(builtLightDidDetails?.delegationKey).toBeUndefined()
   })
 })

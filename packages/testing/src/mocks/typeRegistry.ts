@@ -13,7 +13,7 @@ import type { HexString } from '@polkadot/util/types'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { Metadata, TypeRegistry } from '@polkadot/types'
 
-import metaStatic from './metadata/develop.json'
+import metaStatic from '../metadata/spiritnet.js'
 
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
 export type StaticMetadata =

@@ -75,24 +75,22 @@ export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
  *
  * @param input [[BalanceNumber]] to convert.
  * @returns String representation of the given [[BalanceNumber]].
- * @throws On invalid number representation if given a string.
- * @throws On malformed input.
  */
 export function balanceNumberToString(input: BalanceNumber): string {
   if (typeof input === 'string') {
     if (!input.match(/^-?\d*\.?\d+$/)) {
-      throw new Error('not a string representation of number')
+      throw new Error('Not a string representation of number')
     }
     return input
   }
   if (
     typeof input === 'number' ||
-    (typeof input === 'bigint' && input.toString) ||
-    (typeof input === 'object' && input instanceof BN && input.toString)
+    typeof input === 'bigint' ||
+    (typeof input === 'object' && input instanceof BN)
   ) {
     return input.toString()
   }
-  throw new Error('could not convert to String')
+  throw new Error('Could not convert to String')
 }
 
 /**
@@ -101,7 +99,6 @@ export function balanceNumberToString(input: BalanceNumber): string {
  * @param input [[BalanceNumber]] to convert.
  * @param unit Metric prefix of the given [[BalanceNumber]].
  * @returns Exact BN representation in femtoKilt, to use in transactions and calculations.
- * @throws Unknown metricPrefix, or if the input has too many decimal places for its unit.
  */
 export function toFemtoKilt(
   input: BalanceNumber,
@@ -121,7 +118,7 @@ export function toFemtoKilt(
     : stringRepresentation.split('.')
   if (fraction && fraction.length > unitVal + 15) {
     throw new Error(
-      `Too many decimal places: input with unit ${unit} and value ${stringRepresentation} exceeds the ${
+      `Too many decimal places: input with unit "${unit}" and value "${stringRepresentation}" exceeds the ${
         unitVal + 15
       } possible decimal places by ${fraction.length - unitVal + 15}`
     )

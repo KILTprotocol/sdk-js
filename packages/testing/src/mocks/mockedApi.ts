@@ -49,8 +49,8 @@ import type {
 } from '@polkadot/types/interfaces'
 import { GenericEventData, TypeRegistry, U64 } from '@polkadot/types'
 import type {
-  IIdentity,
   ISubmittableResult,
+  KiltAddress,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from './mockedApi.utils.js'
@@ -58,6 +58,7 @@ import { createRegistryFromMetadata } from './typeRegistry.js'
 
 export interface MockApiPromise extends ApiPromise {
   __queueResults(results: Array<Partial<ExtrinsicStatus>>): void
+
   __setDefaultResult(status: Partial<ExtrinsicStatus>): void
 }
 
@@ -70,30 +71,31 @@ class MockSubmittableExtrinsic {
   }
 
   nonce = { toHuman: (): number | undefined => undefined }
+
   constructor(result: ISubmittableResult) {
     this.result = result
   }
 
   public addSignature(): this {
-    const signature = this.signature.toHuman()
-      ? this.signature.toHuman()! + 1
-      : 0
+    const signature =
+      this.signature.toHuman() !== undefined ? this.signature.toHuman()! + 1 : 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() ? this.nonce.toHuman()! + 1 : 0
+    const nonce =
+      this.nonce.toHuman() !== undefined ? this.nonce.toHuman()! + 1 : 0
     this.nonce = { toHuman: () => nonce }
     return this
   }
 
   public signAsync(): this {
-    const signature = this.signature.toHuman() || 0
+    const signature = this.signature.toHuman() ?? 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() || 0
+    const nonce = this.nonce.toHuman() ?? 0
     this.nonce = { toHuman: () => nonce }
 
     return this
@@ -102,7 +104,7 @@ class MockSubmittableExtrinsic {
   public async send(
     callable: (...params: unknown[]) => void
   ): Promise<string | (() => void)> {
-    if (callable) {
+    if (typeof callable === 'function') {
       callable(this.result)
       return () => {}
     }
@@ -113,14 +115,14 @@ class MockSubmittableExtrinsic {
     a: any,
     callable: (...params: unknown[]) => void
   ): Promise<string | (() => void)> {
-    const signature = this.signature.toHuman() || 0
+    const signature = this.signature.toHuman() ?? 0
     this.signature = {
       signed: true,
       toHuman: () => signature,
     }
-    const nonce = this.nonce.toHuman() || 0
+    const nonce = this.nonce.toHuman() ?? 0
     this.nonce = { toHuman: () => nonce }
-    if (callable) {
+    if (typeof callable === 'function') {
       callable(this.result)
       return () => {
         // noop
@@ -250,10 +252,7 @@ export function getMockedApi(): MockApiPromise {
         // default return value decodes to BN(0)
         // default return value decodes to AccountInfo with all entries holding BN(0)
         account: jest.fn(
-          async (
-            address: IIdentity['address'],
-            cb
-          ): Promise<AccountInfoWithProviders> =>
+          async (address: KiltAddress, cb): Promise<AccountInfoWithProviders> =>
             TYPE_REGISTRY.createType('AccountInfoWithProviders')
         ),
       },
@@ -333,8 +332,8 @@ export function getMockedApi(): MockApiPromise {
       },
       did: {
         // default return value decodes to null, represents dID not found
-        dIDs: jest.fn(async (address: string) =>
-          mockChainQueryReturn('did', 'dIDs')
+        did: jest.fn(async (address: string) =>
+          mockChainQueryReturn('did', 'did')
         ),
         /* example return value:
       new Option(
@@ -347,6 +346,12 @@ export function getMockedApi(): MockApiPromise {
         ]
       )
       */
+        serviceEndpoints: jest.fn(async () =>
+          mockChainQueryReturn('did', 'serviceEndpoints')
+        ),
+        didBlacklist: jest
+          .fn()
+          .mockReturnValue(mockChainQueryReturn('did', 'didBlacklist')),
       },
       portablegabi: {
         accumulatorList: jest.fn((address: string, index: number) =>
@@ -367,6 +372,8 @@ export function getMockedApi(): MockApiPromise {
       },
     },
     registry: TYPE_REGISTRY,
+    hasSubscriptions: true,
   }
+  MockedApi.query.did.serviceEndpoints.entries = jest.fn().mockReturnValue([])
   return MockedApi as MockApiPromise
 }

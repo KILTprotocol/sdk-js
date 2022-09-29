@@ -18,16 +18,18 @@ declare global {
   }
 }
 
-let testcontainer: StartedTestContainer
+let testcontainer: StartedTestContainer | undefined
+
+const WS_PORT = 9944
 
 test.beforeAll(async () => {
   // start dev node with testcontainers
   testcontainer = await new GenericContainer(
     process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node:latest'
   )
-    .withCmd(['--dev', '--ws-port', '9944', '--ws-external'])
-    .withExposedPorts({ container: 9944, host: 9944 })
-    .withWaitStrategy(Wait.forLogMessage('Idle'))
+    .withCmd(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
+    .withExposedPorts({ container: WS_PORT, host: WS_PORT })
+    .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
     .start()
 })
 

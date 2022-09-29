@@ -6,7 +6,7 @@
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { DidUri } from './DidDetails'
+import type { DidUri } from './DidDocument'
 
 export type InstanceType =
   | 'array'
@@ -34,17 +34,3 @@ export interface ICType {
   owner: DidUri | null
   schema: ICTypeSchema
 }
-
-export type CompressedCTypeSchema = [
-  ICTypeSchema['$id'],
-  ICTypeSchema['$schema'],
-  ICTypeSchema['title'],
-  ICTypeSchema['properties'],
-  ICTypeSchema['type']
-]
-
-export type CompressedCType = [
-  ICType['hash'],
-  ICType['owner'],
-  CompressedCTypeSchema
-]

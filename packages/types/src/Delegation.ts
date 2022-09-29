@@ -6,7 +6,7 @@
  */
 
 import type { ICType } from './CType'
-import type { DidUri } from './DidDetails'
+import type { DidUri } from './DidDocument'
 
 /* eslint-disable no-bitwise */
 export const Permission = {

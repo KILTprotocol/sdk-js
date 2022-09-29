@@ -10,6 +10,7 @@
  */
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import * as CType from './CType'
 import * as Claim from '../claim'
 
@@ -152,13 +153,13 @@ describe('Nested CTypes', () => {
   })
 
   it('verify json-schema validator', () => {
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         nestedCType.schema,
         [passport.schema, kyc.schema],
         claimContents
       )
-    ).toBeTruthy()
+    ).not.toThrow()
 
     claimContents.fullName = {}
     expect(() =>
@@ -168,29 +169,29 @@ describe('Nested CTypes', () => {
         claimContents,
         didAlice
       )
-    ).toThrowError(
-      new Error('Nested claim data does not validate against CType')
-    )
-    expect(
+    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
+    expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],
         claimDeepContents
       )
-    ).toBeTruthy()
+    ).not.toThrow()
     ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],
         claimDeepContents
       )
-    ).toBeFalsy()
+    ).toThrow()
   })
 
   it('verify claim from a nested ctype', () => {
-    expect(nestedData).toBeTruthy()
-    expect(nestedDeepData).toBeTruthy()
+    expect(nestedData).toBeDefined()
+    expect(nestedData).not.toBeNull()
+    expect(nestedDeepData).toBeDefined()
+    expect(nestedDeepData).not.toBeNull()
     expect(() =>
       Claim.fromNestedCTypeClaim(
         deeplyNestedCType,
@@ -198,8 +199,6 @@ describe('Nested CTypes', () => {
         claimDeepContents,
         didAlice
       )
-    ).toThrowError(
-      new Error('Nested claim data does not validate against CType')
-    )
+    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
   })
 })

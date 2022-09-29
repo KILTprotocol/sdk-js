@@ -52,12 +52,12 @@ describe('CType', () => {
   it('verifies the metadata of a ctype', async () => {
     expect(() => CType.verifyCTypeMetadata(metadata)).not.toThrow()
     expect(metadata.ctypeHash).not.toHaveLength(0)
-    expect(
+    expect(() =>
       CType.verifyObjectAgainstSchema(metadata, MetadataModel)
-    ).toBeTruthy()
-    expect(
+    ).not.toThrow()
+    expect(() =>
       CType.verifyObjectAgainstSchema(ctypeMetadata, MetadataModel)
-    ).toBeFalsy()
+    ).toThrow()
   })
   it('checks if the metadata matches corresponding ctype hash', async () => {
     expect(metadata.ctypeHash).toEqual(ctype.hash)
@@ -70,7 +70,7 @@ describe('CType', () => {
     // @ts-expect-error
     delete faultyMetadata.metadata.properties
     expect(() => CType.verifyCTypeMetadata(metadata)).toThrow(
-      SDKErrors.ERROR_OBJECT_MALFORMED
+      SDKErrors.ObjectUnverifiableError
     )
   })
 })

@@ -7,7 +7,6 @@
 
 /* eslint-disable max-classes-per-file */
 import { ApiPromise } from '@polkadot/api'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type {
   DocumentLoader,
   ExpansionMap,
@@ -16,6 +15,7 @@ import type {
   VerificationResult,
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
+
 import type { AttestedProof } from '../../types.js'
 import {
   verifyAttestedProof,
@@ -40,16 +40,9 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
   constructor(options: { KiltConnection: ApiPromise }) {
     // vc-js complains when there is no verificationMethod
     super({ type: KILT_ATTESTED_PROOF_TYPE, verificationMethod: '<none>' })
-    if (
-      !options.KiltConnection ||
-      !(options.KiltConnection instanceof ApiPromise)
-    )
+    if (!('KiltConnection' in options))
       throw new TypeError('KiltConnection must be a Kilt blockchain connection')
     this.provider = options.KiltConnection
-  }
-
-  private setConnection(): void {
-    BlockchainApiConnection.setConnection(Promise.resolve(this.provider))
   }
 
   /**
@@ -64,19 +57,19 @@ export class KiltAttestedSuite extends KiltAbstractSuite {
   }): Promise<VerificationResult> {
     try {
       const { document, proof } = options
-      if (!document || typeof document !== 'object')
-        throw new TypeError('document must be a JsonLd object')
-      if (!proof || typeof proof !== 'object')
-        throw new TypeError('proof must be a JsonLd object')
+      if (typeof document !== 'object')
+        throw new TypeError('Document must be a JsonLd object')
+      if (typeof proof !== 'object')
+        throw new TypeError('Proof must be a JsonLd object')
       const compactedDoc = await this.compactDoc(document, options)
       const compactedProof = await this.compactProof<AttestedProof>(
         proof,
         options
       )
-      this.setConnection()
       const { verified, errors, status } = await verifyAttestedProof(
         compactedDoc,
-        compactedProof
+        compactedProof,
+        this.provider
       )
       if (errors.length > 0)
         return {

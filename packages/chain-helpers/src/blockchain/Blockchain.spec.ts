@@ -9,146 +9,107 @@
  * @group unit/blockchain
  */
 
-/* eslint-disable dot-notation */
-import { Keyring, ss58Format } from '@kiltprotocol/utils'
-import type { IIdentity } from '@kiltprotocol/types'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { setConnection } from '../blockchainApiConnection/BlockchainApiConnection'
+import { ConfigService } from '@kiltprotocol/config'
+import type { KeyringPair } from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+
 import {
   IS_FINALIZED,
-  isRecoverableTxError,
-  parseSubscriptionOptions,
-  submitSignedTx,
+  IS_IN_BLOCK,
+  IS_READY,
+  signAndSubmitTx,
 } from './Blockchain'
 
 let api: any
 
-beforeAll(() => {
+beforeEach(() => {
   api = ApiMocks.getMockedApi()
-  setConnection(Promise.resolve(api))
+  ConfigService.set({ api })
 })
 
 describe('Blockchain', () => {
   describe('submitSignedTx', () => {
-    let alice: IIdentity
-    let bob: IIdentity
+    let pair: KeyringPair
 
     beforeAll(async () => {
-      const keyring = new Keyring({
-        type: 'ed25519',
-        ss58Format,
-      })
-      const alicePair = keyring.createFromUri('//Alice')
-      alice = {
-        signKeyringPair: alicePair,
-        address: alicePair.address,
-      } as IIdentity
-      const bobPair = keyring.createFromUri('//Bob')
-      bob = {
-        signKeyringPair: bobPair,
-        address: bobPair.address,
-      } as IIdentity
+      pair = Crypto.makeKeypairFromUri('//Alice')
     })
 
-    it('catches ERROR_TRANSACTION_USURPED and discovers as recoverable', async () => {
-      api.__setDefaultResult({ isUsurped: true })
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-
-    it('catches priority error and discovers as recoverable', async () => {
-      api.__setDefaultResult()
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
-      tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-
-    it('catches Already Imported error and discovers as recoverable', async () => {
-      api.__setDefaultResult()
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
-      tx.send = jest
-        .fn()
-        .mockRejectedValue(Error('Transaction Already Imported'))
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-
-    it('catches Outdated/Stale Tx error and discovers as recoverable', async () => {
-      api.__setDefaultResult()
-      const tx = api.tx.balances.transfer(bob.address, 100)
-      tx.signAsync(alice.signKeyringPair)
-      tx.send = jest
-        .fn()
-        .mockRejectedValue(
-          Error('1010: Invalid Transaction: Transaction is outdated')
-        )
-      const error = await submitSignedTx(tx, parseSubscriptionOptions()).catch(
-        (e) => e
-      )
-      expect(isRecoverableTxError(error)).toBe(true)
-    }, 20_000)
-  })
-
-  describe('parseSubscriptionOptions', () => {
-    it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
-      function testFunction() {
-        return true
-      }
-
-      expect(parseSubscriptionOptions()).toEqual({
-        resolveOn: IS_FINALIZED,
-        rejectOn: expect.any(Function),
-        timeout: undefined,
-      })
-
-      expect(parseSubscriptionOptions({ resolveOn: testFunction })).toEqual({
-        resolveOn: testFunction,
-        rejectOn: expect.any(Function),
-        timeout: undefined,
-      })
-
+    it('allows waiting for finalization', async () => {
+      api.__setDefaultResult({ isFinalized: true })
+      const tx = api.tx.balances.transfer('abcdef', 50)
       expect(
-        parseSubscriptionOptions({
-          resolveOn: testFunction,
-          rejectOn: testFunction,
-        })
-      ).toEqual({
-        resolveOn: testFunction,
-        rejectOn: testFunction,
-        timeout: undefined,
-      })
+        await signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
+      ).toHaveProperty('isFinalized', true)
+    })
 
+    it('allows waiting for in block', async () => {
+      api.__setDefaultResult({ isInBlock: true })
+      const tx = api.tx.balances.transfer('abcdef', 50)
       expect(
-        parseSubscriptionOptions({
-          resolveOn: testFunction,
-          timeout: 10,
-        })
-      ).toEqual({
-        resolveOn: testFunction,
-        rejectOn: expect.any(Function),
-        timeout: 10,
-      })
+        await signAndSubmitTx(tx, pair, { resolveOn: IS_IN_BLOCK })
+      ).toHaveProperty('isInBlock', true)
+    })
 
+    it('allows waiting for ready', async () => {
+      api.__setDefaultResult({ isReady: true })
+      const tx = api.tx.balances.transfer('abcdef', 50)
       expect(
-        parseSubscriptionOptions({
-          timeout: 10,
-        })
-      ).toEqual({
-        resolveOn: IS_FINALIZED,
-        rejectOn: expect.any(Function),
-        timeout: 10,
+        await signAndSubmitTx(tx, pair, { resolveOn: IS_READY })
+      ).toHaveProperty('status.isReady', true)
+    })
+
+    it('uses default resolution config', async () => {
+      api.__setDefaultResult({ isReady: true })
+      ConfigService.set({ submitTxResolveOn: IS_READY })
+      let tx = api.tx.balances.transfer('abcdef', 50)
+      expect(await signAndSubmitTx(tx, pair)).toHaveProperty(
+        'status.isReady',
+        true
+      )
+
+      api.__setDefaultResult({ isInBlock: true })
+      ConfigService.set({ submitTxResolveOn: IS_IN_BLOCK })
+      tx = api.tx.balances.transfer('abcdef', 50)
+      expect(await signAndSubmitTx(tx, pair)).toHaveProperty('isInBlock', true)
+
+      api.__setDefaultResult({ isFinalized: true })
+      ConfigService.set({ submitTxResolveOn: IS_FINALIZED })
+      tx = api.tx.balances.transfer('abcdef', 50)
+      expect(await signAndSubmitTx(tx, pair)).toHaveProperty(
+        'isFinalized',
+        true
+      )
+    })
+
+    it('rejects on error condition', async () => {
+      api.__setDefaultResult({ isInvalid: true })
+      const tx = api.tx.balances.transfer('abcdef', 50)
+      await expect(
+        signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
+      ).rejects.toHaveProperty('isError', true)
+    })
+
+    it('throws if subscriptions not supported', async () => {
+      // @ts-ignore
+      api.hasSubscriptions = false
+      const tx = api.tx.balances.transfer('abcdef', 50)
+      await expect(
+        signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
+      ).rejects.toThrow(SDKErrors.SubscriptionsNotSupportedError)
+    })
+
+    it('rejects if disconnected', async () => {
+      api.__setDefaultResult({ isReady: true })
+      api.once.mockImplementation((ev: string, callback: () => void) => {
+        // mock disconnect 500 ms after submission
+        if (ev === 'disconnected') setTimeout(callback, 500)
       })
+      const tx = api.tx.balances.transfer('abcdef', 50)
+      await expect(
+        signAndSubmitTx(tx, pair, { resolveOn: IS_FINALIZED })
+      ).rejects.toHaveProperty('internalError', expect.any(Error))
     })
   })
 })

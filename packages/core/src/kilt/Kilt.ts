@@ -12,42 +12,52 @@
  * ```Kilt.connect('ws://localhost:9944');```.
  */
 
-import { ConfigService } from '@kiltprotocol/config'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, WsProvider } from '@polkadot/api'
+
+import { ConfigService } from '@kiltprotocol/config'
+import { latest, rpc, runtime } from '@kiltprotocol/type-definitions'
 
 /**
- * Connects to the KILT Blockchain and caches the connection.
- * When used again, the cached instance is returned.
+ * Prepares crypto modules (required for identity creation and others) and calls ConfigService.set().
  *
- * @returns An instance of ApiPromise.
- */
-export function connect(): Promise<ApiPromise> {
-  return BlockchainApiConnection.getConnectionOrConnect()
-}
-
-/**
- * Allows setting global configuration such as the blockchain endpoint and log level.
- *
- * @param configs Config options object.
- */
-export function config<K extends Partial<ConfigService.configOpts>>(
-  configs: K
-): void {
-  ConfigService.set(configs)
-}
-
-/**
- * Prepares crypto modules (required e.g. For identity creation) and calls Kilt.config().
- *
- * @param configs Arguments to pass on to Kilt.config().
+ * @param configs Arguments to pass on to ConfigService.set().
  * @returns Promise that must be awaited to assure crypto is ready.
  */
 export async function init<K extends Partial<ConfigService.configOpts>>(
   configs?: K
 ): Promise<void> {
-  config(configs || {})
+  ConfigService.set(configs || {})
   await cryptoWaitReady()
 }
-export const { disconnect } = BlockchainApiConnection
+
+/**
+ * Connects to the KILT Blockchain and passes the initialized api instance to `init()`, making it available for functions in the sdk.
+ *
+ * @param blockchainRpcWsUrl WebSocket URL of the RPC endpoint exposed by a node that is part of the Kilt blockchain network you wish to connect to.
+ * @returns An instance of ApiPromise.
+ */
+export async function connect(blockchainRpcWsUrl: string): Promise<ApiPromise> {
+  const provider = new WsProvider(blockchainRpcWsUrl)
+  const api = await ApiPromise.create({
+    provider,
+    types: latest,
+    rpc,
+    runtime,
+  })
+  await init({ api })
+  return api.isReadyOrError
+}
+
+/**
+ * Disconnects the cached connection and clears the cache.
+ *
+ * @returns If there was a cached and connected connection, or not.
+ */
+export async function disconnect(): Promise<boolean> {
+  if (!ConfigService.isSet('api')) return false
+  const api = ConfigService.get('api')
+  ConfigService.unset('api')
+  await api.disconnect()
+  return true
+}

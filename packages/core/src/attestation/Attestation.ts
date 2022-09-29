@@ -8,18 +8,16 @@
 import type {
   IAttestation,
   IDelegationHierarchyDetails,
-  IRequestForAttestation,
-  CompressedAttestation,
+  ICredential,
   DidUri,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
-import { query } from './Attestation.chain.js'
+import * as Credential from '../credential/index.js'
 
 /**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
- * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as a [[Credential]].
+ * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[Credential]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
@@ -33,47 +31,47 @@ import { query } from './Attestation.chain.js'
  * Throws on invalid input.
  *
  * @param input The potentially only partial [[IAttestation]].
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_HASH_NOT_PROVIDED]] or [[ERROR_OWNER_NOT_PROVIDED]] when input's cTypeHash, claimHash or owner respectively do not exist.
- * @throws [[ERROR_DELEGATION_ID_TYPE]] when the input's delegationId is not of type 'string' or 'null'.
- * @throws [[ERROR_REVOCATION_BIT_MISSING]] when input.revoked is not of type 'boolean'.
- *
  */
 export function verifyDataStructure(input: IAttestation): void {
   if (!input.cTypeHash) {
-    throw new SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
-  } else DataUtils.validateHash(input.cTypeHash, 'CType')
+    throw new SDKErrors.CTypeHashMissingError()
+  }
+  DataUtils.verifyIsHex(input.cTypeHash, 256)
 
   if (!input.claimHash) {
-    throw new SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
-  } else DataUtils.validateHash(input.claimHash, 'Claim')
-
-  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw new SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.ClaimHashMissingError()
   }
+  DataUtils.verifyIsHex(input.claimHash, 256)
+
+  if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
+    throw new SDKErrors.DelegationIdTypeError()
+  }
+
   if (!input.owner) {
-    throw new SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  } else DidUtils.validateKiltDidUri(input.owner)
+    throw new SDKErrors.OwnerMissingError()
+  }
+  Did.validateUri(input.owner, 'Did')
 
   if (typeof input.revoked !== 'boolean') {
-    throw new SDKErrors.ERROR_REVOCATION_BIT_MISSING()
+    throw new SDKErrors.RevokedTypeError()
   }
 }
 
 /**
  * Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
  *
- * @param request - The base request for attestation.
+ * @param credential - The base credential for attestation.
  * @param attesterDid - The attester's DID, used to attest to the underlying claim.
  * @returns A new [[Attestation]] object.
  */
-export function fromRequestAndDid(
-  request: IRequestForAttestation,
+export function fromCredentialAndDid(
+  credential: ICredential,
   attesterDid: DidUri
 ): IAttestation {
   const attestation = {
-    claimHash: request.rootHash,
-    cTypeHash: request.claim.cTypeHash,
-    delegationId: request.delegationId,
+    claimHash: credential.rootHash,
+    cTypeHash: credential.claim.cTypeHash,
+    delegationId: credential.delegationId,
     owner: attesterDid,
     revoked: false,
   }
@@ -90,7 +88,7 @@ export function fromRequestAndDid(
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation
 ): Promise<IDelegationHierarchyDetails | null> {
-  if (!input) {
+  if (input === null) {
     return null
   }
 
@@ -129,62 +127,25 @@ export function isIAttestation(input: unknown): input is IAttestation {
 }
 
 /**
- * Queries an attestation from the chain and checks if it is existing, if the owner of the attestation matches and if it was not revoked.
+ * Verifies whether the data of the given attestation matches the one from the corresponding credential. It is valid if:
+ * * the [[Credential]] object has valid data (see [[Credential.verifyDataIntegrity]]);
+ * and
+ * * the hash of the [[Credential]] object, and the hash of the [[Attestation]].
  *
- * @param attestation - The Attestation to verify.
- * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
- * @returns A promise containing whether the attestation is valid.
+ * @param attestation - The attestation to verify.
+ * @param credential - The credential to verify against.
  */
-export async function checkValidity(
+export function verifyAgainstCredential(
   attestation: IAttestation,
-  claimHash: IAttestation['claimHash'] = attestation.claimHash
-): Promise<boolean> {
-  verifyDataStructure(attestation)
-  // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-  const chainAttestation = await query(claimHash)
-  return !!(
-    chainAttestation !== null &&
-    chainAttestation.owner === attestation.owner &&
-    !chainAttestation.revoked
-  )
-}
-
-/**
- * Compresses an [[Attestation]] object into an array for storage and/or messaging.
- *
- * @param attestation An [[Attestation]] object that will be sorted and stripped for messaging or storage.
- * @returns An ordered array of an [[Attestation]].
- */
-export function compress(attestation: IAttestation): CompressedAttestation {
-  verifyDataStructure(attestation)
-  return [
-    attestation.claimHash,
-    attestation.cTypeHash,
-    attestation.owner,
-    attestation.revoked,
-    attestation.delegationId,
-  ]
-}
-
-/**
- * Decompresses an [[Attestation]] from storage and/or message into an object.
- *
- * @param attestation A compressed [[Attestation]] array that is decompressed back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when the attestation is not an array or its length is not equal to 5.
- *
- * @returns An object that has the same properties as an [[Attestation]].
- */
-export function decompress(attestation: CompressedAttestation): IAttestation {
-  if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
+  credential: ICredential
+): void {
+  if (
+    credential.claim.cTypeHash !== attestation.cTypeHash ||
+    credential.rootHash !== attestation.claimHash
+  ) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Attestation does not match credential'
+    )
   }
-  const decompressedAttestation = {
-    claimHash: attestation[0],
-    cTypeHash: attestation[1],
-    owner: attestation[2],
-    revoked: attestation[3],
-    delegationId: attestation[4],
-  }
-  verifyDataStructure(decompressedAttestation)
-  return decompressedAttestation
+  Credential.verifyDataIntegrity(credential)
 }

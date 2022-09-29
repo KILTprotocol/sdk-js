@@ -9,6 +9,7 @@
  * @group unit/delegation
  */
 
+import type { HexString } from '@polkadot/util/types'
 import {
   IDelegationNode,
   IDelegationHierarchyDetails,
@@ -17,44 +18,33 @@ import {
   ICType,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
+import { ApiMocks } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
 import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { DelegationNode } from './DelegationNode'
 import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
+
+let mockedApi: any
+
+beforeAll(() => {
+  mockedApi = ApiMocks.getMockedApi()
+  ConfigService.set({ api: mockedApi })
+})
 
 let hierarchiesDetails: Record<string, IDelegationHierarchyDetails> = {}
 let nodes: Record<string, DelegationNode> = {}
 
 jest.mock('./DelegationNode.chain', () => ({
   getChildren: jest.fn(async (node: DelegationNode) =>
-    node.childrenIds.map((id) => nodes[id] || null)
+    node.childrenIds.map((id) => (id in nodes ? nodes[id] : null))
   ),
-  query: jest.fn(async (id: string) => nodes[id] || null),
-  getStoreAsRootTx: jest.fn(async (node: DelegationNode) => {
-    nodes[node.id] = node
-    hierarchiesDetails[node.id] = {
-      id: node.id,
-      cTypeHash: await node.getCTypeHash(),
-    }
-  }),
-  getRevokeTx: jest.fn(
-    async (
-      nodeId: IDelegationNode['id'],
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      maxDepth: number,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      maxRevocations: number
-    ) => {
-      nodes[nodeId] = new DelegationNode({
-        ...nodes[nodeId],
-        childrenIds: nodes[nodeId].childrenIds,
-        revoked: true,
-      })
-    }
-  ),
+  query: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
 }))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
-  query: jest.fn(async (id: string) => hierarchiesDetails[id] || null),
+  query: jest.fn(async (id: string) =>
+    id in hierarchiesDetails ? hierarchiesDetails[id] : null
+  ),
 }))
 
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
@@ -70,6 +60,24 @@ describe('DelegationNode', () => {
   let addresses: DidUri[]
 
   beforeAll(() => {
+    jest
+      .mocked(mockedApi.tx.delegation.revokeDelegation)
+      .mockImplementation((nodeId: IDelegationNode['id']) => {
+        nodes[nodeId] = new DelegationNode({
+          ...nodes[nodeId],
+          childrenIds: nodes[nodeId].childrenIds,
+          revoked: true,
+        })
+      })
+    jest
+      .mocked(mockedApi.tx.delegation.createHierarchy)
+      .mockImplementation(async (nodeId: string, cTypeHash: HexString) => {
+        hierarchiesDetails[nodeId] = {
+          id: nodeId,
+          cTypeHash,
+        }
+      })
+
     successId = Crypto.hashStr('success')
     hierarchyId = Crypto.hashStr('rootId')
     id = Crypto.hashStr('id')
@@ -137,8 +145,8 @@ describe('DelegationNode', () => {
         } as DelegationNode,
       }
 
-      expect(
-        await new DelegationNode({
+      await expect(
+        new DelegationNode({
           id: successId,
           hierarchyId,
           account: didAlice,
@@ -147,10 +155,10 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).toBe(true)
+      ).resolves.not.toThrow()
 
-      expect(
-        await new DelegationNode({
+      await expect(
+        new DelegationNode({
           id: failureId,
           hierarchyId,
           account: didAlice,
@@ -159,7 +167,7 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).toBe(false)
+      ).rejects.toThrow()
     })
 
     it('get delegation root', async () => {
@@ -512,19 +520,19 @@ describe('DelegationNode', () => {
       } as IDelegationNode
 
       expect(() => errorCheck(malformedPermissionsDelegationNode)).toThrowError(
-        SDKErrors.ERROR_UNAUTHORIZED
+        SDKErrors.UnauthorizedError
       )
 
       expect(() => errorCheck(missingRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_MISSING
+        SDKErrors.DelegationIdMissingError
       )
 
       expect(() => errorCheck(malformedRootIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE
+        SDKErrors.DelegationIdTypeError
       )
 
       expect(() => errorCheck(malformedParentIdDelegationNode)).toThrowError(
-        SDKErrors.ERROR_DELEGATION_ID_TYPE
+        SDKErrors.DelegationIdTypeError
       )
     })
   })

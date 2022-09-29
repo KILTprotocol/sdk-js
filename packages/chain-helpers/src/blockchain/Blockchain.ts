@@ -5,19 +5,20 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { SubmittableResult } from '@polkadot/api'
+import { AnyNumber } from '@polkadot/types/types'
+
 import { ConfigService } from '@kiltprotocol/config'
 import type {
-  IIdentity,
   ISubmittableResult,
   KeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { SubmittableResult } from '@polkadot/api'
-import { AnyNumber } from '@polkadot/types/types'
+import { SDKErrors } from '@kiltprotocol/utils'
+
 import { ErrorHandler } from '../errorhandling/index.js'
 import { makeSubscriptionPromise } from './SubscriptionPromise.js'
-import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -87,63 +88,58 @@ export function EXTRINSIC_FAILED(result: ISubmittableResult): boolean {
   return ErrorHandler.extrinsicFailed(result)
 }
 
-/**
- * Parses potentially incomplete or undefined options and returns complete [[Options]].
- *
- * @param opts Potentially undefined or partial [[Options]] .
- * @returns Complete [[Options]], with potentially defaulted values.
- */
-export function parseSubscriptionOptions(
-  opts?: Partial<SubscriptionPromise.Options>
-): SubscriptionPromise.Options {
-  const {
-    resolveOn = IS_FINALIZED,
-    rejectOn = (result: ISubmittableResult) =>
-      EXTRINSIC_FAILED(result) || IS_ERROR(result),
-    timeout,
-  } = { ...opts }
-
-  return {
-    resolveOn,
-    rejectOn,
-    timeout,
-  }
+function defaultResolveOn(): SubscriptionPromise.ResultEvaluator {
+  return ConfigService.isSet('submitTxResolveOn')
+    ? ConfigService.get('submitTxResolveOn')
+    : IS_FINALIZED
 }
 
 /**
  * Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
- * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
+ * finalization or rejects if any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters or via the [[ConfigService]].
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
  * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts Partial optional [[SubscriptionPromise]]to be parsed: Criteria for resolving/rejecting the promise.
+ * @param opts Allows overwriting criteria for resolving/rejecting the transaction result subscription promise. These options take precedent over configuration via the ConfigService.
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  opts?: Partial<SubscriptionPromise.Options>
+  opts: Partial<SubscriptionPromise.Options> = {}
 ): Promise<ISubmittableResult> {
-  log.info(`Submitting ${tx.method}`)
-  const options = parseSubscriptionOptions(opts)
-  const { promise, subscription } = makeSubscriptionPromise(options)
+  const {
+    resolveOn = defaultResolveOn(),
+    rejectOn = (result: ISubmittableResult) =>
+      EXTRINSIC_FAILED(result) || IS_ERROR(result),
+  } = opts
 
-  let latestResult: SubmittableResult
+  const api = ConfigService.get('api')
+  if (!api.hasSubscriptions) {
+    throw new SDKErrors.SubscriptionsNotSupportedError()
+  }
+
+  log.info(`Submitting ${tx.method}`)
+  const { promise, subscription } = makeSubscriptionPromise({
+    ...opts,
+    resolveOn,
+    rejectOn,
+  })
+
+  let latestResult: SubmittableResult | undefined
   const unsubscribe = await tx.send((result) => {
     latestResult = result
     subscription(result)
   })
 
-  const api = await getConnectionOrConnect()
-
   function handleDisconnect(): void {
     const result = new SubmittableResult({
-      events: latestResult.events || [],
+      events: latestResult?.events || [],
       internalError: new Error('connection error'),
       status:
-        latestResult.status ||
+        latestResult?.status ||
         api.registry.createType('ExtrinsicStatus', 'future'),
       txHash: api.registry.createType('Hash'),
     })
@@ -165,34 +161,6 @@ export async function submitSignedTx(
 export const dispatchTx = submitSignedTx
 
 /**
- * Checks the TxError/TxStatus for issues that may be resolved via resigning.
- *
- * @param reason Polkadot API returned error or ISubmittableResult.
- * @returns Whether or not this issue may be resolved via resigning.
- */
-export function isRecoverableTxError(
-  reason: Error | ISubmittableResult
-): boolean {
-  if (reason instanceof Error) {
-    return (
-      reason.message.includes(TxOutdated) ||
-      reason.message.includes(TxPriority) ||
-      reason.message.includes(TxDuplicate) ||
-      false
-    )
-  }
-  if (
-    reason &&
-    typeof reason === 'object' &&
-    typeof reason.status === 'object'
-  ) {
-    const { status } = reason as ISubmittableResult
-    if (status.isUsurped) return true
-  }
-  return false
-}
-
-/**
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
@@ -203,13 +171,12 @@ export function isRecoverableTxError(
  */
 export async function signAndSubmitTx(
   tx: SubmittableExtrinsic,
-  signer: KeyringPair | IIdentity,
+  signer: KeyringPair,
   {
     tip,
     ...opts
   }: Partial<SubscriptionPromise.Options> & Partial<{ tip: AnyNumber }> = {}
 ): Promise<ISubmittableResult> {
-  const signKeyringPair = (signer as IIdentity).signKeyringPair || signer
-  const signedTx = await tx.signAsync(signKeyringPair, { tip })
+  const signedTx = await tx.signAsync(signer, { tip })
   return submitSignedTx(signedTx, opts)
 }

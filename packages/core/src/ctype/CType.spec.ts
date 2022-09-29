@@ -10,22 +10,27 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
+import { ApiMocks } from '@kiltprotocol/testing'
 import type {
   ICType,
-  CompressedCType,
   CTypeSchemaWithoutId,
   ICTypeSchema,
-  CompressedCTypeSchema,
   IClaim,
 } from '@kiltprotocol/types'
 import * as Claim from '../claim'
-import * as RequestForAttestation from '../requestforattestation'
-import { getOwner, isStored } from './CType.chain'
+import * as Credential from '../credential'
 import * as CType from './CType.js'
 import { CTypeModel, CTypeWrapperModel } from './CType.schemas'
 
-jest.mock('./CType.chain')
+const mockedApi: any = ApiMocks.getMockedApi()
+ConfigService.set({ api: mockedApi })
 
+const encodedAliceDid = ApiMocks.mockChainQueryReturn(
+  'ctype',
+  'cTYPEs',
+  '4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+)
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 
@@ -35,7 +40,6 @@ describe('CType', () => {
   let claimCtype: ICType
   let claimContents: any
   let claim: IClaim
-  let compressedCType: CompressedCType
   beforeAll(async () => {
     rawCType = {
       $id: 'kilt:ctype:0x2',
@@ -64,21 +68,6 @@ describe('CType', () => {
     }
 
     claim = Claim.fromCTypeAndClaimContents(claimCtype, claimContents, didAlice)
-    compressedCType = [
-      claimCtype.hash,
-      claimCtype.owner,
-      [
-        claimCtype.schema.$id,
-        claimCtype.schema.$schema,
-        claimCtype.schema.title,
-        {
-          name: {
-            type: 'string',
-          },
-        },
-        'object',
-      ],
-    ]
   })
 
   it('makes ctype object from schema without id', () => {
@@ -90,13 +79,13 @@ describe('CType', () => {
   })
 
   it('verifies the claim structure', () => {
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBeTruthy()
+    ).not.toThrow()
     claim.contents.name = 123
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstSchema(claim.contents, claimCtype.schema)
-    ).toBeFalsy()
+    ).toThrow()
   })
 
   it('throws error on faulty input', () => {
@@ -130,72 +119,33 @@ describe('CType', () => {
       },
     }
     expect(() => CType.verifyDataStructure(wrongHashCtype)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED
+      SDKErrors.HashMalformedError
     )
     expect(() => CType.verifyDataStructure(faultySchemaCtype)).toThrowError(
-      SDKErrors.ERROR_OBJECT_MALFORMED
+      SDKErrors.ObjectUnverifiableError
     )
     expect(() =>
       CType.verifyDataStructure(invalidAddressCtype)
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Not a valid KILT did: did:kilt:Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N"`
+      `"Not a valid KILT DID \\"did:kilt:Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N\\""`
     )
     expect(() =>
       CType.verifyDataStructure(faultyAddressTypeCType)
-    ).toThrowErrorMatchingInlineSnapshot(`"Not a valid KILT did: 4262626426"`)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Not a valid KILT DID \\"4262626426\\""`
+    )
     expect(() =>
       CType.verifyDataStructure(wrongSchemaIdCType)
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Provided $id \\"kilt:ctype:0xd5302762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" and schema $id \\"kilt:ctype:0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" are not matching"`
+      `"Provided $id \\"kilt:ctype:0xd5302762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" does not match schema $id \\"kilt:ctype:0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\""`
     )
-  })
-
-  it('compresses and decompresses the ctype object', () => {
-    expect(CType.compressSchema(claimCtype.schema)).toEqual(compressedCType[2])
-    expect(CType.decompressSchema(compressedCType[2])).toEqual(
-      claimCtype.schema
-    )
-
-    expect(CType.compress(claimCtype)).toEqual(compressedCType)
-
-    expect(CType.decompress(compressedCType)).toEqual(claimCtype)
-  })
-
-  it('Negative test for compresses and decompresses the ctype object', () => {
-    const faultySchema = [...compressedCType[2]]
-    faultySchema.pop()
-    const faultySchemaCTypeCompressed = [...compressedCType]
-    faultySchemaCTypeCompressed[2] = faultySchema as CompressedCTypeSchema
-    compressedCType.pop()
-    // @ts-expect-error
-    delete rawCType.$id
-    // @ts-expect-error
-    delete claimCtype.hash
-
-    expect(() =>
-      CType.decompress(faultySchemaCTypeCompressed as CompressedCType)
-    ).toThrow()
-    expect(() => CType.compressSchema(rawCType)).toThrow()
-
-    expect(() => CType.compress(claimCtype)).toThrow()
-
-    expect(() => CType.decompress(compressedCType)).toThrow()
   })
 
   it('verifies whether a ctype is registered on chain ', async () => {
-    jest.mocked(isStored).mockResolvedValue(false)
-    expect(await CType.verifyStored(claimCtype)).toBe(false)
-    jest.mocked(isStored).mockResolvedValue(true)
-    expect(await CType.verifyStored(claimCtype)).toBe(true)
-  })
+    await expect(CType.verifyStored(claimCtype)).rejects.toThrow()
 
-  it('verifies ctype owner on chain', async () => {
-    jest.mocked(getOwner).mockResolvedValue(didBob)
-    expect(await CType.verifyOwner(claimCtype)).toBe(false)
-    jest.mocked(getOwner).mockResolvedValue(claimCtype.owner)
-    expect(await CType.verifyOwner(claimCtype)).toBe(true)
-    jest.mocked(getOwner).mockResolvedValue(null)
-    expect(await CType.verifyOwner(claimCtype)).toBe(false)
+    mockedApi.query.ctype.ctypes.mockResolvedValueOnce(encodedAliceDid)
+    await expect(CType.verifyStored(claimCtype)).resolves.not.toThrow()
   })
 })
 
@@ -236,13 +186,13 @@ describe('blank ctypes', () => {
     const claimA1 = Claim.fromCTypeAndClaimContents(ctype1, {}, didAlice)
     const claimA2 = Claim.fromCTypeAndClaimContents(ctype2, {}, didAlice)
 
-    expect(RequestForAttestation.fromClaim(claimA1).rootHash).not.toEqual(
-      RequestForAttestation.fromClaim(claimA2).rootHash
+    expect(Credential.fromClaim(claimA1).rootHash).not.toEqual(
+      Credential.fromClaim(claimA2).rootHash
     )
   })
   it('typeguard returns true or false for complete or incomplete CTypes', () => {
-    expect(CType.isICType(ctype1)).toBeTruthy()
-    expect(CType.isICType({ ...ctype2, owner: '' })).toBeFalsy()
+    expect(CType.isICType(ctype1)).toBe(true)
+    expect(CType.isICType({ ...ctype2, owner: '' })).toBe(false)
   })
 })
 
@@ -289,23 +239,23 @@ describe('CType verification', () => {
     'third-property': true,
   }
   it('verifies claims', () => {
-    expect(
+    expect(() =>
       CType.verifyClaimAgainstSchema(goodClaim, ctypeWrapperModel)
-    ).toBeTruthy()
-    expect(
+    ).not.toThrow()
+    expect(() =>
       CType.verifyClaimAgainstSchema(badClaim, ctypeWrapperModel)
-    ).toBeFalsy()
-    expect(
+    ).toThrow()
+    expect(() =>
       CType.verifyObjectAgainstSchema(badClaim, CTypeWrapperModel, [])
-    ).toBeFalsy()
+    ).toThrow()
     expect(() => {
       CType.verifyClaimAgainstSchema(badClaim, ctypeInput)
-    }).toThrow(SDKErrors.ERROR_OBJECT_MALFORMED)
+    }).toThrow(SDKErrors.ObjectUnverifiableError)
   })
   it('verifies ctypes', () => {
-    expect(
+    expect(() =>
       CType.verifyObjectAgainstSchema(ctypeWrapperModel, CTypeModel)
-    ).toBeTruthy()
+    ).not.toThrow()
   })
 })
 
@@ -321,51 +271,30 @@ describe('CType registration verification', () => {
   } as ICType['schema']
 
   describe('when CType is not registered', () => {
-    beforeAll(() => {
-      jest.mocked(getOwner).mockResolvedValue(null)
-      jest.mocked(isStored).mockResolvedValue(false)
-    })
-
     it('does not verify registration when not registered', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBeFalsy()
-    })
-
-    it('does not verify owner when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBeFalsy()
+      await expect(CType.verifyStored(ctype)).rejects.toThrow()
     })
   })
 
   describe('when CType is registered', () => {
     beforeAll(() => {
-      jest.mocked(getOwner).mockResolvedValue(didAlice)
-      jest.mocked(isStored).mockResolvedValue(true)
+      mockedApi.query.ctype.ctypes.mockResolvedValue(encodedAliceDid)
     })
 
     it('verifies registration when owner not set', async () => {
       const ctype = CType.fromSchema(rawCType)
-      expect(await CType.verifyStored(ctype)).toBeTruthy()
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner matches', async () => {
       const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyStored(ctype)).toBeTruthy()
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner does not match', async () => {
       const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyStored(ctype)).toBeTruthy()
-    })
-
-    it('verifies owner when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType, didAlice)
-      expect(await CType.verifyOwner(ctype)).toBeTruthy()
-    })
-
-    it('does not verify owner when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType, didBob)
-      expect(await CType.verifyOwner(ctype)).toBeFalsy()
+      await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
   })
 })

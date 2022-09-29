@@ -11,13 +11,15 @@
 
 import {
   DidUri,
-  ICredential,
+  IAttestation,
   ICType,
-  IRequestForAttestation,
+  ICredential,
+  ICredentialPresentation,
 } from '@kiltprotocol/types'
 import { Attestation } from '@kiltprotocol/core'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
+import { ApiMocks } from '@kiltprotocol/testing'
 import { DocumentLoader } from 'jsonld-signatures'
 import { base58Encode } from '@polkadot/util-crypto'
 import * as toVC from './exportToVerifiableCredential'
@@ -30,6 +32,8 @@ import {
   KILT_CREDENTIAL_CONTEXT_URL,
   KILT_VERIFIABLECREDENTIAL_TYPE,
 } from './constants'
+
+const mockedApi: any = ApiMocks.getMockedApi()
 
 const ctype: ICType = {
   schema: {
@@ -54,57 +58,70 @@ const ctype: ICType = {
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
-const credential: ICredential = {
-  request: {
-    claim: {
-      contents: {
-        birthday: '1991-01-01',
-        name: 'Kurt',
-        premium: true,
-      },
-      owner: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-      cTypeHash:
-        '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+const credential: ICredentialPresentation = {
+  claim: {
+    contents: {
+      birthday: '1991-01-01',
+      name: 'Kurt',
+      premium: true,
     },
-    claimHashes: [
-      '0x0586412d7b8adf811c288211c9c704b3331bb3adb61fba6448c89453568180f6',
-      '0x3856178f49d3c379e00793125678eeb8db61cfa4ed32cd7a4b67ac8e27714fc1',
-      '0x683428497edeba0198f02a45a7015fc2c010fa75994bc1d1372349c25e793a10',
-      '0x8804cc546c4597b2ab0541dd3a6532e338b0b5b4d2458eb28b4d909a5d4caf4e',
-    ],
-    claimNonceMap: {
-      '0xe5a099ea4f8be89227af8a5d74b0371e1c13232978c8b8edce1ecec698eb2665':
-        'eab8a98c-0ef3-4a33-a5c7-c9821b3bec45',
-      '0x14a06c5955ebc9247c9f54b30e0f1714e6ebd54ae05ad7b16fa9a4643dff1dc2':
-        'fda7a7d4-770c-4cae-9cd9-6deebdb3ed80',
-      '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d':
-        'ed28443a-ec36-4a54-9caa-6bf014df257d',
-      '0xf42b46c4a7a3bad68650069bd81fdf2085c9ea02df1c27a82282e97e3f71ef8e':
-        'adc7dc71-ab0a-45f9-a091-9f3ec1bb96c7',
-    },
-    legitimations: [],
-    delegationId: null,
-    rootHash:
-      '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-    claimerSignature: {
-      signature:
-        '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
-      keyUri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#key1',
-    },
-  },
-  attestation: {
-    claimHash:
-      '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+    owner: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
     cTypeHash:
       '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
-    delegationId: null,
-    owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-    revoked: false,
+  },
+  claimHashes: [
+    '0x0586412d7b8adf811c288211c9c704b3331bb3adb61fba6448c89453568180f6',
+    '0x3856178f49d3c379e00793125678eeb8db61cfa4ed32cd7a4b67ac8e27714fc1',
+    '0x683428497edeba0198f02a45a7015fc2c010fa75994bc1d1372349c25e793a10',
+    '0x8804cc546c4597b2ab0541dd3a6532e338b0b5b4d2458eb28b4d909a5d4caf4e',
+  ],
+  claimNonceMap: {
+    '0xe5a099ea4f8be89227af8a5d74b0371e1c13232978c8b8edce1ecec698eb2665':
+      'eab8a98c-0ef3-4a33-a5c7-c9821b3bec45',
+    '0x14a06c5955ebc9247c9f54b30e0f1714e6ebd54ae05ad7b16fa9a4643dff1dc2':
+      'fda7a7d4-770c-4cae-9cd9-6deebdb3ed80',
+    '0xb102f462e4cde1b48e7936085cef1e2ab6ae4f7ca46cd3fab06074c00546a33d':
+      'ed28443a-ec36-4a54-9caa-6bf014df257d',
+    '0xf42b46c4a7a3bad68650069bd81fdf2085c9ea02df1c27a82282e97e3f71ef8e':
+      'adc7dc71-ab0a-45f9-a091-9f3ec1bb96c7',
+  },
+  legitimations: [],
+  delegationId: null,
+  rootHash:
+    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+  claimerSignature: {
+    signature:
+      '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
+    keyUri: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#key1',
   },
 }
 
+const attestation: IAttestation = {
+  claimHash:
+    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+  cTypeHash:
+    '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+  delegationId: null,
+  owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+  revoked: false,
+}
+
+const encodedAttestation = ApiMocks.mockChainQueryReturn(
+  'attestation',
+  'attestations',
+  [
+    '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+    '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+    undefined,
+    false,
+    ['4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG', 0],
+  ]
+)
+
 it('exports credential to VC', () => {
-  expect(toVC.fromCredential(credential)).toMatchObject({
+  expect(
+    toVC.fromCredentialAndAttestation(credential, attestation)
+  ).toMatchObject({
     '@context': [
       DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
       KILT_CREDENTIAL_CONTEXT_URL,
@@ -125,7 +142,9 @@ it('exports credential to VC', () => {
 })
 
 it('exports includes ctype as schema', () => {
-  expect(toVC.fromCredential(credential, ctype)).toMatchObject({
+  expect(
+    toVC.fromCredentialAndAttestation(credential, attestation, ctype)
+  ).toMatchObject({
     credentialSchema: {
       '@id': ctype.schema.$id,
       name: ctype.schema.title,
@@ -137,7 +156,9 @@ it('exports includes ctype as schema', () => {
 })
 
 it('VC has correct format (full example)', () => {
-  expect(toVC.fromCredential(credential, ctype)).toMatchObject({
+  expect(
+    toVC.fromCredentialAndAttestation(credential, attestation, ctype)
+  ).toMatchObject({
     '@context': [
       DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
       KILT_CREDENTIAL_CONTEXT_URL,
@@ -205,13 +226,13 @@ describe('proofs', () => {
   let VC: VerifiableCredential
   let documentLoader: DocumentLoader
   beforeAll(() => {
-    VC = toVC.fromCredential(credential)
+    VC = toVC.fromCredentialAndAttestation(credential, attestation)
     const keyId = VC.proof[0].verificationMethod
     const verificationMethod: IPublicKeyRecord = {
-      uri: keyId,
+      id: keyId,
       type: 'Ed25519VerificationKey2018',
       publicKeyBase58: base58Encode(
-        Crypto.decodeAddress(DidUtils.parseDidUri(keyId).identifier)
+        Crypto.decodeAddress(Did.parse(keyId).address)
       ),
       controller: VC.credentialSubject['@id'] as DidUri,
     }
@@ -240,7 +261,11 @@ describe('proofs', () => {
   })
 
   it('it verifies schema', () => {
-    const VCWithSchema = toVC.fromCredential(credential, ctype)
+    const VCWithSchema = toVC.fromCredentialAndAttestation(
+      credential,
+      attestation,
+      ctype
+    )
     const result = verificationUtils.validateSchema(VCWithSchema)
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
@@ -249,7 +274,7 @@ describe('proofs', () => {
   })
 
   it('it verifies credential with all properties revealed', async () => {
-    expect(VC.proof[2].nonces).toMatchObject(credential.request.claimNonceMap)
+    expect(VC.proof[2].nonces).toMatchObject(credential.claimNonceMap)
     expect(Object.entries(VC.proof[2].nonces)).toHaveLength(4)
     const result = await verificationUtils.verifyCredentialDigestProof(
       VC,
@@ -262,13 +287,15 @@ describe('proofs', () => {
   })
 
   it('it verifies credential with selected properties revealed', async () => {
-    const reducedRequest: IRequestForAttestation = JSON.parse(
-      JSON.stringify(credential.request)
+    const reducedCredential: ICredential = JSON.parse(
+      JSON.stringify(credential)
     )
-    delete reducedRequest.claim.contents.name
-    delete reducedRequest.claim.contents.birthday
-    const reducedCredential = { ...credential, request: reducedRequest }
-    const reducedVC = toVC.fromCredential(reducedCredential)
+    delete reducedCredential.claim.contents.name
+    delete reducedCredential.claim.contents.birthday
+    const reducedVC = toVC.fromCredentialAndAttestation(
+      reducedCredential,
+      attestation
+    )
 
     const result = await verificationUtils.verifyCredentialDigestProof(
       reducedVC,
@@ -282,7 +309,7 @@ describe('proofs', () => {
 
   it('makes presentation', async () => {
     const presentation = await presentationUtils.makePresentation(VC, ['name'])
-    const { contents, owner } = credential.request.claim
+    const { contents, owner } = credential.claim
     expect(presentation).toHaveProperty(
       'verifiableCredential.credentialSubject',
       {
@@ -303,9 +330,16 @@ describe('proofs', () => {
   })
 
   it('verifies attestation proof on chain', async () => {
-    jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
+    mockedApi.query.attestation.attestations.mockResolvedValueOnce(
+      encodedAttestation
+    )
+    jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
 
-    const result = await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+    const result = await verificationUtils.verifyAttestedProof(
+      VC,
+      VC.proof[1],
+      mockedApi
+    )
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
@@ -315,7 +349,7 @@ describe('proofs', () => {
 
   describe('negative tests', () => {
     beforeEach(() => {
-      VC = toVC.fromCredential(credential, ctype)
+      VC = toVC.fromCredentialAndAttestation(credential, attestation, ctype)
     })
 
     it('errors on proof mismatch', async () => {
@@ -334,7 +368,7 @@ describe('proofs', () => {
         verified: false,
       })
       expect(
-        await verificationUtils.verifyAttestedProof(VC, VC.proof[2])
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[2], mockedApi)
       ).toMatchObject({
         verified: false,
       })
@@ -376,8 +410,6 @@ describe('proofs', () => {
     })
 
     it('it detects tampering with credential fields', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(credential.attestation)
-
       VC.delegationId = '0x123'
       expect(
         await verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
@@ -385,7 +417,7 @@ describe('proofs', () => {
         verified: false,
       })
       expect(
-        await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+        await verificationUtils.verifyAttestedProof(VC, VC.proof[1], mockedApi)
       ).toMatchObject({
         verified: false,
         status: 'invalid',
@@ -410,11 +442,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation not on chain', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue(null)
-
       const result = await verificationUtils.verifyAttestedProof(
         VC,
-        VC.proof[1]
+        VC.proof[1],
+        mockedApi
       )
       expect(result).toMatchObject({
         verified: false,
@@ -423,14 +454,10 @@ describe('proofs', () => {
     })
 
     it('fails if attestation on chain not identical', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue({
-        ...credential.attestation,
-        owner: credential.request.claim.owner,
-      })
-
       const result = await verificationUtils.verifyAttestedProof(
         VC,
-        VC.proof[1]
+        VC.proof[1],
+        mockedApi
       )
       expect(result).toMatchObject({
         verified: false,
@@ -439,14 +466,18 @@ describe('proofs', () => {
     })
 
     it('fails if attestation revoked', async () => {
-      jest.spyOn(Attestation, 'query').mockResolvedValue({
-        ...credential.attestation,
+      mockedApi.query.attestation.attestations.mockResolvedValueOnce(
+        encodedAttestation
+      )
+      jest.spyOn(Attestation, 'fromChain').mockReturnValue({
+        ...attestation,
         revoked: true,
       })
 
       const result = await verificationUtils.verifyAttestedProof(
         VC,
-        VC.proof[1]
+        VC.proof[1],
+        mockedApi
       )
       expect(result).toMatchObject({
         verified: false,

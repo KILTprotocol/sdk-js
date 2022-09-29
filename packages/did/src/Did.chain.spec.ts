@@ -9,15 +9,16 @@
  * @group unit/did
  */
 
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { getAddEndpointExtrinsic } from './Did.chain'
+
+import { serviceToChain } from './Did.chain'
 
 let api: any
 
 beforeAll(() => {
   api = ApiMocks.createAugmentedApi()
-  BlockchainApiConnection.setConnection(Promise.resolve(api))
+  ConfigService.set({ api })
 })
 
 describe('services validation', () => {
@@ -55,12 +56,12 @@ describe('services validation', () => {
 
   it.each([...validTestURIs, ...unencodedTestUris.map(encodeURI)])(
     'allows adding services with valid URI "%s"',
-    async (uri) => {
+    (uri) => {
       expect(
-        await getAddEndpointExtrinsic({
-          id: 'service_1',
-          types: [],
-          urls: [uri],
+        serviceToChain({
+          id: '#service_1',
+          type: [],
+          serviceEndpoint: [uri],
         })
       ).toBeDefined()
     }
@@ -68,12 +69,12 @@ describe('services validation', () => {
 
   it.each([...validTestIds, ...invalidTestIds.map(encodeURIComponent)])(
     'allows adding services with valid id "%s"',
-    async (id) => {
+    (id) => {
       expect(
-        await getAddEndpointExtrinsic({
-          id,
-          types: [],
-          urls: [],
+        serviceToChain({
+          id: `#${id}`,
+          type: [],
+          serviceEndpoint: [],
         })
       ).toBeDefined()
     }
@@ -81,27 +82,27 @@ describe('services validation', () => {
 
   it.each(invalidTestIds)(
     'disallows adding services with invalid id "%s"',
-    async (id) => {
-      await expect(
-        getAddEndpointExtrinsic({
-          id,
-          types: [],
-          urls: [],
+    (id) => {
+      expect(() =>
+        serviceToChain({
+          id: `#${id}`,
+          type: [],
+          serviceEndpoint: [],
         })
-      ).rejects.toThrow('ID')
+      ).toThrow('ID')
     }
   )
 
   it.each([...malformedTestUris, ...unencodedTestUris])(
     'disallows adding services with invalid URI "%s"',
-    async (uri) => {
-      await expect(
-        getAddEndpointExtrinsic({
-          id: 'service_1',
-          types: [],
-          urls: [uri],
+    (uri) => {
+      expect(() =>
+        serviceToChain({
+          id: '#service_1',
+          type: [],
+          serviceEndpoint: [uri],
         })
-      ).rejects.toThrow('URI')
+      ).toThrow('URI')
     }
   )
 })

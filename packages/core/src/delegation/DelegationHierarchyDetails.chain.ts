@@ -9,12 +9,9 @@ import type {
   IDelegationHierarchyDetails,
   IDelegationNode,
 } from '@kiltprotocol/types'
-import type { Option } from '@polkadot/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import {
-  decodeDelegationHierarchyDetails,
-  IChainDelegationHierarchyDetails,
-} from './DelegationDecoder.js'
+import { ConfigService } from '@kiltprotocol/config'
+
+import { delegationHierarchyDetailsFromChain } from './DelegationDecoder.js'
 
 /**
  * Query a delegation hierarchy node from the blockchain given its identifier.
@@ -25,11 +22,9 @@ import {
 export async function query(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails | null> {
-  const api = await BlockchainApiConnection.getConnectionOrConnect()
-  const decoded = decodeDelegationHierarchyDetails(
-    await api.query.delegation.delegationHierarchies<
-      Option<IChainDelegationHierarchyDetails>
-    >(rootId)
+  const api = ConfigService.get('api')
+  const decoded = delegationHierarchyDetailsFromChain(
+    await api.query.delegation.delegationHierarchies(rootId)
   )
   if (!decoded) {
     return null

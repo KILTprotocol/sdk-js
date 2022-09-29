@@ -5,108 +5,144 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { SignerPayloadJSON } from '@polkadot/types/types'
-
-export type SigningAlgorithms = 'ed25519' | 'sr25519' | 'ecdsa-secp256k1'
-
-export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
+import type {
+  DidResourceUri,
+  DidUri,
+  DidVerificationKey,
+  VerificationKeyRelationship,
+} from './DidDocument.js'
 
 /**
- * Base interface for all {en/de}cryption & signing requests.
+ * Base interface for all signing requests.
  */
-export interface RequestData<
-  A extends SigningAlgorithms | EncryptionAlgorithms
-> {
+export interface SignRequestData {
   /**
-   * Identifier for the encryption/signing algorithm to use.
-   */
-  alg: A
-  /**
-   * Public key as u8a identifying the keypair to use (in combination with the alg).
-   */
-  publicKey: Uint8Array
-  /**
-   * Data to be {en/de}crypted or signed.
+   * Data to be signed.
    */
   data: Uint8Array
 
-  [x: string]: unknown
+  /**
+   * The did key relationship to be used.
+   */
+  keyRelationship: VerificationKeyRelationship
+
+  /**
+   * The DID to be used for signing.
+   */
+  did: DidUri
 }
 
 /**
- * Base interface for responses to {en/de}cryption & signing requests.
+ * Base interface for responses to signing requests.
  */
-export interface ResponseData<
-  A extends SigningAlgorithms | EncryptionAlgorithms
-> {
+export interface SignResponseData {
   /**
-   * Identifier for the encryption/signing algorithm used.
+   * Result of the signing.
    */
-  alg: A
+  signature: Uint8Array
   /**
-   * Result of the {en/de}cryption or signing.
+   * The did key uri used for signing.
+   */
+  keyUri: DidResourceUri
+  /**
+   * The did key type used for signing.
+   */
+  keyType: DidVerificationKey['type']
+}
+
+/**
+ * A callback function to sign data.
+ */
+export type SignCallback = (
+  signData: SignRequestData
+) => Promise<SignResponseData>
+
+/**
+ * A callback function to sign extrinsics.
+ */
+export type SignExtrinsicCallback = (
+  signData: SignRequestData
+) => Promise<Omit<SignResponseData, 'keyUri'>>
+
+/**
+ * Base interface for encryption requests.
+ */
+export interface EncryptRequestData {
+  /**
+   * Data to be encrypted.
    */
   data: Uint8Array
-
-  [x: string]: unknown
-}
-
-/**
- * Extends [[RequestData]] with optional metadata for providing info on the data to be signed, especially in case of signing extrinsics.
- */
-export interface SigningData<A extends SigningAlgorithms>
-  extends RequestData<A> {
   /**
-   * Info for extensions to display to user.
+   * The other party's public key to be used for x25519 Diffie-Hellman key agreement.
    */
-  meta?: Partial<SignerPayloadJSON>
+  peerPublicKey: Uint8Array
+  /**
+   * The DID to be used for encryption.
+   */
+  did: DidUri
 }
 
 /**
- * A callback function to sign with a given signature algorithm.
+ * Base interface for responses to encryption requests.
  */
-export type SignCallback<A extends SigningAlgorithms = any> = (
-  signData: SigningData<A>
-) => Promise<ResponseData<A>>
-
-export interface SigningOptions<A extends SigningAlgorithms = any> {
-  sign: SignCallback<A>
-  signingPublicKey: string | Uint8Array
-  alg: A
+export interface EncryptResponseData {
+  /**
+   * Result of the encryption.
+   */
+  data: Uint8Array
+  /**
+   * A random nonce generated in the encryption process.
+   */
+  nonce: Uint8Array
+  /**
+   * The did key uri used for the encryption.
+   */
+  keyUri: DidResourceUri
 }
 
 /**
  * Uses stored key material to encrypt a message encoded as u8a.
  *
- * @param requestData Slightly extended [[RequestData]] containing both our and their public keys, the data to be encrypted, and `alg: 'x25519-xsalsa20-poly1305'`.
- * @param requestData.peerPublicKey The other party's public key to be used for x25519 Diffie-Hellman key agreement.
- * @returns [[ResponseData]] which additionally contains a `nonce` randomly generated in the encryption process (required for decryption).
+ * @param requestData The data to be encrypted, the peers public key and `alg: 'x25519-xsalsa20-poly1305'`.
+ * @returns [[EncryptionResponseData]] which additionally to the data contains a `nonce` randomly generated in the encryption process (required for decryption).
  */
-export interface EncryptCallback<
-  A extends 'x25519-xsalsa20-poly1305' = 'x25519-xsalsa20-poly1305'
-> {
-  (
-    requestData: RequestData<A> & {
-      peerPublicKey: Uint8Array
-    }
-  ): Promise<ResponseData<A> & { nonce: Uint8Array }>
+export interface EncryptCallback {
+  (requestData: EncryptRequestData): Promise<EncryptResponseData>
+}
+
+export interface DecryptRequestData {
+  /**
+   * Data to be encrypted.
+   */
+  data: Uint8Array
+  /**
+   * The other party's public key to be used for x25519 Diffie-Hellman key agreement.
+   */
+  peerPublicKey: Uint8Array
+  /**
+   * The random nonce generated during encryption as u8a.
+   */
+  nonce: Uint8Array
+  /**
+   * The did key uri, which should be used for decryption.
+   */
+  keyUri: DidResourceUri
+}
+
+export interface DecryptResponseData {
+  /**
+   * Result of the decryption.
+   */
+  data: Uint8Array
 }
 
 /**
  * Uses stored key material to decrypt a message encoded as u8a.
  *
  * @param requestData Slightly extended [[RequestData]] containing both our and their public keys, the nonce used for encryption, the data to be decrypted, and `alg: 'x25519-xsalsa20-poly1305'`.
- * @param requestData.peerPublicKey The other party's public key to be used for x25519 Diffie-Hellman key agreement.
  * @param requestData.nonce The random nonce generated during encryption as u8a.
  * @returns A Promise resolving to [[ResponseData]] containing the decrypted message or rejecting if key or algorithm is unknown or if they do not match.
  */
-export interface DecryptCallback<
-  A extends 'x25519-xsalsa20-poly1305' = 'x25519-xsalsa20-poly1305'
-> {
-  (
-    requestData: RequestData<A> & {
-      peerPublicKey: Uint8Array
-      nonce: Uint8Array
-    }
-  ): Promise<ResponseData<A>>
+export interface DecryptCallback {
+  (requestData: DecryptRequestData): Promise<DecryptResponseData>
 }

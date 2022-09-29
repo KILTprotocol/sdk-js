@@ -5,15 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ICredential, CompressedCredential } from './Credential'
-import type { CompressedCType, ICType } from './CType'
+import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
-import type {
-  IQuoteAttesterSigned,
-  CompressedQuoteAttesterSigned,
-} from './Quote'
-import type { CompressedPartialClaim } from './Message'
+import type { IQuoteAttesterSigned } from './Quote'
 import type { PartialClaim } from './Claim'
+import type { ICredential } from './Credential'
 
 export interface ITerms {
   claim: PartialClaim
@@ -22,11 +18,3 @@ export interface ITerms {
   quote?: IQuoteAttesterSigned
   cTypes?: ICType[]
 }
-
-export type CompressedTerms = [
-  CompressedPartialClaim,
-  CompressedCredential[],
-  IDelegationNode['id'] | undefined,
-  CompressedQuoteAttesterSigned | undefined,
-  CompressedCType[] | undefined
-]

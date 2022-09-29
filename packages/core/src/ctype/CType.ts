@@ -20,13 +20,11 @@ import type {
   CTypeSchemaWithoutId,
   IClaim,
   ICTypeMetadata,
-  CompressedCType,
-  CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
-import { HexString } from '@polkadot/util/types'
-import { getOwner, isStored } from './CType.chain.js'
+import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
+import * as Did from '@kiltprotocol/did'
+import { ConfigService } from '@kiltprotocol/config'
+import type { HexString } from '@polkadot/util/types'
 import {
   CTypeModel,
   CTypeWrapperModel,
@@ -97,24 +95,27 @@ export function getIdForSchema(
  * @param object Data to be verified against schema.
  * @param schema Schema to verify against.
  * @param messages Optional empty array. If passed, this receives all verification errors.
- * @returns Whether or not verification was successful.
  */
 export function verifyObjectAgainstSchema(
   object: Record<string, any>,
   schema: Record<string, any>,
   messages?: string[]
-): boolean {
+): void {
   const validator = new JsonSchema.Validator(schema, '7', false)
   if (schema.$id !== CTypeModel.$id) {
     validator.addSchema(CTypeModel)
   }
-  const result = validator.validate(object)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
+  const { valid, errors } = validator.validate(object)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
       messages.push(error.error)
     })
   }
-  return result.valid
+  throw new SDKErrors.ObjectUnverifiableError(
+    'JSON schema verification failed for object',
+    { cause: errors }
+  )
 }
 
 /**
@@ -123,40 +124,28 @@ export function verifyObjectAgainstSchema(
  * @param claimContents IClaim['contents'] to be verified against the schema.
  * @param schema ICType['schema'] to be verified against the [CTypeModel].
  * @param messages An array, which will be filled by schema errors.
- * @throws [[ERROR_OBJECT_MALFORMED]] when schema does not correspond to the CTypeModel.
- *
- * @returns Boolean whether both claimContents and schema could be verified.
  */
 export function verifyClaimAgainstSchema(
   claimContents: IClaim['contents'],
   schema: ICType['schema'],
   messages?: string[]
-): boolean {
-  if (!verifyObjectAgainstSchema(schema, CTypeModel)) {
-    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
-  }
-  return verifyObjectAgainstSchema(claimContents, schema, messages)
+): void {
+  verifyObjectAgainstSchema(schema, CTypeModel)
+  verifyObjectAgainstSchema(claimContents, schema, messages)
 }
 
 /**
  * Checks on the KILT blockchain whether a CType is registered.
  *
  * @param ctype CType data.
- * @returns Whether or not the CType is registered on-chain.
  */
-export async function verifyStored(ctype: ICType): Promise<boolean> {
-  return isStored(ctype.hash)
-}
-
-/**
- * Checks on the KILT blockchain whether a CType is registered to the owner listed in the CType record.
- *
- * @param ctype CType data.
- * @returns Whether or not the CType is registered on-chain to `ctype.owner`.
- */
-export async function verifyOwner(ctype: ICType): Promise<boolean> {
-  const owner = await getOwner(ctype.hash)
-  return owner ? owner === ctype.owner : false
+export async function verifyStored(ctype: ICType): Promise<void> {
+  const api = ConfigService.get('api')
+  const encoded = await api.query.ctype.ctypes(ctype.hash)
+  if (encoded.isNone)
+    throw new SDKErrors.CTypeHashMissingError(
+      `CType with hash ${ctype.hash} is not registered on chain`
+    )
 }
 
 /**
@@ -164,26 +153,20 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
  * Throws on invalid input.
  *
  * @param input The potentially only partial ICType.
- * @throws [[ERROR_OBJECT_MALFORMED]] when input does not correspond to either it's schema, or the CTypeWrapperModel.
- * @throws [[ERROR_HASH_MALFORMED]] when the input's hash does not match the hash calculated from ICType's schema.
- * @throws [[ERROR_CTYPE_OWNER_TYPE]] when the input's owner is not of type string or null.
- *
  */
 export function verifyDataStructure(input: ICType): void {
-  if (!verifyObjectAgainstSchema(input, CTypeWrapperModel)) {
-    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
-  }
-  if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
-    throw new SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
+  verifyObjectAgainstSchema(input, CTypeWrapperModel)
+  if (!('schema' in input) || getHashForSchema(input.schema) !== input.hash) {
+    throw new SDKErrors.HashMalformedError(input.hash, 'CType')
   }
   if (getIdForSchema(input.schema) !== input.schema.$id) {
-    throw new SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING(
+    throw new SDKErrors.CTypeIdMismatchError(
       getIdForSchema(input.schema),
       input.schema.$id
     )
   }
-  if (!(input.owner === null || DidUtils.validateKiltDidUri(input.owner))) {
-    throw new SDKErrors.ERROR_CTYPE_OWNER_TYPE()
+  if (input.owner !== null) {
+    Did.validateUri(input.owner, 'Did')
   }
 }
 
@@ -194,39 +177,37 @@ export function verifyDataStructure(input: ICType): void {
  * @param nestedCTypes - An array of [[CType]] schemas.
  * @param claimContents - The contents of a [[Claim]] to be validated.
  * @param messages - Optional empty array. If passed, this receives all verification errors.
- *
- * @returns Whether the contents is valid.
  */
 export function verifyClaimAgainstNestedSchemas(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,
   claimContents: Record<string, any>,
   messages?: string[]
-): boolean {
+): void {
   const validator = new JsonSchema.Validator(cType, '7', false)
   nestedCTypes.forEach((ctype) => {
     validator.addSchema(ctype)
   })
   validator.addSchema(CTypeModel)
-  const result = validator.validate(claimContents)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
+  const { valid, errors } = validator.validate(claimContents)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
       messages.push(error.error)
     })
   }
-  return result.valid
+  throw new SDKErrors.NestedClaimUnverifiableError(undefined, {
+    cause: errors,
+  })
 }
 
 /**
  * Checks a CTypeMetadata object.
  *
  * @param metadata [[ICTypeMetadata]] that is to be instantiated.
- * @throws [[ERROR_OBJECT_MALFORMED]] when metadata is not verifiable with the MetadataModel.
  */
 export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
-  if (!verifyObjectAgainstSchema(metadata, MetadataModel)) {
-    throw new SDKErrors.ERROR_OBJECT_MALFORMED()
-  }
+  verifyObjectAgainstSchema(metadata, MetadataModel)
 }
 
 /**
@@ -269,90 +250,4 @@ export function isICType(input: unknown): input is ICType {
     return false
   }
   return true
-}
-
-/**
- * Compresses a [[CType]] schema for storage and/or messaging.
- *
- * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
- * @throws [[ERROR_COMPRESS_OBJECT]] when any of the four required properties of the cTypeSchema are missing.
- *
- * @returns An ordered array of a [[CType]] schema.
- */
-export function compressSchema(
-  cTypeSchema: ICType['schema']
-): CompressedCTypeSchema {
-  if (
-    !cTypeSchema.$id ||
-    !cTypeSchema.$schema ||
-    !cTypeSchema.title ||
-    !cTypeSchema.properties ||
-    !cTypeSchema.type
-  ) {
-    throw new SDKErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
-  }
-  const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
-  return [
-    sortedCTypeSchema.$id,
-    sortedCTypeSchema.$schema,
-    sortedCTypeSchema.title,
-    sortedCTypeSchema.properties,
-    sortedCTypeSchema.type,
-  ]
-}
-
-/**
- * Decompresses a schema of a [[CType]] from storage and/or message.
- *
- * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
- *
- * @returns An object that has the same properties as a [[CType]] schema.
- */
-export function decompressSchema(
-  cTypeSchema: CompressedCTypeSchema
-): ICType['schema'] {
-  if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 5) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
-  }
-  return {
-    $id: cTypeSchema[0],
-    $schema: cTypeSchema[1],
-    title: cTypeSchema[2],
-    properties: cTypeSchema[3],
-    type: cTypeSchema[4],
-  }
-}
-
-/**
- * Compresses a [[CType]] for storage and/or messaging.
- *
- * @param cType A [[CType]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[CType]].
- */
-export function compress(cType: ICType): CompressedCType {
-  verifyDataStructure(cType)
-  return [cType.hash, cType.owner, compressSchema(cType.schema)]
-}
-
-/**
- * Decompresses a [[CType]] from storage and/or message.
- *
- * @param cType A compressed [[CType]] array that is reverted back into an object.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]] when either the cType is not an Array or it's length is not equal to the defined length of 3.
- *
- * @returns An object that has the same properties as a [[CType]].
- */
-export function decompress(cType: CompressedCType): ICType {
-  if (!Array.isArray(cType) || cType.length !== 3) {
-    throw new SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
-  }
-  const decompressedCType = {
-    hash: cType[0],
-    owner: cType[1],
-    schema: decompressSchema(cType[2]),
-  }
-  verifyDataStructure(decompressedCType)
-  return decompressedCType
 }
