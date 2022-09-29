@@ -11,43 +11,32 @@
 
 import {
   Did,
-  Utils,
-  Message,
-  IDidResolver,
-  DidResolvedDetails,
-  ResolvedDidKey,
-  IDidDetails,
-  DidPublicKey,
+  DidDocument,
   DidKey,
+  DidResourceUri,
+  Message,
   MessageBody,
+  ResolvedDidKey,
+  Utils,
 } from '@kiltprotocol/sdk-js'
 import nacl from 'tweetnacl'
 import { makeEncryptionKeyTool } from './TestUtils'
 
+// Mock nacl randombytes, so that the nonce and ciphertext stay the same between runs
+jest.spyOn(nacl, 'randomBytes').mockReturnValue(new Uint8Array(24).fill(42))
+
 function makeLightDidFromSeed(seed: string) {
-  const keyring = new Utils.Keyring({
-    type: 'sr25519',
-    ss58Format: Utils.ss58Format,
-  })
+  const keypair = Utils.Crypto.makeKeypairFromUri(seed, 'sr25519')
+  const { keyAgreement, encrypt } = makeEncryptionKeyTool(seed)
 
-  const keypair = keyring.addFromUri(seed, undefined, 'sr25519')
-
-  // Mock nacl randombytes, so that the nonce and ciphertext stay the same between runs
-  jest.spyOn(nacl, 'randomBytes').mockReturnValue(new Uint8Array(24).fill(42))
-
-  const { keypair: encKeypair, encrypt } = makeEncryptionKeyTool(seed)
-
-  const did = Did.LightDidDetails.fromDetails({
-    authenticationKey: {
-      publicKey: keypair.publicKey,
-      type: 'sr25519',
-    },
-    encryptionKey: encKeypair,
-    serviceEndpoints: [
+  const did = Did.createLightDidDocument({
+    authentication: [keypair],
+    keyAgreement,
+    service: [
       {
-        id: '1234',
-        types: ['KiltPublishedCredentialCollectionV1'],
-        urls: [
+        id: '#1234',
+        type: ['KiltPublishedCredentialCollectionV1'],
+        serviceEndpoint: [
           'https://ipfs.io/ipfs/QmNUAwg7JPK9nnuZiUri5nDaqLHqUFtNoZYtfD22Q6w3c8',
         ],
       },
@@ -57,30 +46,19 @@ function makeLightDidFromSeed(seed: string) {
   return { did, encrypt }
 }
 
-const mockResolver = (didMock: IDidDetails) => {
-  const resolveDoc = async (): Promise<DidResolvedDetails | null> => {
+function makeResolveKey(document: DidDocument) {
+  return async function resolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey | null> {
+    const { fragment } = Did.parse(keyUri)
+    const key = Did.getKey(document, fragment!) as DidKey
     return {
-      details: didMock,
-      metadata: { deactivated: false },
-    }
-  }
-  const resolveKey = async (
-    keyUri: DidPublicKey['uri']
-  ): Promise<ResolvedDidKey | null> => {
-    const { fragment } = Did.Utils.parseDidUri(keyUri)
-    const { details } = (await resolveDoc()) as DidResolvedDetails
-    const key = details?.getKey(fragment!) as DidKey
-    return {
-      controller: details!.uri,
-      uri: keyUri,
+      controller: document!.uri,
+      id: keyUri!,
       publicKey: key.publicKey,
       type: key.type,
     }
   }
-  return {
-    resolveDoc,
-    resolveKey,
-  } as unknown as IDidResolver
 }
 
 describe('Breaking Changes', () => {
@@ -114,7 +92,7 @@ describe('Breaking Changes', () => {
           '0x072678802b3e7807fbec86cc93328d52de76e0249011918d4f96835fa0923b8e'
         )
 
-      const message = new Message(
+      const message = Message.fromBody(
         {
           type: 'request-terms',
           content: {
@@ -126,7 +104,7 @@ describe('Breaking Changes', () => {
       )
 
       expect(message).toMatchInlineSnapshot(`
-        Message {
+        Object {
           "body": Object {
             "content": Object {
               "cTypeHash": "0x1234",
@@ -140,13 +118,12 @@ describe('Breaking Changes', () => {
         }
       `)
 
-      const encrypted = await message.encrypt(
-        'encryption',
-        aliceDid,
-        encrypt,
+      const encrypted = await Message.encrypt(
+        message,
+        encrypt(aliceDid),
         `${bobDid.uri}#encryption`,
         {
-          resolver: mockResolver(bobDid),
+          resolveKey: makeResolveKey(bobDid),
         }
       )
 
