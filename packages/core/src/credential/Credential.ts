@@ -20,11 +20,11 @@
 import {
   isDidSignature,
   verifyDidSignature,
-  resolve,
+  resolveKey,
   signPayload,
 } from '@kiltprotocol/did'
 import type {
-  DidResolve,
+  DidResolveKey,
   Hash,
   IAttestation,
   IClaim,
@@ -213,17 +213,17 @@ export function verifyAgainstCType(
  *
  * @param input - The [[ICredentialPresentation]].
  * @param verificationOpts Additional verification options.
- * @param verificationOpts.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
+ * @param verificationOpts.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  */
 export async function verifySignature(
   input: ICredentialPresentation,
   {
     challenge,
-    didResolve = resolve,
+    didResolveKey = resolveKey,
   }: {
     challenge?: string
-    didResolve?: DidResolve
+    didResolveKey?: DidResolveKey
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
@@ -236,7 +236,7 @@ export async function verifySignature(
     signature: claimerSignature,
     message: signingData,
     expectedVerificationMethod: 'authentication',
-    didResolve,
+    didResolveKey,
   })
 }
 
@@ -282,7 +282,7 @@ export function fromClaim(
 type VerifyOptions = {
   ctype?: ICType
   challenge?: string
-  didResolve?: DidResolve
+  didResolveKey?: DidResolveKey
 }
 
 /**
@@ -313,16 +313,16 @@ export async function verifyCredential(
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
+ * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
  */
 export async function verifyPresentation(
   presentation: ICredentialPresentation,
-  { ctype, challenge, didResolve = resolve }: VerifyOptions = {}
+  { ctype, challenge, didResolveKey = resolveKey }: VerifyOptions = {}
 ): Promise<void> {
   await verifyCredential(presentation, { ctype })
   await verifySignature(presentation, {
     challenge,
-    didResolve,
+    didResolveKey,
   })
 }
 
