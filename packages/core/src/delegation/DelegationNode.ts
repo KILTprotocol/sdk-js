@@ -173,6 +173,20 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
+   * Fetches the parent node of this delegation node.
+   *
+   * @returns Promise containing the parent as [[DelegationNode]] or [null].
+   */
+  public async getParent(): Promise<DelegationNode | null> {
+    try {
+      if (!this.parentId) return null
+      return fetch(this.parentId)
+    } catch {
+      return null
+    }
+  }
+
+  /**
    * Fetches the children nodes of this delegation node.
    *
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
