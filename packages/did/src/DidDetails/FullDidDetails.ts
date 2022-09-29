@@ -204,7 +204,7 @@ function groupExtrinsicsByKeyRelationship(
   const [first, ...rest] = extrinsics.map((extrinsic) => {
     const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
     if (!keyRelationship) {
-      throw new SDKErrors.DidBuilderError(
+      throw new SDKErrors.DidBatchError(
         'Can only batch extrinsics that require a DID signature'
       )
     }
@@ -262,7 +262,7 @@ export async function authorizeBatch({
   submitter: KiltAddress
 }): Promise<SubmittableExtrinsic> {
   if (extrinsics.length === 0) {
-    throw new SDKErrors.DidBuilderError(
+    throw new SDKErrors.DidBatchError(
       'Cannot build a batch with no transactions'
     )
   }
