@@ -122,9 +122,7 @@ describe('Messaging', () => {
     return null
   }
 
-  async function resolveKey(
-    keyUri: DidResourceUri
-  ): Promise<ResolvedDidKey | null> {
+  async function resolveKey(keyUri: DidResourceUri): Promise<ResolvedDidKey> {
     const { fragment, did } = Did.parse(keyUri)
     const { document } = (await didResolve(
       did as DidUri

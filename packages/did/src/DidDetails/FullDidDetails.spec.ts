@@ -123,7 +123,7 @@ mockedApi.query.did.did.mockReturnValue(
 
 /*
  * Functions tested:
- * - query
+ * - fetch
  *
  * Functions tested in integration tests:
  * - getKeysForExtrinsic
@@ -132,11 +132,9 @@ mockedApi.query.did.did.mockReturnValue(
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDid = await Did.query(existingDid)
+    const fullDid = await Did.fetch(existingDid)
 
     expect(fullDid).not.toBeNull()
-    if (!fullDid) throw new Error('Cannot load created DID')
-
     expect(fullDid).toEqual(<DidDocument>{
       uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
       authentication: [
@@ -197,8 +195,7 @@ describe('When creating an instance from the chain', () => {
       ApiMocks.mockChainQueryReturn('did', 'did')
     )
 
-    const fullDid = await Did.query(nonExistingDid)
-    expect(fullDid).toBeNull()
+    await expect(Did.fetch(nonExistingDid)).rejects.toThrow()
   })
 
   describe('authorizeBatch', () => {

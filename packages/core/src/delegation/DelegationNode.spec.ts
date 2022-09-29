@@ -38,11 +38,11 @@ jest.mock('./DelegationNode.chain', () => ({
   getChildren: jest.fn(async (node: DelegationNode) =>
     node.childrenIds.map((id) => (id in nodes ? nodes[id] : null))
   ),
-  query: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
+  fetch: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
 }))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
-  query: jest.fn(async (id: string) =>
+  fetch: jest.fn(async (id: string) =>
     id in hierarchiesDetails ? hierarchiesDetails[id] : null
   ),
 }))
@@ -587,20 +587,15 @@ describe('DelegationHierarchy', () => {
     })
     await rootDelegation.getStoreTx()
 
-    const rootNode = await DelegationNode.query(ROOT_IDENTIFIER)
-    if (rootNode) {
-      expect(rootNode.id).toBe(ROOT_IDENTIFIER)
-    }
+    const rootNode = await DelegationNode.fetch(ROOT_IDENTIFIER)
+    expect(rootNode.id).toBe(ROOT_IDENTIFIER)
   })
 
-  it('query root delegation', async () => {
-    const queriedDelegation = await DelegationNode.query(ROOT_IDENTIFIER)
-    expect(queriedDelegation).not.toBe(undefined)
-    if (queriedDelegation) {
-      expect(queriedDelegation.account).toBe(didAlice)
-      expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)
-      expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
-    }
+  it('fetch root delegation', async () => {
+    const queriedDelegation = await DelegationNode.fetch(ROOT_IDENTIFIER)
+    expect(queriedDelegation.account).toBe(didAlice)
+    expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)
+    expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
   })
 
   it('root delegation verify', async () => {
@@ -613,8 +608,8 @@ describe('DelegationHierarchy', () => {
       revoked: false,
     })
     await aDelegationRootNode.getRevokeTx(didAlice)
-    const node = await DelegationNode.query(ROOT_IDENTIFIER)
-    const fetchedNodeRevocationStatus = node?.revoked
+    const node = await DelegationNode.fetch(ROOT_IDENTIFIER)
+    const fetchedNodeRevocationStatus = node.revoked
     expect(fetchedNodeRevocationStatus).toEqual(true)
   })
 
