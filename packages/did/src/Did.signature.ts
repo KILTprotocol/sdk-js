@@ -81,7 +81,10 @@ export async function verifyDidSignature({
   const keyId: UriFragment = fragment
   const keyUri: DidResourceUri = inputUri
 
+  // Cannot simply use resolveKey here as we need to check the key relationship.
+  // Shall we add this feature in the resolveKey and remove the duplicated code below?
   const resolutionDetails = await didResolve(keyUri)
+
   // Verification fails if the DID does not exist at all.
   if (!resolutionDetails) {
     throw new SDKErrors.DidError(`No result for provided key URI "${keyUri}"`)
@@ -98,23 +101,18 @@ export async function verifyDidSignature({
     )
   }
 
-  // Otherwise, the document used is either the migrated full DID document or the light DID document.
-  const did = (
-    resolutionDetails.metadata.canonicalId !== undefined
-      ? (await didResolve(resolutionDetails.metadata.canonicalId))?.document
-      : resolutionDetails.document
-  ) as DidDocument
+  const document = resolutionDetails.document as DidDocument
 
-  const key = Did.getKey(did, keyId)
+  const key = Did.getKey(document, keyId)
   if (!key) {
     throw new SDKErrors.DidError(
-      `No key with ID "${keyId}" for the DID ${did.uri}`
+      `No key with ID "${keyId}" for the DID ${document.uri}`
     )
   }
   // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
   if (
     expectedVerificationMethod &&
-    !did[expectedVerificationMethod]?.map((verKey) => verKey.id).includes(keyId)
+    !document[expectedVerificationMethod]?.some(({ id }) => keyId === id)
   ) {
     throw new SDKErrors.DidError(
       `No key with ID "${keyId}" for the verification method "${expectedVerificationMethod}"`
