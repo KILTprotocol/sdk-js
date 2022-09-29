@@ -42,7 +42,8 @@
     "@polkadot/types": "^9.4.1",
     "@polkadot/util": "^10.0.0",
     "@polkadot/util-crypto": "^10.0.0",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
