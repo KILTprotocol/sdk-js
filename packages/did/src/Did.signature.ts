@@ -75,7 +75,7 @@ export async function verifyDidSignature({
   const { fragment } = parse(inputUri)
   if (!fragment)
     throw new SDKErrors.SignatureMalformedError(
-      `Signature key URI "${signature.keyUri}" invalid`
+      `Signature key URI "${inputUri}" invalid`
     )
 
   const keyId: UriFragment = fragment
