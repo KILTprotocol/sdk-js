@@ -35,9 +35,9 @@ import { parse } from '../Did.utils.js'
  *
  * @param didUri The URI of the DID to fetch.
  *
- * @returns The fetched [[DidDocument]], or null if DID does not exist.
+ * @returns The fetched [[DidDocument]], or throws Error if DID does not exist.
  */
-export async function query(didUri: DidUri): Promise<DidDocument | null> {
+export async function fetch(didUri: DidUri): Promise<DidDocument> {
   const { fragment, type } = parse(didUri)
   if (fragment) {
     throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)
@@ -50,7 +50,7 @@ export async function query(didUri: DidUri): Promise<DidDocument | null> {
 
   const api = ConfigService.get('api')
   const encoded = await api.query.did.did(toChain(didUri))
-  if (encoded.isNone) return null
+  if (encoded.isNone) throw new SDKErrors.DidNotFoundError()
   const didRec = documentFromChain(encoded)
 
   const did: DidDocument = {

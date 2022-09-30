@@ -495,7 +495,7 @@ describe('When there is an on-chain DID', () => {
       )
       expect(owner).toStrictEqual(did.uri)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
-      expect(await Did.queryWeb3Name(genericAccount.address)).toStrictEqual(
+      expect(await Did.fetchWeb3Name(genericAccount.address)).toStrictEqual(
         'test-name'
       )
     })
