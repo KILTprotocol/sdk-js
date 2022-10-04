@@ -25,9 +25,9 @@ import {
   addDelegationToChainArgs,
   getAttestationHashes,
   getChildren,
-  query,
+  fetch,
 } from './DelegationNode.chain.js'
-import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
+import { fetch as fetchDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
@@ -166,12 +166,7 @@ export class DelegationNode implements IDelegationNode {
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
-      const hierarchyDetails = await queryDetails(this.hierarchyId)
-      if (!hierarchyDetails) {
-        throw new SDKErrors.HierarchyQueryError(this.hierarchyId)
-      }
-      this.hierarchyDetails = hierarchyDetails
-      return hierarchyDetails
+      this.hierarchyDetails = await fetchDetails(this.hierarchyId)
     }
     return this.hierarchyDetails
   }
@@ -182,7 +177,12 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the parent as [[DelegationNode]] or [null].
    */
   public async getParent(): Promise<DelegationNode | null> {
-    return this.parentId ? query(this.parentId) : null
+    try {
+      if (!this.parentId) return null
+      return fetch(this.parentId)
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -191,10 +191,11 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
-    const refreshedNodeDetails = await query(this.id)
-    // Updates the children info with the latest information available on chain.
-    if (refreshedNodeDetails) {
-      this.childrenIdentifiers = refreshedNodeDetails.childrenIds
+    try {
+      // Updates the children info with the latest information available on chain.
+      this.childrenIdentifiers = (await fetch(this.id)).childrenIds
+    } catch {
+      // ignore missing
     }
     return getChildren(this)
   }
@@ -263,13 +264,13 @@ export class DelegationNode implements IDelegationNode {
   public async delegateSign(
     delegateDid: DidDocument,
     sign: SignCallback
-  ): Promise<Did.Utils.EncodedSignature> {
+  ): Promise<Did.EncodedSignature> {
     const delegateSignature = await sign({
       data: this.generateHash(),
       did: delegateDid.uri,
       keyRelationship: 'authentication',
     })
-    const { fragment } = Did.Utils.parseDidUri(delegateSignature.keyUri)
+    const { fragment } = Did.parse(delegateSignature.keyUri)
     if (!fragment) {
       throw new SDKErrors.DidError(
         `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`
@@ -281,7 +282,7 @@ export class DelegationNode implements IDelegationNode {
         `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
       )
     }
-    return Did.Chain.didSignatureToChain(
+    return Did.didSignatureToChain(
       key as DidVerificationKey,
       delegateSignature.signature
     )
@@ -293,11 +294,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
   public async getLatestState(): Promise<DelegationNode> {
-    const newNodeState = await query(this.id)
-    if (!newNodeState) {
-      throw new SDKErrors.DelegationIdMissingError()
-    }
-    return newNodeState
+    return fetch(this.id)
   }
 
   /**
@@ -307,7 +304,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async getStoreTx(
-    signature?: Did.Utils.EncodedSignature
+    signature?: Did.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
     const api = ConfigService.get('api')
 
@@ -331,14 +328,12 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Verifies the delegation node by querying it from chain and checking its revocation status.
+   * Verifies the delegation node by fetching it from chain and checking its revocation status.
    */
   public async verify(): Promise<void> {
-    const node = await query(this.id)
-    if (!node || node.revoked !== false) {
-      throw new SDKErrors.InvalidDelegationNodeError(
-        'Delegation node not found or revoked'
-      )
+    const node = await fetch(this.id)
+    if (node.revoked !== false) {
+      throw new SDKErrors.InvalidDelegationNodeError('Delegation node revoked')
     }
   }
 
@@ -358,15 +353,22 @@ export class DelegationNode implements IDelegationNode {
         node: this,
       }
     }
-    const parent = await this.getParent()
-    if (parent) {
+    if (!this.parentId) {
+      return {
+        steps: 0,
+        node: null,
+      }
+    }
+    try {
+      const parent = await fetch(this.parentId)
       const result = await parent.findAncestorOwnedBy(did)
       result.steps += 1
       return result
-    }
-    return {
-      steps: 0,
-      node: null,
+    } catch {
+      return {
+        steps: 0,
+        node: null,
+      }
     }
   }
 
@@ -442,13 +444,13 @@ export class DelegationNode implements IDelegationNode {
    * Queries the delegation node with its [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
-   * @returns Promise containing the [[DelegationNode]] or [null].
+   * @returns Promise containing the [[DelegationNode]].
    */
-  public static async query(
+  public static async fetch(
     delegationId: IDelegationNode['id']
-  ): Promise<DelegationNode | null> {
-    log.info(`:: query('${delegationId}')`)
-    const result = await query(delegationId)
+  ): Promise<DelegationNode> {
+    log.info(`:: fetch('${delegationId}')`)
+    const result = await fetch(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
     return result
   }

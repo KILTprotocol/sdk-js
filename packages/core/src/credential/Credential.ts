@@ -418,7 +418,7 @@ export async function createPresentation({
   })
 
   return {
-    ...credential,
+    ...presentation,
     claimerSignature: { signature: u8aToHex(signature), keyUri, challenge },
   }
 }

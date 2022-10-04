@@ -67,6 +67,4 @@ export type DidResolve = (did: DidUri) => Promise<DidResolutionResult | null>
  * @returns A promise of a [[ResolvedDidKey]] object representing the DID public key or null if
  * the DID or key URI cannot be resolved.
  */
-export type DidResolveKey = (
-  didUri: DidResourceUri
-) => Promise<ResolvedDidKey | null>
+export type DidResolveKey = (didUri: DidResourceUri) => Promise<ResolvedDidKey>

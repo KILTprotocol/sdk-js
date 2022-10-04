@@ -49,7 +49,7 @@ export function getKey(
  * @param id Endpoint id (not the full endpoint uri).
  * @returns The respective endpoint data or undefined.
  */
-export function getEndpoint(
+export function getService(
   did: Pick<DidDocument, 'service'>,
   id: DidServiceEndpoint['id']
 ): DidServiceEndpoint | undefined {

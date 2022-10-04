@@ -9,7 +9,6 @@
  * @group integration/accountLinking
  */
 
-import { AccountLinks, Web3Names } from '@kiltprotocol/did'
 import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
@@ -37,13 +36,12 @@ import { disconnect } from '../kilt'
 let paymentAccount: KiltKeyringPair
 let paymentAccountChain: string
 let linkDeposit: BN
-let sign: AccountLinks.LinkingSignCallback
 let api: ApiPromise
 
 beforeAll(async () => {
   api = await initializeApi()
   paymentAccount = await createEndowedTestAccount()
-  paymentAccountChain = AccountLinks.accountToChain(paymentAccount.address)
+  paymentAccountChain = Did.accountToChain(paymentAccount.address)
   linkDeposit = api.consts.didLookup.deposit.toBn()
 }, 40_000)
 
@@ -60,9 +58,9 @@ describe('When there is an on-chain DID', () => {
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
-      didChain = Did.Chain.didToChain(did.uri)
+      didChain = Did.toChain(did.uri)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-      newDidChain = Did.Chain.didToChain(newDid.uri)
+      newDidChain = Did.toChain(newDid.uri)
     }, 40_000)
     it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
@@ -106,12 +104,12 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
       expect(
-        AccountLinks.connectedDidFromChain(
+        Did.connectedDidFromChain(
           await api.query.didLookup.connectedDids(paymentAccountChain)
         ).did
       ).toStrictEqual(did.uri)
       const encoded = await api.query.didLookup.connectedAccounts.keys(didChain)
-      expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
+      expect(Did.connectedAccountsFromChain(encoded)).toStrictEqual([
         paymentAccount.address,
       ])
       expect(
@@ -145,7 +143,7 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that account is linked to new DID
       expect(
-        AccountLinks.connectedDidFromChain(
+        Did.connectedDidFromChain(
           await api.query.didLookup.connectedDids(paymentAccountChain)
         ).did
       ).toStrictEqual(newDid.uri)
@@ -165,7 +163,7 @@ describe('When there is an on-chain DID', () => {
       const encoded = await api.query.didLookup.connectedAccounts.keys(
         newDidChain
       )
-      expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
+      expect(Did.connectedAccountsFromChain(encoded)).toStrictEqual([
         paymentAccount.address,
       ])
       expect(
@@ -220,25 +218,22 @@ describe('When there is an on-chain DID', () => {
         // TODO: remove this line to test against ethereum linking enabled chains
         if (keyType === 'ethereum') return
 
-        const keyTool = makeSigningKeyTool(
-          Did.Utils.signatureAlgForKeyType[keyType]
-        )
+        const keyTool = makeSigningKeyTool(keyType as KiltKeyringPair['type'])
         keypair = keyTool.keypair
-        keypairChain = AccountLinks.accountToChain(keypair.address)
-        sign = AccountLinks.makeLinkingSignCallback(keypair)
+        keypairChain = Did.accountToChain(keypair.address)
         didKey = makeSigningKeyTool()
         newDidKey = makeSigningKeyTool()
         did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
-        didChain = Did.Chain.didToChain(did.uri)
+        didChain = Did.toChain(did.uri)
         newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-        newDidChain = Did.Chain.didToChain(newDid.uri)
+        newDidChain = Did.toChain(newDid.uri)
       }, 40_000)
 
       it('should be possible to associate the account while the sender pays the deposit', async () => {
-        const args = await AccountLinks.associateAccountToChainArgs(
+        const args = await Did.associateAccountToChainArgs(
           keypair.address,
           did.uri,
-          sign
+          async (payload) => keypair.sign(payload, { withType: false })
         )
         const signedTx = await Did.authorizeExtrinsic(
           did.uri,
@@ -263,7 +258,7 @@ describe('When there is an on-chain DID', () => {
             .toString()
         ).toMatchInlineSnapshot('"0"')
         expect(
-          AccountLinks.connectedDidFromChain(
+          Did.connectedDidFromChain(
             await api.query.didLookup.connectedDids(keypairChain)
           ).did
         ).toStrictEqual(did.uri)
@@ -273,7 +268,7 @@ describe('When there is an on-chain DID', () => {
         const encoded = await api.query.didLookup.connectedAccounts.keys(
           didChain
         )
-        expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
+        expect(Did.connectedAccountsFromChain(encoded)).toStrictEqual([
           keypair.address,
         ])
         expect(
@@ -290,10 +285,10 @@ describe('When there is an on-chain DID', () => {
         ).toBe(true)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
-        const args = await AccountLinks.associateAccountToChainArgs(
+        const args = await Did.associateAccountToChainArgs(
           keypair.address,
           newDid.uri,
-          sign
+          async (payload) => keypair.sign(payload, { withType: false })
         )
         const signedTx = await Did.authorizeExtrinsic(
           newDid.uri,
@@ -317,7 +312,7 @@ describe('When there is an on-chain DID', () => {
           (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
         ).toBe(true)
         expect(
-          AccountLinks.connectedDidFromChain(
+          Did.connectedDidFromChain(
             await api.query.didLookup.connectedDids(keypairChain)
           ).did
         ).toStrictEqual(newDid.uri)
@@ -340,7 +335,7 @@ describe('When there is an on-chain DID', () => {
         const encoded = await api.query.didLookup.connectedAccounts.keys(
           newDidChain
         )
-        expect(AccountLinks.connectedAccountsFromChain(encoded)).toStrictEqual([
+        expect(Did.connectedAccountsFromChain(encoded)).toStrictEqual([
           keypair.address,
         ])
         expect(
@@ -415,24 +410,21 @@ describe('When there is an on-chain DID', () => {
       genericAccount = new Keyring({ type: 'ecdsa' }).addFromMnemonic(
         mnemonicGenerate()
       )
-      genericAccountChain = AccountLinks.accountToChain(genericAccount.address)
-      // also testing that signing with type bitflag works, like the polkadot extension does it
-      sign = async (payload) => genericAccount.sign(payload, { withType: true })
-
+      genericAccountChain = Did.accountToChain(genericAccount.address)
       await fundAccount(genericAccount.address, convertToTxUnit(new BN(10), 1))
       didKey = makeSigningKeyTool()
       newDidKey = makeSigningKeyTool()
       did = await createFullDidFromSeed(paymentAccount, didKey.keypair)
-      didChain = Did.Chain.didToChain(did.uri)
+      didChain = Did.toChain(did.uri)
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
-      newDidChain = Did.Chain.didToChain(newDid.uri)
+      newDidChain = Did.toChain(newDid.uri)
     }, 40_000)
 
     it('should be possible to associate the account while the sender pays the deposit', async () => {
-      const args = await AccountLinks.associateAccountToChainArgs(
+      const args = await Did.associateAccountToChainArgs(
         genericAccount.address,
         did.uri,
-        sign
+        async (payload) => genericAccount.sign(payload, { withType: true })
       )
       const signedTx = await Did.authorizeExtrinsic(
         did.uri,
@@ -457,7 +449,7 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       expect(
-        AccountLinks.connectedDidFromChain(
+        Did.connectedDidFromChain(
           await api.query.didLookup.connectedDids(genericAccountChain)
         ).did
       ).toStrictEqual(did.uri)
@@ -467,7 +459,7 @@ describe('When there is an on-chain DID', () => {
       const encoded = await api.query.didLookup.connectedAccounts.keys(didChain)
       expect(
         // Wildcard substrate encoding. Account should match the generated one.
-        AccountLinks.connectedAccountsFromChain(encoded, 42)
+        Did.connectedAccountsFromChain(encoded, 42)
       ).toStrictEqual([genericAccount.address])
       expect(
         (
@@ -498,14 +490,14 @@ describe('When there is an on-chain DID', () => {
       await submitExtrinsic(signedTx, paymentAccount)
 
       // Check that the Web3 name has been linked to the DID
-      const { owner } = Web3Names.web3NameOwnerFromChain(
+      const { owner } = Did.web3NameOwnerFromChain(
         await api.query.web3Names.owner('test-name')
       )
       expect(owner).toStrictEqual(did.uri)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
-      expect(
-        await AccountLinks.queryWeb3Name(genericAccount.address)
-      ).toStrictEqual('test-name')
+      expect(await Did.fetchWeb3Name(genericAccount.address)).toStrictEqual(
+        'test-name'
+      )
     })
 
     it('should be possible for the sender to remove the link', async () => {

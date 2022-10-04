@@ -5,16 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  blake2AsHex,
-  blake2AsU8a,
-  naclBoxPairFromSecret,
-  randomAsHex,
-} from '@polkadot/util-crypto'
-import { KeypairType } from '@polkadot/util-crypto/types'
-import { Keyring } from '@polkadot/keyring'
+import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
-import {
+import type {
   DecryptCallback,
   DidDocument,
   DidKey,
@@ -23,16 +16,15 @@ import {
   DidUri,
   DidVerificationKey,
   EncryptCallback,
-  EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
+  KiltEncryptionKeypair,
   KiltKeyringPair,
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
   SignCallback,
-  SigningAlgorithms,
 } from '@kiltprotocol/types'
-import { Crypto, ss58Format } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
@@ -50,9 +42,7 @@ export type EncryptionKeyToolCallback = (
  */
 export function makeEncryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-}): EncryptionKeyToolCallback {
+}: KiltEncryptionKeypair): EncryptionKeyToolCallback {
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
       const keyId = didDocument.keyAgreement?.[0].id
@@ -78,15 +68,11 @@ export function makeEncryptCallback({
  *
  * @param secretKey The options parameter.
  * @param secretKey.secretKey The key to use for decryption.
- * @param secretKey.type The X25519 type, only this one is supported.
  * @returns The callback.
  */
 export function makeDecryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: 'x25519'
-}): DecryptCallback {
+}: KiltEncryptionKeypair): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
@@ -99,13 +85,7 @@ export function makeDecryptCallback({
 }
 
 export interface EncryptionKeyTool {
-  keyAgreement: [
-    {
-      secretKey: Uint8Array
-      publicKey: Uint8Array
-      type: EncryptionKeyType
-    }
-  ]
+  keyAgreement: [KiltEncryptionKeypair]
   encrypt: EncryptionKeyToolCallback
   decrypt: DecryptCallback
 }
@@ -117,12 +97,7 @@ export interface EncryptionKeyTool {
  * @returns Object with secret and public key and the key type.
  */
 export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
-  const { secretKey, publicKey } = naclBoxPairFromSecret(blake2AsU8a(seed, 256))
-  const keypair = {
-    secretKey,
-    publicKey,
-    type: 'x25519' as EncryptionKeyType,
-  }
+  const keypair = Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))
 
   const encrypt = makeEncryptCallback(keypair)
   const decrypt = makeDecryptCallback(keypair)
@@ -162,7 +137,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
     }
 }
 
-type StoreDidCallback = Parameters<typeof Did.Chain.getStoreTx>['2']
+type StoreDidCallback = Parameters<typeof Did.getStoreTx>['2']
 
 /**
  * Generates a callback that can be used for signing.
@@ -182,12 +157,6 @@ export function makeStoreDidCallback(
   }
 }
 
-const keypairTypeForAlg: Record<SigningAlgorithms, KeypairType> = {
-  ed25519: 'ed25519',
-  sr25519: 'sr25519',
-  'ecdsa-secp256k1': 'ecdsa',
-}
-
 export interface KeyTool {
   keypair: KiltKeyringPair
   getSignCallback: KeyToolSignCallback
@@ -198,32 +167,21 @@ export interface KeyTool {
 /**
  * Generates a keypair usable for signing and a few related values.
  *
- * @param alg The algorithm to use for the keypair.
+ * @param type The type to use for the keypair.
  * @returns The keypair, matching sign callback, a key usable as DID authentication key.
  */
 export function makeSigningKeyTool(
-  alg: SigningAlgorithms = 'sr25519'
+  type: KiltKeyringPair['type'] = 'sr25519'
 ): KeyTool {
-  const type = keypairTypeForAlg[alg]
-  const seed = randomAsHex(32)
-  const keypair = new Keyring({ type, ss58Format }).addFromUri(
-    seed,
-    {},
-    type
-  ) as KiltKeyringPair
+  const keypair = Crypto.makeKeypairFromSeed(undefined, type)
   const getSignCallback = makeSignCallback(keypair)
   const storeDidCallback = makeStoreDidCallback(keypair)
-
-  const authenticationKey = {
-    publicKey: keypair.publicKey,
-    type: keypair.type as LightDidSupportedVerificationKeyType,
-  }
 
   return {
     keypair,
     getSignCallback,
     storeDidCallback,
-    authentication: [authenticationKey],
+    authentication: [keypair as NewLightDidVerificationKey],
   }
 }
 
@@ -252,11 +210,11 @@ export function computeKeyId(key: DidKey['publicKey']): DidKey['id'] {
 function makeDidKeyFromKeypair({
   publicKey,
   type,
-}: KeyringPair): DidVerificationKey {
+}: KiltKeyringPair): DidVerificationKey {
   return {
     id: computeKeyId(publicKey),
     publicKey,
-    type: Did.Utils.keyTypeForSignatureAlg[type as SigningAlgorithms],
+    type,
   }
 }
 
@@ -271,7 +229,7 @@ function makeDidKeyFromKeypair({
  * @returns A promise resolving to a [[DidDocument]] object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoFullDidFromKeypair(
-  keypair: KeyringPair,
+  keypair: KiltKeyringPair,
   {
     keyRelationships = new Set([
       'assertionMethod',
@@ -285,7 +243,7 @@ export async function createLocalDemoFullDidFromKeypair(
   } = {}
 ): Promise<DidDocument> {
   const authKey = makeDidKeyFromKeypair(keypair)
-  const uri = Did.Utils.getFullDidUriFromKey(authKey)
+  const uri = Did.getFullDidUriFromKey(authKey)
 
   const result: DidDocument = {
     uri,
@@ -303,11 +261,15 @@ export async function createLocalDemoFullDidFromKeypair(
     result.keyAgreement = [encKey]
   }
   if (keyRelationships.has('assertionMethod')) {
-    const attKey = makeDidKeyFromKeypair(keypair.derive('//att'))
+    const attKey = makeDidKeyFromKeypair(
+      keypair.derive('//att') as KiltKeyringPair
+    )
     result.assertionMethod = [attKey]
   }
   if (keyRelationships.has('capabilityDelegation')) {
-    const delKey = makeDidKeyFromKeypair(keypair.derive('//del'))
+    const delKey = makeDidKeyFromKeypair(
+      keypair.derive('//del') as KiltKeyringPair
+    )
     result.capabilityDelegation = [delKey]
   }
 
@@ -327,7 +289,7 @@ export async function createLocalDemoFullDidFromLightDid(
   const { uri, authentication } = lightDid
 
   return {
-    uri: Did.Utils.getFullDidUri(uri),
+    uri: Did.getFullDidUri(uri),
     authentication,
     assertionMethod: authentication,
     capabilityDelegation: authentication,
@@ -342,7 +304,7 @@ export async function createFullDidFromLightDid(
   sign: StoreDidCallback
 ): Promise<DidDocument> {
   const { authentication, uri } = lightDidForId
-  const tx = await Did.Chain.getStoreTx(
+  const tx = await Did.getStoreTx(
     {
       authentication,
       assertionMethod: authentication,
@@ -354,9 +316,7 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const fullDid = await Did.query(Did.Utils.getFullDidUri(uri))
-  if (!fullDid) throw new Error('Could not fetch created DID document')
-  return fullDid
+  return Did.fetch(Did.getFullDidUri(uri))
 }
 
 export async function createFullDidFromSeed(

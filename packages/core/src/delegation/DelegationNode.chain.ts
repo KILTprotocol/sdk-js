@@ -12,7 +12,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils, Chain as DidChain } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { delegationNodeFromChain } from './DelegationDecoder.js'
 import { DelegationNode } from './DelegationNode.js'
 import { permissionsAsBitset } from './DelegationNode.utils.js'
@@ -28,41 +28,39 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
  */
 export function addDelegationToChainArgs(
   delegation: DelegationNode,
-  signature: DidUtils.EncodedSignature
+  signature: Did.EncodedSignature
 ): [
   DelegationNode['id'],
   string,
   KiltAddress,
   Uint8Array,
-  DidUtils.EncodedSignature
+  Did.EncodedSignature
 ] {
   return [
     delegation.id,
     delegation.parentId || '',
-    DidChain.didToChain(delegation.account),
+    Did.toChain(delegation.account),
     permissionsAsBitset(delegation),
     signature,
   ]
 }
 
 /**
- * Query a delegation node from the blockchain given its identifier.
+ * Fetch a delegation node from the blockchain given its identifier.
  *
- * @param delegationId The delegation node ID to query.
- * @returns Either the retrieved [[DelegationNode]] or null.
+ * @param delegationId The delegation node ID to fetch.
+ * @returns The retrieved [[DelegationNode]].
  */
-export async function query(
+export async function fetch(
   delegationId: IDelegationNode['id']
-): Promise<DelegationNode | null> {
+): Promise<DelegationNode> {
   const api = ConfigService.get('api')
-  const decoded = delegationNodeFromChain(
-    await api.query.delegation.delegationNodes(delegationId)
-  )
-  if (!decoded) {
-    return null
+  const chainNode = await api.query.delegation.delegationNodes(delegationId)
+  if (chainNode.isNone) {
+    throw new SDKErrors.DelegationIdMissingError()
   }
   return new DelegationNode({
-    ...decoded,
+    ...delegationNodeFromChain(chainNode),
     id: delegationId,
   })
 }
@@ -77,15 +75,7 @@ export async function getChildren(
   delegationNode: DelegationNode
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNode.id}')`)
-  const childrenNodes = await Promise.all(
-    delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
-      const childNode = await query(childId)
-      if (!childNode) {
-        throw new SDKErrors.DelegationIdMissingError()
-      }
-      return childNode
-    })
-  )
+  const childrenNodes = await Promise.all(delegationNode.childrenIds.map(fetch))
   log.info(`children: ${JSON.stringify(childrenNodes)}`)
   return childrenNodes
 }

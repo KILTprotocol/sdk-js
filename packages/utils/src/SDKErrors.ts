@@ -47,8 +47,13 @@ export class DidError extends SDKError {}
 
 export class DidExporterError extends SDKError {}
 
-// TODO: rename me
-export class DidBuilderError extends SDKError {}
+export class DidBatchError extends SDKError {}
+
+export class DidNotFoundError extends SDKError {}
+
+export class DidResolveUpgradedDidError extends SDKError {}
+
+export class DidDeactivatedError extends SDKError {}
 
 export class ClaimHashMissingError extends SDKError {}
 

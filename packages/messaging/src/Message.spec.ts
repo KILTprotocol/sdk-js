@@ -123,10 +123,8 @@ describe('Messaging', () => {
     return null
   }
 
-  async function resolveKey(
-    keyUri: DidResourceUri
-  ): Promise<ResolvedDidKey | null> {
-    const { fragment, did } = Did.Utils.parseDidUri(keyUri)
+  async function resolveKey(keyUri: DidResourceUri): Promise<ResolvedDidKey> {
+    const { fragment, did } = Did.parse(keyUri)
     const { document } = (await didResolve(
       did as DidUri
     )) as DidResolutionResult
@@ -192,7 +190,6 @@ describe('Messaging', () => {
     const decryptedMessage = await Message.decrypt(
       encryptedMessage,
       bobEncKey.decrypt,
-      bobLightDid,
       { resolveKey }
     )
     expect(JSON.stringify(message.body)).toEqual(
@@ -211,12 +208,9 @@ describe('Messaging', () => {
     encryptedMessageWrongContent.ciphertext = u8aToHex(messedUpContent)
 
     await expect(() =>
-      Message.decrypt(
-        encryptedMessageWrongContent,
-        bobEncKey.decrypt,
-        bobLightDid,
-        { resolveKey }
-      )
+      Message.decrypt(encryptedMessageWrongContent, bobEncKey.decrypt, {
+        resolveKey,
+      })
     ).rejects.toThrowError(SDKErrors.DecodingMessageError)
 
     const encryptedWrongBody = await aliceEncKey.encrypt(aliceLightDid)({
@@ -231,12 +225,9 @@ describe('Messaging', () => {
       receiverKeyUri: `${bobLightDid.uri}${bobLightDid.keyAgreement![0].id}`,
     }
     await expect(() =>
-      Message.decrypt(
-        encryptedMessageWrongBody,
-        bobEncKey.decrypt,
-        bobLightDid,
-        { resolveKey }
-      )
+      Message.decrypt(encryptedMessageWrongBody, bobEncKey.decrypt, {
+        resolveKey,
+      })
     ).rejects.toThrowError(SyntaxError)
   })
 
@@ -815,7 +806,7 @@ describe('Error checking / Verification', () => {
     async function didResolve(
       didUri: DidUri
     ): Promise<DidResolutionResult | null> {
-      const { did } = Did.Utils.parseDidUri(didUri)
+      const { did } = Did.parse(didUri)
       if (did === identityAlice.uri) {
         return {
           metadata: {

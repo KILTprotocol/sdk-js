@@ -17,13 +17,8 @@ import {
   KiltKeyringPair,
   SignCallback,
 } from '@kiltprotocol/types'
-import Keyring from '@polkadot/keyring'
-import {
-  mnemonicGenerate,
-  randomAsHex,
-  randomAsU8a,
-} from '@polkadot/util-crypto'
-import { Crypto, ss58Format } from '@kiltprotocol/utils'
+import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
+import { Crypto } from '@kiltprotocol/utils'
 import { makeSigningKeyTool, makeDidSignature } from '@kiltprotocol/testing'
 import * as Did from './index.js'
 import { verifyDidSignature, isDidSignature } from './Did.signature'
@@ -166,7 +161,7 @@ describe('light DID', () => {
     jest.mocked(resolve).mockResolvedValue({
       document: did,
       metadata: {
-        canonicalId: Did.Utils.getFullDidUri(did.uri),
+        canonicalId: Did.getFullDidUri(did.uri),
         deactivated: false,
       },
     })
@@ -195,9 +190,7 @@ describe('full DID', () => {
   let did: DidDocument
   let sign: SignCallback
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
-      mnemonicGenerate()
-    ) as KiltKeyringPair
+    keypair = Crypto.makeKeypairFromSeed()
     did = {
       uri: `did:kilt:${keypair.address}`,
       authentication: [
@@ -302,9 +295,7 @@ describe('full DID', () => {
 describe('type guard', () => {
   let keypair: KeyringPair
   beforeAll(() => {
-    keypair = new Keyring({ type: 'sr25519', ss58Format }).addFromMnemonic(
-      mnemonicGenerate()
-    )
+    keypair = Crypto.makeKeypairFromSeed()
   })
 
   it('rejects malformed key uri', () => {

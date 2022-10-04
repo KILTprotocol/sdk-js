@@ -6,7 +6,6 @@
  */
 
 import { BN } from '@polkadot/util'
-import Keyring from '@polkadot/keyring'
 
 import type {
   DidEncryptionKey,
@@ -21,23 +20,19 @@ import type {
   ResolvedDidServiceEndpoint,
   UriFragment,
 } from '@kiltprotocol/types'
-import { ss58Format } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import { ApiMocks, makeSigningKeyTool } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 
-import { getFullDidUriFromKey, stripFragment } from '../Did.utils'
+import { getFullDidUriFromKey } from '../Did.utils'
 import {
-  didFromChain,
+  documentFromChain,
+  resourceIdToChain,
   serviceFromChain,
   servicesFromChain,
 } from '../Did.chain.js'
 
-import {
-  resolve,
-  resolveKey,
-  resolveServiceEndpoint,
-  strictResolve,
-} from './index.js'
+import { resolve, resolveKey, resolveService, strictResolve } from './index.js'
 import * as Did from '../index.js'
 
 /**
@@ -125,7 +120,7 @@ function generateDelegationKey(): DidVerificationKey {
 }
 
 function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
-  const fragment = stripFragment(serviceId)
+  const fragment = serviceId.substring(1)
   return {
     id: serviceId,
     type: [`type-${fragment}`],
@@ -135,7 +130,7 @@ function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
 
 jest.mock('../Did.chain.js')
 
-jest.mocked(didFromChain).mockReturnValue({
+jest.mocked(documentFromChain).mockReturnValue({
   authentication: [generateAuthenticationKey()],
   lastTxCounter: new BN(0),
   deposit: {
@@ -149,6 +144,9 @@ jest
 jest
   .mocked(servicesFromChain)
   .mockReturnValue([generateServiceEndpoint('#service-1')])
+jest
+  .mocked(resourceIdToChain)
+  .mockImplementation((id: string) => id.substring(1))
 
 describe('When resolving a key', () => {
   it('correctly resolves it for a full DID if both the DID and the key exist', async () => {
@@ -166,12 +164,12 @@ describe('When resolving a key', () => {
   it('returns null if either the DID or the key do not exist', async () => {
     let keyIdUri: DidResourceUri = `${deletedDid}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
 
     const didWithNoEncryptionKey = didWithAuthenticationKey
     keyIdUri = `${didWithNoEncryptionKey}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
@@ -191,7 +189,7 @@ describe('When resolving a service endpoint', () => {
     const serviceIdUri: DidResourceUri = `${fullDid}#service-1`
 
     expect(
-      await resolveServiceEndpoint(serviceIdUri)
+      await resolveService(serviceIdUri)
     ).toStrictEqual<ResolvedDidServiceEndpoint>({
       id: serviceIdUri,
       type: [`type-service-1`],
@@ -209,22 +207,22 @@ describe('When resolving a service endpoint', () => {
 
     let serviceIdUri: DidResourceUri = `${deletedDid}#service-1`
 
-    expect(await resolveServiceEndpoint(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
 
     const didWithNoServiceEndpoints = didWithAuthenticationKey
     serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
 
-    expect(await resolveServiceEndpoint(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
     const uriWithoutFragment = deletedDid
     await expect(
-      resolveServiceEndpoint(uriWithoutFragment as DidResourceUri)
+      resolveService(uriWithoutFragment as DidResourceUri)
     ).rejects.toThrow()
 
     const invalidUri = 'invalid-uri' as DidResourceUri
-    await expect(resolveServiceEndpoint(invalidUri)).rejects.toThrow()
+    await expect(resolveService(invalidUri)).rejects.toThrow()
   })
 })
 
@@ -250,7 +248,7 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves the document with all keys', async () => {
-    jest.mocked(didFromChain).mockReturnValueOnce({
+    jest.mocked(documentFromChain).mockReturnValueOnce({
       authentication: [generateAuthenticationKey()],
       keyAgreement: [generateEncryptionKey()],
       assertionMethod: [generateAttestationKey()],
@@ -366,9 +364,8 @@ describe('When resolving a full DID', () => {
 })
 
 describe('When resolving a light DID', () => {
-  const keyring = new Keyring({ ss58Format })
-  const authKey = keyring.addFromMnemonic('auth')
-  const encryptionKey = keyring.addFromMnemonic('enc')
+  const authKey = Crypto.makeKeypairFromSeed()
+  const encryptionKey = Crypto.makeEncryptionKeypairFromSeed()
 
   beforeEach(() => {
     mockedApi.query.did.did.mockReturnValue(didNotFound)

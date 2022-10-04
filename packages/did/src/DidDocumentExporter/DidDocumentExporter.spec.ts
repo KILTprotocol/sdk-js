@@ -19,7 +19,6 @@ import type {
 
 import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
-import { stripFragment } from '../Did.utils'
 
 /**
  * @group unit/did
@@ -63,7 +62,7 @@ function generateDelegationKey(): DidVerificationKey {
 }
 
 function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
-  const fragment = stripFragment(serviceId)
+  const fragment = Did.resourceIdToChain(serviceId)
   return {
     id: serviceId,
     type: [`type-${fragment}`],

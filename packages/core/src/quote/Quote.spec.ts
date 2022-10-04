@@ -161,7 +161,7 @@ describe('Quote', () => {
     )
     expect(signature).toEqual(quoteBothAgreed.claimerSignature)
 
-    const { fragment: attesterKeyId } = Did.Utils.parseDidUri(
+    const { fragment: attesterKeyId } = Did.parse(
       validAttesterSignedQuote.attesterSignature.keyUri
     )
 

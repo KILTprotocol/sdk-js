@@ -12,7 +12,7 @@ import type {
   DidUri,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Utils as DidUtils } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
 import * as Credential from '../credential/index.js'
 
@@ -50,7 +50,7 @@ export function verifyDataStructure(input: IAttestation): void {
   if (!input.owner) {
     throw new SDKErrors.OwnerMissingError()
   }
-  DidUtils.validateKiltDidUri(input.owner, 'Did')
+  Did.validateUri(input.owner, 'Did')
 
   if (typeof input.revoked !== 'boolean') {
     throw new SDKErrors.RevokedTypeError()
@@ -80,16 +80,16 @@ export function fromCredentialAndDid(
 }
 
 /**
- * Tries to query the delegationId and if successful query the rootId.
+ * Tries to fetch the delegationId and if successful fetch the rootId.
  *
  * @param input - The ID of the Delegation stored in [[Attestation]] , or the whole Attestation object.
- * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
+ * @returns A promise of the affiliated [[DelegationNode]].
  */
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation
-): Promise<IDelegationHierarchyDetails | null> {
+): Promise<IDelegationHierarchyDetails> {
   if (input === null) {
-    return null
+    throw new SDKErrors.HierarchyQueryError('null')
   }
 
   let delegationId: IAttestation['delegationId']
@@ -101,13 +101,10 @@ export async function getDelegationDetails(
   }
 
   if (!delegationId) {
-    return null
+    throw new SDKErrors.HierarchyQueryError('null')
   }
 
-  const delegationNode = await DelegationNode.query(delegationId)
-  if (!delegationNode) {
-    return null
-  }
+  const delegationNode = await DelegationNode.fetch(delegationId)
   return delegationNode.getHierarchyDetails()
 }
 

@@ -38,7 +38,7 @@ console.log(lightDidDocument.service)
 
 // Let's export `DidDocument` using the `application/ld+json` format.
 
-const fullDid = await Did.query('...')
+const fullDid = await Did.fetch('...')
 
 // The document type will be a `JsonLDDidDocument`, which extends the simpler `ConformingDidDocument`.
 const fullDidDocument: JsonLDDidDocument = Did.exportToDidDocument(fullDid, 'application/ld+json')

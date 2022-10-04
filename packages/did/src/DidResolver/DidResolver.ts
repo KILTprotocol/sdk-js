@@ -17,12 +17,8 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
-import {
-  didToChain,
-  resourceIdToChain,
-  serviceFromChain,
-} from '../Did.chain.js'
-import { getFullDidUri, parseDidUri } from '../Did.utils.js'
+import { toChain, resourceIdToChain, serviceFromChain } from '../Did.chain.js'
+import { getFullDidUri, parse } from '../Did.utils.js'
 
 /**
  * Resolve a DID URI to the DID document and its metadata.
@@ -35,10 +31,16 @@ import { getFullDidUri, parseDidUri } from '../Did.utils.js'
 export async function resolve(
   did: DidUri
 ): Promise<DidResolutionResult | null> {
-  const { type } = parseDidUri(did)
+  const { type } = parse(did)
   const api = ConfigService.get('api')
 
-  const document = await Did.query(getFullDidUri(did))
+  let document: DidDocument | undefined
+  try {
+    document = await Did.fetch(getFullDidUri(did))
+  } catch {
+    // ignore errors
+  }
+
   if (type === 'full' && document) {
     return {
       document,
@@ -50,7 +52,7 @@ export async function resolve(
 
   // If the full DID has been deleted (or the light DID was upgraded and deleted),
   // return the info in the resolution metadata.
-  const isFullDidDeleted = (await api.query.did.didBlacklist(didToChain(did)))
+  const isFullDidDeleted = (await api.query.did.didBlacklist(toChain(did)))
     .isSome
   if (isFullDidDeleted) {
     return {
@@ -127,8 +129,8 @@ export async function strictResolve(
  */
 export async function resolveKey(
   keyUri: DidResourceUri
-): Promise<ResolvedDidKey | null> {
-  const { did, fragment: keyId } = parseDidUri(keyUri)
+): Promise<ResolvedDidKey> {
+  const { did, fragment: keyId } = parse(keyUri)
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
@@ -137,7 +139,7 @@ export async function resolveKey(
 
   const resolved = await resolve(did)
   if (!resolved) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const {
@@ -147,15 +149,15 @@ export async function resolveKey(
 
   // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    return null
+    throw new SDKErrors.DidResolveUpgradedDidError()
   }
   if (!document) {
-    return null
+    throw new SDKErrors.DidDeactivatedError()
   }
 
   const key = Did.getKey(document, keyId)
   if (!key) {
-    return null
+    throw new SDKErrors.DidNotFoundError('Key not found in DID')
   }
 
   const { includedAt } = key
@@ -174,10 +176,10 @@ export async function resolveKey(
  * @param serviceUri The DID service URI.
  * @returns The details associated with the service endpoint.
  */
-export async function resolveServiceEndpoint(
+export async function resolveService(
   serviceUri: DidResourceUri
-): Promise<ResolvedDidServiceEndpoint | null> {
-  const { fragment: serviceId, did, type } = parseDidUri(serviceUri)
+): Promise<ResolvedDidServiceEndpoint> {
+  const { fragment: serviceId, did, type } = parse(serviceUri)
 
   // A fragment (serviceId) IS expected to resolve a service endpoint.
   if (!serviceId) {
@@ -186,23 +188,22 @@ export async function resolveServiceEndpoint(
   const api = ConfigService.get('api')
 
   if (type === 'full') {
-    const encoded = await api.query.did.serviceEndpoints(
-      didToChain(serviceUri),
+    const chainService = await api.query.did.serviceEndpoints(
+      toChain(serviceUri),
       resourceIdToChain(serviceId)
     )
-    if (encoded.isNone) {
-      return null
+    if (chainService.isNone) {
+      throw new SDKErrors.DidNotFoundError('Service not found in DID')
     }
-    const serviceEndpoint = serviceFromChain(encoded)
     return {
-      ...serviceEndpoint,
+      ...serviceFromChain(chainService),
       id: serviceUri,
     }
   }
 
   const resolved = await resolve(did)
   if (!resolved) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const {
@@ -212,19 +213,19 @@ export async function resolveServiceEndpoint(
 
   // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    return null
+    throw new SDKErrors.DidResolveUpgradedDidError()
   }
   if (!document) {
-    return null
+    throw new SDKErrors.DidDeactivatedError()
   }
 
-  const endpoint = Did.getEndpoint(document, serviceId)
-  if (!endpoint) {
-    return null
+  const service = Did.getService(document, serviceId)
+  if (!service) {
+    throw new SDKErrors.DidNotFoundError('Service not found in DID')
   }
 
   return {
-    ...endpoint,
+    ...service,
     id: `${did}${serviceId}`,
   }
 }

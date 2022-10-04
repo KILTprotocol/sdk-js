@@ -10,7 +10,7 @@ import type { AccountId } from '@polkadot/types/interfaces'
 
 import { Crypto } from '@kiltprotocol/utils'
 import type { DidUri, ICType } from '@kiltprotocol/types'
-import { Chain as DidChain } from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 
 import { getSchemaPropertiesForHash } from './CType.js'
 
@@ -31,5 +31,5 @@ export function toChain(ctype: ICType): string {
  * @returns The owner DID.
  */
 export function fromChain(encoded: Option<AccountId>): DidUri {
-  return DidChain.uriFromChain(encoded.unwrap())
+  return Did.fromChain(encoded.unwrap())
 }
