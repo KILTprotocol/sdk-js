@@ -53,7 +53,7 @@ jobs:
             yarn.lock
 
       - name: Update metadata to latest spiritnet metadata
-        run: yarn workspace @kiltprotocol/testing node ./scripts/fetchMetadata.js -o ./src/mocks/metadata/spiritnet.json -e wss://spiritnet.kilt.io/
+        run: yarn workspace @kiltprotocol/augment-api run update-metadata
 
       - name: yarn build
         run: yarn build
