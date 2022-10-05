@@ -52,9 +52,6 @@ jobs:
             locked_dependencies.txt
             yarn.lock
 
-      - name: Update metadata to latest spiritnet metadata
-        run: yarn workspace @kiltprotocol/augment-api run update-metadata
-
       - name: yarn build
         run: yarn build
       - name: zip build
