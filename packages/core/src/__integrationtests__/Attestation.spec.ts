@@ -33,7 +33,7 @@ import {
   driversLicenseCType,
   initializeApi,
   isCtypeOnChain,
-  submitExtrinsic,
+  submitTx,
 } from './utils'
 
 let tokenHolder: KiltKeyringPair
@@ -81,15 +81,13 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.getRevokeTx', async () => {
     const draft = api.tx.attestation.revoke(claimHash, null)
-    const authorized = await Did.authorizeExtrinsic(
+    const authorized = await Did.authorizeTx(
       attester.uri,
       draft,
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )
-    await expect(
-      submitExtrinsic(authorized, tokenHolder)
-    ).rejects.toMatchObject({
+    await expect(submitTx(authorized, tokenHolder)).rejects.toMatchObject({
       section: 'attestation',
       name: 'AttestationNotFound',
     })
@@ -97,15 +95,13 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.getRemoveTx', async () => {
     const draft = api.tx.attestation.remove(claimHash, null)
-    const authorized = await Did.authorizeExtrinsic(
+    const authorized = await Did.authorizeTx(
       attester.uri,
       draft,
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )
-    await expect(
-      submitExtrinsic(authorized, tokenHolder)
-    ).rejects.toMatchObject({
+    await expect(submitTx(authorized, tokenHolder)).rejects.toMatchObject({
       section: 'attestation',
       name: 'AttestationNotFound',
     })
@@ -116,13 +112,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
     const ctypeExists = await isCtypeOnChain(driversLicenseCType)
     if (ctypeExists) return
-    const tx = await Did.authorizeExtrinsic(
+    const tx = await Did.authorizeTx(
       attester.uri,
       api.tx.ctype.add(CType.toChain(driversLicenseCType)),
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )
-    await submitExtrinsic(tx, tokenHolder)
+    await submitTx(tx, tokenHolder)
   }, 60_000)
 
   it('should be possible to make a claim', async () => {
@@ -173,13 +169,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attestation.cTypeHash,
       null
     )
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
       storeTx,
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )
-    await submitExtrinsic(authorizedStoreTx, tokenHolder)
+    await submitTx(authorizedStoreTx, tokenHolder)
     const storedAttestation = Attestation.fromChain(
       await api.query.attestation.attestations(attestation.claimHash),
       attestation.claimHash
@@ -189,7 +185,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
     const reclaimTx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
-    await submitExtrinsic(reclaimTx, tokenHolder)
+    await submitTx(reclaimTx, tokenHolder)
 
     // Test that the attestation has been deleted.
     expect(
@@ -227,14 +223,14 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attestation.cTypeHash,
       null
     )
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
       storeTx,
       getSignCallback(attester),
       keypair.address
     )
     await expect(
-      submitExtrinsic(authorizedStoreTx, keypair)
+      submitTx(authorizedStoreTx, keypair)
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low"`
     )
@@ -276,7 +272,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attestation.cTypeHash,
       null
     )
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
       storeTx,
       attesterKey.getSignCallback(attester),
@@ -284,7 +280,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     )
 
     await expect(
-      submitExtrinsic(authorizedStoreTx, tokenHolder)
+      submitTx(authorizedStoreTx, tokenHolder)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
   }, 60_000)
 
@@ -310,13 +306,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attestation.cTypeHash,
         null
       )
-      const authorizedStoreTx = await Did.authorizeExtrinsic(
+      const authorizedStoreTx = await Did.authorizeTx(
         attester.uri,
         storeTx,
         attesterKey.getSignCallback(attester),
         tokenHolder.address
       )
-      await submitExtrinsic(authorizedStoreTx, tokenHolder)
+      await submitTx(authorizedStoreTx, tokenHolder)
 
       await Credential.verifyPresentation(presentation)
       const storedAttestation = Attestation.fromChain(
@@ -333,7 +329,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attestation.cTypeHash,
         null
       )
-      const authorizedStoreTx = await Did.authorizeExtrinsic(
+      const authorizedStoreTx = await Did.authorizeTx(
         attester.uri,
         storeTx,
         attesterKey.getSignCallback(attester),
@@ -341,7 +337,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
 
       await expect(
-        submitExtrinsic(authorizedStoreTx, tokenHolder)
+        submitTx(authorizedStoreTx, tokenHolder)
       ).rejects.toMatchObject({
         section: 'attestation',
         name: 'AlreadyAttested',
@@ -368,7 +364,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       const revokeTx = api.tx.attestation.revoke(attestation.claimHash, null)
-      const authorizedRevokeTx = await Did.authorizeExtrinsic(
+      const authorizedRevokeTx = await Did.authorizeTx(
         claimer.uri,
         revokeTx,
         claimerKey.getSignCallback(claimer),
@@ -376,7 +372,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
 
       await expect(
-        submitExtrinsic(authorizedRevokeTx, tokenHolder)
+        submitTx(authorizedRevokeTx, tokenHolder)
       ).rejects.toMatchObject({ section: 'attestation', name: 'Unauthorized' })
       const storedAttestation = Attestation.fromChain(
         await api.query.attestation.attestations(attestation.claimHash),
@@ -395,13 +391,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       expect(storedAttestation?.revoked).toBe(false)
 
       const revokeTx = api.tx.attestation.revoke(attestation.claimHash, null)
-      const authorizedRevokeTx = await Did.authorizeExtrinsic(
+      const authorizedRevokeTx = await Did.authorizeTx(
         attester.uri,
         revokeTx,
         attesterKey.getSignCallback(attester),
         tokenHolder.address
       )
-      await submitExtrinsic(authorizedRevokeTx, tokenHolder)
+      await submitTx(authorizedRevokeTx, tokenHolder)
 
       const storedAttestationAfter = Attestation.fromChain(
         await api.query.attestation.attestations(attestation.claimHash),
@@ -413,13 +409,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
       const removeTx = api.tx.attestation.remove(attestation.claimHash, null)
-      const authorizedRemoveTx = await Did.authorizeExtrinsic(
+      const authorizedRemoveTx = await Did.authorizeTx(
         attester.uri,
         removeTx,
         attesterKey.getSignCallback(attester),
         tokenHolder.address
       )
-      await submitExtrinsic(authorizedRemoveTx, tokenHolder)
+      await submitTx(authorizedRemoveTx, tokenHolder)
     }, 40_000)
   })
 
@@ -444,13 +440,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const storeTx = api.tx.ctype.add(
         CType.toChain(officialLicenseAuthorityCType)
       )
-      const authorizedStoreTx = await Did.authorizeExtrinsic(
+      const authorizedStoreTx = await Did.authorizeTx(
         attester.uri,
         storeTx,
         attesterKey.getSignCallback(attester),
         tokenHolder.address
       )
-      await submitExtrinsic(authorizedStoreTx, tokenHolder)
+      await submitTx(authorizedStoreTx, tokenHolder)
 
       expect(await isCtypeOnChain(officialLicenseAuthorityCType)).toBe(true)
     }, 45_000)
@@ -479,13 +475,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         licenseAuthorizationGranted.cTypeHash,
         null
       )
-      const authorizedStoreTx = await Did.authorizeExtrinsic(
+      const authorizedStoreTx = await Did.authorizeTx(
         anotherAttester.uri,
         storeTx,
         anotherAttesterKey.getSignCallback(anotherAttester),
         tokenHolder.address
       )
-      await submitExtrinsic(authorizedStoreTx, tokenHolder)
+      await submitTx(authorizedStoreTx, tokenHolder)
 
       // make credential including legitimation
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
@@ -509,13 +505,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         licenseGranted.cTypeHash,
         null
       )
-      const authorizedStoreTx2 = await Did.authorizeExtrinsic(
+      const authorizedStoreTx2 = await Did.authorizeTx(
         attester.uri,
         storeTx2,
         attesterKey.getSignCallback(attester),
         tokenHolder.address
       )
-      await submitExtrinsic(authorizedStoreTx2, tokenHolder)
+      await submitTx(authorizedStoreTx2, tokenHolder)
 
       const storedAttLicense = Attestation.fromChain(
         await api.query.attestation.attestations(licenseGranted.claimHash),
