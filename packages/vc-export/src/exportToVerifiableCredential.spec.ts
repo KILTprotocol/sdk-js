@@ -36,26 +36,22 @@ import {
 const mockedApi: any = ApiMocks.getMockedApi()
 
 const ctype: ICType = {
-  schema: {
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'membership',
-    properties: {
-      birthday: {
-        type: 'string',
-        format: 'date',
-      },
-      name: {
-        type: 'string',
-      },
-      premium: {
-        type: 'boolean',
-      },
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'membership',
+  properties: {
+    birthday: {
+      type: 'string',
+      format: 'date',
     },
-    type: 'object',
-    $id: 'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+    name: {
+      type: 'string',
+    },
+    premium: {
+      type: 'boolean',
+    },
   },
-  owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
-  hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+  type: 'object',
+  $id: 'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 }
 
 const credential: ICredentialPresentation = {
@@ -146,11 +142,10 @@ it('exports includes ctype as schema', () => {
     toVC.fromCredentialAndAttestation(credential, attestation, ctype)
   ).toMatchObject({
     credentialSchema: {
-      '@id': ctype.schema.$id,
-      name: ctype.schema.title,
+      '@id': ctype.$id,
+      name: ctype.title,
       '@type': 'JsonSchemaValidator2018',
-      author: ctype.owner || null,
-      schema: ctype.schema,
+      schema: ctype,
     },
   })
 })
@@ -167,7 +162,6 @@ it('VC has correct format (full example)', () => {
     credentialSchema: {
       '@id': expect.any(String),
       '@type': 'JsonSchemaValidator2018',
-      author: expect.any(String),
       name: 'membership',
       schema: {
         $id: expect.any(String),

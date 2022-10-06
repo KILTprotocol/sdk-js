@@ -19,6 +19,7 @@ import type {
   ICType,
   IClaim,
   ICredential,
+  ICTypeSchema,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
@@ -41,7 +42,7 @@ describe('Attestation', () => {
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
   const identityBob: DidUri =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
-  let rawCTypeSchema: ICType['schema']
+  let rawCTypeSchema: ICTypeSchema
   let testCType: ICType
   let testContents: any
   let testClaim: IClaim
@@ -49,7 +50,6 @@ describe('Attestation', () => {
 
   beforeAll(async () => {
     rawCTypeSchema = {
-      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Attestation',
       properties: {
@@ -58,7 +58,7 @@ describe('Attestation', () => {
       type: 'object',
     }
 
-    testCType = CType.fromSchema(rawCTypeSchema, identityAlice)
+    testCType = CType.fromSchema(rawCTypeSchema)
 
     testContents = {}
     testClaim = Claim.fromCTypeAndClaimContents(

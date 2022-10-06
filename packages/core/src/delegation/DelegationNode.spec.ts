@@ -15,7 +15,6 @@ import {
   IDelegationHierarchyDetails,
   Permission,
   DidUri,
-  ICType,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { ApiMocks } from '@kiltprotocol/testing'
@@ -539,7 +538,7 @@ describe('DelegationNode', () => {
 })
 
 describe('DelegationHierarchy', () => {
-  let ctypeHash: ICType['hash']
+  let ctypeHash: HexString
   let ROOT_IDENTIFIER: string
   let ROOT_SUCCESS: string
 

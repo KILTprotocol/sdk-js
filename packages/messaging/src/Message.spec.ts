@@ -50,6 +50,7 @@ import type {
   MessageBody,
   PartialClaim,
   ICredentialPresentation,
+  ICTypeSchema,
 } from '@kiltprotocol/types'
 import {
   Quote,
@@ -702,8 +703,7 @@ describe('Error checking / Verification', () => {
   ): Promise<[ICredential, IAttestation]> {
     // create claim
 
-    const rawCType: ICType['schema'] = {
-      $id: Crypto.hashStr('kilt:ctype:0x1'),
+    const rawCType: ICTypeSchema = {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Credential',
       properties: {
@@ -738,8 +738,8 @@ describe('Error checking / Verification', () => {
   let keyBob: KeyTool
 
   let date: string
-  let rawCType: ICType['schema']
-  let rawCTypeWithMultipleProperties: ICType['schema']
+  let rawCType: ICTypeSchema
+  let rawCTypeWithMultipleProperties: ICTypeSchema
   let testCType: ICType
   let testCTypeWithMultipleProperties: ICType
   let claim: IClaim
@@ -826,7 +826,6 @@ describe('Error checking / Verification', () => {
     }
 
     rawCTypeWithMultipleProperties = {
-      $id: Crypto.hashStr('kilt:ctype:0x2'),
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Drivers license Claim',
       properties: {
@@ -838,7 +837,6 @@ describe('Error checking / Verification', () => {
     }
     // CType Schema
     rawCType = {
-      $id: Crypto.hashStr('kilt:ctype:0x1'),
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'ClaimCtype',
       properties: {
@@ -847,10 +845,9 @@ describe('Error checking / Verification', () => {
       type: 'object',
     }
     // CType
-    testCType = CType.fromSchema(rawCType, identityAlice.uri)
+    testCType = CType.fromSchema(rawCType)
     testCTypeWithMultipleProperties = CType.fromSchema(
-      rawCTypeWithMultipleProperties,
-      identityAlice.uri
+      rawCTypeWithMultipleProperties
     )
 
     // Claim

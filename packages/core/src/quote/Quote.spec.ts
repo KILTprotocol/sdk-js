@@ -21,6 +21,7 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   ICredential,
+  ICTypeSchema,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
@@ -42,7 +43,7 @@ describe('Quote', () => {
 
   let invalidCost: ICostBreakdown
   let date: string
-  let cTypeSchema: ICType['schema']
+  let cTypeSchema: ICTypeSchema
   let testCType: ICType
   let claim: IClaim
   let credential: ICredential
@@ -81,7 +82,6 @@ describe('Quote', () => {
     date = new Date(2019, 11, 10).toISOString()
 
     cTypeSchema = {
-      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Quote Information',
       properties: {
@@ -93,7 +93,7 @@ describe('Quote', () => {
     testCType = CType.fromSchema(cTypeSchema)
 
     claim = {
-      cTypeHash: testCType.hash,
+      cTypeHash: CType.getCTypeHashFromId(testCType.$id),
       contents: {},
       owner: claimerIdentity.uri,
     }

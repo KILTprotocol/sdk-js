@@ -10,20 +10,18 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
+import type { ICType, ICTypeMetadata, ICTypeSchema } from '@kiltprotocol/types'
 import * as CType from './CType'
 import { MetadataModel } from './CType.schemas'
 
 describe('CType', () => {
-  const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
-  let rawCType: ICType['schema']
+  let rawCType: ICTypeSchema
   let ctype: ICType
   let ctypeMetadata: ICTypeMetadata['metadata']
   let metadata: ICTypeMetadata
 
   beforeAll(async () => {
     rawCType = {
-      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'CtypeMetaData',
       properties: {
@@ -32,7 +30,7 @@ describe('CType', () => {
       },
       type: 'object',
     }
-    ctype = CType.fromSchema(rawCType, didAlice)
+    ctype = CType.fromSchema(rawCType)
 
     ctypeMetadata = {
       title: { default: 'Title' },
@@ -45,13 +43,13 @@ describe('CType', () => {
 
     metadata = {
       metadata: ctypeMetadata,
-      ctypeHash: ctype.hash,
+      ctypeId: ctype.$id,
     }
   })
 
   it('verifies the metadata of a ctype', async () => {
     expect(() => CType.verifyCTypeMetadata(metadata)).not.toThrow()
-    expect(metadata.ctypeHash).not.toHaveLength(0)
+    expect(metadata.ctypeId).not.toHaveLength(0)
     expect(() =>
       CType.verifyObjectAgainstSchema(metadata, MetadataModel)
     ).not.toThrow()
@@ -60,12 +58,12 @@ describe('CType', () => {
     ).toThrow()
   })
   it('checks if the metadata matches corresponding ctype hash', async () => {
-    expect(metadata.ctypeHash).toEqual(ctype.hash)
+    expect(metadata.ctypeId).toEqual(ctype.$id)
   })
   it('throws error when supplied malformed constructor input', () => {
     const faultyMetadata: ICTypeMetadata = {
       metadata: ctypeMetadata,
-      ctypeHash: ctype.hash,
+      ctypeId: ctype.$id,
     }
     // @ts-expect-error
     delete faultyMetadata.metadata.properties
