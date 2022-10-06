@@ -229,7 +229,7 @@ export function verifyRequiredCTypeProperties(
   CType.verifyDataStructure(cType as ICType)
 
   const unknownProperties = requiredProperties.find(
-    (property) => !(property in cType.schema.properties)
+    (property) => !(property in cType.properties)
   )
   if (unknownProperties) {
     throw new SDKErrors.CTypeUnknownPropertiesError()

@@ -146,8 +146,8 @@ export const MetadataModel = {
       required: ['title', 'properties'],
       additionalProperties: false,
     },
-    ctypeHash: { type: 'string', minLength: 1 },
+    ctypeId: { type: 'string', minLength: 1 },
   },
-  required: ['metadata', 'ctypeHash'],
+  required: ['metadata', 'ctypeId'],
   additionalProperties: false,
 }

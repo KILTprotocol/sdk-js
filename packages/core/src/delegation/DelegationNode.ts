@@ -10,7 +10,6 @@ import type {
   DidUri,
   DidVerificationKey,
   IAttestation,
-  ICType,
   IDelegationHierarchyDetails,
   IDelegationNode,
   SignCallback,
@@ -155,7 +154,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns The CType hash associated with the delegation hierarchy.
    */
-  public async getCTypeHash(): Promise<ICType['hash']> {
+  public async getCTypeHash(): Promise<HexString> {
     const { cTypeHash } = await this.getHierarchyDetails()
     return cTypeHash
   }

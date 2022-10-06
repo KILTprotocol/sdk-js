@@ -6,10 +6,10 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types/codec'
+import type { HexString } from '@polkadot/util/types'
 import type { DidSignature, DidUri } from './DidDocument.js'
 import type { IAttestation } from './Attestation.js'
 import type { PartialClaim } from './Claim.js'
-import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
 import type { IQuoteAgreement } from './Quote.js'
 import type { ICredential, ICredentialPresentation } from './Credential.js'
@@ -86,12 +86,12 @@ export interface ISubmitCredential extends IMessageBodyBase {
 }
 
 export interface IAcceptCredential extends IMessageBodyBase {
-  content: Array<ICType['hash']>
+  content: HexString[]
   type: 'accept-credential'
 }
 
 export interface IRejectCredential extends IMessageBodyBase {
-  content: Array<ICType['hash']>
+  content: HexString[]
   type: 'reject-credential'
 }
 
@@ -140,7 +140,7 @@ export interface IConfirmPayment extends IMessageBodyBase {
 
 export interface IRequestCredentialContent {
   cTypes: Array<{
-    cTypeHash: ICType['hash']
+    cTypeHash: HexString
     trustedAttesters?: DidUri[]
     requiredProperties?: string[]
   }>

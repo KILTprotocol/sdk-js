@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ICType } from './CType'
+import type { HexString } from '@polkadot/util/types'
 import type { DidSignature, DidUri } from './DidDocument'
 import type { ICredential } from './Credential'
 
@@ -16,7 +16,7 @@ export interface ICostBreakdown {
 }
 export interface IQuote {
   attesterDid: DidUri
-  cTypeHash: ICType['hash']
+  cTypeHash: HexString
   cost: ICostBreakdown
   currency: string
   timeframe: string
