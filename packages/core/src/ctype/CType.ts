@@ -62,7 +62,7 @@ export function getHashForSchema(
   schema: CTypeSchemaWithoutId | ICType['schema']
 ): HexString {
   const preparedSchema = getSchemaPropertiesForHash(schema)
-  return Crypto.hashObjectAsStr(preparedSchema)
+  return Crypto.hashStr(Crypto.encodeObjectAsStr(preparedSchema))
 }
 
 /**

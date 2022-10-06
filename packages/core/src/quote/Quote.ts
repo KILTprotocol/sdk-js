@@ -73,7 +73,7 @@ export async function createAttesterSignedQuote(
   }
 
   const signature = await sign({
-    data: Crypto.coToUInt8(Crypto.hashObjectAsStr(quoteInput)),
+    data: Crypto.hash(Crypto.encodeObjectAsStr(quoteInput)),
     did: quoteInput.attesterDid,
     keyRelationship: 'authentication',
   })
@@ -104,7 +104,7 @@ export async function verifyAttesterSignedQuote(
   const { attesterSignature, ...basicQuote } = quote
   await verifyDidSignature({
     signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
@@ -141,13 +141,13 @@ export async function createQuoteAgreement(
 
   await verifyDidSignature({
     signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
 
   const { signature, keyUri } = await sign({
-    data: Crypto.coToUInt8(Crypto.hashObjectAsStr(attesterSignedQuote)),
+    data: Crypto.hash(Crypto.encodeObjectAsStr(attesterSignedQuote)),
     did: claimerDid,
     keyRelationship: 'authentication',
   })
