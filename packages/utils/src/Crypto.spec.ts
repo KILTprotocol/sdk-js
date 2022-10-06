@@ -52,7 +52,7 @@ describe('helper functions', () => {
     expect(Crypto.hashStr('123')).not.toEqual(Crypto.hashStr(message))
   })
 
-  it.only('encodeObjectAsStr should sort objects', () => {
+  it('encodeObjectAsStr should sort objects', () => {
     expect(Crypto.encodeObjectAsStr({ b: 2, a: 1 })).toEqual('{"a":1,"b":2}')
     expect(Crypto.encodeObjectAsStr({ a: 1, b: 2 })).toEqual('{"a":1,"b":2}')
     expect(Crypto.encodeObjectAsStr({ a: 1, b: 2 })).not.toEqual(
@@ -60,11 +60,11 @@ describe('helper functions', () => {
     )
   })
 
-  it.only('encodeObjectAsStr converts numbers to strings', () => {
+  it('encodeObjectAsStr converts numbers to strings', () => {
     expect(Crypto.encodeObjectAsStr(1)).toEqual('1')
   })
 
-  it.only('encodeObjectAsStr converts boolean to strings', () => {
+  it('encodeObjectAsStr converts boolean to strings', () => {
     expect(Crypto.encodeObjectAsStr(true)).toEqual('true')
     expect(Crypto.encodeObjectAsStr(false)).toEqual('false')
   })
