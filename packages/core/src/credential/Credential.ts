@@ -421,5 +421,5 @@ export async function createPresentation({
     signCallback
   )
 
-  return { ...credential, claimerSignature: { signature, keyUri, challenge } }
+  return { ...presentation, claimerSignature: { signature, keyUri, challenge } }
 }

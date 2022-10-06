@@ -164,12 +164,12 @@ describe('When resolving a key', () => {
   it('returns null if either the DID or the key do not exist', async () => {
     let keyIdUri: DidResourceUri = `${deletedDid}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
 
     const didWithNoEncryptionKey = didWithAuthenticationKey
     keyIdUri = `${didWithNoEncryptionKey}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
@@ -207,12 +207,12 @@ describe('When resolving a service endpoint', () => {
 
     let serviceIdUri: DidResourceUri = `${deletedDid}#service-1`
 
-    expect(await resolveService(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
 
     const didWithNoServiceEndpoints = didWithAuthenticationKey
     serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
 
-    expect(await resolveService(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
@@ -365,7 +365,7 @@ describe('When resolving a full DID', () => {
 
 describe('When resolving a light DID', () => {
   const authKey = Crypto.makeKeypairFromSeed()
-  const encryptionKey = Crypto.makeEncryptionKeyFromSeed()
+  const encryptionKey = Crypto.makeEncryptionKeypairFromSeed()
 
   beforeEach(() => {
     mockedApi.query.did.did.mockReturnValue(didNotFound)

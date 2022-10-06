@@ -39,7 +39,7 @@ export interface SignResponseData {
   /**
    * Result of the signing.
    */
-  data: Uint8Array
+  signature: Uint8Array
   /**
    * The did key uri used for signing.
    */
@@ -56,6 +56,13 @@ export interface SignResponseData {
 export type SignCallback = (
   signData: SignRequestData
 ) => Promise<SignResponseData>
+
+/**
+ * A callback function to sign extrinsics.
+ */
+export type SignExtrinsicCallback = (
+  signData: SignRequestData
+) => Promise<Omit<SignResponseData, 'keyUri'>>
 
 /**
  * Base interface for encryption requests.

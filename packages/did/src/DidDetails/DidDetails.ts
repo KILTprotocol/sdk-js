@@ -79,7 +79,7 @@ export async function signPayload(
   sign: SignCallback,
   keyRelationship: VerificationKeyRelationship = 'authentication'
 ): Promise<DidSignature> {
-  const { data: signature, keyUri } = await sign({
+  const { signature, keyUri } = await sign({
     data: Crypto.coToUInt8(payload),
     keyRelationship,
     did,

@@ -198,7 +198,7 @@ describe('full DID', () => {
       ],
     }
     sign = async ({ data }) => ({
-      data: keypair.sign(data),
+      signature: keypair.sign(data),
       keyUri: `${did.uri}#0x12345`,
       keyType: 'sr25519',
     })

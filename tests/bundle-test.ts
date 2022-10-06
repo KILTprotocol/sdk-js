@@ -11,8 +11,8 @@ import type {
   DecryptCallback,
   DidDocument,
   EncryptCallback,
-  EncryptionKeyType,
   KeyringPair,
+  KiltEncryptionKeypair,
   KiltKeyringPair,
   NewDidEncryptionKey,
   SignCallback,
@@ -47,7 +47,7 @@ function makeSignCallback(
         )
       }
       const signature = keypair.sign(data, { withType: false })
-      return { data: signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
+      return { signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
     }
   }
 }
@@ -58,7 +58,7 @@ function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
-      data: signature,
+      signature,
       keyType: keypair.type,
     }
   }
@@ -83,11 +83,7 @@ function makeSigningKeypair(
   }
 }
 
-function makeEncryptionKeypair(seed: string): {
-  secretKey: Uint8Array
-  publicKey: Uint8Array
-  type: EncryptionKeyType
-} {
+function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
   const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
     Crypto.hash(seed, 256)
   )
@@ -100,10 +96,7 @@ function makeEncryptionKeypair(seed: string): {
 
 function makeEncryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): (didDocument: DidDocument) => EncryptCallback {
+}: KiltEncryptionKeypair): (didDocument: DidDocument) => EncryptCallback {
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
       const keyId = didDocument.keyAgreement?.[0].id
@@ -122,10 +115,7 @@ function makeEncryptCallback({
 
 function makeDecryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): DecryptCallback {
+}: KiltEncryptionKeypair): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
@@ -156,9 +146,7 @@ async function createFullDidFromKeypair(
   )
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
-  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
-  if (!fullDid) throw new Error('Cannot query created DID')
-  return fullDid
+  return Did.fetch(Did.getFullDidUriFromKey(keypair))
 }
 
 async function runAll() {
@@ -230,9 +218,7 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
-  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
-  if (!fullDid) throw new Error('Could not fetch created DID document')
-
+  const fullDid = await Did.fetch(Did.getFullDidUriFromKey(keypair))
   const resolved = await Did.resolve(fullDid.uri)
 
   if (
@@ -332,8 +318,7 @@ async function runAll() {
 
   const decryptedMessage = await Message.decrypt(
     encryptedMessage,
-    aliceDecryptCallback,
-    alice
+    aliceDecryptCallback
   )
   if (JSON.stringify(message.body) !== JSON.stringify(decryptedMessage.body)) {
     throw new Error('Original and decrypted message are not the same')
