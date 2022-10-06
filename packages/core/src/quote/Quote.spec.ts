@@ -155,7 +155,7 @@ describe('Quote', () => {
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
     const signature = await makeDidSignature(
-      Crypto.hashObjectAsStr(validAttesterSignedQuote),
+      Crypto.hashStr(Crypto.encodeObjectAsStr(validAttesterSignedQuote)),
       claimerIdentity.uri,
       claimer.getSignCallback(claimerIdentity)
     )
@@ -167,14 +167,16 @@ describe('Quote', () => {
 
     expect(() =>
       Crypto.verify(
-        Crypto.hashObjectAsStr({
-          attesterDid: validQuoteData.attesterDid,
-          cTypeHash: validQuoteData.cTypeHash,
-          cost: validQuoteData.cost,
-          currency: validQuoteData.currency,
-          timeframe: validQuoteData.timeframe,
-          termsAndConditions: validQuoteData.termsAndConditions,
-        }),
+        Crypto.hashStr(
+          Crypto.encodeObjectAsStr({
+            attesterDid: validQuoteData.attesterDid,
+            cTypeHash: validQuoteData.cTypeHash,
+            cost: validQuoteData.cost,
+            currency: validQuoteData.currency,
+            timeframe: validQuoteData.timeframe,
+            termsAndConditions: validQuoteData.termsAndConditions,
+          })
+        ),
         validAttesterSignedQuote.attesterSignature.signature,
         u8aToHex(
           Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
