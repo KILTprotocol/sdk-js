@@ -19,7 +19,13 @@
 
 import { hexToBn } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
-import type { DidUri, IClaim, ICType, PartialClaim } from '@kiltprotocol/types'
+import type {
+  DidUri,
+  IClaim,
+  ICType,
+  ICTypeSchema,
+  PartialClaim,
+} from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import * as CType from '../ctype/index.js'
@@ -217,7 +223,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
 
 function verifyAgainstCType(
   claimContents: IClaim['contents'],
-  cTypeSchema: ICType['schema']
+  cTypeSchema: ICTypeSchema
 ): void {
   CType.verifyClaimAgainstSchema(claimContents, cTypeSchema)
 }
@@ -226,12 +232,9 @@ function verifyAgainstCType(
  * Verifies the data structure and schema of a Claim.
  *
  * @param claimInput IClaim to verify.
- * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
+ * @param cTypeSchema ICTypeSchema to verify claimInput's contents.
  */
-export function verify(
-  claimInput: IClaim,
-  cTypeSchema: ICType['schema']
-): void {
+export function verify(claimInput: IClaim, cTypeSchema: ICTypeSchema): void {
   verifyAgainstCType(claimInput.contents, cTypeSchema)
   verifyDataStructure(claimInput)
 }
@@ -248,18 +251,14 @@ export function verify(
  */
 export function fromNestedCTypeClaim(
   cTypeInput: ICType,
-  nestedCType: Array<ICType['schema']>,
+  nestedCType: ICTypeSchema[],
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  CType.verifyClaimAgainstNestedSchemas(
-    cTypeInput.schema,
-    nestedCType,
-    claimContents
-  )
+  CType.verifyClaimAgainstNestedSchemas(cTypeInput, nestedCType, claimContents)
 
   const claim = {
-    cTypeHash: cTypeInput.hash,
+    cTypeHash: CType.getCTypeHashFromId(cTypeInput.$id),
     contents: claimContents,
     owner: claimOwner,
   }
@@ -281,9 +280,9 @@ export function fromCTypeAndClaimContents(
   claimOwner: DidUri
 ): IClaim {
   CType.verifyDataStructure(ctypeInput)
-  verifyAgainstCType(claimContents, ctypeInput.schema)
+  verifyAgainstCType(claimContents, ctypeInput)
   const claim = {
-    cTypeHash: ctypeInput.hash,
+    cTypeHash: CType.getCTypeHashFromId(ctypeInput.$id),
     contents: claimContents,
     owner: claimOwner,
   }

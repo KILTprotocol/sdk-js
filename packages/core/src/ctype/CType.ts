@@ -64,6 +64,21 @@ export function getIdForCTypeHash(hash: HexString): ICType['$id'] {
 }
 
 /**
+ * Extracts the CType hash from a CType $id.
+ *
+ * @param id A CType id of the form 'kilt:ctype:0x[0-9a-f]'.
+ * @returns The CType hash as a zero-prefixed string of hex digits.
+ */
+export function getCTypeHashFromId(id: ICType['$id']): HexString {
+  const result = id.match(/kilt:ctype:(0x[0-9a-f]+)/i)
+  if (!result)
+    throw new SDKErrors.CTypeHashMissingError(
+      `The string ${id} is not a valid CType id`
+    )
+  return result[1] as HexString
+}
+
+/**
  * Calculates the schema $id for a CType schema by hashing it.
  *
  * @param schema CType schema for which to create schema id.
@@ -125,7 +140,7 @@ export function verifyClaimAgainstSchema(
  */
 export async function verifyStored(ctype: ICType): Promise<void> {
   const api = ConfigService.get('api')
-  const hash = getHashForSchema(ctype)
+  const hash = getCTypeHashFromId(ctype.$id)
   const encoded = await api.query.ctype.ctypes(hash)
   if (encoded.isNone)
     throw new SDKErrors.CTypeHashMissingError(
