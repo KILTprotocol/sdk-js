@@ -238,7 +238,7 @@ export class DelegationNode implements IDelegationNode {
    * This hash is signed by the delegate and later stored along with the delegation to
    * make sure delegation data (such as permissions) has not been tampered with.
    *
-   * @returns The hash representation of this delegation **as a hex string**.
+   * @returns The hash representation of this delegation **as a byte array**.
    */
   public generateHash(): Uint8Array {
     const propsToHash = [this.id, this.hierarchyId]
