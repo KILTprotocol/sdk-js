@@ -231,7 +231,7 @@ async function runAll() {
     throw new Error('DIDs do not match')
   }
 
-  const deleteTx = await Did.authorizeExtrinsic(
+  const deleteTx = await Did.authorizeTx(
     fullDid.uri,
     api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
     getSignCallback(fullDid),
@@ -263,7 +263,7 @@ async function runAll() {
     type: 'object',
   })
 
-  const cTypeStoreTx = await Did.authorizeExtrinsic(
+  const cTypeStoreTx = await Did.authorizeTx(
     alice.uri,
     api.tx.ctype.add(CType.toChain(DriversLicense)),
     aliceSign(alice),
@@ -328,7 +328,7 @@ async function runAll() {
   Attestation.verifyAgainstCredential(attestation, credential)
   console.info('Attestation Data verified')
 
-  const attestationStoreTx = await Did.authorizeExtrinsic(
+  const attestationStoreTx = await Did.authorizeTx(
     alice.uri,
     api.tx.attestation.add(attestation.claimHash, attestation.cTypeHash, null),
     aliceSign(alice),
