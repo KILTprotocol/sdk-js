@@ -498,7 +498,7 @@ describe('When there is an on-chain DID', () => {
       const data = await api.rpc.did.queryByAccount(
         Did.accountToChain(genericAccount.address)
       )
-      expect(Did.linkedInfoFromRpc(data).web3Name).toStrictEqual('test-name')
+      expect(Did.linkedInfoFromChain(data).web3Name).toStrictEqual('test-name')
     })
 
     it('should be possible for the sender to remove the link', async () => {

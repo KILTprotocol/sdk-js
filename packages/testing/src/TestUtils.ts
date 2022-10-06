@@ -27,7 +27,7 @@ import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { ConfigService } from '@kiltprotocol/config'
-import { linkedInfoFromRpc, toRpc } from '@kiltprotocol/did'
+import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocument
@@ -318,9 +318,9 @@ export async function createFullDidFromLightDid(
   )
   await Blockchain.signAndSubmitTx(tx, payer)
   const encodedDidDetails = await api.rpc.did.query(
-    toRpc(Did.getFullDidUri(uri))
+    toChain(Did.getFullDidUri(uri))
   )
-  return linkedInfoFromRpc(encodedDidDetails).didDocument
+  return linkedInfoFromChain(encodedDidDetails).didDocument
 }
 
 export async function createFullDidFromSeed(

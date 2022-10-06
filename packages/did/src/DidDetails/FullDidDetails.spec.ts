@@ -27,9 +27,11 @@ import {
   documentFromChain,
   generateDidAuthenticatedTx,
   servicesFromChain,
+  toChain,
 } from '../Did.chain'
 
 import * as Did from './index.js'
+import { linkedInfoFromChain } from '../Did.rpc'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -58,7 +60,7 @@ const existingServiceEndpoints: DidServiceEndpoint[] = [
   },
 ]
 
-jest.mock('../Did.chain')
+jest.mock('../Did.rpc')
 jest.mocked(documentFromChain).mockReturnValue({
   authentication: [
     {
@@ -132,7 +134,10 @@ mockedApi.query.did.did.mockReturnValue(
 
 describe('When creating an instance from the chain', () => {
   it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDid = await Did.fetch(existingDid)
+    const encodedFullDid = await augmentedApi.rpc.did.query(
+      toChain(existingDid)
+    )
+    const { didDocument: fullDid } = linkedInfoFromChain(encodedFullDid)
 
     expect(fullDid).not.toBeNull()
     expect(fullDid).toEqual(<DidDocument>{
@@ -195,7 +200,10 @@ describe('When creating an instance from the chain', () => {
       ApiMocks.mockChainQueryReturn('did', 'did')
     )
 
-    await expect(Did.fetch(nonExistingDid)).rejects.toThrow()
+    const encodedNonExistingDid = await augmentedApi.rpc.did.query(
+      toChain(nonExistingDid)
+    )
+    expect(linkedInfoFromChain(encodedNonExistingDid)).rejects.toThrow()
   })
 
   describe('authorizeBatch', () => {

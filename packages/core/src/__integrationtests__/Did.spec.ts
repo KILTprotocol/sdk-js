@@ -13,7 +13,7 @@ import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import * as Did from '@kiltprotocol/did'
-import { linkedInfoFromRpc, resolve, toRpc } from '@kiltprotocol/did'
+import { linkedInfoFromChain, resolve, toRpc } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
@@ -111,7 +111,7 @@ describe('write and didDeleteTx', () => {
 
     const fullDidUri = Did.getFullDidUri(newDid.uri)
     const fullDidLinkedInfo = await api.rpc.did.query(toRpc(fullDidUri))
-    const { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+    const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
 
     expect(fullDid).toMatchObject(<DidDocument>{
       uri: fullDidUri,
@@ -162,7 +162,7 @@ describe('write and didDeleteTx', () => {
     const fullDidLinkedInfo = await api.rpc.did.query(
       toRpc(Did.getFullDidUri(did.uri))
     )
-    const { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+    const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
 
     const otherAccount = devBob
@@ -206,7 +206,7 @@ describe('write and didDeleteTx', () => {
     const fullDidLinkedInfo = await api.rpc.did.query(
       toRpc(Did.getFullDidUri(did.uri))
     )
-    const { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+    const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
 
     const encodedDid = Did.toChain(fullDid.uri)
@@ -250,7 +250,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   let fullDidLinkedInfo = await api.rpc.did.query(
     toRpc(Did.getFullDidUri(newDid.uri))
   )
-  let { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+  let { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
 
   const newKey = makeSigningKeyTool()
 
@@ -270,7 +270,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   fullDidLinkedInfo = await api.rpc.did.query(
     toRpc(Did.getFullDidUri(newDid.uri))
   )
-    ; ({ didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo))
+    ; ({ didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo))
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
@@ -354,7 +354,7 @@ describe('DID migration', () => {
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
       toRpc(migratedFullDidUri)
     )
-    const { didDocument: migratedFullDid } = linkedInfoFromRpc(
+    const { didDocument: migratedFullDid } = linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
@@ -399,9 +399,9 @@ describe('DID migration', () => {
     await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
-      toRpc(migratedFullDidUri)
+      (migratedFullDidUri)
     )
-    const { didDocument: migratedFullDid } = linkedInfoFromRpc(
+    const { didDocument: migratedFullDid } = linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
@@ -454,7 +454,7 @@ describe('DID migration', () => {
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
       toRpc(migratedFullDidUri)
     )
-    const { didDocument: migratedFullDid } = linkedInfoFromRpc(
+    const { didDocument: migratedFullDid } = linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
@@ -527,7 +527,7 @@ describe('DID authorization', () => {
     const didLinkedInfo = await api.rpc.did.query(
       toRpc(Did.getFullDidUriFromKey(authentication[0]))
     )
-      ; ({ didDocument: did } = linkedInfoFromRpc(didLinkedInfo))
+      ; ({ didDocument: did } = linkedInfoFromChain(didLinkedInfo))
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
@@ -642,7 +642,7 @@ describe('DID management batching', () => {
       const fullDidLinkedInfo = await api.rpc.did.query(
         toRpc(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid).not.toBeNull()
       expect(fullDid).toMatchObject({
@@ -715,7 +715,7 @@ describe('DID management batching', () => {
       const fullDidLinkedInfo = await api.rpc.did.query(
         toRpc(Did.getFullDidUriFromKey(didAuthKey))
       )
-      const { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid).not.toBeNull()
       expect(fullDid?.authentication).toMatchObject<NewDidVerificationKey[]>([
@@ -778,7 +778,7 @@ describe('DID management batching', () => {
       const initialFullDidLinkedInfo = await api.rpc.did.query(
         toRpc(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: initialFullDid } = linkedInfoFromRpc(
+      const { didDocument: initialFullDid } = linkedInfoFromChain(
         initialFullDidLinkedInfo
       )
 
@@ -808,7 +808,7 @@ describe('DID management batching', () => {
       const finalFullDidLinkedInfo = await api.rpc.did.query(
         toRpc(initialFullDid.uri)
       )
-      const { didDocument: finalFullDid } = linkedInfoFromRpc(
+      const { didDocument: finalFullDid } = linkedInfoFromChain(
         finalFullDidLinkedInfo
       )
 
@@ -844,7 +844,7 @@ describe('DID management batching', () => {
       const initialFullDidLinkedInfo = await api.rpc.did.query(
         toRpc(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: initialFullDid } = linkedInfoFromRpc(
+      const { didDocument: initialFullDid } = linkedInfoFromChain(
         initialFullDidLinkedInfo
       )
 
@@ -877,7 +877,7 @@ describe('DID management batching', () => {
       const finalFullDidLinkedInfo = await api.rpc.did.query(
         toRpc(initialFullDid.uri)
       )
-      const { didDocument: finalFullDid } = linkedInfoFromRpc(
+      const { didDocument: finalFullDid } = linkedInfoFromChain(
         finalFullDidLinkedInfo
       )
 
@@ -916,7 +916,7 @@ describe('DID management batching', () => {
       const fullDidLinkedInfo = await api.rpc.did.query(
         toRpc(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
@@ -943,7 +943,7 @@ describe('DID management batching', () => {
       const updatedFullDidLinkedInfo = await api.rpc.did.query(
         toRpc(fullDid.uri)
       )
-      const { didDocument: updatedFullDid } = linkedInfoFromRpc(
+      const { didDocument: updatedFullDid } = linkedInfoFromChain(
         updatedFullDidLinkedInfo
       )
 
@@ -980,7 +980,7 @@ describe('DID management batching', () => {
       const fullDidLinkedInfo = await api.rpc.did.query(
         toRpc(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: fullDid } = linkedInfoFromRpc(fullDidLinkedInfo)
+      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
@@ -1013,7 +1013,7 @@ describe('DID management batching', () => {
       const updatedFullDidLinkedInfo = await api.rpc.did.query(
         toRpc(fullDid.uri)
       )
-      const { didDocument: updatedFullDid } = linkedInfoFromRpc(
+      const { didDocument: updatedFullDid } = linkedInfoFromChain(
         updatedFullDidLinkedInfo
       )
       // .setAttestationKey() extrinsic went through but it was then reverted
