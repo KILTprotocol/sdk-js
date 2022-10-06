@@ -5,15 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { HexString } from '@polkadot/util/types'
 import type { DidUri } from './DidDocument'
-import type { ICType } from './CType'
 
 export type IClaimContents = Record<
   string,
   Record<string, unknown> | string | number | boolean
 >
 export interface IClaim {
-  cTypeHash: ICType['hash']
+  cTypeHash: HexString
   contents: IClaimContents
   owner: DidUri
 }

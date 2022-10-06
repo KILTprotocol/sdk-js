@@ -17,19 +17,14 @@
 
 import type {
   ICType,
-  CTypeSchemaWithoutId,
   IClaim,
   ICTypeMetadata,
+  ICTypeSchema,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
-import * as Did from '@kiltprotocol/did'
 import { ConfigService } from '@kiltprotocol/config'
 import type { HexString } from '@polkadot/util/types'
-import {
-  CTypeModel,
-  CTypeWrapperModel,
-  MetadataModel,
-} from './CType.schemas.js'
+import { CTypeModel, MetadataModel } from './CType.schemas.js'
 
 /**
  * Utility for (re)creating ctype hashes. For this, the $id property needs to be stripped from the CType schema.
@@ -38,18 +33,13 @@ import {
  * @returns CtypeSchema without the $id property.
  */
 export function getSchemaPropertiesForHash(
-  ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
-): Partial<ICType['schema']> {
+  ctypeSchema: ICType | ICTypeSchema
+): ICTypeSchema {
   // We need to remove the CType ID from the CType before storing it on the blockchain
   // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
   // which is itself a hash of the CType schema.
-  const schemaWithoutId: Partial<ICType['schema']> =
-    '$id' in ctypeSchema
-      ? (ctypeSchema as ICType['schema'])
-      : (ctypeSchema as CTypeSchemaWithoutId)
-  const shallowCopy = { ...schemaWithoutId }
-  delete shallowCopy.$id
-  return shallowCopy
+  const { $id: _, ...schemaWithoutId } = ctypeSchema as ICType
+  return schemaWithoutId
 }
 
 /**
@@ -58,9 +48,7 @@ export function getSchemaPropertiesForHash(
  * @param schema The CType schema (with or without $id).
  * @returns Hash as hex string.
  */
-export function getHashForSchema(
-  schema: CTypeSchemaWithoutId | ICType['schema']
-): HexString {
+export function getHashForSchema(schema: ICTypeSchema): HexString {
   const preparedSchema = getSchemaPropertiesForHash(schema)
   return Crypto.hashObjectAsStr(preparedSchema)
 }
@@ -71,9 +59,7 @@ export function getHashForSchema(
  * @param hash CType hash as hex string.
  * @returns Schema id uri.
  */
-export function getIdForCTypeHash(
-  hash: ICType['hash']
-): ICType['schema']['$id'] {
+export function getIdForCTypeHash(hash: HexString): ICType['$id'] {
   return `kilt:ctype:${hash}`
 }
 
@@ -83,9 +69,7 @@ export function getIdForCTypeHash(
  * @param schema CType schema for which to create schema id.
  * @returns Schema id uri.
  */
-export function getIdForSchema(
-  schema: CTypeSchemaWithoutId | ICType['schema']
-): string {
+export function getIdForSchema(schema: ICTypeSchema): ICType['$id'] {
   return getIdForCTypeHash(getHashForSchema(schema))
 }
 
@@ -119,15 +103,15 @@ export function verifyObjectAgainstSchema(
 }
 
 /**
- * Verifies the structure of the provided IClaim['contents'] with ICType['schema'].
+ * Verifies the structure of the provided IClaim['contents'] with ICTypeSchema.
  *
  * @param claimContents IClaim['contents'] to be verified against the schema.
- * @param schema ICType['schema'] to be verified against the [CTypeModel].
+ * @param schema ICTypeSchema to be verified against the [CTypeModel].
  * @param messages An array, which will be filled by schema errors.
  */
 export function verifyClaimAgainstSchema(
   claimContents: IClaim['contents'],
-  schema: ICType['schema'],
+  schema: ICTypeSchema,
   messages?: string[]
 ): void {
   verifyObjectAgainstSchema(schema, CTypeModel)
@@ -141,10 +125,11 @@ export function verifyClaimAgainstSchema(
  */
 export async function verifyStored(ctype: ICType): Promise<void> {
   const api = ConfigService.get('api')
-  const encoded = await api.query.ctype.ctypes(ctype.hash)
+  const hash = getHashForSchema(ctype)
+  const encoded = await api.query.ctype.ctypes(hash)
   if (encoded.isNone)
     throw new SDKErrors.CTypeHashMissingError(
-      `CType with hash ${ctype.hash} is not registered on chain`
+      `CType with hash ${hash} is not registered on chain`
     )
 }
 
@@ -155,18 +140,10 @@ export async function verifyStored(ctype: ICType): Promise<void> {
  * @param input The potentially only partial ICType.
  */
 export function verifyDataStructure(input: ICType): void {
-  verifyObjectAgainstSchema(input, CTypeWrapperModel)
-  if (!('schema' in input) || getHashForSchema(input.schema) !== input.hash) {
-    throw new SDKErrors.HashMalformedError(input.hash, 'CType')
-  }
-  if (getIdForSchema(input.schema) !== input.schema.$id) {
-    throw new SDKErrors.CTypeIdMismatchError(
-      getIdForSchema(input.schema),
-      input.schema.$id
-    )
-  }
-  if (input.owner !== null) {
-    Did.validateUri(input.owner, 'Did')
+  verifyObjectAgainstSchema(input, CTypeModel)
+  const idFromSchema = getIdForSchema(input)
+  if (idFromSchema !== input.$id) {
+    throw new SDKErrors.CTypeIdMismatchError(idFromSchema, input.$id)
   }
 }
 
@@ -179,8 +156,8 @@ export function verifyDataStructure(input: ICType): void {
  * @param messages - Optional empty array. If passed, this receives all verification errors.
  */
 export function verifyClaimAgainstNestedSchemas(
-  cType: ICType['schema'],
-  nestedCTypes: Array<ICType['schema']>,
+  cType: ICTypeSchema,
+  nestedCTypes: ICTypeSchema[],
   claimContents: Record<string, any>,
   messages?: string[]
 ): void {
@@ -216,21 +193,13 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
  * or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it.
  *
  * @param schema The JSON schema from which the [[CType]] should be generated.
- * @param owner The public SS58 address of the owner of the [[CType]].
  *
  * @returns A ctype object with cTypeHash, owner and the schema.
  */
-export function fromSchema(
-  schema: CTypeSchemaWithoutId | ICType['schema'],
-  owner?: ICType['owner']
-): ICType {
-  const ctype = {
-    hash: getHashForSchema(schema),
-    owner: owner || null,
-    schema: {
-      ...schema,
-      $id: getIdForSchema(schema),
-    },
+export function fromSchema(schema: ICTypeSchema): ICType {
+  const ctype: ICType = {
+    ...schema,
+    $id: getIdForSchema(schema),
   }
   verifyDataStructure(ctype)
   return ctype

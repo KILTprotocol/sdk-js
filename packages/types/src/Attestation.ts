@@ -5,14 +5,14 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { HexString } from '@polkadot/util/types'
 import type { DidUri } from './DidDocument'
-import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { ICredential } from './Credential'
 
 export interface IAttestation {
   claimHash: ICredential['rootHash']
-  cTypeHash: ICType['hash']
+  cTypeHash: HexString
   owner: DidUri
   delegationId: IDelegationNode['id'] | null
   revoked: boolean

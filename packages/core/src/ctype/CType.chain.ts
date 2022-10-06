@@ -21,7 +21,7 @@ import { getSchemaPropertiesForHash } from './CType.js'
  * @returns Encoded CType.
  */
 export function toChain(ctype: ICType): string {
-  return Crypto.encodeObjectAsStr(getSchemaPropertiesForHash(ctype.schema))
+  return Crypto.encodeObjectAsStr(getSchemaPropertiesForHash(ctype))
 }
 
 /**

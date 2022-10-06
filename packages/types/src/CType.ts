@@ -6,7 +6,6 @@
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { DidUri } from './DidDocument'
 
 export type InstanceType =
   | 'array'
@@ -18,7 +17,6 @@ export type InstanceType =
   | 'string'
 
 export interface ICTypeSchema {
-  $id: string
   $schema: string
   title: string
   properties: {
@@ -27,10 +25,6 @@ export interface ICTypeSchema {
   type: 'object'
 }
 
-export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
-
-export interface ICType {
-  hash: HexString
-  owner: DidUri | null
-  schema: ICTypeSchema
+export interface ICType extends ICTypeSchema {
+  $id: `kilt:ctype:${HexString}`
 }
