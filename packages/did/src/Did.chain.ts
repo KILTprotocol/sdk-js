@@ -10,7 +10,7 @@ import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import type { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
 import type { Bytes } from '@polkadot/types-codec'
-import { BN, hexToU8a } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 
 import type {
   Deposit,
@@ -18,7 +18,6 @@ import type {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidSignature,
   DidUri,
   DidVerificationKey,
   KiltAddress,
@@ -505,7 +504,7 @@ export async function generateDidAuthenticatedTx({
  */
 export function didSignatureToChain(
   key: DidVerificationKey,
-  signature: Pick<DidSignature, 'signature'>
+  signature: Uint8Array
 ): EncodedSignature {
   if (!verificationKeyTypes.includes(key.type)) {
     throw new SDKErrors.DidError(
@@ -513,7 +512,7 @@ export function didSignatureToChain(
     )
   }
 
-  return { [key.type]: hexToU8a(signature.signature) } as EncodedSignature
+  return { [key.type]: signature } as EncodedSignature
 }
 
 /**

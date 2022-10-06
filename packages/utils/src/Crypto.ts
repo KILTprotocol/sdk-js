@@ -175,24 +175,6 @@ export function encodeObjectAsStr(
 }
 
 /**
- * Hashes numbers, booleans, and objects by stringify-ing them. Object keys are sorted to yield consistent hashing.
- *
- * @param value Object or value to be hashed.
- * @param nonce Optional nonce to obscure hashed values that could be guessed.
- * @returns Blake2b hash as hex string.
- */
-export function hashObjectAsStr(
-  value: Record<string, any> | string | number | boolean,
-  nonce?: string
-): HexString {
-  let objectAsStr = encodeObjectAsStr(value)
-  if (nonce) {
-    objectAsStr = nonce + objectAsStr
-  }
-  return hashStr(objectAsStr)
-}
-
-/**
  * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
  *
  * @param message String or byte array to be encrypted.
