@@ -19,6 +19,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '../index.js'
 import { toChain, resourceIdToChain, serviceFromChain } from '../Did.chain.js'
 import { getFullDidUri, parse } from '../Did.utils.js'
+import { linkedInfoFromRpc, toRpc } from '../index.js'
 
 /**
  * Resolve a DID URI to the DID document and its metadata.
@@ -36,7 +37,8 @@ export async function resolve(
 
   let document: DidDocument | undefined
   try {
-    document = await Did.fetch(getFullDidUri(did))
+    const encodedLinkedInfo = await api.rpc.did.query(toRpc(did))
+    document = linkedInfoFromRpc(encodedLinkedInfo).didDocument
   } catch {
     // ignore errors
   }

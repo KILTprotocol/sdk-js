@@ -28,20 +28,11 @@ import { ApiPromise } from '@polkadot/api'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
-import type {
-  DidLinkedInfo,
-  PalletDidLookupConnectionRecord,
-} from '@kiltprotocol/augment-api'
+import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
 import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature } from '../Did.utils.js'
-import {
-  depositFromChain,
-  fromChain,
-  toChain,
-  Web3Name,
-  web3NameFromChain,
-} from '../Did.chain.js'
+import { depositFromChain, fromChain, toChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -74,7 +65,7 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
 function isEthereumEnabled(api: ApiPromise): boolean {
   const removeType = api.createType(
     api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
-      'bool'
+    'bool'
   )
   const associateType = api.createType(
     api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() || 'bool'
@@ -169,48 +160,6 @@ export function connectedAccountsFromChain(
 ): Array<KiltAddress | SubstrateAddress> {
   return encoded.map<string>(({ args: [, accountAddress] }) =>
     accountFromChain(accountAddress, networkPrefix)
-  )
-}
-
-/**
- * Decodes accounts, DID, and web3name linked to the provided account.
- *
- * @param encoded The data returned by `api.rpc.did.queryByAccount()`.
- * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
- * @returns The accounts, DID, and web3name.
- */
-export function queryByAccountFromChain(
-  encoded: Option<DidLinkedInfo>,
-  networkPrefix = ss58Format
-): {
-  did: DidUri
-  accounts: Array<KiltAddress | SubstrateAddress>
-  web3name?: Web3Name
-} {
-  const { accounts, identifier, w3n } = encoded.unwrap()
-  return {
-    did: fromChain(identifier),
-    accounts: accounts.map((account) =>
-      accountFromChain(account, networkPrefix)
-    ),
-    web3name: w3n.isSome ? w3n.unwrap().toString() : undefined,
-  }
-}
-
-/**
- * Return the Web3 name associated with the given account, if present.
- *
- * @param linkedAccount The account to use for the lookup.
- * @returns The Web3 name linked to the given account, or throws Error otherwise.
- */
-export async function fetchWeb3Name(linkedAccount: Address): Promise<Web3Name> {
-  const api = ConfigService.get('api')
-  // TODO: Replace with custom RPC call when available.
-  const encoded = await api.query.didLookup.connectedDids(
-    accountToChain(linkedAccount)
-  )
-  return web3NameFromChain(
-    await api.query.web3Names.names(encoded.unwrap().did)
   )
 }
 

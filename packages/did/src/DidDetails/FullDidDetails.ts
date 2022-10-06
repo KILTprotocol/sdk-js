@@ -10,7 +10,6 @@ import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidDocument,
   DidUri,
   KiltAddress,
   SignExtrinsicCallback,
@@ -24,52 +23,9 @@ import { ConfigService } from '@kiltprotocol/config'
 import {
   documentFromChain,
   generateDidAuthenticatedTx,
-  servicesFromChain,
   toChain,
 } from '../Did.chain.js'
 import { parse } from '../Did.utils.js'
-
-/**
- * Fetches [[DidDocument]] from the blockchain. [[resolve]] provides more detailed output.
- * Private keys are assumed to already live in another storage, as only the public keys are retrieved from the blockchain.
- *
- * @param didUri The URI of the DID to fetch.
- *
- * @returns The fetched [[DidDocument]], or throws Error if DID does not exist.
- */
-export async function fetch(didUri: DidUri): Promise<DidDocument> {
-  const { fragment, type } = parse(didUri)
-  if (fragment) {
-    throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)
-  }
-  if (type !== 'full') {
-    throw new SDKErrors.DidError(
-      `DID URI "${didUri}" does not refer to a full DID`
-    )
-  }
-
-  const api = ConfigService.get('api')
-  const encoded = await api.query.did.did(toChain(didUri))
-  if (encoded.isNone) throw new SDKErrors.DidNotFoundError()
-  const didRec = documentFromChain(encoded)
-
-  const did: DidDocument = {
-    uri: didUri,
-    authentication: didRec.authentication,
-    assertionMethod: didRec.assertionMethod,
-    capabilityDelegation: didRec.capabilityDelegation,
-    keyAgreement: didRec.keyAgreement,
-  }
-
-  const service = servicesFromChain(
-    await api.query.did.serviceEndpoints.entries(toChain(didUri))
-  )
-  if (service.length > 0) {
-    did.service = service
-  }
-
-  return did
-}
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs

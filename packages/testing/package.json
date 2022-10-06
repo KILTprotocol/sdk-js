@@ -32,6 +32,7 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
     "@kiltprotocol/augment-api": "workspace:*",
+    "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
