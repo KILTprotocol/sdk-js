@@ -214,6 +214,11 @@ export function getMockedApi(): MockApiPromise {
         ),
       },
       chain: { subscribeNewHeads: jest.fn() },
+      did: {
+        query: jest.fn(),
+        queryByWeb3Name: jest.fn(),
+        queryByAccount: jest.fn(),
+      },
     },
     tx: {
       attestation: {
