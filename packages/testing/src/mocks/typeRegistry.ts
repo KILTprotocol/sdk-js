@@ -13,6 +13,7 @@ import type { HexString } from '@polkadot/util/types'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { Metadata, TypeRegistry } from '@polkadot/types'
 
+import { latest as types, rpc, runtime } from '@kiltprotocol/type-definitions'
 import metaStatic from '../metadata/spiritnet.js'
 
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
@@ -43,6 +44,9 @@ export function createAugmentedApi(
   const api = new ApiPromise({
     provider: new WsProvider('ws://', false),
     registry,
+    types,
+    rpc,
+    runtime,
   })
 
   api.injectMetadata(metadata, true)

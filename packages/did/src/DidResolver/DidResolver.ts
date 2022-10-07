@@ -18,8 +18,8 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
 import { toChain, resourceIdToChain, serviceFromChain } from '../Did.chain.js'
+import { linkedInfoFromChain } from '../Did.rpc.js'
 import { getFullDidUri, parse } from '../Did.utils.js'
-import { linkedInfoFromChain } from '../index.js'
 
 /**
  * Resolve a DID URI to the DID document and its metadata.
