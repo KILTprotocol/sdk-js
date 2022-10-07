@@ -91,7 +91,7 @@ describe('When there is an on-chain DID', () => {
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
       expect(queryByAccount.accounts).toStrictEqual([paymentAccount.address])
-      expect(queryByAccount.didDocument.uri).toStrictEqual(did.uri)
+      expect(queryByAccount.document.uri).toStrictEqual(did.uri)
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = api.tx.didLookup.associateSender()
@@ -119,7 +119,7 @@ describe('When there is an on-chain DID', () => {
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
       expect(queryByAccount.accounts).toStrictEqual([paymentAccount.address])
-      expect(queryByAccount.didDocument.uri).toStrictEqual(newDid.uri)
+      expect(queryByAccount.document.uri).toStrictEqual(newDid.uri)
     }, 30_000)
     it('should be possible for the sender to remove the link', async () => {
       const removeSenderTx = api.tx.didLookup.removeSenderAssociation()
@@ -196,7 +196,7 @@ describe('When there is an on-chain DID', () => {
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
         expect(queryByAccount.accounts).toStrictEqual([keypair.address])
-        expect(queryByAccount.didDocument.uri).toStrictEqual(did.uri)
+        expect(queryByAccount.document.uri).toStrictEqual(did.uri)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
         const args = await Did.associateAccountToChainArgs(
@@ -228,7 +228,7 @@ describe('When there is an on-chain DID', () => {
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
         expect(queryByAccount.accounts).toStrictEqual([keypair.address])
-        expect(queryByAccount.didDocument.uri).toStrictEqual(newDid.uri)
+        expect(queryByAccount.document.uri).toStrictEqual(newDid.uri)
       })
       it('should be possible for the DID to remove the link', async () => {
         const removeLinkTx =
@@ -313,7 +313,7 @@ describe('When there is an on-chain DID', () => {
       // Use generic substrate address prefix
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount, 42)
       expect(queryByAccount.accounts).toStrictEqual([genericAccount.address])
-      expect(queryByAccount.didDocument.uri).toStrictEqual(did.uri)
+      expect(queryByAccount.document.uri).toStrictEqual(did.uri)
     })
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {

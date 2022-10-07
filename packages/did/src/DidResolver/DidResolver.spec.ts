@@ -139,7 +139,7 @@ jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
 
   return {
     accounts: [],
-    didDocument: {
+    document: {
       uri: `did:kilt:${identifier as unknown as KiltAddress}`,
       authentication: [generateAuthenticationKey()],
       service: [generateServiceEndpoint('#service-1')],
@@ -203,7 +203,7 @@ describe('When resolving a service endpoint', () => {
 
       return {
         accounts: [],
-        didDocument: {
+        document: {
           uri: `did:kilt:${identifier as unknown as KiltAddress}`,
           authentication: [generateAuthenticationKey()],
         },
@@ -214,7 +214,7 @@ describe('When resolving a service endpoint', () => {
 
       return {
         accounts: [],
-        didDocument: {
+        document: {
           uri: `did:kilt:${identifier as unknown as KiltAddress}`,
           authentication: [generateAuthenticationKey()],
         },
@@ -270,7 +270,7 @@ describe('When resolving a full DID', () => {
 
       return {
         accounts: [],
-        didDocument: {
+        document: {
           authentication: [generateAuthenticationKey()],
           keyAgreement: [generateEncryptionKey()],
           assertionMethod: [generateAttestationKey()],
@@ -323,7 +323,7 @@ describe('When resolving a full DID', () => {
 
       return {
         accounts: [],
-        didDocument: {
+        document: {
           authentication: [generateAuthenticationKey()],
           service: [
             generateServiceEndpoint('#id-1'),

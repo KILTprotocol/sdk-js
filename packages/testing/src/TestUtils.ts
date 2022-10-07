@@ -322,7 +322,7 @@ export async function createFullDidFromLightDid(
   const encodedDidDetails = await api.rpc.did.query(
     toChain(Did.getFullDidUri(uri))
   )
-  return linkedInfoFromChain(encodedDidDetails).didDocument
+  return linkedInfoFromChain(encodedDidDetails).document
 }
 
 export async function createFullDidFromSeed(

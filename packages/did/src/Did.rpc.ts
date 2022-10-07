@@ -183,7 +183,7 @@ function connectedAccountsFromChain(
 }
 
 export interface DidInfo {
-  didDocument: DidDocument
+  document: DidDocument
   web3Name?: Web3Name
   accounts: Address[]
 }
@@ -216,15 +216,12 @@ export function linkedInfoFromChain(
     did.service = service
   }
 
-  let linkedWeb3Name
-  if (w3n.isSome) {
-    linkedWeb3Name = web3NameFromChain(w3n.unwrap())
-  }
+  const web3Name = w3n.isNone ? undefined : web3NameFromChain(w3n.unwrap())
   const linkedAccounts = connectedAccountsFromChain(accounts, networkPrefix)
 
   return {
-    didDocument: did,
-    web3Name: linkedWeb3Name,
+    document: did,
+    web3Name,
     accounts: linkedAccounts,
   }
 }

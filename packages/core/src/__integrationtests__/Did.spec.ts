@@ -13,7 +13,6 @@ import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import * as Did from '@kiltprotocol/did'
-import { linkedInfoFromChain, resolve, toRpc } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
@@ -110,8 +109,8 @@ describe('write and didDeleteTx', () => {
     await submitTx(tx, paymentAccount)
 
     const fullDidUri = Did.getFullDidUri(newDid.uri)
-    const fullDidLinkedInfo = await api.rpc.did.query(toRpc(fullDidUri))
-    const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+    const fullDidLinkedInfo = await api.rpc.did.query(Did.toChain(fullDidUri))
+    const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
     expect(fullDid).toMatchObject(<DidDocument>{
       uri: fullDidUri,
@@ -160,9 +159,9 @@ describe('write and didDeleteTx', () => {
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     // We verify that the DID to delete is on chain.
     const fullDidLinkedInfo = await api.rpc.did.query(
-      toRpc(Did.getFullDidUri(did.uri))
+      Did.toChain(Did.getFullDidUri(did.uri))
     )
-    const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+    const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
 
     const otherAccount = devBob
@@ -203,9 +202,9 @@ describe('write and didDeleteTx', () => {
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
     const fullDidLinkedInfo = await api.rpc.did.query(
-      toRpc(Did.getFullDidUri(did.uri))
+      Did.toChain(Did.getFullDidUri(did.uri))
     )
-    const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+    const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
 
     const encodedDid = Did.toChain(fullDid.uri)
@@ -247,9 +246,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   let fullDidLinkedInfo = await api.rpc.did.query(
-    toRpc(Did.getFullDidUri(newDid.uri))
+    Did.toChain(Did.getFullDidUri(newDid.uri))
   )
-  let { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+  let { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
   const newKey = makeSigningKeyTool()
 
@@ -267,9 +266,9 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   // Authentication key changed, so did must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
   fullDidLinkedInfo = await api.rpc.did.query(
-    toRpc(Did.getFullDidUri(newDid.uri))
+    Did.toChain(Did.getFullDidUri(newDid.uri))
   )
-    ; ({ didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo))
+  fullDid = Did.linkedInfoFromChain(fullDidLinkedInfo).document
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
@@ -351,9 +350,9 @@ describe('DID migration', () => {
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
-      toRpc(migratedFullDidUri)
+      Did.toChain(migratedFullDidUri)
     )
-    const { didDocument: migratedFullDid } = linkedInfoFromChain(
+    const { document: migratedFullDid } = Did.linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
@@ -377,7 +376,9 @@ describe('DID migration', () => {
       (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
-    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
+    const { metadata } = (await Did.resolve(
+      lightDid.uri
+    )) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -400,7 +401,7 @@ describe('DID migration', () => {
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
       migratedFullDidUri
     )
-    const { didDocument: migratedFullDid } = linkedInfoFromChain(
+    const { document: migratedFullDid } = Did.linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
@@ -418,7 +419,9 @@ describe('DID migration', () => {
       (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
-    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
+    const { metadata } = (await Did.resolve(
+      lightDid.uri
+    )) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -451,9 +454,9 @@ describe('DID migration', () => {
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
-      toRpc(migratedFullDidUri)
+      Did.toChain(migratedFullDidUri)
     )
-    const { didDocument: migratedFullDid } = linkedInfoFromChain(
+    const { document: migratedFullDid } = Did.linkedInfoFromChain(
       migratedFullDidLinkedInfo
     )
 
@@ -483,7 +486,9 @@ describe('DID migration', () => {
     const encodedDid = Did.toChain(migratedFullDid.uri)
     expect((await api.query.did.did(encodedDid)).isSome).toBe(true)
 
-    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
+    const { metadata } = (await Did.resolve(
+      lightDid.uri
+    )) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -524,9 +529,9 @@ describe('DID authorization', () => {
     )
     await submitTx(createTx, paymentAccount)
     const didLinkedInfo = await api.rpc.did.query(
-      toRpc(Did.getFullDidUriFromKey(authentication[0]))
+      Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
     )
-      ; ({ didDocument: did } = linkedInfoFromChain(didLinkedInfo))
+    did = Did.linkedInfoFromChain(didLinkedInfo).document
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
@@ -639,9 +644,9 @@ describe('DID management batching', () => {
       )
       await submitTx(extrinsic, paymentAccount)
       const fullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(Did.getFullDidUriFromKey(authentication[0]))
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid).not.toBeNull()
       expect(fullDid).toMatchObject({
@@ -712,9 +717,9 @@ describe('DID management batching', () => {
       await submitTx(extrinsic, paymentAccount)
 
       const fullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(Did.getFullDidUriFromKey(didAuthKey))
+        Did.toChain(Did.getFullDidUriFromKey(didAuthKey))
       )
-      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid).not.toBeNull()
       expect(fullDid?.authentication).toMatchObject<NewDidVerificationKey[]>([
@@ -775,9 +780,9 @@ describe('DID management batching', () => {
       await submitTx(createTx, paymentAccount)
 
       const initialFullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(Did.getFullDidUriFromKey(authentication[0]))
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: initialFullDid } = linkedInfoFromChain(
+      const { document: initialFullDid } = Did.linkedInfoFromChain(
         initialFullDidLinkedInfo
       )
 
@@ -805,9 +810,9 @@ describe('DID management batching', () => {
       await submitTx(extrinsic, paymentAccount)
 
       const finalFullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(initialFullDid.uri)
+        Did.toChain(initialFullDid.uri)
       )
-      const { didDocument: finalFullDid } = linkedInfoFromChain(
+      const { document: finalFullDid } = Did.linkedInfoFromChain(
         finalFullDidLinkedInfo
       )
 
@@ -841,9 +846,9 @@ describe('DID management batching', () => {
       await submitTx(createTx, paymentAccount)
 
       const initialFullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(Did.getFullDidUriFromKey(authentication[0]))
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: initialFullDid } = linkedInfoFromChain(
+      const { document: initialFullDid } = Did.linkedInfoFromChain(
         initialFullDidLinkedInfo
       )
 
@@ -874,9 +879,9 @@ describe('DID management batching', () => {
       await submitTx(extrinsic, paymentAccount)
 
       const finalFullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(initialFullDid.uri)
+        Did.toChain(initialFullDid.uri)
       )
-      const { didDocument: finalFullDid } = linkedInfoFromChain(
+      const { document: finalFullDid } = Did.linkedInfoFromChain(
         finalFullDidLinkedInfo
       )
 
@@ -913,9 +918,9 @@ describe('DID management batching', () => {
       // Create the full DID with a service endpoint
       await submitTx(tx, paymentAccount)
       const fullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(Did.getFullDidUriFromKey(authentication[0]))
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
@@ -940,9 +945,9 @@ describe('DID management batching', () => {
       await submitTx(updateTx, paymentAccount)
 
       const updatedFullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(fullDid.uri)
+        Did.toChain(fullDid.uri)
       )
-      const { didDocument: updatedFullDid } = linkedInfoFromChain(
+      const { document: updatedFullDid } = Did.linkedInfoFromChain(
         updatedFullDidLinkedInfo
       )
 
@@ -977,9 +982,9 @@ describe('DID management batching', () => {
       )
       await submitTx(createTx, paymentAccount)
       const fullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(Did.getFullDidUriFromKey(authentication[0]))
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
-      const { didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo)
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
@@ -1008,9 +1013,9 @@ describe('DID management batching', () => {
       })
 
       const updatedFullDidLinkedInfo = await api.rpc.did.query(
-        toRpc(fullDid.uri)
+        Did.toChain(fullDid.uri)
       )
-      const { didDocument: updatedFullDid } = linkedInfoFromChain(
+      const { document: updatedFullDid } = Did.linkedInfoFromChain(
         updatedFullDidLinkedInfo
       )
       // .setAttestationKey() extrinsic went through but it was then reverted
