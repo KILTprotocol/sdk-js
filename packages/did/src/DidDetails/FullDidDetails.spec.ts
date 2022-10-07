@@ -56,7 +56,7 @@ describe('When creating an instance from the chain', () => {
       sign = keyTool.getSignCallback(fullDid)
     })
 
-    describe('.addSingleExtrinsic()', () => {
+    describe('.addSingleTx()', () => {
       it('fails if the extrinsic does not require a DID', async () => {
         const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
@@ -168,13 +168,13 @@ const mockApi = ApiMocks.createAugmentedApi()
 
 describe('When creating an instance from the chain', () => {
   it('Should return correct KeyRelationship for single valid call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.attestation.add(new Uint8Array(32), new Uint8Array(32), null)
     )
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batched call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.batch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -191,7 +191,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batchAll call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.batchAll([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -208,7 +208,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for forceBatch call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -225,7 +225,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return undefined for batch with mixed KeyRelationship calls', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),

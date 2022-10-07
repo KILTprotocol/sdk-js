@@ -187,7 +187,7 @@ export function getMockedApi(): MockApiPromise {
     { isFinalized: true }
   )
 
-  function getMockSubmittableExtrinsic(): SubmittableExtrinsic {
+  function getMockSubmittableTx(): SubmittableExtrinsic {
     const result = TxResultsQueue.shift() || defaultTxResult
     return new MockSubmittableExtrinsic(result) as any as SubmittableExtrinsic
   }
@@ -222,33 +222,31 @@ export function getMockedApi(): MockApiPromise {
     },
     tx: {
       attestation: {
-        add: jest.fn((claimHash, _cTypeHash) => getMockSubmittableExtrinsic()),
-        revoke: jest.fn((claimHash: string) => getMockSubmittableExtrinsic()),
-        remove: jest.fn((claimHash: string) => getMockSubmittableExtrinsic()),
-        reclaimDeposit: jest.fn((claimHash: string) =>
-          getMockSubmittableExtrinsic()
-        ),
+        add: jest.fn((claimHash, _cTypeHash) => getMockSubmittableTx()),
+        revoke: jest.fn((claimHash: string) => getMockSubmittableTx()),
+        remove: jest.fn((claimHash: string) => getMockSubmittableTx()),
+        reclaimDeposit: jest.fn((claimHash: string) => getMockSubmittableTx()),
       },
       balances: {
-        transfer: jest.fn(() => getMockSubmittableExtrinsic()),
+        transfer: jest.fn(() => getMockSubmittableTx()),
       },
       ctype: {
-        add: jest.fn((hash, signature) => getMockSubmittableExtrinsic()),
+        add: jest.fn((hash, signature) => getMockSubmittableTx()),
       },
       delegation: {
-        createHierarchy: jest.fn(() => getMockSubmittableExtrinsic()),
-        addDelegation: jest.fn(() => getMockSubmittableExtrinsic()),
-        revokeDelegation: jest.fn(() => getMockSubmittableExtrinsic()),
+        createHierarchy: jest.fn(() => getMockSubmittableTx()),
+        addDelegation: jest.fn(() => getMockSubmittableTx()),
+        revokeDelegation: jest.fn(() => getMockSubmittableTx()),
       },
       did: {
-        add: jest.fn(() => getMockSubmittableExtrinsic()),
-        remove: jest.fn(() => getMockSubmittableExtrinsic()),
+        add: jest.fn(() => getMockSubmittableTx()),
+        remove: jest.fn(() => getMockSubmittableTx()),
       },
       portablegabi: {
         updateAccumulator: jest.fn((_acc) => {
           // change the accumulator for each update
           accumulator.push(accumulator.length)
-          return getMockSubmittableExtrinsic()
+          return getMockSubmittableTx()
         }),
       },
     },

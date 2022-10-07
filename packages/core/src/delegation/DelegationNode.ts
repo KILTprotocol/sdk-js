@@ -19,7 +19,6 @@ import type {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import type { HexString } from '@polkadot/util/types'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
 import {
@@ -239,19 +238,17 @@ export class DelegationNode implements IDelegationNode {
    * This hash is signed by the delegate and later stored along with the delegation to
    * make sure delegation data (such as permissions) has not been tampered with.
    *
-   * @returns The hash representation of this delegation **as a hex string**.
+   * @returns The hash representation of this delegation **as a byte array**.
    */
-  public generateHash(): HexString {
+  public generateHash(): Uint8Array {
     const propsToHash = [this.id, this.hierarchyId]
     if (this.parentId) {
       propsToHash.push(this.parentId)
     }
     const uint8Props = propsToHash.map((value) => Crypto.coToUInt8(value))
     uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
-    const generated = Crypto.u8aToHex(
-      Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
-    )
-    log.debug(`generateHash(): ${generated}`)
+    const generated = Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
+    log.debug(`generateHash(): ${Crypto.u8aToHex(generated)}`)
     return generated
   }
 
@@ -268,11 +265,11 @@ export class DelegationNode implements IDelegationNode {
     delegateDid: DidDocument,
     sign: SignCallback
   ): Promise<Did.EncodedSignature> {
-    const delegateSignature = await Did.signPayload(
-      delegateDid.uri,
-      this.generateHash(),
-      sign
-    )
+    const delegateSignature = await sign({
+      data: this.generateHash(),
+      did: delegateDid.uri,
+      keyRelationship: 'authentication',
+    })
     const { fragment } = Did.parse(delegateSignature.keyUri)
     if (!fragment) {
       throw new SDKErrors.DidError(
@@ -285,7 +282,10 @@ export class DelegationNode implements IDelegationNode {
         `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
       )
     }
-    return Did.didSignatureToChain(key as DidVerificationKey, delegateSignature)
+    return Did.didSignatureToChain(
+      key as DidVerificationKey,
+      delegateSignature.signature
+    )
   }
 
   /**
