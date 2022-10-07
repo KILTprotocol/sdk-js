@@ -29,9 +29,9 @@ module.exports = {
     '!utils/src/json-schema/*',
     '!testing/**',
     '!augment-api/**',
-    // TODO: write tests for these files and remove here
     '!**/*.chain.ts',
     '!did/src/Did.chain.ts',
+    '!did/src/Did.rpc.ts',
     '!did/src/Did.utils.ts',
     '!utils/src/jsonabc.ts',
   ],
