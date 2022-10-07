@@ -399,7 +399,7 @@ describe('DID migration', () => {
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
-      migratedFullDidUri
+      Did.toChain(migratedFullDidUri)
     )
     const { document: migratedFullDid } = Did.linkedInfoFromChain(
       migratedFullDidLinkedInfo
