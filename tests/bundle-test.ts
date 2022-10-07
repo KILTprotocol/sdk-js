@@ -7,7 +7,6 @@
 
 /// <reference lib="dom" />
 
-import { ConfigService } from '@kiltprotocol/config'
 import type {
   DecryptCallback,
   DidDocument,
@@ -24,6 +23,7 @@ const { kilt } = window
 const {
   Claim,
   Attestation,
+  ConfigService,
   Credential,
   CType,
   Did,
@@ -33,7 +33,7 @@ const {
   BalanceUtils,
 } = kilt
 
-kilt.ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
 function makeSignCallback(
   keypair: KeyringPair
