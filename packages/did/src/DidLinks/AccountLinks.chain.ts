@@ -11,7 +11,7 @@ import {
   ethereumEncode,
   signatureVerify,
 } from '@polkadot/util-crypto'
-import type { Enum, Option, StorageKey, U8aFixed } from '@polkadot/types'
+import type { Enum, StorageKey, U8aFixed } from '@polkadot/types'
 import type { AccountId32 } from '@polkadot/types/interfaces'
 import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
@@ -27,12 +27,11 @@ import {
 import { ApiPromise } from '@polkadot/api'
 
 import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
-import type { Deposit, DidUri, KiltAddress } from '@kiltprotocol/types'
-import type { PalletDidLookupConnectionRecord } from '@kiltprotocol/augment-api'
+import type { DidUri, KiltAddress } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 
 import { EncodedSignature } from '../Did.utils.js'
-import { depositFromChain, fromChain, toChain } from '../Did.chain.js'
+import { toChain } from '../Did.chain.js'
 
 /// A chain-agnostic address, which can be encoded using any network prefix.
 export type SubstrateAddress = KeyringPair['address']
@@ -65,7 +64,7 @@ interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
 function isEthereumEnabled(api: ApiPromise): boolean {
   const removeType = api.createType(
     api.tx.didLookup.removeAccountAssociation.meta.args[0]?.type?.toString() ||
-    'bool'
+      'bool'
   )
   const associateType = api.createType(
     api.tx.didLookup.associateAccount.meta.args[0]?.type?.toString() || 'bool'
@@ -105,25 +104,6 @@ export function accountToChain(account: Address): Address {
   const encoded: EncodedMultiAddress = encodeMultiAddress(account)
   // Force type cast to enable the old blockchain types to accept the future format
   return encoded as unknown as Address
-}
-
-/**
- * Decodes the information about the connection between an address and a DID.
- *
- * @param encoded The output of `api.query.didLookup.connectedDids()`.
- * @returns The connection details.
- */
-export function connectedDidFromChain(
-  encoded: Option<PalletDidLookupConnectionRecord>
-): {
-  did: DidUri
-  deposit: Deposit
-} {
-  const { did, deposit } = encoded.unwrap()
-  return {
-    did: fromChain(did),
-    deposit: depositFromChain(deposit),
-  }
 }
 
 function isLinkableAccountId(

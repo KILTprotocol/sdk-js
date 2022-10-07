@@ -270,7 +270,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   fullDidLinkedInfo = await api.rpc.did.query(
     toRpc(Did.getFullDidUri(newDid.uri))
   )
-    ; ({ didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo))
+  ;({ didDocument: fullDid } = linkedInfoFromChain(fullDidLinkedInfo))
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
@@ -399,7 +399,7 @@ describe('DID migration', () => {
     await submitExtrinsic(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
     const migratedFullDidLinkedInfo = await api.rpc.did.query(
-      (migratedFullDidUri)
+      migratedFullDidUri
     )
     const { didDocument: migratedFullDid } = linkedInfoFromChain(
       migratedFullDidLinkedInfo
@@ -527,7 +527,7 @@ describe('DID authorization', () => {
     const didLinkedInfo = await api.rpc.did.query(
       toRpc(Did.getFullDidUriFromKey(authentication[0]))
     )
-      ; ({ didDocument: did } = linkedInfoFromChain(didLinkedInfo))
+    ;({ didDocument: did } = linkedInfoFromChain(didLinkedInfo))
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {

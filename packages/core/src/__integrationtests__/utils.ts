@@ -24,6 +24,7 @@ import type {
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
+import { latest as types, rpc, runtime } from '@kiltprotocol/type-definitions'
 
 import * as CType from '../ctype'
 import { init } from '../kilt'
@@ -54,7 +55,7 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint)
-  const api = new ApiPromise({ provider })
+  const api = new ApiPromise({ provider, types, rpc, runtime })
   await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
   return api.isReadyOrError
 }
