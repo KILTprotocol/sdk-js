@@ -7,7 +7,10 @@
 
 import type { DefinitionRpc, DefinitionRpcSub } from '@polkadot/types/types'
 
-const rpc: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>> = {
+export const rpc: Record<
+  string,
+  Record<string, DefinitionRpc | DefinitionRpcSub>
+> = {
   did: {
     query: {
       description:
@@ -47,7 +50,7 @@ const rpc: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>> = {
       params: [
         {
           name: 'account',
-          type: 'AccountId32',
+          type: 'PalletDidLookupLinkableAccountLinkableAccountId',
         },
         {
           name: 'at',
@@ -59,6 +62,3 @@ const rpc: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>> = {
     },
   },
 }
-
-// eslint-disable-next-line import/no-default-export
-export default rpc
