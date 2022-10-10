@@ -10,8 +10,6 @@ import type {
   OverrideVersionedType,
 } from '@polkadot/types/types'
 
-// Custom types
-
 import { types8 } from './types_8.js'
 import { types9 } from './types_9.js'
 import { types10 } from './types_10.js'
