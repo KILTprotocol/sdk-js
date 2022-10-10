@@ -39,13 +39,13 @@ describe('CType', () => {
 
     metadata = {
       metadata: ctypeMetadata,
-      ctypeId: ctype.$id,
+      cTypeId: ctype.$id,
     }
   })
 
   it('verifies the metadata of a ctype', async () => {
     expect(() => CType.verifyCTypeMetadata(metadata)).not.toThrow()
-    expect(metadata.ctypeId).not.toHaveLength(0)
+    expect(metadata.cTypeId).not.toHaveLength(0)
     expect(() =>
       CType.verifyObjectAgainstSchema(metadata, MetadataModel)
     ).not.toThrow()
@@ -54,12 +54,12 @@ describe('CType', () => {
     ).toThrow()
   })
   it('checks if the metadata matches corresponding ctype hash', async () => {
-    expect(metadata.ctypeId).toEqual(ctype.$id)
+    expect(metadata.cTypeId).toEqual(ctype.$id)
   })
   it('throws error when supplied malformed constructor input', () => {
     const faultyMetadata: ICTypeMetadata = {
       metadata: ctypeMetadata,
-      ctypeId: ctype.$id,
+      cTypeId: ctype.$id,
     }
     // @ts-expect-error
     delete faultyMetadata.metadata.properties

@@ -55,13 +55,13 @@ let attesterKey: KeyTool
 
 async function writeHierarchy(
   delegator: DidDocument,
-  ctypeId: ICType['$id'],
+  cTypeId: ICType['$id'],
   sign: SignCallback
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
     account: delegator.uri,
     permissions: [Permission.DELEGATE],
-    cTypeHash: CType.getCTypeHashFromId(ctypeId),
+    cTypeHash: CType.getCTypeHashFromId(cTypeId),
   })
 
   const storeTx = await rootNode.getStoreTx()

@@ -31,5 +31,5 @@ export interface IMetadata {
 
 export interface ICTypeMetadata {
   metadata: IMetadata
-  ctypeId: ICType['$id'] | null
+  cTypeId: ICType['$id'] | null
 }
