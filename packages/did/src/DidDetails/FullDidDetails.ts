@@ -117,7 +117,7 @@ function getKeyRelationshipForMethod(
  * @param extrinsic The unsigned extrinsic to inspect.
  * @returns The key relationship.
  */
-export function getKeyRelationshipForExtrinsic(
+export function getKeyRelationshipForTx(
   extrinsic: Extrinsic
 ): VerificationKeyRelationship | undefined {
   return getKeyRelationshipForMethod(extrinsic.method)
@@ -161,7 +161,7 @@ async function getNextNonce(did: DidUri): Promise<BN> {
  * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
  * @returns The DID-signed submittable extrinsic.
  */
-export async function authorizeExtrinsic(
+export async function authorizeTx(
   did: DidUri,
   extrinsic: Extrinsic,
   sign: SignExtrinsicCallback,
@@ -178,7 +178,7 @@ export async function authorizeExtrinsic(
     )
   }
 
-  const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
+  const keyRelationship = getKeyRelationshipForTx(extrinsic)
   if (keyRelationship === undefined) {
     throw new SDKErrors.SDKError('No key relationship found for extrinsic')
   }
@@ -202,7 +202,7 @@ function groupExtrinsicsByKeyRelationship(
   extrinsics: Extrinsic[]
 ): GroupedExtrinsics {
   const [first, ...rest] = extrinsics.map((extrinsic) => {
-    const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
+    const keyRelationship = getKeyRelationshipForTx(extrinsic)
     if (!keyRelationship) {
       throw new SDKErrors.DidBatchError(
         'Can only batch extrinsics that require a DID signature'
@@ -274,7 +274,7 @@ export async function authorizeBatch({
   }
 
   if (extrinsics.length === 1) {
-    return authorizeExtrinsic(did, extrinsics[0], sign, submitter, {
+    return authorizeTx(did, extrinsics[0], sign, submitter, {
       txCounter: nonce,
     })
   }

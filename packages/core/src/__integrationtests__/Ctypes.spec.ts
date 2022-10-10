@@ -20,11 +20,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import { ApiPromise } from '@polkadot/api'
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
-import {
-  createEndowedTestAccount,
-  initializeApi,
-  submitExtrinsic,
-} from './utils'
+import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
 
 let api: ApiPromise
 beforeAll(async () => {
@@ -60,28 +56,26 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const { keypair, getSignCallback } = makeSigningKeyTool()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
       getSignCallback(ctypeCreator),
       keypair.address
     )
-    await expect(
-      submitExtrinsic(authorizedStoreTx, keypair)
-    ).rejects.toThrowError()
+    await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedStoreTx, paymentAccount)
+    await submitTx(authorizedStoreTx, paymentAccount)
 
     expect(
       CType.fromChain(
@@ -94,23 +88,23 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedStoreTx, paymentAccount)
+    await submitTx(authorizedStoreTx, paymentAccount)
 
     const storeTx2 = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx2 = await Did.authorizeExtrinsic(
+    const authorizedStoreTx2 = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx2,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
     await expect(
-      submitExtrinsic(authorizedStoreTx2, paymentAccount)
+      submitTx(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
     expect(

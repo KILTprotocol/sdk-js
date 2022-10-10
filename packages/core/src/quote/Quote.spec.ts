@@ -27,6 +27,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
+  makeDidSignature,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as CType from '../ctype'
@@ -153,13 +154,12 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    expect(
-      await Did.signPayload(
-        claimerIdentity.uri,
-        Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimer.getSignCallback(claimerIdentity)
-      )
-    ).toEqual(quoteBothAgreed.claimerSignature)
+    const signature = await makeDidSignature(
+      Crypto.hashStr(Crypto.encodeObjectAsStr(validAttesterSignedQuote)),
+      claimerIdentity.uri,
+      claimer.getSignCallback(claimerIdentity)
+    )
+    expect(signature).toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = Did.parse(
       validAttesterSignedQuote.attesterSignature.keyUri
@@ -167,14 +167,16 @@ describe('Quote', () => {
 
     expect(() =>
       Crypto.verify(
-        Crypto.hashObjectAsStr({
-          attesterDid: validQuoteData.attesterDid,
-          cTypeHash: validQuoteData.cTypeHash,
-          cost: validQuoteData.cost,
-          currency: validQuoteData.currency,
-          timeframe: validQuoteData.timeframe,
-          termsAndConditions: validQuoteData.termsAndConditions,
-        }),
+        Crypto.hashStr(
+          Crypto.encodeObjectAsStr({
+            attesterDid: validQuoteData.attesterDid,
+            cTypeHash: validQuoteData.cTypeHash,
+            cost: validQuoteData.cost,
+            currency: validQuoteData.currency,
+            timeframe: validQuoteData.timeframe,
+            termsAndConditions: validQuoteData.termsAndConditions,
+          })
+        ),
         validAttesterSignedQuote.attesterSignature.signature,
         u8aToHex(
           Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||

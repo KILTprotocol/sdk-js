@@ -135,7 +135,7 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
 })
 
 // Submits resolving when IS_IN_BLOCK
-export async function submitExtrinsic(
+export async function submitTx(
   extrinsic: SubmittableExtrinsic,
   submitter: KeyringPair,
   resolveOn?: SubscriptionPromise.ResultEvaluator
@@ -164,7 +164,7 @@ export async function fundAccount(
 ): Promise<void> {
   const api = ConfigService.get('api')
   const transferTx = api.tx.balances.transfer(address, amount)
-  await submitExtrinsic(transferTx, devFaucet)
+  await submitTx(transferTx, devFaucet)
 }
 
 export async function createEndowedTestAccount(

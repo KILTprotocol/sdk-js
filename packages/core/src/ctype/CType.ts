@@ -51,7 +51,7 @@ export function getSchemaPropertiesForHash(
  */
 export function getHashForSchema(schema: ICTypeSchema): CTypeHash {
   const preparedSchema = getSchemaPropertiesForHash(schema)
-  return Crypto.hashObjectAsStr(preparedSchema)
+  return Crypto.hashStr(Crypto.encodeObjectAsStr(preparedSchema))
 }
 
 /**

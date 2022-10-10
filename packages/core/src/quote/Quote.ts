@@ -26,7 +26,6 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { resolve, verifyDidSignature } from '@kiltprotocol/did'
-import * as Did from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -73,16 +72,16 @@ export async function createAttesterSignedQuote(
     throw new SDKErrors.QuoteUnverifiableError()
   }
 
-  const signature = await Did.signPayload(
-    quoteInput.attesterDid,
-    Crypto.hashObjectAsStr(quoteInput),
-    sign
-  )
+  const signature = await sign({
+    data: Crypto.hash(Crypto.encodeObjectAsStr(quoteInput)),
+    did: quoteInput.attesterDid,
+    keyRelationship: 'authentication',
+  })
   return {
     ...quoteInput,
     attesterSignature: {
       keyUri: signature.keyUri,
-      signature: signature.signature,
+      signature: Crypto.u8aToHex(signature.signature),
     },
   }
 }
@@ -105,7 +104,7 @@ export async function verifyAttesterSignedQuote(
   const { attesterSignature, ...basicQuote } = quote
   await verifyDidSignature({
     signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
@@ -142,21 +141,24 @@ export async function createQuoteAgreement(
 
   await verifyDidSignature({
     signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolve,
   })
 
-  const signature = await Did.signPayload(
-    claimerDid,
-    Crypto.hashObjectAsStr(attesterSignedQuote),
-    sign
-  )
+  const { signature, keyUri } = await sign({
+    data: Crypto.hash(Crypto.encodeObjectAsStr(attesterSignedQuote)),
+    did: claimerDid,
+    keyRelationship: 'authentication',
+  })
 
   return {
     ...attesterSignedQuote,
     rootHash: credentialRootHash,
-    claimerSignature: signature,
+    claimerSignature: {
+      signature: Crypto.u8aToHex(signature),
+      keyUri,
+    },
   }
 }
 

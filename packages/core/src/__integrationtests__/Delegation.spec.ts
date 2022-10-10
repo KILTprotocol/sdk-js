@@ -37,7 +37,7 @@ import {
   driversLicenseCType,
   initializeApi,
   isCtypeOnChain,
-  submitExtrinsic,
+  submitTx,
 } from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
@@ -65,13 +65,13 @@ async function writeHierarchy(
   })
 
   const storeTx = await rootNode.getStoreTx()
-  const authorizedStoreTx = await Did.authorizeExtrinsic(
+  const authorizedStoreTx = await Did.authorizeTx(
     delegator.uri,
     storeTx,
     sign,
     paymentAccount.address
   )
-  await submitExtrinsic(authorizedStoreTx, paymentAccount)
+  await submitTx(authorizedStoreTx, paymentAccount)
 
   return rootNode
 }
@@ -93,13 +93,13 @@ async function addDelegation(
   })
   const signature = await delegationNode.delegateSign(delegate, delegateSign)
   const storeTx = await delegationNode.getStoreTx(signature)
-  const authorizedStoreTx = await Did.authorizeExtrinsic(
+  const authorizedStoreTx = await Did.authorizeTx(
     delegator.uri,
     storeTx,
     delegatorSign,
     paymentAccount.address
   )
-  await submitExtrinsic(authorizedStoreTx, paymentAccount)
+  await submitTx(authorizedStoreTx, paymentAccount)
   return delegationNode
 }
 
@@ -119,13 +119,13 @@ beforeAll(async () => {
   if (await isCtypeOnChain(driversLicenseCType)) return
 
   const storeTx = api.tx.ctype.add(CType.toChain(driversLicenseCType))
-  const authorizedStoreTx = await Did.authorizeExtrinsic(
+  const authorizedStoreTx = await Did.authorizeTx(
     attester.uri,
     storeTx,
     attesterKey.getSignCallback(attester),
     paymentAccount.address
   )
-  await submitExtrinsic(authorizedStoreTx, paymentAccount)
+  await submitTx(authorizedStoreTx, paymentAccount)
 }, 60_000)
 
 it('fetches the correct deposit amount', async () => {
@@ -206,13 +206,13 @@ describe('and attestation rights have been delegated', () => {
       attestation.cTypeHash,
       { Delegation: { subjectNodeId: delegatedNode.id } }
     )
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
       storeTx,
       attesterKey.getSignCallback(attester),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedStoreTx, paymentAccount)
+    await submitTx(authorizedStoreTx, paymentAccount)
 
     const storedAttestation = Attestation.fromChain(
       await api.query.attestation.attestations(attestation.claimHash),
@@ -225,13 +225,13 @@ describe('and attestation rights have been delegated', () => {
     const revokeTx = api.tx.attestation.revoke(attestation.claimHash, {
       Delegation: { maxChecks: 1 },
     })
-    const authorizedStoreTx2 = await Did.authorizeExtrinsic(
+    const authorizedStoreTx2 = await Did.authorizeTx(
       root.uri,
       revokeTx,
       rootKey.getSignCallback(root),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedStoreTx2, paymentAccount)
+    await submitTx(authorizedStoreTx2, paymentAccount)
 
     const storedAttestationAfter = Attestation.fromChain(
       await api.query.attestation.attestations(attestation.claimHash),
@@ -276,27 +276,27 @@ describe('revocation', () => {
 
     // Test revocation
     const revokeTx = await delegationA.getRevokeTx(delegator.uri)
-    const authorizedRevokeTx = await Did.authorizeExtrinsic(
+    const authorizedRevokeTx = await Did.authorizeTx(
       delegator.uri,
       revokeTx,
       delegatorSign,
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedRevokeTx, paymentAccount)
+    await submitTx(authorizedRevokeTx, paymentAccount)
     await expect(delegationA.verify()).rejects.toThrow()
 
     // Delegation removal can only be done by either the delegation owner themselves via DID call
     // or the deposit owner as a regular signed call.
     // Change introduced in https://github.com/KILTprotocol/mashnet-node/pull/304
     const removeTx = await delegationA.getRemoveTx()
-    const authorizedRemoveTx = await Did.authorizeExtrinsic(
+    const authorizedRemoveTx = await Did.authorizeTx(
       delegator.uri,
       removeTx,
       delegatorSign,
       paymentAccount.address
     )
     await expect(
-      submitExtrinsic(authorizedRemoveTx, paymentAccount)
+      submitTx(authorizedRemoveTx, paymentAccount)
     ).rejects.toMatchObject({
       section: 'delegation',
       name: 'UnauthorizedRemoval',
@@ -322,14 +322,14 @@ describe('revocation', () => {
       firstDelegateSign
     )
     const revokeTx = api.tx.delegation.revokeDelegation(delegationRoot.id, 1, 1)
-    const authorizedRevokeTx = await Did.authorizeExtrinsic(
+    const authorizedRevokeTx = await Did.authorizeTx(
       firstDelegate.uri,
       revokeTx,
       firstDelegateSign,
       paymentAccount.address
     )
     await expect(
-      submitExtrinsic(authorizedRevokeTx, paymentAccount)
+      submitTx(authorizedRevokeTx, paymentAccount)
     ).rejects.toMatchObject({
       section: 'delegation',
       name: 'UnauthorizedRevocation',
@@ -337,13 +337,13 @@ describe('revocation', () => {
     await expect(delegationRoot.verify()).resolves.not.toThrow()
 
     const revokeTx2 = await delegationA.getRevokeTx(firstDelegate.uri)
-    const authorizedRevokeTx2 = await Did.authorizeExtrinsic(
+    const authorizedRevokeTx2 = await Did.authorizeTx(
       firstDelegate.uri,
       revokeTx2,
       firstDelegateSign,
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedRevokeTx2, paymentAccount)
+    await submitTx(authorizedRevokeTx2, paymentAccount)
     await expect(delegationA.verify()).rejects.toThrow()
   }, 60_000)
 
@@ -371,13 +371,13 @@ describe('revocation', () => {
     )
     delegationRoot = await delegationRoot.getLatestState()
     const revokeTx = await delegationRoot.getRevokeTx(delegator.uri)
-    const authorizedRevokeTx = await Did.authorizeExtrinsic(
+    const authorizedRevokeTx = await Did.authorizeTx(
       delegator.uri,
       revokeTx,
       delegatorSign,
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedRevokeTx, paymentAccount)
+    await submitTx(authorizedRevokeTx, paymentAccount)
 
     await expect(delegationRoot.verify()).rejects.toThrow()
     await expect(delegationA.verify()).rejects.toThrow()
@@ -416,15 +416,13 @@ describe('Deposit claiming', () => {
     const depositClaimTx = await delegatedNode.getReclaimDepositTx()
 
     // Test removal failure with an account that is not the deposit payer.
-    await expect(submitExtrinsic(depositClaimTx, devBob)).rejects.toMatchObject(
-      {
-        section: 'delegation',
-        name: 'UnauthorizedRemoval',
-      }
-    )
+    await expect(submitTx(depositClaimTx, devBob)).rejects.toMatchObject({
+      section: 'delegation',
+      name: 'UnauthorizedRemoval',
+    })
 
     // Test removal success with the right account.
-    await submitExtrinsic(depositClaimTx, paymentAccount)
+    await submitTx(depositClaimTx, paymentAccount)
 
     await expect(DelegationNode.fetch(delegatedNode.id)).rejects.toThrow()
     await expect(DelegationNode.fetch(subDelegatedNode.id)).rejects.toThrow()
