@@ -14,6 +14,7 @@ import type {
   DidKey,
   DidResourceUri,
   DidUri,
+  KeyRelationship,
 } from './DidDocument.js'
 
 /**
@@ -67,4 +68,7 @@ export type DidResolve = (did: DidUri) => Promise<DidResolutionResult | null>
  * @returns A promise of a [[ResolvedDidKey]] object representing the DID public key or null if
  * the DID or key URI cannot be resolved.
  */
-export type DidResolveKey = (didUri: DidResourceUri) => Promise<ResolvedDidKey>
+export type DidResolveKey = (
+  didUri: DidResourceUri,
+  expectedVerificationMethod?: KeyRelationship
+) => Promise<ResolvedDidKey>
