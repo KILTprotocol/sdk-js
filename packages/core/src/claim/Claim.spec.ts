@@ -173,7 +173,7 @@ describe('Claim', () => {
       type: 'object',
     }
 
-    testCType = CType.fromProperties(rawCType.properties, rawCType.title)
+    testCType = CType.fromSchema(rawCType)
 
     claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
   })

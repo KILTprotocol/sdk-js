@@ -50,6 +50,7 @@ import type {
   MessageBody,
   PartialClaim,
   ICredentialPresentation,
+  ICTypeSchema,
 } from '@kiltprotocol/types'
 import {
   Quote,
@@ -703,12 +704,16 @@ describe('Error checking / Verification', () => {
   ): Promise<[ICredential, IAttestation]> {
     // create claim
 
-    const testCType = CType.fromProperties(
-      {
+    const rawCType: ICTypeSchema = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Credential',
+      properties: {
         name: { type: 'string' },
       },
-      'Credential'
-    )
+      type: 'object',
+    }
+
+    const testCType = CType.fromSchema(rawCType)
 
     const claim = Claim.fromCTypeAndClaimContents(
       testCType,
@@ -734,6 +739,8 @@ describe('Error checking / Verification', () => {
   let keyBob: KeyTool
 
   let date: string
+  let rawCType: ICTypeSchema
+  let rawCTypeWithMultipleProperties: ICTypeSchema
   let testCType: ICType
   let testCTypeWithMultipleProperties: ICType
   let claim: IClaim
@@ -819,20 +826,29 @@ describe('Error checking / Verification', () => {
       return null
     }
 
-    // CType
-    testCType = CType.fromProperties(
-      {
-        name: { type: 'string' },
-      },
-      'ClaimCtype'
-    )
-    testCTypeWithMultipleProperties = CType.fromProperties(
-      {
+    rawCTypeWithMultipleProperties = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Drivers license Claim',
+      properties: {
         name: { type: 'string' },
         id: { type: 'string' },
         age: { type: 'string' },
       },
-      'Drivers license Claim'
+      type: 'object',
+    }
+    // CType Schema
+    rawCType = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'ClaimCtype',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    // CType
+    testCType = CType.fromSchema(rawCType)
+    testCTypeWithMultipleProperties = CType.fromSchema(
+      rawCTypeWithMultipleProperties
     )
 
     // Claim

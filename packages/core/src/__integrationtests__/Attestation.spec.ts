@@ -241,8 +241,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
-    const badCtype = CType.fromProperties(
-      {
+    const badCtype = CType.fromSchema({
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'badDriversLicense',
+      properties: {
         name: {
           type: 'string',
         },
@@ -250,8 +252,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           type: 'integer',
         },
       },
-      'badDriversLicense'
-    )
+      type: 'object',
+    })
 
     const content = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
@@ -417,8 +419,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   })
 
   describe('when there is another Ctype that works as a legitimation', () => {
-    const officialLicenseAuthorityCType = CType.fromProperties(
-      {
+    const officialLicenseAuthorityCType = CType.fromSchema({
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'License Authority',
+      properties: {
         LicenseType: {
           type: 'string',
         },
@@ -426,8 +430,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           type: 'string',
         },
       },
-      'License Authority'
-    )
+      type: 'object',
+    })
 
     beforeAll(async () => {
       if (await isCtypeOnChain(officialLicenseAuthorityCType)) return

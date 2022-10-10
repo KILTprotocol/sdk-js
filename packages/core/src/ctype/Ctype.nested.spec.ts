@@ -9,42 +9,59 @@
  * @group unit/ctype
  */
 
-import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
+import type {
+  ICType,
+  IClaim,
+  IClaimContents,
+  ICTypeSchema,
+} from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import * as CType from './CType'
 import * as Claim from '../claim'
 
 describe('Nested CTypes', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+  let passportCType: ICTypeSchema
+  let kycCType: ICTypeSchema
   let passport: ICType
   let kyc: ICType
   let claimContents: IClaimContents
   let claimDeepContents: IClaim['contents']
+  let nested: ICTypeSchema
+  let nestedDeeply: ICTypeSchema
   let nestedCType: ICType
   let deeplyNestedCType: ICType
   let nestedData: IClaim
   let nestedDeepData: IClaim
 
   beforeAll(async () => {
-    passport = CType.fromProperties(
-      {
+    passportCType = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Passport',
+      properties: {
         fullName: { type: 'string' },
         passportIdentifier: { type: 'string' },
         streetAddress: { type: 'string' },
         city: { type: 'string' },
         state: { type: 'string' },
       },
-      'Passport'
-    )
+      type: 'object',
+    }
 
-    kyc = CType.fromProperties(
-      {
+    kycCType = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'KYC',
+      properties: {
         ID: { type: 'string' },
         number: { type: 'string' },
         name: { type: 'string' },
       },
-      'KYC'
-    )
+      type: 'object',
+    }
+
+    passport = CType.fromSchema(passportCType)
+
+    kyc = CType.fromSchema(kycCType)
 
     claimContents = {
       fullName: 'Archer Macdonald',
@@ -72,8 +89,11 @@ describe('Nested CTypes', () => {
       },
     }
 
-    nestedCType = CType.fromProperties(
-      {
+    nested = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'KYC and Passport',
+      type: 'object',
+      properties: {
         fullName: {
           $ref: `${passport.$id}#/properties/fullName`,
         },
@@ -99,11 +119,12 @@ describe('Nested CTypes', () => {
           $ref: `${kyc.$id}#/properties/name`,
         },
       },
-      'KYC and Passport'
-    )
-
-    deeplyNestedCType = CType.fromProperties(
-      {
+    }
+    nestedDeeply = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'test',
+      type: 'object',
+      properties: {
         passport: {
           $ref: `${passport.$id}`,
         },
@@ -111,8 +132,11 @@ describe('Nested CTypes', () => {
           $ref: `${kyc.$id}`,
         },
       },
-      'test'
-    )
+    }
+
+    nestedCType = CType.fromSchema(nested)
+
+    deeplyNestedCType = CType.fromSchema(nestedDeeply)
 
     nestedData = Claim.fromNestedCTypeClaim(
       nestedCType,
