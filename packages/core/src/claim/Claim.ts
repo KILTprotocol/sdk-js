@@ -215,21 +215,14 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
   DataUtils.verifyIsHex(input.cTypeHash, 256)
 }
 
-function verifyAgainstCType(
-  claimContents: IClaim['contents'],
-  cTypeSchema: ICType
-): void {
-  CType.verifyClaimAgainstSchema(claimContents, cTypeSchema)
-}
-
 /**
  * Verifies the data structure and schema of a Claim.
  *
  * @param claimInput IClaim to verify.
- * @param cTypeSchema ICType to verify claimInput's contents.
+ * @param cType ICType to verify claimInput's contents.
  */
-export function verify(claimInput: IClaim, cTypeSchema: ICType): void {
-  verifyAgainstCType(claimInput.contents, cTypeSchema)
+export function verify(claimInput: IClaim, cType: ICType): void {
+  CType.verifyClaimAgainstSchema(claimInput.contents, cType)
   verifyDataStructure(claimInput)
 }
 
@@ -263,20 +256,20 @@ export function fromNestedCTypeClaim(
 /**
  * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and [[DidUri]].
  *
- * @param ctypeInput [[ICType]] for which the Claim will be built.
+ * @param cType [[ICType]] for which the Claim will be built.
  * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
  * @param claimOwner The DID to be used as the Claim owner.
  * @returns A Claim object.
  */
 export function fromCTypeAndClaimContents(
-  ctypeInput: ICType,
+  cType: ICType,
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  CType.verifyDataStructure(ctypeInput)
-  verifyAgainstCType(claimContents, ctypeInput)
+  CType.verifyDataStructure(cType)
+  CType.verifyClaimAgainstSchema(claimContents, cType)
   const claim = {
-    cTypeHash: CType.getCTypeHashFromId(ctypeInput.$id),
+    cTypeHash: CType.getCTypeHashFromId(cType.$id),
     contents: claimContents,
     owner: claimOwner,
   }

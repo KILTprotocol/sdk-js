@@ -26,32 +26,27 @@ import { ConfigService } from '@kiltprotocol/config'
 import { CTypeModel, MetadataModel } from './CType.schemas.js'
 
 /**
- * Utility for (re)creating ctype hashes. For this, the $id property needs to be stripped from the CType schema.
+ * Utility for (re)creating CType hashes. Sorts the schema and strips the $id property (which contains the CType hash) before stringifying.
  *
- * @param ctypeSchema The CType schema (with or without $id).
- * @returns CtypeSchema without the $id property.
+ * @param cType The CType (with or without $id).
+ * @returns A deterministic JSON serialization of a CType, omitting the $id property.
  */
-export function serializeForHash(
-  ctypeSchema: ICType | Omit<ICType, '$id'>
-): string {
-  // We need to remove the CType ID from the CType before storing it on the blockchain
-  // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
-  // which is itself a hash of the CType schema.
+export function serializeForHash(cType: ICType | Omit<ICType, '$id'>): string {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { $id: _, ...schemaWithoutId } = ctypeSchema as ICType
+  const { $id, ...schemaWithoutId } = cType as ICType
   return Crypto.encodeObjectAsStr(schemaWithoutId)
 }
 
 /**
  * Calculates the CType hash from a schema.
  *
- * @param schema The CType schema (with or without $id).
+ * @param cType The ICType (with or without $id).
  * @returns Hash as hex string.
  */
 export function getHashForSchema(
-  schema: ICType | Omit<ICType, '$id'>
+  cType: ICType | Omit<ICType, '$id'>
 ): CTypeHash {
-  const serializedSchema = serializeForHash(schema)
+  const serializedSchema = serializeForHash(cType)
   return Crypto.hashStr(serializedSchema)
 }
 
