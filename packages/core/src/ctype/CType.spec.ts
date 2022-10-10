@@ -29,32 +29,16 @@ const encodedAliceDid = ApiMocks.mockChainQueryReturn(
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 
 describe('CType', () => {
-  let schema1: ICTypeSchema
-  let schema2: ICTypeSchema
   let claimCtype: ICType
   let claimContents: any
   let claim: IClaim
   beforeAll(async () => {
-    schema1 = {
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'CtypeModel 2',
-      properties: {
+    claimCtype = CType.fromProperties(
+      {
         name: { type: 'string' },
       },
-      type: 'object',
-    }
-
-    schema2 = {
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'CtypeModel 1',
-      properties: {
-        'first-property': { type: 'integer' },
-        'second-property': { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    claimCtype = CType.fromSchema(schema1)
+      'CtypeModel 2'
+    )
 
     claimContents = {
       name: 'Bob',
@@ -64,7 +48,13 @@ describe('CType', () => {
   })
 
   it('makes ctype object from schema without id', () => {
-    const ctype = CType.fromSchema(schema2)
+    const ctype = CType.fromProperties(
+      {
+        'first-property': { type: 'integer' },
+        'second-property': { type: 'string' },
+      },
+      'CtypeModel 1'
+    )
 
     expect(ctype.$id).toBe(
       'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
@@ -117,28 +107,12 @@ describe('CType', () => {
 })
 
 describe('blank ctypes', () => {
-  let ctypeSchema1: ICTypeSchema
-  let ctypeSchema2: ICTypeSchema
   let ctype1: ICType
   let ctype2: ICType
 
   beforeAll(async () => {
-    ctypeSchema1 = {
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'hasDriversLicense',
-      properties: {},
-      type: 'object',
-    }
-
-    ctypeSchema2 = {
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'claimedSomething',
-      properties: {},
-      type: 'object',
-    }
-
-    ctype1 = CType.fromSchema(ctypeSchema1)
-    ctype2 = CType.fromSchema(ctypeSchema2)
+    ctype1 = CType.fromProperties({}, 'hasDriversLicense')
+    ctype2 = CType.fromProperties({}, 'claimedSomething')
   })
 
   it('two ctypes with no properties have different hashes if id is different', () => {
@@ -182,15 +156,13 @@ describe('CType verification', () => {
     required: ['first-property', 'second-property'],
   } as unknown as ICTypeSchema
 
-  const ctypeWrapperModel: ICType = CType.fromSchema({
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'name',
-    properties: {
+  const ctypeWrapperModel: ICType = CType.fromProperties(
+    {
       'first-property': { type: 'integer' },
       'second-property': { type: 'string' },
     },
-    type: 'object',
-  })
+    'name'
+  )
 
   const goodClaim = {
     'first-property': 10,
@@ -224,18 +196,15 @@ describe('CType verification', () => {
 })
 
 describe('CType registration verification', () => {
-  const rawCType: ICTypeSchema = {
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'CtypeModel 2',
-    properties: {
+  const ctype = CType.fromProperties(
+    {
       name: { type: 'string' },
     },
-    type: 'object',
-  }
+    'CtypeModel 2'
+  )
 
   describe('when CType is not registered', () => {
     it('does not verify registration when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType)
       await expect(CType.verifyStored(ctype)).rejects.toThrow()
     })
   })
@@ -246,17 +215,14 @@ describe('CType registration verification', () => {
     })
 
     it('verifies registration when owner not set', async () => {
-      const ctype = CType.fromSchema(rawCType)
       await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType)
       await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
 
     it('verifies registration when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType)
       await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
     })
   })

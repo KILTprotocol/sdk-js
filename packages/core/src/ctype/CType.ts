@@ -22,7 +22,7 @@ import type {
   ICTypeSchema,
   CTypeHash,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { CTypeModel, MetadataModel } from './CType.schemas.js'
 
@@ -153,7 +153,7 @@ export async function verifyStored(ctype: ICType): Promise<void> {
  * Checks whether the input meets all the required criteria of an ICType object.
  * Throws on invalid input.
  *
- * @param input The potentially only partial ICType.
+ * @param input The ICType object.
  */
 export function verifyDataStructure(input: ICType): void {
   verifyObjectAgainstSchema(input, CTypeModel)
@@ -204,19 +204,24 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
 }
 
 /**
- * Creates a new [[CType]] from an [[ICTypeSchema]].
- * _Note_ that you can either supply the schema as [[ICTypeSchema]] with the id
- * or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it.
+ * Creates a new [[ICType]] object from a set of atomic claims and a title.
+ * The CType id will be automatically generated.
  *
- * @param schema The JSON schema from which the [[CType]] should be generated.
- *
- * @returns A ctype object with cTypeHash, owner and the schema.
+ * @param properties Key-value pairs describing the admissible atomic claims for a credential with this CType. The value of each property is a json-schema (e.g. `{ "type": "number" }`) used to validate that property.
+ * @param title The new CType's title as a string.
+ * @returns A ctype object, including cTypeId, $schema, and type.
  */
-export function fromSchema(schema: ICTypeSchema): ICType {
-  const ctype: ICType = {
-    ...schema,
-    $id: getIdForSchema(schema),
+export function fromProperties(
+  properties: ICType['properties'],
+  title: ICType['title']
+): ICType {
+  const schema: ICTypeSchema = {
+    properties,
+    title,
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    type: 'object',
   }
+  const ctype = jsonabc.sortObj({ ...schema, $id: getIdForSchema(schema) })
   verifyDataStructure(ctype)
   return ctype
 }

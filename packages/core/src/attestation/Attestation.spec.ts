@@ -57,7 +57,10 @@ describe('Attestation', () => {
       type: 'object',
     }
 
-    testCType = CType.fromSchema(rawCTypeSchema)
+    testCType = CType.fromProperties(
+      rawCTypeSchema.properties,
+      rawCTypeSchema.title
+    )
 
     testContents = {}
     testClaim = Claim.fromCTypeAndClaimContents(

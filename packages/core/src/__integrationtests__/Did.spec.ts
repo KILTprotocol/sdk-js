@@ -499,12 +499,7 @@ describe('DID authorization', () => {
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
-    const ctype = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
+    const ctype = CType.fromProperties({}, UUID.generate())
     const call = api.tx.ctype.add(CType.toChain(ctype))
     const tx = await Did.authorizeTx(
       did.uri,
@@ -530,12 +525,7 @@ describe('DID authorization', () => {
     )
     await submitTx(tx, paymentAccount)
 
-    const ctype = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
+    const ctype = CType.fromProperties({}, UUID.generate())
     const call = api.tx.ctype.add(CType.toChain(ctype))
     const tx2 = await Did.authorizeTx(
       did.uri,
@@ -975,12 +965,7 @@ describe('DID extrinsics batching', () => {
   }, 50_000)
 
   it('simple batch succeeds despite failures of some extrinsics', async () => {
-    const ctype = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
+    const ctype = CType.fromProperties({}, UUID.generate())
     const ctypeStoreTx = api.tx.ctype.add(CType.toChain(ctype))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
@@ -1010,12 +995,7 @@ describe('DID extrinsics batching', () => {
   })
 
   it('batchAll fails if any extrinsics fail', async () => {
-    const ctype = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
+    const ctype = CType.fromProperties({}, UUID.generate())
     const ctypeStoreTx = api.tx.ctype.add(CType.toChain(ctype))
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
@@ -1082,12 +1062,7 @@ describe('DID extrinsics batching', () => {
     // Authentication key
     const web3NameReleaseExt = api.tx.web3Names.releaseByOwner()
     // Attestation key
-    const ctype1 = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
+    const ctype1 = CType.fromProperties({}, UUID.generate())
     const ctype1Creation = api.tx.ctype.add(CType.toChain(ctype1))
     // Delegation key
     const rootNode = DelegationNode.newRoot({
@@ -1100,12 +1075,7 @@ describe('DID extrinsics batching', () => {
     // Authentication key
     const web3NameNewClaimExt = api.tx.web3Names.claim('test-2')
     // Attestation key
-    const ctype2 = CType.fromSchema({
-      title: UUID.generate(),
-      properties: {},
-      type: 'object',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    })
+    const ctype2 = CType.fromProperties({}, UUID.generate())
     const ctype2Creation = api.tx.ctype.add(CType.toChain(ctype2))
     // Delegation key
     const delegationHierarchyRemoval = await rootNode.getRevokeTx(fullDid.uri)

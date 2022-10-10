@@ -10,27 +10,23 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { ICType, ICTypeMetadata, ICTypeSchema } from '@kiltprotocol/types'
+import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
 import * as CType from './CType'
 import { MetadataModel } from './CType.schemas'
 
 describe('CType', () => {
-  let rawCType: ICTypeSchema
   let ctype: ICType
   let ctypeMetadata: ICTypeMetadata['metadata']
   let metadata: ICTypeMetadata
 
   beforeAll(async () => {
-    rawCType = {
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'CtypeMetaData',
-      properties: {
+    ctype = CType.fromProperties(
+      {
         'first-property': { type: 'integer' },
         'second-property': { type: 'string' },
       },
-      type: 'object',
-    }
-    ctype = CType.fromSchema(rawCType)
+      'CtypeMetaData'
+    )
 
     ctypeMetadata = {
       title: { default: 'Title' },
