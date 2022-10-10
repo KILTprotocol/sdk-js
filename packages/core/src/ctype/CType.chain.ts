@@ -8,11 +8,10 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 
-import { Crypto } from '@kiltprotocol/utils'
 import type { DidUri, ICType } from '@kiltprotocol/types'
 import * as Did from '@kiltprotocol/did'
 
-import { getSchemaPropertiesForHash } from './CType.js'
+import { serializeForHash } from './CType.js'
 
 /**
  * Encodes the provided CType for use in `api.tx.ctype.add()`.
@@ -21,7 +20,7 @@ import { getSchemaPropertiesForHash } from './CType.js'
  * @returns Encoded CType.
  */
 export function toChain(ctype: ICType): string {
-  return Crypto.encodeObjectAsStr(getSchemaPropertiesForHash(ctype))
+  return serializeForHash(ctype)
 }
 
 /**

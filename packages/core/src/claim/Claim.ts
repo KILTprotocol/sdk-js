@@ -19,13 +19,7 @@
 
 import { hexToBn } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
-import type {
-  DidUri,
-  IClaim,
-  ICType,
-  ICTypeSchema,
-  PartialClaim,
-} from '@kiltprotocol/types'
+import type { DidUri, IClaim, ICType, PartialClaim } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import * as CType from '../ctype/index.js'
@@ -223,7 +217,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
 
 function verifyAgainstCType(
   claimContents: IClaim['contents'],
-  cTypeSchema: ICTypeSchema
+  cTypeSchema: ICType
 ): void {
   CType.verifyClaimAgainstSchema(claimContents, cTypeSchema)
 }
@@ -232,9 +226,9 @@ function verifyAgainstCType(
  * Verifies the data structure and schema of a Claim.
  *
  * @param claimInput IClaim to verify.
- * @param cTypeSchema ICTypeSchema to verify claimInput's contents.
+ * @param cTypeSchema ICType to verify claimInput's contents.
  */
-export function verify(claimInput: IClaim, cTypeSchema: ICTypeSchema): void {
+export function verify(claimInput: IClaim, cTypeSchema: ICType): void {
   verifyAgainstCType(claimInput.contents, cTypeSchema)
   verifyDataStructure(claimInput)
 }
@@ -251,7 +245,7 @@ export function verify(claimInput: IClaim, cTypeSchema: ICTypeSchema): void {
  */
 export function fromNestedCTypeClaim(
   cTypeInput: ICType,
-  nestedCType: ICTypeSchema[],
+  nestedCType: ICType[],
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {

@@ -17,7 +17,6 @@ import type {
   ICType,
   IClaim,
   ICredential,
-  ICTypeSchema,
   CTypeHash,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -41,23 +40,18 @@ describe('Attestation', () => {
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
   const identityBob: DidUri =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
-  let rawCTypeSchema: ICTypeSchema
   let testCType: ICType
   let testContents: any
   let testClaim: IClaim
   let credential: ICredential
 
   beforeAll(async () => {
-    rawCTypeSchema = {
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Attestation',
-      properties: {
+    testCType = CType.fromProperties(
+      {
         name: { type: 'string' },
       },
-      type: 'object',
-    }
-
-    testCType = CType.fromSchema(rawCTypeSchema)
+      'Attestation'
+    )
 
     testContents = {}
     testClaim = Claim.fromCTypeAndClaimContents(

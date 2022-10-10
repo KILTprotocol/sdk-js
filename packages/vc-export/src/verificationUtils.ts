@@ -309,7 +309,7 @@ export async function verifyCredentialDigestProof(
 /**
  * Validates the claims in the VC's `credentialSubject` against a CType definition on the `credentialSchema` property.
  *
- * @param credential A verifiable credential where `credentialSchema.schema` is an [[ICTypeSchema]].
+ * @param credential A verifiable credential where `credentialSchema.schema` is an [[ICType]].
  * @returns The [[VerificationResult]].
  */
 export function validateSchema(

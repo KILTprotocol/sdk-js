@@ -19,10 +19,9 @@ import type {
   ICType,
   IClaim,
   ICTypeMetadata,
-  ICTypeSchema,
   CTypeHash,
 } from '@kiltprotocol/types'
-import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { CTypeModel, MetadataModel } from './CType.schemas.js'
 
@@ -32,15 +31,15 @@ import { CTypeModel, MetadataModel } from './CType.schemas.js'
  * @param ctypeSchema The CType schema (with or without $id).
  * @returns CtypeSchema without the $id property.
  */
-export function getSchemaPropertiesForHash(
-  ctypeSchema: ICType | ICTypeSchema
-): ICTypeSchema {
+export function serializeForHash(
+  ctypeSchema: ICType | Omit<ICType, '$id'>
+): string {
   // We need to remove the CType ID from the CType before storing it on the blockchain
   // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
   // which is itself a hash of the CType schema.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { $id: _, ...schemaWithoutId } = ctypeSchema as ICType
-  return schemaWithoutId
+  return Crypto.encodeObjectAsStr(schemaWithoutId)
 }
 
 /**
@@ -49,9 +48,11 @@ export function getSchemaPropertiesForHash(
  * @param schema The CType schema (with or without $id).
  * @returns Hash as hex string.
  */
-export function getHashForSchema(schema: ICTypeSchema): CTypeHash {
-  const preparedSchema = getSchemaPropertiesForHash(schema)
-  return Crypto.hashStr(Crypto.encodeObjectAsStr(preparedSchema))
+export function getHashForSchema(
+  schema: ICType | Omit<ICType, '$id'>
+): CTypeHash {
+  const serializedSchema = serializeForHash(schema)
+  return Crypto.hashStr(serializedSchema)
 }
 
 /**
@@ -85,7 +86,9 @@ export function getCTypeHashFromId(id: ICType['$id']): CTypeHash {
  * @param schema CType schema for which to create schema id.
  * @returns Schema id uri.
  */
-export function getIdForSchema(schema: ICTypeSchema): ICType['$id'] {
+export function getIdForSchema(
+  schema: ICType | Omit<ICType, '$id'>
+): ICType['$id'] {
   return getIdForCTypeHash(getHashForSchema(schema))
 }
 
@@ -119,15 +122,15 @@ export function verifyObjectAgainstSchema(
 }
 
 /**
- * Verifies the structure of the provided IClaim['contents'] with ICTypeSchema.
+ * Verifies the structure of the provided IClaim['contents'] with [[ICType]].
  *
  * @param claimContents IClaim['contents'] to be verified against the schema.
- * @param schema ICTypeSchema to be verified against the [CTypeModel].
+ * @param schema ICType to be verified against the [[CTypeModel]].
  * @param messages An array, which will be filled by schema errors.
  */
 export function verifyClaimAgainstSchema(
   claimContents: IClaim['contents'],
-  schema: ICTypeSchema,
+  schema: ICType,
   messages?: string[]
 ): void {
   verifyObjectAgainstSchema(schema, CTypeModel)
@@ -153,7 +156,7 @@ export async function verifyStored(ctype: ICType): Promise<void> {
  * Checks whether the input meets all the required criteria of an ICType object.
  * Throws on invalid input.
  *
- * @param input The potentially only partial ICType.
+ * @param input The ICType object.
  */
 export function verifyDataStructure(input: ICType): void {
   verifyObjectAgainstSchema(input, CTypeModel)
@@ -172,8 +175,8 @@ export function verifyDataStructure(input: ICType): void {
  * @param messages - Optional empty array. If passed, this receives all verification errors.
  */
 export function verifyClaimAgainstNestedSchemas(
-  cType: ICTypeSchema,
-  nestedCTypes: ICTypeSchema[],
+  cType: ICType,
+  nestedCTypes: ICType[],
   claimContents: Record<string, any>,
   messages?: string[]
 ): void {
@@ -204,19 +207,24 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
 }
 
 /**
- * Creates a new [[CType]] from an [[ICTypeSchema]].
- * _Note_ that you can either supply the schema as [[ICTypeSchema]] with the id
- * or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it.
+ * Creates a new [[ICType]] object from a set of atomic claims and a title.
+ * The CType id will be automatically generated.
  *
- * @param schema The JSON schema from which the [[CType]] should be generated.
- *
- * @returns A ctype object with cTypeHash, owner and the schema.
+ * @param properties Key-value pairs describing the admissible atomic claims for a credential with this CType. The value of each property is a json-schema (e.g. `{ "type": "number" }`) used to validate that property.
+ * @param title The new CType's title as a string.
+ * @returns A ctype object, including cTypeId, $schema, and type.
  */
-export function fromSchema(schema: ICTypeSchema): ICType {
-  const ctype: ICType = {
-    ...schema,
-    $id: getIdForSchema(schema),
+export function fromProperties(
+  properties: ICType['properties'],
+  title: ICType['title']
+): ICType {
+  const schema: Omit<ICType, '$id'> = {
+    properties,
+    title,
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    type: 'object',
   }
+  const ctype = jsonabc.sortObj({ ...schema, $id: getIdForSchema(schema) })
   verifyDataStructure(ctype)
   return ctype
 }

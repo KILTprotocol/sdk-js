@@ -18,15 +18,12 @@ export type InstanceType =
 
 export type CTypeHash = HexString
 
-export interface ICTypeSchema {
+export interface ICType {
+  $id: `kilt:ctype:${CTypeHash}`
   $schema: string
   title: string
   properties: {
     [key: string]: { $ref?: string; type?: InstanceType; format?: string }
   }
   type: 'object'
-}
-
-export interface ICType extends ICTypeSchema {
-  $id: `kilt:ctype:${CTypeHash}`
 }

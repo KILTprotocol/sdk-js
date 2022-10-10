@@ -10,7 +10,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { IClaim, ICType, DidUri, ICTypeSchema } from '@kiltprotocol/types'
+import type { IClaim, ICType, DidUri } from '@kiltprotocol/types'
 import * as CType from '../ctype'
 import * as Claim from './Claim'
 
@@ -153,7 +153,6 @@ describe('compute hashes & validate by reproducing them', () => {
 describe('Claim', () => {
   let did: DidUri
   let claimContents: any
-  let rawCType: ICTypeSchema
   let testCType: ICType
   let claim: IClaim
 
@@ -164,16 +163,12 @@ describe('Claim', () => {
       name: 'Bob',
     }
 
-    rawCType = {
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'ClaimCtype',
-      properties: {
+    testCType = CType.fromProperties(
+      {
         name: { type: 'string' },
       },
-      type: 'object',
-    }
-
-    testCType = CType.fromSchema(rawCType)
+      'ClaimCtype'
+    )
 
     claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
   })
