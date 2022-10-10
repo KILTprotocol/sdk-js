@@ -13,7 +13,7 @@
 
 import type {
   DidDocument,
-  DidResolutionResult,
+  DidResourceUri,
   DidSignature,
   DidUri,
   DidVerificationKey,
@@ -22,6 +22,7 @@ import type {
   IClaimContents,
   ICredential,
   ICredentialPresentation,
+  ResolvedDidKey,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
@@ -308,37 +309,19 @@ describe('Credential', () => {
   let legitimation: ICredentialPresentation
   let identityDave: DidDocument
   let migratedAndDeletedLightDid: DidDocument
-  let migratedAndDeletedFullDid: DidDocument
 
-  async function mockResolve(
-    didUri: DidUri
-  ): Promise<DidResolutionResult | null> {
-    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.parse(didUri)
-    switch (did) {
-      case identityAlice?.uri:
-        return { document: identityAlice, metadata: { deactivated: false } }
-      case identityBob?.uri:
-        return { document: identityBob, metadata: { deactivated: false } }
-      case identityCharlie?.uri:
-        return { document: identityCharlie, metadata: { deactivated: false } }
-      case identityDave?.uri:
-        return { document: identityDave, metadata: { deactivated: false } }
-      case migratedAndDeletedLightDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      case migratedAndDeletedFullDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      default:
-        return null
-    }
+  async function didResolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [
+      identityAlice,
+      identityBob,
+      identityCharlie,
+      identityDave,
+    ].find(({ uri }) => uri === did)
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document.authentication[0], did)
   }
 
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
@@ -409,7 +392,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
   })
   it('verify credentials signed by a light DID', async () => {
@@ -433,7 +416,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
   })
 
@@ -450,7 +433,7 @@ describe('Credential', () => {
     await expect(
       Credential.verifyPresentation(credential as ICredentialPresentation, {
         ctype: testCType,
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrow()
   })
@@ -460,10 +443,6 @@ describe('Credential', () => {
     migratedAndDeletedLightDid = Did.createLightDidDocument({
       authentication: migratedAndDeleted.authentication,
     })
-    migratedAndDeletedFullDid = {
-      uri: Did.getFullDidUri(migratedAndDeletedLightDid.uri),
-      authentication: [migratedAndDeletedLightDid.authentication[0]],
-    }
 
     const [presentation] = await buildPresentation(
       migratedAndDeletedLightDid,
@@ -481,7 +460,7 @@ describe('Credential', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrowError()
   })
@@ -541,7 +520,6 @@ describe('create presentation', () => {
   let unmigratedClaimerKey: KeyTool
   let migratedThenDeletedClaimerLightDid: DidDocument
   let migratedThenDeletedKey: KeyTool
-  let migratedThenDeletedClaimerFullDid: DidDocument
   let attester: DidDocument
   let credential: ICredential
 
@@ -561,47 +539,18 @@ describe('create presentation', () => {
     }
   }
 
-  async function mockResolve(
-    didUri: DidUri
-  ): Promise<DidResolutionResult | null> {
-    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.parse(didUri)
-    switch (did) {
-      case migratedClaimerLightDid?.uri:
-        return {
-          document: migratedClaimerLightDid,
-          metadata: {
-            canonicalId: migratedClaimerFullDid.uri,
-            deactivated: false,
-          },
-        }
-      case migratedThenDeletedClaimerLightDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      case migratedThenDeletedClaimerFullDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      case unmigratedClaimerLightDid?.uri:
-        return {
-          document: unmigratedClaimerLightDid,
-          metadata: { deactivated: false },
-        }
-      case migratedClaimerFullDid?.uri:
-        return {
-          document: migratedClaimerFullDid,
-          metadata: { deactivated: false },
-        }
-      case attester?.uri:
-        return { document: attester, metadata: { deactivated: false } }
-      default:
-        return null
-    }
+  async function didResolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [
+      migratedClaimerLightDid,
+      unmigratedClaimerLightDid,
+      migratedClaimerFullDid,
+      attester,
+    ].find(({ uri }) => uri === did)
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document.authentication[0], did)
   }
 
   beforeAll(async () => {
@@ -630,9 +579,6 @@ describe('create presentation', () => {
     migratedThenDeletedClaimerLightDid = Did.createLightDidDocument({
       authentication: migratedThenDeletedKey.authentication,
     })
-    migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
-      migratedThenDeletedClaimerLightDid
-    )
 
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
@@ -658,7 +604,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -685,7 +631,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -714,7 +660,7 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -745,7 +691,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(att, {
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrow()
   })
@@ -776,7 +722,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrow()
   })

@@ -1,5 +1,5 @@
 {
-  "name": "@kiltprotocol/config",
+  "name": "@kiltprotocol/type-definitions",
   "version": "0.30.0-29",
   "description": "",
   "main": "./lib/cjs/index.js",
@@ -32,11 +32,5 @@
   "devDependencies": {
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
-  },
-  "dependencies": {
-    "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.4.1",
-    "typescript-logging": "^0.6.4"
   }
 }

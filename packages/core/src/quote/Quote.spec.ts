@@ -13,7 +13,6 @@ import { u8aToHex } from '@polkadot/util'
 
 import type {
   DidDocument,
-  DidResolutionResult,
   IClaim,
   ICostBreakdown,
   ICType,
@@ -21,6 +20,8 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   ICredential,
+  DidResourceUri,
+  ResolvedDidKey,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
@@ -54,19 +55,15 @@ describe('Quote', () => {
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
 
-  async function mockResolve(
-    didUri: string
-  ): Promise<DidResolutionResult | null> {
-    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const didWithoutFragment = didUri.split('#')[0]
-    switch (didWithoutFragment) {
-      case claimerIdentity?.uri:
-        return { document: claimerIdentity, metadata: { deactivated: false } }
-      case attesterIdentity?.uri:
-        return { document: attesterIdentity, metadata: { deactivated: false } }
-      default:
-        return null
-    }
+  async function mockResolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [claimerIdentity, attesterIdentity].find(
+      ({ uri }) => uri === did
+    )
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document.authentication[0], did)
   }
 
   beforeAll(async () => {
@@ -139,7 +136,7 @@ describe('Quote', () => {
       claimer.getSignCallback(claimerIdentity),
       claimerIdentity.uri,
       {
-        didResolve: mockResolve,
+        didResolveKey: mockResolveKey,
       }
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
@@ -179,7 +176,7 @@ describe('Quote', () => {
       )
     ).not.toThrow()
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-      didResolve: mockResolve,
+      didResolveKey: mockResolveKey,
     })
     expect(
       await Quote.createAttesterSignedQuote(

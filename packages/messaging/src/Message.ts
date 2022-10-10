@@ -306,7 +306,7 @@ export async function decrypt(
   const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
     encrypted
 
-  const senderKeyDetails = await resolveKey(senderKeyUri)
+  const senderKeyDetails = await resolveKey(senderKeyUri, 'keyAgreement')
 
   const { fragment } = Did.parse(receiverKeyUri)
   if (!fragment) {
@@ -416,7 +416,7 @@ export async function encrypt(
     resolveKey?: DidResolveKey
   } = {}
 ): Promise<IEncryptedMessage> {
-  const receiverKey = await resolveKey(receiverKeyUri)
+  const receiverKey = await resolveKey(receiverKeyUri, 'keyAgreement')
   if (message.receiver !== receiverKey.controller) {
     throw new SDKErrors.IdentityMismatchError('receiver public key', 'receiver')
   }

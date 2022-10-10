@@ -11,8 +11,6 @@
 
 import type {
   DidDocument,
-  DidKey,
-  DidResolutionResult,
   DidResourceUri,
   DidUri,
   IEncryptedMessage,
@@ -86,56 +84,21 @@ describe('Messaging', () => {
   let bobSign: KeyToolSignCallback
   const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
-  async function didResolve(did: DidUri): Promise<DidResolutionResult | null> {
-    // The light dids are regarded as not upgraded.
-    if (did.startsWith(aliceLightDidWithDetails.uri)) {
-      return {
-        document: aliceLightDidWithDetails,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(aliceLightDid.uri)) {
-      return {
-        document: aliceLightDid,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(aliceFullDid.uri)) {
-      return { document: aliceFullDid, metadata: { deactivated: false } }
-    }
-
-    // The light dids are regarded as not upgraded.
-    if (did.startsWith(bobLightDidWithDetails.uri)) {
-      return {
-        document: bobLightDidWithDetails,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(bobLightDid.uri)) {
-      return {
-        document: bobLightDid,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(bobFullDid.uri)) {
-      return { document: bobFullDid, metadata: { deactivated: false } }
-    }
-    return null
-  }
-
-  async function resolveKey(keyUri: DidResourceUri): Promise<ResolvedDidKey> {
-    const { fragment, did } = Did.parse(keyUri)
-    const { document } = (await didResolve(
-      did as DidUri
-    )) as DidResolutionResult
-    if (document === undefined) throw new Error('Could not resolve details')
-    const key = Did.getKey(document, fragment!) as DidKey
-    return {
-      controller: document!.uri,
-      id: keyUri,
-      publicKey: key.publicKey,
-      type: key.type,
-    }
+  async function resolveKey(
+    keyUri: DidResourceUri,
+    keyRelationship = 'authentication'
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [
+      aliceLightDidWithDetails,
+      aliceLightDid,
+      aliceFullDid,
+      bobLightDidWithDetails,
+      bobLightDid,
+      bobFullDid,
+    ].find(({ uri }) => uri === did)
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document[keyRelationship][0], did)
   }
 
   beforeAll(async () => {
@@ -266,7 +229,7 @@ describe('Messaging', () => {
       credential.rootHash,
       aliceSign(aliceFullDid),
       aliceFullDid.uri,
-      { didResolve }
+      { didResolveKey: resolveKey }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -434,7 +397,7 @@ describe('Messaging', () => {
       credential.rootHash,
       aliceSign(aliceLightDid),
       aliceLightDid.uri,
-      { didResolve }
+      { didResolveKey: resolveKey }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -476,7 +439,7 @@ describe('Messaging', () => {
       credential.rootHash,
       aliceSign(aliceLightDidWithDetails),
       aliceLightDidWithDetails.uri,
-      { didResolve }
+      { didResolveKey: resolveKey }
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
       content: {
@@ -796,27 +759,15 @@ describe('Error checking / Verification', () => {
       name: 'Bob',
     }
 
-    async function didResolve(
-      didUri: DidUri
-    ): Promise<DidResolutionResult | null> {
-      const { did } = Did.parse(didUri)
-      if (did === identityAlice.uri) {
-        return {
-          metadata: {
-            deactivated: false,
-          },
-          document: identityAlice,
-        }
-      }
-      if (did === identityBob.uri) {
-        return {
-          metadata: {
-            deactivated: false,
-          },
-          document: identityBob,
-        }
-      }
-      return null
+    async function didResolveKey(
+      keyUri: DidResourceUri
+    ): Promise<ResolvedDidKey> {
+      const { did } = Did.parse(keyUri)
+      const document = [identityAlice, identityBob].find(
+        ({ uri }) => uri === did
+      )
+      if (!document) throw new Error('Cannot resolve mocked DID')
+      return Did.keyToResolvedKey(document.authentication[0], did)
     }
 
     // CType
@@ -872,7 +823,7 @@ describe('Error checking / Verification', () => {
       legitimation.rootHash,
       keyBob.getSignCallback(identityBob),
       identityBob.uri,
-      { didResolve }
+      { didResolveKey }
     )
     // Request Terms content
     requestTermsContent = {

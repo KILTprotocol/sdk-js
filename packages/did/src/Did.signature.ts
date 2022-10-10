@@ -8,24 +8,20 @@
 import { u8aToHex, isHex } from '@polkadot/util'
 
 import {
-  DidDocument,
-  DidResolve,
-  DidResourceUri,
+  DidResolveKey,
   DidSignature,
-  UriFragment,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { resolve } from './DidResolver/index.js'
+import { resolveKey } from './DidResolver/index.js'
 import { parse, validateUri } from './Did.utils.js'
-import * as Did from './index.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: DidSignature
   expectedVerificationMethod?: VerificationKeyRelationship
-  didResolve?: DidResolve
+  didResolveKey?: DidResolveKey
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
@@ -60,13 +56,13 @@ function verifyDidSignatureDataStructure(
  * @param input.message The message that was signed.
  * @param input.signature An object containing signature and signer key.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
- * @param input.didResolve Allows specifying a custom DID resolve. Defaults to the built-in [[resolve]].
+ * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
  */
 export async function verifyDidSignature({
   message,
   signature,
   expectedVerificationMethod,
-  didResolve = resolve,
+  didResolveKey = resolveKey,
 }: DidSignatureVerificationInput): Promise<void> {
   verifyDidSignatureDataStructure(signature)
   // Add support for old signatures that had the `keyId` instead of the `keyUri`
@@ -75,52 +71,15 @@ export async function verifyDidSignature({
   const { fragment } = parse(inputUri)
   if (!fragment)
     throw new SDKErrors.SignatureMalformedError(
-      `Signature key URI "${signature.keyUri}" invalid`
+      `Signature key URI "${inputUri}" invalid`
     )
 
-  const keyId: UriFragment = fragment
-  const keyUri: DidResourceUri = inputUri
+  const { publicKey } = await didResolveKey(
+    inputUri,
+    expectedVerificationMethod
+  )
 
-  const resolutionDetails = await didResolve(keyUri)
-  // Verification fails if the DID does not exist at all.
-  if (!resolutionDetails) {
-    throw new SDKErrors.DidError(`No result for provided key URI "${keyUri}"`)
-  }
-
-  // Verification also fails if the DID has been deleted.
-  if (resolutionDetails.metadata.deactivated) {
-    throw new SDKErrors.DidError('DID for provided key is deactivated')
-  }
-  // Verification also fails if the signer is a migrated light DID.
-  if (resolutionDetails.metadata.canonicalId) {
-    throw new SDKErrors.DidError(
-      'DID for provided key has been migrated and not usable anymore'
-    )
-  }
-
-  // Otherwise, the document used is either the migrated full DID document or the light DID document.
-  const did = (
-    resolutionDetails.metadata.canonicalId !== undefined
-      ? (await didResolve(resolutionDetails.metadata.canonicalId))?.document
-      : resolutionDetails.document
-  ) as DidDocument
-
-  const key = Did.getKey(did, keyId)
-  if (!key) {
-    throw new SDKErrors.DidError(
-      `No key with ID "${keyId}" for the DID ${did.uri}`
-    )
-  }
-  // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
-  if (
-    expectedVerificationMethod &&
-    !did[expectedVerificationMethod]?.map((verKey) => verKey.id).includes(keyId)
-  ) {
-    throw new SDKErrors.DidError(
-      `No key with ID "${keyId}" for the verification method "${expectedVerificationMethod}"`
-    )
-  }
-  Crypto.verify(message, signature.signature, u8aToHex(key.publicKey))
+  Crypto.verify(message, signature.signature, u8aToHex(publicKey))
 }
 
 /**
