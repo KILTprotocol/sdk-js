@@ -248,17 +248,14 @@ async function runAll() {
 
   // CType workflow
   console.log('CType workflow started')
-  const DriversLicense = CType.fromProperties(
-    {
-      name: {
-        type: 'string',
-      },
-      age: {
-        type: 'integer',
-      },
+  const DriversLicense = CType.fromProperties('Drivers License', {
+    name: {
+      type: 'string',
     },
-    'Drivers License'
-  )
+    age: {
+      type: 'integer',
+    },
+  })
 
   const cTypeStoreTx = await Did.authorizeTx(
     alice.uri,

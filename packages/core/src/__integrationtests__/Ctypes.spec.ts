@@ -35,15 +35,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   function makeCType(): ICType {
     ctypeCounter += 1
-    return {
-      $id: `kilt:ctype:0x${ctypeCounter}`,
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: `ctype${ctypeCounter}`,
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
+    return CType.fromProperties(`ctype${ctypeCounter}`, {
+      name: { type: 'string' },
+    })
   }
 
   beforeAll(async () => {
@@ -115,25 +109,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
-    const iAmNotThere: ICType = {
-      $id: 'kilt:ctype:0x2',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'ctype2',
-      properties: {
-        game: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    const iAmNotThereWithOwner: ICType = {
-      $id: 'kilt:ctype:0x3',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'ctype2',
-      properties: {
-        game: { type: 'string' },
-      },
-      type: 'object',
-    }
+    const iAmNotThere: ICType = CType.fromProperties('ctype2', {
+      game: { type: 'string' },
+    })
 
     await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
     expect(
@@ -143,8 +121,6 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
     const fakeHash = Crypto.hashStr('abcdefg')
     expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
-
-    await expect(CType.verifyStored(iAmNotThereWithOwner)).rejects.toThrow()
   })
 })
 
