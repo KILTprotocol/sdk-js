@@ -38,6 +38,7 @@ export function getSchemaPropertiesForHash(
   // We need to remove the CType ID from the CType before storing it on the blockchain
   // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
   // which is itself a hash of the CType schema.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { $id: _, ...schemaWithoutId } = ctypeSchema as ICType
   return schemaWithoutId
 }
