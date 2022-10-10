@@ -163,12 +163,9 @@ describe('Claim', () => {
       name: 'Bob',
     }
 
-    testCType = CType.fromProperties(
-      {
-        name: { type: 'string' },
-      },
-      'ClaimCtype'
-    )
+    testCType = CType.fromProperties('ClaimCtype', {
+      name: { type: 'string' },
+    })
 
     claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
   })

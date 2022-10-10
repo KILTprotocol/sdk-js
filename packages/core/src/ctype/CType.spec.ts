@@ -33,12 +33,9 @@ describe('CType', () => {
   let claimContents: any
   let claim: IClaim
   beforeAll(async () => {
-    claimCtype = CType.fromProperties(
-      {
-        name: { type: 'string' },
-      },
-      'CtypeModel 2'
-    )
+    claimCtype = CType.fromProperties('CtypeModel 2', {
+      name: { type: 'string' },
+    })
 
     claimContents = {
       name: 'Bob',
@@ -48,13 +45,10 @@ describe('CType', () => {
   })
 
   it('makes ctype object from schema without id', () => {
-    const ctype = CType.fromProperties(
-      {
-        'first-property': { type: 'integer' },
-        'second-property': { type: 'string' },
-      },
-      'CtypeModel 1'
-    )
+    const ctype = CType.fromProperties('CtypeModel 1', {
+      'first-property': { type: 'integer' },
+      'second-property': { type: 'string' },
+    })
 
     expect(ctype.$id).toBe(
       'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
@@ -111,8 +105,8 @@ describe('blank ctypes', () => {
   let ctype2: ICType
 
   beforeAll(async () => {
-    ctype1 = CType.fromProperties({}, 'hasDriversLicense')
-    ctype2 = CType.fromProperties({}, 'claimedSomething')
+    ctype1 = CType.fromProperties('hasDriversLicense', {})
+    ctype2 = CType.fromProperties('claimedSomething', {})
   })
 
   it('two ctypes with no properties have different hashes if id is different', () => {
@@ -157,13 +151,10 @@ describe('CType verification', () => {
     required: ['first-property', 'second-property'],
   } as unknown as ICType
 
-  const ctypeWrapperModel: ICType = CType.fromProperties(
-    {
-      'first-property': { type: 'integer' },
-      'second-property': { type: 'string' },
-    },
-    'name'
-  )
+  const ctypeWrapperModel: ICType = CType.fromProperties('name', {
+    'first-property': { type: 'integer' },
+    'second-property': { type: 'string' },
+  })
 
   const goodClaim = {
     'first-property': 10,
@@ -197,12 +188,9 @@ describe('CType verification', () => {
 })
 
 describe('CType registration verification', () => {
-  const ctype = CType.fromProperties(
-    {
-      name: { type: 'string' },
-    },
-    'CtypeModel 2'
-  )
+  const ctype = CType.fromProperties('CtypeModel 2', {
+    name: { type: 'string' },
+  })
 
   describe('when CType is not registered', () => {
     it('does not verify registration when not registered', async () => {

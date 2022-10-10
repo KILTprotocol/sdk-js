@@ -103,19 +103,17 @@ export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
   }
 }
 
-export const driversLicenseCType = CType.fromProperties(
-  {
-    name: {
-      type: 'string',
-    },
-    age: {
-      type: 'integer',
-    },
+export const driversLicenseCType = CType.fromProperties('Drivers License', {
+  name: {
+    type: 'string',
   },
-  'Drivers License'
-)
+  age: {
+    type: 'integer',
+  },
+})
 
 export const driversLicenseCTypeForDeposit = CType.fromProperties(
+  'Drivers License for deposit test',
   {
     name: {
       type: 'string',
@@ -127,7 +125,6 @@ export const driversLicenseCTypeForDeposit = CType.fromProperties(
       type: 'string',
     },
   },
-  'Drivers License for deposit test'
 )
 
 // Submits resolving when IS_IN_BLOCK

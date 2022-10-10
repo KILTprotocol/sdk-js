@@ -20,13 +20,10 @@ describe('CType', () => {
   let metadata: ICTypeMetadata
 
   beforeAll(async () => {
-    ctype = CType.fromProperties(
-      {
-        'first-property': { type: 'integer' },
-        'second-property': { type: 'string' },
-      },
-      'CtypeMetaData'
-    )
+    ctype = CType.fromProperties('CtypeMetaData', {
+      'first-property': { type: 'integer' },
+      'second-property': { type: 'string' },
+    })
 
     ctypeMetadata = {
       title: { default: 'Title' },

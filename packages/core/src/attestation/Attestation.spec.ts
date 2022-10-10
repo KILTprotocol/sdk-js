@@ -46,12 +46,9 @@ describe('Attestation', () => {
   let credential: ICredential
 
   beforeAll(async () => {
-    testCType = CType.fromProperties(
-      {
-        name: { type: 'string' },
-      },
-      'Attestation'
-    )
+    testCType = CType.fromProperties('Attestation', {
+      name: { type: 'string' },
+    })
 
     testContents = {}
     testClaim = Claim.fromCTypeAndClaimContents(

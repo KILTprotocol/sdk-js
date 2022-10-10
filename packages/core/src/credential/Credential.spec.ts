@@ -38,12 +38,9 @@ import * as CType from '../ctype'
 import * as Credential from './Credential'
 import { getCTypeHashFromId } from '../ctype'
 
-const testCType = CType.fromProperties(
-  {
-    name: { type: 'string' },
-  },
-  'raw ctype'
-)
+const testCType = CType.fromProperties('raw ctype', {
+  name: { type: 'string' },
+})
 
 function buildCredential(
   claimerDid: DidUri,
@@ -334,10 +331,7 @@ describe('Credential', () => {
   ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
 
-    const ctype = CType.fromProperties(
-      { name: { type: 'string' } },
-      'Credential'
-    )
+    const ctype = CType.fromProperties('Credential', { name: { type: 'string' } })
 
     const claim = Claim.fromCTypeAndClaimContents(ctype, contents, claimer.uri)
     // build credential with legitimations
@@ -512,7 +506,7 @@ describe('Credential', () => {
   })
 })
 
-describe('create presentation', () => {
+describe('create presentation', ;() => {
   let migratedClaimerLightDid: DidDocument
   let migratedClaimerFullDid: DidDocument
   let newKeyForMigratedClaimerDid: KeyTool
@@ -523,7 +517,7 @@ describe('create presentation', () => {
   let attester: DidDocument
   let credential: ICredential
 
-  const ctype = CType.fromProperties(testCType.properties, testCType.title)
+  const ctype = CType.fromProperties(testCType.title, testCType.properties)
 
   // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(

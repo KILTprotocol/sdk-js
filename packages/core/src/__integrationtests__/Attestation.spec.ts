@@ -241,17 +241,14 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
-    const badCtype = CType.fromProperties(
-      {
-        name: {
-          type: 'string',
-        },
-        weight: {
-          type: 'integer',
-        },
+    const badCtype = CType.fromProperties('badDriversLicense', {
+      name: {
+        type: 'string',
       },
-      'badDriversLicense'
-    )
+      weight: {
+        type: 'integer',
+      },
+    })
 
     const content = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
@@ -418,6 +415,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
   describe('when there is another Ctype that works as a legitimation', () => {
     const officialLicenseAuthorityCType = CType.fromProperties(
+      'License Authority',
       {
         LicenseType: {
           type: 'string',
@@ -425,8 +423,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         LicenseSubtypes: {
           type: 'string',
         },
-      },
-      'License Authority'
+      }
     )
 
     beforeAll(async () => {

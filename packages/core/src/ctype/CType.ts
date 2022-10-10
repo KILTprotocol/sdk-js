@@ -210,13 +210,13 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
  * Creates a new [[ICType]] object from a set of atomic claims and a title.
  * The CType id will be automatically generated.
  *
- * @param properties Key-value pairs describing the admissible atomic claims for a credential with this CType. The value of each property is a json-schema (e.g. `{ "type": "number" }`) used to validate that property.
  * @param title The new CType's title as a string.
+ * @param properties Key-value pairs describing the admissible atomic claims for a credential with this CType. The value of each property is a json-schema (for example `{ "type": "number" }`) used to validate that property.
  * @returns A ctype object, including cTypeId, $schema, and type.
  */
 export function fromProperties(
-  properties: ICType['properties'],
-  title: ICType['title']
+  title: ICType['title'],
+  properties: ICType['properties']
 ): ICType {
   const schema: Omit<ICType, '$id'> = {
     properties,

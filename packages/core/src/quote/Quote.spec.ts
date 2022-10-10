@@ -77,12 +77,9 @@ describe('Quote', () => {
     } as unknown as ICostBreakdown
     date = new Date(2019, 11, 10).toISOString()
 
-    testCType = CType.fromProperties(
-      {
-        name: { type: 'string' },
-      },
-      'Quote Information'
-    )
+    testCType = CType.fromProperties('Quote Information', {
+      name: { type: 'string' },
+    })
 
     claim = {
       cTypeHash: CType.getCTypeHashFromId(testCType.$id),

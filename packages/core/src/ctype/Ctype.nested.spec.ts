@@ -26,25 +26,19 @@ describe('Nested CTypes', () => {
   let nestedDeepData: IClaim
 
   beforeAll(async () => {
-    passport = CType.fromProperties(
-      {
-        fullName: { type: 'string' },
-        passportIdentifier: { type: 'string' },
-        streetAddress: { type: 'string' },
-        city: { type: 'string' },
-        state: { type: 'string' },
-      },
-      'Passport'
-    )
+    passport = CType.fromProperties('Passport', {
+      fullName: { type: 'string' },
+      passportIdentifier: { type: 'string' },
+      streetAddress: { type: 'string' },
+      city: { type: 'string' },
+      state: { type: 'string' },
+    })
 
-    kyc = CType.fromProperties(
-      {
-        ID: { type: 'string' },
-        number: { type: 'string' },
-        name: { type: 'string' },
-      },
-      'KYC'
-    )
+    kyc = CType.fromProperties('KYC', {
+      ID: { type: 'string' },
+      number: { type: 'string' },
+      name: { type: 'string' },
+    })
 
     claimContents = {
       fullName: 'Archer Macdonald',
@@ -72,47 +66,41 @@ describe('Nested CTypes', () => {
       },
     }
 
-    nestedCType = CType.fromProperties(
-      {
-        fullName: {
-          $ref: `${passport.$id}#/properties/fullName`,
-        },
-        passportIdentifier: {
-          $ref: `${passport.$id}#/properties/passportIdentifier`,
-        },
-        streetAddress: {
-          $ref: `${passport.$id}#/properties/streetAddress`,
-        },
-        city: {
-          $ref: `${passport.$id}#/properties/city`,
-        },
-        state: {
-          $ref: `${passport.$id}#/properties/state`,
-        },
-        ID: {
-          $ref: `${kyc.$id}#/properties/ID`,
-        },
-        number: {
-          $ref: `${kyc.$id}#/properties/number`,
-        },
-        name: {
-          $ref: `${kyc.$id}#/properties/name`,
-        },
+    nestedCType = CType.fromProperties('KYC and Passport', {
+      fullName: {
+        $ref: `${passport.$id}#/properties/fullName`,
       },
-      'KYC and Passport'
-    )
+      passportIdentifier: {
+        $ref: `${passport.$id}#/properties/passportIdentifier`,
+      },
+      streetAddress: {
+        $ref: `${passport.$id}#/properties/streetAddress`,
+      },
+      city: {
+        $ref: `${passport.$id}#/properties/city`,
+      },
+      state: {
+        $ref: `${passport.$id}#/properties/state`,
+      },
+      ID: {
+        $ref: `${kyc.$id}#/properties/ID`,
+      },
+      number: {
+        $ref: `${kyc.$id}#/properties/number`,
+      },
+      name: {
+        $ref: `${kyc.$id}#/properties/name`,
+      },
+    })
 
-    deeplyNestedCType = CType.fromProperties(
-      {
-        passport: {
-          $ref: `${passport.$id}`,
-        },
-        KYC: {
-          $ref: `${kyc.$id}`,
-        },
+    deeplyNestedCType = CType.fromProperties('test', {
+      passport: {
+        $ref: `${passport.$id}`,
       },
-      'test'
-    )
+      KYC: {
+        $ref: `${kyc.$id}`,
+      },
+    })
 
     nestedData = Claim.fromNestedCTypeClaim(
       nestedCType,

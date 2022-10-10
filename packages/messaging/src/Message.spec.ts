@@ -666,12 +666,9 @@ describe('Error checking / Verification', () => {
   ): Promise<[ICredential, IAttestation]> {
     // create claim
 
-    const testCType = CType.fromProperties(
-      {
-        name: { type: 'string' },
-      },
-      'Credential'
-    )
+    const testCType = CType.fromProperties('Credential', {
+      name: { type: 'string' },
+    })
 
     const claim = Claim.fromCTypeAndClaimContents(
       testCType,
@@ -748,7 +745,7 @@ describe('Error checking / Verification', () => {
   let messageRejectAcceptDelegation: IMessage
   let messageInformCreateDelegation: IMessage
 
-  beforeAll(async () => {
+  beforeAll(;async () => {
     keyAlice = makeSigningKeyTool()
     identityAlice = await createLocalDemoFullDidFromKeypair(keyAlice.keypair)
     keyBob = makeSigningKeyTool()
@@ -771,19 +768,16 @@ describe('Error checking / Verification', () => {
     }
 
     // CType
-    testCType = CType.fromProperties(
-      {
-        name: { type: 'string' },
-      },
-      'ClaimCtype'
-    )
+    testCType = CType.fromProperties('ClaimCtype', {
+      name: { type: 'string' },
+    })
     testCTypeWithMultipleProperties = CType.fromProperties(
+      'Drivers license Claim',
       {
         name: { type: 'string' },
         id: { type: 'string' },
         age: { type: 'string' },
-      },
-      'Drivers license Claim'
+      }
     )
 
     // Claim
