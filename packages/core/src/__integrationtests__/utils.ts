@@ -124,7 +124,7 @@ export const driversLicenseCTypeForDeposit = CType.fromProperties(
     location: {
       type: 'string',
     },
-  },
+  }
 )
 
 // Submits resolving when IS_IN_BLOCK

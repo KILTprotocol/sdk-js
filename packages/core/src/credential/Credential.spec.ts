@@ -331,7 +331,9 @@ describe('Credential', () => {
   ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
 
-    const ctype = CType.fromProperties('Credential', { name: { type: 'string' } })
+    const ctype = CType.fromProperties('Credential', {
+      name: { type: 'string' },
+    })
 
     const claim = Claim.fromCTypeAndClaimContents(ctype, contents, claimer.uri)
     // build credential with legitimations
@@ -506,7 +508,7 @@ describe('Credential', () => {
   })
 })
 
-describe('create presentation', ;() => {
+describe('create presentation', () => {
   let migratedClaimerLightDid: DidDocument
   let migratedClaimerFullDid: DidDocument
   let newKeyForMigratedClaimerDid: KeyTool

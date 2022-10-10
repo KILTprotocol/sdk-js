@@ -745,7 +745,7 @@ describe('Error checking / Verification', () => {
   let messageRejectAcceptDelegation: IMessage
   let messageInformCreateDelegation: IMessage
 
-  beforeAll(;async () => {
+  beforeAll(async () => {
     keyAlice = makeSigningKeyTool()
     identityAlice = await createLocalDemoFullDidFromKeypair(keyAlice.keypair)
     keyBob = makeSigningKeyTool()
