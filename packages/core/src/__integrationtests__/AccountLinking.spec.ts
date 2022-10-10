@@ -29,7 +29,7 @@ import {
   createEndowedTestAccount,
   fundAccount,
   initializeApi,
-  submitExtrinsic,
+  submitTx,
 } from './utils'
 import { disconnect } from '../kilt'
 
@@ -80,7 +80,7 @@ describe('When there is an on-chain DID', () => {
       ).toBe(true)
 
       const associateSenderTx = api.tx.didLookup.associateSender()
-      const signedTx = await Did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeTx(
         did.uri,
         associateSenderTx,
         didKey.getSignCallback(did),
@@ -89,7 +89,7 @@ describe('When there is an on-chain DID', () => {
       const balanceBefore = (
         await api.query.system.account(paymentAccount.address)
       ).data
-      await submitExtrinsic(signedTx, paymentAccount)
+      await submitTx(signedTx, paymentAccount)
 
       // Check that the deposit has been taken from the sender's balance.
       const balanceAfter = (
@@ -123,7 +123,7 @@ describe('When there is an on-chain DID', () => {
     }, 30_000)
     it('should be possible to associate the tx sender to a new DID', async () => {
       const associateSenderTx = api.tx.didLookup.associateSender()
-      const signedTx = await Did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeTx(
         newDid.uri,
         associateSenderTx,
         newDidKey.getSignCallback(newDid),
@@ -132,7 +132,7 @@ describe('When there is an on-chain DID', () => {
       const balanceBefore = (
         await api.query.system.account(paymentAccount.address)
       ).data
-      await submitExtrinsic(signedTx, paymentAccount)
+      await submitTx(signedTx, paymentAccount)
 
       // Reserve should not change when replacing the link
       const balanceAfter = (
@@ -180,7 +180,7 @@ describe('When there is an on-chain DID', () => {
       const balanceBefore = (
         await api.query.system.account(paymentAccount.address)
       ).data
-      await submitExtrinsic(removeSenderTx, paymentAccount)
+      await submitTx(removeSenderTx, paymentAccount)
 
       // Check that the deposit has been returned to the sender's balance.
       const balanceAfter = (
@@ -235,7 +235,7 @@ describe('When there is an on-chain DID', () => {
           did.uri,
           async (payload) => keypair.sign(payload, { withType: false })
         )
-        const signedTx = await Did.authorizeExtrinsic(
+        const signedTx = await Did.authorizeTx(
           did.uri,
           api.tx.didLookup.associateAccount(...args),
           didKey.getSignCallback(did),
@@ -244,7 +244,7 @@ describe('When there is an on-chain DID', () => {
         const balanceBefore = (
           await api.query.system.account(paymentAccount.address)
         ).data
-        await submitExtrinsic(signedTx, paymentAccount)
+        await submitTx(signedTx, paymentAccount)
 
         // Check that the deposit has been taken from the sender's balance.
         const balanceAfter = (
@@ -290,7 +290,7 @@ describe('When there is an on-chain DID', () => {
           newDid.uri,
           async (payload) => keypair.sign(payload, { withType: false })
         )
-        const signedTx = await Did.authorizeExtrinsic(
+        const signedTx = await Did.authorizeTx(
           newDid.uri,
           api.tx.didLookup.associateAccount(...args),
           newDidKey.getSignCallback(newDid),
@@ -299,7 +299,7 @@ describe('When there is an on-chain DID', () => {
         const balanceBefore = (
           await api.query.system.account(paymentAccount.address)
         ).data
-        await submitExtrinsic(signedTx, paymentAccount)
+        await submitTx(signedTx, paymentAccount)
 
         // Reserve should not change when replacing the link
         const balanceAfter = (
@@ -358,7 +358,7 @@ describe('When there is an on-chain DID', () => {
       it('should be possible for the DID to remove the link', async () => {
         const removeLinkTx =
           api.tx.didLookup.removeAccountAssociation(keypairChain)
-        const signedTx = await Did.authorizeExtrinsic(
+        const signedTx = await Did.authorizeTx(
           newDid.uri,
           removeLinkTx,
           newDidKey.getSignCallback(newDid),
@@ -367,7 +367,7 @@ describe('When there is an on-chain DID', () => {
         const balanceBefore = (
           await api.query.system.account(paymentAccount.address)
         ).data
-        await submitExtrinsic(signedTx, paymentAccount)
+        await submitTx(signedTx, paymentAccount)
 
         // Check that the deposit has been returned to the sender's balance.
         const balanceAfter = (
@@ -426,7 +426,7 @@ describe('When there is an on-chain DID', () => {
         did.uri,
         async (payload) => genericAccount.sign(payload, { withType: true })
       )
-      const signedTx = await Did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeTx(
         did.uri,
         api.tx.didLookup.associateAccount(...args),
         didKey.getSignCallback(did),
@@ -435,7 +435,7 @@ describe('When there is an on-chain DID', () => {
       const balanceBefore = (
         await api.query.system.account(paymentAccount.address)
       ).data
-      await submitExtrinsic(signedTx, paymentAccount)
+      await submitTx(signedTx, paymentAccount)
 
       // Check that the deposit has been taken from the sender's balance.
       const balanceAfter = (
@@ -481,13 +481,13 @@ describe('When there is an on-chain DID', () => {
 
     it('should be possible to add a Web3 name for the linked DID and retrieve it starting from the linked account', async () => {
       const web3NameClaimTx = api.tx.web3Names.claim('test-name')
-      const signedTx = await Did.authorizeExtrinsic(
+      const signedTx = await Did.authorizeTx(
         did.uri,
         web3NameClaimTx,
         didKey.getSignCallback(did),
         paymentAccount.address
       )
-      await submitExtrinsic(signedTx, paymentAccount)
+      await submitTx(signedTx, paymentAccount)
 
       // Check that the Web3 name has been linked to the DID
       const { owner } = Did.web3NameOwnerFromChain(
@@ -506,7 +506,7 @@ describe('When there is an on-chain DID', () => {
       const balanceBefore = (
         await api.query.system.account(paymentAccount.address)
       ).data
-      await submitExtrinsic(reclaimDepositTx, genericAccount)
+      await submitTx(reclaimDepositTx, genericAccount)
 
       // Check that the deposit has been returned to the sender's balance.
       const balanceAfter = (

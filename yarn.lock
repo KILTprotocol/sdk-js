@@ -1234,7 +1234,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"
   dependencies:
-    "@kiltprotocol/type-definitions": ^0.2.0
+    "@kiltprotocol/type-definitions": 0.2.1
     "@polkadot/api": ^9.4.1
     "@polkadot/typegen": ^9.4.1
     "@types/websocket": ^1.0.0
@@ -1286,7 +1286,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/testing": "workspace:*"
-    "@kiltprotocol/type-definitions": 0.2.0
+    "@kiltprotocol/type-definitions": 0.2.1
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
@@ -1382,14 +1382,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/type-definitions@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@kiltprotocol/type-definitions@npm:0.2.0"
-  checksum: 849c8b54c581bcda0702b243db41fd9ca6377087aaf9a793c74140bb511a96027bbf677a58bba64d788b516a5237d2130a578d637e63aa2e3fdaf234b58b49f0
-  languageName: node
-  linkType: hard
-
-"@kiltprotocol/type-definitions@npm:^0.2.0":
+"@kiltprotocol/type-definitions@npm:0.2.1":
   version: 0.2.1
   resolution: "@kiltprotocol/type-definitions@npm:0.2.1"
   checksum: c8606942d10b65ee1b45180e48273ed58f0df3fa9cdaa376d8b7da0d7c8741ef45d5a81ec4689f64945f06a2789d5fd16b3b47128ffafb23ae729b42876bbca4

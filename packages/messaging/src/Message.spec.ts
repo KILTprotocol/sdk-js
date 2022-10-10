@@ -66,6 +66,7 @@ import {
   createLocalDemoFullDidFromKeypair,
   KeyTool,
   KeyToolSignCallback,
+  makeDidSignature,
 } from '@kiltprotocol/testing'
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -963,9 +964,9 @@ describe('Error checking / Verification', () => {
       },
       metaData: {},
       signatures: {
-        inviter: await Did.signPayload(
-          identityAlice.uri,
+        inviter: await makeDidSignature(
           'signature',
+          identityAlice.uri,
           keyAlice.getSignCallback(identityAlice)
         ),
       },
@@ -980,14 +981,14 @@ describe('Error checking / Verification', () => {
         isPCR: false,
       },
       signatures: {
-        inviter: await Did.signPayload(
-          identityAlice.uri,
+        inviter: await makeDidSignature(
           'signature',
+          identityAlice.uri,
           keyAlice.getSignCallback(identityAlice)
         ),
-        invitee: await Did.signPayload(
-          identityBob.uri,
+        invitee: await makeDidSignature(
           'signature',
+          identityBob.uri,
           keyBob.getSignCallback(identityBob)
         ),
       },
