@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { HexString } from '@polkadot/util/types'
+import type { CTypeHash } from './CType'
 import type { DidUri } from './DidDocument'
 
 /* eslint-disable no-bitwise */
@@ -27,5 +27,5 @@ export interface IDelegationNode {
 
 export interface IDelegationHierarchyDetails {
   id: IDelegationNode['id']
-  cTypeHash: HexString
+  cTypeHash: CTypeHash
 }

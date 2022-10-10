@@ -20,10 +20,10 @@ import type {
   IClaim,
   ICTypeMetadata,
   ICTypeSchema,
+  CTypeHash,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { HexString } from '@polkadot/util/types'
 import { CTypeModel, MetadataModel } from './CType.schemas.js'
 
 /**
@@ -48,7 +48,7 @@ export function getSchemaPropertiesForHash(
  * @param schema The CType schema (with or without $id).
  * @returns Hash as hex string.
  */
-export function getHashForSchema(schema: ICTypeSchema): HexString {
+export function getHashForSchema(schema: ICTypeSchema): CTypeHash {
   const preparedSchema = getSchemaPropertiesForHash(schema)
   return Crypto.hashObjectAsStr(preparedSchema)
 }
@@ -59,7 +59,7 @@ export function getHashForSchema(schema: ICTypeSchema): HexString {
  * @param hash CType hash as hex string.
  * @returns Schema id uri.
  */
-export function getIdForCTypeHash(hash: HexString): ICType['$id'] {
+export function getIdForCTypeHash(hash: CTypeHash): ICType['$id'] {
   return `kilt:ctype:${hash}`
 }
 
@@ -69,13 +69,13 @@ export function getIdForCTypeHash(hash: HexString): ICType['$id'] {
  * @param id A CType id of the form 'kilt:ctype:0x[0-9a-f]'.
  * @returns The CType hash as a zero-prefixed string of hex digits.
  */
-export function getCTypeHashFromId(id: ICType['$id']): HexString {
+export function getCTypeHashFromId(id: ICType['$id']): CTypeHash {
   const result = id.match(/kilt:ctype:(0x[0-9a-f]+)/i)
   if (!result)
     throw new SDKErrors.CTypeHashMissingError(
       `The string ${id} is not a valid CType id`
     )
-  return result[1] as HexString
+  return result[1] as CTypeHash
 }
 
 /**

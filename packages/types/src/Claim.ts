@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { HexString } from '@polkadot/util/types'
+import type { CTypeHash } from './CType'
 import type { DidUri } from './DidDocument'
 
 export type IClaimContents = Record<
@@ -13,7 +13,7 @@ export type IClaimContents = Record<
   Record<string, unknown> | string | number | boolean
 >
 export interface IClaim {
-  cTypeHash: HexString
+  cTypeHash: CTypeHash
   contents: IClaimContents
   owner: DidUri
 }

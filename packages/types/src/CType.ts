@@ -16,6 +16,8 @@ export type InstanceType =
   | 'object'
   | 'string'
 
+export type CTypeHash = HexString
+
 export interface ICTypeSchema {
   $schema: string
   title: string
@@ -26,5 +28,5 @@ export interface ICTypeSchema {
 }
 
 export interface ICType extends ICTypeSchema {
-  $id: `kilt:ctype:${HexString}`
+  $id: `kilt:ctype:${CTypeHash}`
 }

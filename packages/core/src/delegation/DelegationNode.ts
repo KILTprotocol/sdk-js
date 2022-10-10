@@ -5,7 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { HexString } from '@polkadot/util/types'
+
 import type {
+  CTypeHash,
   DidDocument,
   DidUri,
   DidVerificationKey,
@@ -18,7 +21,7 @@ import type {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import type { HexString } from '@polkadot/util/types'
+
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
 import {
@@ -154,7 +157,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns The CType hash associated with the delegation hierarchy.
    */
-  public async getCTypeHash(): Promise<HexString> {
+  public async getCTypeHash(): Promise<CTypeHash> {
     const { cTypeHash } = await this.getHierarchyDetails()
     return cTypeHash
   }

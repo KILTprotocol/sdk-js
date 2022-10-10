@@ -9,12 +9,12 @@
  * @group unit/delegation
  */
 
-import type { HexString } from '@polkadot/util/types'
 import {
   IDelegationNode,
   IDelegationHierarchyDetails,
   Permission,
   DidUri,
+  CTypeHash,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { ApiMocks } from '@kiltprotocol/testing'
@@ -70,7 +70,7 @@ describe('DelegationNode', () => {
       })
     jest
       .mocked(mockedApi.tx.delegation.createHierarchy)
-      .mockImplementation(async (nodeId: string, cTypeHash: HexString) => {
+      .mockImplementation(async (nodeId: string, cTypeHash: CTypeHash) => {
         hierarchiesDetails[nodeId] = {
           id: nodeId,
           cTypeHash,
@@ -538,7 +538,7 @@ describe('DelegationNode', () => {
 })
 
 describe('DelegationHierarchy', () => {
-  let ctypeHash: HexString
+  let ctypeHash: CTypeHash
   let ROOT_IDENTIFIER: string
   let ROOT_SUCCESS: string
 
