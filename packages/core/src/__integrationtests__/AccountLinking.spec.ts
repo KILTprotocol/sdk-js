@@ -103,15 +103,6 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
-      console.log(
-        api
-          .createType('PalletDidLookupLinkableAccountLinkableAccountId', {
-            AccountId32: paymentAccount.address,
-          })
-          .toHuman()
-      )
-      const a = await api.rpc.did.queryByAccount(paymentAccountChain)
-      console.log(a)
       expect(
         Did.connectedDidFromChain(
           await api.query.didLookup.connectedDids(paymentAccountChain)
