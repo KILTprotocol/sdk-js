@@ -970,7 +970,7 @@ describe('DID extrinsics batching', () => {
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
-      cTypeHash: CType.getCTypeHashFromId(ctype.$id),
+      cTypeHash: CType.idToHash(ctype.$id),
     })
     const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
@@ -1000,7 +1000,7 @@ describe('DID extrinsics batching', () => {
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
-      cTypeHash: CType.getCTypeHashFromId(ctype.$id),
+      cTypeHash: CType.idToHash(ctype.$id),
     })
     const delegationStoreTx = await rootNode.getStoreTx()
     const delegationRevocationTx = await rootNode.getRevokeTx(fullDid.uri)
@@ -1068,7 +1068,7 @@ describe('DID extrinsics batching', () => {
     const rootNode = DelegationNode.newRoot({
       account: fullDid.uri,
       permissions: [Permission.DELEGATE],
-      cTypeHash: CType.getCTypeHashFromId(ctype1.$id),
+      cTypeHash: CType.idToHash(ctype1.$id),
     })
     const delegationHierarchyCreation = await rootNode.getStoreTx()
 

@@ -61,7 +61,7 @@ async function writeHierarchy(
   const rootNode = DelegationNode.newRoot({
     account: delegator.uri,
     permissions: [Permission.DELEGATE],
-    cTypeHash: CType.getCTypeHashFromId(cTypeId),
+    cTypeHash: CType.idToHash(cTypeId),
   })
 
   const storeTx = await rootNode.getStoreTx()
@@ -457,9 +457,7 @@ describe('hierarchyDetails', () => {
 
     const details = await delegatedNode.getHierarchyDetails()
 
-    expect(CType.getIdForCTypeHash(details.cTypeHash)).toBe(
-      driversLicenseCType.$id
-    )
+    expect(CType.hashToId(details.cTypeHash)).toBe(driversLicenseCType.$id)
     expect(details.id).toBe(rootNode.id)
   }, 60_000)
 })

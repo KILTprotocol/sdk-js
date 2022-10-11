@@ -186,7 +186,7 @@ describe('Claim', () => {
   })
 
   it('should throw an error on faulty constructor input', () => {
-    const cTypeHash = CType.getCTypeHashFromId(testCType.$id)
+    const cTypeHash = CType.idToHash(testCType.$id)
     const ownerAddress = did
 
     const everything = {

@@ -82,7 +82,7 @@ describe('Quote', () => {
     })
 
     claim = {
-      cTypeHash: CType.getCTypeHashFromId(testCType.$id),
+      cTypeHash: CType.idToHash(testCType.$id),
       contents: {},
       owner: claimerIdentity.uri,
     }

@@ -40,7 +40,7 @@ function jsonLDcontents(
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
   if (!cTypeHash) throw new SDKErrors.CTypeHashMissingError()
-  const vocabulary = `${CType.getIdForCTypeHash(cTypeHash)}#`
+  const vocabulary = `${CType.hashToId(cTypeHash)}#`
   const result: Record<string, unknown> = {}
   if (owner) result['@id'] = owner
   if (!expanded) {
@@ -74,7 +74,7 @@ export function toJsonLD(
     [`${prefix}credentialSubject`]: credentialSubject,
   }
   result[`${prefix}credentialSchema`] = {
-    '@id': CType.getIdForCTypeHash(claim.cTypeHash),
+    '@id': CType.hashToId(claim.cTypeHash),
   }
   if (!expanded) result['@context'] = { '@vocab': VC_VOCAB }
   return result
@@ -245,7 +245,7 @@ export function fromNestedCTypeClaim(
   CType.verifyClaimAgainstNestedSchemas(cTypeInput, nestedCType, claimContents)
 
   const claim = {
-    cTypeHash: CType.getCTypeHashFromId(cTypeInput.$id),
+    cTypeHash: CType.idToHash(cTypeInput.$id),
     contents: claimContents,
     owner: claimOwner,
   }
@@ -269,7 +269,7 @@ export function fromCTypeAndClaimContents(
   CType.verifyDataStructure(cType)
   CType.verifyClaimAgainstSchema(claimContents, cType)
   const claim = {
-    cTypeHash: CType.getCTypeHashFromId(cType.$id),
+    cTypeHash: CType.idToHash(cType.$id),
     contents: claimContents,
     owner: claimOwner,
   }

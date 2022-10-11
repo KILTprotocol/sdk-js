@@ -49,7 +49,7 @@ function buildCredential(
   // create claim
 
   const claim: IClaim = {
-    cTypeHash: CType.getCTypeHashFromId(testCType.$id),
+    cTypeHash: CType.idToHash(testCType.$id),
     contents,
     owner: claimerDid,
   }

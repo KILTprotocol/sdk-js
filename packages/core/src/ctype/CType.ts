@@ -56,7 +56,7 @@ export function getHashForSchema(
  * @param hash CType hash as hex string.
  * @returns Schema id uri.
  */
-export function getIdForCTypeHash(hash: CTypeHash): ICType['$id'] {
+export function hashToId(hash: CTypeHash): ICType['$id'] {
   return `kilt:ctype:${hash}`
 }
 
@@ -66,7 +66,7 @@ export function getIdForCTypeHash(hash: CTypeHash): ICType['$id'] {
  * @param id A CType id of the form 'kilt:ctype:0x[0-9a-f]'.
  * @returns The CType hash as a zero-prefixed string of hex digits.
  */
-export function getCTypeHashFromId(id: ICType['$id']): CTypeHash {
+export function idToHash(id: ICType['$id']): CTypeHash {
   const result = id.match(/kilt:ctype:(0x[0-9a-f]+)/i)
   if (!result)
     throw new SDKErrors.CTypeHashMissingError(
@@ -84,7 +84,7 @@ export function getCTypeHashFromId(id: ICType['$id']): CTypeHash {
 export function getIdForSchema(
   schema: ICType | Omit<ICType, '$id'>
 ): ICType['$id'] {
-  return getIdForCTypeHash(getHashForSchema(schema))
+  return hashToId(getHashForSchema(schema))
 }
 
 /**
@@ -139,7 +139,7 @@ export function verifyClaimAgainstSchema(
  */
 export async function verifyStored(ctype: ICType): Promise<void> {
   const api = ConfigService.get('api')
-  const hash = getCTypeHashFromId(ctype.$id)
+  const hash = idToHash(ctype.$id)
   const encoded = await api.query.ctype.ctypes(hash)
   if (encoded.isNone)
     throw new SDKErrors.CTypeHashMissingError(
