@@ -62,7 +62,7 @@ describe('When there is an on-chain DID', () => {
       newDid = await createFullDidFromSeed(paymentAccount, newDidKey.keypair)
       newDidChain = Did.toChain(newDid.uri)
     }, 40_000)
-    it.only('should be possible to associate the tx sender', async () => {
+    it('should be possible to associate the tx sender', async () => {
       // Check that no links exist
       expect(
         (await api.query.didLookup.connectedDids(paymentAccountChain)).isNone
@@ -103,9 +103,6 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
-      const para = {
-        AccountId32: paymentAccount.address,
-      } as any
       console.log(
         api
           .createType('PalletDidLookupLinkableAccountLinkableAccountId', {
@@ -113,7 +110,7 @@ describe('When there is an on-chain DID', () => {
           })
           .toHuman()
       )
-      const a = await api.rpc.did.queryByAccount(para)
+      const a = await api.rpc.did.queryByAccount(paymentAccountChain)
       console.log(a)
       expect(
         Did.connectedDidFromChain(
