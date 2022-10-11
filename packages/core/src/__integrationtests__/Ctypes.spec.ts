@@ -72,7 +72,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await submitTx(authorizedStoreTx, paymentAccount)
 
     expect(
-      CType.fromChain(await api.query.ctype.ctypes(CType.idToHash(ctype.$id)))
+      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
     ).toBe(ctypeCreator.uri)
     await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 40_000)
@@ -100,7 +100,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
     expect(
-      CType.fromChain(await api.query.ctype.ctypes(CType.idToHash(ctype.$id)))
+      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
     ).toBe(ctypeCreator.uri)
   }, 45_000)
 
@@ -111,7 +111,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
     await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
     expect(
-      (await api.query.ctype.ctypes(CType.idToHash(iAmNotThere.$id))).isNone
+      (await api.query.ctype.ctypes(CType.idToChain(iAmNotThere.$id))).isNone
     ).toBe(true)
 
     const fakeHash = Crypto.hashStr('abcdefg')

@@ -8,10 +8,10 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 
-import type { DidUri, ICType } from '@kiltprotocol/types'
+import type { CTypeHash, DidUri, ICType } from '@kiltprotocol/types'
 import * as Did from '@kiltprotocol/did'
 
-import { serializeForHash } from './CType.js'
+import { idToHash, serializeForHash } from './CType.js'
 
 /**
  * Encodes the provided CType for use in `api.tx.ctype.add()`.
@@ -21,6 +21,16 @@ import { serializeForHash } from './CType.js'
  */
 export function toChain(ctype: ICType): string {
   return serializeForHash(ctype)
+}
+
+/**
+ * Encodes the provided CType['$id'] for use in `api.query.ctype.ctypes()`.
+ *
+ * @param cTypeId The CType id to translate for the blockchain.
+ * @returns Encoded CType id.
+ */
+export function idToChain(cTypeId: ICType['$id']): CTypeHash {
+  return idToHash(cTypeId)
 }
 
 /**
