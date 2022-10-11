@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/augment-api",
-  "version": "0.30.0-30",
+  "version": "0.30.0-31",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
