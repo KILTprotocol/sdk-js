@@ -1,17 +1,13 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IQuote
- */
-
 import type { ICType } from './CType'
-import type { DidSignature } from './DidDetails'
+import type { DidSignature, DidUri } from './DidDocument'
+import type { ICredential } from './Credential'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>
@@ -19,7 +15,7 @@ export interface ICostBreakdown {
   gross: number
 }
 export interface IQuote {
-  attesterDid: string
+  attesterDid: DidUri
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
   currency: string
@@ -31,38 +27,6 @@ export interface IQuoteAttesterSigned extends IQuote {
 }
 
 export interface IQuoteAgreement extends IQuoteAttesterSigned {
-  rootHash: string
+  rootHash: ICredential['rootHash']
   claimerSignature: DidSignature
 }
-
-export type CompressedCostBreakdown = [
-  ICostBreakdown['gross'],
-  ICostBreakdown['net'],
-  ICostBreakdown['tax']
-]
-
-export type CompressedQuote = [
-  IQuote['attesterDid'],
-  IQuote['cTypeHash'],
-  CompressedCostBreakdown,
-  IQuote['currency'],
-  IQuote['termsAndConditions'],
-  IQuote['timeframe']
-]
-
-export type CompressedQuoteAttesterSigned = [
-  ...CompressedQuote,
-  [
-    IQuoteAttesterSigned['attesterSignature']['signature'],
-    IQuoteAttesterSigned['attesterSignature']['keyId']
-  ]
-]
-
-export type CompressedQuoteAgreed = [
-  ...CompressedQuoteAttesterSigned,
-  [
-    IQuoteAgreement['claimerSignature']['signature'],
-    IQuoteAgreement['claimerSignature']['keyId']
-  ],
-  IQuoteAgreement['rootHash']
-]

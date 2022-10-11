@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,61 +9,98 @@
 /* eslint-disable no-console */
 
 import { BN } from '@polkadot/util'
+import { ApiPromise, WsProvider } from '@polkadot/api'
+import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
-import { Keyring } from '@kiltprotocol/utils'
-import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
-import {
-  DemoKeystore,
-  DemoKeystoreUtils,
-  DidChain,
-  DidMigrationHandler,
-  FullDidDetails,
-  LightDidDetails,
-} from '@kiltprotocol/did'
-import {
-  BlockchainApiConnection,
-  BlockchainUtils,
-} from '@kiltprotocol/chain-helpers'
+import { Crypto } from '@kiltprotocol/utils'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type {
-  ISubmittableResult,
+  ICType,
   KeyringPair,
+  KiltAddress,
+  KiltKeyringPair,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
-import { CType } from '../ctype/CType'
-import { Balance } from '../balance'
+import { ConfigService } from '@kiltprotocol/config'
+
+import * as CType from '../ctype'
 import { init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
 
-const WS_ADDRESS = 'ws://127.0.0.1:9944'
-export async function initializeApi(): Promise<void> {
-  return init({ address: WS_ADDRESS })
+const WS_PORT = 9944
+
+async function getStartedTestContainer(): Promise<StartedTestContainer> {
+  try {
+    const image =
+      process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
+    console.log(`using testcontainer with image ${image}`)
+    const testcontainer = new GenericContainer(image)
+      .withCmd(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
+      .withExposedPorts(WS_PORT)
+      .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
+    const started = await testcontainer.start()
+    return started
+  } catch (error) {
+    console.error(
+      'Could not start the docker container via testcontainers, run with DEBUG=testcontainers* to debug'
+    )
+    throw error
+  }
 }
 
-const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
+async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
+  const provider = new WsProvider(wsEndpoint)
+  const api = new ApiPromise({ provider })
+  await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+  return api.isReadyOrError
+}
+
+export async function initializeApi(): Promise<ApiPromise> {
+  const { TEST_WS_ADDRESS, JEST_WORKER_ID } = process.env
+  if (TEST_WS_ADDRESS) {
+    if (JEST_WORKER_ID !== '1') {
+      throw new Error(
+        'TEST_WS_ADDRESS is set but more than one jest worker was started. You cannot run tests in parallel when TEST_WS_ADDRESS is set. Please run jest with `-w 1`.'
+      )
+    }
+    console.log(`connecting to node ${TEST_WS_ADDRESS}`)
+    return buildConnection(TEST_WS_ADDRESS)
+  }
+  const started = await getStartedTestContainer()
+  const port = started.getMappedPort(9944)
+  const host = started.getHost()
+  const WS_ADDRESS = `ws://${host}:${port}`
+  console.log(`connecting to test container at ${WS_ADDRESS}`)
+  const api = await buildConnection(WS_ADDRESS)
+  api.once('disconnected', () => started.stop().catch())
+  return api
+}
 
 // Dev Faucet account seed phrase
 const faucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 // endowed accounts on development chain spec
 // ids are ed25519 because the endowed accounts are
-export const devFaucet = keyring.createFromUri(faucetSeed)
-export const devAlice = keyring.createFromUri('//Alice')
-export const devBob = keyring.createFromUri('//Bob')
-export const devCharlie = keyring.createFromUri('//Charlie')
+export const devFaucet = Crypto.makeKeypairFromUri(faucetSeed)
+export const devAlice = Crypto.makeKeypairFromUri('//Alice')
+export const devBob = Crypto.makeKeypairFromUri('//Bob')
+export const devCharlie = Crypto.makeKeypairFromUri('//Charlie')
 
-export function keypairFromRandom(): KeyringPair {
-  return keyring.addFromSeed(randomAsU8a(32))
-}
-export function addressFromRandom(): string {
-  return keypairFromRandom().address
+export function addressFromRandom(): KiltAddress {
+  return makeSigningKeyTool('ed25519').keypair.address
 }
 
-export async function isCtypeOnChain(ctype: CType): Promise<boolean> {
-  return ctype.verifyStored()
+export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
+  try {
+    await CType.verifyStored(ctype)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export const driversLicenseCType = CType.fromSchema({
@@ -97,14 +134,13 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
   type: 'object',
 })
 
-// Submits with resign = true by default and resolving when IS_IN_BLOCK
-export async function submitExtrinsicWithResign(
+// Submits resolving when IS_IN_BLOCK
+export async function submitTx(
   extrinsic: SubmittableExtrinsic,
   submitter: KeyringPair,
-  resolveOn: SubscriptionPromise.ResultEvaluator = BlockchainUtils.IS_IN_BLOCK
+  resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
-  await BlockchainUtils.signAndSubmitTx(extrinsic, submitter, {
-    reSign: true,
+  await Blockchain.signAndSubmitTx(extrinsic, submitter, {
     resolveOn,
   })
 }
@@ -112,94 +148,29 @@ export async function submitExtrinsicWithResign(
 export async function endowAccounts(
   faucet: KeyringPair,
   addresses: string[],
-  resolveOn: SubscriptionPromise.Evaluator<ISubmittableResult> = BlockchainUtils.IS_FINALIZED
+  resolveOn?: SubscriptionPromise.ResultEvaluator
 ): Promise<void> {
-  await Promise.all(
-    addresses.map((address) =>
-      Balance.makeTransfer(address, ENDOWMENT).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn,
-          reSign: true,
-        }).catch((e) => console.log(e))
-      )
-    )
+  const api = ConfigService.get('api')
+  const transactions = await Promise.all(
+    addresses.map((address) => api.tx.balances.transfer(address, ENDOWMENT))
   )
+  const batch = api.tx.utility.batchAll(transactions)
+  await Blockchain.signAndSubmitTx(batch, faucet, { resolveOn })
 }
 
-async function fundAccount(
+export async function fundAccount(
   address: KeyringPair['address'],
   amount: BN
 ): Promise<void> {
-  const transferTx = await Balance.makeTransfer(address, amount)
-  return submitExtrinsicWithResign(transferTx, devFaucet).catch((e) =>
-    console.log(e)
-  )
+  const api = ConfigService.get('api')
+  const transferTx = api.tx.balances.transfer(address, amount)
+  await submitTx(transferTx, devFaucet)
 }
+
 export async function createEndowedTestAccount(
   amount: BN = ENDOWMENT
-): Promise<KeyringPair> {
-  const keypair = keypairFromRandom()
+): Promise<KiltKeyringPair> {
+  const { keypair } = makeSigningKeyTool()
   await fundAccount(keypair.address, amount)
   return keypair
-}
-
-export function getDefaultMigrationHandler(
-  submitter: KeyringPair
-): DidMigrationHandler {
-  return async (e) => {
-    await BlockchainUtils.signAndSubmitTx(e, submitter, {
-      reSign: true,
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-    })
-  }
-}
-
-// It takes the auth key from the light DID and use it as attestation and delegation key as well.
-export async function createFullDidFromLightDid(
-  identity: KeyringPair,
-  lightDidForId: LightDidDetails,
-  keystore: DemoKeystore
-): Promise<FullDidDetails> {
-  const fullDid = await lightDidForId.migrate(
-    identity.address,
-    keystore,
-    getDefaultMigrationHandler(identity)
-  )
-
-  const addAttestationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.assertionMethod,
-    fullDid.authenticationKey
-  )
-  const addDelegationKeyExtrinsic = await DidChain.getSetKeyExtrinsic(
-    KeyRelationship.capabilityDelegation,
-    fullDid.authenticationKey
-  )
-
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const authenticatedBatch = await fullDid.authorizeBatch(
-    api.tx.utility.batch([
-      addAttestationKeyExtrinsic,
-      addDelegationKeyExtrinsic,
-    ]),
-    keystore,
-    identity.address,
-    KeyRelationship.authentication
-  )
-  await submitExtrinsicWithResign(authenticatedBatch, identity)
-
-  return FullDidDetails.fromChainInfo(
-    fullDid.identifier
-  ) as Promise<FullDidDetails>
-}
-
-export async function createFullDidFromSeed(
-  identity: KeyringPair,
-  keystore: DemoKeystore,
-  seed: string = randomAsHex()
-): Promise<FullDidDetails> {
-  const lightDid = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
-    keystore,
-    seed
-  )
-  return createFullDidFromLightDid(identity, lightDid, keystore)
 }

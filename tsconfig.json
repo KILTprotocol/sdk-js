@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.build.json",
+  "include": ["packages/**/*", "jest-setup/*", "docs/*"],
   "compilerOptions": {
     "baseUrl": "./packages",
     "sourceMap": true,
@@ -14,8 +15,9 @@
       "@kiltprotocol/vc-export": ["vc-export/src"],
       "@kiltprotocol/did": ["did/src"],
       "@kiltprotocol/docs": ["docs/src"],
-      "@kiltprotocol/testing": ["testing/src"]
-    }
+      "@kiltprotocol/testing": ["testing/src"],
+      "@kiltprotocol/augment-api": ["augment-api/src"],
+      "@kiltprotocol/type-definitions": ["type-definitions/src"],
+      }
   },
-  "skipLibCheck": true
 }

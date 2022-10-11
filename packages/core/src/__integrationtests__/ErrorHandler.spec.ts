@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,57 +10,76 @@
  */
 
 import { BN } from '@polkadot/util'
-import type { KeyringPair } from '@kiltprotocol/types'
-import { DemoKeystore, FullDidDetails } from '@kiltprotocol/did'
-import { Attestation } from '../index'
-import { makeTransfer } from '../balance/Balance.chain'
+import { ApiPromise } from '@polkadot/api'
+import type {
+  DidDocument,
+  IAttestation,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
+import {
+  createFullDidFromSeed,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import * as Did from '@kiltprotocol/did'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
   createEndowedTestAccount,
-  createFullDidFromSeed,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitTx,
 } from './utils'
 
-let paymentAccount: KeyringPair
-let someDid: FullDidDetails
-const keystore = new DemoKeystore()
+let paymentAccount: KiltKeyringPair
+let someDid: DidDocument
+let key: KeyTool
+let api: ApiPromise
 
 beforeAll(async () => {
-  await initializeApi()
+  api = await initializeApi()
+}, 30_000)
+
+beforeAll(async () => {
   paymentAccount = await createEndowedTestAccount()
-  someDid = await createFullDidFromSeed(paymentAccount, keystore)
+  key = makeSigningKeyTool()
+  someDid = await createFullDidFromSeed(paymentAccount, key.keypair)
 }, 60_000)
 
 it('records an extrinsic error when transferring less than the existential amount to new identity', async () => {
-  await expect(
-    makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
-      submitExtrinsicWithResign(tx, paymentAccount)
-    )
-  ).rejects.toMatchObject({ section: 'balances', name: 'ExistentialDeposit' })
+  const transferTx = api.tx.balances.transfer(addressFromRandom(), new BN(1))
+  await expect(submitTx(transferTx, paymentAccount)).rejects.toMatchObject({
+    section: 'balances',
+    name: 'ExistentialDeposit',
+  })
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
-  const attestation = Attestation.fromAttestation({
+  const attestation: IAttestation = {
     claimHash:
       '0xfea1357cdba9982ebe7a8a3bb2db975cbb7424acd503d4dc3a7339778e8bb752',
     cTypeHash:
       '0x103752ecd8e284b1c9677337ccc91ea255ac8e6651dc65d90f0504f31d7e54f0',
     delegationId: null,
-    owner: someDid.did,
+    owner: someDid.uri,
     revoked: false,
+  }
+  const storeTx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
+  const tx = await Did.authorizeTx(
+    someDid.uri,
+    storeTx,
+    key.getSignCallback(someDid),
+    paymentAccount.address
+  )
+  await expect(submitTx(tx, paymentAccount)).rejects.toMatchObject({
+    section: 'ctype',
+    name: 'CTypeNotFound',
   })
-  const tx = await attestation
-    .store()
-    .then((ex) =>
-      someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
-    )
-  await expect(
-    submitExtrinsicWithResign(tx, paymentAccount)
-  ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeNotFound' })
 }, 30_000)
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

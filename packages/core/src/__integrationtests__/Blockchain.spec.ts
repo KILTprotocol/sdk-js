@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,26 +9,21 @@
  * @group integration/blockchain
  */
 
-import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import { BN } from '@polkadot/util'
-import type { IBlockchainApi, KeyringPair } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { makeTransfer } from '../balance/Balance.chain'
-import {
-  devFaucet,
-  devCharlie,
-  keypairFromRandom,
-  submitExtrinsicWithResign,
-  initializeApi,
-} from './utils'
-import { connect, disconnect } from '../kilt'
+import type { ApiPromise } from '@polkadot/api'
 
-let blockchain: IBlockchainApi
+import type { KeyringPair } from '@kiltprotocol/types'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
+
+import { toFemtoKilt } from '../balance/Balance.utils'
+import { devCharlie, devFaucet, initializeApi, submitTx } from './utils'
+import { disconnect } from '../kilt'
+
+let api: ApiPromise
 beforeAll(async () => {
-  await initializeApi().then(async () => {
-    blockchain = await connect()
-  })
-})
+  api = await initializeApi()
+}, 30_000)
 
 describe('Chain returns specific errors, that we check for', () => {
   let faucet: KeyringPair
@@ -36,61 +31,56 @@ describe('Chain returns specific errors, that we check for', () => {
   let charlie: KeyringPair
   beforeAll(async () => {
     faucet = devFaucet
-    testIdentity = keypairFromRandom()
+    testIdentity = makeSigningKeyTool().keypair
     charlie = devCharlie
-    await makeTransfer(testIdentity.address, new BN(10000), 0).then((tx) =>
-      submitExtrinsicWithResign(tx, faucet)
+
+    const transferTx = api.tx.balances.transfer(
+      testIdentity.address,
+      toFemtoKilt(10000)
     )
+    await submitTx(transferTx, faucet)
   }, 40000)
 
   it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {
-    const tx = blockchain.api.tx.balances.transfer(
+    const tx = api.tx.balances.transfer(
       charlie.address,
       new BN('1000000000000001')
     )
-    const errorTx = blockchain.api.tx.balances.transfer(
+    const errorTx = api.tx.balances.transfer(
       charlie.address,
       new BN('1000000000000000')
     )
 
-    const nonce = await blockchain.getNonce(testIdentity.address)
+    const nonce = await api.rpc.system.accountNextIndex(testIdentity.address)
 
-    const signer: SignerPayload = blockchain.api.createType('SignerPayload', {
+    const signer = api.createType('SignerPayload', {
       method: tx.method.toHex(),
       nonce,
-      genesisHash: blockchain.api.genesisHash,
-      blockHash: blockchain.api.genesisHash,
-      runtimeVersion: blockchain.api.runtimeVersion,
-      version: blockchain.api.extrinsicVersion,
+      genesisHash: api.genesisHash,
+      blockHash: api.genesisHash,
+      runtimeVersion: api.runtimeVersion,
+      version: api.extrinsicVersion,
     })
-    const { signature } = blockchain.api
+    const { signature } = api
       .createType('ExtrinsicPayload', signer.toPayload(), {
-        version: blockchain.api.extrinsicVersion,
+        version: api.extrinsicVersion,
       })
       .sign(testIdentity)
     tx.addSignature(testIdentity.address, signature, signer.toPayload())
 
-    const errorSigner: SignerPayload = blockchain.api.createType(
-      'SignerPayload',
-      {
-        method: errorTx.method.toHex(),
-        nonce,
-        genesisHash: blockchain.api.genesisHash,
-        blockHash: blockchain.api.genesisHash,
-        runtimeVersion: blockchain.api.runtimeVersion,
-        version: blockchain.api.extrinsicVersion,
-      }
-    )
-    await BlockchainUtils.dispatchTx(
-      tx,
-      BlockchainUtils.parseSubscriptionOptions({
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      })
-    )
+    const errorSigner = api.createType('SignerPayload', {
+      method: errorTx.method.toHex(),
+      nonce,
+      genesisHash: api.genesisHash,
+      blockHash: api.genesisHash,
+      runtimeVersion: api.runtimeVersion,
+      version: api.extrinsicVersion,
+    })
+    await Blockchain.dispatchTx(tx)
 
-    const { signature: errorSignature } = blockchain.api
+    const { signature: errorSignature } = api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
-        version: blockchain.api.extrinsicVersion,
+        version: api.extrinsicVersion,
       })
       .sign(testIdentity)
     errorTx.addSignature(
@@ -99,67 +89,51 @@ describe('Chain returns specific errors, that we check for', () => {
       errorSigner.toPayload()
     )
 
-    await expect(
-      BlockchainUtils.dispatchTx(
-        errorTx,
-        BlockchainUtils.parseSubscriptionOptions({
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        })
-      )
-    ).rejects.toThrow(BlockchainUtils.TxOutdated)
+    await expect(Blockchain.dispatchTx(errorTx)).rejects.toThrow(
+      Blockchain.TxOutdated
+    )
   }, 40000)
 
   it(`throws 'ERROR_TRANSACTION_USURPED' error if separate Tx was imported with identical nonce but higher priority while Tx is in pool`, async () => {
-    const tx = blockchain.api.tx.balances.transfer(
+    const tx = api.tx.balances.transfer(
       charlie.address,
       new BN('1000000000000000')
     )
-    const errorTx = blockchain.api.tx.balances.transfer(
+    const errorTx = api.tx.balances.transfer(
       charlie.address,
       new BN('1000000000000000')
     )
 
-    const nonce = await blockchain.getNonce(testIdentity.address)
+    const nonce = await api.rpc.system.accountNextIndex(testIdentity.address)
 
-    const signer: SignerPayload = blockchain.api.createType('SignerPayload', {
+    const signer = api.createType('SignerPayload', {
       method: tx.method.toHex(),
       nonce,
-      genesisHash: blockchain.api.genesisHash,
-      blockHash: blockchain.api.genesisHash,
-      runtimeVersion: blockchain.api.runtimeVersion,
-      version: blockchain.api.extrinsicVersion,
+      genesisHash: api.genesisHash,
+      blockHash: api.genesisHash,
+      runtimeVersion: api.runtimeVersion,
+      version: api.extrinsicVersion,
     })
-    const { signature } = blockchain.api
+    const { signature } = api
       .createType('ExtrinsicPayload', signer.toPayload(), {
-        version: blockchain.api.extrinsicVersion,
+        version: api.extrinsicVersion,
       })
       .sign(testIdentity)
     tx.addSignature(testIdentity.address, signature, signer.toPayload())
 
-    const errorSigner: SignerPayload = blockchain.api.createType(
-      'SignerPayload',
-      {
-        method: errorTx.method.toHex(),
-        nonce,
-        genesisHash: blockchain.api.genesisHash,
-        blockHash: blockchain.api.genesisHash,
-        runtimeVersion: blockchain.api.runtimeVersion,
-        version: blockchain.api.extrinsicVersion,
-        tip: '0x00000000000000000000000000005678',
-      }
-    )
-    expect(
-      BlockchainUtils.dispatchTx(
-        tx,
-        BlockchainUtils.parseSubscriptionOptions({
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        })
-      )
-    ).rejects.toHaveProperty('status.isUsurped', true)
+    const errorSigner = api.createType('SignerPayload', {
+      method: errorTx.method.toHex(),
+      nonce,
+      genesisHash: api.genesisHash,
+      blockHash: api.genesisHash,
+      runtimeVersion: api.runtimeVersion,
+      version: api.extrinsicVersion,
+      tip: '0x00000000000000000000000000005678',
+    })
 
-    const { signature: errorSignature } = blockchain.api
+    const { signature: errorSignature } = api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
-        version: blockchain.api.extrinsicVersion,
+        version: api.extrinsicVersion,
       })
       .sign(testIdentity)
     errorTx.addSignature(
@@ -168,15 +142,15 @@ describe('Chain returns specific errors, that we check for', () => {
       errorSigner.toPayload()
     )
 
-    await BlockchainUtils.dispatchTx(
-      errorTx,
-      BlockchainUtils.parseSubscriptionOptions({
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      })
-    )
+    const promiseToFail = Blockchain.dispatchTx(tx)
+    const promiseToUsurp = Blockchain.dispatchTx(errorTx)
+    await Promise.all([
+      expect(promiseToFail).rejects.toHaveProperty('status.isUsurped', true),
+      promiseToUsurp,
+    ])
   }, 40000)
 })
 
-afterAll(() => {
-  if (typeof blockchain !== 'undefined') disconnect()
+afterAll(async () => {
+  if (typeof api !== 'undefined') await disconnect()
 })

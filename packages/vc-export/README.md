@@ -10,10 +10,24 @@ Data sovereignty and interoperability
 This package helps you to translate KILT credentials to the popular [Verifiable Credential](https://www.w3.org/TR/vc-data-model/) format and structure.
 It provides you with tools to export your existing KILT credentials to the widely understood Verifiable Credential, produce Verifiable Presentations from a Verifiable Credential, and to verify the associated proofs.
 
+## Installation
+
+NPM:
+
+```
+npm install @kiltprotocol/vc-export
+```
+
+YARN:
+
+```
+yarn add @kiltprotocol/vc-export
+```
+
 ## Contents
 
 - exporting
-  - `fromCredential()`: translates `Credential` to `VerifiableCredential`
+  - `fromCredentialAndAttestation()`: translates `Credential` to `VerifiableCredential`
 - presentation utils
   - `makePresentation()`: creates `VerifiablePresentation` ()
   - `removeProperties()`: derives a new `VerifiableCredential` from an existing one with a reduced set of disclosed attributes
@@ -46,7 +60,7 @@ let credential: Credential
 let identity: Identity
 
 // turn the KILT credential into a VerifiableCredential
-const VC = VCUtils.fromCredential(credential)
+const VC = VCUtils.fromCredentialAndAttestation(credential)
 
 // produce a reduced copy of the VC where only selected attributes are disclosed
 const nameOnly = await VCUtils.presentation.removeProperties(VC, ['name'])

@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/utils",
-  "version": "0.26.0-5",
+  "version": "0.30.0-29",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -17,10 +17,9 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "yarn build:cjs && yarn build:esm && yarn copy:jsonabc",
+    "build:ts": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
-    "copy:jsonabc": "cp -f ./src/jsonabc.* ./lib/cjs && cp -f ./src/jsonabc.cjs ./lib/esm/jsonabc.cjs"
+    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -31,17 +30,16 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@kiltprotocol/testing": "workspace:*",
     "rimraf": "^3.0.2",
-    "typescript": "^4.5.4"
+    "typescript": "^4.8.3"
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/keyring": "^8.1.2",
-    "@polkadot/types": "^6.11.1",
-    "@polkadot/util": "^8.1.2",
-    "@polkadot/util-crypto": "^8.1.2",
+    "@polkadot/api": "^9.0.0",
+    "@polkadot/keyring": "^10.0.0",
+    "@polkadot/util": "^10.0.0",
+    "@polkadot/util-crypto": "^10.0.0",
     "tweetnacl": "^1.0.3",
-    "uuid": "^8.1.0"
+    "uuid": "^9.0.0"
   }
 }

@@ -1,573 +1,552 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  BTreeMap,
-  BTreeSet,
-  Enum,
-  Option,
-  Struct,
-  Vec,
-  u8,
-  u64,
-  GenericAccountId,
-  Text,
-  u128,
-  u32,
-} from '@polkadot/types'
-import type {
-  BlockNumber,
-  Call,
-  Extrinsic,
-  Hash,
-} from '@polkadot/types/interfaces'
+import type { Option } from '@polkadot/types'
+import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import { BN, hexToString, hexToU8a } from '@polkadot/util'
+import type { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
+import type { Bytes } from '@polkadot/types-codec'
+import { BN } from '@polkadot/util'
 
 import type {
   Deposit,
+  DidDocument,
+  DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidSignature,
-  IDidIdentifier,
-  IIdentity,
-  KeystoreSigningOptions,
+  DidUri,
+  DidVerificationKey,
+  KiltAddress,
+  NewDidEncryptionKey,
+  NewDidVerificationKey,
+  SignExtrinsicCallback,
+  SignRequestData,
+  SignResponseData,
   SubmittableExtrinsic,
+  UriFragment,
+  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
+import { verificationKeyTypes } from '@kiltprotocol/types'
+import { Crypto, SDKErrors, ss58Format } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { KeyRelationship } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import type {
+  DidDidDetails,
+  DidDidDetailsDidAuthorizedCallOperation,
+  DidDidDetailsDidPublicKey,
+  DidDidDetailsDidPublicKeyDetails,
+  DidServiceEndpointsDidEndpoint,
+  KiltSupportDeposit,
+} from '@kiltprotocol/augment-api'
 
-import { DidDetails, getSignatureAlgForKeyType } from './DidDetails/index.js'
-
-const log = ConfigService.LoggingFactory.getLogger('Did')
+import {
+  EncodedEncryptionKey,
+  EncodedKey,
+  EncodedSignature,
+  EncodedVerificationKey,
+  getAddressByKey,
+  getFullDidUri,
+  parse,
+} from './Did.utils.js'
 
 // ### Chain type definitions
 
-type KeyId = Hash
-type DidKeyAgreementKeys = BTreeSet<KeyId>
-
-type SupportedSignatureKeys = 'sr25519' | 'ed25519' | 'ecdsa'
-type SupportedEncryptionKeys = 'x25519'
-
-interface DidVerificationKey<T extends string = SupportedSignatureKeys>
-  extends Enum {
-  type: T
-  value: Vec<u8>
-}
-
-interface DidEncryptionKey<T extends string = SupportedEncryptionKeys>
-  extends Enum {
-  type: T
-  value: Vec<u8>
-}
-
-interface DidPublicKey extends Enum {
-  isPublicVerificationKey: boolean
-  asPublicVerificationKey: DidVerificationKey
-  isPublicEncryptionKey: boolean
-  asPublicEncryptionKey: DidEncryptionKey
-  type: 'PublicVerificationKey' | 'PublicEncryptionKey'
-  value: DidVerificationKey | DidEncryptionKey
-}
-
-interface DidPublicKeyDetails extends Struct {
-  key: DidPublicKey
-  blockNumber: BlockNumber
-}
-
-type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
-
-interface IDidChainRecordCodec extends Struct {
-  authenticationKey: KeyId
-  keyAgreementKeys: DidKeyAgreementKeys
-  delegationKey: Option<KeyId>
-  attestationKey: Option<KeyId>
-  publicKeys: DidPublicKeyMap
-  lastTxCounter: u64
-  deposit: Deposit
-}
-
-interface IServiceEndpointChainRecordCodec extends Struct {
-  id: Text
-  serviceTypes: Vec<Text>
-  urls: Vec<Text>
-}
+export type ChainDidPublicKey = DidDidDetailsDidPublicKey
+export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 // ### RAW QUERYING (lowest layer)
 
-// Query a full DID given the identifier (a KILT address for v1).
-// Interacts with the Did storage map.
-async function queryDidEncoded(
-  didIdentifier: IDidIdentifier
-): Promise<Option<IDidChainRecordCodec>> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
+/**
+ * Format a DID to be used as a parameter for the blockchain API functions.
+
+ * @param did The DID to format.
+ * @returns The blockchain-formatted DID.
+ */
+export function toChain(did: DidUri): KiltAddress {
+  return parse(did).address
 }
 
-// Query ALL deleted DIDs, which can be very time consuming if the number of deleted DIDs gets large.
-async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
-  return api.query.did.didBlacklist
-    .keys<GenericAccountId[]>()
-    .then((entries) =>
-      entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
-    )
+/**
+ * Format a DID resource ID to be used as a parameter for the blockchain API functions.
+
+ * @param id The DID resource ID to format.
+ * @returns The blockchain-formatted ID.
+ */
+export function resourceIdToChain(id: UriFragment): string {
+  return id.replace(/^#/, '')
 }
 
-// Query a DID service given the DID identifier and the service ID.
-// Interacts with the ServiceEndpoints storage double map.
-async function queryServiceEncoded(
-  didIdentifier: IDidIdentifier,
-  serviceId: string
-): Promise<Option<IServiceEndpointChainRecordCodec>> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.serviceEndpoints<
-    Option<IServiceEndpointChainRecordCodec>
-  >(didIdentifier, serviceId)
-}
-
-// Query all services for a DID given the DID identifier.
-// Interacts with the ServiceEndpoints storage double map.
-async function queryAllServicesEncoded(
-  didIdentifier: IDidIdentifier
-): Promise<IServiceEndpointChainRecordCodec[]> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedEndpoints = await api.query.did.serviceEndpoints.entries<
-    Option<IServiceEndpointChainRecordCodec>
-  >(didIdentifier)
-  return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
-}
-
-// Query the # of services stored under a DID without fetching all the services.
-// Interacts with the DidEndpointsCount storage map.
-async function queryEndpointsCountsEncoded(
-  didIdentifier: IDidIdentifier
-): Promise<u32> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.query.did.didEndpointsCount<u32>(didIdentifier)
-}
-
-async function queryDepositAmountEncoded(): Promise<u128> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.consts.did.deposit as u128
+/**
+ * Convert the deposit data coming from the blockchain to JS object.
+ *
+ * @param deposit The blockchain-formatted deposit data.
+ * @returns The deposit data.
+ */
+export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
+  return {
+    owner: Crypto.encodeAddress(deposit.owner, ss58Format),
+    amount: deposit.amount.toBn(),
+  }
 }
 
 // ### DECODED QUERYING types
 
-export type IChainDeposit = {
-  owner: IIdentity['address']
-  amount: BN
-}
-
-export type IDidChainRecordJSON = {
-  authenticationKey: DidKey['id']
-  keyAgreementKeys: Array<DidKey['id']>
-  capabilityDelegationKey?: DidKey['id']
-  assertionMethodKey?: DidKey['id']
-  publicKeys: DidKey[]
+type ChainDocument = Pick<
+  DidDocument,
+  'authentication' | 'assertionMethod' | 'capabilityDelegation' | 'keyAgreement'
+> & {
   lastTxCounter: BN
-  deposit: IChainDeposit
+  deposit: Deposit
 }
 
 // ### DECODED QUERYING (builds on top of raw querying)
 
-function decodeDidDeposit(encodedDeposit: Deposit): IChainDeposit {
-  return {
-    amount: new BN(encodedDeposit.amount.toString()),
-    owner: encodedDeposit.owner.toString(),
-  }
-}
-
-function decodeDidPublicKeyDetails(
+function didPublicKeyDetailsFromChain(
   keyId: Hash,
-  keyDetails: DidPublicKeyDetails
+  keyDetails: ChainDidPublicKeyDetails
 ): DidKey {
-  const key = keyDetails.key.value
+  const key = keyDetails.key.isPublicEncryptionKey
+    ? keyDetails.key.asPublicEncryptionKey
+    : keyDetails.key.asPublicVerificationKey
   return {
-    id: keyId.toHex(),
-    type: key.type.toLowerCase(),
+    id: `#${keyId.toHex()}`,
+    type: key.type.toLowerCase() as DidKey['type'],
     publicKey: key.value.toU8a(),
-    includedAt: keyDetails.blockNumber.toBn(),
   }
 }
 
-function decodeDidChainRecord(
-  didDetail: IDidChainRecordCodec
-): IDidChainRecordJSON {
-  const publicKeys: DidKey[] = [...didDetail.publicKeys.entries()].map(
-    ([keyId, keyDetails]) => {
-      return decodeDidPublicKeyDetails(keyId, keyDetails)
-    }
-  )
-  const authenticationKeyId = didDetail.authenticationKey.toHex()
-  const keyAgreementKeyIds = [...didDetail.keyAgreementKeys.values()].map(
-    (keyId) => {
-      return keyId.toHex()
-    }
-  )
+/**
+ * Convert the DID data from blockchain format to the DID URI.
+ *
+ * @param encoded The chain-formatted DID.
+ * @returns The DID URI.
+ */
+export function fromChain(encoded: AccountId32): DidUri {
+  return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
+}
 
-  const didRecord: IDidChainRecordJSON = {
+/**
+ * Convert the DID Document data from the blockchain format to a JS object.
+ *
+ * @param encoded The chain-formatted DID Document.
+ * @returns The DID Document.
+ */
+export function documentFromChain(
+  encoded: Option<DidDidDetails>
+): ChainDocument {
+  const {
     publicKeys,
-    authenticationKey: authenticationKeyId,
-    keyAgreementKeys: keyAgreementKeyIds,
-    lastTxCounter: didDetail.lastTxCounter.toBn(),
-    deposit: decodeDidDeposit(didDetail.deposit),
+    authenticationKey,
+    attestationKey,
+    delegationKey,
+    keyAgreementKeys,
+    lastTxCounter,
+    deposit,
+  } = encoded.unwrap()
+
+  const keys: Record<string, DidKey> = [...publicKeys.entries()]
+    .map(([keyId, keyDetails]) =>
+      didPublicKeyDetailsFromChain(keyId, keyDetails)
+    )
+    .reduce((res, key) => {
+      res[resourceIdToChain(key.id)] = key
+      return res
+    }, {})
+
+  const authentication = keys[authenticationKey.toHex()] as DidVerificationKey
+
+  const didRecord: ChainDocument = {
+    authentication: [authentication],
+    lastTxCounter: lastTxCounter.toBn(),
+    deposit: depositFromChain(deposit),
   }
-  if (didDetail.delegationKey.isSome) {
-    didRecord.capabilityDelegationKey = didDetail.delegationKey.unwrap().toHex()
+  if (attestationKey.isSome) {
+    const key = keys[attestationKey.unwrap().toHex()] as DidVerificationKey
+    didRecord.assertionMethod = [key]
   }
-  if (didDetail.attestationKey.isSome) {
-    didRecord.assertionMethodKey = didDetail.attestationKey.unwrap().toHex()
+  if (delegationKey.isSome) {
+    const key = keys[delegationKey.unwrap().toHex()] as DidVerificationKey
+    didRecord.capabilityDelegation = [key]
   }
+
+  const keyAgreementKeyIds = [...keyAgreementKeys.values()].map((keyId) =>
+    keyId.toHex()
+  )
+  if (keyAgreementKeyIds.length > 0) {
+    didRecord.keyAgreement = keyAgreementKeyIds.map(
+      (id) => keys[id] as DidEncryptionKey
+    )
+  }
+
   return didRecord
 }
 
-export async function queryDetails(
-  didIdentifier: IDidIdentifier
-): Promise<IDidChainRecordJSON | null> {
-  const result = await queryDidEncoded(didIdentifier)
-  if (result.isNone) {
-    return null
-  }
-  return decodeDidChainRecord(result.unwrap())
+interface ChainEndpoint {
+  id: string
+  serviceTypes: DidServiceEndpoint['type']
+  urls: DidServiceEndpoint['serviceEndpoint']
 }
 
-// TODO: Find a better way to not decode the whole details struct to only fetch one key.
-export async function queryKey(
-  didIdentifier: IDidIdentifier,
-  keyId: DidKey['id']
-): Promise<DidKey | null> {
-  const didDetails = await queryDetails(didIdentifier)
-  if (!didDetails) {
-    return null
+/**
+ * Checks if a string is a valid URI according to RFC#3986.
+ *
+ * @param str String to be checked.
+ * @returns Whether `str` is a valid URI.
+ */
+function isUri(str: string): boolean {
+  try {
+    const url = new URL(str) // this actually accepts any URI but throws if it can't be parsed
+    return url.href === str || encodeURI(decodeURI(str)) === str // make sure our URI has not been converted implicitly by URL
+  } catch {
+    return false
   }
-  return didDetails.publicKeys.find((key) => key.id === keyId) || null
 }
 
-function decodeServiceChainRecord(
-  serviceDetails: IServiceEndpointChainRecordCodec
-): DidServiceEndpoint {
-  const id = hexToString(serviceDetails.id.toString())
+const UriFragmentRegex = /^[a-zA-Z0-9._~%+,;=*()'&$!@:/?-]+$/
+
+/**
+ * Checks if a string is a valid URI fragment according to RFC#3986.
+ *
+ * @param str String to be checked.
+ * @returns Whether `str` is a valid URI fragment.
+ */
+function isUriFragment(str: string): boolean {
+  try {
+    return UriFragmentRegex.test(str) && !!decodeURIComponent(str)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Performs sanity checks on service endpoint data, making sure that the following conditions are met:
+ *   - The `id` property is a string containing a valid URI fragment according to RFC#3986, not a complete DID URI.
+ *   - If the `uris` property contains one or more strings, they must be valid URIs according to RFC#3986.
+ *
+ * @param endpoint A service endpoint object to check.
+ */
+export function validateService(endpoint: DidServiceEndpoint): void {
+  const { id, serviceEndpoint } = endpoint
+  if (id.startsWith('did:kilt')) {
+    throw new SDKErrors.DidError(
+      `This function requires only the URI fragment part (following '#') of the service ID, not the full DID URI, which is violated by id "${id}"`
+    )
+  }
+  if (!isUriFragment(resourceIdToChain(id))) {
+    throw new SDKErrors.DidError(
+      `The service ID must be valid as a URI fragment according to RFC#3986, which "${id}" is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding the desired id.`
+    )
+  }
+  serviceEndpoint.forEach((uri) => {
+    if (!isUri(uri)) {
+      throw new SDKErrors.DidError(
+        `A service URI must be a URI according to RFC#3986, which "${uri}" (service id "${id}") is not. Make sure not to use disallowed characters (e.g. whitespace) or consider URL-encoding resource locators beforehand.`
+      )
+    }
+  })
+}
+
+/**
+ * Format the DID service to be used as a parameter for the blockchain API functions.
+ *
+ * @param service The DID service to format.
+ * @returns The blockchain-formatted DID service.
+ */
+export function serviceToChain(service: DidServiceEndpoint): ChainEndpoint {
+  validateService(service)
+  const { id, type, serviceEndpoint } = service
   return {
-    id,
-    types: serviceDetails.serviceTypes.map((type) =>
-      hexToString(type.toString())
-    ),
-    urls: serviceDetails.urls.map((url) => hexToString(url.toString())),
+    id: resourceIdToChain(id),
+    serviceTypes: type,
+    urls: serviceEndpoint,
   }
 }
 
-export async function queryServiceEndpoints(
-  didIdentifier: IDidIdentifier
-): Promise<DidServiceEndpoint[]> {
-  const encoded = await queryAllServicesEncoded(didIdentifier)
-  return encoded.map((e) => decodeServiceChainRecord(e))
+/**
+ * Convert the DID service data coming from the blockchain to JS object.
+ *
+ * @param encoded The blockchain-formatted DID service data.
+ * @returns The DID service.
+ */
+export function serviceFromChain(
+  encoded: Option<DidServiceEndpointsDidEndpoint>
+): DidServiceEndpoint {
+  const { id, serviceTypes, urls } = encoded.unwrap()
+  return {
+    id: `#${id.toUtf8()}`,
+    type: serviceTypes.map((type) => type.toUtf8()),
+    serviceEndpoint: urls.map((url) => url.toUtf8()),
+  }
 }
 
-export async function queryServiceEndpoint(
-  didIdentifier: IDidIdentifier,
-  serviceId: DidServiceEndpoint['id']
-): Promise<DidServiceEndpoint | null> {
-  const serviceEncoded = await queryServiceEncoded(didIdentifier, serviceId)
-  if (serviceEncoded.isNone) return null
-
-  return decodeServiceChainRecord(serviceEncoded.unwrap())
-}
-
-export async function queryEndpointsCounts(
-  didIdentifier: IDidIdentifier
-): Promise<BN> {
-  const endpointsCountEncoded = await queryEndpointsCountsEncoded(didIdentifier)
-  return endpointsCountEncoded.toBn()
-}
-
-export async function queryNonce(didIdentifier: IDidIdentifier): Promise<BN> {
-  const encoded = await queryDidEncoded(didIdentifier)
-  return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
-}
-
-export async function queryDidDeletionStatus(
-  didIdentifier: IDidIdentifier
-): Promise<boolean> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  // The following function returns something different than 0x00 if there is an entry for the provided key, 0x00 otherwise.
-  const encodedStorageHash = await api.query.did.didBlacklist.hash(
-    didIdentifier
-  )
-  // isEmpty returns true if there is no entry for the given key -> the function should return false.
-  return !encodedStorageHash.isEmpty
-}
-
-export async function queryDepositAmount(): Promise<BN> {
-  const encodedDeposit = await queryDepositAmountEncoded()
-  return encodedDeposit.toBn()
-}
-
-export async function queryDeletedDidIdentifiers(): Promise<IDidIdentifier[]> {
-  const encodedIdentifiers = await queryDeletedDidsEncoded()
-  return encodedIdentifiers.map((id) => id.toHuman())
+/**
+ * Decode service endpoint records associated with the full DID from the KILT blockchain.
+ *
+ * @param encoded The data returned by `api.query.did.serviceEndpoints.entries`.
+ * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
+ */
+export function servicesFromChain(
+  encoded: Array<[any, Option<DidServiceEndpointsDidEndpoint>]>
+): DidServiceEndpoint[] {
+  return encoded.map(([, encodedValue]) => serviceFromChain(encodedValue))
 }
 
 // ### EXTRINSICS types
 
-export type PublicKeyEnum = Record<string, Uint8Array>
-export type SignatureEnum = Record<string, Uint8Array>
-
 export type AuthorizeCallInput = {
-  didIdentifier: IDidIdentifier
+  did: DidUri
   txCounter: AnyNumber
   call: Extrinsic
-  submitter: IIdentity['address']
+  submitter: KiltAddress
   blockNumber?: AnyNumber
-}
-
-export type NewDidKey = Pick<DidKey, 'type' | 'publicKey'>
-
-interface IDidAuthorizedCallOperation extends Struct {
-  did: IDidIdentifier
-  txCounter: u64
-  call: Call
-  submitter: GenericAccountId
-  blockNumber: AnyNumber
 }
 
 // ### EXTRINSICS
 
-function formatPublicKey(key: NewDidKey): PublicKeyEnum {
-  const { type, publicKey } = key
-  return { [type]: publicKey }
+export function publicKeyToChain(
+  key: NewDidVerificationKey
+): EncodedVerificationKey
+export function publicKeyToChain(key: NewDidEncryptionKey): EncodedEncryptionKey
+
+/**
+ * Transforms a DID public key record to an enum-type key-value pair required in many key-related extrinsics.
+ *
+ * @param key Object describing data associated with a public key.
+ * @returns Data restructured to allow SCALE encoding by polkadot api.
+ */
+export function publicKeyToChain(
+  key: NewDidVerificationKey | NewDidEncryptionKey
+): EncodedKey {
+  // TypeScript can't infer type here, so we have to add a type assertion.
+  return { [key.type]: key.publicKey } as EncodedKey
 }
 
-export async function generateCreateTxFromDidDetails(
-  did: DidDetails,
-  submitterAddress: IIdentity['address'],
-  signingOptions: KeystoreSigningOptions
-): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const { signer, signingPublicKey, alg } = signingOptions
+interface GetStoreTxInput {
+  authentication: [NewDidVerificationKey]
+  assertionMethod?: [NewDidVerificationKey]
+  capabilityDelegation?: [NewDidVerificationKey]
+  keyAgreement?: NewDidEncryptionKey[]
 
-  const newKeyAgreementKeys: PublicKeyEnum[] = did
-    .getKeys(KeyRelationship.keyAgreement)
-    .map((key) => {
-      return formatPublicKey(key)
-    })
+  service?: DidServiceEndpoint[]
+}
+
+export type GetStoreTxSignCallback = (
+  signData: Omit<SignRequestData, 'did'>
+) => Promise<Omit<SignResponseData, 'keyUri'>>
+
+/**
+ * Create a DID creation operation which includes the information provided.
+ *
+ * The resulting extrinsic can be submitted to create an on-chain DID that has the provided keys and service endpoints.
+ *
+ * A DID creation operation can contain at most 25 new service endpoints.
+ * Additionally, each service endpoint must respect the following conditions:
+ * - The service endpoint ID is at most 50 bytes long and is a valid URI fragment according to RFC#3986.
+ * - The service endpoint has at most 1 service type, with a value that is at most 50 bytes long.
+ * - The service endpoint has at most 1 URI, with a value that is at most 200 bytes long, and which is a valid URI according to RFC#3986.
+ *
+ * @param input The DID keys and services to store, also accepts DidDocument, so you can store a light DID for example.
+ * @param submitter The KILT address authorized to submit the creation operation.
+ * @param sign The sign callback. The authentication key has to be used.
+ *
+ * @returns The SubmittableExtrinsic for the DID creation operation.
+ */
+export async function getStoreTx(
+  input: GetStoreTxInput | DidDocument,
+  submitter: KiltAddress,
+  sign: GetStoreTxSignCallback
+): Promise<SubmittableExtrinsic> {
+  const api = ConfigService.get('api')
+
+  const {
+    authentication,
+    assertionMethod,
+    capabilityDelegation,
+    keyAgreement = [],
+    service = [],
+  } = input
+
+  if (!('authentication' in input) || typeof authentication[0] !== 'object') {
+    throw new SDKErrors.DidError(
+      `The provided DID does not have an authentication key to sign the creation operation`
+    )
+  }
 
   // For now, it only takes the first attestation key, if present.
-  const attestationKeys = did.getKeys(KeyRelationship.assertionMethod)
-  if (attestationKeys.length > 1) {
-    log.warn(
-      `More than one attestation key (${attestationKeys.length}) specified. Only the first will be stored on the chain.`
+  if (assertionMethod && assertionMethod.length > 1) {
+    throw new SDKErrors.DidError(
+      `More than one attestation key (${assertionMethod.length}) specified. The chain can only store one.`
     )
   }
-  const newAttestationKey: PublicKeyEnum | undefined = attestationKeys[0]
-    ? formatPublicKey(attestationKeys[0])
-    : undefined
 
   // For now, it only takes the first delegation key, if present.
-  const delegationKeys = did.getKeys(KeyRelationship.capabilityDelegation)
-  if (delegationKeys.length > 1) {
-    log.warn(
-      `More than one delegation key (${delegationKeys.length}) specified. Only the first will be stored on the chain.`
+  if (capabilityDelegation && capabilityDelegation.length > 1) {
+    throw new SDKErrors.DidError(
+      `More than one delegation key (${capabilityDelegation.length}) specified. The chain can only store one.`
     )
   }
-  const newDelegationKey: PublicKeyEnum | undefined = delegationKeys[0]
-    ? formatPublicKey(delegationKeys[0])
-    : undefined
 
-  const newServiceDetails = did.getEndpoints().map((service) => {
-    const { id, urls } = service
-    return { id, urls, serviceTypes: service.types }
-  })
+  const maxKeyAgreementKeys = api.consts.did.maxNewKeyAgreementKeys.toNumber()
+  if (keyAgreement.length > maxKeyAgreementKeys) {
+    throw new SDKErrors.DidError(
+      `The number of key agreement keys in the creation operation is greater than the maximum allowed, which is ${maxKeyAgreementKeys}`
+    )
+  }
 
-  const rawCreationDetails = {
-    did: did.identifier,
-    submitter: submitterAddress,
-    newKeyAgreementKeys,
+  const maxNumberOfServicesPerDid =
+    api.consts.did.maxNumberOfServicesPerDid.toNumber()
+  if (service.length > maxNumberOfServicesPerDid) {
+    throw new SDKErrors.DidError(
+      `Cannot store more than ${maxNumberOfServicesPerDid} service endpoints per DID`
+    )
+  }
+
+  const [authenticationKey] = authentication
+  const did = getAddressByKey(authenticationKey)
+
+  const newAttestationKey =
+    assertionMethod &&
+    assertionMethod.length > 0 &&
+    publicKeyToChain(assertionMethod[0])
+
+  const newDelegationKey =
+    capabilityDelegation &&
+    capabilityDelegation.length > 0 &&
+    publicKeyToChain(capabilityDelegation[0])
+
+  const newKeyAgreementKeys = keyAgreement.map(publicKeyToChain)
+  const newServiceDetails = service.map(serviceToChain)
+
+  const apiInput = {
+    did,
+    submitter,
     newAttestationKey,
     newDelegationKey,
+    newKeyAgreementKeys,
     newServiceDetails,
   }
 
-  const encodedDidCreationDetails = api.registry.createType(
-    api.tx.did.create.meta.args[0].type.toString(),
-    rawCreationDetails
-  )
+  const encoded = api.registry
+    .createType(api.tx.did.create.meta.args[0].type.toString(), apiInput)
+    .toU8a()
 
-  const signature = await signer.sign({
-    data: encodedDidCreationDetails.toU8a(),
-    meta: {},
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
+  const signature = await sign({
+    data: encoded,
+    keyRelationship: 'authentication',
   })
-  return api.tx.did.create(encodedDidCreationDetails, {
-    [signature.alg]: signature.data,
-  })
+  const encodedSignature = {
+    [signature.keyType]: signature.signature,
+  } as EncodedSignature
+  return api.tx.did.create(encoded, encodedSignature)
 }
 
-export async function getSetKeyExtrinsic(
-  keyRelationship: KeyRelationship,
-  key: NewDidKey
-): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const keyAsEnum = formatPublicKey(key)
-  switch (keyRelationship) {
-    case KeyRelationship.authentication:
-      return api.tx.did.setAuthenticationKey(keyAsEnum)
-    case KeyRelationship.capabilityDelegation:
-      return api.tx.did.setDelegationKey(keyAsEnum)
-    case KeyRelationship.assertionMethod:
-      return api.tx.did.setAttestationKey(keyAsEnum)
-    default:
-      throw SDKErrors.ERROR_DID_ERROR(
-        `setting a key is only allowed for the following key types: ${[
-          KeyRelationship.authentication,
-          KeyRelationship.capabilityDelegation,
-          KeyRelationship.assertionMethod,
-        ]}`
-      )
-  }
+export interface SigningOptions {
+  sign: SignExtrinsicCallback
+  keyRelationship: VerificationKeyRelationship
 }
 
-export async function getRemoveKeyExtrinsic(
-  keyRelationship: KeyRelationship,
-  keyId?: DidKey['id']
-): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  switch (keyRelationship) {
-    case KeyRelationship.capabilityDelegation:
-      return api.tx.did.removeDelegationKey()
-    case KeyRelationship.assertionMethod:
-      return api.tx.did.removeAttestationKey()
-    case KeyRelationship.keyAgreement:
-      if (!keyId) {
-        throw SDKErrors.ERROR_DID_ERROR(
-          `When removing a ${KeyRelationship.keyAgreement} key it is required to specify the id of the key to be removed.`
-        )
-      }
-      return api.tx.did.removeKeyAgreementKey(keyId)
-    default:
-      throw SDKErrors.ERROR_DID_ERROR(
-        `key removal is only allowed for the following key types: ${[
-          KeyRelationship.keyAgreement,
-          KeyRelationship.capabilityDelegation,
-          KeyRelationship.assertionMethod,
-        ]}`
-      )
-  }
-}
-
-export async function getAddKeyExtrinsic(
-  keyRelationship: KeyRelationship,
-  key: NewDidKey
-): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const keyAsEnum = formatPublicKey(key)
-  if (keyRelationship === KeyRelationship.keyAgreement) {
-    return api.tx.did.addKeyAgreementKey(keyAsEnum)
-  }
-  throw SDKErrors.ERROR_DID_ERROR(
-    `adding to the key set is only allowed for the following key types:  ${[
-      KeyRelationship.keyAgreement,
-    ]}`
-  )
-}
-
-export async function getAddEndpointExtrinsic(
-  endpoint: DidServiceEndpoint
-): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-
-  return api.tx.did.addServiceEndpoint({
-    serviceTypes: endpoint.types,
-    ...endpoint,
-  })
-}
-
-// The endpointId parameter is the service endpoint ID without the DID prefix.
-// So for a endpoint of the form did:kilt:<identifier>#<endpoint_id>, only <endpoint_id> must be passed as parameter here.
-export async function getRemoveEndpointExtrinsic(
-  endpointId: DidServiceEndpoint['id']
-): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.removeServiceEndpoint(endpointId)
-}
-
-export async function getDeleteDidExtrinsic(
-  endpointsCount: BN
-): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.delete(endpointsCount)
-}
-
-export async function getReclaimDepositExtrinsic(
-  didIdentifier: IDidIdentifier,
-  endpointsCount: BN
-): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)
-}
-
-// The block number can either be provided by the DID subject,
-// or the latest one will automatically be fetched from the blockchain.
+/**
+ * DID related operations on the KILT blockchain require authorization by a full DID. This is realized by requiring that relevant extrinsics are signed with a key featured by a full DID as a verification method.
+ * Such extrinsics can be produced using this function.
+ *
+ * @param params Object wrapping all input to the function.
+ * @param params.did Full DID.
+ * @param params.keyRelationship DID key relationship to be used for authorization.
+ * @param params.sign The callback to interface with the key store managing the private key to be used.
+ * @param params.call The call or extrinsic to be authorized.
+ * @param params.txCounter The nonce or txCounter value for this extrinsic, which must be on larger than the current txCounter value of the authorizing full DID.
+ * @param params.submitter Payment account allowed to submit this extrinsic and cover its fees, which will end up owning any deposit associated with newly created records.
+ * @param params.blockNumber Block number for determining the validity period of this authorization. If omitted, the current block number will be fetched from chain.
+ * @returns A DID authorized extrinsic that, after signing with the payment account mentioned in the params, is ready for submission.
+ */
 export async function generateDidAuthenticatedTx({
-  didIdentifier,
-  signingPublicKey,
-  alg,
-  signer,
+  did,
+  keyRelationship,
+  sign,
   call,
   txCounter,
   submitter,
   blockNumber,
-}: AuthorizeCallInput & KeystoreSigningOptions): Promise<SubmittableExtrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const signableCall = api.registry.createType<IDidAuthorizedCallOperation>(
-    api.tx.did.submitDidCall.meta.args[0].type.toString(),
-    {
-      txCounter,
-      did: didIdentifier,
-      call,
-      submitter,
-      blockNumber: blockNumber || (await api.query.system.number()),
-    }
-  )
-  const signature = await signer.sign({
+}: AuthorizeCallInput & SigningOptions): Promise<SubmittableExtrinsic> {
+  const api = ConfigService.get('api')
+  const signableCall =
+    api.registry.createType<DidDidDetailsDidAuthorizedCallOperation>(
+      api.tx.did.submitDidCall.meta.args[0].type.toString(),
+      {
+        txCounter,
+        did: toChain(did),
+        call,
+        submitter,
+        blockNumber: blockNumber ?? (await api.query.system.number()),
+      }
+    )
+  const signature = await sign({
     data: signableCall.toU8a(),
-    meta: {
-      method: call.method.toHex(),
-      version: call.version,
-      specVersion: api.runtimeVersion.specVersion.toString(),
-      transactionVersion: api.runtimeVersion.transactionVersion.toString(),
-      genesisHash: api.genesisHash.toHex(),
-      nonce: signableCall.txCounter.toHex(),
-      address: Crypto.encodeAddress(signableCall.did),
-    },
-    publicKey: Crypto.coToUInt8(signingPublicKey),
-    alg,
+    keyRelationship,
+    did,
   })
-  return api.tx.did.submitDidCall(signableCall, {
-    [signature.alg]: signature.data,
-  })
+  const encodedSignature = {
+    [signature.keyType]: signature.signature,
+  } as EncodedSignature
+  return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
 
 // ### Chain utils
-export function encodeDidSignature(
-  key: Pick<DidKey, 'type'>,
-  signature: Pick<DidSignature, 'signature'>
-): SignatureEnum {
-  const alg = getSignatureAlgForKeyType(key.type)
-  if (!alg) {
-    throw SDKErrors.ERROR_DID_ERROR(
-      `The provided type ${key.type} does not match any known algorithm.`
+/**
+ * Compiles an enum-type key-value pair representation of a signature created with a full DID verification method. Required for creating full DID signed extrinsics.
+ *
+ * @param key Object describing data associated with a public key.
+ * @param signature Object containing a signature generated with a full DID associated public key.
+ * @returns Data restructured to allow SCALE encoding by polkadot api.
+ */
+export function didSignatureToChain(
+  key: DidVerificationKey,
+  signature: Uint8Array
+): EncodedSignature {
+  if (!verificationKeyTypes.includes(key.type)) {
+    throw new SDKErrors.DidError(
+      `encodedDidSignature requires a verification key. A key of type "${key.type}" was used instead`
     )
   }
+
+  return { [key.type]: signature } as EncodedSignature
+}
+
+/**
+ * Web3Name is the type of nickname for a DID.
+ */
+export type Web3Name = string
+
+/**
+ * Decodes the web3name of a DID.
+ *
+ * @param encoded The value returned by `api.query.web3Names.names()`.
+ * @returns The registered web3name for this DID if any.
+ */
+export function web3NameFromChain(encoded: Option<Bytes>): Web3Name {
+  return encoded.unwrap().toUtf8()
+}
+
+/**
+ * Decodes the DID of the owner of web3name.
+ *
+ * @param encoded The value returned by `api.query.web3Names.owner()`.
+ * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
+ */
+export function web3NameOwnerFromChain(
+  encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
+): {
+  owner: DidUri
+  deposit: Deposit
+  claimedAt: BN
+} {
+  const { owner, deposit, claimedAt } = encoded.unwrap()
   return {
-    [alg]: hexToU8a(signature.signature),
+    owner: fromChain(owner),
+    deposit: depositFromChain(deposit),
+    claimedAt: claimedAt.toBn(),
   }
 }

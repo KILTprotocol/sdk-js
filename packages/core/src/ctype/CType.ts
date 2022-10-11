@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -13,144 +13,241 @@
  * * Anyone can use a CTYPE to create a new [[Claim]].
  *
  * @packageDocumentation
- * @module CType
- * @preferred
  */
 
 import type {
-  IClaim,
   ICType,
-  CompressedCType,
   CTypeSchemaWithoutId,
-  SubmittableExtrinsic,
+  IClaim,
+  ICTypeMetadata,
 } from '@kiltprotocol/types'
-import { store } from './CType.chain.js'
-import * as CTypeUtils from './CType.utils.js'
+import { Crypto, SDKErrors, JsonSchema } from '@kiltprotocol/utils'
+import * as Did from '@kiltprotocol/did'
+import { ConfigService } from '@kiltprotocol/config'
+import type { HexString } from '@polkadot/util/types'
+import {
+  CTypeModel,
+  CTypeWrapperModel,
+  MetadataModel,
+} from './CType.schemas.js'
 
-export class CType implements ICType {
-  /**
-   * [STATIC] Clones an already existing [[CType]]
-   * or initializes from an [[ICType]] like object
-   * which is non-initialized and non-verified CType data.
-   *
-   * @param cTypeInput The [[CType]] which shall be cloned.
-   *
-   * @returns A copy of the given [[CType]].
-   */
-  public static fromCType(cTypeInput: ICType): CType {
-    return new CType(cTypeInput)
+/**
+ * Utility for (re)creating ctype hashes. For this, the $id property needs to be stripped from the CType schema.
+ *
+ * @param ctypeSchema The CType schema (with or without $id).
+ * @returns CtypeSchema without the $id property.
+ */
+export function getSchemaPropertiesForHash(
+  ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
+): Partial<ICType['schema']> {
+  // We need to remove the CType ID from the CType before storing it on the blockchain
+  // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
+  // which is itself a hash of the CType schema.
+  const schemaWithoutId: Partial<ICType['schema']> =
+    '$id' in ctypeSchema
+      ? (ctypeSchema as ICType['schema'])
+      : (ctypeSchema as CTypeSchemaWithoutId)
+  const shallowCopy = { ...schemaWithoutId }
+  delete shallowCopy.$id
+  return shallowCopy
+}
+
+/**
+ * Calculates the CType hash from a schema.
+ *
+ * @param schema The CType schema (with or without $id).
+ * @returns Hash as hex string.
+ */
+export function getHashForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): HexString {
+  const preparedSchema = getSchemaPropertiesForHash(schema)
+  return Crypto.hashStr(Crypto.encodeObjectAsStr(preparedSchema))
+}
+
+/**
+ * Calculates the schema $id from a CType hash.
+ *
+ * @param hash CType hash as hex string.
+ * @returns Schema id uri.
+ */
+export function getIdForCTypeHash(
+  hash: ICType['hash']
+): ICType['schema']['$id'] {
+  return `kilt:ctype:${hash}`
+}
+
+/**
+ * Calculates the schema $id for a CType schema by hashing it.
+ *
+ * @param schema CType schema for which to create schema id.
+ * @returns Schema id uri.
+ */
+export function getIdForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): string {
+  return getIdForCTypeHash(getHashForSchema(schema))
+}
+
+/**
+ * Verifies data against CType schema or CType schema against meta-schema.
+ *
+ * @param object Data to be verified against schema.
+ * @param schema Schema to verify against.
+ * @param messages Optional empty array. If passed, this receives all verification errors.
+ */
+export function verifyObjectAgainstSchema(
+  object: Record<string, any>,
+  schema: Record<string, any>,
+  messages?: string[]
+): void {
+  const validator = new JsonSchema.Validator(schema, '7', false)
+  if (schema.$id !== CTypeModel.$id) {
+    validator.addSchema(CTypeModel)
   }
-
-  /**
-   *  [STATIC] Creates a new [[CType]] from an [[ICTypeSchema]].
-   *  _Note_ that you can either supply the schema as [[ICTypeSchema]] with the id
-   *  or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it.
-   *
-   * @param schema The JSON schema from which the [[CType]] should be generated.
-   * @param owner The public SS58 address of the owner of the [[CType]].
-   *
-   * @returns An instance of [[CType]].
-   */
-  public static fromSchema(
-    schema: CTypeSchemaWithoutId | ICType['schema'],
-    owner?: ICType['owner']
-  ): CType {
-    return new CType({
-      hash: CTypeUtils.getHashForSchema(schema),
-      owner: owner || null,
-      schema: {
-        ...schema,
-        $id: CTypeUtils.getIdForSchema(schema),
-      },
+  const { valid, errors } = validator.validate(object)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
+      messages.push(error.error)
     })
   }
+  throw new SDKErrors.ObjectUnverifiableError(
+    'JSON schema verification failed for object',
+    { cause: errors }
+  )
+}
 
-  /**
-   *  [STATIC] Custom Type Guard to determine input being of type ICType using the CTypeUtils errorCheck.
-   *
-   * @param input The potentially only partial ICType.
-   *
-   * @returns Boolean whether input is of type ICType.
-   */
-  static isICType(input: unknown): input is ICType {
-    try {
-      CTypeUtils.errorCheck(input as ICType)
-    } catch (error) {
-      return false
-    }
-    return true
+/**
+ * Verifies the structure of the provided IClaim['contents'] with ICType['schema'].
+ *
+ * @param claimContents IClaim['contents'] to be verified against the schema.
+ * @param schema ICType['schema'] to be verified against the [CTypeModel].
+ * @param messages An array, which will be filled by schema errors.
+ */
+export function verifyClaimAgainstSchema(
+  claimContents: IClaim['contents'],
+  schema: ICType['schema'],
+  messages?: string[]
+): void {
+  verifyObjectAgainstSchema(schema, CTypeModel)
+  verifyObjectAgainstSchema(claimContents, schema, messages)
+}
+
+/**
+ * Checks on the KILT blockchain whether a CType is registered.
+ *
+ * @param ctype CType data.
+ */
+export async function verifyStored(ctype: ICType): Promise<void> {
+  const api = ConfigService.get('api')
+  const encoded = await api.query.ctype.ctypes(ctype.hash)
+  if (encoded.isNone)
+    throw new SDKErrors.CTypeHashMissingError(
+      `CType with hash ${ctype.hash} is not registered on chain`
+    )
+}
+
+/**
+ * Checks whether the input meets all the required criteria of an ICType object.
+ * Throws on invalid input.
+ *
+ * @param input The potentially only partial ICType.
+ */
+export function verifyDataStructure(input: ICType): void {
+  verifyObjectAgainstSchema(input, CTypeWrapperModel)
+  if (!('schema' in input) || getHashForSchema(input.schema) !== input.hash) {
+    throw new SDKErrors.HashMalformedError(input.hash, 'CType')
   }
-
-  public hash: ICType['hash']
-  public owner: ICType['owner'] | null
-  public schema: ICType['schema']
-
-  public constructor(cTypeInput: ICType) {
-    CTypeUtils.errorCheck(cTypeInput)
-    this.schema = cTypeInput.schema
-    this.owner = cTypeInput.owner
-    this.hash = cTypeInput.hash
+  if (getIdForSchema(input.schema) !== input.schema.$id) {
+    throw new SDKErrors.CTypeIdMismatchError(
+      getIdForSchema(input.schema),
+      input.schema.$id
+    )
   }
-
-  /**
-   * [ASYNC] Stores the [[CType]] on the blockchain.
-   *
-   * @returns A promise of a unsigned SubmittableExtrinsic.
-   */
-  public async store(): Promise<SubmittableExtrinsic> {
-    return store(this)
+  if (input.owner !== null) {
+    Did.validateUri(input.owner, 'Did')
   }
+}
 
-  /**
-   *  Verifies whether a [[Claim]] follows this [[CType]]'s schema.
-   *
-   * @param claim The [[Claim]] we want to check against.
-   * @returns Whether the [[Claim]] and the schema align.
-   */
-  public verifyClaimStructure(claim: IClaim): boolean {
-    return CTypeUtils.verifySchema(claim.contents, this.schema)
+/**
+ * Validates an array of [[CType]]s against a [[Claim]].
+ *
+ * @param cType - A [[CType]] that has nested [[CType]]s inside.
+ * @param nestedCTypes - An array of [[CType]] schemas.
+ * @param claimContents - The contents of a [[Claim]] to be validated.
+ * @param messages - Optional empty array. If passed, this receives all verification errors.
+ */
+export function verifyClaimAgainstNestedSchemas(
+  cType: ICType['schema'],
+  nestedCTypes: Array<ICType['schema']>,
+  claimContents: Record<string, any>,
+  messages?: string[]
+): void {
+  const validator = new JsonSchema.Validator(cType, '7', false)
+  nestedCTypes.forEach((ctype) => {
+    validator.addSchema(ctype)
+  })
+  validator.addSchema(CTypeModel)
+  const { valid, errors } = validator.validate(claimContents)
+  if (valid === true) return
+  if (messages) {
+    errors.forEach((error) => {
+      messages.push(error.error)
+    })
   }
+  throw new SDKErrors.NestedClaimUnverifiableError(undefined, {
+    cause: errors,
+  })
+}
 
-  /**
-   * [ASYNC] Check whether the [[CType]]'s hash has been registered to the blockchain.
-   *
-   * @returns Whether the [[CType]] hash is registered to the blockchain.
-   */
-  public async verifyStored(): Promise<boolean> {
-    return CTypeUtils.verifyStored(this)
+/**
+ * Checks a CTypeMetadata object.
+ *
+ * @param metadata [[ICTypeMetadata]] that is to be instantiated.
+ */
+export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
+  verifyObjectAgainstSchema(metadata, MetadataModel)
+}
+
+/**
+ * Creates a new [[CType]] from an [[ICTypeSchema]].
+ * _Note_ that you can either supply the schema as [[ICTypeSchema]] with the id
+ * or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it.
+ *
+ * @param schema The JSON schema from which the [[CType]] should be generated.
+ * @param owner The public SS58 address of the owner of the [[CType]].
+ *
+ * @returns A ctype object with cTypeHash, owner and the schema.
+ */
+export function fromSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema'],
+  owner?: ICType['owner']
+): ICType {
+  const ctype = {
+    hash: getHashForSchema(schema),
+    owner: owner || null,
+    schema: {
+      ...schema,
+      $id: getIdForSchema(schema),
+    },
   }
+  verifyDataStructure(ctype)
+  return ctype
+}
 
-  /**
-   * [ASYNC] Check whether the current owner of [[CType]] matches the one stored on the blockchain. Returns true iff:
-   * - The [[CType]] is registered on-chain
-   * - The owner property of the [[CType]] matches the registered owner
-   * If the owner property is not set this method will always return false because the blockchain always stores the
-   * submitter as owner.
-   *
-   * @returns Whether the owner of this [[CType]] matches the one stored on the blockchain.
-   */
-  public async verifyOwner(): Promise<boolean> {
-    return CTypeUtils.verifyOwner(this)
+/**
+ * Custom Type Guard to determine input being of type ICType.
+ *
+ * @param input The potentially only partial ICType.
+ *
+ * @returns Boolean whether input is of type ICType.
+ */
+export function isICType(input: unknown): input is ICType {
+  try {
+    verifyDataStructure(input as ICType)
+  } catch (error) {
+    return false
   }
-
-  /**
-   * Compresses an [[CType]] object.
-   *
-   * @returns An array that contains the same properties of an [[CType]].
-   */
-
-  public compress(): CompressedCType {
-    return CTypeUtils.compress(this)
-  }
-
-  /**
-   * [STATIC] Builds an [[CType]] from the decompressed array.
-   *
-   * @param cType The [[CompressedCType]] that should get decompressed.
-   * @returns A new [[CType]] object.
-   */
-  public static decompress(cType: CompressedCType): CType {
-    const decompressedCType = CTypeUtils.decompress(cType)
-    return CType.fromCType(decompressedCType)
-  }
+  return true
 }

@@ -1,6 +1,6 @@
 # DID Document exporter
 
-The DID Document exporter provides the functionality needed to convert an instance of a generic `IDidDetails` into a document that is compliant with the [W3C specification](https://www.w3.org/TR/did-core/). This component is required for the KILT plugin for the [DIF Universal Resolver](https://dev.uniresolver.io/).
+The DID Document exporter provides the functionality needed to convert an instance of a generic `DidDocument` into a document that is compliant with the [W3C specification](https://www.w3.org/TR/did-core/). This component is required for the KILT plugin for the [DIF Universal Resolver](https://dev.uniresolver.io/).
 
 ## How to use the exporter
 
@@ -9,18 +9,14 @@ The exporter interface and used types are part of the `@kiltprotocol/types` pack
 Currently, the exporter supports DID Documents in `application/json` and `application/ld+json` format.
 
 ```typescript
-import {
-  exportToDidDocument,
-  FullDidDetails,
-  LightDidDetails
-} from '@kiltprotocol/did'
+import * as Did from '@kiltprotocol/did'
 
-import type { IDidDocument, IJsonLDDidDocument } from '@kiltprotocol/types'
+import type { ConformingDidDocument, JsonLDDidDocument } from '@kiltprotocol/types'
 
-// Create an instance of `LightDidDetails` with the required information
-const lightDidDetails = new LightDidDetails({...})
+// Create `DidDocument` with the required information
+const lightDid: DidDocument = Did.createLightDidDocument({ ... })
 
-const lightDidDocument: IDidDocument = exportToDidDocument(lightDidDetails, 'application/json')
+const lightDidDocument: ConformingDidDocument = Did.exportToDidDocument(lightDid, 'application/json')
 
 // Will print the light DID.
 console.log(lightDidDocument.id)
@@ -37,16 +33,16 @@ console.log(lightDidDocument.keyAgreement)
 // Will print all the delegation keys.
 console.log(lightDidDocument.capabilityDelegation)
 
-// Will print all the external services referenced inside the `IDidDetails` instance.
+// Will print all the external services referenced inside the `DidDocument` instance.
 console.log(lightDidDocument.service)
 
-// Let's export an instance of `FullDidDetails` using the `application/ld+json` format.
+// Let's export `DidDocument` using the `application/ld+json` format.
 
-const fullDidDetails = new FullDidDetails({...})
+const fullDid = await Did.fetch('...')
 
-// The document type will be a `IJsonLDDidDocument`, which extends the simpler `IDidDocument`.
-const fullDidDocument: IJsonLDDidDocument = exportToDidDocument(fullDidDetails, 'application/ld+json')
+// The document type will be a `JsonLDDidDocument`, which extends the simpler `ConformingDidDocument`.
+const fullDidDocument: JsonLDDidDocument = Did.exportToDidDocument(fullDid, 'application/ld+json')
 
-// The same properties of `IDidDocument` can be accessed, plus a `@context` property required by the JSON-LD specification.
+// The same properties of `ConformingDidDocument` can be accessed, plus a `@context` property required by the JSON-LD specification.
 console.log(fullDidDocument['@context'])
 ```

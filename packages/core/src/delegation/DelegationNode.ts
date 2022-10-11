@@ -1,9 +1,43 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
+
+import type {
+  DidDocument,
+  DidUri,
+  DidVerificationKey,
+  IAttestation,
+  ICType,
+  IDelegationHierarchyDetails,
+  IDelegationNode,
+  SignCallback,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
+import * as Did from '@kiltprotocol/did'
+import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
+import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
+import {
+  addDelegationToChainArgs,
+  getAttestationHashes,
+  getChildren,
+  fetch,
+} from './DelegationNode.chain.js'
+import { fetch as fetchDetails } from './DelegationHierarchyDetails.chain.js'
+import * as DelegationNodeUtils from './DelegationNode.utils.js'
+
+const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
+
+type NewDelegationNodeInput = Required<
+  Pick<IDelegationNode, 'hierarchyId' | 'parentId' | 'account' | 'permissions'>
+>
+
+type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
+  DelegationHierarchyDetailsRecord
 
 /**
  * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
@@ -17,57 +51,13 @@
  * Permissions:
  *   * Delegate.
  *   * Attest.
- *
- * @packageDocumentation
- * @module DelegationNode
- * @preferred
  */
-
-import {
-  IDelegationHierarchyDetails,
-  IDelegationNode,
-  IDidDetails,
-  KeyRelationship,
-  KeystoreSigner,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
-import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
-import { ConfigService } from '@kiltprotocol/config'
-import type { DidKeySelectionHandler } from '@kiltprotocol/did'
-import { DidDetails, DidChain, DidUtils } from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
-import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
-import { query as queryAttestation } from '../attestation/Attestation.chain.js'
-import {
-  getChildren,
-  getAttestationHashes,
-  query,
-  queryDepositAmount,
-  remove,
-  revoke,
-  storeAsDelegation,
-  storeAsRoot,
-  reclaimDeposit,
-} from './DelegationNode.chain.js'
-import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
-import * as DelegationNodeUtils from './DelegationNode.utils.js'
-import { Attestation } from '../attestation/Attestation.js'
-
-const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
-
-type NewDelegationNodeInput = Required<
-  Pick<IDelegationNode, 'hierarchyId' | 'parentId' | 'account' | 'permissions'>
->
-
-type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
-  DelegationHierarchyDetailsRecord
-
 export class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
   private childrenIdentifiers: Array<IDelegationNode['id']> = []
-  public readonly account: IDidDetails['did']
+  public readonly account: DidUri
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean
@@ -164,73 +154,80 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns The CType hash associated with the delegation hierarchy.
    */
-  public async getCTypeHash(): Promise<string> {
-    return this.getHierarchyDetails().then((details) => details.cTypeHash)
+  public async getCTypeHash(): Promise<ICType['hash']> {
+    const { cTypeHash } = await this.getHierarchyDetails()
+    return cTypeHash
   }
 
   /**
-   * [ASYNC] Fetches the details of the hierarchy this delegation node belongs to.
+   * Fetches the details of the hierarchy this delegation node belongs to.
    *
-   * @throws [[ERROR_HIERARCHY_QUERY]] when the hierarchy details could not be queried.
-   * @returns Promise containing the [[DelegationHierarchyDetails]] of this delegation node.
+   * @returns Promise containing the [[IDelegationHierarchyDetails]] of this delegation node.
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
-      const hierarchyDetails = await queryDetails(this.hierarchyId)
-      if (!hierarchyDetails) {
-        throw SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
-      }
-      this.hierarchyDetails = hierarchyDetails
-      return hierarchyDetails
+      this.hierarchyDetails = await fetchDetails(this.hierarchyId)
     }
     return this.hierarchyDetails
   }
 
   /**
-   * [ASYNC] Fetches the parent node of this delegation node.
+   * Fetches the parent node of this delegation node.
    *
    * @returns Promise containing the parent as [[DelegationNode]] or [null].
    */
   public async getParent(): Promise<DelegationNode | null> {
-    return this.parentId ? query(this.parentId) : null
+    try {
+      if (!this.parentId) return null
+      return fetch(this.parentId)
+    } catch {
+      return null
+    }
   }
 
   /**
-   * [ASYNC] Fetches the children nodes of this delegation node.
+   * Fetches the children nodes of this delegation node.
    *
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
-    const refreshedNodeDetails = await query(this.id)
-    // Updates the children info with the latest information available on chain.
-    if (refreshedNodeDetails) {
-      this.childrenIdentifiers = refreshedNodeDetails.childrenIds
+    try {
+      // Updates the children info with the latest information available on chain.
+      this.childrenIdentifiers = (await fetch(this.id)).childrenIds
+    } catch {
+      // ignore missing
     }
     return getChildren(this)
   }
 
   /**
-   * [ASYNC] Fetches and resolves all attestations attested with this delegation node.
+   * Fetches and resolves all attestations attested with this delegation node.
    *
    * @returns Promise containing all resolved attestations attested with this node.
    */
-  public async getAttestations(): Promise<Attestation[]> {
+  public async getAttestations(): Promise<IAttestation[]> {
     const attestationHashes = await this.getAttestationHashes()
+    const api = ConfigService.get('api')
+
     const attestations = await Promise.all(
-      attestationHashes.map((claimHash: string) => {
-        return queryAttestation(claimHash)
+      attestationHashes.map(async (claimHash) => {
+        const encoded = await api.query.attestation.attestations(claimHash)
+        if (encoded.isNone) return undefined
+        return attestationFromChain(encoded, claimHash)
       })
     )
 
-    return attestations.filter((value): value is Attestation => !!value)
+    return attestations.filter((value): value is IAttestation => !!value)
   }
 
   /**
-   * [ASYNC] Fetches all hashes of attestations attested with this delegation node.
+   * Fetches all hashes of attestations attested with this delegation node.
    *
    * @returns Promise containing all attestation hashes attested with this node.
    */
-  public async getAttestationHashes(): Promise<string[]> {
+  public async getAttestationHashes(): Promise<
+    Array<IAttestation['claimHash']>
+  > {
     return getAttestationHashes(this.id)
   }
 
@@ -241,106 +238,89 @@ export class DelegationNode implements IDelegationNode {
    * This hash is signed by the delegate and later stored along with the delegation to
    * make sure delegation data (such as permissions) has not been tampered with.
    *
-   * @returns The hash representation of this delegation **as a hex string**.
+   * @returns The hash representation of this delegation **as a byte array**.
    */
-  public generateHash(): string {
-    const propsToHash: Array<Uint8Array | string> = [this.id, this.hierarchyId]
+  public generateHash(): Uint8Array {
+    const propsToHash = [this.id, this.hierarchyId]
     if (this.parentId) {
       propsToHash.push(this.parentId)
     }
-    const uint8Props: Uint8Array[] = propsToHash.map((value) => {
-      return Crypto.coToUInt8(value)
-    })
+    const uint8Props = propsToHash.map((value) => Crypto.coToUInt8(value))
     uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
-    const generated: string = Crypto.u8aToHex(
-      Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
-    )
-    log.debug(`generateHash(): ${generated}`)
+    const generated = Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
+    log.debug(`generateHash(): ${Crypto.u8aToHex(generated)}`)
     return generated
   }
 
   /**
    * Signs the delegation hash from the delegations' property values.
    *
-   * This is required to anchor the delegation node on chain in order to enforce the delegee's consent.
+   * This is required to anchor the delegation node on chain in order to enforce the delegate's consent.
    *
-   * @param delegeeDid The DID of the delegee.
-   * @param signer The keystore responsible for signing the delegation creation details for the delegee.
-   * @param options The additional signing options.
-   * @param options.keySelection The logic to select the right key to sign for the delegee. It defaults to picking the first key from the set of valid keys.
-   * @example
-   * ```
-   * // Sign the hash of the delegation node...
-   * let myNewDelegation: DelegationNode
-   * let myDidDetails: DidDetails
-   * let myKeyStore: Keystore
-   * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
-   *
-   * // produce the extrinsic that stores the delegation node on the Kilt chain
-   * const extrinsic = await newDelegationNode.store(signature)
-   *
-   * // now the delegating DID must sign as well
-   * const submittable = await delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
-   *
-   * // and we can put it on chain
-   * await submittable.signAndSend()
-   * ```
+   * @param delegateDid The DID of the delegate.
+   * @param sign The callback to sign the delegation creation details for the delegate.
    * @returns The DID signature over the delegation **as a hex string**.
    */
-  public async delegeeSign(
-    delegeeDid: DidDetails,
-    signer: KeystoreSigner,
-    {
-      keySelection = DidUtils.defaultDidKeySelection,
-    }: {
-      keySelection?: DidKeySelectionHandler
-    } = {}
-  ): Promise<DidChain.SignatureEnum> {
-    const authenticationKey = await keySelection(
-      delegeeDid.getKeys(KeyRelationship.authentication)
-    )
-    if (!authenticationKey) {
-      throw SDKErrors.ERROR_DID_ERROR(
-        `Delegee ${delegeeDid.did} does not have any authentication key.`
+  public async delegateSign(
+    delegateDid: DidDocument,
+    sign: SignCallback
+  ): Promise<Did.EncodedSignature> {
+    const delegateSignature = await sign({
+      data: this.generateHash(),
+      did: delegateDid.uri,
+      keyRelationship: 'authentication',
+    })
+    const { fragment } = Did.parse(delegateSignature.keyUri)
+    if (!fragment) {
+      throw new SDKErrors.DidError(
+        `DID key uri "${delegateSignature.keyUri}" couldn't be parsed`
       )
     }
-    const delegeeSignature = await delegeeDid.signPayload(
-      this.generateHash(),
-      signer,
-      authenticationKey.id
+    const key = Did.getKey(delegateDid, fragment)
+    if (!key) {
+      throw new SDKErrors.DidError(
+        `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
+      )
+    }
+    return Did.didSignatureToChain(
+      key as DidVerificationKey,
+      delegateSignature.signature
     )
-    return DidChain.encodeDidSignature(authenticationKey, delegeeSignature)
   }
 
   /**
-   * [ASYNC] Syncronise the delegation node state with the latest state as stored on the blockchain.
+   * Synchronise the delegation node state with the latest state as stored on the blockchain.
    *
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
   public async getLatestState(): Promise<DelegationNode> {
-    const newNodeState = await query(this.id)
-    if (!newNodeState) {
-      throw SDKErrors.ERROR_DELEGATION_ID_MISSING
-    }
-    return newNodeState
+    return fetch(this.id)
   }
 
   /**
-   * [ASYNC] Stores the delegation node on chain.
+   * Stores the delegation node on chain.
    *
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async store(
-    signature?: DidChain.SignatureEnum
+  public async getStoreTx(
+    signature?: Did.EncodedSignature
   ): Promise<SubmittableExtrinsic> {
+    const api = ConfigService.get('api')
+
     if (this.isRoot()) {
-      return storeAsRoot(this)
+      return api.tx.delegation.createHierarchy(
+        this.hierarchyId,
+        await this.getCTypeHash()
+      )
     }
     if (!signature) {
-      throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
+      throw new SDKErrors.DelegateSignatureMissingError()
     }
-    return storeAsDelegation(this, signature)
+
+    return api.tx.delegation.addDelegation(
+      ...addDelegationToChainArgs(this, signature)
+    )
   }
 
   isRoot(): boolean {
@@ -348,24 +328,24 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revocation status.
-   *
-   * @returns Promise containing a boolean flag.
+   * Verifies the delegation node by fetching it from chain and checking its revocation status.
    */
-  public async verify(): Promise<boolean> {
-    const node = await query(this.id)
-    return node !== null && !node.revoked
+  public async verify(): Promise<void> {
+    const node = await fetch(this.id)
+    if (node.revoked !== false) {
+      throw new SDKErrors.InvalidDelegationNodeError('Delegation node revoked')
+    }
   }
 
   /**
-   * [ASYNC] Checks on chain whether a identity with the given DID is delegating to the current node.
+   * Checks on chain whether an identity with the given DID is delegating to the current node.
    *
    * @param did The DID to search for.
    *
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    did: IDidDetails['did']
+    did: DidUri
   ): Promise<{ steps: number; node: DelegationNode | null }> {
     if (this.account === did) {
       return {
@@ -373,20 +353,27 @@ export class DelegationNode implements IDelegationNode {
         node: this,
       }
     }
-    const parent = await this.getParent()
-    if (parent) {
+    if (!this.parentId) {
+      return {
+        steps: 0,
+        node: null,
+      }
+    }
+    try {
+      const parent = await fetch(this.parentId)
       const result = await parent.findAncestorOwnedBy(did)
       result.steps += 1
       return result
-    }
-    return {
-      steps: 0,
-      node: null,
+    } catch {
+      return {
+        steps: 0,
+        node: null,
+      }
     }
   }
 
   /**
-   * [ASYNC] Recursively counts all nodes that descend from the current node (excluding the current node). It is important to first refresh the state of the node from the chain.
+   * Recursively counts all nodes that descend from the current node (excluding the current node). It is important to first refresh the state of the node from the chain.
    *
    * @returns Promise resolving to the node count.
    */
@@ -405,70 +392,66 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Revokes the delegation node on chain.
+   * Revokes the delegation node on chain.
    *
    * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async revoke(did: IDidDetails['did']): Promise<SubmittableExtrinsic> {
+  public async getRevokeTx(did: DidUri): Promise<SubmittableExtrinsic> {
     const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
-      throw SDKErrors.ERROR_UNAUTHORIZED(
-        `The DID ${did} is not among the delegators and may not revoke this node`
+      throw new SDKErrors.UnauthorizedError(
+        `The DID "${did}" is not among the delegators and may not revoke this node`
       )
     }
     const childCount = await this.subtreeNodeCount()
     log.debug(
       `:: revoke(${this.id}) with maxRevocations=${childCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
     )
-    return revoke(this.id, steps, childCount)
+    const api = ConfigService.get('api')
+    return api.tx.delegation.revokeDelegation(this.id, steps, childCount)
   }
 
   /**
-   * [ASYNC] Removes the delegation node from the chain.
+   * Removes the delegation node from the chain.
    *
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async remove(): Promise<SubmittableExtrinsic> {
+  public async getRemoveTx(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
     log.debug(`:: remove(${this.id}) with maxRevocations=${childCount}`)
-    return remove(this.id, childCount)
+    const api = ConfigService.get('api')
+    return api.tx.delegation.removeDelegation(this.id, childCount)
   }
 
   /**
-   * [ASYNC] Reclaims the deposit of a delegation and removes the delegation and all its children.
+   * Reclaims the deposit of a delegation and removes the delegation and all its children.
    *
    * This call can only be successfully executed if the submitter of the transaction is the original payer of the delegation deposit.
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    */
-  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
+  public async getReclaimDepositTx(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
-    log.debug(`:: reclaimDeposit(${this.id}) with maxRemovals=${childCount}`)
-    return reclaimDeposit(this.id, childCount)
+    log.debug(
+      `:: getReclaimDepositTx(${this.id}) with maxRemovals=${childCount}`
+    )
+    const api = ConfigService.get('api')
+    return api.tx.delegation.reclaimDeposit(this.id, childCount)
   }
 
   /**
-   * [STATIC] [ASYNC] Queries the delegation node with its [delegationId].
+   * Queries the delegation node with its [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
-   * @returns Promise containing the [[DelegationNode]] or [null].
+   * @returns Promise containing the [[DelegationNode]].
    */
-  public static async query(
-    delegationId: string
-  ): Promise<DelegationNode | null> {
-    log.info(`:: query('${delegationId}')`)
-    const result = await query(delegationId)
+  public static async fetch(
+    delegationId: IDelegationNode['id']
+  ): Promise<DelegationNode> {
+    log.info(`:: fetch('${delegationId}')`)
+    const result = await fetch(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
     return result
-  }
-
-  /**
-   * [STATIC] Query and return the amount of KILTs (in femto notation) needed to deposit in order to create a delegation.
-   *
-   * @returns The amount of femtoKILTs required to deposit to create the delegation.
-   */
-  public static queryDepositAmount(): Promise<BN> {
-    return queryDepositAmount()
   }
 }

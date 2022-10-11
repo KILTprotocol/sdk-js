@@ -1,91 +1,58 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DataUtils
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
-import type { IIdentity } from '@kiltprotocol/types'
+import { isHex } from '@polkadot/util'
+import type { KiltAddress } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import * as SDKErrors from './SDKErrors.js'
-import { verify } from './Crypto.js'
+import { ss58Format } from './ss58Format.js'
 
 /**
- *  Validates an given address string against the External Address Format (SS58) with our Prefix of 38.
+ * Verifies a given address string against the External Address Format (SS58) with our Prefix of 38.
  *
- * @param address Address string to validate for correct Format.
- * @param name Contextual name of the address, e.g. "claim owner".
- * @throws [[ERROR_ADDRESS_TYPE]] when address not of type string or of invalid Format.
- *
- * @returns Boolean whether the given address string checks out against the Format.
+ * @param input Address string to validate for correct Format.
  */
-export function validateAddress(
-  address: IIdentity['address'],
-  name: string
-): boolean {
-  if (typeof address !== 'string') {
-    throw SDKErrors.ERROR_ADDRESS_TYPE()
+export function verifyKiltAddress(input: unknown): void {
+  if (typeof input !== 'string') {
+    throw new SDKErrors.AddressTypeError()
   }
-  // KILT has registered ss58 prefix 38
-  if (!checkAddress(address, 38)[0]) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID(address, name)
+  if (!checkAddress(input, ss58Format)[0]) {
+    throw new SDKErrors.AddressInvalidError(input)
   }
-  return true
 }
 
 /**
- *  Validates the format of the given blake2b hash via regex.
+ * Type guard to check whether input is an SS58 address with our prefix of 38.
  *
- * @param hash Hash string to validate for correct Format.
- * @param name Contextual name of the address, e.g. "claim owner".
- * @throws [[ERROR_HASH_TYPE]] when hash not of type string or of invalid Format.
- *
- * @returns Boolean whether the given hash string checks out against the Format.
+ * @param input Address string to validate for correct format.
+ * @returns True if input is a KiltAddress, false otherwise.
  */
-export function validateHash(hash: string, name: string): boolean {
-  if (typeof hash !== 'string') {
-    throw SDKErrors.ERROR_HASH_TYPE()
+export function isKiltAddress(input: unknown): input is KiltAddress {
+  try {
+    verifyKiltAddress(input)
+    return true
+  } catch {
+    return false
   }
-  const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-  if (!hash.match(blake2bPattern)) {
-    throw SDKErrors.ERROR_HASH_MALFORMED(hash, name)
-  }
-  return true
 }
 
+// re-exporting isHex
+export { isHex } from '@polkadot/util'
+
 /**
- *  Validates the signature of the given signer address against the signed data.
+ * Validates the format of a hex string via regex.
  *
- * @param data The signed string of data.
- * @param signature The signature of the data to be validated.
- * @param signer Address of the signer identity.
- * @throws [[ERROR_SIGNATURE_DATA_TYPE]] when parameters are of invalid type.
- * @throws [[ERROR_SIGNATURE_UNVERIFIABLE]] when the signature could not be validated against the data.
- *
- * @returns Boolean whether the signature is valid for the given data.
+ * @param input Hex string to validate for correct format.
+ * @param bitLength Expected length of hex in bits.
  */
-export function validateSignature(
-  data: string,
-  signature: string,
-  signer: IIdentity['address']
-): boolean {
-  if (
-    typeof data !== 'string' ||
-    typeof signature !== 'string' ||
-    typeof signer !== 'string'
-  ) {
-    throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+export function verifyIsHex(input: unknown, bitLength?: number): void {
+  if (!isHex(input, bitLength)) {
+    throw new SDKErrors.HashMalformedError(
+      typeof input === 'string' ? input : undefined
+    )
   }
-  if (!verify(data, signature, signer)) {
-    throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
-  }
-  return true
 }

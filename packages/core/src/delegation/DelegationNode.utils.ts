@@ -1,20 +1,11 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module DelegationNodeUtils
- */
-
-import type {
-  IAttestation,
-  IDelegationNode,
-  IDidDetails,
-} from '@kiltprotocol/types'
+import type { DidUri, IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 import { DelegationNode } from './DelegationNode.js'
@@ -32,16 +23,23 @@ import { DelegationNode } from './DelegationNode.js'
  * @returns The bitset as single value uint8 array.
  */
 export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
-  const permissionsBitsetData: number = delegation.permissions.reduce(
+  const permissionsBitsetData = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )
-  const uint8: Uint8Array = new Uint8Array(4)
+  const uint8 = new Uint8Array(4)
   uint8[0] = permissionsBitsetData
   return uint8
 }
 
+/**
+ * Traverses a delegation tree and counts the number of delegation nodes between an attestation and an ancestral delegation node owned by `attester`.
+ *
+ * @param attester Identity to be located in the delegation tree.
+ * @param attestation Attestation whose delegation tree to search.
+ * @returns 0 if `attester` is the owner of `attestation`, the number of delegation nodes traversed otherwise.
+ */
 export async function countNodeDepth(
-  attester: IDidDetails['did'],
+  attester: DidUri,
   attestation: IAttestation
 ): Promise<number> {
   let delegationTreeTraversalSteps = 0
@@ -49,47 +47,49 @@ export async function countNodeDepth(
   // if the attester is not the owner, we need to check the delegation tree
   if (attestation.owner !== attester && attestation.delegationId !== null) {
     delegationTreeTraversalSteps += 1
-    const delegationNode = await DelegationNode.query(attestation.delegationId)
-
-    if (typeof delegationNode !== 'undefined' && delegationNode !== null) {
+    try {
+      const delegationNode = await DelegationNode.fetch(
+        attestation.delegationId
+      )
       const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
       delegationTreeTraversalSteps += steps
       if (node === null) {
-        throw SDKErrors.ERROR_UNAUTHORIZED(
-          'Attester is not athorized to revoke this attestation. (attester not in delegation tree)'
+        throw new SDKErrors.UnauthorizedError(
+          'Attester is not authorized to revoke this attestation. (Attester not in delegation tree)'
         )
       }
+    } catch {
+      // ignore the error
     }
   } else if (attestation.owner !== attester) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
-      'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
+    throw new SDKErrors.UnauthorizedError(
+      'Attester is not authorized to revoke this attestation. (Not the owner, no delegations)'
     )
   }
 
   return delegationTreeTraversalSteps
 }
 
+/**
+ * Checks for errors on delegation node data.
+ *
+ * @param delegationNodeInput Delegation node data.
+ */
 export function errorCheck(delegationNodeInput: IDelegationNode): void {
   const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 
   if (permissions.length === 0 || permissions.length > 3) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
+    throw new SDKErrors.UnauthorizedError(
       'Must have at least one permission and no more then two'
     )
   }
 
   if (!rootId) {
-    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
-  } else if (typeof rootId !== 'string') {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
-  } else if (!isHex(rootId)) {
-    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    throw new SDKErrors.DelegationIdMissingError()
+  } else if (typeof rootId !== 'string' || !isHex(rootId)) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
-  if (parentId) {
-    if (typeof parentId !== 'string') {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    } else if (!isHex(parentId)) {
-      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
-    }
+  if (parentId && (typeof parentId !== 'string' || !isHex(parentId))) {
+    throw new SDKErrors.DelegationIdTypeError()
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,36 +9,36 @@
  * @group integration/ctype
  */
 
-import { ICType, KeyringPair } from '@kiltprotocol/types'
-import { FullDidDetails, DemoKeystore } from '@kiltprotocol/did'
-import { Crypto } from '@kiltprotocol/utils'
-import { CType } from '../ctype/CType'
-import { getOwner } from '../ctype/CType.chain'
-import { disconnect } from '../kilt'
+import type { DidDocument, ICType, KiltKeyringPair } from '@kiltprotocol/types'
+import * as Did from '@kiltprotocol/did'
 import {
-  createEndowedTestAccount,
   createFullDidFromSeed,
-  initializeApi,
-  keypairFromRandom,
-  submitExtrinsicWithResign,
-} from './utils'
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import { Crypto } from '@kiltprotocol/utils'
+import { ApiPromise } from '@polkadot/api'
+import * as CType from '../ctype'
+import { disconnect } from '../kilt'
+import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
 
+let api: ApiPromise
 beforeAll(async () => {
-  await initializeApi()
-})
+  api = await initializeApi()
+}, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {
-  let ctypeCreator: FullDidDetails
-  let paymentAccount: KeyringPair
+  let ctypeCreator: DidDocument
+  let paymentAccount: KiltKeyringPair
   let ctypeCounter = 0
-  const keystore = new DemoKeystore()
+  let key: KeyTool
 
-  function makeCType(): CType {
+  function makeCType(): ICType {
     ctypeCounter += 1
     return CType.fromSchema({
       $id: `kilt:ctype:0x${ctypeCounter}`,
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: `ctype1${ctypeCounter}`,
+      title: `ctype${ctypeCounter}`,
       properties: {
         name: { type: 'string' },
       },
@@ -48,57 +48,69 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   beforeAll(async () => {
     paymentAccount = await createEndowedTestAccount()
-    ctypeCreator = await createFullDidFromSeed(paymentAccount, keystore)
+    key = makeSigningKeyTool()
+    ctypeCreator = await createFullDidFromSeed(paymentAccount, key.keypair)
   }, 60_000)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
-    const bobbyBroke = keypairFromRandom()
-    await expect(
-      ctype
-        .store()
-        .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
-        )
-        .then((tx) => submitExtrinsicWithResign(tx, bobbyBroke))
-    ).rejects.toThrowError()
-    await expect(ctype.verifyStored()).resolves.toBeFalsy()
+    const { keypair, getSignCallback } = makeSigningKeyTool()
+    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
+    const authorizedStoreTx = await Did.authorizeTx(
+      ctypeCreator.uri,
+      storeTx,
+      getSignCallback(ctypeCreator),
+      keypair.address
+    )
+    await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
+    await expect(CType.verifyStored(ctype)).rejects.toThrow()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    await ctype
-      .store()
-      .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
-      )
-      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
-    await Promise.all([
-      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did),
-      expect(ctype.verifyStored()).resolves.toBeTruthy(),
-    ])
-    ctype.owner = ctypeCreator.did
-    await expect(ctype.verifyStored()).resolves.toBeTruthy()
+    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
+    const authorizedStoreTx = await Did.authorizeTx(
+      ctypeCreator.uri,
+      storeTx,
+      key.getSignCallback(ctypeCreator),
+      paymentAccount.address
+    )
+    await submitTx(authorizedStoreTx, paymentAccount)
+
+    expect(CType.fromChain(await api.query.ctype.ctypes(ctype.hash))).toBe(
+      ctypeCreator.uri
+    )
+    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+
+    ctype.owner = ctypeCreator.uri
+    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    await ctype
-      .store()
-      .then((tx) =>
-        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
-      )
-      .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+    const storeTx = api.tx.ctype.add(CType.toChain(ctype))
+    const authorizedStoreTx = await Did.authorizeTx(
+      ctypeCreator.uri,
+      storeTx,
+      key.getSignCallback(ctypeCreator),
+      paymentAccount.address
+    )
+    await submitTx(authorizedStoreTx, paymentAccount)
+
+    const storeTx2 = api.tx.ctype.add(CType.toChain(ctype))
+    const authorizedStoreTx2 = await Did.authorizeTx(
+      ctypeCreator.uri,
+      storeTx2,
+      key.getSignCallback(ctypeCreator),
+      paymentAccount.address
+    )
     await expect(
-      ctype
-        .store()
-        .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
-        )
-        .then((tx) => submitExtrinsicWithResign(tx, paymentAccount))
+      submitTx(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
-    // console.log('Triggered error on re-submit')
-    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.did)
+
+    expect(CType.fromChain(await api.query.ctype.ctypes(ctype.hash))).toBe(
+      ctypeCreator.uri
+    )
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -122,18 +134,19 @@ describe('When there is an CtypeCreator and a verifier', () => {
         },
         type: 'object',
       },
-      ctypeCreator.did
+      ctypeCreator.uri
     )
 
-    await Promise.all([
-      expect(iAmNotThere.verifyStored()).resolves.toBeFalsy(),
-      expect(getOwner(iAmNotThere.hash)).resolves.toBeNull(),
-      expect(getOwner(Crypto.hashStr('abcdefg'))).resolves.toBeNull(),
-      expect(iAmNotThereWithOwner.verifyStored()).resolves.toBeFalsy(),
-    ])
+    await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
+    expect((await api.query.ctype.ctypes(iAmNotThere.hash)).isNone).toBe(true)
+
+    const fakeHash = Crypto.hashStr('abcdefg')
+    expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
+
+    await expect(CType.verifyStored(iAmNotThereWithOwner)).rejects.toThrow()
   })
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

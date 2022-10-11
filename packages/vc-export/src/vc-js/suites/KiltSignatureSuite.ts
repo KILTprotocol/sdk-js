@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -22,6 +22,9 @@ export class KiltSignatureSuite extends KiltAbstractSuite {
     super({ type: KILT_SELF_SIGNED_PROOF_TYPE, verificationMethod: '<none>' })
   }
 
+  /**
+   * @inheritdoc
+   */
   public async verifyProof(options: {
     proof: JsonLdObj
     document: JsonLdObj
@@ -31,10 +34,10 @@ export class KiltSignatureSuite extends KiltAbstractSuite {
   }): Promise<VerificationResult> {
     try {
       const { document, proof, documentLoader } = options
-      if (!document || typeof document !== 'object')
-        throw new TypeError('document must be a JsonLd object')
-      if (!proof || typeof proof !== 'object')
-        throw new TypeError('proof must be a JsonLd object')
+      if (typeof document !== 'object')
+        throw new TypeError('Document must be a JsonLd object')
+      if (typeof proof !== 'object')
+        throw new TypeError('Proof must be a JsonLd object')
       const compactedDoc = await this.compactDoc(document, options)
       const compactedProof = await this.compactProof<SelfSignedProof>(
         proof,

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -12,18 +12,15 @@ import { createRegistryFromMetadata } from './typeRegistry.js'
 
 const TYPE_REGISTRY = createRegistryFromMetadata()
 
-const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
-  ss58Format: 38,
-})
-TYPE_REGISTRY.setChainProperties(chainProperties)
+TYPE_REGISTRY.setChainProperties(TYPE_REGISTRY.getChainProperties())
 
-const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
+const AccountId32 = TYPE_REGISTRY.getOrThrow('AccountId32')
 
 type ChainQueryTypes = {
   attestation: 'attestations' | 'delegatedAttestations'
   ctype: 'cTYPEs'
   delegation: 'hierarchies' | 'delegations'
-  did: 'dIDs'
+  did: 'did' | 'serviceEndpoints' | 'didBlacklist'
   portablegabi: 'accumulatorList' | 'accumulatorCount' | 'accountState'
 }
 
@@ -40,7 +37,7 @@ const chainQueryReturnTuples: {
 } = {
   ctype: {
     // CTYPEs: ctype-hash -> account-id?
-    cTYPEs: AccountId,
+    cTYPEs: AccountId32,
   },
   delegation: {
     // Delegation hierarchies: root-id -> (ctype-hash)?
@@ -62,7 +59,11 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: TYPE_REGISTRY.getOrUnknown('DidDidDetails'),
+    did: TYPE_REGISTRY.getOrUnknown('DidDidDetails'),
+    serviceEndpoints: TYPE_REGISTRY.getOrUnknown(
+      'DidServiceEndpointsDidEndpoint'
+    ),
+    didBlacklist: TYPE_REGISTRY.getOrUnknown('Bool'),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
@@ -81,7 +82,7 @@ const chainQueryReturnTuples: {
  * @param outerQuery The name of the module which you want to query.
  * @param innerQuery The name of the storage item of the module which you want to query.
  * @param mockValue The value which the mock should return.
- * @returns The mockvalue wrapped into either a vector or an option.
+ * @returns The mock value wrapped into either a vector or an option.
  */
 export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
   outerQuery: T,
@@ -113,10 +114,12 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
       mockValue as Constructor[]
     )
   }
+
   // helper function to wrap values into an option
   function wrapInOption(): Option<Codec> {
     return new Option(TYPE_REGISTRY, chainQueryReturnTuple, mockValue)
   }
+
   // check cases
   switch (outerQuery) {
     case 'attestation': {
@@ -141,7 +144,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
     default:
       // should never occur
       throw new Error(
-        `Missing module ${outerQuery} for KILT chain. 
+        `Missing module "${outerQuery}" for KILT chain. 
         The following ones exist: attestation, ctype, delegation, did, portablegabi.`
       )
   }

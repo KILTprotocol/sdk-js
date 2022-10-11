@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,61 +9,71 @@
  * @group integration/deposit
  */
 
-import {
-  DemoKeystore,
-  DemoKeystoreUtils,
-  DidChain,
-  FullDidDetails,
-} from '@kiltprotocol/did'
-import {
-  IRequestForAttestation,
-  KeyringPair,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
-import { DecoderUtils, Keyring } from '@kiltprotocol/utils'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { mnemonicGenerate } from '@polkadot/util-crypto'
-import { BN } from '@polkadot/util'
+import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromLightDid,
   createFullDidFromSeed,
+  createMinimalLightDidFromKeypair,
+  KeyTool,
+  makeSigningKeyTool,
+} from '@kiltprotocol/testing'
+import type {
+  DidDocument,
+  IAttestation,
+  ICredential,
+  KeyringPair,
+  KiltKeyringPair,
+  SignCallback,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import type { ApiPromise } from '@polkadot/api'
+import { BN } from '@polkadot/util'
+import {
   devFaucet,
   driversLicenseCTypeForDeposit as driversLicenseCType,
   endowAccounts,
   initializeApi,
   isCtypeOnChain,
-  submitExtrinsicWithResign,
+  submitTx,
 } from './utils'
-import { Balance } from '../balance'
-import { Attestation } from '../attestation/Attestation'
-import { Claim } from '../claim/Claim'
-import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import * as Attestation from '../attestation'
+import * as Claim from '../claim'
+import * as Credential from '../credential'
 import { disconnect } from '../kilt'
-import { queryRaw } from '../attestation/Attestation.chain'
+import * as CType from '../ctype'
 
+let api: ApiPromise
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
-let attestation: Attestation
+let attestation: IAttestation
 let storedEndpointsCount: BN
 
 async function checkDeleteFullDid(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
-  keystore: DemoKeystore
+  identity: KiltKeyringPair,
+  fullDid: DidDocument,
+  sign: SignCallback
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
-  const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.toChain(fullDid.uri)
+  )
+  const deleteDid = api.tx.did.delete(storedEndpointsCount)
 
-  tx = await fullDid.authorizeExtrinsic(deleteDid, keystore, identity.address)
+  tx = await Did.authorizeTx(fullDid.uri, deleteDid, sign, identity.address)
 
-  const balanceBeforeDeleting = await Balance.getBalances(identity.address)
+  const balanceBeforeDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
-  const didResult = await DidChain.queryDetails(fullDid.identifier)
-  const didDeposit = didResult!.deposit
+  const didResult = Did.documentFromChain(
+    await api.query.did.did(Did.toChain(fullDid.uri))
+  )
+  const didDeposit = didResult.deposit
 
-  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
+  await submitTx(tx, identity)
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address)
+  const balanceAfterDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeDeleting.reserved
     .sub(didDeposit.amount)
@@ -72,22 +82,27 @@ async function checkDeleteFullDid(
 
 async function checkReclaimFullDid(
   identity: KeyringPair,
-  fullDid: FullDidDetails
+  fullDid: DidDocument
 ): Promise<boolean> {
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
-  tx = await DidChain.getReclaimDepositExtrinsic(
-    fullDid.identifier,
-    storedEndpointsCount
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.toChain(fullDid.uri)
   )
+  tx = api.tx.did.reclaimDeposit(Did.toChain(fullDid.uri), storedEndpointsCount)
 
-  const balanceBeforeRevoking = await Balance.getBalances(identity.address)
+  const balanceBeforeRevoking = (
+    await api.query.system.account(identity.address)
+  ).data
 
-  const didResult = await DidChain.queryDetails(fullDid.identifier)
-  const didDeposit = didResult!.deposit
+  const didResult = Did.documentFromChain(
+    await api.query.did.did(Did.toChain(fullDid.uri))
+  )
+  const didDeposit = didResult.deposit
 
-  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
+  await submitTx(tx, identity)
 
-  const balanceAfterRevoking = await Balance.getBalances(identity.address)
+  const balanceAfterRevoking = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeRevoking.reserved
     .sub(didDeposit.amount)
@@ -95,58 +110,42 @@ async function checkReclaimFullDid(
 }
 
 async function checkRemoveFullDidAttestation(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
-  keystore: DemoKeystore,
-  requestForAttestation: IRequestForAttestation
+  identity: KiltKeyringPair,
+  fullDid: DidDocument,
+  sign: SignCallback,
+  credential: ICredential
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.did
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
+
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
   )
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
 
-  tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
+  await submitTx(authorizedTx, identity)
+
+  const attestationResult = await api.query.attestation.attestations(
+    attestation.claimHash
   )
-
-  await submitExtrinsicWithResign(
-    authorizedTx,
-    identity,
-    BlockchainUtils.IS_FINALIZED
-  )
-
-  const attestationResult = await queryRaw(attestation.claimHash)
-  DecoderUtils.assertCodecIsType(attestationResult, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
-  const balanceBeforeRemoving = await Balance.getBalances(identity.address)
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.did
-  )
+  const balanceBeforeRemoving = (
+    await api.query.system.account(identity.address)
+  ).data
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  tx = await attestation.remove(0)
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
+  tx = api.tx.attestation.remove(attestation.claimHash, null)
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
 
-  await submitExtrinsicWithResign(
-    authorizedTx,
-    identity,
-    BlockchainUtils.IS_FINALIZED
-  )
+  await submitTx(authorizedTx, identity)
 
-  const balanceAfterRemoving = await Balance.getBalances(identity.address)
+  const balanceAfterRemoving = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeRemoving.reserved
     .sub(attestationDeposit)
@@ -154,49 +153,41 @@ async function checkRemoveFullDidAttestation(
 }
 
 async function checkReclaimFullDidAttestation(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
-  keystore: DemoKeystore,
-  requestForAttestation: IRequestForAttestation
+  identity: KiltKeyringPair,
+  fullDid: DidDocument,
+  sign: SignCallback,
+  credential: ICredential
 ): Promise<boolean> {
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.did
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
+
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
   )
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
 
-  tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
+  await submitTx(authorizedTx, identity)
+
+  const balanceBeforeReclaiming = (
+    await api.query.system.account(identity.address)
+  ).data
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
+
+  tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
+
+  const attestationResult = await api.query.attestation.attestations(
+    attestation.claimHash
   )
-
-  await submitExtrinsicWithResign(
-    authorizedTx,
-    identity,
-    BlockchainUtils.IS_FINALIZED
-  )
-
-  const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.did
-  )
-
-  tx = await attestation.reclaimDeposit()
-
-  const attestationResult = await queryRaw(attestation.claimHash)
-  DecoderUtils.assertCodecIsType(attestationResult, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-
   const attestationDeposit = attestationResult.isSome
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
-  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
+  await submitTx(tx, identity)
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address)
+  const balanceAfterDeleting = (
+    await api.query.system.account(identity.address)
+  ).data
 
   return balanceBeforeReclaiming.reserved
     .sub(attestationDeposit)
@@ -204,88 +195,118 @@ async function checkReclaimFullDidAttestation(
 }
 
 async function checkDeletedDidReclaimAttestation(
-  identity: KeyringPair,
-  fullDid: FullDidDetails,
-  keystore: DemoKeystore,
-  requestForAttestation: IRequestForAttestation
+  identity: KiltKeyringPair,
+  fullDid: DidDocument,
+  sign: SignCallback,
+  credential: ICredential
 ): Promise<void> {
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.did
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
+
+  tx = api.tx.attestation.add(
+    attestation.claimHash,
+    attestation.cTypeHash,
+    null
+  )
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
+
+  await submitTx(authorizedTx, identity)
+
+  storedEndpointsCount = await api.query.did.didEndpointsCount(
+    Did.toChain(fullDid.uri)
   )
 
-  tx = await attestation.store()
-  authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
+  attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
-  await submitExtrinsicWithResign(
-    authorizedTx,
-    identity,
-    BlockchainUtils.IS_FINALIZED
-  )
+  const deleteDid = api.tx.did.delete(storedEndpointsCount)
+  tx = await Did.authorizeTx(fullDid.uri, deleteDid, sign, identity.address)
 
-  storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.identifier)
+  await submitTx(tx, identity)
 
-  attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.did
-  )
+  tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
 
-  const deleteDid = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
-  tx = await fullDid.authorizeExtrinsic(deleteDid, keystore, identity.address)
-
-  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
-
-  tx = await attestation.reclaimDeposit()
-
-  await submitExtrinsicWithResign(tx, identity, BlockchainUtils.IS_FINALIZED)
+  await submitTx(tx, identity)
 }
 
-const testIdentities: KeyringPair[] = []
-const testMnemonics: string[] = []
-const keystore = new DemoKeystore()
-let requestForAttestation: RequestForAttestation
+async function checkWeb3Deposit(
+  identity: KiltKeyringPair,
+  fullDid: DidDocument,
+  sign: SignCallback
+): Promise<boolean> {
+  const web3Name = 'test-web3name'
+  const balanceBeforeClaiming = (
+    await api.query.system.account(identity.address)
+  ).data
+
+  const depositAmount = api.consts.web3Names.deposit.toBn()
+  const claimTx = api.tx.web3Names.claim(web3Name)
+  let didAuthorizedTx = await Did.authorizeTx(
+    fullDid.uri,
+    claimTx,
+    sign,
+    identity.address
+  )
+  await submitTx(didAuthorizedTx, identity)
+  const balanceAfterClaiming = (
+    await api.query.system.account(identity.address)
+  ).data
+  if (
+    !balanceAfterClaiming.reserved
+      .sub(balanceBeforeClaiming.reserved)
+      .eq(depositAmount)
+  ) {
+    return false
+  }
+
+  const releaseTx = api.tx.web3Names.releaseByOwner()
+  didAuthorizedTx = await Did.authorizeTx(
+    fullDid.uri,
+    releaseTx,
+    sign,
+    identity.address
+  )
+  await submitTx(didAuthorizedTx, identity)
+  const balanceAfterReleasing = (
+    await api.query.system.account(identity.address)
+  ).data
+
+  if (!balanceAfterReleasing.reserved.eq(balanceBeforeClaiming.reserved)) {
+    return false
+  }
+
+  return true
+}
+
+let keys: KeyTool[]
+let credential: ICredential
 
 beforeAll(async () => {
-  /* Initialize KILT SDK and set up node endpoint */
-  await initializeApi()
-  const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'sr25519' })
+  api = await initializeApi()
+}, 30_000)
 
-  for (let i = 0; i < 9; i += 1) {
-    testMnemonics.push(mnemonicGenerate())
-  }
-  /* Generating all the identities from the keyring  */
-  testMnemonics.forEach((val) =>
-    testIdentities.push(keyring.addFromMnemonic(val, undefined, 'sr25519'))
-  ) // Sending tokens to all accounts
-  const testAddresses = testIdentities.map((val) => val.address)
+beforeAll(async () => {
+  keys = new Array(10).fill(0).map(() => makeSigningKeyTool())
+
+  const testAddresses = keys.map((val) => val.keypair.address)
 
   await endowAccounts(devFaucet, testAddresses)
-  // Create the group of mnemonics for the script
-  const claimerMnemonic = mnemonicGenerate()
 
-  /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
-  const claimerLightDid = await DemoKeystoreUtils.createMinimalLightDidFromSeed(
-    keystore,
-    claimerMnemonic
+  const claimer = makeSigningKeyTool()
+  const claimerLightDid = await createMinimalLightDidFromKeypair(
+    claimer.keypair
   )
 
-  const attester = await createFullDidFromSeed(devFaucet, keystore)
+  const attesterKey = makeSigningKeyTool()
+  const attester = await createFullDidFromSeed(devFaucet, attesterKey.keypair)
 
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
-    await attester
-      .authorizeExtrinsic(
-        await driversLicenseCType.store(),
-        keystore,
-        devFaucet.address
-      )
-      .then((val) =>
-        submitExtrinsicWithResign(val, devFaucet, BlockchainUtils.IS_IN_BLOCK)
-      )
+    const extrinsic = await Did.authorizeTx(
+      attester.uri,
+      api.tx.ctype.add(CType.toChain(driversLicenseCType)),
+      attesterKey.getSignCallback(attester),
+      devFaucet.address
+    )
+    await submitTx(extrinsic, devFaucet)
   }
 
   const rawClaim = {
@@ -296,147 +317,169 @@ beforeAll(async () => {
   const claim = Claim.fromCTypeAndClaimContents(
     driversLicenseCType,
     rawClaim,
-    claimerLightDid.did
+    claimerLightDid.uri
   )
 
-  requestForAttestation = RequestForAttestation.fromClaim(claim)
-  await requestForAttestation.signWithDidKey(
-    keystore,
-    claimerLightDid,
-    claimerLightDid.authenticationKey.id
-  )
+  credential = Credential.fromClaim(claim)
+  await Credential.createPresentation({
+    credential,
+    signCallback: claimer.getSignCallback(claimerLightDid),
+  })
 }, 120_000)
 
 describe('Different deposits scenarios', () => {
-  let testFullDidOne: FullDidDetails
-  let testFullDidTwo: FullDidDetails
-  let testFullDidThree: FullDidDetails
-  let testFullDidFour: FullDidDetails
-  let testFullDidFive: FullDidDetails
-  let testFullDidSix: FullDidDetails
-  let testFullDidSeven: FullDidDetails
-  let testFullDidEight: FullDidDetails
-  let testFullDidNine: FullDidDetails
-  beforeAll(async () => {
-    const [testDidFive, testDidSix, testDidSeven, testDidEight, testDidNine] =
-      await Promise.all([
-        DemoKeystoreUtils.createMinimalLightDidFromSeed(
-          keystore,
-          testMnemonics[4]
-        ),
-        DemoKeystoreUtils.createMinimalLightDidFromSeed(
-          keystore,
-          testMnemonics[5]
-        ),
-        DemoKeystoreUtils.createMinimalLightDidFromSeed(
-          keystore,
-          testMnemonics[6]
-        ),
-        DemoKeystoreUtils.createMinimalLightDidFromSeed(
-          keystore,
-          testMnemonics[7]
-        ),
-        DemoKeystoreUtils.createMinimalLightDidFromSeed(
-          keystore,
-          testMnemonics[8]
-        ),
-      ])
+  let testFullDidOne: DidDocument
+  let testFullDidTwo: DidDocument
+  let testFullDidThree: DidDocument
+  let testFullDidFour: DidDocument
+  let testFullDidFive: DidDocument
+  let testFullDidSix: DidDocument
+  let testFullDidSeven: DidDocument
+  let testFullDidEight: DidDocument
+  let testFullDidNine: DidDocument
+  let testFullDidTen: DidDocument
 
-    ;[
-      testFullDidOne,
-      testFullDidTwo,
-      testFullDidThree,
-      testFullDidFour,
-      testFullDidFive,
-      testFullDidSix,
-      testFullDidSeven,
-      testFullDidEight,
-      testFullDidNine,
-    ] = await Promise.all([
-      createFullDidFromSeed(testIdentities[0], keystore, testMnemonics[0]),
-      createFullDidFromSeed(testIdentities[1], keystore, testMnemonics[1]),
-      createFullDidFromSeed(testIdentities[2], keystore, testMnemonics[2]),
-      createFullDidFromSeed(testIdentities[3], keystore, testMnemonics[3]),
-      createFullDidFromLightDid(testIdentities[4], testDidFive, keystore),
-      createFullDidFromLightDid(testIdentities[5], testDidSix, keystore),
-      createFullDidFromLightDid(testIdentities[6], testDidSeven, keystore),
-      createFullDidFromLightDid(testIdentities[7], testDidEight, keystore),
-      createFullDidFromLightDid(testIdentities[8], testDidNine, keystore),
-    ])
+  beforeAll(async () => {
+    const testDidFive = await createMinimalLightDidFromKeypair(keys[4].keypair)
+    const testDidSix = await createMinimalLightDidFromKeypair(keys[5].keypair)
+    const testDidSeven = await createMinimalLightDidFromKeypair(keys[6].keypair)
+    const testDidEight = await createMinimalLightDidFromKeypair(keys[7].keypair)
+    const testDidNine = await createMinimalLightDidFromKeypair(keys[8].keypair)
+
+    testFullDidOne = await createFullDidFromSeed(
+      keys[0].keypair,
+      keys[0].keypair
+    )
+    testFullDidTwo = await createFullDidFromSeed(
+      keys[1].keypair,
+      keys[1].keypair
+    )
+    testFullDidThree = await createFullDidFromSeed(
+      keys[2].keypair,
+      keys[2].keypair
+    )
+    testFullDidFour = await createFullDidFromSeed(
+      keys[3].keypair,
+      keys[3].keypair
+    )
+    testFullDidFive = await createFullDidFromLightDid(
+      keys[4].keypair,
+      testDidFive,
+      keys[4].storeDidCallback
+    )
+    testFullDidSix = await createFullDidFromLightDid(
+      keys[5].keypair,
+      testDidSix,
+      keys[5].storeDidCallback
+    )
+    testFullDidSeven = await createFullDidFromLightDid(
+      keys[6].keypair,
+      testDidSeven,
+      keys[6].storeDidCallback
+    )
+    testFullDidEight = await createFullDidFromLightDid(
+      keys[7].keypair,
+      testDidEight,
+      keys[7].storeDidCallback
+    )
+    testFullDidNine = await createFullDidFromLightDid(
+      keys[8].keypair,
+      testDidNine,
+      keys[8].storeDidCallback
+    )
+    testFullDidTen = await createFullDidFromSeed(
+      keys[9].keypair,
+      keys[9].keypair
+    )
   }, 240_000)
 
   it('Check if deleting full DID returns deposit', async () => {
-    await expect(
-      checkDeleteFullDid(testIdentities[0], testFullDidOne, keystore)
-    ).resolves.toBe(true)
+    expect(
+      await checkDeleteFullDid(
+        keys[0].keypair,
+        testFullDidOne,
+        keys[0].getSignCallback(testFullDidOne)
+      )
+    ).toBe(true)
   }, 45_000)
   it('Check if reclaiming full DID returns deposit', async () => {
-    await expect(
-      checkReclaimFullDid(testIdentities[1], testFullDidTwo)
-    ).resolves.toBe(true)
+    expect(await checkReclaimFullDid(keys[1].keypair, testFullDidTwo)).toBe(
+      true
+    )
   }, 45_000)
   it('Check if removing an attestation from a full DID returns deposit', async () => {
-    await expect(
-      checkRemoveFullDidAttestation(
-        testIdentities[2],
+    expect(
+      await checkRemoveFullDidAttestation(
+        keys[2].keypair,
         testFullDidThree,
-        keystore,
-        requestForAttestation
+        keys[2].getSignCallback(testFullDidThree),
+        credential
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if reclaiming an attestation from a full DID returns the deposit', async () => {
-    await expect(
-      checkReclaimFullDidAttestation(
-        testIdentities[3],
+    expect(
+      await checkReclaimFullDidAttestation(
+        keys[3].keypair,
         testFullDidFour,
-        keystore,
-        requestForAttestation
+        keys[3].getSignCallback(testFullDidFour),
+        credential
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if deleting from a migrated light DID to a full DID returns deposit', async () => {
-    await expect(
-      checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
-    ).resolves.toBe(true)
+    expect(
+      await checkDeleteFullDid(
+        keys[4].keypair,
+        testFullDidFive,
+        keys[4].getSignCallback(testFullDidFive)
+      )
+    ).toBe(true)
   }, 90_000)
   it('Check if reclaiming from a migrated light DID to a full DID returns deposit', async () => {
-    await expect(
-      checkReclaimFullDid(testIdentities[5], testFullDidSix)
-    ).resolves.toBe(true)
+    expect(await checkReclaimFullDid(keys[5].keypair, testFullDidSix)).toBe(
+      true
+    )
   }, 90_000)
   it('Check if removing an attestation from a migrated light DID to a full DID returns the deposit', async () => {
-    await expect(
-      checkRemoveFullDidAttestation(
-        testIdentities[6],
+    expect(
+      await checkRemoveFullDidAttestation(
+        keys[6].keypair,
         testFullDidSeven,
-        keystore,
-        requestForAttestation
+        keys[6].getSignCallback(testFullDidSeven),
+        credential
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if reclaiming an attestation from a migrated light DID to a full DID returns the deposit', async () => {
-    await expect(
-      checkReclaimFullDidAttestation(
-        testIdentities[7],
+    expect(
+      await checkReclaimFullDidAttestation(
+        keys[7].keypair,
         testFullDidEight,
-        keystore,
-        requestForAttestation
+        keys[7].getSignCallback(testFullDidEight),
+        credential
       )
-    ).resolves.toBe(true)
+    ).toBe(true)
   }, 90_000)
   it('Check if deleting a full DID and reclaiming an attestation returns the deposit', async () => {
-    await expect(
-      checkDeletedDidReclaimAttestation(
-        testIdentities[8],
-        testFullDidNine,
-        keystore,
-        requestForAttestation
+    await checkDeletedDidReclaimAttestation(
+      keys[8].keypair,
+      testFullDidNine,
+      keys[8].getSignCallback(testFullDidNine),
+      credential
+    )
+  }, 120_000)
+  it('Check if claiming and releasing a web3 name correctly handles deposits', async () => {
+    expect(
+      await checkWeb3Deposit(
+        keys[9].keypair,
+        testFullDidTen,
+        keys[9].getSignCallback(testFullDidTen)
       )
-    ).resolves.not.toThrow()
+    ).toBe(true)
   }, 120_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

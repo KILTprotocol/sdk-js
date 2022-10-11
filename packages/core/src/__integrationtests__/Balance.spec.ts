@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,28 +9,26 @@
  * @group integration/balance
  */
 
+import { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
+
 import type { KeyringPair } from '@kiltprotocol/types'
-import {
-  getBalances,
-  listenToBalanceChanges,
-  makeTransfer,
-} from '../balance/Balance.chain'
+import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import { disconnect } from '../kilt'
 import {
   addressFromRandom,
-  EXISTENTIAL_DEPOSIT,
-  keypairFromRandom,
   devAlice,
   devBob,
   devFaucet,
+  EXISTENTIAL_DEPOSIT,
   initializeApi,
-  submitExtrinsicWithResign,
+  submitTx,
 } from './utils'
 
+let api: ApiPromise
 beforeAll(async () => {
-  await initializeApi()
-})
+  api = await initializeApi()
+}, 30_000)
 
 describe('when there is a dev chain with a faucet', () => {
   let faucet: KeyringPair
@@ -44,46 +42,43 @@ describe('when there is a dev chain with a faucet', () => {
   })
 
   it('should have enough coins available on the faucet', async () => {
-    const balance = await getBalances(faucet.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    const balance = (await api.query.system.account(faucet.address)).data
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
   it('Bob has tokens', async () => {
-    const balance = await getBalances(bob.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    const balance = (await api.query.system.account(bob.address)).data
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
   })
 
   it('Alice has tokens', async () => {
-    const balance = await getBalances(alice.address)
-    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
+    const balance = (await api.query.system.account(alice.address)).data
+    expect(balance.free.gt(new BN(100_000_000))).toBe(true)
   })
 
   it('getBalances should return 0 for new address', async () => {
-    return expect(
-      getBalances(addressFromRandom()).then((n) => n.free.toNumber())
-    ).resolves.toEqual(0)
+    const { free } = (await api.query.system.account(addressFromRandom())).data
+    expect(free.toNumber()).toEqual(0)
   })
 
-  // Skipped because it is run in parallel with other tests and it fails because of the deposit taken
+  // Skipped because it is run in parallel with other tests, and it fails because of the deposit taken
   // in the other test cases.
-  it.skip('should be able to faucet coins to a new address', async () => {
-    const address: string = addressFromRandom()
-    const funny = jest.fn()
-    listenToBalanceChanges(address, funny)
-    const balanceBefore = await getBalances(faucet.address)
-    await makeTransfer(address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, faucet)
-    )
-    const [balanceAfter, balanceIdent] = await Promise.all([
-      getBalances(faucet.address),
-      getBalances(address),
-    ])
+  it('should be able to faucet coins to a new address', async () => {
+    const address = addressFromRandom()
+    const spy = jest.fn()
+    api.query.system.account(address, spy)
+    const balanceBefore = (await api.query.system.account(faucet.address)).data
+    const transferTx = api.tx.balances.transfer(address, EXISTENTIAL_DEPOSIT)
+    await submitTx(transferTx, faucet)
+    const balanceAfter = (await api.query.system.account(faucet.address)).data
+    const balanceIdent = (await api.query.system.account(address)).data
+
     expect(
       balanceBefore.free.sub(balanceAfter.free).gt(EXISTENTIAL_DEPOSIT)
-    ).toBeTruthy()
+    ).toBe(true)
     expect(balanceIdent.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
-    expect(funny).toBeCalled()
+    expect(spy).toBeCalled()
   }, 30_000)
 })
 
@@ -94,87 +89,88 @@ describe('When there are haves and have-nots', () => {
   let faucet: KeyringPair
 
   beforeAll(async () => {
-    bobbyBroke = keypairFromRandom()
+    bobbyBroke = makeSigningKeyTool().keypair
     richieRich = devAlice
     faucet = devFaucet
-    stormyD = keypairFromRandom()
+    stormyD = makeSigningKeyTool().keypair
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, richieRich)
+    const transferTx = api.tx.balances.transfer(
+      stormyD.address,
+      EXISTENTIAL_DEPOSIT
     )
-    const balanceTo = await getBalances(stormyD.address)
+    await submitTx(transferTx, richieRich)
+    const balanceTo = (await api.query.system.account(stormyD.address)).data
     expect(balanceTo.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
   }, 40_000)
 
   it('should not accept transactions from KeyringPair with zero balance', async () => {
-    const originalBalance = await getBalances(stormyD.address)
-    await expect(
-      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        submitExtrinsicWithResign(tx, bobbyBroke)
-      )
-    ).rejects.toThrowError('1010: Invalid Transaction')
-    const [newBalance, zeroBalance] = await Promise.all([
-      getBalances(stormyD.address),
-      getBalances(bobbyBroke.address),
-    ])
+    const originalBalance = (await api.query.system.account(stormyD.address))
+      .data
+    const transferTx = api.tx.balances.transfer(
+      stormyD.address,
+      EXISTENTIAL_DEPOSIT
+    )
+    await expect(submitTx(transferTx, bobbyBroke)).rejects.toThrowError(
+      '1010: Invalid Transaction'
+    )
+
+    const newBalance = (await api.query.system.account(stormyD.address)).data
+    const zeroBalance = (await api.query.system.account(bobbyBroke.address))
+      .data
     expect(newBalance.free.toNumber()).toBe(originalBalance.free.toNumber())
     expect(zeroBalance.free.toNumber()).toBe(0)
   }, 50_000)
 
   it.skip('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
-    const RichieBalance = await getBalances(richieRich.address)
-    await expect(
-      makeTransfer(bobbyBroke.address, RichieBalance.free).then((tx) =>
-        submitExtrinsicWithResign(tx, richieRich)
-      )
-    ).rejects.toThrowError()
-    const [newBalance, zeroBalance] = await Promise.all([
-      getBalances(richieRich.address),
-      getBalances(bobbyBroke.address),
-    ])
+    const RichieBalance = (await api.query.system.account(richieRich.address))
+      .data
+    const transferTx = api.tx.balances.transfer(
+      bobbyBroke.address,
+      RichieBalance.free
+    )
+    await expect(submitTx(transferTx, richieRich)).rejects.toThrowError()
+
+    const newBalance = (await api.query.system.account(stormyD.address)).data
+    const zeroBalance = (await api.query.system.account(bobbyBroke.address))
+      .data
     expect(zeroBalance.free.toString()).toEqual('0')
     expect(newBalance.free.lt(RichieBalance.free))
   }, 30_000)
 
   it('should be able to make a new transaction once the last is ready', async () => {
-    const listener = jest.fn()
-    listenToBalanceChanges(faucet.address, listener)
-    await makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, faucet)
-    )
-    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-      submitExtrinsicWithResign(tx, faucet)
-    )
+    const spy = jest.fn()
+    api.query.system.account(faucet.address, spy)
 
-    expect(listener).toBeCalledWith(
-      faucet.address,
-      expect.anything(),
-      expect.anything()
+    const transferTx1 = api.tx.balances.transfer(
+      richieRich.address,
+      EXISTENTIAL_DEPOSIT
     )
-    expect(listener).toBeCalledTimes(3)
+    await submitTx(transferTx1, faucet)
+    const transferTx2 = api.tx.balances.transfer(
+      stormyD.address,
+      EXISTENTIAL_DEPOSIT
+    )
+    await submitTx(transferTx2, faucet)
+
+    expect(spy).toBeCalledTimes(3)
   }, 30_000)
 
   it('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
-    listenToBalanceChanges(faucet.address, listener)
-    await Promise.all([
-      makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        submitExtrinsicWithResign(tx, faucet)
-      ),
-      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
-        submitExtrinsicWithResign(tx, faucet)
-      ),
+    api.query.system.account(faucet.address, listener)
+
+    const batch = api.tx.utility.batchAll([
+      api.tx.balances.transfer(richieRich.address, EXISTENTIAL_DEPOSIT),
+      api.tx.balances.transfer(stormyD.address, EXISTENTIAL_DEPOSIT),
     ])
-    expect(listener).toBeCalledWith(
-      faucet.address,
-      expect.anything(),
-      expect.anything()
-    )
+    await submitTx(batch, faucet)
+
+    expect(listener).toBeCalledTimes(2)
   }, 50_000)
 })
 
-afterAll(() => {
-  disconnect()
+afterAll(async () => {
+  await disconnect()
 })

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -15,17 +15,17 @@ import jsonld from 'jsonld'
 
 import { base58Encode, randomAsHex } from '@polkadot/util-crypto'
 
-import { DidDocumentPublicKeyType } from '@kiltprotocol/types'
-import { DidUtils } from '@kiltprotocol/did'
+import { DidResourceUri, DidUri } from '@kiltprotocol/types'
+import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 
 import { KiltSignatureSuite as Suite } from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
 import { documentLoader as kiltDocumentLoader } from '../documentLoader'
 import type {
-  VerifiableCredential,
-  SelfSignedProof,
   IPublicKeyRecord,
+  SelfSignedProof,
+  VerifiableCredential,
 } from '../../types'
 import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
 
@@ -44,27 +44,27 @@ beforeAll(async () => {
     }
     return false
   })
-  documentLoader = async (url) => {
-    if (url.startsWith('did:kilt:')) {
-      const { identifier, fragment, did } = DidUtils.parseDidUri(url)
+  documentLoader = async (uri) => {
+    if (uri.startsWith('did:kilt:')) {
+      const { address, fragment, did } = Did.parse(uri as DidUri)
       const key: IPublicKeyRecord = {
-        id: url,
-        publicKeyBase58: base58Encode(Crypto.decodeAddress(identifier)),
+        id: uri as DidResourceUri,
+        publicKeyBase58: base58Encode(Crypto.decodeAddress(address)),
         controller: did,
-        type: DidDocumentPublicKeyType.Ed25519VerificationKey,
+        type: 'Ed25519VerificationKey2018',
       }
       if (fragment) {
-        return { documentUrl: url, document: key }
+        return { documentUrl: uri, document: key }
       }
       return {
-        documentUrl: url,
+        documentUrl: uri,
         document: {
           id: did,
           verificationMethod: [key],
         },
       }
     }
-    return kiltDocumentLoader(url)
+    return kiltDocumentLoader(uri)
   }
 })
 
@@ -76,25 +76,26 @@ describe('jsigs', () => {
         'https://w3id.org/security/v2',
         { documentLoader, compactToRelative: false }
       )
-      await expect(purpose.match(compactedProof, {})).resolves.toBe(true)
-      await expect(
-        purpose.match(compactedProof, { document: credential, documentLoader })
-      ).resolves.toBe(true)
+      expect(await purpose.match(compactedProof, {})).toBe(true)
+      expect(
+        await purpose.match(compactedProof, {
+          document: credential,
+          documentLoader,
+        })
+      ).toBe(true)
     })
 
     it('suite matches proof', async () => {
       const proofWithContext = { ...proof, '@context': credential['@context'] }
-      await expect(suite.matchProof({ proof: proofWithContext })).resolves.toBe(
-        true
-      )
-      await expect(
-        suite.matchProof({
+      expect(await suite.matchProof({ proof: proofWithContext })).toBe(true)
+      expect(
+        await suite.matchProof({
           proof: proofWithContext,
           document: credential,
           purpose,
           documentLoader,
         })
-      ).resolves.toBe(true)
+      ).toBe(true)
     })
   })
 
@@ -104,9 +105,9 @@ describe('jsigs', () => {
     })
 
     it('verifies Kilt Self Signed Proof', async () => {
-      await expect(
-        jsigs.verify(credential, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        await jsigs.verify(credential, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -122,9 +123,9 @@ describe('jsigs', () => {
 
     it('detects tampering', async () => {
       tamperCred.id = tamperCred.id.replace('1', '2')
-      await expect(
-        jsigs.verify(tamperCred, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
 
     it('detects signer mismatch', async () => {
@@ -133,9 +134,9 @@ describe('jsigs', () => {
         publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
-      await expect(
-        jsigs.verify(tamperCred, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: false })
+      expect(
+        await jsigs.verify(tamperCred, { suite, purpose, documentLoader })
+      ).toMatchObject({ verified: false })
     })
   })
 })
@@ -147,9 +148,14 @@ describe('vc-js', () => {
     })
 
     it('verifies Kilt Self Signed Proof', async () => {
-      await expect(
-        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({ verified: true })
+      expect(
+        await vcjs.verifyCredential({
+          credential,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).toMatchObject({ verified: true })
     })
   })
 
@@ -165,14 +171,14 @@ describe('vc-js', () => {
 
     it('detects tampering', async () => {
       tamperCred.id = tamperCred.id.replace('1', '2')
-      await expect(
-        vcjs.verifyCredential({
+      expect(
+        await vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: false })
+      ).toMatchObject({ verified: false })
     })
 
     it('detects signer mismatch', async () => {
@@ -181,14 +187,14 @@ describe('vc-js', () => {
         publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
-      await expect(
-        vcjs.verifyCredential({
+      expect(
+        await vcjs.verifyCredential({
           credential: tamperCred,
           suite,
           purpose,
           documentLoader,
         })
-      ).resolves.toMatchObject({ verified: false })
+      ).toMatchObject({ verified: false })
     })
   })
 })

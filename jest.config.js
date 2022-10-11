@@ -6,7 +6,7 @@ module.exports = {
   // Parachain block time is 12s
   testTimeout: 15000,
   setupFilesAfterEnv: ['../jest-setup/setup.js'],
-  transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
+  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {
     global: {
       branches: 70,
@@ -24,19 +24,16 @@ module.exports = {
     '!**/lib/**',
     '!**/test/**',
     '!**/kilt/*',
-    '!**/blockchainApiConnection/*',
     '!**/types/**/*',
     '!**/SDKErrors.ts',
     '!utils/src/json-schema/*',
     '!testing/**',
+    '!augment-api/**',
     // TODO: write tests for these files and remove here
     '!**/*.chain.ts',
-    '!did/src/index.types.ts',
     '!did/src/Did.chain.ts',
     '!did/src/Did.utils.ts',
-    '!did/src/DemoKeystore/DemoKeystore.ts',
-    '!did/src/DidDetails/DidDetails.utils.ts',
-    '!did/src/DidDetails/FullDidDetails.utils.ts',
+    '!utils/src/jsonabc.ts',
   ],
   resolver: "ts-jest-resolver",
   rootDir: 'packages',

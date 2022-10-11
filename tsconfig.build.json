@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "target": "es2017",
-    "lib": ["es6"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
     "sourceMap": false,
     "strict": true,
     "allowJs": true,
@@ -17,10 +17,11 @@
     "importHelpers": true,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "skipLibCheck": true
   },
   "exclude": [
-    "node_modules",
-    "lib"
+    "**/node_modules",
+    "**/lib"
   ]
 }

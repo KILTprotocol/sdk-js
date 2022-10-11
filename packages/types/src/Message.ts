@@ -1,63 +1,40 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IMessage
- */
-
-import type { AnyJson } from '@polkadot/types/types'
-import type { DidSignature, IDidDetails } from './DidDetails.js'
-import type { CompressedAttestation, IAttestation } from './Attestation.js'
-import type { CompressedCredential, ICredential } from './Credential.js'
-import type { IClaim, PartialClaim } from './Claim.js'
+import type { AnyJson } from '@polkadot/types/types/codec'
+import type { DidSignature, DidUri } from './DidDocument.js'
+import type { IAttestation } from './Attestation.js'
+import type { PartialClaim } from './Claim.js'
 import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
-import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote.js'
-import type {
-  CompressedRequestForAttestation,
-  IRequestForAttestation,
-} from './RequestForAttestation.js'
-import type { CompressedTerms, ITerms } from './Terms.js'
-import type { DidPublicKey, IClaimContents } from './index.js'
+import type { IQuoteAgreement } from './Quote.js'
+import type { ICredential, ICredentialPresentation } from './Credential.js'
+import type { ITerms } from './Terms.js'
+import type { DidResourceUri } from './index.js'
 
-export enum MessageBodyType {
-  ERROR = 'error',
-  REJECT = 'reject',
-
-  REQUEST_TERMS = 'request-terms',
-  SUBMIT_TERMS = 'submit-terms',
-  REJECT_TERMS = 'reject-terms',
-
-  REQUEST_ATTESTATION = 'request-attestation',
-  SUBMIT_ATTESTATION = 'submit-attestation',
-  REJECT_ATTESTATION = 'reject-attestation',
-
-  REQUEST_PAYMENT = 'request-payment',
-  CONFIRM_PAYMENT = 'confirm-payment',
-
-  REQUEST_CREDENTIAL = 'request-credential',
-  SUBMIT_CREDENTIAL = 'submit-credential',
-  ACCEPT_CREDENTIAL = 'accept-credential',
-  REJECT_CREDENTIAL = 'reject-credential',
-
-  REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
-  SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
-  REJECT_ACCEPT_DELEGATION = 'reject-accept-delegation',
-  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
-}
-
-export type CompressedDelegationData = [
-  IDelegationNode['account'],
-  IDelegationNode['id'],
-  IDelegationNode['id'],
-  IDelegationNode['permissions'],
-  boolean
-]
+export type MessageBodyType =
+  | 'error'
+  | 'reject'
+  | 'request-terms'
+  | 'submit-terms'
+  | 'reject-terms'
+  | 'request-attestation'
+  | 'submit-attestation'
+  | 'reject-attestation'
+  | 'request-payment'
+  | 'confirm-payment'
+  | 'request-credential'
+  | 'submit-credential'
+  | 'accept-credential'
+  | 'reject-credential'
+  | 'request-accept-delegation'
+  | 'submit-accept-delegation'
+  | 'reject-accept-delegation'
+  | 'inform-create-delegation'
 
 interface IMessageBodyBase {
   content: any
@@ -71,7 +48,7 @@ export interface IError extends IMessageBodyBase {
     /** Optional human-readable description of the error. */
     message?: string
   }
-  type: MessageBodyType.ERROR
+  type: 'error'
 }
 
 export interface IReject extends IMessageBodyBase {
@@ -81,77 +58,51 @@ export interface IReject extends IMessageBodyBase {
     /** Optional human-readable description of the rejection. */
     message?: string
   }
-  type: MessageBodyType.REJECT
+  type: 'reject'
 }
 
 export interface IRequestTerms extends IMessageBodyBase {
   content: PartialClaim
-  type: MessageBodyType.REQUEST_TERMS
+  type: 'request-terms'
 }
+
 export interface ISubmitTerms extends IMessageBodyBase {
   content: ITerms
-  type: MessageBodyType.SUBMIT_TERMS
+  type: 'submit-terms'
 }
+
 export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: PartialClaim
     legitimations: ICredential[]
     delegationId?: IDelegationNode['id']
   }
-  type: MessageBodyType.REJECT_TERMS
+  type: 'reject-terms'
 }
 
 export interface ISubmitCredential extends IMessageBodyBase {
-  content: ICredential[]
-  type: MessageBodyType.SUBMIT_CREDENTIAL
+  content: ICredentialPresentation[]
+  type: 'submit-credential'
 }
 
 export interface IAcceptCredential extends IMessageBodyBase {
   content: Array<ICType['hash']>
-  type: MessageBodyType.ACCEPT_CREDENTIAL
+  type: 'accept-credential'
 }
+
 export interface IRejectCredential extends IMessageBodyBase {
   content: Array<ICType['hash']>
-  type: MessageBodyType.REJECT_CREDENTIAL
+  type: 'reject-credential'
 }
 
-export type CompressedSubmitTerms = [
-  MessageBodyType.SUBMIT_TERMS,
-  CompressedTerms
-]
-export type CompressedSubmitAttestation = [
-  MessageBodyType.SUBMIT_ATTESTATION,
-  CompressedAttestation
-]
-export type CompressedRejectAttestation = [
-  MessageBodyType.REJECT_ATTESTATION,
-  IRequestForAttestation['rootHash']
-]
-export type CompressedSubmitCredentials = [
-  MessageBodyType.SUBMIT_CREDENTIAL,
-  CompressedCredential[]
-]
-export type CompressedAcceptCredential = [
-  MessageBodyType.ACCEPT_CREDENTIAL,
-  Array<ICType['hash']>
-]
-export type CompressedRejectCredential = [
-  MessageBodyType.REJECT_CREDENTIAL,
-  Array<ICType['hash']>
-]
-export type CompressedRejectAcceptDelegation = [
-  MessageBodyType.REJECT_ACCEPT_DELEGATION,
-  CompressedDelegationData
-]
-
 export interface IRequestAttestationContent {
-  requestForAttestation: IRequestForAttestation
+  credential: ICredential
   quote?: IQuoteAgreement
 }
 
 export interface IRequestAttestation extends IMessageBodyBase {
   content: IRequestAttestationContent
-  type: MessageBodyType.REQUEST_ATTESTATION
+  type: 'request-attestation'
 }
 
 export interface ISubmitAttestationContent {
@@ -160,12 +111,12 @@ export interface ISubmitAttestationContent {
 
 export interface ISubmitAttestation extends IMessageBodyBase {
   content: ISubmitAttestationContent
-  type: MessageBodyType.SUBMIT_ATTESTATION
+  type: 'submit-attestation'
 }
 
 export interface IRejectAttestation extends IMessageBodyBase {
-  content: IRequestForAttestation['rootHash']
-  type: MessageBodyType.REJECT_ATTESTATION
+  content: ICredential['rootHash']
+  type: 'reject-attestation'
 }
 
 export interface IRequestPaymentContent {
@@ -184,13 +135,13 @@ export interface IConfirmPaymentContent {
 
 export interface IConfirmPayment extends IMessageBodyBase {
   content: IConfirmPaymentContent
-  type: MessageBodyType.CONFIRM_PAYMENT
+  type: 'confirm-payment'
 }
 
 export interface IRequestCredentialContent {
   cTypes: Array<{
     cTypeHash: ICType['hash']
-    trustedAttesters?: Array<IDidDetails['did']>
+    trustedAttesters?: DidUri[]
     requiredProperties?: string[]
   }>
   challenge?: string
@@ -198,12 +149,12 @@ export interface IRequestCredentialContent {
 
 export interface IRequestCredential extends IMessageBodyBase {
   content: IRequestCredentialContent
-  type: MessageBodyType.REQUEST_CREDENTIAL
+  type: 'request-credential'
 }
 
 export interface IRequestPayment extends IMessageBodyBase {
   content: IRequestPaymentContent
-  type: MessageBodyType.REQUEST_PAYMENT
+  type: 'request-payment'
 }
 
 export interface IDelegationData {
@@ -213,10 +164,12 @@ export interface IDelegationData {
   permissions: IDelegationNode['permissions']
   isPCR: boolean
 }
+
 export interface IRejectAcceptDelegation extends IMessageBodyBase {
   content: IDelegationData
-  type: MessageBodyType.REJECT_ACCEPT_DELEGATION
+  type: 'reject-accept-delegation'
 }
+
 export interface IRequestDelegationApproval {
   delegationData: IDelegationData
   metaData?: AnyJson
@@ -227,7 +180,7 @@ export interface IRequestDelegationApproval {
 
 export interface IRequestAcceptDelegation extends IMessageBodyBase {
   content: IRequestDelegationApproval
-  type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
+  type: 'request-accept-delegation'
 }
 
 export interface ISubmitDelegationApproval {
@@ -237,95 +190,21 @@ export interface ISubmitDelegationApproval {
     invitee: DidSignature
   }
 }
+
 export interface ISubmitAcceptDelegation extends IMessageBodyBase {
   content: ISubmitDelegationApproval
-  type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
+  type: 'submit-accept-delegation'
 }
 
 export interface IInformDelegationCreation {
   delegationId: IDelegationNode['id']
   isPCR: boolean
 }
+
 export interface IInformCreateDelegation extends IMessageBodyBase {
   content: IInformDelegationCreation
-  type: MessageBodyType.INFORM_CREATE_DELEGATION
+  type: 'inform-create-delegation'
 }
-
-export type CompressedInformDelegationCreation = [
-  IInformDelegationCreation['delegationId'],
-  IInformDelegationCreation['isPCR']
-]
-
-export type CompressedInformCreateDelegation = [
-  MessageBodyType.INFORM_CREATE_DELEGATION,
-  CompressedInformDelegationCreation
-]
-
-export type CompressedPartialClaim = [
-  IClaim['cTypeHash'],
-  IClaim['owner'] | undefined,
-  IClaimContents | undefined
-]
-export type CompressedRequestTerms = [
-  MessageBodyType.REQUEST_TERMS,
-  CompressedPartialClaim
-]
-
-export type CompressedRejectedTerms = [
-  CompressedPartialClaim,
-  CompressedCredential[],
-  IDelegationNode['id'] | undefined
-]
-export type CompressedRejectTerms = [
-  MessageBodyType.REJECT_TERMS,
-  CompressedRejectedTerms
-]
-
-export type CompressedRequestCredentialContent = [
-  Array<
-    [
-      ICType['hash'],
-      Array<IDidDetails['did']> | undefined,
-      string[] | undefined
-    ]
-  >,
-  string?
-]
-
-export type CompressedRequestCredentials = [
-  MessageBodyType.REQUEST_CREDENTIAL,
-  CompressedRequestCredentialContent
-]
-
-export type CompressedRequestAttestationContent = [
-  CompressedRequestForAttestation,
-  CompressedQuoteAgreed | undefined
-]
-
-export type CompressedRequestAttestation = [
-  MessageBodyType.REQUEST_ATTESTATION,
-  CompressedRequestAttestationContent
-]
-
-export type CompressedRequestDelegationApproval = [
-  CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
-  AnyJson
-]
-export type CompressedRequestAcceptDelegation = [
-  MessageBodyType.REQUEST_ACCEPT_DELEGATION,
-  CompressedRequestDelegationApproval
-]
-
-export type CompressedSubmitDelegationApproval = [
-  CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
-  [DidSignature['signature'], DidSignature['keyId']]
-]
-export type CompressedSubmitAcceptDelegation = [
-  MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
-  CompressedSubmitDelegationApproval
-]
 
 export type MessageBody =
   | IError
@@ -349,40 +228,21 @@ export type MessageBody =
   | IRejectAcceptDelegation
   | IInformCreateDelegation
 
-export type CompressedMessageBody =
-  | CompressedRequestTerms
-  | CompressedSubmitTerms
-  | CompressedRejectTerms
-  //
-  | CompressedRequestAttestation
-  | CompressedSubmitAttestation
-  | CompressedRejectAttestation
-  //
-  | CompressedRequestCredentials
-  | CompressedSubmitCredentials
-  | CompressedAcceptCredential
-  | CompressedRejectCredential
-  //
-  | CompressedRequestAcceptDelegation
-  | CompressedSubmitAcceptDelegation
-  | CompressedRejectAcceptDelegation
-  | CompressedInformCreateDelegation
-
 /**
  * - `body` - The body of the message, see [[MessageBody]].
  * - `createdAt` - The timestamp of the message construction.
- * - `receiverAddress` - The public SS58 address of the receiver.
- * - `senderAddress` - The public SS58 address of the sender.
- * - `senderBoxPublicKex` - The public encryption key of the sender.
+ * - `sender` - The DID of the sender.
+ * - `receiver` - The DID of the receiver.
  * - `messageId` - The message id.
+ * - `receivedAt` - The timestamp of the message reception.
  * - `inReplyTo` - The id of the parent-message.
  * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
  */
 export interface IMessage {
   body: MessageBody
   createdAt: number
-  sender: IDidDetails['did']
-  receiver: IDidDetails['did']
+  sender: DidUri
+  receiver: DidUri
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -399,12 +259,12 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * This adds the following fields:
  * - `ciphertext` - The encrypted message content.
  * - `nonce` - The encryption nonce.
- * - `receiverKeyId` - The identifier of a DID-associated public key to which to encrypt.
- * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
+ * - `receiverKeyUri` - The URI of the receiver's encryption key.
+ * - `senderKeyUri` - The URI of the sender's encryption key.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: DidPublicKey['id']
-  senderKeyId: DidPublicKey['id']
+  receiverKeyUri: DidResourceUri
+  senderKeyUri: DidResourceUri
   ciphertext: string
   nonce: string
 }

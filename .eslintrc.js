@@ -20,6 +20,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
+    project: './tsconfig.json',
   },
   plugins: [
     '@typescript-eslint',
@@ -36,6 +37,7 @@ module.exports = {
         devDependencies: [
           '**/*.test.ts',
           '**/*.spec.ts',
+          '**/__integrationtests__/*',
           '**/webpack.config.js',
         ],
       },
@@ -72,12 +74,35 @@ module.exports = {
       },
     ],
     '@typescript-eslint/ban-ts-comment': 'warn',
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowNumber: false,
+        allowNullableString: true,
+        allowNullableBoolean: true,
+      },
+    ],
     'jsdoc/require-description': 'warn',
     'jsdoc/require-description-complete-sentence': 'warn',
     'jsdoc/no-types': 'warn',
     'jsdoc/require-param-type': 'off',
     'jsdoc/require-returns-type': 'off',
-    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/require-jsdoc': [
+      'warn',
+      {
+        publicOnly: true,
+        exemptEmptyConstructors: true,
+        contexts: ['MethodDefinition:has([accessibility="public"])'],
+        require: {
+          FunctionDeclaration: true, // require jsdoc on exported functions
+          FunctionExpression: true,
+          ArrowFunctionExpression: false, // do not require jsdoc on arrow functions
+          MethodDefinition: false, // bc we only want to enforce jsdoc on public methods, this must be false
+          ClassDeclaration: false, // do not require jsdoc on declarations of exported classes
+          ClassExpression: false,
+        },
+      },
+    ],
     'jsdoc/check-examples': [
       'warn',
       {
@@ -113,6 +138,7 @@ module.exports = {
         '@typescript-eslint/no-object-literal-type-assertion': 'off',
         'no-underscore-dangle': 'off',
         'global-require': 'off',
+        'jsdoc/require-jsdoc': 'off',
         'jsdoc/check-tag-names': [
           'warn',
           {
@@ -122,12 +148,33 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
       },
     },
     {
-      files: ['**/__integrationtests__/*.ts'],
+      files: ['**/__integrationtests__/*.ts', '**/TestUtils.ts'],
       rules: {
         'import/extensions': 'off',
+        'jsdoc/require-jsdoc': 'off',
+      },
+    },
+    {
+      files: ['**/augment-api/src/interfaces/**/*.ts'],
+      rules: {
+        'license-header/header': 'off',
+      },
+    },
+    {
+      files: ['tests/*'],
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        'import/no-extraneous-dependencies': [
+          'error',
+          {
+            devDependencies: ['tests/*', 'tests/bundle.spec.ts'],
+          },
+        ],
       },
     },
   ],

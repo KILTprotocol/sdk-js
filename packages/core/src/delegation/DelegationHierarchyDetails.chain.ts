@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,40 +9,27 @@ import type {
   IDelegationHierarchyDetails,
   IDelegationNode,
 } from '@kiltprotocol/types'
-import type { Option } from '@polkadot/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import {
-  decodeDelegationHierarchyDetails,
-  DelegationHierarchyDetailsRecord,
-  IChainDelegationHierarchyDetails,
-} from './DelegationDecoder.js'
+import { ConfigService } from '@kiltprotocol/config'
+import { SDKErrors } from '@kiltprotocol/utils'
+
+import { delegationHierarchyDetailsFromChain } from './DelegationDecoder.js'
 
 /**
- * @packageDocumentation
- * @module DelegationHierarchyDetails
- */
-
-/**
- * Query a delegation hierarchy node from the blockchain given its identifier.
+ * Fetch a delegation hierarchy node from the blockchain given its identifier.
  *
- * @param rootId The root delegation node ID to query.
- * @returns Either the retrieved [[IDelegationHierarchyDetails]] or null.
+ * @param rootId The root delegation node ID to fetch.
+ * @returns The retrieved [[IDelegationHierarchyDetails]].
  */
-export async function query(
+export async function fetch(
   rootId: IDelegationNode['id']
-): Promise<IDelegationHierarchyDetails | null> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const decoded: DelegationHierarchyDetailsRecord | null =
-    decodeDelegationHierarchyDetails(
-      await blockchain.api.query.delegation.delegationHierarchies<
-        Option<IChainDelegationHierarchyDetails>
-      >(rootId)
-    )
-  if (!decoded) {
-    return null
+): Promise<IDelegationHierarchyDetails> {
+  const api = ConfigService.get('api')
+  const chain = await api.query.delegation.delegationHierarchies(rootId)
+  if (chain.isNone) {
+    throw new SDKErrors.HierarchyQueryError(rootId)
   }
   return {
-    ...decoded,
+    ...delegationHierarchyDetailsFromChain(chain),
     id: rootId,
   }
 }

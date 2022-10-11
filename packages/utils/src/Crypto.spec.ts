@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2021 BOTLabs GmbH.
+ * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,9 +10,7 @@
  */
 
 import * as string from '@polkadot/util/string'
-import type { KeyringPair } from '@kiltprotocol/types'
 import nacl from 'tweetnacl'
-import { Keyring } from './index'
 import * as Crypto from './Crypto'
 
 const messageStr = 'This is a test'
@@ -54,48 +52,26 @@ describe('helper functions', () => {
     expect(Crypto.hashStr('123')).not.toEqual(Crypto.hashStr(message))
   })
 
-  it('should sort objects when hashing', () => {
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 })).toEqual(
-      Crypto.hashObjectAsStr({ b: 2, a: 1 })
-    )
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 })).not.toEqual(
-      Crypto.hashObjectAsStr({ b: 1, a: 2 })
-    )
-    // with nonce
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 }, 'abc')).toEqual(
-      Crypto.hashObjectAsStr({ b: 2, a: 1 }, 'abc')
-    )
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 }, 'abc')).not.toEqual(
-      Crypto.hashObjectAsStr({ b: 1, a: 2 }, 'abc')
-    )
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 }, 'abc')).not.toEqual(
-      Crypto.hashObjectAsStr({ b: 2, a: 1 }, 'acab')
+  it('encodeObjectAsStr should sort objects', () => {
+    expect(Crypto.encodeObjectAsStr({ b: 2, a: 1 })).toEqual('{"a":1,"b":2}')
+    expect(Crypto.encodeObjectAsStr({ a: 1, b: 2 })).toEqual('{"a":1,"b":2}')
+    expect(Crypto.encodeObjectAsStr({ a: 1, b: 2 })).not.toEqual(
+      '{"a":2,"b":1}'
     )
   })
 
-  it('hashObjectAsStr hashes numbers as strings', () => {
-    expect(Crypto.hashObjectAsStr(1)).toEqual(Crypto.hashStr('1'))
-    expect(Crypto.hashObjectAsStr(1)).not.toEqual(
-      Crypto.hashStr(Uint8Array.from([1]))
-    )
+  it('encodeObjectAsStr converts numbers to strings', () => {
+    expect(Crypto.encodeObjectAsStr(1)).toEqual('1')
   })
 
-  it('hashObjectAsStr hashes boolean as strings', () => {
-    expect(Crypto.hashObjectAsStr(true)).toEqual(Crypto.hashStr('true'))
-    expect(Crypto.hashObjectAsStr(false)).toEqual(Crypto.hashStr('false'))
+  it('encodeObjectAsStr converts boolean to strings', () => {
+    expect(Crypto.encodeObjectAsStr(true)).toEqual('true')
+    expect(Crypto.encodeObjectAsStr(false)).toEqual('false')
   })
 
   it('converts buffer to Uint8Array', () => {
     const testarray = [1, 2, 3, 4, 5]
-    expect(Crypto.coToUInt8(Buffer.from(testarray))).toMatchInlineSnapshot(`
-      Uint8Array [
-        1,
-        2,
-        3,
-        4,
-        5,
-      ]
-    `)
+    expect(Crypto.coToUInt8(Buffer.from(testarray))).toBeInstanceOf(Uint8Array)
     expect(Crypto.coToUInt8(Uint8Array.from(testarray))).toMatchInlineSnapshot(`
       Uint8Array [
         1,
@@ -129,9 +105,10 @@ describe('helper functions', () => {
     `)
     // with nonces
     hashed = Crypto.hashStatements(statements, {
-      nonces: digests.reduce<Record<string, string>>((p, n, i) => {
-        return { ...p, [n]: ['a', 'b', 'c'][i] }
-      }, {}),
+      nonces: digests.reduce<Record<string, string>>(
+        (p, n, i) => ({ ...p, [n]: ['a', 'b', 'c'][i] }),
+        {}
+      ),
     })
     expect(hashed.map((i) => i.digest)).toEqual(digests)
     expect(hashed.map((i) => i.saltedHash)).toMatchInlineSnapshot(`
@@ -141,82 +118,6 @@ describe('helper functions', () => {
         "0x4e31eef9054d0d8682707880a414b86fafaa963b19220d03273eae764ad0bc1d",
       ]
     `)
-  })
-})
-
-describe('Symmetric Crypto', () => {
-  let alice: KeyringPair
-  let alicePubKey: string
-  let bob: KeyringPair
-  let bobPubKey: string
-
-  beforeAll(async () => {
-    const keyring = new Keyring({
-      type: 'ed25519',
-      // KILT has registered the ss58 prefix 38
-      ss58Format: 38,
-    })
-    alice = keyring.addFromUri('//Alice')
-    alicePubKey = Crypto.u8aToHex(alice.publicKey)
-    bob = keyring.addFromUri('//Bob')
-    bobPubKey = Crypto.u8aToHex(bob.publicKey)
-  })
-
-  it('should sign and verify (UInt8Array)', () => {
-    const signature = Crypto.sign(message, alice)
-    expect(signature).not.toBeFalsy()
-    expect(Crypto.verify(message, signature, alice.address)).toBe(true)
-
-    expect(Crypto.verify(message, signature, bob.address)).toBe(false)
-    expect(
-      Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.address)
-    ).toBe(false)
-  })
-
-  it('should sign and verify (string)', () => {
-    const signature = Crypto.signStr(messageStr, alice)
-    expect(signature).not.toBeFalsy()
-    expect(Crypto.verify(messageStr, signature, alicePubKey)).toBe(true)
-
-    expect(Crypto.verify(messageStr, signature, bobPubKey)).toBe(false)
-    expect(Crypto.verify('0x000000', signature, alicePubKey)).toBe(false)
-  })
-
-  // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
-  it('should encrypt and decrypt symmetrical using random secret key (UInt8Array)', () => {
-    const secret = new Uint8Array([
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    ])
-    const data = Crypto.encryptSymmetric(message, secret)
-    expect(data).not.toBeFalsy()
-    expect(Crypto.decryptSymmetric(data, secret)).toEqual(message)
-    const dataWithNonce = Crypto.encryptSymmetric(message, secret, data.nonce)
-    expect(Crypto.decryptSymmetric(dataWithNonce, secret)).toEqual(message)
-  })
-
-  // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
-  it('should encrypt and decrypt symmetrical using random secret key (string)', () => {
-    const secret =
-      '0x000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F'
-
-    const data = Crypto.encryptSymmetricAsStr(messageStr, secret)
-    expect(data).not.toBeFalsy()
-    expect(Crypto.decryptSymmetricStr(data, secret)).toEqual(messageStr)
-    expect(
-      Crypto.decryptSymmetricStr(
-        { encrypted: '0x000102030405060708090A0B0C0D0E0F', nonce: data.nonce },
-        secret
-      )
-    ).toEqual(null)
-    const dataWithNonce = Crypto.encryptSymmetricAsStr(
-      messageStr,
-      secret,
-      data.nonce
-    )
-    expect(Crypto.decryptSymmetricStr(dataWithNonce, secret)).toEqual(
-      messageStr
-    )
   })
 })
 
