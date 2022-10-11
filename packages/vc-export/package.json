@@ -9,10 +9,6 @@
     ".": {
       "import": "./lib/esm/index.js",
       "require": "./lib/cjs/index.js"
-    },
-    "./constants": {
-      "import": "./lib/esm/constants.js",
-      "require": "./lib/cjs/constants.js"
     }
   },
   "files": [
