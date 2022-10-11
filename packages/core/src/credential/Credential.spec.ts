@@ -36,7 +36,6 @@ import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from './Credential'
-import { getCTypeHashFromId } from '../ctype'
 
 const testCType = CType.fromProperties('raw ctype', {
   name: { type: 'string' },
@@ -50,7 +49,7 @@ function buildCredential(
   // create claim
 
   const claim: IClaim = {
-    cTypeHash: getCTypeHashFromId(testCType.$id),
+    cTypeHash: CType.getCTypeHashFromId(testCType.$id),
     contents,
     owner: claimerDid,
   }

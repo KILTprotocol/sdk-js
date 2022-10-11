@@ -109,7 +109,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
-    const iAmNotThere: ICType = CType.fromProperties('ctype2', {
+    const iAmNotThere = CType.fromProperties('ctype2', {
       game: { type: 'string' },
     })
 

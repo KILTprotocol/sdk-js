@@ -132,7 +132,7 @@ describe('blank ctypes', () => {
 
 describe('CType verification', () => {
   const ctypeInput = {
-    $id: 'kilt:ctype:0xdeadbeef',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
     title: 'Ctype Title',
     properties: [
