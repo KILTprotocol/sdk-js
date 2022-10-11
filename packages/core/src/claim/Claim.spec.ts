@@ -153,7 +153,6 @@ describe('compute hashes & validate by reproducing them', () => {
 describe('Claim', () => {
   let did: DidUri
   let claimContents: any
-  let rawCType: ICType['schema']
   let testCType: ICType
   let claim: IClaim
 
@@ -164,24 +163,16 @@ describe('Claim', () => {
       name: 'Bob',
     }
 
-    rawCType = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'ClaimCtype',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    testCType = CType.fromSchema(rawCType)
+    testCType = CType.fromProperties('ClaimCtype', {
+      name: { type: 'string' },
+    })
 
     claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
   })
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
-    expect(() => Claim.verify(claimObj, testCType.schema)).not.toThrow()
+    expect(() => Claim.verify(claimObj, testCType)).not.toThrow()
   })
 
   it('allows falsy claim values', () => {
@@ -195,7 +186,7 @@ describe('Claim', () => {
   })
 
   it('should throw an error on faulty constructor input', () => {
-    const cTypeHash = testCType.hash
+    const cTypeHash = CType.idToHash(testCType.$id)
     const ownerAddress = did
 
     const everything = {

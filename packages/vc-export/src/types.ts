@@ -47,7 +47,7 @@ export interface CredentialDigestProof extends Proof {
 export interface CredentialSchema {
   '@id': string
   '@type': typeof JSON_SCHEMA_TYPE
-  schema: ICType['schema']
+  schema: ICType
   modelVersion?: string
   name?: string
   author?: string

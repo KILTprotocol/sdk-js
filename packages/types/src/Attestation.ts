@@ -6,13 +6,13 @@
  */
 
 import type { DidUri } from './DidDocument'
-import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { ICredential } from './Credential'
+import type { CTypeHash } from './CType'
 
 export interface IAttestation {
   claimHash: ICredential['rootHash']
-  cTypeHash: ICType['hash']
+  cTypeHash: CTypeHash
   owner: DidUri
   delegationId: IDelegationNode['id'] | null
   revoked: boolean

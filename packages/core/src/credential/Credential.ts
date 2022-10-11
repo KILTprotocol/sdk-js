@@ -202,7 +202,7 @@ export function verifyAgainstCType(
   ctype: ICType
 ): void {
   verifyDataStructure(credential)
-  verifyClaimAgainstSchema(credential.claim.contents, ctype.schema)
+  verifyClaimAgainstSchema(credential.claim.contents, ctype)
 }
 
 /**

@@ -65,25 +65,6 @@ export const CTypeModel: JsonSchema.Schema = {
   required: ['$id', 'title', '$schema', 'properties', 'type'],
 }
 
-export const CTypeWrapperModel = {
-  $id: 'http://kilt-protocol.org/draft-01/ctype-wrapper#',
-  $schema: 'http://json-schema.org/draft-07/schema#',
-  type: 'object',
-  properties: {
-    schema: {
-      type: 'object',
-      properties: CTypeModel.properties,
-      required: CTypeModel.required,
-    },
-    owner: { type: ['string', 'null'] },
-    hash: {
-      type: 'string',
-    },
-  },
-  additionalProperties: false,
-  required: ['schema', 'hash'],
-}
-
 export const MetadataModel = {
   $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -165,8 +146,8 @@ export const MetadataModel = {
       required: ['title', 'properties'],
       additionalProperties: false,
     },
-    ctypeHash: { type: 'string', minLength: 1 },
+    cTypeId: { type: 'string', minLength: 1 },
   },
-  required: ['metadata', 'ctypeHash'],
+  required: ['metadata', 'cTypeId'],
   additionalProperties: false,
 }

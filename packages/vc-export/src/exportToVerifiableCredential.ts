@@ -100,13 +100,11 @@ export function fromCredentialAndAttestation(
   // if ctype is given, add as credential schema
   let credentialSchema: CredentialSchema | undefined
   if (ctype) {
-    const { schema, owner } = ctype
     credentialSchema = {
-      '@id': schema.$id,
+      '@id': ctype.$id,
       '@type': JSON_SCHEMA_TYPE,
-      name: schema.title,
-      schema,
-      author: owner || undefined,
+      name: ctype.title,
+      schema: ctype,
     }
   }
 

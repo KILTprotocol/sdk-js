@@ -6,7 +6,6 @@
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { DidUri } from './DidDocument'
 
 export type InstanceType =
   | 'array'
@@ -17,20 +16,14 @@ export type InstanceType =
   | 'object'
   | 'string'
 
-export interface ICTypeSchema {
-  $id: string
+export type CTypeHash = HexString
+
+export interface ICType {
+  $id: `kilt:ctype:${CTypeHash}`
   $schema: string
   title: string
   properties: {
     [key: string]: { $ref?: string; type?: InstanceType; format?: string }
   }
   type: 'object'
-}
-
-export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
-
-export interface ICType {
-  hash: HexString
-  owner: DidUri | null
-  schema: ICTypeSchema
 }

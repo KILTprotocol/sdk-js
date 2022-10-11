@@ -38,8 +38,6 @@ export type DelegationHierarchyDetailsRecord = Pick<
   'cTypeHash'
 >
 
-export type CtypeHash = Hash
-
 export function delegationHierarchyDetailsFromChain(
   encoded: Option<DelegationDelegationHierarchyDelegationHierarchyDetails>
 ): DelegationHierarchyDetailsRecord {

@@ -5,9 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ICType } from './CType'
 import type { DidSignature, DidUri } from './DidDocument'
 import type { ICredential } from './Credential'
+import type { CTypeHash } from './CType'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>
@@ -16,7 +16,7 @@ export interface ICostBreakdown {
 }
 export interface IQuote {
   attesterDid: DidUri
-  cTypeHash: ICType['hash']
+  cTypeHash: CTypeHash
   cost: ICostBreakdown
   currency: string
   timeframe: string
