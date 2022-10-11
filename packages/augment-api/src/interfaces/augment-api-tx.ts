@@ -6,10 +6,10 @@
 import '@polkadot/api-base/types/submittable';
 
 import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableExtrinsicFunction } from '@polkadot/api-base/types';
-import type { Bytes, Compact, Option, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { Bytes, Compact, Option, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, Call, H256, MultiAddress, Perbill, Perquintill } from '@polkadot/types/interfaces/runtime';
-import type { CumulusPrimitivesParachainInherentParachainInherentData, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, FrameSupportScheduleMaybeHashed, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletDynFilterSettingFilterSettings, PalletVestingVestingInfo, RuntimeCommonAuthorizationPalletAuthorize, SpRuntimeHeader, SpRuntimeMultiSignature, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeSessionKeys, XcmV1MultiLocation, XcmV2WeightLimit, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
+import type { AccountId32, Call, H256, MultiAddress, Perbill, Weight } from '@polkadot/types/interfaces/runtime';
+import type { DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, MashnetNodeRuntimeOpaqueSessionKeys, MashnetNodeRuntimeOriginCaller, MashnetNodeRuntimeProxyType, PalletDidLookupAssociateAccountRequest, PalletDidLookupLinkableAccountLinkableAccountId, PublicCredentialsCredentialsCredential, RuntimeCommonAuthorizationPalletAuthorize, SpCoreVoid, SpFinalityGrandpaEquivocationProof, SpRuntimeHeader } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -94,6 +94,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       revoke: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
+      /**
+       * Transfer the storage deposit from one account to another.
+       * 
+       * If the currently required deposit is different, the new deposit
+       * value will be reserved.
+       * 
+       * The subject of the call must be the attester who issues the
+       * attestation. The sender of the call will be the new deposit owner.
+       **/
+      transferDeposit: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     authorship: {
       /**
@@ -185,157 +195,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * [`transfer`]: struct.Pallet.html#method.transfer
        **/
       transferKeepAlive: AugmentedSubmittable<(dest: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, Compact<u128>]>;
-    };
-    council: {
-      /**
-       * Close a vote that is either approved, disapproved or whose voting period has ended.
-       * 
-       * May be called by any signed account in order to finish voting and close the proposal.
-       * 
-       * If called before the end of the voting period it will only close the vote if it is
-       * has enough votes to be approved or disapproved.
-       * 
-       * If called after the end of the voting period abstentions are counted as rejections
-       * unless there is a prime member set and the prime member cast an approval.
-       * 
-       * If the close operation completes successfully with disapproval, the transaction fee will
-       * be waived. Otherwise execution of the approved operation will be charged to the caller.
-       * 
-       * + `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
-       * proposal.
-       * + `length_bound`: The upper bound for the length of the proposal in storage. Checked via
-       * `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(B + M + P1 + P2)` where:
-       * - `B` is `proposal` size in bytes (length-fee-bounded)
-       * - `M` is members-count (code- and governance-bounded)
-       * - `P1` is the complexity of `proposal` preimage.
-       * - `P2` is proposal-count (code-bounded)
-       * - DB:
-       * - 2 storage reads (`Members`: codec `O(M)`, `Prime`: codec `O(1)`)
-       * - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec
-       * `O(P2)`)
-       * - any mutations done while executing `proposal` (`P1`)
-       * - up to 3 events
-       * # </weight>
-       **/
-      close: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array, index: Compact<u32> | AnyNumber | Uint8Array, proposalWeightBound: Compact<u64> | AnyNumber | Uint8Array, lengthBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>, Compact<u64>, Compact<u32>]>;
-      /**
-       * Disapprove a proposal, close, and remove it from the system, regardless of its current
-       * state.
-       * 
-       * Must be called by the Root origin.
-       * 
-       * Parameters:
-       * * `proposal_hash`: The hash of the proposal that should be disapproved.
-       * 
-       * # <weight>
-       * Complexity: O(P) where P is the number of max proposals
-       * DB Weight:
-       * * Reads: Proposals
-       * * Writes: Voting, Proposals, ProposalOf
-       * # </weight>
-       **/
-      disapproveProposal: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Dispatch a proposal from a member using the `Member` origin.
-       * 
-       * Origin must be a member of the collective.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching
-       * `proposal`
-       * - DB: 1 read (codec `O(M)`) + DB access of `proposal`
-       * - 1 event
-       * # </weight>
-       **/
-      execute: AugmentedSubmittable<(proposal: Call | IMethod | string | Uint8Array, lengthBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, Compact<u32>]>;
-      /**
-       * Add a new proposal to either be voted on or executed directly.
-       * 
-       * Requires the sender to be member.
-       * 
-       * `threshold` determines whether `proposal` is executed directly (`threshold < 2`)
-       * or put up for voting.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(B + M + P1)` or `O(B + M + P2)` where:
-       * - `B` is `proposal` size in bytes (length-fee-bounded)
-       * - `M` is members-count (code- and governance-bounded)
-       * - branching is influenced by `threshold` where:
-       * - `P1` is proposal execution complexity (`threshold < 2`)
-       * - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
-       * - DB:
-       * - 1 storage read `is_member` (codec `O(M)`)
-       * - 1 storage read `ProposalOf::contains_key` (codec `O(1)`)
-       * - DB accesses influenced by `threshold`:
-       * - EITHER storage accesses done by `proposal` (`threshold < 2`)
-       * - OR proposal insertion (`threshold <= 2`)
-       * - 1 storage mutation `Proposals` (codec `O(P2)`)
-       * - 1 storage mutation `ProposalCount` (codec `O(1)`)
-       * - 1 storage write `ProposalOf` (codec `O(B)`)
-       * - 1 storage write `Voting` (codec `O(M)`)
-       * - 1 event
-       * # </weight>
-       **/
-      propose: AugmentedSubmittable<(threshold: Compact<u32> | AnyNumber | Uint8Array, proposal: Call | IMethod | string | Uint8Array, lengthBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, Call, Compact<u32>]>;
-      /**
-       * Set the collective's membership.
-       * 
-       * - `new_members`: The new member list. Be nice to the chain and provide it sorted.
-       * - `prime`: The prime member whose vote sets the default.
-       * - `old_count`: The upper bound for the previous number of members in storage. Used for
-       * weight estimation.
-       * 
-       * Requires root origin.
-       * 
-       * NOTE: Does not enforce the expected `MaxMembers` limit on the amount of members, but
-       * the weight estimations rely on it to estimate dispatchable weight.
-       * 
-       * # WARNING:
-       * 
-       * The `pallet-collective` can also be managed by logic outside of the pallet through the
-       * implementation of the trait [`ChangeMembers`].
-       * Any call to `set_members` must be careful that the member set doesn't get out of sync
-       * with other logic managing the member set.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(MP + N)` where:
-       * - `M` old-members-count (code- and governance-bounded)
-       * - `N` new-members-count (code- and governance-bounded)
-       * - `P` proposals-count (code-bounded)
-       * - DB:
-       * - 1 storage mutation (codec `O(M)` read, `O(N)` write) for reading and writing the
-       * members
-       * - 1 storage read (codec `O(P)`) for reading the proposals
-       * - `P` storage mutations (codec `O(M)`) for updating the votes for each proposal
-       * - 1 storage write (codec `O(1)`) for deleting the old `prime` and setting the new one
-       * # </weight>
-       **/
-      setMembers: AugmentedSubmittable<(newMembers: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], prime: Option<AccountId32> | null | Uint8Array | AccountId32 | string, oldCount: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>, Option<AccountId32>, u32]>;
-      /**
-       * Add an aye or nay vote for the sender to the given proposal.
-       * 
-       * Requires the sender to be a member.
-       * 
-       * Transaction fees will be waived if the member is voting on any particular proposal
-       * for the first time and the call is successful. Subsequent vote changes will charge a
-       * fee.
-       * # <weight>
-       * ## Weight
-       * - `O(M)` where `M` is members-count (code- and governance-bounded)
-       * - DB:
-       * - 1 storage read `Members` (codec `O(M)`)
-       * - 1 storage mutation `Voting` (codec `O(M)`)
-       * - 1 event
-       * # </weight>
-       **/
-      vote: AugmentedSubmittable<(proposal: H256 | string | Uint8Array, index: Compact<u32> | AnyNumber | Uint8Array, approve: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>, bool]>;
     };
     ctype: {
       /**
@@ -508,339 +367,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       revokeDelegation: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array, maxParentChecks: u32 | AnyNumber | Uint8Array, maxRevocations: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u32, u32]>;
-    };
-    democracy: {
       /**
-       * Permanently place a proposal into the blacklist. This prevents it from ever being
-       * proposed again.
+       * Transfer the storage deposit from one account to another.
        * 
-       * If called on a queued public or external proposal, then this will result in it being
-       * removed. If the `ref_index` supplied is an active referendum with the proposal hash,
-       * then it will be cancelled.
+       * If the currently required deposit is different, the new deposit
+       * value will be reserved.
        * 
-       * The dispatch origin of this call must be `BlacklistOrigin`.
-       * 
-       * - `proposal_hash`: The proposal hash to blacklist permanently.
-       * - `ref_index`: An ongoing referendum whose hash is `proposal_hash`, which will be
-       * cancelled.
-       * 
-       * Weight: `O(p)` (though as this is an high-privilege dispatch, we assume it has a
-       * reasonable value).
+       * The subject of the call must be the owner of the delegation node.
+       * The sender of the call will be the new deposit owner.
        **/
-      blacklist: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array, maybeRefIndex: Option<u32> | null | Uint8Array | u32 | AnyNumber) => SubmittableExtrinsic<ApiType>, [H256, Option<u32>]>;
-      /**
-       * Remove a proposal.
-       * 
-       * The dispatch origin of this call must be `CancelProposalOrigin`.
-       * 
-       * - `prop_index`: The index of the proposal to cancel.
-       * 
-       * Weight: `O(p)` where `p = PublicProps::<T>::decode_len()`
-       **/
-      cancelProposal: AugmentedSubmittable<(propIndex: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>]>;
-      /**
-       * Cancel a proposal queued for enactment.
-       * 
-       * The dispatch origin of this call must be _Root_.
-       * 
-       * - `which`: The index of the referendum to cancel.
-       * 
-       * Weight: `O(D)` where `D` is the items in the dispatch queue. Weighted as `D = 10`.
-       **/
-      cancelQueued: AugmentedSubmittable<(which: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      /**
-       * Remove a referendum.
-       * 
-       * The dispatch origin of this call must be _Root_.
-       * 
-       * - `ref_index`: The index of the referendum to cancel.
-       * 
-       * # Weight: `O(1)`.
-       **/
-      cancelReferendum: AugmentedSubmittable<(refIndex: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>]>;
-      /**
-       * Clears all public proposals.
-       * 
-       * The dispatch origin of this call must be _Root_.
-       * 
-       * Weight: `O(1)`.
-       **/
-      clearPublicProposals: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Delegate the voting power (with some given conviction) of the sending account.
-       * 
-       * The balance delegated is locked for as long as it's delegated, and thereafter for the
-       * time appropriate for the conviction's lock period.
-       * 
-       * The dispatch origin of this call must be _Signed_, and the signing account must either:
-       * - be delegating already; or
-       * - have no voting activity (if there is, then it will need to be removed/consolidated
-       * through `reap_vote` or `unvote`).
-       * 
-       * - `to`: The account whose voting the `target` account's voting power will follow.
-       * - `conviction`: The conviction that will be attached to the delegated votes. When the
-       * account is undelegated, the funds will be locked for the corresponding period.
-       * - `balance`: The amount of the account's balance to be used in delegating. This must not
-       * be more than the account's current balance.
-       * 
-       * Emits `Delegated`.
-       * 
-       * Weight: `O(R)` where R is the number of referendums the voter delegating to has
-       * voted on. Weight is charged as if maximum votes.
-       **/
-      delegate: AugmentedSubmittable<(to: AccountId32 | string | Uint8Array, conviction: PalletDemocracyConviction | 'None' | 'Locked1x' | 'Locked2x' | 'Locked3x' | 'Locked4x' | 'Locked5x' | 'Locked6x' | number | Uint8Array, balance: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletDemocracyConviction, u128]>;
-      /**
-       * Schedule an emergency cancellation of a referendum. Cannot happen twice to the same
-       * referendum.
-       * 
-       * The dispatch origin of this call must be `CancellationOrigin`.
-       * 
-       * -`ref_index`: The index of the referendum to cancel.
-       * 
-       * Weight: `O(1)`.
-       **/
-      emergencyCancel: AugmentedSubmittable<(refIndex: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      /**
-       * Enact a proposal from a referendum. For now we just make the weight be the maximum.
-       **/
-      enactProposal: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array, index: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u32]>;
-      /**
-       * Schedule a referendum to be tabled once it is legal to schedule an external
-       * referendum.
-       * 
-       * The dispatch origin of this call must be `ExternalOrigin`.
-       * 
-       * - `proposal_hash`: The preimage hash of the proposal.
-       * 
-       * Weight: `O(V)` with V number of vetoers in the blacklist of proposal.
-       * Decoding vec of length V. Charged as maximum
-       **/
-      externalPropose: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Schedule a negative-turnout-bias referendum to be tabled next once it is legal to
-       * schedule an external referendum.
-       * 
-       * The dispatch of this call must be `ExternalDefaultOrigin`.
-       * 
-       * - `proposal_hash`: The preimage hash of the proposal.
-       * 
-       * Unlike `external_propose`, blacklisting has no effect on this and it may replace a
-       * pre-scheduled `external_propose` call.
-       * 
-       * Weight: `O(1)`
-       **/
-      externalProposeDefault: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Schedule a majority-carries referendum to be tabled next once it is legal to schedule
-       * an external referendum.
-       * 
-       * The dispatch of this call must be `ExternalMajorityOrigin`.
-       * 
-       * - `proposal_hash`: The preimage hash of the proposal.
-       * 
-       * Unlike `external_propose`, blacklisting has no effect on this and it may replace a
-       * pre-scheduled `external_propose` call.
-       * 
-       * Weight: `O(1)`
-       **/
-      externalProposeMajority: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Schedule the currently externally-proposed majority-carries referendum to be tabled
-       * immediately. If there is no externally-proposed referendum currently, or if there is one
-       * but it is not a majority-carries referendum then it fails.
-       * 
-       * The dispatch of this call must be `FastTrackOrigin`.
-       * 
-       * - `proposal_hash`: The hash of the current external proposal.
-       * - `voting_period`: The period that is allowed for voting on this proposal.
-       * Must be always greater than zero.
-       * For `FastTrackOrigin` must be equal or greater than `FastTrackVotingPeriod`.
-       * - `delay`: The number of block after voting has ended in approval and this should be
-       * enacted. This doesn't have a minimum amount.
-       * 
-       * Emits `Started`.
-       * 
-       * Weight: `O(1)`
-       **/
-      fastTrack: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array, votingPeriod: u64 | AnyNumber | Uint8Array, delay: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u64, u64]>;
-      /**
-       * Register the preimage for an upcoming proposal. This requires the proposal to be
-       * in the dispatch queue. No deposit is needed. When this call is successful, i.e.
-       * the preimage has not been uploaded before and matches some imminent proposal,
-       * no fee is paid.
-       * 
-       * The dispatch origin of this call must be _Signed_.
-       * 
-       * - `encoded_proposal`: The preimage of a proposal.
-       * 
-       * Emits `PreimageNoted`.
-       * 
-       * Weight: `O(E)` with E size of `encoded_proposal` (protected by a required deposit).
-       **/
-      noteImminentPreimage: AugmentedSubmittable<(encodedProposal: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Same as `note_imminent_preimage` but origin is `OperationalPreimageOrigin`.
-       **/
-      noteImminentPreimageOperational: AugmentedSubmittable<(encodedProposal: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Register the preimage for an upcoming proposal. This doesn't require the proposal to be
-       * in the dispatch queue but does require a deposit, returned once enacted.
-       * 
-       * The dispatch origin of this call must be _Signed_.
-       * 
-       * - `encoded_proposal`: The preimage of a proposal.
-       * 
-       * Emits `PreimageNoted`.
-       * 
-       * Weight: `O(E)` with E size of `encoded_proposal` (protected by a required deposit).
-       **/
-      notePreimage: AugmentedSubmittable<(encodedProposal: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Same as `note_preimage` but origin is `OperationalPreimageOrigin`.
-       **/
-      notePreimageOperational: AugmentedSubmittable<(encodedProposal: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Propose a sensitive action to be taken.
-       * 
-       * The dispatch origin of this call must be _Signed_ and the sender must
-       * have funds to cover the deposit.
-       * 
-       * - `proposal_hash`: The hash of the proposal preimage.
-       * - `value`: The amount of deposit (must be at least `MinimumDeposit`).
-       * 
-       * Emits `Proposed`.
-       * 
-       * Weight: `O(p)`
-       **/
-      propose: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u128>]>;
-      /**
-       * Remove an expired proposal preimage and collect the deposit.
-       * 
-       * The dispatch origin of this call must be _Signed_.
-       * 
-       * - `proposal_hash`: The preimage hash of a proposal.
-       * - `proposal_length_upper_bound`: an upper bound on length of the proposal. Extrinsic is
-       * weighted according to this value with no refund.
-       * 
-       * This will only work after `VotingPeriod` blocks from the time that the preimage was
-       * noted, if it's the same account doing it. If it's a different account, then it'll only
-       * work an additional `EnactmentPeriod` later.
-       * 
-       * Emits `PreimageReaped`.
-       * 
-       * Weight: `O(D)` where D is length of proposal.
-       **/
-      reapPreimage: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array, proposalLenUpperBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>]>;
-      /**
-       * Remove a vote for a referendum.
-       * 
-       * If the `target` is equal to the signer, then this function is exactly equivalent to
-       * `remove_vote`. If not equal to the signer, then the vote must have expired,
-       * either because the referendum was cancelled, because the voter lost the referendum or
-       * because the conviction period is over.
-       * 
-       * The dispatch origin of this call must be _Signed_.
-       * 
-       * - `target`: The account of the vote to be removed; this account must have voted for
-       * referendum `index`.
-       * - `index`: The index of referendum of the vote to be removed.
-       * 
-       * Weight: `O(R + log R)` where R is the number of referenda that `target` has voted on.
-       * Weight is calculated for the maximum number of vote.
-       **/
-      removeOtherVote: AugmentedSubmittable<(target: AccountId32 | string | Uint8Array, index: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32]>;
-      /**
-       * Remove a vote for a referendum.
-       * 
-       * If:
-       * - the referendum was cancelled, or
-       * - the referendum is ongoing, or
-       * - the referendum has ended such that
-       * - the vote of the account was in opposition to the result; or
-       * - there was no conviction to the account's vote; or
-       * - the account made a split vote
-       * ...then the vote is removed cleanly and a following call to `unlock` may result in more
-       * funds being available.
-       * 
-       * If, however, the referendum has ended and:
-       * - it finished corresponding to the vote of the account, and
-       * - the account made a standard vote with conviction, and
-       * - the lock period of the conviction is not over
-       * ...then the lock will be aggregated into the overall account's lock, which may involve
-       * *overlocking* (where the two locks are combined into a single lock that is the maximum
-       * of both the amount locked and the time is it locked for).
-       * 
-       * The dispatch origin of this call must be _Signed_, and the signer must have a vote
-       * registered for referendum `index`.
-       * 
-       * - `index`: The index of referendum of the vote to be removed.
-       * 
-       * Weight: `O(R + log R)` where R is the number of referenda that `target` has voted on.
-       * Weight is calculated for the maximum number of vote.
-       **/
-      removeVote: AugmentedSubmittable<(index: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      /**
-       * Signals agreement with a particular proposal.
-       * 
-       * The dispatch origin of this call must be _Signed_ and the sender
-       * must have funds to cover the deposit, equal to the original deposit.
-       * 
-       * - `proposal`: The index of the proposal to second.
-       * - `seconds_upper_bound`: an upper bound on the current number of seconds on this
-       * proposal. Extrinsic is weighted according to this value with no refund.
-       * 
-       * Weight: `O(S)` where S is the number of seconds a proposal already has.
-       **/
-      second: AugmentedSubmittable<(proposal: Compact<u32> | AnyNumber | Uint8Array, secondsUpperBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, Compact<u32>]>;
-      /**
-       * Undelegate the voting power of the sending account.
-       * 
-       * Tokens may be unlocked following once an amount of time consistent with the lock period
-       * of the conviction with which the delegation was issued.
-       * 
-       * The dispatch origin of this call must be _Signed_ and the signing account must be
-       * currently delegating.
-       * 
-       * Emits `Undelegated`.
-       * 
-       * Weight: `O(R)` where R is the number of referendums the voter delegating to has
-       * voted on. Weight is charged as if maximum votes.
-       **/
-      undelegate: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Unlock tokens that have an expired lock.
-       * 
-       * The dispatch origin of this call must be _Signed_.
-       * 
-       * - `target`: The account to remove the lock on.
-       * 
-       * Weight: `O(R)` with R number of vote of target.
-       **/
-      unlock: AugmentedSubmittable<(target: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Veto and blacklist the external proposal hash.
-       * 
-       * The dispatch origin of this call must be `VetoOrigin`.
-       * 
-       * - `proposal_hash`: The preimage hash of the proposal to veto and blacklist.
-       * 
-       * Emits `Vetoed`.
-       * 
-       * Weight: `O(V + log(V))` where V is number of `existing vetoers`
-       **/
-      vetoExternal: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Vote in a referendum. If `vote.is_aye()`, the vote is to enact the proposal;
-       * otherwise it is a vote to keep the status quo.
-       * 
-       * The dispatch origin of this call must be _Signed_.
-       * 
-       * - `ref_index`: The index of the referendum to vote for.
-       * - `vote`: The vote configuration.
-       * 
-       * Weight: `O(R)` where R is the number of referendums the voter has voted on.
-       **/
-      vote: AugmentedSubmittable<(refIndex: Compact<u32> | AnyNumber | Uint8Array, vote: PalletDemocracyVoteAccountVote | { Standard: any } | { Split: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, PalletDemocracyVoteAccountVote]>;
+      transferDeposit: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     did: {
       /**
@@ -1122,6 +658,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       submitDidCall: AugmentedSubmittable<(didCall: DidDidDetailsDidAuthorizedCallOperation | { did?: any; txCounter?: any; call?: any; blockNumber?: any; submitter?: any } | string | Uint8Array, signature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidSignature]>;
+      /**
+       * Transfer the storage deposit from one account to another.
+       * 
+       * If the currently required deposit is different, the new deposit
+       * value will be reserved.
+       * 
+       * The subject of the call must be the did owner.
+       * The sender of the call will be the new deposit owner.
+       **/
+      transferDeposit: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
     };
     didLookup: {
       /**
@@ -1143,7 +689,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids + ConnectedAccounts
        * # </weight>
        **/
-      associateAccount: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array, proof: SpRuntimeMultiSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64, SpRuntimeMultiSignature]>;
+      associateAccount: AugmentedSubmittable<(req: PalletDidLookupAssociateAccountRequest | { Dotsama: any } | { Ethereum: any } | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupAssociateAccountRequest, u64]>;
       /**
        * Associate the sender of the call to the DID that authorized this
        * call.
@@ -1171,7 +717,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids
        * # </weight>
        **/
-      reclaimDeposit: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      reclaimDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
       /**
        * Remove the association of the provided account ID. This call doesn't
        * require the authorization of the account ID, but the associated DID
@@ -1185,7 +731,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids + ConnectedAccounts
        * # </weight>
        **/
-      removeAccountAssociation: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      removeAccountAssociation: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
       /**
        * Remove the association of the sender account. This call doesn't
        * require the authorization of the DID, but requires a signed origin.
@@ -1199,26 +745,52 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       removeSenderAssociation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-    };
-    dmpQueue: {
       /**
-       * Service a single overweight message.
+       * Transfer the storage deposit from one account to another.
        * 
-       * - `origin`: Must pass `ExecuteOverweightOrigin`.
-       * - `index`: The index of the overweight message to service.
-       * - `weight_limit`: The amount of weight that message execution may take.
+       * If the currently required deposit is different, the new deposit
+       * value will be reserved.
        * 
-       * Errors:
-       * - `Unknown`: Message of `index` is unknown.
-       * - `OverLimit`: Message execution may use greater than `weight_limit`.
-       * 
-       * Events:
-       * - `OverweightServiced`: On success.
+       * The subject of the call must be linked to the account.
+       * The sender of the call will be the new deposit owner.
        **/
-      serviceOverweight: AugmentedSubmittable<(index: u64 | AnyNumber | Uint8Array, weightLimit: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u64]>;
+      transferDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
     };
-    dynFilter: {
-      setFilter: AugmentedSubmittable<(filter: PalletDynFilterSettingFilterSettings | { transferDisabled?: any; featureDisabled?: any; xcmDisabled?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDynFilterSettingFilterSettings]>;
+    grandpa: {
+      /**
+       * Note that the current authority set of the GRANDPA finality gadget has stalled.
+       * 
+       * This will trigger a forced authority set change at the beginning of the next session, to
+       * be enacted `delay` blocks after that. The `delay` should be high enough to safely assume
+       * that the block signalling the forced change will not be re-orged e.g. 1000 blocks.
+       * The block production rate (which may be slowed down because of finality lagging) should
+       * be taken into account when choosing the `delay`. The GRANDPA voters based on the new
+       * authority will start voting on top of `best_finalized_block_number` for new finalized
+       * blocks. `best_finalized_block_number` should be the highest of the latest finalized
+       * block of all validators of the new authority set.
+       * 
+       * Only callable by root.
+       **/
+      noteStalled: AugmentedSubmittable<(delay: u64 | AnyNumber | Uint8Array, bestFinalizedBlockNumber: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u64]>;
+      /**
+       * Report voter equivocation/misbehavior. This method will verify the
+       * equivocation proof and validate the given key ownership proof
+       * against the extracted offender. If both are valid, the offence
+       * will be reported.
+       **/
+      reportEquivocation: AugmentedSubmittable<(equivocationProof: SpFinalityGrandpaEquivocationProof | { setId?: any; equivocation?: any } | string | Uint8Array, keyOwnerProof: SpCoreVoid | null) => SubmittableExtrinsic<ApiType>, [SpFinalityGrandpaEquivocationProof, SpCoreVoid]>;
+      /**
+       * Report voter equivocation/misbehavior. This method will verify the
+       * equivocation proof and validate the given key ownership proof
+       * against the extracted offender. If both are valid, the offence
+       * will be reported.
+       * 
+       * This extrinsic must be called unsigned and it is expected that only
+       * block authors will call it (validated in `ValidateUnsigned`), as such
+       * if the block author is defined it will be defined as the equivocation
+       * reporter.
+       **/
+      reportEquivocationUnsigned: AugmentedSubmittable<(equivocationProof: SpFinalityGrandpaEquivocationProof | { setId?: any; equivocation?: any } | string | Uint8Array, keyOwnerProof: SpCoreVoid | null) => SubmittableExtrinsic<ApiType>, [SpFinalityGrandpaEquivocationProof, SpCoreVoid]>;
     };
     indices: {
       /**
@@ -1265,7 +837,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Indices Accounts, System Account (original owner)
        * # </weight>
        **/
-      forceTransfer: AugmentedSubmittable<(updated: AccountId32 | string | Uint8Array, index: u64 | AnyNumber | Uint8Array, freeze: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64, bool]>;
+      forceTransfer: AugmentedSubmittable<(updated: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, index: u64 | AnyNumber | Uint8Array, freeze: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u64, bool]>;
       /**
        * Free up an index owned by the sender.
        * 
@@ -1330,665 +902,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: Indices Accounts, System Account (recipient)
        * # </weight>
        **/
-      transfer: AugmentedSubmittable<(updated: AccountId32 | string | Uint8Array, index: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64]>;
-    };
-    parachainStaking: {
-      /**
-       * Revert the previously requested exit of the network of a collator
-       * candidate. On success, adds back the candidate to the TopCandidates
-       * and updates the collators.
-       * 
-       * Requires the candidate to previously have called
-       * `init_leave_candidates`.
-       * 
-       * Emits `CollatorCanceledExit`.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], TotalCollatorStake, TopCandidates,
-       * CandidatePool
-       * - Writes: TotalCollatorStake, CandidatePool, TopCandidates
-       * # </weight>
-       **/
-      cancelLeaveCandidates: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Stake less funds for a collator candidate.
-       * 
-       * If the new amount of staked fund is not large enough, the account
-       * could be removed from the set of collator candidates and not be
-       * considered for authoring the next blocks.
-       * 
-       * This operation affects the pallet's total stake amount.
-       * 
-       * The unstaked funds are not released immediately to the account, but
-       * they will be available after `StakeDuration` blocks.
-       * 
-       * The resulting total amount of funds staked must be within the
-       * allowed range as set in the pallet's configuration.
-       * 
-       * Emits `CollatorStakedLess`.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], Unstaking, TopCandidates,
-       * MaxSelectedCandidates, CandidatePool
-       * - Writes: Unstaking, CandidatePool, TotalCollatorStake
-       * # </weight>
-       **/
-      candidateStakeLess: AugmentedSubmittable<(less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-      /**
-       * Stake more funds for a collator candidate.
-       * 
-       * If not in the set of candidates, staking enough funds allows the
-       * account to be added to it. The larger amount of funds, the higher
-       * chances to be selected as the author of the next block.
-       * 
-       * This operation affects the pallet's total stake amount.
-       * 
-       * The resulting total amount of funds staked must be within the
-       * allowed range as set in the pallet's configuration.
-       * 
-       * Emits `CollatorStakedMore`.
-       * 
-       * # <weight>
-       * Weight: O(N + D + U) where  where N is `MaxSelectedCandidates`
-       * bounded by `MaxTopCandidates`, D is the number of delegators for
-       * this candidate bounded by `MaxDelegatorsPerCollator` and U is the
-       * number of locked unstaking requests bounded by `MaxUnstakeRequests`.
-       * - Reads: [Origin Account], Locks, TotalCollatorStake,
-       * MaxCollatorCandidateStake, TopCandidates, CandidatePool
-       * - Writes: Locks, TotalCollatorStake, CandidatePool, TopCandidates
-       * # </weight>
-       **/
-      candidateStakeMore: AugmentedSubmittable<(more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-      /**
-       * Delegate another collator's candidate by staking some funds and
-       * increasing the pallet's as well as the collator's total stake.
-       * 
-       * The account that wants to delegate cannot be part of the collator
-       * candidates set as well.
-       * 
-       * The caller _must_ have delegated before. Otherwise,
-       * `join_delegators` should be called.
-       * 
-       * If the delegator has already delegated the maximum number of
-       * collator candidates, this operation will fail.
-       * 
-       * The amount staked must be larger than the minimum required to become
-       * a delegator as set in the pallet's configuration.
-       * 
-       * As only `MaxDelegatorsPerCollator` are allowed to delegate a given
-       * collator, the amount staked must be larger than the lowest one in
-       * the current set of delegator for the operation to be meaningful.
-       * 
-       * The collator's total stake as well as the pallet's total stake are
-       * increased accordingly.
-       * 
-       * NOTE: This transaction is expected to throw until we increase
-       * `MaxCollatorsPerDelegator` by at least one, since it is currently
-       * set to one.
-       * 
-       * Emits `Delegation`.
-       * Emits `DelegationReplaced` if the candidate has
-       * `MaxDelegatorsPerCollator` many delegations but this delegator
-       * staked more than one of the other delegators of this candidate.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], DelegatorState, TopCandidates,
-       * MaxSelectedCandidates, CandidatePool, LastDelegation, Round
-       * - Writes: Locks, CandidatePool, DelegatorState, TotalCollatorStake,
-       * LastDelegation
-       * # </weight>
-       **/
-      delegateAnotherCandidate: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
-      /**
-       * Reduce the stake for delegating a collator candidate.
-       * 
-       * If the new amount of staked fund is not large enough, the collator
-       * could be removed from the set of collator candidates and not be
-       * considered for authoring the next blocks.
-       * 
-       * The unstaked funds are not release immediately to the account, but
-       * they will be available after `StakeDuration` blocks.
-       * 
-       * The remaining staked funds must still be larger than the minimum
-       * required by this pallet to maintain the status of delegator.
-       * 
-       * The resulting total amount of funds staked must be within the
-       * allowed range as set in the pallet's configuration.
-       * 
-       * Emits `DelegatorStakedLess`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * TopCandidates, CandidatePool, MaxSelectedCandidates
-       * - Writes: Unstaking, DelegatorState, CandidatePool,
-       * TotalCollatorStake
-       * # </weight>
-       **/
-      delegatorStakeLess: AugmentedSubmittable<(candidate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
-      /**
-       * Increase the stake for delegating a collator candidate.
-       * 
-       * If not in the set of candidates, staking enough funds allows the
-       * collator candidate to be added to it.
-       * 
-       * Emits `DelegatorStakedMore`.
-       * 
-       * # <weight>
-       * Weight: O(N) + O(D) where N is `MaxSelectedCandidates` bounded
-       * by `MaxTopCandidates` and D the number of total delegators for
-       * this collator bounded by `MaxCollatorsPerDelegator`.
-       * bounded by `MaxUnstakeRequests`.
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * Locks, TopCandidates, CandidatePool, MaxSelectedCandidates
-       * - Writes: Unstaking, Locks, DelegatorState, CandidatePool,
-       * TotalCollatorStake
-       * # </weight>
-       **/
-      delegatorStakeMore: AugmentedSubmittable<(candidate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
-      /**
-       * Execute the network exit of a candidate who requested to leave at
-       * least `ExitQueueDelay` rounds ago. Prepares unstaking of the
-       * candidates and their delegators stake which can be unlocked via
-       * `unlock_unstaked` after waiting at least `StakeDuration` many
-       * blocks.
-       * 
-       * Requires the candidate to previously have called
-       * `init_leave_candidates`.
-       * 
-       * The exit request can be reversed by calling
-       * `cancel_leave_candidates`.
-       * 
-       * Emits `CollatorLeft`.
-       * 
-       * # <weight>
-       * Weight: O(N + D + U) where  where N is `MaxSelectedCandidates`
-       * bounded by `MaxTopCandidates`, D is the number of delegators for
-       * this candidate bounded by `MaxDelegatorsPerCollator` and U is the
-       * number of locked unstaking requests bounded by `MaxUnstakeRequests`.
-       * - Reads: CandidatePool, Round, D * DelegatorState, D
-       * * BlockNumber, D * Unstaking
-       * - Writes: D * Unstaking, D * DelegatorState, Total
-       * - Kills: CandidatePool, DelegatorState
-       * # </weight>
-       **/
-      executeLeaveCandidates: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
-      /**
-       * Forces the start of the new round in the next block.
-       * 
-       * The new round will be enforced via <T as
-       * ShouldEndSession<_>>::should_end_session.
-       * 
-       * The dispatch origin must be Root.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account]
-       * - Writes: ForceNewRound
-       * # </weight>
-       **/
-      forceNewRound: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Forcedly removes a collator candidate from the TopCandidates and
-       * clears all associated storage for the candidate and their
-       * delegators.
-       * 
-       * Prepares unstaking of the candidates and their delegators stake
-       * which can be unlocked via `unlock_unstaked` after waiting at
-       * least `StakeDuration` many blocks.
-       * 
-       * Emits `CandidateRemoved`.
-       * 
-       * # <weight>
-       * - The transaction's complexity is mainly dependent on updating the
-       * `SelectedCandidates` storage in `select_top_candidates` which in
-       * return depends on the number of `MaxSelectedCandidates` (N).
-       * - For each N, we read `CandidatePool` from the storage.
-       * ---------
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators of the
-       * collator candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: MaxCollatorCandidateStake, 2 * N * CandidatePool,
-       * TopCandidates, BlockNumber, D * DelegatorState, D * Unstaking
-       * - Writes: MaxCollatorCandidateStake, N * CandidatePool, D *
-       * DelegatorState, (D + 1) * Unstaking
-       * - Kills: CandidatePool, DelegatorState for all delegators which only
-       * delegated to the candidate
-       * # </weight>
-       **/
-      forceRemoveCandidate: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
-      /**
-       * Request to leave the set of collator candidates.
-       * 
-       * On success, the account is immediately removed from the candidate
-       * pool to prevent selection as a collator in future validation rounds,
-       * but unstaking of the funds is executed with a delay of
-       * `StakeDuration` blocks.
-       * 
-       * The exit request can be reversed by calling
-       * `cancel_leave_candidates`.
-       * 
-       * This operation affects the pallet's total stake amount. It is
-       * updated even though the funds of the candidate who signaled to leave
-       * are still locked for `ExitDelay` + `StakeDuration` more blocks.
-       * 
-       * NOTE: Upon starting a new session_i in `new_session`, the current
-       * top candidates are selected to be block authors for session_i+1. Any
-       * changes to the top candidates afterwards do not effect the set of
-       * authors for session_i+1.
-       * Thus, we have to make sure none of these collators can
-       * leave before session_i+1 ends by delaying their
-       * exit for `ExitDelay` many blocks.
-       * 
-       * Emits `CollatorScheduledExit`.
-       * 
-       * # <weight>
-       * - The transaction's complexity is mainly dependent on updating the
-       * `SelectedCandidates` storage in `select_top_candidates` which in
-       * return depends on the number of `MaxSelectedCandidates` (N).
-       * - For each N, we read `CandidatePool` from the storage.
-       * ---------
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], TopCandidates, (N + 1) * CandidatePool,
-       * TotalCollatorStake
-       * - Writes: CandidatePool, TopCandidates, TotalCollatorStake
-       * # </weight>
-       **/
-      initLeaveCandidates: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Join the set of collator candidates.
-       * 
-       * In the next blocks, if the collator candidate has enough funds
-       * staked to be included in any of the top `MaxSelectedCandidates`
-       * positions, it will be included in the set of potential authors that
-       * will be selected by the stake-weighted random selection function.
-       * 
-       * The staked funds of the new collator candidate are added to the
-       * total stake of the system.
-       * 
-       * The total amount of funds staked must be within the allowed range as
-       * set in the pallet's configuration.
-       * 
-       * The dispatch origin must not be already part of the collator
-       * candidates nor of the delegators set.
-       * 
-       * Emits `JoinedCollatorCandidates`.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], DelegatorState,
-       * MaxCollatorCandidateStake, Locks, TotalCollatorStake,
-       * TopCandidates, MaxSelectedCandidates, CandidatePool,
-       * - Writes: Locks, TotalCollatorStake, CandidatePool, TopCandidates,
-       * # </weight>
-       **/
-      joinCandidates: AugmentedSubmittable<(stake: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-      /**
-       * Join the set of delegators by delegating to a collator candidate.
-       * 
-       * The account that wants to delegate cannot be part of the collator
-       * candidates set as well.
-       * 
-       * The caller must _not_ have delegated before. Otherwise,
-       * `delegate_another_candidate` should be called.
-       * 
-       * The amount staked must be larger than the minimum required to become
-       * a delegator as set in the pallet's configuration.
-       * 
-       * As only `MaxDelegatorsPerCollator` are allowed to delegate a given
-       * collator, the amount staked must be larger than the lowest one in
-       * the current set of delegator for the operation to be meaningful.
-       * 
-       * The collator's total stake as well as the pallet's total stake are
-       * increased accordingly.
-       * 
-       * Emits `Delegation`.
-       * Emits `DelegationReplaced` if the candidate has
-       * `MaxDelegatorsPerCollator` many delegations but this delegator
-       * staked more than one of the other delegators of this candidate.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], DelegatorState, TopCandidates,
-       * MaxSelectedCandidates, CandidatePool, LastDelegation, Round
-       * - Writes: Locks, CandidatePool, DelegatorState, TotalCollatorStake,
-       * LastDelegation
-       * # </weight>
-       **/
-      joinDelegators: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
-      /**
-       * Leave the set of delegators and, by implication, revoke all ongoing
-       * delegations.
-       * 
-       * All staked funds are not unlocked immediately, but they are added to
-       * the queue of pending unstaking, and will effectively be released
-       * after `StakeDuration` blocks from the moment the delegator leaves.
-       * 
-       * This operation reduces the total stake of the pallet as well as the
-       * stakes of all collators that were delegated, potentially affecting
-       * their chances to be included in the set of candidates in the next
-       * rounds.
-       * 
-       * Emits `DelegatorLeft`.
-       * 
-       * # <weight>
-       * Weight: O(C) where C is the number of delegations for this delegator
-       * which is bounded by by `MaxCollatorsPerDelegator`.
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * TopCandidates, MaxSelectedCandidates, C * CandidatePool,
-       * - Writes: Unstaking, CandidatePool, TotalCollatorStake,
-       * - Kills: DelegatorState
-       * # </weight>
-       **/
-      leaveDelegators: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Terminates an ongoing delegation for a given collator candidate.
-       * 
-       * The staked funds are not unlocked immediately, but they are added to
-       * the queue of pending unstaking, and will effectively be released
-       * after `StakeDuration` blocks from the moment the delegation is
-       * terminated.
-       * 
-       * This operation reduces the total stake of the pallet as well as the
-       * stakes of the collator involved, potentially affecting its chances
-       * to be included in the set of candidates in the next rounds.
-       * 
-       * Emits `DelegatorLeft`.
-       * 
-       * # <weight>
-       * Weight: O(C) where C is the number of delegations for this delegator
-       * which is bounded by by `MaxCollatorsPerDelegator`.
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * Locks, TopCandidates, CandidatePool, MaxSelectedCandidates
-       * - Writes: Unstaking, Locks, DelegatorState, CandidatePool,
-       * TotalCollatorStake
-       * - Kills: DelegatorState if the delegator has not delegated to
-       * another collator
-       * # </weight>
-       **/
-      revokeDelegation: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
-      /**
-       * Set the number of blocks each validation round lasts.
-       * 
-       * If the new value is less than the length of the current round, the
-       * system will immediately move to the next round in the next block.
-       * 
-       * The new value must be higher than the minimum allowed as set in the
-       * pallet's configuration.
-       * 
-       * The dispatch origin must be Root.
-       * 
-       * Emits `BlocksPerRoundSet`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account], Round
-       * - Writes: Round
-       * # </weight>
-       **/
-      setBlocksPerRound: AugmentedSubmittable<(updated: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
-      /**
-       * Set the annual inflation rate to derive per-round inflation.
-       * 
-       * The inflation details are considered valid if the annual reward rate
-       * is approximately the per-block reward rate multiplied by the
-       * estimated* total number of blocks per year.
-       * 
-       * The estimated average block time is twelve seconds.
-       * 
-       * The dispatch origin must be Root.
-       * 
-       * Emits `RoundInflationSet`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account]
-       * - Writes: InflationConfig
-       * # </weight>
-       **/
-      setInflation: AugmentedSubmittable<(collatorMaxRatePercentage: Perquintill | AnyNumber | Uint8Array, collatorAnnualRewardRatePercentage: Perquintill | AnyNumber | Uint8Array, delegatorMaxRatePercentage: Perquintill | AnyNumber | Uint8Array, delegatorAnnualRewardRatePercentage: Perquintill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Perquintill, Perquintill, Perquintill, Perquintill]>;
-      /**
-       * Set the maximal amount a collator can stake. Existing stakes are not
-       * changed.
-       * 
-       * The dispatch origin must be Root.
-       * 
-       * Emits `MaxCandidateStakeChanged`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account], MaxCollatorCandidateStake
-       * - Writes: Round
-       * # </weight>
-       **/
-      setMaxCandidateStake: AugmentedSubmittable<(updated: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-      /**
-       * Set the maximum number of collator candidates that can be selected
-       * at the beginning of each validation round.
-       * 
-       * Changes are not applied until the start of the next round.
-       * 
-       * The new value must be higher than the minimum allowed as set in the
-       * pallet's configuration.
-       * 
-       * The dispatch origin must be Root.
-       * 
-       * Emits `MaxSelectedCandidatesSet`.
-       * 
-       * 
-       * # <weight>
-       * - The transaction's complexity is mainly dependent on updating the
-       * `SelectedCandidates` storage in `select_top_candidates` which in
-       * return depends on the number of `MaxSelectedCandidates` (N).
-       * - For each N, we read `CandidatePool` from the storage.
-       * ---------
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators of a
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: MaxSelectedCandidates, TopCandidates, N * CandidatePool
-       * - Writes: MaxSelectedCandidates
-       * # </weight>
-       **/
-      setMaxSelectedCandidates: AugmentedSubmittable<(updated: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      /**
-       * Unlock all previously staked funds that are now available for
-       * unlocking by the origin account after `StakeDuration` blocks have
-       * elapsed.
-       * 
-       * Weight: O(U) where U is the number of locked unstaking requests
-       * bounded by `MaxUnstakeRequests`.
-       * - Reads: [Origin Account], Unstaking, Locks
-       * - Writes: Unstaking, Locks
-       * - Kills: Unstaking & Locks if no balance is locked anymore
-       * # </weight>
-       **/
-      unlockUnstaked: AugmentedSubmittable<(target: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
-    };
-    parachainSystem: {
-      authorizeUpgrade: AugmentedSubmittable<(codeHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      enactAuthorizedUpgrade: AugmentedSubmittable<(code: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Set the current validation data.
-       * 
-       * This should be invoked exactly once per block. It will panic at the finalization
-       * phase if the call was not invoked.
-       * 
-       * The dispatch origin for this call must be `Inherent`
-       * 
-       * As a side effect, this function upgrades the current validation function
-       * if the appropriate time has come.
-       **/
-      setValidationData: AugmentedSubmittable<(data: CumulusPrimitivesParachainInherentParachainInherentData | { validationData?: any; relayChainState?: any; downwardMessages?: any; horizontalMessages?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CumulusPrimitivesParachainInherentParachainInherentData]>;
-      sudoSendUpwardMessage: AugmentedSubmittable<(message: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-    };
-    polkadotXcm: {
-      /**
-       * Execute an XCM message from a local, signed, origin.
-       * 
-       * An event is deposited indicating whether `msg` could be executed completely or only
-       * partially.
-       * 
-       * No more than `max_weight` will be used in its attempted execution. If this is less than the
-       * maximum amount of weight that the message could take to be executed, then no execution
-       * attempt will be made.
-       * 
-       * NOTE: A successful return to this does *not* imply that the `msg` was executed successfully
-       * to completion; only that *some* of it was executed.
-       **/
-      execute: AugmentedSubmittable<(message: XcmVersionedXcm | { V0: any } | { V1: any } | { V2: any } | string | Uint8Array, maxWeight: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedXcm, u64]>;
-      /**
-       * Set a safe XCM version (the version that XCM should be encoded with if the most recent
-       * version a destination can accept is unknown).
-       * 
-       * - `origin`: Must be Root.
-       * - `maybe_xcm_version`: The default XCM encoding version, or `None` to disable.
-       **/
-      forceDefaultXcmVersion: AugmentedSubmittable<(maybeXcmVersion: Option<u32> | null | Uint8Array | u32 | AnyNumber) => SubmittableExtrinsic<ApiType>, [Option<u32>]>;
-      /**
-       * Ask a location to notify us regarding their XCM version and any changes to it.
-       * 
-       * - `origin`: Must be Root.
-       * - `location`: The location to which we should subscribe for XCM version notifications.
-       **/
-      forceSubscribeVersionNotify: AugmentedSubmittable<(location: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation]>;
-      /**
-       * Require that a particular destination should no longer notify us regarding any XCM
-       * version changes.
-       * 
-       * - `origin`: Must be Root.
-       * - `location`: The location to which we are currently subscribed for XCM version
-       * notifications which we no longer desire.
-       **/
-      forceUnsubscribeVersionNotify: AugmentedSubmittable<(location: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation]>;
-      /**
-       * Extoll that a particular destination can be communicated with through a particular
-       * version of XCM.
-       * 
-       * - `origin`: Must be Root.
-       * - `location`: The destination that is being described.
-       * - `xcm_version`: The latest version of XCM that `location` supports.
-       **/
-      forceXcmVersion: AugmentedSubmittable<(location: XcmV1MultiLocation | { parents?: any; interior?: any } | string | Uint8Array, xcmVersion: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmV1MultiLocation, u32]>;
-      /**
-       * Transfer some assets from the local chain to the sovereign account of a destination
-       * chain and forward a notification XCM.
-       * 
-       * Fee payment on the destination side is made from the asset in the `assets` vector of
-       * index `fee_asset_item`, up to enough to pay for `weight_limit` of weight. If more weight
-       * is needed than `weight_limit`, then the operation will fail and the assets send may be
-       * at risk.
-       * 
-       * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
-       * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
-       * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
-       * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
-       * an `AccountId32` value.
-       * - `assets`: The assets to be withdrawn. This should include the assets used to pay the fee on the
-       * `dest` side.
-       * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
-       * fees.
-       * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
-       **/
-      limitedReserveTransferAssets: AugmentedSubmittable<(dest: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, beneficiary: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, assets: XcmVersionedMultiAssets | { V0: any } | { V1: any } | string | Uint8Array, feeAssetItem: u32 | AnyNumber | Uint8Array, weightLimit: XcmV2WeightLimit | { Unlimited: any } | { Limited: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation, XcmVersionedMultiLocation, XcmVersionedMultiAssets, u32, XcmV2WeightLimit]>;
-      /**
-       * Teleport some assets from the local chain to some destination chain.
-       * 
-       * Fee payment on the destination side is made from the asset in the `assets` vector of
-       * index `fee_asset_item`, up to enough to pay for `weight_limit` of weight. If more weight
-       * is needed than `weight_limit`, then the operation will fail and the assets send may be
-       * at risk.
-       * 
-       * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
-       * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
-       * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
-       * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
-       * an `AccountId32` value.
-       * - `assets`: The assets to be withdrawn. The first item should be the currency used to to pay the fee on the
-       * `dest` side. May not be empty.
-       * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
-       * fees.
-       * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
-       **/
-      limitedTeleportAssets: AugmentedSubmittable<(dest: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, beneficiary: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, assets: XcmVersionedMultiAssets | { V0: any } | { V1: any } | string | Uint8Array, feeAssetItem: u32 | AnyNumber | Uint8Array, weightLimit: XcmV2WeightLimit | { Unlimited: any } | { Limited: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation, XcmVersionedMultiLocation, XcmVersionedMultiAssets, u32, XcmV2WeightLimit]>;
-      /**
-       * Transfer some assets from the local chain to the sovereign account of a destination
-       * chain and forward a notification XCM.
-       * 
-       * Fee payment on the destination side is made from the asset in the `assets` vector of
-       * index `fee_asset_item`. The weight limit for fees is not provided and thus is unlimited,
-       * with all fees taken as needed from the asset.
-       * 
-       * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
-       * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
-       * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
-       * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
-       * an `AccountId32` value.
-       * - `assets`: The assets to be withdrawn. This should include the assets used to pay the fee on the
-       * `dest` side.
-       * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
-       * fees.
-       **/
-      reserveTransferAssets: AugmentedSubmittable<(dest: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, beneficiary: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, assets: XcmVersionedMultiAssets | { V0: any } | { V1: any } | string | Uint8Array, feeAssetItem: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation, XcmVersionedMultiLocation, XcmVersionedMultiAssets, u32]>;
-      send: AugmentedSubmittable<(dest: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, message: XcmVersionedXcm | { V0: any } | { V1: any } | { V2: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation, XcmVersionedXcm]>;
-      /**
-       * Teleport some assets from the local chain to some destination chain.
-       * 
-       * Fee payment on the destination side is made from the asset in the `assets` vector of
-       * index `fee_asset_item`. The weight limit for fees is not provided and thus is unlimited,
-       * with all fees taken as needed from the asset.
-       * 
-       * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
-       * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
-       * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
-       * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
-       * an `AccountId32` value.
-       * - `assets`: The assets to be withdrawn. The first item should be the currency used to to pay the fee on the
-       * `dest` side. May not be empty.
-       * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
-       * fees.
-       **/
-      teleportAssets: AugmentedSubmittable<(dest: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, beneficiary: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, assets: XcmVersionedMultiAssets | { V0: any } | { V1: any } | string | Uint8Array, feeAssetItem: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation, XcmVersionedMultiLocation, XcmVersionedMultiAssets, u32]>;
-    };
-    preimage: {
-      /**
-       * Register a preimage on-chain.
-       * 
-       * If the preimage was previously requested, no fees or deposits are taken for providing
-       * the preimage. Otherwise, a deposit is taken proportional to the size of the preimage.
-       **/
-      notePreimage: AugmentedSubmittable<(bytes: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Request a preimage be uploaded to the chain without paying any fees or deposits.
-       * 
-       * If the preimage requests has already been provided on-chain, we unreserve any deposit
-       * a user may have paid, and take the control of the preimage out of their hands.
-       **/
-      requestPreimage: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Clear an unrequested preimage from the runtime storage.
-       **/
-      unnotePreimage: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Clear a previously made request for a preimage.
-       * 
-       * NOTE: THIS MUST NOT BE CALLED ON `hash` MORE TIMES THAN `request_preimage`.
-       **/
-      unrequestPreimage: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      transfer: AugmentedSubmittable<(updated: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, index: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u64]>;
     };
     proxy: {
       /**
@@ -2006,7 +920,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * Weight is a function of the number of proxies the user has (P).
        * # </weight>
        **/
-      addProxy: AugmentedSubmittable<(delegate: AccountId32 | string | Uint8Array, proxyType: SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, SpiritnetRuntimeProxyType, u64]>;
+      addProxy: AugmentedSubmittable<(delegate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, proxyType: MashnetNodeRuntimeProxyType | 'Any' | 'NonTransfer' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, MashnetNodeRuntimeProxyType, u64]>;
       /**
        * Publish the hash of a proxy-call that will be made in the future.
        * 
@@ -2030,7 +944,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - P: the number of proxies the user has.
        * # </weight>
        **/
-      announce: AugmentedSubmittable<(real: AccountId32 | string | Uint8Array, callHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, H256]>;
+      announce: AugmentedSubmittable<(real: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, callHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, H256]>;
       /**
        * Spawn a fresh new account that is guaranteed to be otherwise inaccessible, and
        * initialize it with a proxy of `proxy_type` for `origin` sender.
@@ -2056,7 +970,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        * TODO: Might be over counting 1 read
        **/
-      anonymous: AugmentedSubmittable<(proxyType: SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array, index: u16 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpiritnetRuntimeProxyType, u64, u16]>;
+      anonymous: AugmentedSubmittable<(proxyType: MashnetNodeRuntimeProxyType | 'Any' | 'NonTransfer' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array, index: u16 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MashnetNodeRuntimeProxyType, u64, u16]>;
       /**
        * Removes a previously spawned anonymous proxy.
        * 
@@ -2079,7 +993,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * Weight is a function of the number of proxies the user has (P).
        * # </weight>
        **/
-      killAnonymous: AugmentedSubmittable<(spawner: AccountId32 | string | Uint8Array, proxyType: SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, index: u16 | AnyNumber | Uint8Array, height: Compact<u64> | AnyNumber | Uint8Array, extIndex: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, SpiritnetRuntimeProxyType, u16, Compact<u64>, Compact<u32>]>;
+      killAnonymous: AugmentedSubmittable<(spawner: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, proxyType: MashnetNodeRuntimeProxyType | 'Any' | 'NonTransfer' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, index: u16 | AnyNumber | Uint8Array, height: Compact<u64> | AnyNumber | Uint8Array, extIndex: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, MashnetNodeRuntimeProxyType, u16, Compact<u64>, Compact<u32>]>;
       /**
        * Dispatch the given `call` from an account that the sender is authorised for through
        * `add_proxy`.
@@ -2097,7 +1011,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * Weight is a function of the number of proxies the user has (P).
        * # </weight>
        **/
-      proxy: AugmentedSubmittable<(real: AccountId32 | string | Uint8Array, forceProxyType: Option<SpiritnetRuntimeProxyType> | null | Uint8Array | SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Option<SpiritnetRuntimeProxyType>, Call]>;
+      proxy: AugmentedSubmittable<(real: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, forceProxyType: Option<MashnetNodeRuntimeProxyType> | null | Uint8Array | MashnetNodeRuntimeProxyType | 'Any' | 'NonTransfer' | 'CancelProxy' | 'NonDepositClaiming' | number, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, Option<MashnetNodeRuntimeProxyType>, Call]>;
       /**
        * Dispatch the given `call` from an account that the sender is authorized for through
        * `add_proxy`.
@@ -2117,7 +1031,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - P: the number of proxies the user has.
        * # </weight>
        **/
-      proxyAnnounced: AugmentedSubmittable<(delegate: AccountId32 | string | Uint8Array, real: AccountId32 | string | Uint8Array, forceProxyType: Option<SpiritnetRuntimeProxyType> | null | Uint8Array | SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Option<SpiritnetRuntimeProxyType>, Call]>;
+      proxyAnnounced: AugmentedSubmittable<(delegate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, real: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, forceProxyType: Option<MashnetNodeRuntimeProxyType> | null | Uint8Array | MashnetNodeRuntimeProxyType | 'Any' | 'NonTransfer' | 'CancelProxy' | 'NonDepositClaiming' | number, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, MultiAddress, Option<MashnetNodeRuntimeProxyType>, Call]>;
       /**
        * Remove the given announcement of a delegate.
        * 
@@ -2136,7 +1050,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - P: the number of proxies the user has.
        * # </weight>
        **/
-      rejectAnnouncement: AugmentedSubmittable<(delegate: AccountId32 | string | Uint8Array, callHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, H256]>;
+      rejectAnnouncement: AugmentedSubmittable<(delegate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, callHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, H256]>;
       /**
        * Remove a given announcement.
        * 
@@ -2155,7 +1069,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - P: the number of proxies the user has.
        * # </weight>
        **/
-      removeAnnouncement: AugmentedSubmittable<(real: AccountId32 | string | Uint8Array, callHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, H256]>;
+      removeAnnouncement: AugmentedSubmittable<(real: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, callHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, H256]>;
       /**
        * Unregister all proxy accounts for the sender.
        * 
@@ -2182,62 +1096,82 @@ declare module '@polkadot/api-base/types/submittable' {
        * Weight is a function of the number of proxies the user has (P).
        * # </weight>
        **/
-      removeProxy: AugmentedSubmittable<(delegate: AccountId32 | string | Uint8Array, proxyType: SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, SpiritnetRuntimeProxyType, u64]>;
+      removeProxy: AugmentedSubmittable<(delegate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, proxyType: MashnetNodeRuntimeProxyType | 'Any' | 'NonTransfer' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, MashnetNodeRuntimeProxyType, u64]>;
     };
-    relayMigration: {
+    publicCredentials: {
       /**
-       * Set the associated relay block number to be AnyRelayNumber.
+       * Register a new public credential on chain.
        * 
-       * Has to be done pre migration.
-       **/
-      disableStrictRelayNumberCheck: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Set the associated relay block number to be
-       * RelayNumberStrictlyIncreases.
+       * This function fails if a credential with the same identifier already
+       * exists for the specified subject.
        * 
-       * Has to be done post migration.
+       * Emits `CredentialStored`.
        **/
-      enableStrictRelayNumberCheck: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      add: AugmentedSubmittable<(credential: PublicCredentialsCredentialsCredential | { ctypeHash?: any; subject?: any; claims?: any; authorization?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PublicCredentialsCredentialsCredential]>;
       /**
-       * Set an XCM call to the relay chain.
+       * Removes the information pertaining a public credential from the
+       * chain and returns the deposit to its payer.
        * 
-       * Has to be done pre migration.
-       **/
-      sendSwapCallBytes: AugmentedSubmittable<(relayCall: Bytes | string | Uint8Array, relayBalance: u128 | AnyNumber | Uint8Array, maxWeight: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u128, u64]>;
-    };
-    scheduler: {
-      /**
-       * Cancel an anonymously scheduled task.
-       **/
-      cancel: AugmentedSubmittable<(when: u64 | AnyNumber | Uint8Array, index: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u32]>;
-      /**
-       * Cancel a named scheduled task.
-       **/
-      cancelNamed: AugmentedSubmittable<(id: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Anonymously schedule a task.
-       **/
-      schedule: AugmentedSubmittable<(when: u64 | AnyNumber | Uint8Array, maybePeriodic: Option<ITuple<[u64, u32]>> | null | Uint8Array | ITuple<[u64, u32]> | [u64 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], priority: u8 | AnyNumber | Uint8Array, call: FrameSupportScheduleMaybeHashed | { Value: any } | { Hash: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, Option<ITuple<[u64, u32]>>, u8, FrameSupportScheduleMaybeHashed]>;
-      /**
-       * Anonymously schedule a task after a delay.
+       * The removal of the credential does not delete it entirely from the
+       * blockchain history, but only its link *from* the blockchain state
+       * *to* the blockchain history is removed.
        * 
-       * # <weight>
-       * Same as [`schedule`].
-       * # </weight>
-       **/
-      scheduleAfter: AugmentedSubmittable<(after: u64 | AnyNumber | Uint8Array, maybePeriodic: Option<ITuple<[u64, u32]>> | null | Uint8Array | ITuple<[u64, u32]> | [u64 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], priority: u8 | AnyNumber | Uint8Array, call: FrameSupportScheduleMaybeHashed | { Value: any } | { Hash: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, Option<ITuple<[u64, u32]>>, u8, FrameSupportScheduleMaybeHashed]>;
-      /**
-       * Schedule a named task.
-       **/
-      scheduleNamed: AugmentedSubmittable<(id: Bytes | string | Uint8Array, when: u64 | AnyNumber | Uint8Array, maybePeriodic: Option<ITuple<[u64, u32]>> | null | Uint8Array | ITuple<[u64, u32]> | [u64 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], priority: u8 | AnyNumber | Uint8Array, call: FrameSupportScheduleMaybeHashed | { Value: any } | { Hash: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u64, Option<ITuple<[u64, u32]>>, u8, FrameSupportScheduleMaybeHashed]>;
-      /**
-       * Schedule a named task after a delay.
+       * Clients parsing public credentials should interpret
+       * the lack of such a link as the fact that the credential has been
+       * removed by its attester some time in the past.
        * 
-       * # <weight>
-       * Same as [`schedule_named`](Self::schedule_named).
-       * # </weight>
+       * This function fails if a credential already exists for the specified
+       * subject.
+       * 
+       * The dispatch origin must be the owner of the deposit, hence not the
+       * credential's attester.
+       * 
+       * Emits `CredentialRemoved`.
        **/
-      scheduleNamedAfter: AugmentedSubmittable<(id: Bytes | string | Uint8Array, after: u64 | AnyNumber | Uint8Array, maybePeriodic: Option<ITuple<[u64, u32]>> | null | Uint8Array | ITuple<[u64, u32]> | [u64 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], priority: u8 | AnyNumber | Uint8Array, call: FrameSupportScheduleMaybeHashed | { Value: any } | { Hash: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u64, Option<ITuple<[u64, u32]>>, u8, FrameSupportScheduleMaybeHashed]>;
+      reclaimDeposit: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Removes the information pertaining a public credential from the
+       * chain.
+       * 
+       * The removal of the credential does not delete it entirely from the
+       * blockchain history, but only its link *from* the blockchain state
+       * *to* the blockchain history is removed.
+       * 
+       * Clients parsing public credentials should interpret
+       * the lack of such a link as the fact that the credential has been
+       * removed by its attester some time in the past.
+       * 
+       * This function fails if a credential already exists for the specified
+       * subject.
+       * 
+       * The dispatch origin must be authorized to remove the credential.
+       * 
+       * Emits `CredentialRemoved`.
+       **/
+      remove: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
+      /**
+       * Revokes a public credential.
+       * 
+       * If a credential was already revoked, this function does not fail but
+       * simply results in a noop.
+       * 
+       * The dispatch origin must be authorized to revoke the credential.
+       * 
+       * Emits `CredentialRevoked`.
+       **/
+      revoke: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
+      /**
+       * Unrevokes a public credential.
+       * 
+       * If a credential was not revoked, this function does not fail but
+       * simply results in a noop.
+       * 
+       * The dispatch origin must be authorized to unrevoke the
+       * credential.
+       * 
+       * Emits `CredentialUnrevoked`.
+       **/
+      unrevoke: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
     };
     session: {
       /**
@@ -2275,7 +1209,62 @@ declare module '@polkadot/api-base/types/submittable' {
        * - DbWrites per key id: `KeyOwner`
        * # </weight>
        **/
-      setKeys: AugmentedSubmittable<(keys: SpiritnetRuntimeSessionKeys | { aura?: any } | string | Uint8Array, proof: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpiritnetRuntimeSessionKeys, Bytes]>;
+      setKeys: AugmentedSubmittable<(keys: MashnetNodeRuntimeOpaqueSessionKeys | { aura?: any; grandpa?: any } | string | Uint8Array, proof: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MashnetNodeRuntimeOpaqueSessionKeys, Bytes]>;
+    };
+    sudo: {
+      /**
+       * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
+       * key.
+       * 
+       * The dispatch origin for this call must be _Signed_.
+       * 
+       * # <weight>
+       * - O(1).
+       * - Limited storage reads.
+       * - One DB change.
+       * # </weight>
+       **/
+      setKey: AugmentedSubmittable<(updated: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
+      /**
+       * Authenticates the sudo key and dispatches a function call with `Root` origin.
+       * 
+       * The dispatch origin for this call must be _Signed_.
+       * 
+       * # <weight>
+       * - O(1).
+       * - Limited storage reads.
+       * - One DB write (event).
+       * - Weight of derivative `call` execution + 10,000.
+       * # </weight>
+       **/
+      sudo: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call]>;
+      /**
+       * Authenticates the sudo key and dispatches a function call with `Signed` origin from
+       * a given account.
+       * 
+       * The dispatch origin for this call must be _Signed_.
+       * 
+       * # <weight>
+       * - O(1).
+       * - Limited storage reads.
+       * - One DB write (event).
+       * - Weight of derivative `call` execution + 10,000.
+       * # </weight>
+       **/
+      sudoAs: AugmentedSubmittable<(who: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, Call]>;
+      /**
+       * Authenticates the sudo key and dispatches a function call with `Root` origin.
+       * This function does not check the weight of the call, and instead allows the
+       * Sudo user to specify the weight of the call.
+       * 
+       * The dispatch origin for this call must be _Signed_.
+       * 
+       * # <weight>
+       * - O(1).
+       * - The weight of this call is defined by the caller.
+       * # </weight>
+       **/
+      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: Weight | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, Weight]>;
     };
     system: {
       /**
@@ -2341,206 +1330,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       setStorage: AugmentedSubmittable<(items: Vec<ITuple<[Bytes, Bytes]>> | ([Bytes | string | Uint8Array, Bytes | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[Bytes, Bytes]>>]>;
     };
-    technicalCommittee: {
-      /**
-       * Close a vote that is either approved, disapproved or whose voting period has ended.
-       * 
-       * May be called by any signed account in order to finish voting and close the proposal.
-       * 
-       * If called before the end of the voting period it will only close the vote if it is
-       * has enough votes to be approved or disapproved.
-       * 
-       * If called after the end of the voting period abstentions are counted as rejections
-       * unless there is a prime member set and the prime member cast an approval.
-       * 
-       * If the close operation completes successfully with disapproval, the transaction fee will
-       * be waived. Otherwise execution of the approved operation will be charged to the caller.
-       * 
-       * + `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
-       * proposal.
-       * + `length_bound`: The upper bound for the length of the proposal in storage. Checked via
-       * `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(B + M + P1 + P2)` where:
-       * - `B` is `proposal` size in bytes (length-fee-bounded)
-       * - `M` is members-count (code- and governance-bounded)
-       * - `P1` is the complexity of `proposal` preimage.
-       * - `P2` is proposal-count (code-bounded)
-       * - DB:
-       * - 2 storage reads (`Members`: codec `O(M)`, `Prime`: codec `O(1)`)
-       * - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec
-       * `O(P2)`)
-       * - any mutations done while executing `proposal` (`P1`)
-       * - up to 3 events
-       * # </weight>
-       **/
-      close: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array, index: Compact<u32> | AnyNumber | Uint8Array, proposalWeightBound: Compact<u64> | AnyNumber | Uint8Array, lengthBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>, Compact<u64>, Compact<u32>]>;
-      /**
-       * Disapprove a proposal, close, and remove it from the system, regardless of its current
-       * state.
-       * 
-       * Must be called by the Root origin.
-       * 
-       * Parameters:
-       * * `proposal_hash`: The hash of the proposal that should be disapproved.
-       * 
-       * # <weight>
-       * Complexity: O(P) where P is the number of max proposals
-       * DB Weight:
-       * * Reads: Proposals
-       * * Writes: Voting, Proposals, ProposalOf
-       * # </weight>
-       **/
-      disapproveProposal: AugmentedSubmittable<(proposalHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Dispatch a proposal from a member using the `Member` origin.
-       * 
-       * Origin must be a member of the collective.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching
-       * `proposal`
-       * - DB: 1 read (codec `O(M)`) + DB access of `proposal`
-       * - 1 event
-       * # </weight>
-       **/
-      execute: AugmentedSubmittable<(proposal: Call | IMethod | string | Uint8Array, lengthBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, Compact<u32>]>;
-      /**
-       * Add a new proposal to either be voted on or executed directly.
-       * 
-       * Requires the sender to be member.
-       * 
-       * `threshold` determines whether `proposal` is executed directly (`threshold < 2`)
-       * or put up for voting.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(B + M + P1)` or `O(B + M + P2)` where:
-       * - `B` is `proposal` size in bytes (length-fee-bounded)
-       * - `M` is members-count (code- and governance-bounded)
-       * - branching is influenced by `threshold` where:
-       * - `P1` is proposal execution complexity (`threshold < 2`)
-       * - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
-       * - DB:
-       * - 1 storage read `is_member` (codec `O(M)`)
-       * - 1 storage read `ProposalOf::contains_key` (codec `O(1)`)
-       * - DB accesses influenced by `threshold`:
-       * - EITHER storage accesses done by `proposal` (`threshold < 2`)
-       * - OR proposal insertion (`threshold <= 2`)
-       * - 1 storage mutation `Proposals` (codec `O(P2)`)
-       * - 1 storage mutation `ProposalCount` (codec `O(1)`)
-       * - 1 storage write `ProposalOf` (codec `O(B)`)
-       * - 1 storage write `Voting` (codec `O(M)`)
-       * - 1 event
-       * # </weight>
-       **/
-      propose: AugmentedSubmittable<(threshold: Compact<u32> | AnyNumber | Uint8Array, proposal: Call | IMethod | string | Uint8Array, lengthBound: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, Call, Compact<u32>]>;
-      /**
-       * Set the collective's membership.
-       * 
-       * - `new_members`: The new member list. Be nice to the chain and provide it sorted.
-       * - `prime`: The prime member whose vote sets the default.
-       * - `old_count`: The upper bound for the previous number of members in storage. Used for
-       * weight estimation.
-       * 
-       * Requires root origin.
-       * 
-       * NOTE: Does not enforce the expected `MaxMembers` limit on the amount of members, but
-       * the weight estimations rely on it to estimate dispatchable weight.
-       * 
-       * # WARNING:
-       * 
-       * The `pallet-collective` can also be managed by logic outside of the pallet through the
-       * implementation of the trait [`ChangeMembers`].
-       * Any call to `set_members` must be careful that the member set doesn't get out of sync
-       * with other logic managing the member set.
-       * 
-       * # <weight>
-       * ## Weight
-       * - `O(MP + N)` where:
-       * - `M` old-members-count (code- and governance-bounded)
-       * - `N` new-members-count (code- and governance-bounded)
-       * - `P` proposals-count (code-bounded)
-       * - DB:
-       * - 1 storage mutation (codec `O(M)` read, `O(N)` write) for reading and writing the
-       * members
-       * - 1 storage read (codec `O(P)`) for reading the proposals
-       * - `P` storage mutations (codec `O(M)`) for updating the votes for each proposal
-       * - 1 storage write (codec `O(1)`) for deleting the old `prime` and setting the new one
-       * # </weight>
-       **/
-      setMembers: AugmentedSubmittable<(newMembers: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], prime: Option<AccountId32> | null | Uint8Array | AccountId32 | string, oldCount: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>, Option<AccountId32>, u32]>;
-      /**
-       * Add an aye or nay vote for the sender to the given proposal.
-       * 
-       * Requires the sender to be a member.
-       * 
-       * Transaction fees will be waived if the member is voting on any particular proposal
-       * for the first time and the call is successful. Subsequent vote changes will charge a
-       * fee.
-       * # <weight>
-       * ## Weight
-       * - `O(M)` where `M` is members-count (code- and governance-bounded)
-       * - DB:
-       * - 1 storage read `Members` (codec `O(M)`)
-       * - 1 storage mutation `Voting` (codec `O(M)`)
-       * - 1 event
-       * # </weight>
-       **/
-      vote: AugmentedSubmittable<(proposal: H256 | string | Uint8Array, index: Compact<u32> | AnyNumber | Uint8Array, approve: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>, bool]>;
-    };
-    technicalMembership: {
-      /**
-       * Add a member `who` to the set.
-       * 
-       * May only be called from `T::AddOrigin`.
-       **/
-      addMember: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Swap out the sending member for some other key `new`.
-       * 
-       * May only be called from `Signed` origin of a current member.
-       * 
-       * Prime membership is passed from the origin account to `new`, if extant.
-       **/
-      changeKey: AugmentedSubmittable<(updated: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Remove the prime member if it exists.
-       * 
-       * May only be called from `T::PrimeOrigin`.
-       **/
-      clearPrime: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Remove a member `who` from the set.
-       * 
-       * May only be called from `T::RemoveOrigin`.
-       **/
-      removeMember: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Change the membership to a new set, disregarding the existing membership. Be nice and
-       * pass `members` pre-sorted.
-       * 
-       * May only be called from `T::ResetOrigin`.
-       **/
-      resetMembers: AugmentedSubmittable<(members: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>]>;
-      /**
-       * Set the prime member. Must be a current member.
-       * 
-       * May only be called from `T::PrimeOrigin`.
-       **/
-      setPrime: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Swap out one member `remove` for another `add`.
-       * 
-       * May only be called from `T::SwapOrigin`.
-       * 
-       * Prime membership is *not* passed from `remove` to `add`, if extant.
-       **/
-      swapMember: AugmentedSubmittable<(remove: AccountId32 | string | Uint8Array, add: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32]>;
-    };
     timestamp: {
       /**
        * Set the current time.
@@ -2561,255 +1350,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       set: AugmentedSubmittable<(now: Compact<u64> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u64>]>;
-    };
-    tips: {
-      /**
-       * Close and payout a tip.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * The tip identified by `hash` must have finished its countdown period.
-       * 
-       * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
-       * as the hash of the tuple of the original tip `reason` and the beneficiary account ID.
-       * 
-       * # <weight>
-       * - Complexity: `O(T)` where `T` is the number of tippers. decoding `Tipper` vec of length
-       * `T`. `T` is charged as upper bound given by `ContainsLengthBound`. The actual cost
-       * depends on the implementation of `T::Tippers`.
-       * - DbReads: `Tips`, `Tippers`, `tip finder`
-       * - DbWrites: `Reasons`, `Tips`, `Tippers`, `tip finder`
-       * # </weight>
-       **/
-      closeTip: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Report something `reason` that deserves a tip and claim any eventual the finder's fee.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * Payment: `TipReportDepositBase` will be reserved from the origin account, as well as
-       * `DataDepositPerByte` for each byte in `reason`.
-       * 
-       * - `reason`: The reason for, or the thing that deserves, the tip; generally this will be
-       * a UTF-8-encoded URL.
-       * - `who`: The account which should be credited for the tip.
-       * 
-       * Emits `NewTip` if successful.
-       * 
-       * # <weight>
-       * - Complexity: `O(R)` where `R` length of `reason`.
-       * - encoding and hashing of 'reason'
-       * - DbReads: `Reasons`, `Tips`
-       * - DbWrites: `Reasons`, `Tips`
-       * # </weight>
-       **/
-      reportAwesome: AugmentedSubmittable<(reason: Bytes | string | Uint8Array, who: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, AccountId32]>;
-      /**
-       * Retract a prior tip-report from `report_awesome`, and cancel the process of tipping.
-       * 
-       * If successful, the original deposit will be unreserved.
-       * 
-       * The dispatch origin for this call must be _Signed_ and the tip identified by `hash`
-       * must have been reported by the signing account through `report_awesome` (and not
-       * through `tip_new`).
-       * 
-       * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
-       * as the hash of the tuple of the original tip `reason` and the beneficiary account ID.
-       * 
-       * Emits `TipRetracted` if successful.
-       * 
-       * # <weight>
-       * - Complexity: `O(1)`
-       * - Depends on the length of `T::Hash` which is fixed.
-       * - DbReads: `Tips`, `origin account`
-       * - DbWrites: `Reasons`, `Tips`, `origin account`
-       * # </weight>
-       **/
-      retractTip: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Remove and slash an already-open tip.
-       * 
-       * May only be called from `T::RejectOrigin`.
-       * 
-       * As a result, the finder is slashed and the deposits are lost.
-       * 
-       * Emits `TipSlashed` if successful.
-       * 
-       * # <weight>
-       * `T` is charged as upper bound given by `ContainsLengthBound`.
-       * The actual cost depends on the implementation of `T::Tippers`.
-       * # </weight>
-       **/
-      slashTip: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Declare a tip value for an already-open tip.
-       * 
-       * The dispatch origin for this call must be _Signed_ and the signing account must be a
-       * member of the `Tippers` set.
-       * 
-       * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
-       * as the hash of the tuple of the hash of the original tip `reason` and the beneficiary
-       * account ID.
-       * - `tip_value`: The amount of tip that the sender would like to give. The median tip
-       * value of active tippers will be given to the `who`.
-       * 
-       * Emits `TipClosing` if the threshold of tippers has been reached and the countdown period
-       * has started.
-       * 
-       * # <weight>
-       * - Complexity: `O(T)` where `T` is the number of tippers. decoding `Tipper` vec of length
-       * `T`, insert tip and check closing, `T` is charged as upper bound given by
-       * `ContainsLengthBound`. The actual cost depends on the implementation of `T::Tippers`.
-       * 
-       * Actually weight could be lower as it depends on how many tips are in `OpenTip` but it
-       * is weighted as if almost full i.e of length `T-1`.
-       * - DbReads: `Tippers`, `Tips`
-       * - DbWrites: `Tips`
-       * # </weight>
-       **/
-      tip: AugmentedSubmittable<(hash: H256 | string | Uint8Array, tipValue: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u128>]>;
-      /**
-       * Give a tip for something new; no finder's fee will be taken.
-       * 
-       * The dispatch origin for this call must be _Signed_ and the signing account must be a
-       * member of the `Tippers` set.
-       * 
-       * - `reason`: The reason for, or the thing that deserves, the tip; generally this will be
-       * a UTF-8-encoded URL.
-       * - `who`: The account which should be credited for the tip.
-       * - `tip_value`: The amount of tip that the sender would like to give. The median tip
-       * value of active tippers will be given to the `who`.
-       * 
-       * Emits `NewTip` if successful.
-       * 
-       * # <weight>
-       * - Complexity: `O(R + T)` where `R` length of `reason`, `T` is the number of tippers.
-       * - `O(T)`: decoding `Tipper` vec of length `T`. `T` is charged as upper bound given by
-       * `ContainsLengthBound`. The actual cost depends on the implementation of
-       * `T::Tippers`.
-       * - `O(R)`: hashing and encoding of reason of length `R`
-       * - DbReads: `Tippers`, `Reasons`
-       * - DbWrites: `Reasons`, `Tips`
-       * # </weight>
-       **/
-      tipNew: AugmentedSubmittable<(reason: Bytes | string | Uint8Array, who: AccountId32 | string | Uint8Array, tipValue: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, AccountId32, Compact<u128>]>;
-    };
-    tipsMembership: {
-      /**
-       * Add a member `who` to the set.
-       * 
-       * May only be called from `T::AddOrigin`.
-       **/
-      addMember: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Swap out the sending member for some other key `new`.
-       * 
-       * May only be called from `Signed` origin of a current member.
-       * 
-       * Prime membership is passed from the origin account to `new`, if extant.
-       **/
-      changeKey: AugmentedSubmittable<(updated: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Remove the prime member if it exists.
-       * 
-       * May only be called from `T::PrimeOrigin`.
-       **/
-      clearPrime: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Remove a member `who` from the set.
-       * 
-       * May only be called from `T::RemoveOrigin`.
-       **/
-      removeMember: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Change the membership to a new set, disregarding the existing membership. Be nice and
-       * pass `members` pre-sorted.
-       * 
-       * May only be called from `T::ResetOrigin`.
-       **/
-      resetMembers: AugmentedSubmittable<(members: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>]>;
-      /**
-       * Set the prime member. Must be a current member.
-       * 
-       * May only be called from `T::PrimeOrigin`.
-       **/
-      setPrime: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Swap out one member `remove` for another `add`.
-       * 
-       * May only be called from `T::SwapOrigin`.
-       * 
-       * Prime membership is *not* passed from `remove` to `add`, if extant.
-       **/
-      swapMember: AugmentedSubmittable<(remove: AccountId32 | string | Uint8Array, add: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32]>;
-    };
-    treasury: {
-      /**
-       * Approve a proposal. At a later time, the proposal will be allocated to the beneficiary
-       * and the original deposit will be returned.
-       * 
-       * May only be called from `T::ApproveOrigin`.
-       * 
-       * # <weight>
-       * - Complexity: O(1).
-       * - DbReads: `Proposals`, `Approvals`
-       * - DbWrite: `Approvals`
-       * # </weight>
-       **/
-      approveProposal: AugmentedSubmittable<(proposalId: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>]>;
-      /**
-       * Put forward a suggestion for spending. A deposit proportional to the value
-       * is reserved and slashed if the proposal is rejected. It is returned once the
-       * proposal is awarded.
-       * 
-       * # <weight>
-       * - Complexity: O(1)
-       * - DbReads: `ProposalCount`, `origin account`
-       * - DbWrites: `ProposalCount`, `Proposals`, `origin account`
-       * # </weight>
-       **/
-      proposeSpend: AugmentedSubmittable<(value: Compact<u128> | AnyNumber | Uint8Array, beneficiary: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u128>, MultiAddress]>;
-      /**
-       * Reject a proposed spend. The original deposit will be slashed.
-       * 
-       * May only be called from `T::RejectOrigin`.
-       * 
-       * # <weight>
-       * - Complexity: O(1)
-       * - DbReads: `Proposals`, `rejected proposer account`
-       * - DbWrites: `Proposals`, `rejected proposer account`
-       * # </weight>
-       **/
-      rejectProposal: AugmentedSubmittable<(proposalId: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>]>;
-      /**
-       * Force a previously approved proposal to be removed from the approval queue.
-       * The original deposit will no longer be returned.
-       * 
-       * May only be called from `T::RejectOrigin`.
-       * - `proposal_id`: The index of a proposal
-       * 
-       * # <weight>
-       * - Complexity: O(A) where `A` is the number of approvals
-       * - Db reads and writes: `Approvals`
-       * # </weight>
-       * 
-       * Errors:
-       * - `ProposalNotApproved`: The `proposal_id` supplied was not found in the approval queue,
-       * i.e., the proposal has not been approved. This could also mean the proposal does not
-       * exist altogether, thus there is no way it would have been approved in the first place.
-       **/
-      removeApproval: AugmentedSubmittable<(proposalId: Compact<u32> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>]>;
-      /**
-       * Propose and approve a spend of treasury funds.
-       * 
-       * - `origin`: Must be `SpendOrigin` with the `Success` value being at least `amount`.
-       * - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
-       * - `beneficiary`: The destination account for the transfer.
-       * 
-       * NOTE: For record-keeping purposes, the proposer is deemed to be equivalent to the
-       * beneficiary.
-       **/
-      spend: AugmentedSubmittable<(amount: Compact<u128> | AnyNumber | Uint8Array, beneficiary: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u128>, MultiAddress]>;
     };
     utility: {
       /**
@@ -2879,7 +1419,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Weight of derivative `call` execution + T::WeightInfo::dispatch_as().
        * # </weight>
        **/
-      dispatchAs: AugmentedSubmittable<(asOrigin: SpiritnetRuntimeOriginCaller | { system: any } | { Void: any } | { Council: any } | { TechnicalCommittee: any } | { Did: any } | { PolkadotXcm: any } | { CumulusXcm: any } | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpiritnetRuntimeOriginCaller, Call]>;
+      dispatchAs: AugmentedSubmittable<(asOrigin: MashnetNodeRuntimeOriginCaller | { system: any } | { Void: any } | { Did: any } | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MashnetNodeRuntimeOriginCaller, Call]>;
       /**
        * Send a batch of dispatch calls.
        * Unlike `batch`, it allows errors and won't interrupt.
@@ -2897,107 +1437,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       forceBatch: AugmentedSubmittable<(calls: Vec<Call> | (Call | IMethod | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<Call>]>;
-    };
-    vesting: {
-      /**
-       * Force a vested transfer.
-       * 
-       * The dispatch origin for this call must be _Root_.
-       * 
-       * - `source`: The account whose funds should be transferred.
-       * - `target`: The account that should be transferred the vested funds.
-       * - `schedule`: The vesting schedule attached to the transfer.
-       * 
-       * Emits `VestingCreated`.
-       * 
-       * NOTE: This will unlock all schedules through the current block.
-       * 
-       * # <weight>
-       * - `O(1)`.
-       * - DbWeight: 4 Reads, 4 Writes
-       * - Reads: Vesting Storage, Balances Locks, Target Account, Source Account
-       * - Writes: Vesting Storage, Balances Locks, Target Account, Source Account
-       * # </weight>
-       **/
-      forceVestedTransfer: AugmentedSubmittable<(source: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, target: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, schedule: PalletVestingVestingInfo | { locked?: any; perBlock?: any; startingBlock?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, MultiAddress, PalletVestingVestingInfo]>;
-      /**
-       * Merge two vesting schedules together, creating a new vesting schedule that unlocks over
-       * the highest possible start and end blocks. If both schedules have already started the
-       * current block will be used as the schedule start; with the caveat that if one schedule
-       * is finished by the current block, the other will be treated as the new merged schedule,
-       * unmodified.
-       * 
-       * NOTE: If `schedule1_index == schedule2_index` this is a no-op.
-       * NOTE: This will unlock all schedules through the current block prior to merging.
-       * NOTE: If both schedules have ended by the current block, no new schedule will be created
-       * and both will be removed.
-       * 
-       * Merged schedule attributes:
-       * - `starting_block`: `MAX(schedule1.starting_block, scheduled2.starting_block,
-       * current_block)`.
-       * - `ending_block`: `MAX(schedule1.ending_block, schedule2.ending_block)`.
-       * - `locked`: `schedule1.locked_at(current_block) + schedule2.locked_at(current_block)`.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * - `schedule1_index`: index of the first schedule to merge.
-       * - `schedule2_index`: index of the second schedule to merge.
-       **/
-      mergeSchedules: AugmentedSubmittable<(schedule1Index: u32 | AnyNumber | Uint8Array, schedule2Index: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32]>;
-      /**
-       * Unlock any vested funds of the sender account.
-       * 
-       * The dispatch origin for this call must be _Signed_ and the sender must have funds still
-       * locked under this pallet.
-       * 
-       * Emits either `VestingCompleted` or `VestingUpdated`.
-       * 
-       * # <weight>
-       * - `O(1)`.
-       * - DbWeight: 2 Reads, 2 Writes
-       * - Reads: Vesting Storage, Balances Locks, [Sender Account]
-       * - Writes: Vesting Storage, Balances Locks, [Sender Account]
-       * # </weight>
-       **/
-      vest: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Create a vested transfer.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * - `target`: The account receiving the vested funds.
-       * - `schedule`: The vesting schedule attached to the transfer.
-       * 
-       * Emits `VestingCreated`.
-       * 
-       * NOTE: This will unlock all schedules through the current block.
-       * 
-       * # <weight>
-       * - `O(1)`.
-       * - DbWeight: 3 Reads, 3 Writes
-       * - Reads: Vesting Storage, Balances Locks, Target Account, [Sender Account]
-       * - Writes: Vesting Storage, Balances Locks, Target Account, [Sender Account]
-       * # </weight>
-       **/
-      vestedTransfer: AugmentedSubmittable<(target: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, schedule: PalletVestingVestingInfo | { locked?: any; perBlock?: any; startingBlock?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, PalletVestingVestingInfo]>;
-      /**
-       * Unlock any vested funds of a `target` account.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * - `target`: The account whose vested funds should be unlocked. Must have funds still
-       * locked under this pallet.
-       * 
-       * Emits either `VestingCompleted` or `VestingUpdated`.
-       * 
-       * # <weight>
-       * - `O(1)`.
-       * - DbWeight: 3 Reads, 3 Writes
-       * - Reads: Vesting Storage, Balances Locks, Target Account
-       * - Writes: Vesting Storage, Balances Locks, Target Account
-       * # </weight>
-       **/
-      vestOther: AugmentedSubmittable<(target: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
     };
     web3Names: {
       /**
@@ -3068,6 +1507,16 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       releaseByOwner: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
+       * Transfer the storage deposit from one account to another.
+       * 
+       * If the currently required deposit is different, the new deposit
+       * value will be reserved.
+       * 
+       * The subject of the call must be the owner of the web3name.
+       * The sender of the call will be the new deposit owner.
+       **/
+      transferDeposit: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
        * Unban a name.
        * 
        * Make a name claimable again.
@@ -3084,85 +1533,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       unban: AugmentedSubmittable<(name: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-    };
-    xcmpQueue: {
-      /**
-       * Resumes all XCM executions for the XCMP queue.
-       * 
-       * Note that this function doesn't change the status of the in/out bound channels.
-       * 
-       * - `origin`: Must pass `ControllerOrigin`.
-       **/
-      resumeXcmExecution: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Services a single overweight XCM.
-       * 
-       * - `origin`: Must pass `ExecuteOverweightOrigin`.
-       * - `index`: The index of the overweight XCM to service
-       * - `weight_limit`: The amount of weight that XCM execution may take.
-       * 
-       * Errors:
-       * - `BadOverweightIndex`: XCM under `index` is not found in the `Overweight` storage map.
-       * - `BadXcm`: XCM under `index` cannot be properly decoded into a valid XCM format.
-       * - `WeightOverLimit`: XCM execution may use greater `weight_limit`.
-       * 
-       * Events:
-       * - `OverweightServiced`: On success.
-       **/
-      serviceOverweight: AugmentedSubmittable<(index: u64 | AnyNumber | Uint8Array, weightLimit: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u64]>;
-      /**
-       * Suspends all XCM executions for the XCMP queue, regardless of the sender's origin.
-       * 
-       * - `origin`: Must pass `ControllerOrigin`.
-       **/
-      suspendXcmExecution: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Overwrites the number of pages of messages which must be in the queue after which we drop any further
-       * messages from the channel.
-       * 
-       * - `origin`: Must pass `Root`.
-       * - `new`: Desired value for `QueueConfigData.drop_threshold`
-       **/
-      updateDropThreshold: AugmentedSubmittable<(updated: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      /**
-       * Overwrites the number of pages of messages which the queue must be reduced to before it signals that
-       * message sending may recommence after it has been suspended.
-       * 
-       * - `origin`: Must pass `Root`.
-       * - `new`: Desired value for `QueueConfigData.resume_threshold`
-       **/
-      updateResumeThreshold: AugmentedSubmittable<(updated: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      /**
-       * Overwrites the number of pages of messages which must be in the queue for the other side to be told to
-       * suspend their sending.
-       * 
-       * - `origin`: Must pass `Root`.
-       * - `new`: Desired value for `QueueConfigData.suspend_value`
-       **/
-      updateSuspendThreshold: AugmentedSubmittable<(updated: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-      /**
-       * Overwrites the amount of remaining weight under which we stop processing messages.
-       * 
-       * - `origin`: Must pass `Root`.
-       * - `new`: Desired value for `QueueConfigData.threshold_weight`
-       **/
-      updateThresholdWeight: AugmentedSubmittable<(updated: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
-      /**
-       * Overwrites the speed to which the available weight approaches the maximum weight.
-       * A lower number results in a faster progression. A value of 1 makes the entire weight available initially.
-       * 
-       * - `origin`: Must pass `Root`.
-       * - `new`: Desired value for `QueueConfigData.weight_restrict_decay`.
-       **/
-      updateWeightRestrictDecay: AugmentedSubmittable<(updated: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
-      /**
-       * Overwrite the maximum amount of weight any individual message may consume.
-       * Messages above this weight go into the overweight queue and may only be serviced explicitly.
-       * 
-       * - `origin`: Must pass `Root`.
-       * - `new`: Desired value for `QueueConfigData.xcmp_max_individual_weight`.
-       **/
-      updateXcmpMaxIndividualWeight: AugmentedSubmittable<(updated: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
     };
   } // AugmentedSubmittables
 } // declare module

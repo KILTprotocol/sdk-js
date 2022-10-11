@@ -5,12 +5,12 @@ import type { BTreeMap, BTreeSet, Enum, Option, Struct, Text, Vec } from '@polka
 import type { AccountId32, AccountId33, BlockNumber, Hash, Perquintill } from '@polkadot/types/interfaces/runtime';
 
 // FIXME: manually added as they are not automatically imported
-import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit } from '@polkadot/types/lookup'
+import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
 
 /** @name DidLinkedInfo */
 export interface DidLinkedInfo extends Struct {
   readonly identifier: AccountId32;
-  readonly accounts: Vec<AccountId32>;
+  readonly accounts: Vec<PalletDidLookupLinkableAccountLinkableAccountId>;
   readonly w3n: Option<Text>;
   readonly serviceEndpoints: Vec<RpcServiceEndpoint>;
   readonly details: RpcDidDetails;
@@ -30,7 +30,7 @@ export interface RawDidDetails extends Struct {
 /** @name RawDidLinkedInfo */
 export interface RawDidLinkedInfo extends Struct {
   readonly identifier: AccountId32;
-  readonly accounts: Vec<AccountId32>;
+  readonly accounts: Vec<PalletDidLookupLinkableAccountLinkableAccountId>;
   readonly w3n: Option<Text>;
   readonly serviceEndpoints: Vec<RawServiceEndpoints>;
   readonly details: RawDidDetails;

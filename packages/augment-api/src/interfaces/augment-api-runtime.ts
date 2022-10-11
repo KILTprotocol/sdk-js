@@ -11,17 +11,19 @@ import type { RawDidLinkedInfo } from './extraDefs/index.js';
 import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Text, Vec, u32 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
+import type { OpaqueKeyOwnershipProof } from '@polkadot/types/interfaces/babe';
 import type { CheckInherentsResult, InherentData } from '@polkadot/types/interfaces/blockbuilder';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
-import type { CollationInfo } from '@polkadot/types/interfaces/cumulus';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
+import type { AuthorityList, GrandpaEquivocationProof, SetId } from '@polkadot/types/interfaces/grandpa';
 import type { OpaqueMetadata } from '@polkadot/types/interfaces/metadata';
 import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
 import type { AccountId, AccountId32, Block, Header, Index, KeyTypeId, SlotDuration } from '@polkadot/types/interfaces/runtime';
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
+import type { PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup';
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 
 export type __AugmentedCall<ApiType extends ApiTypes> = AugmentedCall<ApiType>;
@@ -66,13 +68,6 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       inherentExtrinsics: AugmentedCall<ApiType, (inherent: InherentData | { data?: any } | string | Uint8Array) => Observable<Vec<Extrinsic>>>;
     };
-    /** 0xea93e3f16f3d6962/2 */
-    collectCollationInfo: {
-      /**
-       * Collect information about a collation.
-       **/
-      collectCollationInfo: AugmentedCall<ApiType, (header: Header | { parentHash?: any; number?: any; stateRoot?: any; extrinsicsRoot?: any; digest?: any } | string | Uint8Array) => Observable<CollationInfo>>;
-    };
     /** 0xdf6acb689907609b/4 */
     core: {
       /**
@@ -97,11 +92,30 @@ declare module '@polkadot/api-base/types/calls' {
       /**
        * Return the information relative to the DID to which the provided account is linked, if any.
        **/
-      queryDidByAccountId: AugmentedCall<ApiType, (account: AccountId32 | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
+      queryDidByAccountId: AugmentedCall<ApiType, (account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
       /**
        * Return the information relative to the owner of the provided web3name, if any.
        **/
       queryDidByW3n: AugmentedCall<ApiType, (name: Text | string) => Observable<Option<RawDidLinkedInfo>>>;
+    };
+    /** 0xed99c5acb25eedf5/3 */
+    grandpaApi: {
+      /**
+       * Get current GRANDPA authority set id.
+       **/
+      currentSetId: AugmentedCall<ApiType, () => Observable<SetId>>;
+      /**
+       * Generates a proof of key ownership for the given authority in the given set.
+       **/
+      generateKeyOwnershipProof: AugmentedCall<ApiType, (setId: SetId | AnyNumber | Uint8Array, authorityId: AuthorityId | string | Uint8Array) => Observable<Option<OpaqueKeyOwnershipProof>>>;
+      /**
+       * Get the current GRANDPA authorities and weights. This should not change except for when changes are scheduled and the corresponding delay has passed.
+       **/
+      grandpaAuthorities: AugmentedCall<ApiType, () => Observable<AuthorityList>>;
+      /**
+       * Submits an unsigned extrinsic to report an equivocation.
+       **/
+      submitReportEquivocationUnsignedExtrinsic: AugmentedCall<ApiType, (equivocationProof: GrandpaEquivocationProof | { setId?: any; equivocation?: any } | string | Uint8Array, keyOwnerProof: OpaqueKeyOwnershipProof | string | Uint8Array) => Observable<Option<Null>>>;
     };
     /** 0x37e397fc7c91f5e4/1 */
     metadata: {
