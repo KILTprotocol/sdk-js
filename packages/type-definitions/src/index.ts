@@ -50,6 +50,11 @@ export {
   types10720 as types,
 }
 
+export { calls as didCalls } from './runtime/did.js'
+export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+
+export { rpc as didRpc } from './rpc/did.js'
+
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
     minmax: [0, 8],
