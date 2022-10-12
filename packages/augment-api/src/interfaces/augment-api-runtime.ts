@@ -22,6 +22,7 @@ import type { AccountId, AccountId32, Block, Header, Index, KeyTypeId, SlotDurat
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
+import type { PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup';
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 
 export type __AugmentedCall<ApiType extends ApiTypes> = AugmentedCall<ApiType>;
@@ -97,7 +98,7 @@ declare module '@polkadot/api-base/types/calls' {
       /**
        * Return the information relative to the DID to which the provided account is linked, if any.
        **/
-      queryDidByAccountId: AugmentedCall<ApiType, (account: AccountId32 | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
+      queryDidByAccountId: AugmentedCall<ApiType, (account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
       /**
        * Return the information relative to the owner of the provided web3name, if any.
        **/

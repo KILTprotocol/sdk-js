@@ -174,7 +174,7 @@ function accountFromChain(
 }
 
 function connectedAccountsFromChain(
-  encoded: Vec<AccountId32>,
+  encoded: Vec<PalletDidLookupLinkableAccountLinkableAccountId>,
   networkPrefix = ss58Format
 ): Array<KiltAddress | SubstrateAddress> {
   return encoded.map<string>((account) =>
