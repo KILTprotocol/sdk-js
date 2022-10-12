@@ -104,24 +104,18 @@ export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
   }
 }
 
-export const driversLicenseCType = CType.fromSchema({
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'Drivers License',
-  properties: {
-    name: {
-      type: 'string',
-    },
-    age: {
-      type: 'integer',
-    },
+export const driversLicenseCType = CType.fromProperties('Drivers License', {
+  name: {
+    type: 'string',
   },
-  type: 'object',
+  age: {
+    type: 'integer',
+  },
 })
 
-export const driversLicenseCTypeForDeposit = CType.fromSchema({
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'Drivers License for deposit test',
-  properties: {
+export const driversLicenseCTypeForDeposit = CType.fromProperties(
+  'Drivers License for deposit test',
+  {
     name: {
       type: 'string',
     },
@@ -131,9 +125,8 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
     location: {
       type: 'string',
     },
-  },
-  type: 'object',
-})
+  }
+)
 
 // Submits resolving when IS_IN_BLOCK
 export async function submitTx(

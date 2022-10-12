@@ -44,7 +44,6 @@ describe('Quote', () => {
 
   let invalidCost: ICostBreakdown
   let date: string
-  let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
   let credential: ICredential
@@ -78,20 +77,12 @@ describe('Quote', () => {
     } as unknown as ICostBreakdown
     date = new Date(2019, 11, 10).toISOString()
 
-    cTypeSchema = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Quote Information',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    testCType = CType.fromSchema(cTypeSchema)
+    testCType = CType.fromProperties('Quote Information', {
+      name: { type: 'string' },
+    })
 
     claim = {
-      cTypeHash: testCType.hash,
+      cTypeHash: CType.idToHash(testCType.$id),
       contents: {},
       owner: claimerIdentity.uri,
     }

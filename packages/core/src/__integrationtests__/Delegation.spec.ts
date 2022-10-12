@@ -55,13 +55,13 @@ let attesterKey: KeyTool
 
 async function writeHierarchy(
   delegator: DidDocument,
-  ctypeHash: ICType['hash'],
+  cTypeId: ICType['$id'],
   sign: SignCallback
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
     account: delegator.uri,
     permissions: [Permission.DELEGATE],
-    cTypeHash: ctypeHash,
+    cTypeHash: CType.idToHash(cTypeId),
   })
 
   const storeTx = await rootNode.getStoreTx()
@@ -136,7 +136,7 @@ it('fetches the correct deposit amount', async () => {
 it('should be possible to delegate attestation rights', async () => {
   const rootNode = await writeHierarchy(
     root,
-    driversLicenseCType.hash,
+    driversLicenseCType.$id,
     rootKey.getSignCallback(root)
   )
   const delegatedNode = await addDelegation(
@@ -158,7 +158,7 @@ describe('and attestation rights have been delegated', () => {
   beforeAll(async () => {
     rootNode = await writeHierarchy(
       root,
-      driversLicenseCType.hash,
+      driversLicenseCType.$id,
       rootKey.getSignCallback(root)
     )
     delegatedNode = await addDelegation(
@@ -262,7 +262,7 @@ describe('revocation', () => {
   it('delegator can revoke but not remove delegation', async () => {
     const rootNode = await writeHierarchy(
       delegator,
-      driversLicenseCType.hash,
+      driversLicenseCType.$id,
       delegatorSign
     )
     const delegationA = await addDelegation(
@@ -310,7 +310,7 @@ describe('revocation', () => {
   it('delegate cannot revoke root but can revoke own delegation', async () => {
     const delegationRoot = await writeHierarchy(
       delegator,
-      driversLicenseCType.hash,
+      driversLicenseCType.$id,
       delegatorSign
     )
     const delegationA = await addDelegation(
@@ -350,7 +350,7 @@ describe('revocation', () => {
   it('delegator can revoke root, revoking all delegations in tree', async () => {
     let delegationRoot = await writeHierarchy(
       delegator,
-      driversLicenseCType.hash,
+      driversLicenseCType.$id,
       delegatorSign
     )
     const delegationA = await addDelegation(
@@ -390,7 +390,7 @@ describe('Deposit claiming', () => {
     // Delegation nodes are written on the chain using `paymentAccount`.
     const rootNode = await writeHierarchy(
       root,
-      driversLicenseCType.hash,
+      driversLicenseCType.$id,
       rootKey.getSignCallback(root)
     )
     const delegatedNode = await addDelegation(
@@ -443,7 +443,7 @@ describe('hierarchyDetails', () => {
   it('can fetch hierarchyDetails', async () => {
     const rootNode = await writeHierarchy(
       root,
-      driversLicenseCType.hash,
+      driversLicenseCType.$id,
       rootKey.getSignCallback(root)
     )
     const delegatedNode = await addDelegation(
@@ -457,7 +457,7 @@ describe('hierarchyDetails', () => {
 
     const details = await delegatedNode.getHierarchyDetails()
 
-    expect(details.cTypeHash).toBe(driversLicenseCType.hash)
+    expect(CType.hashToId(details.cTypeHash)).toBe(driversLicenseCType.$id)
     expect(details.id).toBe(rootNode.id)
   }, 60_000)
 })

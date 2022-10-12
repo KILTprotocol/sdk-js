@@ -22,7 +22,6 @@ import type {
   IClaimContents,
   ICredential,
   ICredentialPresentation,
-  ICType,
   ResolvedDidKey,
   SignCallback,
 } from '@kiltprotocol/types'
@@ -38,15 +37,9 @@ import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from './Credential'
 
-const rawCType: ICType['schema'] = {
-  $id: 'kilt:ctype:0x2',
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'raw ctype',
-  properties: {
-    name: { type: 'string' },
-  },
-  type: 'object',
-}
+const testCType = CType.fromProperties('raw ctype', {
+  name: { type: 'string' },
+})
 
 function buildCredential(
   claimerDid: DidUri,
@@ -55,10 +48,8 @@ function buildCredential(
 ): ICredential {
   // create claim
 
-  const testCType = CType.fromSchema(rawCType)
-
   const claim: IClaim = {
-    cTypeHash: testCType.hash,
+    cTypeHash: CType.idToHash(testCType.$id),
     contents,
     owner: claimerDid,
   }
@@ -94,7 +85,6 @@ describe('Credential', () => {
     )
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
-    const testCType = CType.fromSchema(rawCType)
     await Credential.verifyCredential(credential, {
       ctype: testCType,
     })
@@ -287,7 +277,6 @@ describe('Credential', () => {
   })
 
   it('should verify the credential claims structure against the ctype', async () => {
-    const testCType = CType.fromSchema(rawCType)
     const builtCredential = buildCredential(
       identityBob,
       {
@@ -341,23 +330,11 @@ describe('Credential', () => {
   ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
 
-    const rawCType2: ICType['schema'] = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
+    const ctype = CType.fromProperties('Credential', {
+      name: { type: 'string' },
+    })
 
-    const testCType = CType.fromSchema(rawCType2)
-
-    const claim = Claim.fromCTypeAndClaimContents(
-      testCType,
-      contents,
-      claimer.uri
-    )
+    const claim = Claim.fromCTypeAndClaimContents(ctype, contents, claimer.uri)
     // build credential with legitimations
     const credential = Credential.fromClaim(claim, {
       legitimations,
@@ -448,7 +425,6 @@ describe('Credential', () => {
       },
       [legitimation]
     )
-    const testCType = CType.fromSchema(rawCType)
     await expect(
       Credential.verifyPresentation(credential as ICredentialPresentation, {
         ctype: testCType,
@@ -540,8 +516,9 @@ describe('create presentation', () => {
   let migratedThenDeletedClaimerLightDid: DidDocument
   let migratedThenDeletedKey: KeyTool
   let attester: DidDocument
-  let ctype: ICType
   let credential: ICredential
+
+  const ctype = CType.fromProperties(testCType.title, testCType.properties)
 
   // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
@@ -598,8 +575,6 @@ describe('create presentation', () => {
       authentication: migratedThenDeletedKey.authentication,
     })
 
-    ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -629,8 +604,6 @@ describe('create presentation', () => {
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -658,8 +631,6 @@ describe('create presentation', () => {
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -690,8 +661,6 @@ describe('create presentation', () => {
   })
 
   it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -723,8 +692,6 @@ describe('create presentation', () => {
   })
 
   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(

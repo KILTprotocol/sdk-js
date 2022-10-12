@@ -248,19 +248,13 @@ async function runAll() {
 
   // CType workflow
   console.log('CType workflow started')
-  const DriversLicense = CType.fromSchema({
-    $id: 'kilt:ctype:0x1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Drivers License',
-    properties: {
-      name: {
-        type: 'string',
-      },
-      age: {
-        type: 'integer',
-      },
+  const DriversLicense = CType.fromProperties('Drivers License', {
+    name: {
+      type: 'string',
     },
-    type: 'object',
+    age: {
+      type: 'integer',
+    },
   })
 
   const cTypeStoreTx = await Did.authorizeTx(
