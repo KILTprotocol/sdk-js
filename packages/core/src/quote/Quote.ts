@@ -21,11 +21,11 @@ import type {
   IQuoteAttesterSigned,
   ICredential,
   SignCallback,
-  DidResolve,
+  DidResolveKey,
   DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import { resolve, verifyDidSignature } from '@kiltprotocol/did'
+import { resolveKey, verifyDidSignature } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -91,14 +91,14 @@ export async function createAttesterSignedQuote(
  *
  * @param quote The object which to be verified.
  * @param options Optional settings.
- * @param options.didResolve Resolve function used in the process of verifying the attester signature.
+ * @param options.didResolveKey Resolve function used in the process of verifying the attester signature.
  */
 export async function verifyAttesterSignedQuote(
   quote: IQuoteAttesterSigned,
   {
-    didResolve = resolve,
+    didResolveKey = resolveKey,
   }: {
-    didResolve?: DidResolve
+    didResolveKey?: DidResolveKey
   } = {}
 ): Promise<void> {
   const { attesterSignature, ...basicQuote } = quote
@@ -106,7 +106,7 @@ export async function verifyAttesterSignedQuote(
     signature: attesterSignature,
     message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
-    didResolve,
+    didResolveKey,
   })
 
   const messages: string[] = []
@@ -123,7 +123,7 @@ export async function verifyAttesterSignedQuote(
  * @param sign The callback to sign with the private key.
  * @param claimerDid The DID of the Claimer, who has to sign.
  * @param options Optional settings.
- * @param options.didResolve Resolve function used in the process of verifying the attester signature.
+ * @param options.didResolveKey Resolve function used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 export async function createQuoteAgreement(
@@ -132,9 +132,9 @@ export async function createQuoteAgreement(
   sign: SignCallback,
   claimerDid: DidUri,
   {
-    didResolve = resolve,
+    didResolveKey = resolveKey,
   }: {
-    didResolve?: DidResolve
+    didResolveKey?: DidResolveKey
   } = {}
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
@@ -143,7 +143,7 @@ export async function createQuoteAgreement(
     signature: attesterSignature,
     message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
-    didResolve,
+    didResolveKey,
   })
 
   const { signature, keyUri } = await sign({

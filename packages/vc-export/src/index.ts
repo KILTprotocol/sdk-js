@@ -11,11 +11,9 @@
 
 import '@kiltprotocol/augment-api'
 
-import type * as types from './types.js'
-
+export * from './types.js'
+export * as constants from './constants.js'
 export * as verification from './verificationUtils.js'
 export * as presentation from './presentationUtils.js'
 export { fromCredentialAndAttestation } from './exportToVerifiableCredential.js'
 export * as vcjsSuites from './vc-js/index.js'
-
-export type { types }

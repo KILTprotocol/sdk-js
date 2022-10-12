@@ -7,11 +7,14 @@
 
 import type {
   DidDocument,
+  DidKey,
   DidResolutionResult,
   DidResourceUri,
   DidUri,
+  KeyRelationship,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
+  UriFragment,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
@@ -125,13 +128,49 @@ export async function strictResolve(
 }
 
 /**
+ * Converts the DID key in the format returned by `resolveKey()`, useful for own implementations of `resolveKey`.
+ *
+ * @param key The DID key in the SDK format.
+ * @param did The DID the key belongs to.
+ * @returns The key in the resolveKey-format.
+ */
+export function keyToResolvedKey(key: DidKey, did: DidUri): ResolvedDidKey {
+  const { id, publicKey, includedAt, type } = key
+  return {
+    controller: did,
+    id: `${did}${id}`,
+    publicKey,
+    type,
+    ...(includedAt && { includedAt }),
+  }
+}
+
+/**
+ * Converts the DID key returned by the `resolveKey()` into the format used in the SDK.
+ *
+ * @param key The key in the resolveKey-format.
+ * @returns The key in the SDK format.
+ */
+export function resolvedKeyToKey(key: ResolvedDidKey): DidKey {
+  const { id, publicKey, includedAt, type } = key
+  return {
+    id: Did.parse(id).fragment as UriFragment,
+    publicKey,
+    type,
+    ...(includedAt && { includedAt }),
+  }
+}
+
+/**
  * Resolve a DID key URI to the key details.
  *
  * @param keyUri The DID key URI.
+ * @param expectedVerificationMethod Optional key relationship the key has to belong to.
  * @returns The details associated with the key.
  */
 export async function resolveKey(
-  keyUri: DidResourceUri
+  keyUri: DidResourceUri,
+  expectedVerificationMethod?: KeyRelationship
 ): Promise<ResolvedDidKey> {
   const { did, fragment: keyId } = parse(keyUri)
 
@@ -163,14 +202,17 @@ export async function resolveKey(
     throw new SDKErrors.DidNotFoundError('Key not found in DID')
   }
 
-  const { includedAt } = key
-  return {
-    controller: did,
-    id: `${did}${keyId}`,
-    publicKey: key.publicKey,
-    type: key.type,
-    ...(includedAt && { includedAt }),
+  // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
+  if (
+    expectedVerificationMethod &&
+    !document[expectedVerificationMethod]?.some(({ id }) => keyId === id)
+  ) {
+    throw new SDKErrors.DidError(
+      `No key "${keyUri}" for the verification method "${expectedVerificationMethod}"`
+    )
   }
+
+  return keyToResolvedKey(key, did)
 }
 
 /**
