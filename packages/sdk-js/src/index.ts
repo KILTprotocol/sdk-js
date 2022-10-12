@@ -9,8 +9,6 @@
  * @module @kiltprotocol/sdk-js
  */
 
-import '@kiltprotocol/augment-api'
-
 export * from '@kiltprotocol/core'
 export { ConfigService } from '@kiltprotocol/config'
 export * as Message from '@kiltprotocol/messaging'

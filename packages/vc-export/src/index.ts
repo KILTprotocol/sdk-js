@@ -9,8 +9,6 @@
  * @module @kiltprotocol/vc-export
  */
 
-import '@kiltprotocol/augment-api'
-
 export * from './types.js'
 export * as constants from './constants.js'
 export * as verification from './verificationUtils.js'

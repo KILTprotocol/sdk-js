@@ -1251,7 +1251,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
@@ -1341,7 +1340,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
@@ -1367,7 +1365,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/testing@workspace:packages/testing"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
@@ -1404,7 +1401,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/types@workspace:packages/types"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/keyring": ^10.0.0
     "@polkadot/types": ^9.4.1
@@ -1435,7 +1431,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
