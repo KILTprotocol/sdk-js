@@ -61,6 +61,7 @@ describe('When there is an on-chain DID', () => {
       expect(
         (
           await api.rpc.did.queryByAccount(
+            // @ts-ignore
             Did.accountToChain(paymentAccount.address)
           )
         ).isNone
@@ -91,6 +92,7 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
       const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+        // @ts-ignore
         Did.accountToChain(paymentAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -119,6 +121,7 @@ describe('When there is an on-chain DID', () => {
       ).toMatchInlineSnapshot('"0"')
       // Check that account is linked to new DID
       const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+        // @ts-ignore
         Did.accountToChain(paymentAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -140,6 +143,7 @@ describe('When there is an on-chain DID', () => {
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
       const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+        // @ts-ignore
         Did.accountToChain(paymentAccount.address)
       )
       expect(encodedQueryByAccount.isNone).toBe(true)
@@ -175,6 +179,7 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           did.uri,
+          // @ts-ignore
           api.tx.didLookup.associateAccount(...args),
           didKey.getSignCallback(did),
           paymentAccount.address
@@ -196,6 +201,7 @@ describe('When there is an on-chain DID', () => {
             .toString()
         ).toMatchInlineSnapshot('"0"')
         const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+          // @ts-ignore
           Did.accountToChain(keypair.address)
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -210,6 +216,7 @@ describe('When there is an on-chain DID', () => {
         )
         const signedTx = await Did.authorizeTx(
           newDid.uri,
+          // @ts-ignore
           api.tx.didLookup.associateAccount(...args),
           newDidKey.getSignCallback(newDid),
           paymentAccount.address
@@ -228,6 +235,7 @@ describe('When there is an on-chain DID', () => {
         ).toMatchInlineSnapshot('"0"')
 
         const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+          // @ts-ignore
           Did.accountToChain(keypair.address)
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -257,6 +265,7 @@ describe('When there is an on-chain DID', () => {
         ).toStrictEqual(linkDeposit.toString())
         // Check that the link has been removed completely
         const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+          // @ts-ignore
           Did.accountToChain(paymentAccount.address)
         )
         expect(encodedQueryByAccount.isNone).toBe(true)
@@ -291,6 +300,7 @@ describe('When there is an on-chain DID', () => {
       )
       const signedTx = await Did.authorizeTx(
         did.uri,
+        // @ts-ignore
         api.tx.didLookup.associateAccount(...args),
         didKey.getSignCallback(did),
         paymentAccount.address
@@ -312,6 +322,7 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+        // @ts-ignore
         Did.accountToChain(genericAccount.address)
       )
       // Use generic substrate address prefix
@@ -337,6 +348,7 @@ describe('When there is an on-chain DID', () => {
       expect(owner).toStrictEqual(did.uri)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
       const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+        // @ts-ignore
         Did.accountToChain(genericAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -360,6 +372,7 @@ describe('When there is an on-chain DID', () => {
       ).toStrictEqual(linkDeposit.toString())
       // Check that the link has been removed completely
       const encodedQueryByAccount = await api.rpc.did.queryByAccount(
+        // @ts-ignore
         Did.accountToChain(genericAccount.address)
       )
       expect(encodedQueryByAccount.isNone).toBe(true)

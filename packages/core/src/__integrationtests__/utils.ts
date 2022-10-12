@@ -25,7 +25,6 @@ import type {
 } from '@kiltprotocol/types'
 import { typesBundle } from '@kiltprotocol/type-definitions'
 import { ConfigService } from '@kiltprotocol/config'
-import { latest as types, rpc, runtime } from '@kiltprotocol/type-definitions'
 
 import * as CType from '../ctype'
 import { init } from '../kilt'
