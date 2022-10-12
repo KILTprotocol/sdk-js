@@ -5,7 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { OverrideBundleDefinition } from '@polkadot/types/types'
+import type {
+  OverrideBundleType,
+  OverrideVersionedType,
+} from '@polkadot/types/types'
 
 import { types8 } from './types_8.js'
 import { types9 } from './types_9.js'
@@ -20,12 +23,16 @@ import { types23 } from './types_23.js'
 import { types25 } from './types_25.js'
 import { types2700 } from './types_2700.js'
 import { types10720 } from './types_10720.js'
-import { types10900 } from './types_10900.js'
 
-import runtime from './runtime.js'
-import rpc from './rpc.js'
+// Custom runtime calls
 
-// Export type definitions
+import { calls as didCalls } from './runtime/did.js'
+import { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+
+// Custom RPC methods
+
+import { rpc as didRpc } from './rpc/did.js'
+
 export {
   types8,
   types9,
@@ -40,77 +47,109 @@ export {
   types25,
   types2700,
   types10720,
-  types10900,
-  // TODO: Change to types10900 when deployed to Spiritnet
-  types10720 as latest,
+  types10720 as types,
 }
 
-// Export runtime APIs definitions
-export { runtime }
+export { calls as didCalls } from './runtime/did.js'
+export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
 
-// Export custom RPC definitions
-export { rpc }
+export { rpc as didRpc } from './rpc/did.js'
 
-// Export complete package
-export const typeBundleForPolkadot: OverrideBundleDefinition = {
-  types: [
-    {
-      minmax: [0, 8],
-      types: types8,
+const defaultTypesBundle: OverrideVersionedType[] = [
+  {
+    minmax: [0, 8],
+    types: types8,
+  },
+  {
+    minmax: [9, 9],
+    types: types9,
+  },
+  {
+    minmax: [10, 11],
+    types: types10,
+  },
+  {
+    minmax: [12, 16],
+    types: types12,
+  },
+  {
+    minmax: [17, 17],
+    types: types17,
+  },
+  {
+    minmax: [18, 18],
+    types: types18,
+  },
+  {
+    minmax: [19, 19],
+    types: types19,
+  },
+  {
+    minmax: [20, 20],
+    types: types20,
+  },
+  {
+    minmax: [21, 22],
+    types: types21,
+  },
+  {
+    minmax: [23, 24],
+    types: types23,
+  },
+  {
+    minmax: [25, 2699],
+    types: types25,
+  },
+  {
+    minmax: [2700, 10710],
+    types: types2700,
+  },
+  {
+    minmax: [10720, 10899],
+    types: types10720,
+  },
+]
+
+// Current runtime version: 10730
+export const typesBundle: OverrideBundleType = {
+  chain: {
+    'KILT Spiritnet': {
+      rpc: {
+        ...didRpc,
+      },
+      runtime: {
+        ...didCalls,
+        ...parachainStakingCalls,
+      },
+      types: defaultTypesBundle,
     },
-    {
-      minmax: [9, 9],
-      types: types9,
+    'KILT Peregrine': {
+      rpc: {
+        ...didRpc,
+      },
+      runtime: {
+        ...didCalls,
+        ...parachainStakingCalls,
+      },
+      types: defaultTypesBundle,
     },
-    {
-      minmax: [10, 11],
-      types: types10,
+    'KILT Mashnet': {
+      rpc: {
+        ...didRpc,
+      },
+      runtime: {
+        ...didCalls,
+      },
+      types: defaultTypesBundle,
     },
-    {
-      minmax: [12, 16],
-      types: types12,
+    Development: {
+      rpc: {
+        ...didRpc,
+      },
+      runtime: {
+        ...didCalls,
+      },
+      types: defaultTypesBundle,
     },
-    {
-      minmax: [17, 17],
-      types: types17,
-    },
-    {
-      minmax: [18, 18],
-      types: types18,
-    },
-    {
-      minmax: [19, 19],
-      types: types19,
-    },
-    {
-      minmax: [20, 20],
-      types: types20,
-    },
-    {
-      minmax: [21, 22],
-      types: types21,
-    },
-    {
-      minmax: [23, 24],
-      types: types23,
-    },
-    {
-      minmax: [25, 2699],
-      types: types25,
-    },
-    {
-      minmax: [2700, 10710],
-      types: types2700,
-    },
-    {
-      minmax: [10720, 10899],
-      types: types10720,
-    },
-    {
-      minmax: [10900, undefined],
-      types: types10900,
-    },
-  ],
-  runtime,
-  rpc,
+  },
 }

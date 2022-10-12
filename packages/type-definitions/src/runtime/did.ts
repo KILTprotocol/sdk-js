@@ -7,7 +7,7 @@
 
 import type { DefinitionsCall } from '@polkadot/types/types'
 
-const runtime: DefinitionsCall = {
+export const calls: DefinitionsCall = {
   DidApi: [
     {
       methods: {
@@ -20,7 +20,7 @@ const runtime: DefinitionsCall = {
               type: 'Text',
             },
           ],
-          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
         },
         query_did_by_account_id: {
           description:
@@ -28,10 +28,10 @@ const runtime: DefinitionsCall = {
           params: [
             {
               name: 'account',
-              type: 'AccountId32',
+              type: 'PalletDidLookupLinkableAccountLinkableAccountId',
             },
           ],
-          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
         },
         query_did: {
           description:
@@ -42,37 +42,10 @@ const runtime: DefinitionsCall = {
               type: 'AccountId32',
             },
           ],
-          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
-        },
-      },
-      version: 1,
-    },
-  ],
-  ParachainStakingApi: [
-    {
-      methods: {
-        get_staking_rates: {
-          description:
-            'Calculate the current staking and reward rates for collators and delegators',
-          params: [],
-          type: 'StakingRates',
-        },
-        get_unclaimed_staking_rewards: {
-          description:
-            'Calculate the claimable staking rewards for a given account address',
-          params: [
-            {
-              name: 'account',
-              type: 'AccountId32',
-            },
-          ],
-          type: 'Balance',
+          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
         },
       },
       version: 1,
     },
   ],
 }
-
-// eslint-disable-next-line import/no-default-export
-export default runtime
