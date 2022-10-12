@@ -5,23 +5,54 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { DefinitionsCall } from '@polkadot/types/types'
+import type { DefinitionsCall, DefinitionCall } from '@polkadot/types/types'
+
+const v1Calls: Record<string, DefinitionCall> = {
+  query_did_by_w3n: {
+    description:
+      'Return the information relative to the owner of the provided web3name, if any.',
+    params: [
+      {
+        name: 'name',
+        type: 'Text',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+  },
+  query_did_by_account_id: {
+    description:
+      'Return the information relative to the DID to which the provided account is linked, if any.',
+    params: [
+      {
+        name: 'account',
+        type: 'AccountId32',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+  },
+  query_did: {
+    description:
+      'Return the information relative to the owner of the provided DID, if present.',
+    params: [
+      {
+        name: 'did',
+        type: 'AccountId32',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+  },
+}
 
 export const calls: DefinitionsCall = {
   DidApi: [
     {
+      methods: { ...v1Calls },
+      version: 1,
+    },
+    {
       methods: {
-        query_did_by_w3n: {
-          description:
-            'Return the information relative to the owner of the provided web3name, if any.',
-          params: [
-            {
-              name: 'name',
-              type: 'Text',
-            },
-          ],
-          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
-        },
+        ...v1Calls,
+        // v2 replace simple AccountId32 with a PalletDidLookupLinkableAccountLinkableAccountId
         query_did_by_account_id: {
           description:
             'Return the information relative to the DID to which the provided account is linked, if any.',
@@ -33,19 +64,8 @@ export const calls: DefinitionsCall = {
           ],
           type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
         },
-        query_did: {
-          description:
-            'Return the information relative to the owner of the provided DID, if present.',
-          params: [
-            {
-              name: 'did',
-              type: 'AccountId32',
-            },
-          ],
-          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
-        },
       },
-      version: 1,
+      version: 2,
     },
   ],
 }
