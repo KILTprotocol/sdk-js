@@ -41,7 +41,7 @@ export async function resolve(
   let document: DidDocument | undefined
   // eslint-disable-next-line no-useless-catch
   try {
-    const encodedLinkedInfo = await api.rpc.did.query(toChain(did))
+    const encodedLinkedInfo = await api.call.didApi.queryDid(toChain(did))
     document = linkedInfoFromChain(encodedLinkedInfo).document
   } catch {
     // ignore errors

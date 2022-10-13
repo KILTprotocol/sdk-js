@@ -9,11 +9,11 @@ import type { Enum, Option, Text, U8aFixed, Vec } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { AccountId32, Hash } from '@polkadot/types/interfaces'
 import type {
-  DidLinkedInfo,
+  RawDidLinkedInfo,
   KiltSupportDeposit,
-  RpcDidDetails,
-  RpcPublicKeyDetails,
-  RpcServiceEndpoint,
+  RawDidDetails,
+  DidDidDetailsDidPublicKeyDetails,
+  RawServiceEndpoints,
 } from '@kiltprotocol/augment-api'
 import type {
   Deposit,
@@ -57,7 +57,7 @@ function depositFromChain(deposit: KiltSupportDeposit): Deposit {
 
 function didPublicKeyDetailsFromChain(
   keyId: Hash,
-  keyDetails: RpcPublicKeyDetails
+  keyDetails: DidDidDetailsDidPublicKeyDetails
 ): DidKey {
   const key = keyDetails.key.isPublicEncryptionKey
     ? keyDetails.key.asPublicEncryptionKey
@@ -73,7 +73,7 @@ function resourceIdToChain(id: UriFragment): string {
   return id.replace(/^#/, '')
 }
 
-function documentFromChain(encoded: RpcDidDetails): RpcDocument {
+function documentFromChain(encoded: RawDidDetails): RpcDocument {
   const {
     publicKeys,
     authenticationKey,
@@ -122,7 +122,7 @@ function documentFromChain(encoded: RpcDidDetails): RpcDocument {
   return didRecord
 }
 
-function serviceFromChain(encoded: RpcServiceEndpoint): DidServiceEndpoint {
+function serviceFromChain(encoded: RawServiceEndpoints): DidServiceEndpoint {
   const { id, serviceTypes, urls } = encoded
   return {
     id: `#${id.toHuman()}`,
@@ -132,7 +132,7 @@ function serviceFromChain(encoded: RpcServiceEndpoint): DidServiceEndpoint {
 }
 
 function servicesFromChain(
-  encoded: RpcServiceEndpoint[]
+  encoded: RawServiceEndpoints[]
 ): DidServiceEndpoint[] {
   return encoded.map((encodedValue) => serviceFromChain(encodedValue))
 }
@@ -191,12 +191,12 @@ export interface DidInfo {
 /**
  * Decodes accounts, DID, and web3name linked to the provided account.
  *
- * @param encoded The data returned by `api.rpc.did.queryByAccount()`, `api.rpc.did.queryByDid()`, and `api.rpc.did.queryByWeb3Name()`.
+ * @param encoded The data returned by `api.call.didApi.queryDidByAccountId()`, `api.call.didApi.queryDid()`, and `api.call.didApi.queryByW3n()`.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
  * @returns The accounts, DID, and web3name.
  */
 export function linkedInfoFromChain(
-  encoded: Option<DidLinkedInfo>,
+  encoded: Option<RawDidLinkedInfo>,
   networkPrefix = ss58Format
 ): DidInfo {
   const { identifier, accounts, w3n, serviceEndpoints, details } =

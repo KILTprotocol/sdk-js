@@ -109,7 +109,9 @@ describe('write and didDeleteTx', () => {
     await submitTx(tx, paymentAccount)
 
     const fullDidUri = Did.getFullDidUri(newDid.uri)
-    const fullDidLinkedInfo = await api.rpc.did.query(Did.toChain(fullDidUri))
+    const fullDidLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(fullDidUri)
+    )
     const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
     expect(fullDid).toMatchObject(<DidDocument>{
@@ -158,7 +160,7 @@ describe('write and didDeleteTx', () => {
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     // We verify that the DID to delete is on chain.
-    const fullDidLinkedInfo = await api.rpc.did.query(
+    const fullDidLinkedInfo = await api.call.didApi.queryDid(
       Did.toChain(Did.getFullDidUri(did.uri))
     )
     const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -201,7 +203,7 @@ describe('write and didDeleteTx', () => {
 
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
-    const fullDidLinkedInfo = await api.rpc.did.query(
+    const fullDidLinkedInfo = await api.call.didApi.queryDid(
       Did.toChain(Did.getFullDidUri(did.uri))
     )
     const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -245,7 +247,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitTx(tx, paymentAccount)
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  let fullDidLinkedInfo = await api.rpc.did.query(
+  let fullDidLinkedInfo = await api.call.didApi.queryDid(
     Did.toChain(Did.getFullDidUri(newDid.uri))
   )
   let { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -265,7 +267,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // Authentication key changed, so did must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  fullDidLinkedInfo = await api.rpc.did.query(
+  fullDidLinkedInfo = await api.call.didApi.queryDid(
     Did.toChain(Did.getFullDidUri(newDid.uri))
   )
   fullDid = Did.linkedInfoFromChain(fullDidLinkedInfo).document
@@ -349,7 +351,7 @@ describe('DID migration', () => {
 
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-    const migratedFullDidLinkedInfo = await api.rpc.did.query(
+    const migratedFullDidLinkedInfo = await api.call.didApi.queryDid(
       Did.toChain(migratedFullDidUri)
     )
     const { document: migratedFullDid } = Did.linkedInfoFromChain(
@@ -398,7 +400,7 @@ describe('DID migration', () => {
 
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-    const migratedFullDidLinkedInfo = await api.rpc.did.query(
+    const migratedFullDidLinkedInfo = await api.call.didApi.queryDid(
       Did.toChain(migratedFullDidUri)
     )
     const { document: migratedFullDid } = Did.linkedInfoFromChain(
@@ -453,7 +455,7 @@ describe('DID migration', () => {
 
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-    const migratedFullDidLinkedInfo = await api.rpc.did.query(
+    const migratedFullDidLinkedInfo = await api.call.didApi.queryDid(
       Did.toChain(migratedFullDidUri)
     )
     const { document: migratedFullDid } = Did.linkedInfoFromChain(
@@ -528,7 +530,7 @@ describe('DID authorization', () => {
       storeDidCallback
     )
     await submitTx(createTx, paymentAccount)
-    const didLinkedInfo = await api.rpc.did.query(
+    const didLinkedInfo = await api.call.didApi.queryDid(
       Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
     )
     did = Did.linkedInfoFromChain(didLinkedInfo).document
@@ -633,7 +635,7 @@ describe('DID management batching', () => {
         storeDidCallback
       )
       await submitTx(extrinsic, paymentAccount)
-      const fullDidLinkedInfo = await api.rpc.did.query(
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -706,7 +708,7 @@ describe('DID management batching', () => {
       )
       await submitTx(extrinsic, paymentAccount)
 
-      const fullDidLinkedInfo = await api.rpc.did.query(
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(Did.getFullDidUriFromKey(didAuthKey))
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -769,7 +771,7 @@ describe('DID management batching', () => {
       )
       await submitTx(createTx, paymentAccount)
 
-      const initialFullDidLinkedInfo = await api.rpc.did.query(
+      const initialFullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
       const { document: initialFullDid } = Did.linkedInfoFromChain(
@@ -799,7 +801,7 @@ describe('DID management batching', () => {
       })
       await submitTx(extrinsic, paymentAccount)
 
-      const finalFullDidLinkedInfo = await api.rpc.did.query(
+      const finalFullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(initialFullDid.uri)
       )
       const { document: finalFullDid } = Did.linkedInfoFromChain(
@@ -835,7 +837,7 @@ describe('DID management batching', () => {
       )
       await submitTx(createTx, paymentAccount)
 
-      const initialFullDidLinkedInfo = await api.rpc.did.query(
+      const initialFullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
       const { document: initialFullDid } = Did.linkedInfoFromChain(
@@ -868,7 +870,7 @@ describe('DID management batching', () => {
 
       await submitTx(extrinsic, paymentAccount)
 
-      const finalFullDidLinkedInfo = await api.rpc.did.query(
+      const finalFullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(initialFullDid.uri)
       )
       const { document: finalFullDid } = Did.linkedInfoFromChain(
@@ -907,7 +909,7 @@ describe('DID management batching', () => {
       )
       // Create the full DID with a service endpoint
       await submitTx(tx, paymentAccount)
-      const fullDidLinkedInfo = await api.rpc.did.query(
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -934,7 +936,7 @@ describe('DID management batching', () => {
       // Now the second operation fails but the batch succeeds
       await submitTx(updateTx, paymentAccount)
 
-      const updatedFullDidLinkedInfo = await api.rpc.did.query(
+      const updatedFullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(fullDid.uri)
       )
       const { document: updatedFullDid } = Did.linkedInfoFromChain(
@@ -971,7 +973,7 @@ describe('DID management batching', () => {
         storeDidCallback
       )
       await submitTx(createTx, paymentAccount)
-      const fullDidLinkedInfo = await api.rpc.did.query(
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
       const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
@@ -1002,7 +1004,7 @@ describe('DID management batching', () => {
         name: 'ServiceAlreadyPresent',
       })
 
-      const updatedFullDidLinkedInfo = await api.rpc.did.query(
+      const updatedFullDidLinkedInfo = await api.call.didApi.queryDid(
         Did.toChain(fullDid.uri)
       )
       const { document: updatedFullDid } = Did.linkedInfoFromChain(

@@ -319,7 +319,7 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const encodedDidDetails = await api.rpc.did.query(
+  const encodedDidDetails = await api.call.didApi.queryDid(
     toChain(Did.getFullDidUri(uri))
   )
   return linkedInfoFromChain(encodedDidDetails).document
