@@ -89,7 +89,7 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       version: AugmentedCall<ApiType, () => Observable<RuntimeVersion>>;
     };
-    /** 0xa02708c798d60bce/1 */
+    /** 0xa02708c798d60bce/2 */
     didApi: {
       /**
        * Return the information relative to the owner of the provided DID, if present.

@@ -43,27 +43,53 @@ const v1Calls: Record<string, DefinitionCall> = {
   },
 }
 
+const v2Calls: Record<string, DefinitionCall> = {
+  query_did_by_w3n: {
+    description:
+      'Return the information relative to the owner of the provided web3name, if any.',
+    params: [
+      {
+        name: 'name',
+        type: 'Text',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
+  },
+  query_did_by_account_id: {
+    description:
+      'Return the information relative to the DID to which the provided account is linked, if any.',
+    params: [
+      {
+        name: 'account',
+        type: 'PalletDidLookupLinkableAccountLinkableAccountId',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
+  },
+  query_did: {
+    description:
+      'Return the information relative to the owner of the provided DID, if present.',
+    params: [
+      {
+        name: 'did',
+        type: 'AccountId32',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
+  },
+}
+
 export const calls: DefinitionsCall = {
   DidApi: [
     {
-      methods: { ...v1Calls },
+      methods: {
+        ...v1Calls,
+      },
       version: 1,
     },
     {
       methods: {
-        ...v1Calls,
-        // v2 replace simple AccountId32 with a PalletDidLookupLinkableAccountLinkableAccountId
-        query_did_by_account_id: {
-          description:
-            'Return the information relative to the DID to which the provided account is linked, if any.',
-          params: [
-            {
-              name: 'account',
-              type: 'PalletDidLookupLinkableAccountLinkableAccountId',
-            },
-          ],
-          type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
-        },
+        ...v2Calls,
       },
       version: 2,
     },
