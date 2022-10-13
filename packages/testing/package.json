@@ -34,7 +34,7 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/type-definitions": "0.2.1",
+    "@kiltprotocol/type-definitions": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^9.4.1",
