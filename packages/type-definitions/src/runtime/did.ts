@@ -17,7 +17,7 @@ const v1Calls: Record<string, DefinitionCall> = {
         type: 'Text',
       },
     ],
-    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+    type: 'Option<RawDidLinkedInfoV1>',
   },
   query_did_by_account_id: {
     description:
@@ -28,7 +28,7 @@ const v1Calls: Record<string, DefinitionCall> = {
         type: 'AccountId32',
       },
     ],
-    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+    type: 'Option<RawDidLinkedInfoV1>',
   },
   query_did: {
     description:
@@ -39,7 +39,7 @@ const v1Calls: Record<string, DefinitionCall> = {
         type: 'AccountId32',
       },
     ],
-    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, AccountId32, Balance, Key, BlockNumber>>',
+    type: 'Option<RawDidLinkedInfoV1>',
   },
 }
 
@@ -53,7 +53,7 @@ const v2Calls: Record<string, DefinitionCall> = {
         type: 'Text',
       },
     ],
-    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
+    type: 'Option<RawDidLinkedInfoV2>',
   },
   query_did_by_account_id: {
     description:
@@ -64,7 +64,7 @@ const v2Calls: Record<string, DefinitionCall> = {
         type: 'PalletDidLookupLinkableAccountLinkableAccountId',
       },
     ],
-    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
+    type: 'Option<RawDidLinkedInfoV2>',
   },
   query_did: {
     description:
@@ -75,7 +75,7 @@ const v2Calls: Record<string, DefinitionCall> = {
         type: 'AccountId32',
       },
     ],
-    type: 'Option<RawDidLinkedInfo<AccountId32, AccountId32, PalletDidLookupLinkableAccountLinkableAccountId, Balance, Key, BlockNumber>>',
+    type: 'Option<RawDidLinkedInfoV2>',
   },
 }
 
