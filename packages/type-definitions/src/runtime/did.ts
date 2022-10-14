@@ -79,6 +79,42 @@ const v2Calls: Record<string, DefinitionCall> = {
   },
 }
 
+const newDidApiCalls: Record<string, DefinitionCall> = {
+  query_by_web3_name: {
+    description:
+      'Return the information relative to the owner of the provided web3name, if any.',
+    params: [
+      {
+        name: 'name',
+        type: 'Text',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfoV2>',
+  },
+  query_by_account: {
+    description:
+      'Return the information relative to the DID to which the provided account is linked, if any.',
+    params: [
+      {
+        name: 'account',
+        type: 'PalletDidLookupLinkableAccountLinkableAccountId',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfoV2>',
+  },
+  query: {
+    description:
+      'Return the information relative to the owner of the provided DID, if present.',
+    params: [
+      {
+        name: 'did',
+        type: 'AccountId32',
+      },
+    ],
+    type: 'Option<RawDidLinkedInfoV2>',
+  },
+}
+
 export const calls: DefinitionsCall = {
   DidApi: [
     {
@@ -92,6 +128,14 @@ export const calls: DefinitionsCall = {
         ...v2Calls,
       },
       version: 2,
+    },
+  ],
+  Did: [
+    {
+      methods: {
+        ...newDidApiCalls,
+      },
+      version: 1,
     },
   ],
 }
