@@ -32,7 +32,7 @@ import {
   servicesFromChain,
 } from '../Did.chain.js'
 
-import { resolve, resolveKey, resolveService, strictResolve } from './index.js'
+import { resolve, resolveKey, resolveService } from './index.js'
 import * as Did from '../index.js'
 
 /**
@@ -450,22 +450,6 @@ describe('When resolving a light DID', () => {
       canonicalId: didWithAuthenticationKey,
     })
     expect(document).toBe(undefined)
-  })
-
-  it('correctly resolves a migrated and not deleted DID in compliant mode', async () => {
-    mockedApi.query.did.did.mockReturnValueOnce(encodedDidWithAuthenticationKey)
-
-    const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
-    const { document, metadata } = (await strictResolve(
-      migratedDid
-    )) as DidResolutionResult
-    if (document === undefined) throw new Error('Document unresolved')
-
-    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
-      deactivated: false,
-      canonicalId: didWithAuthenticationKey,
-    })
-    expect(document).toEqual({ uri: migratedDid })
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {
