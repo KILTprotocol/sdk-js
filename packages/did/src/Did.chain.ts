@@ -9,7 +9,6 @@ import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
 import type { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
-import type { Bytes } from '@polkadot/types-codec'
 import { BN } from '@polkadot/util'
 
 import type {
@@ -513,40 +512,4 @@ export function didSignatureToChain(
   }
 
   return { [key.type]: signature } as EncodedSignature
-}
-
-/**
- * Web3Name is the type of nickname for a DID.
- */
-export type Web3Name = string
-
-/**
- * Decodes the web3name of a DID.
- *
- * @param encoded The value returned by `api.query.web3Names.names()`.
- * @returns The registered web3name for this DID if any.
- */
-export function web3NameFromChain(encoded: Option<Bytes>): Web3Name {
-  return encoded.unwrap().toUtf8()
-}
-
-/**
- * Decodes the DID of the owner of web3name.
- *
- * @param encoded The value returned by `api.query.web3Names.owner()`.
- * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
- */
-export function web3NameOwnerFromChain(
-  encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
-): {
-  owner: DidUri
-  deposit: Deposit
-  claimedAt: BN
-} {
-  const { owner, deposit, claimedAt } = encoded.unwrap()
-  return {
-    owner: fromChain(owner),
-    deposit: depositFromChain(deposit),
-    claimedAt: claimedAt.toBn(),
-  }
 }

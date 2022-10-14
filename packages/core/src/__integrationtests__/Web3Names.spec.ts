@@ -95,17 +95,18 @@ describe('When there is an Web3NameCreator and a payer', () => {
   }, 30_000)
 
   it('should be possible to lookup the DID uri with the given nick', async () => {
-    const { owner } = Did.web3NameOwnerFromChain(
-      await api.query.web3Names.owner(nick)
-    )
-    expect(owner).toBe(w3nCreator.uri)
+    const {
+      document: { uri },
+    } = Did.linkedInfoFromChain(await api.call.didApi.queryDidByW3n(nick))
+    expect(uri).toStrictEqual(w3nCreator.uri)
   }, 30_000)
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
-    const resolved = Did.web3NameFromChain(
-      await api.query.web3Names.names(Did.toChain(w3nCreator.uri))
+    const encodedDidInfo = await api.call.didApi.queryDid(
+      Did.toChain(w3nCreator.uri)
     )
-    expect(resolved).toBe(nick)
+    const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
+    expect(didInfo.web3Name).toBe(nick)
   }, 30_000)
 
   it('should not be possible to create the same w3n twice', async () => {

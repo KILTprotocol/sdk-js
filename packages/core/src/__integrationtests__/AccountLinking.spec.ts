@@ -334,10 +334,9 @@ describe('When there is an on-chain DID', () => {
       await submitTx(signedTx, paymentAccount)
 
       // Check that the Web3 name has been linked to the DID
-      const { owner } = Did.web3NameOwnerFromChain(
-        await api.query.web3Names.owner('test-name')
-      )
-      expect(owner).toStrictEqual(did.uri)
+      const encodedQueryByW3n = await api.call.didApi.queryDidByW3n('test-name')
+      const queryByW3n = Did.linkedInfoFromChain(encodedQueryByW3n)
+      expect(queryByW3n.document.uri).toStrictEqual(did.uri)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
       const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
         Did.accountToChain(genericAccount.address)

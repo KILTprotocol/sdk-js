@@ -1118,11 +1118,11 @@ describe('DID extrinsics batching', () => {
     await submitTx(tx, paymentAccount)
 
     // Test for correct creation and deletion
-    const encoded1 = await api.query.web3Names.owner('test-1')
+    const encoded1 = await api.call.didApi.queryDidByW3n('test-1')
     expect(encoded1.isSome).toBe(false)
     // Test for correct creation of second web3 name
-    const encoded2 = await api.query.web3Names.owner('test-2')
-    expect(Did.web3NameOwnerFromChain(encoded2).owner).toStrictEqual(
+    const encoded2 = await api.call.didApi.queryDidByW3n('test-2')
+    expect(Did.linkedInfoFromChain(encoded2).document.uri).toStrictEqual(
       fullDid.uri
     )
   }, 30_000)
@@ -1167,13 +1167,13 @@ describe('DID extrinsics batching', () => {
     await submitTx(batchedExtrinsics, paymentAccount)
 
     // Test correct use of authentication keys
-    const encoded = await api.query.web3Names.owner('test')
+    const encoded = await api.call.didApi.queryDidByW3n('test')
     expect(encoded.isSome).toBe(false)
 
-    const { owner } = Did.web3NameOwnerFromChain(
-      await api.query.web3Names.owner('test-2')
-    )
-    expect(owner).toStrictEqual(fullDid.uri)
+    const {
+      document: { uri },
+    } = Did.linkedInfoFromChain(await api.call.didApi.queryDidByW3n('test-2'))
+    expect(uri).toStrictEqual(fullDid.uri)
 
     // Test correct use of attestation keys
     await expect(CType.verifyStored(ctype1)).resolves.not.toThrow()

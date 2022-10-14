@@ -34,7 +34,6 @@ import { Crypto, ss58Format } from '@kiltprotocol/utils'
 
 import { Address, SubstrateAddress } from './DidLinks/AccountLinks.chain.js'
 import { getFullDidUri } from './Did.utils.js'
-import { Web3Name } from './Did.chain.js'
 
 function fromChain(encoded: AccountId32): DidUri {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
@@ -137,10 +136,6 @@ function servicesFromChain(
   return encoded.map((encodedValue) => serviceFromChain(encodedValue))
 }
 
-function web3NameFromChain(encoded: Text): Web3Name {
-  return encoded.toHuman()
-}
-
 /**
  * Type describing storage type that is yet to be deployed to spiritnet.
  */
@@ -182,6 +177,11 @@ function connectedAccountsFromChain(
   )
 }
 
+/**
+ * Web3Name is the type of nickname for a DID.
+ */
+export type Web3Name = string
+
 export interface DidInfo {
   document: DidDocument
   web3Name?: Web3Name
@@ -216,7 +216,7 @@ export function linkedInfoFromChain(
     did.service = service
   }
 
-  const web3Name = w3n.isNone ? undefined : web3NameFromChain(w3n.unwrap())
+  const web3Name = w3n.isNone ? undefined : w3n.unwrap().toHuman()
   const linkedAccounts = connectedAccountsFromChain(accounts, networkPrefix)
 
   return {
