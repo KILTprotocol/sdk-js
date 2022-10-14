@@ -13,7 +13,6 @@ import type { ApiPromise } from '@polkadot/api'
 import { BN } from '@polkadot/util'
 
 import * as Did from '@kiltprotocol/did'
-import { resolve } from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   createMinimalLightDidFromKeypair,
@@ -110,7 +109,10 @@ describe('write and didDeleteTx', () => {
     await submitTx(tx, paymentAccount)
 
     const fullDidUri = Did.getFullDidUri(newDid.uri)
-    const fullDid = (await Did.fetch(fullDidUri)) as DidDocument
+    const fullDidLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(fullDidUri)
+    )
+    const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
     expect(fullDid).toMatchObject(<DidDocument>{
       uri: fullDidUri,
@@ -142,23 +144,15 @@ describe('write and didDeleteTx', () => {
     )
 
     const encodedDid = Did.toChain(emptyDid)
-    expect(
-      await api.query.did.serviceEndpoints.entries(encodedDid)
-    ).toHaveLength(0)
-
-    const encoded = await api.query.did.serviceEndpoints(
-      encodedDid,
-      Did.resourceIdToChain('#non-existing-service-id')
-    )
-    expect(encoded.isNone).toBe(true)
-
-    const endpointsCount = await api.query.did.didEndpointsCount(encodedDid)
-    expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
+    expect((await api.call.didApi.queryDid(encodedDid)).isSome).toBe(false)
   })
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     // We verify that the DID to delete is on chain.
-    const fullDid = (await Did.fetch(Did.getFullDidUri(did.uri))) as DidDocument
+    const fullDidLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(Did.getFullDidUri(did.uri))
+    )
+    const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
 
     const otherAccount = devBob
@@ -198,13 +192,17 @@ describe('write and didDeleteTx', () => {
 
   it('deletes DID from previous step', async () => {
     // We verify that the DID to delete is on chain.
-    const fullDid = (await Did.fetch(Did.getFullDidUri(did.uri))) as DidDocument
+    const fullDidLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(Did.getFullDidUri(did.uri))
+    )
+    const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
     expect(fullDid).not.toBeNull()
 
     const encodedDid = Did.toChain(fullDid.uri)
-    const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      encodedDid
+    const linkedInfo = Did.linkedInfoFromChain(
+      await api.call.didApi.queryDid(encodedDid)
     )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
     const call = api.tx.did.delete(storedEndpointsCount)
 
     const submittable = await Did.authorizeTx(
@@ -219,7 +217,7 @@ describe('write and didDeleteTx', () => {
 
     await submitTx(submittable, paymentAccount)
 
-    expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
+    expect((await api.call.didApi.queryDid(encodedDid)).isNone).toBe(true)
 
     // Check that DID is now blacklisted.
     expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
@@ -239,7 +237,10 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitTx(tx, paymentAccount)
 
   // This will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  let fullDid = (await Did.fetch(Did.getFullDidUri(newDid.uri))) as DidDocument
+  let fullDidLinkedInfo = await api.call.didApi.queryDid(
+    Did.toChain(Did.getFullDidUri(newDid.uri))
+  )
+  let { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
   const newKey = makeSigningKeyTool()
 
@@ -256,7 +257,10 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // Authentication key changed, so did must be updated.
   // Also this will better be handled once we have the UpdateBuilder class, which encapsulates all the logic.
-  fullDid = (await Did.fetch(Did.getFullDidUri(newDid.uri))) as DidDocument
+  fullDidLinkedInfo = await api.call.didApi.queryDid(
+    Did.toChain(Did.getFullDidUri(newDid.uri))
+  )
+  fullDid = Did.linkedInfoFromChain(fullDidLinkedInfo).document
 
   // Add a new service endpoint
   const newEndpoint: DidServiceEndpoint = {
@@ -277,11 +281,12 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitTx(tx3, paymentAccount)
 
   const encodedDid = Did.toChain(fullDid.uri)
-  const encoded = await api.query.did.serviceEndpoints(
-    encodedDid,
-    Did.resourceIdToChain(newEndpoint.id)
+  const linkedInfo = Did.linkedInfoFromChain(
+    await api.call.didApi.queryDid(encodedDid)
   )
-  expect(Did.serviceFromChain(encoded)).toStrictEqual(newEndpoint)
+  expect(Did.getService(linkedInfo.document, newEndpoint.id)).toStrictEqual(
+    newEndpoint
+  )
 
   // Delete the added service endpoint
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
@@ -296,26 +301,20 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitTx(tx4, paymentAccount)
 
   // There should not be any endpoint with the given ID now.
-  const encoded2 = await api.query.did.serviceEndpoints(
-    encodedDid,
-    Did.resourceIdToChain(newEndpoint.id)
+  const linkedInfo2 = Did.linkedInfoFromChain(
+    await api.call.didApi.queryDid(encodedDid)
   )
-  expect(encoded2.isNone).toBe(true)
+  expect(Did.getService(linkedInfo2.document, newEndpoint.id)).toBe(undefined)
 
   // Claim the deposit back
-  const storedEndpointsCount = await api.query.did.didEndpointsCount(encodedDid)
+  const storedEndpointsCount = linkedInfo2.document.service?.length ?? 0
   const reclaimDepositTx = api.tx.did.reclaimDeposit(
     encodedDid,
     storedEndpointsCount
   )
   await submitTx(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
-  expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
-  expect(await api.query.did.serviceEndpoints.entries(encodedDid)).toHaveLength(
-    0
-  )
-  const newEndpointsCount = await api.query.did.didEndpointsCount(encodedDid)
-  expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
+  expect((await api.call.didApi.queryDid(encodedDid)).isNone).toBe(true)
 }, 80_000)
 
 describe('DID migration', () => {
@@ -337,7 +336,12 @@ describe('DID migration', () => {
 
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-    const migratedFullDid = await Did.fetch(migratedFullDidUri)
+    const migratedFullDidLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(migratedFullDidUri)
+    )
+    const { document: migratedFullDid } = Did.linkedInfoFromChain(
+      migratedFullDidLinkedInfo
+    )
 
     expect(migratedFullDid).toMatchObject(<DidDocument>{
       uri: migratedFullDidUri,
@@ -356,10 +360,12 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
+      (await api.call.didApi.queryDid(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
-    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
+    const { metadata } = (await Did.resolve(
+      lightDid.uri
+    )) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -379,7 +385,12 @@ describe('DID migration', () => {
 
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-    const migratedFullDid = await Did.fetch(migratedFullDidUri)
+    const migratedFullDidLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(migratedFullDidUri)
+    )
+    const { document: migratedFullDid } = Did.linkedInfoFromChain(
+      migratedFullDidLinkedInfo
+    )
 
     expect(migratedFullDid).toMatchObject(<DidDocument>{
       uri: migratedFullDidUri,
@@ -392,10 +403,12 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
+      (await api.call.didApi.queryDid(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
-    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
+    const { metadata } = (await Did.resolve(
+      lightDid.uri
+    )) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
@@ -427,7 +440,12 @@ describe('DID migration', () => {
 
     await submitTx(storeTx, paymentAccount)
     const migratedFullDidUri = Did.getFullDidUri(lightDid.uri)
-    const migratedFullDid = await Did.fetch(migratedFullDidUri)
+    const migratedFullDidLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(migratedFullDidUri)
+    )
+    const { document: migratedFullDid } = Did.linkedInfoFromChain(
+      migratedFullDidLinkedInfo
+    )
 
     expect(migratedFullDid).toMatchObject(<DidDocument>{
       uri: migratedFullDidUri,
@@ -453,27 +471,27 @@ describe('DID migration', () => {
     })
 
     const encodedDid = Did.toChain(migratedFullDid.uri)
-    expect((await api.query.did.did(encodedDid)).isSome).toBe(true)
+    expect((await api.call.didApi.queryDid(encodedDid)).isSome).toBe(true)
 
-    const { metadata } = (await resolve(lightDid.uri)) as DidResolutionResult
+    const { metadata } = (await Did.resolve(
+      lightDid.uri
+    )) as DidResolutionResult
 
     expect(metadata.canonicalId).toStrictEqual(migratedFullDid.uri)
     expect(metadata.deactivated).toBe(false)
 
     // Remove and claim the deposit back
-    const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      encodedDid
+    const linkedInfo = Did.linkedInfoFromChain(
+      await api.call.didApi.queryDid(encodedDid)
     )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
     const reclaimDepositTx = api.tx.did.reclaimDeposit(
       encodedDid,
       storedEndpointsCount
     )
     await submitTx(reclaimDepositTx, paymentAccount)
 
-    expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
-    expect(
-      await api.query.did.serviceEndpoints.entries(encodedDid)
-    ).toStrictEqual([])
+    expect((await api.call.didApi.queryDid(encodedDid)).isNone).toBe(true)
     expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
   }, 60_000)
 })
@@ -495,7 +513,10 @@ describe('DID authorization', () => {
       storeDidCallback
     )
     await submitTx(createTx, paymentAccount)
-    did = await Did.fetch(Did.getFullDidUriFromKey(authentication[0]))
+    const didLinkedInfo = await api.call.didApi.queryDid(
+      Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
+    )
+    did = Did.linkedInfoFromChain(didLinkedInfo).document
   }, 60_000)
 
   it('authorizes ctype creation with DID signature', async () => {
@@ -513,9 +534,10 @@ describe('DID authorization', () => {
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
-    const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      Did.toChain(did.uri)
+    const linkedInfo = Did.linkedInfoFromChain(
+      await api.call.didApi.queryDid(Did.toChain(did.uri))
     )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
     const deleteCall = api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeTx(
       did.uri,
@@ -597,10 +619,10 @@ describe('DID management batching', () => {
         storeDidCallback
       )
       await submitTx(extrinsic, paymentAccount)
-
-      const fullDid = await Did.fetch(
-        Did.getFullDidUriFromKey(authentication[0])
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid).not.toBeNull()
       expect(fullDid).toMatchObject({
@@ -670,7 +692,10 @@ describe('DID management batching', () => {
       )
       await submitTx(extrinsic, paymentAccount)
 
-      const fullDid = await Did.fetch(Did.getFullDidUriFromKey(didAuthKey))
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(Did.getFullDidUriFromKey(didAuthKey))
+      )
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid).not.toBeNull()
       expect(fullDid?.authentication).toMatchObject<NewDidVerificationKey[]>([
@@ -730,8 +755,11 @@ describe('DID management batching', () => {
       )
       await submitTx(createTx, paymentAccount)
 
-      const initialFullDid = await Did.fetch(
-        Did.getFullDidUriFromKey(authentication[0])
+      const initialFullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
+      )
+      const { document: initialFullDid } = Did.linkedInfoFromChain(
+        initialFullDidLinkedInfo
       )
 
       const encryptionKeys = initialFullDid.keyAgreement
@@ -757,7 +785,12 @@ describe('DID management batching', () => {
       })
       await submitTx(extrinsic, paymentAccount)
 
-      const finalFullDid = (await Did.fetch(initialFullDid.uri)) as DidDocument
+      const finalFullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(initialFullDid.uri)
+      )
+      const { document: finalFullDid } = Did.linkedInfoFromChain(
+        finalFullDidLinkedInfo
+      )
 
       expect(finalFullDid).not.toBeNull()
 
@@ -788,8 +821,11 @@ describe('DID management batching', () => {
       )
       await submitTx(createTx, paymentAccount)
 
-      const initialFullDid = await Did.fetch(
-        Did.getFullDidUriFromKey(authentication[0])
+      const initialFullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
+      )
+      const { document: initialFullDid } = Did.linkedInfoFromChain(
+        initialFullDidLinkedInfo
       )
 
       const extrinsic = await Did.authorizeBatch({
@@ -818,7 +854,12 @@ describe('DID management batching', () => {
 
       await submitTx(extrinsic, paymentAccount)
 
-      const finalFullDid = (await Did.fetch(initialFullDid.uri)) as DidDocument
+      const finalFullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(initialFullDid.uri)
+      )
+      const { document: finalFullDid } = Did.linkedInfoFromChain(
+        finalFullDidLinkedInfo
+      )
 
       expect(finalFullDid).not.toBeNull()
 
@@ -852,9 +893,10 @@ describe('DID management batching', () => {
       )
       // Create the full DID with a service endpoint
       await submitTx(tx, paymentAccount)
-      const fullDid = await Did.fetch(
-        Did.getFullDidUriFromKey(authentication[0])
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
@@ -878,7 +920,12 @@ describe('DID management batching', () => {
       // Now the second operation fails but the batch succeeds
       await submitTx(updateTx, paymentAccount)
 
-      const updatedFullDid = await Did.fetch(fullDid.uri)
+      const updatedFullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(fullDid.uri)
+      )
+      const { document: updatedFullDid } = Did.linkedInfoFromChain(
+        updatedFullDidLinkedInfo
+      )
 
       // .setAttestationKey() extrinsic went through in the batch
       expect(updatedFullDid.assertionMethod?.[0]).toBeDefined()
@@ -910,9 +957,10 @@ describe('DID management batching', () => {
         storeDidCallback
       )
       await submitTx(createTx, paymentAccount)
-      const fullDid = await Did.fetch(
-        Did.getFullDidUriFromKey(authentication[0])
+      const fullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(Did.getFullDidUriFromKey(authentication[0]))
       )
+      const { document: fullDid } = Did.linkedInfoFromChain(fullDidLinkedInfo)
 
       expect(fullDid.assertionMethod).toBeUndefined()
 
@@ -940,7 +988,12 @@ describe('DID management batching', () => {
         name: 'ServiceAlreadyPresent',
       })
 
-      const updatedFullDid = await Did.fetch(fullDid.uri)
+      const updatedFullDidLinkedInfo = await api.call.didApi.queryDid(
+        Did.toChain(fullDid.uri)
+      )
+      const { document: updatedFullDid } = Did.linkedInfoFromChain(
+        updatedFullDidLinkedInfo
+      )
       // .setAttestationKey() extrinsic went through but it was then reverted
       expect(updatedFullDid.assertionMethod).toBeUndefined()
       // The service endpoint will match the one manually added, and not the one set in the builder.
@@ -1049,11 +1102,11 @@ describe('DID extrinsics batching', () => {
     await submitTx(tx, paymentAccount)
 
     // Test for correct creation and deletion
-    const encoded1 = await api.query.web3Names.owner('test-1')
+    const encoded1 = await api.call.didApi.queryDidByW3n('test-1')
     expect(encoded1.isSome).toBe(false)
     // Test for correct creation of second web3 name
-    const encoded2 = await api.query.web3Names.owner('test-2')
-    expect(Did.web3NameOwnerFromChain(encoded2).owner).toStrictEqual(
+    const encoded2 = await api.call.didApi.queryDidByW3n('test-2')
+    expect(Did.linkedInfoFromChain(encoded2).document.uri).toStrictEqual(
       fullDid.uri
     )
   }, 30_000)
@@ -1098,13 +1151,13 @@ describe('DID extrinsics batching', () => {
     await submitTx(batchedExtrinsics, paymentAccount)
 
     // Test correct use of authentication keys
-    const encoded = await api.query.web3Names.owner('test')
+    const encoded = await api.call.didApi.queryDidByW3n('test')
     expect(encoded.isSome).toBe(false)
 
-    const { owner } = Did.web3NameOwnerFromChain(
-      await api.query.web3Names.owner('test-2')
-    )
-    expect(owner).toStrictEqual(fullDid.uri)
+    const {
+      document: { uri },
+    } = Did.linkedInfoFromChain(await api.call.didApi.queryDidByW3n('test-2'))
+    expect(uri).toStrictEqual(fullDid.uri)
 
     // Test correct use of attestation keys
     await expect(CType.verifyStored(ctype1)).resolves.not.toThrow()

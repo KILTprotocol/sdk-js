@@ -23,6 +23,7 @@ const { kilt } = window
 const {
   Claim,
   Attestation,
+  ConfigService,
   Credential,
   CType,
   Did,
@@ -32,7 +33,7 @@ const {
   BalanceUtils,
 } = kilt
 
-kilt.ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
 function makeSignCallback(
   keypair: KeyringPair
@@ -132,6 +133,7 @@ async function createFullDidFromKeypair(
   keypair: KiltKeyringPair,
   encryptionKey: NewDidEncryptionKey
 ) {
+  const api = ConfigService.get('api')
   const sign = makeStoreDidCallback(keypair)
 
   const storeTx = await Did.getStoreTx(
@@ -146,7 +148,8 @@ async function createFullDidFromKeypair(
   )
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
-  return Did.fetch(Did.getFullDidUriFromKey(keypair))
+  const encodedDidDetails = await api.call.didApi.queryDid(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  return Did.linkedInfoFromChain(encodedDidDetails).document
 }
 
 async function runAll() {
@@ -218,7 +221,8 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
-  const fullDid = await Did.fetch(Did.getFullDidUriFromKey(keypair))
+  const encodedDidDetails = await api.call.didApi.queryDid(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  const fullDid = Did.linkedInfoFromChain(encodedDidDetails).document
   const resolved = await Did.resolve(fullDid.uri)
 
   if (

@@ -215,6 +215,13 @@ export function getMockedApi(): MockApiPromise {
       },
       chain: { subscribeNewHeads: jest.fn() },
     },
+    call: {
+      didApi: {
+        queryDid: jest.fn(),
+        queryDidByAccountId: jest.fn(),
+        queryDidByW3n: jest.fn(),
+      },
+    },
     tx: {
       attestation: {
         add: jest.fn((claimHash, _cTypeHash) => getMockSubmittableTx()),
