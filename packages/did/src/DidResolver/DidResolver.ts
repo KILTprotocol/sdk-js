@@ -39,7 +39,6 @@ export async function resolve(
   const api = ConfigService.get('api')
 
   let document: DidDocument | undefined
-  // eslint-disable-next-line no-useless-catch
   try {
     const encodedLinkedInfo = await api.call.didApi.queryDid(toChain(did))
     document = linkedInfoFromChain(encodedLinkedInfo).document
