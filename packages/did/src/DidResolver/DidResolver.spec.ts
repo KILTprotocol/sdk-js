@@ -63,7 +63,7 @@ beforeAll(() => {
   jest
     .spyOn(mockedApi.call.didApi, 'queryDid')
     .mockImplementation((identifier) => {
-      return augmentedApi.createType('Option<RawDidLinkedInfo>', {
+      return augmentedApi.createType('Option<RawDidLinkedInfoV2>', {
         identifier,
         accounts: [],
         w3n: null,
@@ -364,7 +364,7 @@ describe('When resolving a full DID', () => {
     jest
       .spyOn(mockedApi.call.didApi, 'queryDid')
       .mockRejectedValueOnce(
-        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
       )
     const randomDid = getFullDidUriFromKey(
       makeSigningKeyTool().authentication[0]
@@ -377,7 +377,7 @@ describe('When resolving a full DID', () => {
     jest
       .spyOn(mockedApi.call.didApi, 'queryDid')
       .mockRejectedValueOnce(
-        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
       )
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
@@ -414,7 +414,7 @@ describe('When resolving a light DID', () => {
     jest
       .spyOn(mockedApi.call.didApi, 'queryDid')
       .mockResolvedValue(
-        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
       )
   })
 
@@ -487,7 +487,7 @@ describe('When resolving a light DID', () => {
   it('correctly resolves a migrated and not deleted DID', async () => {
     // RPC call changed to return something.
     jest.spyOn(mockedApi.call.didApi, 'queryDid').mockResolvedValueOnce(
-      augmentedApi.createType('Option<RawDidLinkedInfo>', {
+      augmentedApi.createType('Option<RawDidLinkedInfoV2>', {
         addressWithAuthenticationKey,
         accounts: [],
         w3n: null,
@@ -520,7 +520,7 @@ describe('When resolving a light DID', () => {
   it('correctly resolves a migrated and not deleted DID in compliant mode', async () => {
     // RPC call changed to return something.
     jest.spyOn(mockedApi.call.didApi, 'queryDid').mockResolvedValueOnce(
-      augmentedApi.createType('Option<RawDidLinkedInfo>', {
+      augmentedApi.createType('Option<RawDidLinkedInfoV2>', {
         addressWithAuthenticationKey,
         accounts: [],
         w3n: null,

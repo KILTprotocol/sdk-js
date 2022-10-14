@@ -44,6 +44,7 @@ export function createAugmentedApi(
   const api = new ApiPromise({
     provider: new WsProvider('ws://', false),
     types,
+    registry,
   })
 
   api.injectMetadata(metadata, true)
