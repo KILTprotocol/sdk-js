@@ -144,17 +144,7 @@ describe('write and didDeleteTx', () => {
     )
 
     const encodedDid = Did.toChain(emptyDid)
-    const linkedInfo = Did.linkedInfoFromChain(
-      await api.call.didApi.queryDid(encodedDid)
-    )
-    expect(linkedInfo.document.service).toHaveLength(0)
-
-    expect(
-      Did.getService(linkedInfo.document, '#non-existing-service-id')
-    ).toBe(null)
-
-    const endpointsCount = linkedInfo.document.service?.length ?? 0
-    expect(endpointsCount).toStrictEqual(0)
+    expect((await api.call.didApi.queryDid(encodedDid)).isSome).toBe(false)
   })
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
@@ -314,7 +304,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const linkedInfo2 = Did.linkedInfoFromChain(
     await api.call.didApi.queryDid(encodedDid)
   )
-  expect(Did.getService(linkedInfo2.document, newEndpoint.id)).toBe(null)
+  expect(Did.getService(linkedInfo2.document, newEndpoint.id)).toBe(undefined)
 
   // Claim the deposit back
   const storedEndpointsCount = linkedInfo2.document.service?.length ?? 0
