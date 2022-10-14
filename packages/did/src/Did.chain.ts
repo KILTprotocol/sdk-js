@@ -8,7 +8,6 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import type { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
 import { BN } from '@polkadot/util'
 
 import type {
@@ -279,18 +278,6 @@ export function serviceFromChain(
     type: serviceTypes.map((type) => type.toUtf8()),
     serviceEndpoint: urls.map((url) => url.toUtf8()),
   }
-}
-
-/**
- * Decode service endpoint records associated with the full DID from the KILT blockchain.
- *
- * @param encoded The data returned by `api.query.did.serviceEndpoints.entries`.
- * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
- */
-export function servicesFromChain(
-  encoded: Array<[any, Option<DidServiceEndpointsDidEndpoint>]>
-): DidServiceEndpoint[] {
-  return encoded.map(([, encodedValue]) => serviceFromChain(encodedValue))
 }
 
 // ### EXTRINSICS types

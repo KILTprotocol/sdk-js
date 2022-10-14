@@ -5,15 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
-  decodeAddress,
-  encodeAddress,
-  ethereumEncode,
-  signatureVerify,
-} from '@polkadot/util-crypto'
-import type { Enum, StorageKey, U8aFixed } from '@polkadot/types'
-import type { AccountId32 } from '@polkadot/types/interfaces'
-import type { AnyNumber, Codec, TypeDef } from '@polkadot/types/types'
+import { decodeAddress, signatureVerify } from '@polkadot/util-crypto'
+import type { AnyNumber, TypeDef } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
@@ -26,7 +19,7 @@ import {
 } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
 
-import { SDKErrors, ss58Format } from '@kiltprotocol/utils'
+import { SDKErrors } from '@kiltprotocol/utils'
 import type { DidUri, KiltAddress } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 
@@ -43,17 +36,6 @@ export type Address = KiltAddress | SubstrateAddress | EthereumAddress
 type EncodedMultiAddress =
   | { AccountId20: Uint8Array }
   | { AccountId32: Uint8Array }
-
-/**
- * Type describing storage type that is yet to be deployed to spiritnet.
- */
-interface PalletDidLookupLinkableAccountLinkableAccountId extends Enum {
-  readonly isAccountId20: boolean
-  readonly asAccountId20: U8aFixed
-  readonly isAccountId32: boolean
-  readonly asAccountId32: AccountId32
-  readonly type: 'AccountId20' | 'AccountId32'
-}
 
 /**
  * Detects whether api decoration indicates presence of Ethereum linking enabled pallet.
@@ -104,43 +86,6 @@ export function accountToChain(account: Address): Address {
   const encoded: EncodedMultiAddress = encodeMultiAddress(account)
   // Force type cast to enable the old blockchain types to accept the future format
   return encoded as unknown as Address
-}
-
-function isLinkableAccountId(
-  arg: Codec
-): arg is PalletDidLookupLinkableAccountLinkableAccountId {
-  return 'isAccountId32' in arg && 'isAccountId20' in arg
-}
-
-function accountFromChain(
-  account: AccountId32,
-  networkPrefix = ss58Format
-): KiltAddress | SubstrateAddress {
-  if (isLinkableAccountId(account)) {
-    // linked account is substrate address (ethereum-enabled storage version)
-    if (account.isAccountId32)
-      return encodeAddress(account.asAccountId32, networkPrefix)
-    // linked account is ethereum address (ethereum-enabled storage version)
-    if (account.isAccountId20) return ethereumEncode(account.asAccountId20)
-  }
-  // linked account is substrate account (legacy storage version)
-  return encodeAddress(account.toU8a(), networkPrefix)
-}
-
-/**
- * Decodes the accounts linked to the provided DID.
- *
- * @param encoded The data returned by `api.query.didLookup.connectedAccounts.keys()`.
- * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
- * @returns A list of addresses of accounts, encoded using `networkPrefix`.
- */
-export function connectedAccountsFromChain(
-  encoded: Array<StorageKey<[AccountId32, AccountId32]>>,
-  networkPrefix = ss58Format
-): Array<KiltAddress | SubstrateAddress> {
-  return encoded.map<string>(({ args: [, accountAddress] }) =>
-    accountFromChain(accountAddress, networkPrefix)
-  )
 }
 
 /* ### EXTRINSICS ### */

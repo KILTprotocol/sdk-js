@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Enum, Option, Text, U8aFixed, Vec } from '@polkadot/types'
+import type { Enum, Option, U8aFixed, Vec } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { AccountId32, Hash } from '@polkadot/types/interfaces'
 import type {

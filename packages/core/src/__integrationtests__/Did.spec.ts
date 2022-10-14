@@ -144,18 +144,17 @@ describe('write and didDeleteTx', () => {
     )
 
     const encodedDid = Did.toChain(emptyDid)
-    expect(
-      await api.query.did.serviceEndpoints.entries(encodedDid)
-    ).toHaveLength(0)
-
-    const encoded = await api.query.did.serviceEndpoints(
-      encodedDid,
-      Did.resourceIdToChain('#non-existing-service-id')
+    const linkedInfo = Did.linkedInfoFromChain(
+      await api.call.didApi.queryDid(encodedDid)
     )
-    expect(encoded.isNone).toBe(true)
+    expect(linkedInfo.document.service).toHaveLength(0)
 
-    const endpointsCount = await api.query.did.didEndpointsCount(encodedDid)
-    expect(endpointsCount.toString()).toStrictEqual(new BN(0).toString())
+    expect(
+      Did.getService(linkedInfo.document, '#non-existing-service-id')
+    ).toBe(null)
+
+    const endpointsCount = linkedInfo.document.service?.length ?? 0
+    expect(endpointsCount).toStrictEqual(0)
   })
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
@@ -210,9 +209,10 @@ describe('write and didDeleteTx', () => {
     expect(fullDid).not.toBeNull()
 
     const encodedDid = Did.toChain(fullDid.uri)
-    const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      encodedDid
+    const linkedInfo = Did.linkedInfoFromChain(
+      await api.call.didApi.queryDid(encodedDid)
     )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
     const call = api.tx.did.delete(storedEndpointsCount)
 
     const submittable = await Did.authorizeTx(
@@ -227,7 +227,7 @@ describe('write and didDeleteTx', () => {
 
     await submitTx(submittable, paymentAccount)
 
-    expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
+    expect((await api.call.didApi.queryDid(encodedDid)).isNone).toBe(true)
 
     // Check that DID is now blacklisted.
     expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
@@ -291,11 +291,12 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitTx(tx3, paymentAccount)
 
   const encodedDid = Did.toChain(fullDid.uri)
-  const encoded = await api.query.did.serviceEndpoints(
-    encodedDid,
-    Did.resourceIdToChain(newEndpoint.id)
+  const linkedInfo = Did.linkedInfoFromChain(
+    await api.call.didApi.queryDid(encodedDid)
   )
-  expect(Did.serviceFromChain(encoded)).toStrictEqual(newEndpoint)
+  expect(Did.getService(linkedInfo.document, newEndpoint.id)).toStrictEqual(
+    newEndpoint
+  )
 
   // Delete the added service endpoint
   const removeEndpointCall = api.tx.did.removeServiceEndpoint(
@@ -310,26 +311,20 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await submitTx(tx4, paymentAccount)
 
   // There should not be any endpoint with the given ID now.
-  const encoded2 = await api.query.did.serviceEndpoints(
-    encodedDid,
-    Did.resourceIdToChain(newEndpoint.id)
+  const linkedInfo2 = Did.linkedInfoFromChain(
+    await api.call.didApi.queryDid(encodedDid)
   )
-  expect(encoded2.isNone).toBe(true)
+  expect(Did.getService(linkedInfo2.document, newEndpoint.id)).toBe(null)
 
   // Claim the deposit back
-  const storedEndpointsCount = await api.query.did.didEndpointsCount(encodedDid)
+  const storedEndpointsCount = linkedInfo2.document.service?.length ?? 0
   const reclaimDepositTx = api.tx.did.reclaimDeposit(
     encodedDid,
     storedEndpointsCount
   )
   await submitTx(reclaimDepositTx, paymentAccount)
   // Verify that the DID has been deleted
-  expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
-  expect(await api.query.did.serviceEndpoints.entries(encodedDid)).toHaveLength(
-    0
-  )
-  const newEndpointsCount = await api.query.did.didEndpointsCount(encodedDid)
-  expect(newEndpointsCount.toString()).toStrictEqual(new BN(0).toString())
+  expect((await api.call.didApi.queryDid(encodedDid)).isNone).toBe(true)
 }, 80_000)
 
 describe('DID migration', () => {
@@ -375,7 +370,7 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
+      (await api.call.didApi.queryDid(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
     const { metadata } = (await Did.resolve(
@@ -418,7 +413,7 @@ describe('DID migration', () => {
     })
 
     expect(
-      (await api.query.did.did(Did.toChain(migratedFullDid.uri))).isSome
+      (await api.call.didApi.queryDid(Did.toChain(migratedFullDid.uri))).isSome
     ).toBe(true)
 
     const { metadata } = (await Did.resolve(
@@ -486,7 +481,7 @@ describe('DID migration', () => {
     })
 
     const encodedDid = Did.toChain(migratedFullDid.uri)
-    expect((await api.query.did.did(encodedDid)).isSome).toBe(true)
+    expect((await api.call.didApi.queryDid(encodedDid)).isSome).toBe(true)
 
     const { metadata } = (await Did.resolve(
       lightDid.uri
@@ -496,19 +491,17 @@ describe('DID migration', () => {
     expect(metadata.deactivated).toBe(false)
 
     // Remove and claim the deposit back
-    const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      encodedDid
+    const linkedInfo = Did.linkedInfoFromChain(
+      await api.call.didApi.queryDid(encodedDid)
     )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
     const reclaimDepositTx = api.tx.did.reclaimDeposit(
       encodedDid,
       storedEndpointsCount
     )
     await submitTx(reclaimDepositTx, paymentAccount)
 
-    expect((await api.query.did.did(encodedDid)).isNone).toBe(true)
-    expect(
-      await api.query.did.serviceEndpoints.entries(encodedDid)
-    ).toStrictEqual([])
+    expect((await api.call.didApi.queryDid(encodedDid)).isNone).toBe(true)
     expect((await api.query.did.didBlacklist(encodedDid)).isSome).toBe(true)
   }, 60_000)
 })
@@ -551,9 +544,10 @@ describe('DID authorization', () => {
   }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
-    const storedEndpointsCount = await api.query.did.didEndpointsCount(
-      Did.toChain(did.uri)
+    const linkedInfo = Did.linkedInfoFromChain(
+      await api.call.didApi.queryDid(Did.toChain(did.uri))
     )
+    const storedEndpointsCount = linkedInfo.document.service?.length ?? 0
     const deleteCall = api.tx.did.delete(storedEndpointsCount)
     const tx = await Did.authorizeTx(
       did.uri,
