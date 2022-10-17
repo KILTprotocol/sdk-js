@@ -6,8 +6,10 @@
  */
 
 import type {
+  ConformingDidDocument,
   DidDocument,
   DidKey,
+  DidResolutionDocumentMetadata,
   DidResolutionResult,
   DidResourceUri,
   DidUri,
@@ -23,6 +25,7 @@ import * as Did from '../index.js'
 import { toChain } from '../Did.chain.js'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 import { getFullDidUri, parse } from '../Did.utils.js'
+import { exportToDidDocument } from '../DidDocumentExporter/DidDocumentExporter.js'
 
 /**
  * Resolve a DID URI to the DID document and its metadata.
@@ -96,6 +99,59 @@ export async function resolve(
       deactivated: false,
     },
   }
+}
+
+type DidResolutionMetadata = {
+  error?: 'notFound' | 'invalidDidUrl'
+  errorMessage?: string
+}
+
+type DidDocumentMetadata = Partial<DidResolutionDocumentMetadata>
+
+/**
+ * Implementation of `resolve` compliant with W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ * As opposed to `resolve`, which takes a more pragmatic approach, the `didDocument` property contains a fully compliant DID document abstract data model.
+ * Additionally, this function returns an id-only DID document in the case where a DID has been deleted or upgraded.
+ * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
+ *
+ * @param did The DID to resolve.
+ * @returns `didResolutionMetadata`, `didDocument`, and `didDocumentMetadata` as an object.
+ */
+export async function resolveCompliant(did: DidUri): Promise<{
+  didDocumentMetadata: DidDocumentMetadata
+  didResolutionMetadata: DidResolutionMetadata
+  didDocument?: ConformingDidDocument | Pick<ConformingDidDocument, 'id'>
+}> {
+  const result: {
+    didDocumentMetadata: DidDocumentMetadata
+    didResolutionMetadata: DidResolutionMetadata
+    didDocument?: ConformingDidDocument | Pick<ConformingDidDocument, 'id'>
+  } = {
+    didDocumentMetadata: {},
+    didResolutionMetadata: {},
+  }
+  try {
+    Did.validateUri(did, 'Did')
+  } catch (error) {
+    result.didResolutionMetadata.error = 'invalidDidUrl'
+    if (error instanceof Error) {
+      result.didResolutionMetadata.errorMessage =
+        error.name + error.message ? `: ${error.message}` : ''
+    }
+    return result
+  }
+  const resolutionResult = await resolve(did)
+  if (!resolutionResult) {
+    result.didResolutionMetadata.error = 'notFound'
+    result.didResolutionMetadata.errorMessage = `DID ${did} not found (on chain)`
+    return result
+  }
+  result.didDocumentMetadata = resolutionResult.metadata
+  result.didDocument = resolutionResult.document
+    ? exportToDidDocument(resolutionResult.document, 'application/json')
+    : { id: did }
+
+  return result
 }
 
 /**
