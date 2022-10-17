@@ -221,6 +221,11 @@ export function getMockedApi(): MockApiPromise {
         queryDidByAccountId: jest.fn(),
         queryDidByW3n: jest.fn(),
       },
+      did: {
+        query: jest.fn(),
+        queryByAccount: jest.fn(),
+        queryByWeb3Name: jest.fn(),
+      },
     },
     tx: {
       attestation: {
