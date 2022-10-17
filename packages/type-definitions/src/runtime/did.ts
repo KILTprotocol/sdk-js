@@ -7,7 +7,7 @@
 
 import type { DefinitionsCall, DefinitionCall } from '@polkadot/types/types'
 
-const v1Calls: Record<string, DefinitionCall> = {
+const oldDidApiCalls: Record<string, DefinitionCall> = {
   query_did_by_w3n: {
     description:
       'Return the information relative to the owner of the provided web3name, if any.',
@@ -17,7 +17,7 @@ const v1Calls: Record<string, DefinitionCall> = {
         type: 'Text',
       },
     ],
-    type: 'Option<RawDidLinkedInfoV1>',
+    type: 'Option<RawDidLinkedInfo>',
   },
   query_did_by_account_id: {
     description:
@@ -25,10 +25,10 @@ const v1Calls: Record<string, DefinitionCall> = {
     params: [
       {
         name: 'account',
-        type: 'AccountId32',
+        type: 'DidApiAccountId',
       },
     ],
-    type: 'Option<RawDidLinkedInfoV1>',
+    type: 'Option<RawDidLinkedInfo>',
   },
   query_did: {
     description:
@@ -39,43 +39,7 @@ const v1Calls: Record<string, DefinitionCall> = {
         type: 'AccountId32',
       },
     ],
-    type: 'Option<RawDidLinkedInfoV1>',
-  },
-}
-
-const v2Calls: Record<string, DefinitionCall> = {
-  query_did_by_w3n: {
-    description:
-      'Return the information relative to the owner of the provided web3name, if any.',
-    params: [
-      {
-        name: 'name',
-        type: 'Text',
-      },
-    ],
-    type: 'Option<RawDidLinkedInfoV2>',
-  },
-  query_did_by_account_id: {
-    description:
-      'Return the information relative to the DID to which the provided account is linked, if any.',
-    params: [
-      {
-        name: 'account',
-        type: 'PalletDidLookupLinkableAccountLinkableAccountId',
-      },
-    ],
-    type: 'Option<RawDidLinkedInfoV2>',
-  },
-  query_did: {
-    description:
-      'Return the information relative to the owner of the provided DID, if present.',
-    params: [
-      {
-        name: 'did',
-        type: 'AccountId32',
-      },
-    ],
-    type: 'Option<RawDidLinkedInfoV2>',
+    type: 'Option<RawDidLinkedInfo>',
   },
 }
 
@@ -89,7 +53,7 @@ const newDidApiCalls: Record<string, DefinitionCall> = {
         type: 'Text',
       },
     ],
-    type: 'Option<RawDidLinkedInfoV2>',
+    type: 'Option<RawDidLinkedInfo>',
   },
   query_by_account: {
     description:
@@ -97,10 +61,10 @@ const newDidApiCalls: Record<string, DefinitionCall> = {
     params: [
       {
         name: 'account',
-        type: 'PalletDidLookupLinkableAccountLinkableAccountId',
+        type: 'DidApiAccountId',
       },
     ],
-    type: 'Option<RawDidLinkedInfoV2>',
+    type: 'Option<RawDidLinkedInfo>',
   },
   query: {
     description:
@@ -111,7 +75,7 @@ const newDidApiCalls: Record<string, DefinitionCall> = {
         type: 'AccountId32',
       },
     ],
-    type: 'Option<RawDidLinkedInfoV2>',
+    type: 'Option<RawDidLinkedInfo>',
   },
 }
 
@@ -119,13 +83,14 @@ export const calls: DefinitionsCall = {
   DidApi: [
     {
       methods: {
-        ...v1Calls,
+        ...oldDidApiCalls,
       },
       version: 1,
     },
+    // Same calls, since the type of AccountId is overwritten in the type definitions
     {
       methods: {
-        ...v2Calls,
+        ...oldDidApiCalls,
       },
       version: 2,
     },

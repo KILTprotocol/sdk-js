@@ -9,16 +9,10 @@ import type { RegistryTypes } from '@polkadot/types/types'
 
 export const types10720: RegistryTypes = {
   // DID state_call
-  RawDidLinkedInfoV1: {
+  DidApiAccountId: 'AccountId32',
+  RawDidLinkedInfo: {
     identifier: 'AccountId32',
-    accounts: 'Vec<AccountId32>',
-    w3n: 'Option<Text>',
-    serviceEndpoints: 'Vec<RawServiceEndpoints>',
-    details: 'RawDidDetails',
-  },
-  RawDidLinkedInfoV2: {
-    identifier: 'AccountId32',
-    accounts: 'Vec<PalletDidLookupLinkableAccountLinkableAccountId>',
+    accounts: 'Vec<DidApiAccountId>',
     w3n: 'Option<Text>',
     serviceEndpoints: 'Vec<RawServiceEndpoints>',
     details: 'RawDidDetails',
