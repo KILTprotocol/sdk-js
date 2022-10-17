@@ -28,7 +28,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { getFullDidUriFromKey } from '../Did.utils'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 
-import { resolve, resolveKey, resolveService, strictResolve } from './index.js'
+import { resolve, resolveKey, resolveService } from './index.js'
 import * as Did from '../index.js'
 
 /**
@@ -515,40 +515,6 @@ describe('When resolving a light DID', () => {
       canonicalId: didWithAuthenticationKey,
     })
     expect(document).toBe(undefined)
-  })
-
-  it('correctly resolves a migrated and not deleted DID in compliant mode', async () => {
-    // RPC call changed to return something.
-    jest.spyOn(mockedApi.call.didApi, 'queryDid').mockResolvedValueOnce(
-      augmentedApi.createType('Option<RawDidLinkedInfoV2>', {
-        addressWithAuthenticationKey,
-        accounts: [],
-        w3n: null,
-        details: {
-          authenticationKey: '01234567890123456789012345678901',
-          keyAgreementKeys: [],
-          delegationKey: null,
-          attestationKey: null,
-          publicKeys: [],
-          lastTxCounter: 123,
-          deposit: {
-            owner: addressWithAuthenticationKey,
-            amount: 0,
-          },
-        },
-      })
-    )
-    const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
-    const { document, metadata } = (await strictResolve(
-      migratedDid
-    )) as DidResolutionResult
-    if (document === undefined) throw new Error('Document unresolved')
-
-    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
-      deactivated: false,
-      canonicalId: didWithAuthenticationKey,
-    })
-    expect(document).toEqual({ uri: migratedDid })
   })
 
   it('correctly resolves a migrated and deleted DID', async () => {
