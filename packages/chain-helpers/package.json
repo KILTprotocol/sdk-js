@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.30.0-32",
+  "version": "0.30.0-33",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -36,7 +36,6 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@kiltprotocol/augment-api": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",

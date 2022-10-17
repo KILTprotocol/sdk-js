@@ -29,10 +29,6 @@ import { types10720 } from './types_10720.js'
 import { calls as didCalls } from './runtime/did.js'
 import { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
 
-// Custom RPC methods
-
-import { rpc as didRpc } from './rpc/did.js'
-
 export {
   types8,
   types9,
@@ -52,8 +48,6 @@ export {
 
 export { calls as didCalls } from './runtime/did.js'
 export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
-
-export { rpc as didRpc } from './rpc/did.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -114,9 +108,6 @@ const defaultTypesBundle: OverrideVersionedType[] = [
 export const typesBundle: OverrideBundleType = {
   chain: {
     'KILT Spiritnet': {
-      rpc: {
-        ...didRpc,
-      },
       runtime: {
         ...didCalls,
         ...parachainStakingCalls,
@@ -124,9 +115,6 @@ export const typesBundle: OverrideBundleType = {
       types: defaultTypesBundle,
     },
     'KILT Peregrine': {
-      rpc: {
-        ...didRpc,
-      },
       runtime: {
         ...didCalls,
         ...parachainStakingCalls,
@@ -134,18 +122,12 @@ export const typesBundle: OverrideBundleType = {
       types: defaultTypesBundle,
     },
     'KILT Mashnet': {
-      rpc: {
-        ...didRpc,
-      },
       runtime: {
         ...didCalls,
       },
       types: defaultTypesBundle,
     },
     Development: {
-      rpc: {
-        ...didRpc,
-      },
       runtime: {
         ...didCalls,
       },

@@ -20,7 +20,8 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
-import { resourceIdToChain, serviceFromChain, toChain } from '../Did.chain.js'
+import { toChain } from '../Did.chain.js'
+import { linkedInfoFromChain } from '../Did.rpc.js'
 import { getFullDidUri, parse } from '../Did.utils.js'
 
 /**
@@ -39,7 +40,8 @@ export async function resolve(
 
   let document: DidDocument | undefined
   try {
-    document = await Did.fetch(getFullDidUri(did))
+    const encodedLinkedInfo = await api.call.didApi.queryDid(toChain(did))
+    document = linkedInfoFromChain(encodedLinkedInfo).document
   } catch {
     // ignore errors
   }
@@ -188,26 +190,11 @@ export async function resolveKey(
 export async function resolveService(
   serviceUri: DidResourceUri
 ): Promise<ResolvedDidServiceEndpoint> {
-  const { fragment: serviceId, did, type } = parse(serviceUri)
+  const { did, fragment: serviceId } = parse(serviceUri)
 
-  // A fragment (serviceId) IS expected to resolve a service endpoint.
+  // A fragment (serviceId) IS expected to resolve a key.
   if (!serviceId) {
     throw new SDKErrors.InvalidDidFormatError(serviceUri)
-  }
-  const api = ConfigService.get('api')
-
-  if (type === 'full') {
-    const chainService = await api.query.did.serviceEndpoints(
-      toChain(serviceUri),
-      resourceIdToChain(serviceId)
-    )
-    if (chainService.isNone) {
-      throw new SDKErrors.DidNotFoundError('Service not found in DID')
-    }
-    return {
-      ...serviceFromChain(chainService),
-      id: serviceUri,
-    }
   }
 
   const resolved = await resolve(did)
@@ -220,7 +207,7 @@ export async function resolveService(
     metadata: { canonicalId },
   } = resolved
 
-  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  // If the light DID has been upgraded we consider the old service URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
     throw new SDKErrors.DidResolveUpgradedDidError()
   }

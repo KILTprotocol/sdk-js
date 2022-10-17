@@ -529,8 +529,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unknown: AugmentedError<ApiType>;
     };
-    dynFilter: {
-    };
     indices: {
       /**
        * The index was not available.
@@ -854,7 +852,34 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unproxyable: AugmentedError<ApiType>;
     };
-    relayMigration: {
+    publicCredentials: {
+      /**
+       * A credential with the same root hash has already issued to the
+       * specified subject.
+       **/
+      CredentialAlreadyIssued: AugmentedError<ApiType>;
+      /**
+       * No credential with the specified root hash has been issued to the
+       * specified subject.
+       **/
+      CredentialNotFound: AugmentedError<ApiType>;
+      /**
+       * Catch-all for any other errors that should not happen, yet it
+       * happened.
+       **/
+      InternalError: AugmentedError<ApiType>;
+      /**
+       * The credential input is invalid.
+       **/
+      InvalidInput: AugmentedError<ApiType>;
+      /**
+       * Not enough tokens to pay for the fees or the deposit.
+       **/
+      UnableToPayFees: AugmentedError<ApiType>;
+      /**
+       * The caller is not authorized to performed the operation.
+       **/
+      Unauthorized: AugmentedError<ApiType>;
     };
     scheduler: {
       /**
