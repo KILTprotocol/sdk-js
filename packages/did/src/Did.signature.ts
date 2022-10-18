@@ -113,3 +113,18 @@ export function signatureToJson({
 }: SignResponseData): DidSignature {
   return { signature: Crypto.u8aToHex(signature), keyUri }
 }
+
+/**
+ * Deserializes a [[DidSignature]] for signature verification.
+ * Handles backwards compatibility to an older version of the interface where the `keyUri` property was called `keyId`.
+ *
+ * @param input A [[DidSignature]] object.
+ * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
+ */
+export function signatureFromJson(
+  input: DidSignature | OldDidSignature
+): Pick<SignResponseData, 'keyUri' | 'signature'> {
+  const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
+  const signature = Crypto.coToUInt8(input.signature)
+  return { signature, keyUri }
+}

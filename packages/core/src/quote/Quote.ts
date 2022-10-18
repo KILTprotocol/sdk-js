@@ -23,13 +23,13 @@ import type {
   SignCallback,
   DidResolveKey,
   DidUri,
-  DidResourceUri,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import {
   resolveKey,
   verifyDidSignature,
   signatureToJson,
+  signatureFromJson,
 } from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
@@ -105,11 +105,7 @@ export async function verifyAttesterSignedQuote(
 ): Promise<void> {
   const { attesterSignature, ...basicQuote } = quote
   await verifyDidSignature({
-    signature: Crypto.coToUInt8(attesterSignature.signature),
-    keyUri:
-      attesterSignature.keyUri ??
-      // accept the old did signature format where keyUri was keyId
-      (attesterSignature as unknown as { keyId: DidResourceUri }).keyId,
+    ...signatureFromJson(attesterSignature),
     message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolveKey,
@@ -146,11 +142,7 @@ export async function createQuoteAgreement(
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   await verifyDidSignature({
-    signature: Crypto.coToUInt8(attesterSignature.signature),
-    keyUri:
-      attesterSignature.keyUri ??
-      // accept the old did signature format where keyUri was keyId
-      (attesterSignature as unknown as { keyId: DidResourceUri }).keyId,
+    ...signatureFromJson(attesterSignature),
     message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolveKey,
