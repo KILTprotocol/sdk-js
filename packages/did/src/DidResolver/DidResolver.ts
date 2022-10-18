@@ -6,10 +6,9 @@
  */
 
 import type {
-  ConformingDidDocument,
+  ConformingDidResolutionResult,
   DidDocument,
   DidKey,
-  DidResolutionDocumentMetadata,
   DidResolutionResult,
   DidResourceUri,
   DidUri,
@@ -101,13 +100,6 @@ export async function resolve(
   }
 }
 
-type DidResolutionMetadata = {
-  error?: 'notFound' | 'invalidDidUrl'
-  errorMessage?: string
-}
-
-type DidDocumentMetadata = Partial<DidResolutionDocumentMetadata>
-
 /**
  * Implementation of `resolve` compliant with W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
  * As opposed to `resolve`, which takes a more pragmatic approach, the `didDocument` property contains a fully compliant DID document abstract data model.
@@ -115,25 +107,19 @@ type DidDocumentMetadata = Partial<DidResolutionDocumentMetadata>
  * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
  *
  * @param did The DID to resolve.
- * @returns `didResolutionMetadata`, `didDocument`, and `didDocumentMetadata` as an object.
+ * @returns An object with the properties `didDocument` (a spec-conforming DID document or `undefined`), `didDocumentMetadata` (equivalent to `metadata` returned by [[resolve]]), as well as `didResolutionMetadata` (indicating an `error` if any).
  */
-export async function resolveCompliant(did: DidUri): Promise<{
-  didDocumentMetadata: DidDocumentMetadata
-  didResolutionMetadata: DidResolutionMetadata
-  didDocument?: ConformingDidDocument | Pick<ConformingDidDocument, 'id'>
-}> {
-  const result: {
-    didDocumentMetadata: DidDocumentMetadata
-    didResolutionMetadata: DidResolutionMetadata
-    didDocument?: ConformingDidDocument | Pick<ConformingDidDocument, 'id'>
-  } = {
+export async function resolveCompliant(
+  did: DidUri
+): Promise<ConformingDidResolutionResult> {
+  const result: ConformingDidResolutionResult = {
     didDocumentMetadata: {},
     didResolutionMetadata: {},
   }
   try {
     Did.validateUri(did, 'Did')
   } catch (error) {
-    result.didResolutionMetadata.error = 'invalidDidUrl'
+    result.didResolutionMetadata.error = 'invalidDid'
     if (error instanceof Error) {
       result.didResolutionMetadata.errorMessage =
         error.name + error.message ? `: ${error.message}` : ''

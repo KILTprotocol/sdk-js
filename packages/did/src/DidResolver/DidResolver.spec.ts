@@ -6,11 +6,15 @@
  */
 
 import { BN } from '@polkadot/util'
+import { base58Encode } from '@polkadot/util-crypto'
 
 import type {
+  ConformingDidKey,
+  ConformingDidServiceEndpoint,
   DidEncryptionKey,
   DidKey,
   DidResolutionDocumentMetadata,
+  DidResolutionMetadata,
   DidResolutionResult,
   DidResourceUri,
   DidServiceEndpoint,
@@ -28,7 +32,12 @@ import { ConfigService } from '@kiltprotocol/config'
 import { getFullDidUriFromKey } from '../Did.utils'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 
-import { resolve, resolveKey, resolveService } from './index.js'
+import {
+  resolve,
+  resolveCompliant,
+  resolveKey,
+  resolveService,
+} from './index.js'
 import * as Did from '../index.js'
 
 /**
@@ -543,5 +552,125 @@ describe('When resolving a light DID', () => {
       deactivated: false,
     })
     expect(document?.uri).toStrictEqual<DidUri>(lightDid.uri)
+  })
+})
+
+describe('When resolving with the spec compliant resolver', () => {
+  it('returns a spec-compliant DID document', async () => {
+    // Mock transform function changed to return two service endpoints.
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          authentication: [generateAuthenticationKey()],
+          service: [
+            generateServiceEndpoint('#id-1'),
+            generateServiceEndpoint('#id-2'),
+          ],
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+        },
+      }
+    })
+    const fullDidWithAuthenticationKey = didWithAuthenticationKey
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(fullDidWithAuthenticationKey)
+    if (didDocument === undefined) throw new Error('Document unresolved')
+
+    expect(didDocumentMetadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+    })
+
+    expect(didResolutionMetadata).toStrictEqual({})
+
+    expect(didDocument.id).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
+    expect(didDocument.authentication).toStrictEqual<[ConformingDidKey]>([
+      {
+        id: `${fullDidWithAuthenticationKey}${'#auth'}`,
+        controller: fullDidWithAuthenticationKey,
+        type: 'Ed25519VerificationKey2018',
+        publicKeyBase58: base58Encode(new Uint8Array(32).fill(0)),
+      },
+    ])
+    expect(didDocument.service).toStrictEqual<ConformingDidServiceEndpoint[]>([
+      {
+        id: `${fullDidWithAuthenticationKey}#id-1`,
+        type: ['type-id-1'],
+        serviceEndpoint: ['x:url-id-1'],
+      },
+      {
+        id: `${fullDidWithAuthenticationKey}#id-2`,
+        type: ['type-id-2'],
+        serviceEndpoint: ['x:url-id-2'],
+      },
+    ])
+  })
+
+  it('correctly resolves a non-existing DID', async () => {
+    // RPC call changed to not return anything.
+    jest
+      .spyOn(mockedApi.call.didApi, 'queryDid')
+      .mockRejectedValueOnce(
+        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
+      )
+    const randomDid = getFullDidUriFromKey(
+      makeSigningKeyTool().authentication[0]
+    )
+
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(randomDid)
+
+    expect(didDocumentMetadata).toStrictEqual({})
+    expect(didResolutionMetadata).toHaveProperty('error', 'notFound')
+    expect(didDocument).toBeUndefined()
+  })
+
+  it('correctly resolves a deleted DID', async () => {
+    // RPC call changed to not return anything.
+    jest
+      .spyOn(mockedApi.call.didApi, 'queryDid')
+      .mockRejectedValueOnce(
+        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
+      )
+    mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
+
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(deletedDid)
+
+    expect(didDocumentMetadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: true,
+    })
+    expect(didResolutionMetadata).toStrictEqual({})
+    expect(didDocument).toStrictEqual({ id: deletedDid })
+  })
+
+  it('correctly resolves an upgraded light DID', async () => {
+    const key = makeSigningKeyTool().authentication[0]
+    const lightDid = Did.createLightDidDocument({ authentication: [key] }).uri
+    const fullDid = getFullDidUriFromKey(key)
+
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(lightDid)
+
+    expect(didDocumentMetadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+      canonicalId: fullDid,
+    })
+    expect(didResolutionMetadata).toStrictEqual({})
+    expect(didDocument).toStrictEqual({ id: lightDid })
+  })
+
+  it('does not dereference a DID URL (with fragment)', async () => {
+    const fullDidWithAuthenticationKey = didWithAuthenticationKey
+    const keyIdUri: DidUri = `${fullDidWithAuthenticationKey}#auth`
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(keyIdUri)
+
+    expect(didDocumentMetadata).toStrictEqual({})
+    expect(didResolutionMetadata).toHaveProperty<
+      DidResolutionMetadata['error']
+    >('error', 'invalidDid')
+    expect(didDocument).toBeUndefined()
   })
 })
