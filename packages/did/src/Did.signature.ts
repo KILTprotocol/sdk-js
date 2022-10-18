@@ -9,7 +9,9 @@ import { u8aToHex, isHex } from '@polkadot/util'
 
 import {
   DidResolveKey,
+  DidResourceUri,
   DidSignature,
+  SignResponseData,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -19,7 +21,8 @@ import { parse, validateUri } from './Did.utils.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
-  signature: DidSignature
+  signature: Uint8Array
+  keyUri: DidResourceUri
   expectedVerificationMethod?: VerificationKeyRelationship
   didResolveKey?: DidResolveKey
 }
@@ -54,32 +57,28 @@ function verifyDidSignatureDataStructure(
  *
  * @param input Object wrapping all input.
  * @param input.message The message that was signed.
- * @param input.signature An object containing signature and signer key.
+ * @param input.signature Signature bytes.
+ * @param input.keyUri DID URI of the key used for signing.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
  * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
  */
 export async function verifyDidSignature({
   message,
   signature,
+  keyUri,
   expectedVerificationMethod,
   didResolveKey = resolveKey,
 }: DidSignatureVerificationInput): Promise<void> {
-  verifyDidSignatureDataStructure(signature)
-  // Add support for old signatures that had the `keyId` instead of the `keyUri`
-  const inputUri = signature.keyUri || (signature as any).keyId
   // Verification fails if the signature key URI is not valid
-  const { fragment } = parse(inputUri)
+  const { fragment } = parse(keyUri)
   if (!fragment)
     throw new SDKErrors.SignatureMalformedError(
-      `Signature key URI "${inputUri}" invalid`
+      `Signature key URI "${keyUri}" invalid`
     )
 
-  const { publicKey } = await didResolveKey(
-    inputUri,
-    expectedVerificationMethod
-  )
+  const { publicKey } = await didResolveKey(keyUri, expectedVerificationMethod)
 
-  Crypto.verify(message, signature.signature, u8aToHex(publicKey))
+  Crypto.verify(message, signature, u8aToHex(publicKey))
 }
 
 /**
@@ -98,4 +97,19 @@ export function isDidSignature(
   } catch (cause) {
     return false
   }
+}
+
+/**
+ * Transforms the output of a [[SignCallback]] into the [[DidSignature]] format suitable for json-based data exchange.
+ *
+ * @param input Signature data returned from the [[SignCallback]].
+ * @param input.signature Signature bytes.
+ * @param input.keyUri DID URI of the key used for signing.
+ * @returns A [[DidSignature]] object where signature is hex-encoded.
+ */
+export function signatureToJson({
+  signature,
+  keyUri,
+}: SignResponseData): DidSignature {
+  return { signature: Crypto.u8aToHex(signature), keyUri }
 }

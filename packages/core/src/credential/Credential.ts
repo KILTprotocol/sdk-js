@@ -24,6 +24,7 @@ import {
 } from '@kiltprotocol/did'
 import type {
   DidResolveKey,
+  DidResourceUri,
   Hash,
   IAttestation,
   IClaim,
@@ -233,7 +234,11 @@ export async function verifySignature(
     )
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
-    signature: claimerSignature,
+    signature: Crypto.coToUInt8(claimerSignature.signature),
+    keyUri:
+      claimerSignature.keyUri ??
+      // accept the old did signature format where keyUri was keyId
+      (claimerSignature as unknown as { keyId: DidResourceUri }).keyId,
     message: signingData,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
