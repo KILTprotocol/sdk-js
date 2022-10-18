@@ -73,7 +73,7 @@ describe('light DID', () => {
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const { signature, keyUri } = await sign({
-      data: Crypto.coToUInt8(Crypto.u8aToHex(SIGNED_BYTES)),
+      data: SIGNED_BYTES,
       did: did.uri,
       keyRelationship: 'authentication',
     })
@@ -242,7 +242,7 @@ describe('full DID', () => {
   it('verifies did signature over bytes', async () => {
     const SIGNED_BYTES = Uint8Array.from([1, 2, 3, 4, 5])
     const { signature, keyUri } = await sign({
-      data: Crypto.coToUInt8(Crypto.u8aToHex(SIGNED_BYTES)),
+      data: SIGNED_BYTES,
       did: did.uri,
       keyRelationship: 'authentication',
     })

@@ -26,7 +26,11 @@ import type {
   DidResourceUri,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import { resolveKey, verifyDidSignature } from '@kiltprotocol/did'
+import {
+  resolveKey,
+  verifyDidSignature,
+  signatureToJson,
+} from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -80,10 +84,7 @@ export async function createAttesterSignedQuote(
   })
   return {
     ...quoteInput,
-    attesterSignature: {
-      keyUri: signature.keyUri,
-      signature: Crypto.u8aToHex(signature.signature),
-    },
+    attesterSignature: signatureToJson(signature),
   }
 }
 
@@ -155,7 +156,7 @@ export async function createQuoteAgreement(
     didResolveKey,
   })
 
-  const { signature, keyUri } = await sign({
+  const signature = await sign({
     data: Crypto.hash(Crypto.encodeObjectAsStr(attesterSignedQuote)),
     did: claimerDid,
     keyRelationship: 'authentication',
@@ -164,10 +165,7 @@ export async function createQuoteAgreement(
   return {
     ...attesterSignedQuote,
     rootHash: credentialRootHash,
-    claimerSignature: {
-      signature: Crypto.u8aToHex(signature),
-      keyUri,
-    },
+    claimerSignature: signatureToJson(signature),
   }
 }
 
