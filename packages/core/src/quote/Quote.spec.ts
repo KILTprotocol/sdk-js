@@ -9,8 +9,6 @@
  * @group unit/quote
  */
 
-import { u8aToHex } from '@polkadot/util'
-
 import type {
   DidDocument,
   IClaim,
@@ -170,10 +168,8 @@ describe('Quote', () => {
           })
         ),
         validAttesterSignedQuote.attesterSignature.signature,
-        u8aToHex(
-          Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
-            new Uint8Array()
-        )
+        Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
+          new Uint8Array()
       )
     ).not.toThrow()
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {

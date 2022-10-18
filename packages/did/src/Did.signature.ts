@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aToHex, isHex } from '@polkadot/util'
+import { isHex } from '@polkadot/util'
 
 import {
   DidResolveKey,
@@ -78,7 +78,7 @@ export async function verifyDidSignature({
 
   const { publicKey } = await didResolveKey(keyUri, expectedVerificationMethod)
 
-  Crypto.verify(message, signature, u8aToHex(publicKey))
+  Crypto.verify(message, signature, publicKey)
 }
 
 /**
