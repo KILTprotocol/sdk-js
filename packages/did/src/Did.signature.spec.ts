@@ -21,7 +21,12 @@ import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
 import { Crypto } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import * as Did from './index.js'
-import { verifyDidSignature, isDidSignature } from './Did.signature'
+import {
+  verifyDidSignature,
+  isDidSignature,
+  signatureFromJson,
+  signatureToJson,
+} from './Did.signature'
 import { resolveKey, keyToResolvedKey } from './DidResolver'
 
 jest.mock('./DidResolver')
@@ -68,6 +73,26 @@ describe('light DID', () => {
         expectedVerificationMethod: 'authentication',
       })
     ).resolves.not.toThrow()
+  })
+
+  it('deserializes old did signature (with `keyId` property) to new format', async () => {
+    const SIGNED_STRING = 'signed string'
+    const { signature, keyUri } = signatureToJson(
+      await sign({
+        data: Crypto.coToUInt8(SIGNED_STRING),
+        did: did.uri,
+        keyRelationship: 'authentication',
+      })
+    )
+    const oldSignature = {
+      signature,
+      keyId: keyUri,
+    }
+
+    const deserialized = signatureFromJson(oldSignature)
+    expect(deserialized.signature).toBeInstanceOf(Uint8Array)
+    expect(deserialized.keyUri).toStrictEqual(keyUri)
+    expect(deserialized).not.toHaveProperty('keyId')
   })
 
   it('verifies did signature over bytes', async () => {
