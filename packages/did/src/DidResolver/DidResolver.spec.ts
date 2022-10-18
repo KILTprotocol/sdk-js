@@ -63,7 +63,7 @@ beforeAll(() => {
   jest
     .spyOn(mockedApi.call.didApi, 'queryDid')
     .mockImplementation((identifier) => {
-      return augmentedApi.createType('Option<RawDidLinkedInfoV2>', {
+      return augmentedApi.createType('Option<RawDidLinkedInfo>', {
         identifier,
         accounts: [],
         w3n: null,
@@ -364,7 +364,7 @@ describe('When resolving a full DID', () => {
     jest
       .spyOn(mockedApi.call.didApi, 'queryDid')
       .mockRejectedValueOnce(
-        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
+        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
     const randomDid = getFullDidUriFromKey(
       makeSigningKeyTool().authentication[0]
@@ -377,7 +377,7 @@ describe('When resolving a full DID', () => {
     jest
       .spyOn(mockedApi.call.didApi, 'queryDid')
       .mockRejectedValueOnce(
-        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
+        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
@@ -414,7 +414,7 @@ describe('When resolving a light DID', () => {
     jest
       .spyOn(mockedApi.call.didApi, 'queryDid')
       .mockResolvedValue(
-        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
+        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
   })
 
@@ -487,7 +487,7 @@ describe('When resolving a light DID', () => {
   it('correctly resolves a migrated and not deleted DID', async () => {
     // RPC call changed to return something.
     jest.spyOn(mockedApi.call.didApi, 'queryDid').mockResolvedValueOnce(
-      augmentedApi.createType('Option<RawDidLinkedInfoV2>', {
+      augmentedApi.createType('Option<RawDidLinkedInfo>', {
         addressWithAuthenticationKey,
         accounts: [],
         w3n: null,

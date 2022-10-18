@@ -23,6 +23,7 @@ import { types23 } from './types_23.js'
 import { types25 } from './types_25.js'
 import { types2700 } from './types_2700.js'
 import { types10720 } from './types_10720.js'
+import { types10800 } from './types_10800.js'
 
 // Custom runtime calls
 
@@ -43,7 +44,8 @@ export {
   types25,
   types2700,
   types10720,
-  types10720 as types,
+  types10800,
+  types10800 as types,
 }
 
 export { calls as didCalls } from './runtime/did.js'
@@ -99,8 +101,12 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types2700,
   },
   {
-    minmax: [10720, 10899],
+    minmax: [10720, 10750],
     types: types10720,
+  },
+  {
+    minmax: [10800, undefined],
+    types: types10800,
   },
 ]
 

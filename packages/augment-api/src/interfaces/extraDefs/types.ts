@@ -7,6 +7,9 @@ import type { AccountId32, BlockNumber, Hash, Perquintill } from '@polkadot/type
 // FIXME: manually added as they are not automatically imported
 import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
 
+/** @name DidApiAccountId */
+export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId {}
+
 /** @name RawDidDetails */
 export interface RawDidDetails extends Struct {
   readonly authenticationKey: Hash;
@@ -21,7 +24,7 @@ export interface RawDidDetails extends Struct {
 /** @name RawDidLinkedInfo */
 export interface RawDidLinkedInfo extends Struct {
   readonly identifier: AccountId32;
-  readonly accounts: Vec<PalletDidLookupLinkableAccountLinkableAccountId>;
+  readonly accounts: Vec<DidApiAccountId>;
   readonly w3n: Option<Text>;
   readonly serviceEndpoints: Vec<RawServiceEndpoints>;
   readonly details: RawDidDetails;
