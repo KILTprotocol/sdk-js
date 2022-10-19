@@ -37,6 +37,6 @@
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^9.4.1",
-    "typescript-logging": "^0.6.4"
+    "typescript-logging": "^1.0.0"
   }
 }
