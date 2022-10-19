@@ -13,4 +13,16 @@ export const types10800: RegistryTypes = {
   ...types10720,
   // DID state_call v2
   DidApiAccountId: 'PalletDidLookupLinkableAccountLinkableAccountId',
+
+  // Public credentials state_calls (types are somehow not exported in the metadata info)
+  // FIXME: if exported in the metadata, remove these type definitions from future versions
+  PublicCredentialsFilter: {
+    _enum: {
+      ctypeHash: 'Hash',
+      attester: 'AccountId32',
+    },
+  },
+  PublicCredentialApiError: {
+    _enum: ['InvalidSubjectId'],
+  },
 }
