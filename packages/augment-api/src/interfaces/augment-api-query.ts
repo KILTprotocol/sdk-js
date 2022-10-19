@@ -8,8 +8,8 @@ import '@polkadot/api-base/types/storage';
 import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/api-base/types';
 import type { BTreeMap, Bytes, Null, Option, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, Call, H256, Weight } from '@polkadot/types/interfaces/runtime';
-import type { AttestationAttestationsAttestationDetails, CumulusPalletDmpQueueConfigData, CumulusPalletDmpQueuePageIndexData, CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot, CumulusPalletXcmpQueueInboundChannelDetails, CumulusPalletXcmpQueueOutboundChannelDetails, CumulusPalletXcmpQueueQueueConfigData, DelegationDelegationHierarchyDelegationHierarchyDetails, DelegationDelegationHierarchyDelegationNode, DidDidDetails, DidServiceEndpointsDidEndpoint, FrameSupportWeightsPerDispatchClassWeight, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, KiltAssetDidsV1AssetDid, PalletAuthorshipUncleEntryItem, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletDidLookupConnectionRecord, PalletDidLookupLinkableAccountLinkableAccountId, PalletPreimageRequestStatus, PalletProxyAnnouncement, PalletProxyProxyDefinition, PalletSchedulerScheduledV3, PalletTipsOpenTip, PalletTransactionPaymentReleases, PalletTreasuryProposal, PalletVestingReleases, PalletVestingVestingInfo, PalletWeb3NamesWeb3NameWeb3NameOwnership, ParachainStakingCandidate, ParachainStakingDelegationCounter, ParachainStakingDelegator, ParachainStakingInflationInflationInfo, ParachainStakingRoundInfo, ParachainStakingStake, ParachainStakingTotalStake, PolkadotCorePrimitivesOutboundHrmpMessage, PolkadotPrimitivesV2AbridgedHostConfiguration, PolkadotPrimitivesV2PersistedValidationData, PolkadotPrimitivesV2UpgradeRestriction, PublicCredentialsCredentialsCredentialEntry, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpConsensusAuraSr25519AppSr25519Public, SpCoreCryptoKeyTypeId, SpRuntimeDigest, SpTrieStorageProof, SpiritnetRuntimeSessionKeys } from '@polkadot/types/lookup';
+import type { AccountId32, Call, H256 } from '@polkadot/types/interfaces/runtime';
+import type { AttestationAttestationsAttestationDetails, CumulusPalletDmpQueueConfigData, CumulusPalletDmpQueuePageIndexData, CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot, CumulusPalletXcmpQueueInboundChannelDetails, CumulusPalletXcmpQueueOutboundChannelDetails, CumulusPalletXcmpQueueQueueConfigData, DelegationDelegationHierarchyDelegationHierarchyDetails, DelegationDelegationHierarchyDelegationNode, DidDidDetails, DidServiceEndpointsDidEndpoint, FrameSupportWeightsPerDispatchClassU64, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, PalletAuthorshipUncleEntryItem, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletDidLookupConnectionRecord, PalletPreimageRequestStatus, PalletProxyAnnouncement, PalletProxyProxyDefinition, PalletSchedulerScheduledV3, PalletTipsOpenTip, PalletTransactionPaymentReleases, PalletTreasuryProposal, PalletVestingReleases, PalletVestingVestingInfo, PalletWeb3NamesWeb3NameWeb3NameOwnership, ParachainStakingCandidate, ParachainStakingDelegationCounter, ParachainStakingDelegator, ParachainStakingInflationInflationInfo, ParachainStakingRoundInfo, ParachainStakingStake, ParachainStakingTotalStake, PolkadotCorePrimitivesOutboundHrmpMessage, PolkadotPrimitivesV2AbridgedHostConfiguration, PolkadotPrimitivesV2PersistedValidationData, PolkadotPrimitivesV2UpgradeRestriction, RuntimeCommonAuthorizationAuthorizationId, SpConsensusAuraSr25519AppSr25519Public, SpCoreCryptoKeyTypeId, SpRuntimeDigest, SpTrieStorageProof, SpiritnetRuntimeSessionKeys } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -267,11 +267,11 @@ declare module '@polkadot/api-base/types/storage' {
        * The empty tuple is used as a sentinel value to simply indicate the
        * presence of a given tuple in the map.
        **/
-      connectedAccounts: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => Observable<Option<Null>>, [AccountId32, PalletDidLookupLinkableAccountLinkableAccountId]>;
+      connectedAccounts: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<Null>>, [AccountId32, AccountId32]>;
       /**
        * Mapping from account identifiers to DIDs.
        **/
-      connectedDids: AugmentedQuery<ApiType, (arg: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => Observable<Option<PalletDidLookupConnectionRecord>>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
+      connectedDids: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<PalletDidLookupConnectionRecord>>, [AccountId32]>;
     };
     dmpQueue: {
       /**
@@ -489,12 +489,12 @@ declare module '@polkadot/api-base/types/storage' {
        * The weight we reserve at the beginning of the block for processing DMP messages. This
        * overrides the amount set in the Config trait.
        **/
-      reservedDmpWeightOverride: AugmentedQuery<ApiType, () => Observable<Option<Weight>>, []>;
+      reservedDmpWeightOverride: AugmentedQuery<ApiType, () => Observable<Option<u64>>, []>;
       /**
        * The weight we reserve at the beginning of the block for processing XCMP messages. This
        * overrides the amount set in the Config trait.
        **/
-      reservedXcmpWeightOverride: AugmentedQuery<ApiType, () => Observable<Option<Weight>>, []>;
+      reservedXcmpWeightOverride: AugmentedQuery<ApiType, () => Observable<Option<u64>>, []>;
       /**
        * An option which indicates if the relay-chain restricts signalling a validation code upgrade.
        * In other words, if this is `Some` and [`NewValidationCode`] is `Some` then the produced
@@ -538,21 +538,6 @@ declare module '@polkadot/api-base/types/storage' {
        * which are being delegated to, together with the amount held on deposit.
        **/
       proxies: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<ITuple<[Vec<PalletProxyProxyDefinition>, u128]>>, [AccountId32]>;
-    };
-    publicCredentials: {
-      /**
-       * The map of public credentials already attested.
-       * It maps from a (subject id + credential id) -> the creation
-       * details of the credential.
-       **/
-      credentials: AugmentedQuery<ApiType, (arg1: RuntimeCommonAssetsAssetDid | { chainId?: any; assetId?: any } | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<PublicCredentialsCredentialsCredentialEntry>>, [RuntimeCommonAssetsAssetDid, H256]>;
-      /**
-       * A reverse index mapping from credential ID to the subject the credential
-       * was issued to.
-       * 
-       * It it used to perform efficient lookup of credentials given their ID.
-       **/
-      credentialSubjects: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<Option<KiltAssetDidsV1AssetDid>>, [H256]>;
     };
     randomnessCollectiveFlip: {
       /**
@@ -624,7 +609,7 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * The current weight for the block.
        **/
-      blockWeight: AugmentedQuery<ApiType, () => Observable<FrameSupportWeightsPerDispatchClassWeight>, []>;
+      blockWeight: AugmentedQuery<ApiType, () => Observable<FrameSupportWeightsPerDispatchClassU64>, []>;
       /**
        * Digest of the current block, also part of the block header.
        **/

@@ -8,8 +8,8 @@ import '@polkadot/api-base/types/events';
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H256, Perquintill, Weight } from '@polkadot/types/interfaces/runtime';
-import type { DelegationDelegationHierarchyPermissions, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDidLookupLinkableAccountLinkableAccountId, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpiritnetRuntimeProxyType, XcmV1MultiLocation, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { AccountId32, H256, Perquintill } from '@polkadot/types/interfaces/runtime';
+import type { DelegationDelegationHierarchyPermissions, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpiritnetRuntimeProxyType, XcmV1MultiLocation, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -283,11 +283,11 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * A new association between a DID and an account ID was created.
        **/
-      AssociationEstablished: AugmentedEvent<ApiType, [PalletDidLookupLinkableAccountLinkableAccountId, AccountId32]>;
+      AssociationEstablished: AugmentedEvent<ApiType, [AccountId32, AccountId32]>;
       /**
        * An association between a DID and an account ID was removed.
        **/
-      AssociationRemoved: AugmentedEvent<ApiType, [PalletDidLookupLinkableAccountLinkableAccountId, AccountId32]>;
+      AssociationRemoved: AugmentedEvent<ApiType, [AccountId32, AccountId32]>;
     };
     dmpQueue: {
       /**
@@ -301,11 +301,11 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Downward message is overweight and was placed in the overweight queue.
        **/
-      OverweightEnqueued: AugmentedEvent<ApiType, [messageId: U8aFixed, overweightIndex: u64, requiredWeight: Weight], { messageId: U8aFixed, overweightIndex: u64, requiredWeight: Weight }>;
+      OverweightEnqueued: AugmentedEvent<ApiType, [messageId: U8aFixed, overweightIndex: u64, requiredWeight: u64], { messageId: U8aFixed, overweightIndex: u64, requiredWeight: u64 }>;
       /**
        * Downward message from the overweight queue was executed.
        **/
-      OverweightServiced: AugmentedEvent<ApiType, [overweightIndex: u64, weightUsed: Weight], { overweightIndex: u64, weightUsed: Weight }>;
+      OverweightServiced: AugmentedEvent<ApiType, [overweightIndex: u64, weightUsed: u64], { overweightIndex: u64, weightUsed: u64 }>;
       /**
        * Downward message is unsupported version of XCM.
        **/
@@ -313,7 +313,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * The weight limit for handling downward messages was reached.
        **/
-      WeightExhausted: AugmentedEvent<ApiType, [messageId: U8aFixed, remainingWeight: Weight, requiredWeight: Weight], { messageId: U8aFixed, remainingWeight: Weight, requiredWeight: Weight }>;
+      WeightExhausted: AugmentedEvent<ApiType, [messageId: U8aFixed, remainingWeight: u64, requiredWeight: u64], { messageId: U8aFixed, remainingWeight: u64, requiredWeight: u64 }>;
     };
     indices: {
       /**
@@ -453,7 +453,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Downward messages were processed using the given weight.
        **/
-      DownwardMessagesProcessed: AugmentedEvent<ApiType, [weightUsed: Weight, dmqHead: H256], { weightUsed: Weight, dmqHead: H256 }>;
+      DownwardMessagesProcessed: AugmentedEvent<ApiType, [weightUsed: u64, dmqHead: H256], { weightUsed: u64, dmqHead: H256 }>;
       /**
        * Some downward messages have been received and will be processed.
        **/
@@ -537,7 +537,7 @@ declare module '@polkadot/api-base/types/events' {
        * 
        * \[ id, pallet index, call index, actual weight, max budgeted weight \]
        **/
-      NotifyOverweight: AugmentedEvent<ApiType, [u64, u8, u8, Weight, Weight]>;
+      NotifyOverweight: AugmentedEvent<ApiType, [u64, u8, u8, u64, u64]>;
       /**
        * A given location which had a version change subscription was dropped owing to an error
        * migrating the location to our new XCM format.
@@ -629,24 +629,6 @@ declare module '@polkadot/api-base/types/events' {
        * A proxy was removed.
        **/
       ProxyRemoved: AugmentedEvent<ApiType, [delegator: AccountId32, delegatee: AccountId32, proxyType: SpiritnetRuntimeProxyType, delay: u64], { delegator: AccountId32, delegatee: AccountId32, proxyType: SpiritnetRuntimeProxyType, delay: u64 }>;
-    };
-    publicCredentials: {
-      /**
-       * A public credentials has been removed.
-       **/
-      CredentialRemoved: AugmentedEvent<ApiType, [subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256], { subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256 }>;
-      /**
-       * A public credential has been revoked.
-       **/
-      CredentialRevoked: AugmentedEvent<ApiType, [credentialId: H256], { credentialId: H256 }>;
-      /**
-       * A new public credential has been issued.
-       **/
-      CredentialStored: AugmentedEvent<ApiType, [subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256], { subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256 }>;
-      /**
-       * A public credential has been unrevoked.
-       **/
-      CredentialUnrevoked: AugmentedEvent<ApiType, [credentialId: H256], { credentialId: H256 }>;
     };
     scheduler: {
       /**
@@ -914,19 +896,19 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Some XCM failed.
        **/
-      Fail: AugmentedEvent<ApiType, [messageHash: Option<H256>, error: XcmV2TraitsError, weight: Weight], { messageHash: Option<H256>, error: XcmV2TraitsError, weight: Weight }>;
+      Fail: AugmentedEvent<ApiType, [messageHash: Option<H256>, error: XcmV2TraitsError, weight: u64], { messageHash: Option<H256>, error: XcmV2TraitsError, weight: u64 }>;
       /**
        * An XCM exceeded the individual message weight budget.
        **/
-      OverweightEnqueued: AugmentedEvent<ApiType, [sender: u32, sentAt: u32, index: u64, required: Weight], { sender: u32, sentAt: u32, index: u64, required: Weight }>;
+      OverweightEnqueued: AugmentedEvent<ApiType, [sender: u32, sentAt: u32, index: u64, required: u64], { sender: u32, sentAt: u32, index: u64, required: u64 }>;
       /**
        * An XCM from the overweight queue was executed with the given actual weight used.
        **/
-      OverweightServiced: AugmentedEvent<ApiType, [index: u64, used: Weight], { index: u64, used: Weight }>;
+      OverweightServiced: AugmentedEvent<ApiType, [index: u64, used: u64], { index: u64, used: u64 }>;
       /**
        * Some XCM was executed ok.
        **/
-      Success: AugmentedEvent<ApiType, [messageHash: Option<H256>, weight: Weight], { messageHash: Option<H256>, weight: Weight }>;
+      Success: AugmentedEvent<ApiType, [messageHash: Option<H256>, weight: u64], { messageHash: Option<H256>, weight: u64 }>;
       /**
        * An upward message was sent to the relay chain.
        **/

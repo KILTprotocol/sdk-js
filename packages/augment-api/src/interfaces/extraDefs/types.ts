@@ -5,10 +5,10 @@ import type { BTreeMap, BTreeSet, Option, Struct, Text, Vec } from '@polkadot/ty
 import type { AccountId32, BlockNumber, Hash, Perquintill } from '@polkadot/types/interfaces/runtime';
 
 // FIXME: manually added as they are not automatically imported
-import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
+import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit } from '@polkadot/types/lookup'
 
 /** @name DidApiAccountId */
-export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId {}
+export interface DidApiAccountId extends AccountId32 {}
 
 /** @name RawDidDetails */
 export interface RawDidDetails extends Struct {

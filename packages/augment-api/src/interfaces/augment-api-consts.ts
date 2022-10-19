@@ -7,7 +7,7 @@ import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { Option, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { Percent, Permill, Perquintill, Weight } from '@polkadot/types/interfaces/runtime';
+import type { Percent, Permill, Perquintill } from '@polkadot/types/interfaces/runtime';
 import type { FrameSupportPalletId, FrameSupportWeightsRuntimeDbWeight, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
@@ -354,27 +354,12 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       proxyDepositFactor: u128 & AugmentedConst<ApiType>;
     };
-    publicCredentials: {
-      /**
-       * The amount of tokens to reserve when attesting a public credential.
-       **/
-      deposit: u128 & AugmentedConst<ApiType>;
-      /**
-       * The maximum length in bytes of the encoded claims of a credential.
-       **/
-      maxEncodedClaimsLength: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum length in bytes of the raw credential subject
-       * identifier.
-       **/
-      maxSubjectIdLength: u32 & AugmentedConst<ApiType>;
-    };
     scheduler: {
       /**
        * The maximum weight that may be scheduled per block for any dispatchables of less
        * priority than `schedule::HARD_DEADLINE`.
        **/
-      maximumWeight: Weight & AugmentedConst<ApiType>;
+      maximumWeight: u64 & AugmentedConst<ApiType>;
       /**
        * The maximum number of scheduled calls in the queue for a single block.
        * Not strictly enforced, but used for weight estimation.
@@ -399,7 +384,7 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       dbWeight: FrameSupportWeightsRuntimeDbWeight & AugmentedConst<ApiType>;
       /**
-       * The designated SS58 prefix of this chain.
+       * The designated SS85 prefix of this chain.
        * 
        * This replaces the "ss58Format" property declared in the chain spec. Reason is
        * that the runtime should know about the prefix in order to make use of it as
