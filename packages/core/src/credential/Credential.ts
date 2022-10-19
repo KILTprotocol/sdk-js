@@ -21,6 +21,8 @@ import {
   isDidSignature,
   verifyDidSignature,
   resolveKey,
+  signatureToJson,
+  signatureFromJson,
 } from '@kiltprotocol/did'
 import type {
   DidResolveKey,
@@ -34,7 +36,6 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { u8aToHex } from '@polkadot/util'
 import * as Claim from '../claim/index.js'
 import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
@@ -233,7 +234,7 @@ export async function verifySignature(
     )
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
-    signature: claimerSignature,
+    ...signatureFromJson(claimerSignature),
     message: signingData,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
@@ -415,7 +416,7 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const { signature, keyUri } = await signCallback({
+  const signature = await signCallback({
     data: makeSigningData(presentation, challenge),
     did: credential.claim.owner,
     keyRelationship: 'authentication',
@@ -423,6 +424,6 @@ export async function createPresentation({
 
   return {
     ...presentation,
-    claimerSignature: { signature: u8aToHex(signature), keyUri, challenge },
+    claimerSignature: { ...signatureToJson(signature), challenge },
   }
 }

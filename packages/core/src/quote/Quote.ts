@@ -25,7 +25,12 @@ import type {
   DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import { resolveKey, verifyDidSignature } from '@kiltprotocol/did'
+import {
+  resolveKey,
+  verifyDidSignature,
+  signatureToJson,
+  signatureFromJson,
+} from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -79,10 +84,7 @@ export async function createAttesterSignedQuote(
   })
   return {
     ...quoteInput,
-    attesterSignature: {
-      keyUri: signature.keyUri,
-      signature: Crypto.u8aToHex(signature.signature),
-    },
+    attesterSignature: signatureToJson(signature),
   }
 }
 
@@ -103,7 +105,7 @@ export async function verifyAttesterSignedQuote(
 ): Promise<void> {
   const { attesterSignature, ...basicQuote } = quote
   await verifyDidSignature({
-    signature: attesterSignature,
+    ...signatureFromJson(attesterSignature),
     message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolveKey,
@@ -140,13 +142,13 @@ export async function createQuoteAgreement(
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   await verifyDidSignature({
-    signature: attesterSignature,
+    ...signatureFromJson(attesterSignature),
     message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
     didResolveKey,
   })
 
-  const { signature, keyUri } = await sign({
+  const signature = await sign({
     data: Crypto.hash(Crypto.encodeObjectAsStr(attesterSignedQuote)),
     did: claimerDid,
     keyRelationship: 'authentication',
@@ -155,10 +157,7 @@ export async function createQuoteAgreement(
   return {
     ...attesterSignedQuote,
     rootHash: credentialRootHash,
-    claimerSignature: {
-      signature: Crypto.u8aToHex(signature),
-      keyUri,
-    },
+    claimerSignature: signatureToJson(signature),
   }
 }
 

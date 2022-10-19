@@ -12,8 +12,6 @@ import type {
   DidDocument,
   DidKey,
   DidServiceEndpoint,
-  DidSignature,
-  DidUri,
   DidVerificationKey,
   EncryptCallback,
   KeyRelationship,
@@ -332,20 +330,4 @@ export async function createFullDidFromSeed(
   const lightDid = await createMinimalLightDidFromKeypair(keypair)
   const sign = makeStoreDidCallback(keypair)
   return createFullDidFromLightDid(payer, lightDid, sign)
-}
-
-export async function makeDidSignature(
-  data: string,
-  didUri: DidUri,
-  signCallback: SignCallback
-): Promise<DidSignature> {
-  const { signature, keyUri } = await signCallback({
-    data: Crypto.coToUInt8(data),
-    did: didUri,
-    keyRelationship: 'authentication',
-  })
-  return {
-    signature: Crypto.u8aToHex(signature),
-    keyUri,
-  }
 }

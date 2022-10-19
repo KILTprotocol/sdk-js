@@ -9,8 +9,6 @@
  * @group unit/quote
  */
 
-import { u8aToHex } from '@polkadot/util'
-
 import type {
   DidDocument,
   IClaim,
@@ -27,7 +25,6 @@ import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
-  makeDidSignature,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import * as CType from '../ctype'
@@ -142,10 +139,13 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    const signature = await makeDidSignature(
-      Crypto.hashStr(Crypto.encodeObjectAsStr(validAttesterSignedQuote)),
-      claimerIdentity.uri,
-      claimer.getSignCallback(claimerIdentity)
+    const sign = claimer.getSignCallback(claimerIdentity)
+    const signature = Did.signatureToJson(
+      await sign({
+        data: Crypto.hash(Crypto.encodeObjectAsStr(validAttesterSignedQuote)),
+        did: claimerIdentity.uri,
+        keyRelationship: 'authentication',
+      })
     )
     expect(signature).toEqual(quoteBothAgreed.claimerSignature)
 
@@ -166,10 +166,8 @@ describe('Quote', () => {
           })
         ),
         validAttesterSignedQuote.attesterSignature.signature,
-        u8aToHex(
-          Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
-            new Uint8Array()
-        )
+        Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
+          new Uint8Array()
       )
     ).not.toThrow()
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {

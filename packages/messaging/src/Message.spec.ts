@@ -64,7 +64,6 @@ import {
   createLocalDemoFullDidFromKeypair,
   KeyTool,
   KeyToolSignCallback,
-  makeDidSignature,
 } from '@kiltprotocol/testing'
 import { u8aToHex } from '@polkadot/util'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -890,10 +889,12 @@ describe('Error checking / Verification', () => {
       },
       metaData: {},
       signatures: {
-        inviter: await makeDidSignature(
-          'signature',
-          identityAlice.uri,
-          keyAlice.getSignCallback(identityAlice)
+        inviter: Did.signatureToJson(
+          await keyAlice.getSignCallback(identityAlice)({
+            data: Crypto.coToUInt8('signature'),
+            did: identityAlice.uri,
+            keyRelationship: 'authentication',
+          })
         ),
       },
     }
@@ -907,15 +908,19 @@ describe('Error checking / Verification', () => {
         isPCR: false,
       },
       signatures: {
-        inviter: await makeDidSignature(
-          'signature',
-          identityAlice.uri,
-          keyAlice.getSignCallback(identityAlice)
+        inviter: Did.signatureToJson(
+          await keyAlice.getSignCallback(identityAlice)({
+            data: Crypto.coToUInt8('signature'),
+            did: identityAlice.uri,
+            keyRelationship: 'authentication',
+          })
         ),
-        invitee: await makeDidSignature(
-          'signature',
-          identityBob.uri,
-          keyBob.getSignCallback(identityBob)
+        invitee: Did.signatureToJson(
+          await keyBob.getSignCallback(identityBob)({
+            data: Crypto.coToUInt8('signature'),
+            did: identityBob.uri,
+            keyRelationship: 'authentication',
+          })
         ),
       },
     }

@@ -117,14 +117,14 @@ export function signStr(
  *
  * @param message Original signed message to be verified.
  * @param signature Signature as hex string or byte array.
- * @param address Substrate address or public key of the signer.
+ * @param addressOrPublicKey Substrate address or public key of the signer.
  */
 export function verify(
   message: CryptoInput,
   signature: CryptoInput,
-  address: Address
+  addressOrPublicKey: Address | HexString | Uint8Array
 ): void {
-  if (signatureVerify(message, signature, address).isValid !== true)
+  if (signatureVerify(message, signature, addressOrPublicKey).isValid !== true)
     throw new SDKErrors.SignatureUnverifiableError()
 }
 
