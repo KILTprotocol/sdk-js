@@ -5,18 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aToHex } from '@polkadot/util'
-
 import type {
   DidDocument,
   DidKey,
   DidServiceEndpoint,
-  DidSignature,
-  DidUri,
-  SignCallback,
-  VerificationKeyRelationship,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
 
 /**
  * Gets all public keys associated with this DID.
@@ -61,32 +54,4 @@ export function getService(
   id: DidServiceEndpoint['id']
 ): DidServiceEndpoint | undefined {
   return did.service?.find((endpoint) => endpoint.id === id)
-}
-
-/**
- * Generate a signature over the provided input payload, either as a byte array or as a HEX-encoded string.
- *
- * @param did The DID to be used.
- * @param payload The byte array or HEX-encoded payload to sign.
- * @param sign The sign callback to use for the signing operation.
- * @param keyRelationship (optional) The key relationship, that should be used. Defaults to 'authentication'.
- *
- * @returns The resulting [[DidSignature]].
- */
-export async function signPayload(
-  did: DidUri,
-  payload: Uint8Array | string,
-  sign: SignCallback,
-  keyRelationship: VerificationKeyRelationship = 'authentication'
-): Promise<DidSignature> {
-  const { data: signature, keyUri } = await sign({
-    data: Crypto.coToUInt8(payload),
-    keyRelationship,
-    did,
-  })
-
-  return {
-    keyUri,
-    signature: u8aToHex(signature),
-  }
 }

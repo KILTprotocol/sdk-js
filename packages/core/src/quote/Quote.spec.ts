@@ -9,11 +9,8 @@
  * @group unit/quote
  */
 
-import { u8aToHex } from '@polkadot/util'
-
 import type {
   DidDocument,
-  DidResolutionResult,
   IClaim,
   ICostBreakdown,
   ICType,
@@ -21,6 +18,8 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   ICredential,
+  DidResourceUri,
+  ResolvedDidKey,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
@@ -42,7 +41,6 @@ describe('Quote', () => {
 
   let invalidCost: ICostBreakdown
   let date: string
-  let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
   let credential: ICredential
@@ -54,19 +52,15 @@ describe('Quote', () => {
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
 
-  async function mockResolve(
-    didUri: string
-  ): Promise<DidResolutionResult | null> {
-    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const didWithoutFragment = didUri.split('#')[0]
-    switch (didWithoutFragment) {
-      case claimerIdentity?.uri:
-        return { document: claimerIdentity, metadata: { deactivated: false } }
-      case attesterIdentity?.uri:
-        return { document: attesterIdentity, metadata: { deactivated: false } }
-      default:
-        return null
-    }
+  async function mockResolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [claimerIdentity, attesterIdentity].find(
+      ({ uri }) => uri === did
+    )
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document.authentication[0], did)
   }
 
   beforeAll(async () => {
@@ -80,20 +74,12 @@ describe('Quote', () => {
     } as unknown as ICostBreakdown
     date = new Date(2019, 11, 10).toISOString()
 
-    cTypeSchema = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Quote Information',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    testCType = CType.fromSchema(cTypeSchema)
+    testCType = CType.fromProperties('Quote Information', {
+      name: { type: 'string' },
+    })
 
     claim = {
-      cTypeHash: testCType.hash,
+      cTypeHash: CType.idToHash(testCType.$id),
       contents: {},
       owner: claimerIdentity.uri,
     }
@@ -144,7 +130,7 @@ describe('Quote', () => {
       claimer.getSignCallback(claimerIdentity),
       claimerIdentity.uri,
       {
-        didResolve: mockResolve,
+        didResolveKey: mockResolveKey,
       }
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
@@ -153,13 +139,15 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    expect(
-      await Did.signPayload(
-        claimerIdentity.uri,
-        Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimer.getSignCallback(claimerIdentity)
-      )
-    ).toEqual(quoteBothAgreed.claimerSignature)
+    const sign = claimer.getSignCallback(claimerIdentity)
+    const signature = Did.signatureToJson(
+      await sign({
+        data: Crypto.hash(Crypto.encodeObjectAsStr(validAttesterSignedQuote)),
+        did: claimerIdentity.uri,
+        keyRelationship: 'authentication',
+      })
+    )
+    expect(signature).toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = Did.parse(
       validAttesterSignedQuote.attesterSignature.keyUri
@@ -167,23 +155,23 @@ describe('Quote', () => {
 
     expect(() =>
       Crypto.verify(
-        Crypto.hashObjectAsStr({
-          attesterDid: validQuoteData.attesterDid,
-          cTypeHash: validQuoteData.cTypeHash,
-          cost: validQuoteData.cost,
-          currency: validQuoteData.currency,
-          timeframe: validQuoteData.timeframe,
-          termsAndConditions: validQuoteData.termsAndConditions,
-        }),
+        Crypto.hashStr(
+          Crypto.encodeObjectAsStr({
+            attesterDid: validQuoteData.attesterDid,
+            cTypeHash: validQuoteData.cTypeHash,
+            cost: validQuoteData.cost,
+            currency: validQuoteData.currency,
+            timeframe: validQuoteData.timeframe,
+            termsAndConditions: validQuoteData.termsAndConditions,
+          })
+        ),
         validAttesterSignedQuote.attesterSignature.signature,
-        u8aToHex(
-          Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
-            new Uint8Array()
-        )
+        Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
+          new Uint8Array()
       )
     ).not.toThrow()
     await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-      didResolve: mockResolve,
+      didResolveKey: mockResolveKey,
     })
     expect(
       await Quote.createAttesterSignedQuote(

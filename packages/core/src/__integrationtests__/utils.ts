@@ -23,6 +23,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import { typesBundle } from '@kiltprotocol/type-definitions'
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as CType from '../ctype'
@@ -54,7 +55,7 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
   const provider = new WsProvider(wsEndpoint)
-  const api = new ApiPromise({ provider })
+  const api = new ApiPromise({ provider, typesBundle })
   await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
   return api.isReadyOrError
 }
@@ -103,24 +104,18 @@ export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
   }
 }
 
-export const driversLicenseCType = CType.fromSchema({
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'Drivers License',
-  properties: {
-    name: {
-      type: 'string',
-    },
-    age: {
-      type: 'integer',
-    },
+export const driversLicenseCType = CType.fromProperties('Drivers License', {
+  name: {
+    type: 'string',
   },
-  type: 'object',
+  age: {
+    type: 'integer',
+  },
 })
 
-export const driversLicenseCTypeForDeposit = CType.fromSchema({
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'Drivers License for deposit test',
-  properties: {
+export const driversLicenseCTypeForDeposit = CType.fromProperties(
+  'Drivers License for deposit test',
+  {
     name: {
       type: 'string',
     },
@@ -130,12 +125,11 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
     location: {
       type: 'string',
     },
-  },
-  type: 'object',
-})
+  }
+)
 
 // Submits resolving when IS_IN_BLOCK
-export async function submitExtrinsic(
+export async function submitTx(
   extrinsic: SubmittableExtrinsic,
   submitter: KeyringPair,
   resolveOn?: SubscriptionPromise.ResultEvaluator
@@ -164,7 +158,7 @@ export async function fundAccount(
 ): Promise<void> {
   const api = ConfigService.get('api')
   const transferTx = api.tx.balances.transfer(address, amount)
-  await submitExtrinsic(transferTx, devFaucet)
+  await submitTx(transferTx, devFaucet)
 }
 
 export async function createEndowedTestAccount(

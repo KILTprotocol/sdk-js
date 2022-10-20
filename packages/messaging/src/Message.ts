@@ -229,7 +229,7 @@ export function verifyRequiredCTypeProperties(
   CType.verifyDataStructure(cType as ICType)
 
   const unknownProperties = requiredProperties.find(
-    (property) => !(property in cType.schema.properties)
+    (property) => !(property in cType.properties)
   )
   if (unknownProperties) {
     throw new SDKErrors.CTypeUnknownPropertiesError()
@@ -306,12 +306,8 @@ export async function decrypt(
   const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
     encrypted
 
-  const senderKeyDetails = await resolveKey(senderKeyUri)
-  if (!senderKeyDetails) {
-    throw new SDKErrors.DidError(
-      `Could not resolve sender encryption key "${senderKeyUri}"`
-    )
-  }
+  const senderKeyDetails = await resolveKey(senderKeyUri, 'keyAgreement')
+
   const { fragment } = Did.parse(receiverKeyUri)
   if (!fragment) {
     throw new SDKErrors.DidError(
@@ -420,10 +416,7 @@ export async function encrypt(
     resolveKey?: DidResolveKey
   } = {}
 ): Promise<IEncryptedMessage> {
-  const receiverKey = await resolveKey(receiverKeyUri)
-  if (!receiverKey) {
-    throw new SDKErrors.DidError(`Cannot resolve key "${receiverKeyUri}"`)
-  }
+  const receiverKey = await resolveKey(receiverKeyUri, 'keyAgreement')
   if (message.receiver !== receiverKey.controller) {
     throw new SDKErrors.IdentityMismatchError('receiver public key', 'receiver')
   }

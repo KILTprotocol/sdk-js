@@ -10,11 +10,9 @@ import type { SubmittableExtrinsicFunction } from '@polkadot/api/types'
 import { BN } from '@polkadot/util'
 
 import type {
-  DidDocument,
   DidUri,
-  DidVerificationKey,
   KiltAddress,
-  SignCallback,
+  SignExtrinsicCallback,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -25,52 +23,9 @@ import { ConfigService } from '@kiltprotocol/config'
 import {
   documentFromChain,
   generateDidAuthenticatedTx,
-  servicesFromChain,
   toChain,
 } from '../Did.chain.js'
 import { parse } from '../Did.utils.js'
-
-/**
- * Fetches [[DidDocument]] from the blockchain. [[resolve]] provides more detailed output.
- * Private keys are assumed to already live in another storage, as only the public keys are retrieved from the blockchain.
- *
- * @param didUri The URI of the DID to fetch.
- *
- * @returns The fetched [[DidDocument]], or null if DID does not exist.
- */
-export async function query(didUri: DidUri): Promise<DidDocument | null> {
-  const { fragment, type } = parse(didUri)
-  if (fragment) {
-    throw new SDKErrors.DidError(`DID URI cannot contain fragment: "${didUri}"`)
-  }
-  if (type !== 'full') {
-    throw new SDKErrors.DidError(
-      `DID URI "${didUri}" does not refer to a full DID`
-    )
-  }
-
-  const api = ConfigService.get('api')
-  const encoded = await api.query.did.did(toChain(didUri))
-  if (encoded.isNone) return null
-  const didRec = documentFromChain(encoded)
-
-  const did: DidDocument = {
-    uri: didUri,
-    authentication: didRec.authentication,
-    assertionMethod: didRec.assertionMethod,
-    capabilityDelegation: didRec.capabilityDelegation,
-    keyAgreement: didRec.keyAgreement,
-  }
-
-  const service = servicesFromChain(
-    await api.query.did.serviceEndpoints.entries(toChain(didUri))
-  )
-  if (service.length > 0) {
-    did.service = service
-  }
-
-  return did
-}
 
 // Must be in sync with what's implemented in impl did::DeriveDidCallAuthorizationVerificationKeyRelationship for Call
 // in https://github.com/KILTprotocol/mashnet-node/blob/develop/runtimes/spiritnet/src/lib.rs
@@ -112,7 +67,13 @@ function getKeyRelationshipForMethod(
   return methodMapping[section]
 }
 
-export function getKeyRelationshipForExtrinsic(
+/**
+ * Detect the key relationship for a key which should be used to DID-authorize the provided extrinsic.
+ *
+ * @param extrinsic The unsigned extrinsic to inspect.
+ * @returns The key relationship.
+ */
+export function getKeyRelationshipForTx(
   extrinsic: Extrinsic
 ): VerificationKeyRelationship | undefined {
   return getKeyRelationshipForMethod(extrinsic.method)
@@ -127,23 +88,6 @@ function increaseNonce(currentNonce: BN, increment = 1): BN {
   return currentNonce.eq(maxNonceValue)
     ? new BN(increment)
     : currentNonce.addn(increment)
-}
-
-/**
- * Returns all the DID keys that could be used to sign the provided extrinsic for submission.
- * This function should never be used directly by SDK users, who should rather call [[Did.authorizeExtrinsic]].
- *
- * @param did The DID data.
- * @param extrinsic The unsigned extrinsic to perform the lookup.
- *
- * @returns All the keys under the full DID that could be used to generate valid signatures to submit the provided extrinsic.
- */
-export function getKeysForExtrinsic(
-  did: DidDocument,
-  extrinsic: Extrinsic
-): DidVerificationKey[] {
-  const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
-  return (keyRelationship && did[keyRelationship]) || []
 }
 
 /**
@@ -173,10 +117,10 @@ async function getNextNonce(did: DidUri): Promise<BN> {
  * @param signingOptions.txCounter The optional DID nonce to include in the operation signatures. By default, it uses the next value of the nonce stored on chain.
  * @returns The DID-signed submittable extrinsic.
  */
-export async function authorizeExtrinsic(
+export async function authorizeTx(
   did: DidUri,
   extrinsic: Extrinsic,
-  sign: SignCallback,
+  sign: SignExtrinsicCallback,
   submitterAccount: KiltAddress,
   {
     txCounter,
@@ -190,7 +134,7 @@ export async function authorizeExtrinsic(
     )
   }
 
-  const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
+  const keyRelationship = getKeyRelationshipForTx(extrinsic)
   if (keyRelationship === undefined) {
     throw new SDKErrors.SDKError('No key relationship found for extrinsic')
   }
@@ -214,9 +158,9 @@ function groupExtrinsicsByKeyRelationship(
   extrinsics: Extrinsic[]
 ): GroupedExtrinsics {
   const [first, ...rest] = extrinsics.map((extrinsic) => {
-    const keyRelationship = getKeyRelationshipForExtrinsic(extrinsic)
+    const keyRelationship = getKeyRelationshipForTx(extrinsic)
     if (!keyRelationship) {
-      throw new SDKErrors.DidBuilderError(
+      throw new SDKErrors.DidBatchError(
         'Can only batch extrinsics that require a DID signature'
       )
     }
@@ -270,11 +214,11 @@ export async function authorizeBatch({
   did: DidUri
   extrinsics: Extrinsic[]
   nonce?: BN
-  sign: SignCallback
+  sign: SignExtrinsicCallback
   submitter: KiltAddress
 }): Promise<SubmittableExtrinsic> {
   if (extrinsics.length === 0) {
-    throw new SDKErrors.DidBuilderError(
+    throw new SDKErrors.DidBatchError(
       'Cannot build a batch with no transactions'
     )
   }
@@ -286,7 +230,7 @@ export async function authorizeBatch({
   }
 
   if (extrinsics.length === 1) {
-    return authorizeExtrinsic(did, extrinsics[0], sign, submitter, {
+    return authorizeTx(did, extrinsics[0], sign, submitter, {
       txCounter: nonce,
     })
   }

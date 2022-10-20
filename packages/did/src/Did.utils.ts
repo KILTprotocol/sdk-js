@@ -135,45 +135,47 @@ export function validateUri(
     throw new TypeError(`DID string expected, got ${typeof input}`)
   }
   const { address, fragment } = parse(input as DidUri)
-  switch (expectType) {
-    // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
-    // @ts-ignore
-    case false:
-    case 'Did':
-      if (fragment)
-        throw new SDKErrors.DidError(
-          'Expected a Kilt DidUri but got a DidResourceUri (containing a #fragment)'
-        )
-      break
-    case 'ResourceUri':
-      if (!fragment)
-        throw new SDKErrors.DidError(
-          'Expected a Kilt DidResourceUri (containing a #fragment) but got a DidUri'
-        )
-      break
-    default:
-      break
+
+  if (
+    fragment &&
+    (expectType === 'Did' ||
+      // for backwards compatibility with previous implementations, `false` maps to `Did` while `true` maps to `undefined`.
+      (typeof expectType === 'boolean' && expectType === false))
+  ) {
+    throw new SDKErrors.DidError(
+      'Expected a Kilt DidUri but got a DidResourceUri (containing a #fragment)'
+    )
+  }
+
+  if (!fragment && expectType === 'ResourceUri') {
+    throw new SDKErrors.DidError(
+      'Expected a Kilt DidResourceUri (containing a #fragment) but got a DidUri'
+    )
   }
 
   DataUtils.verifyKiltAddress(address)
 }
 
+/**
+ * Internal: derive the address part of the DID when it is created from authentication key.
+ *
+ * @param input The authentication key.
+ * @param input.publicKey The public key.
+ * @param input.type The type of the key.
+ * @returns The expected address of the DID.
+ */
 export function getAddressByKey({
   publicKey,
   type,
 }: Pick<DidVerificationKey, 'publicKey' | 'type'>): KiltAddress {
-  switch (type) {
-    case 'ed25519':
-    case 'sr25519':
-      return encodeAddress(publicKey, ss58Format)
-    case 'ecdsa': {
-      // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
-      const pk = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
-      return encodeAddress(pk, ss58Format)
-    }
-    default:
-      throw new SDKErrors.DidBuilderError(`Unsupported key type "${type}"`)
+  if (type === 'ed25519' || type === 'sr25519') {
+    return encodeAddress(publicKey, ss58Format)
   }
+
+  // Otherwise it’s ecdsa.
+  // Taken from https://github.com/polkadot-js/common/blob/master/packages/keyring/src/pair/index.ts#L44
+  const address = publicKey.length > 32 ? blake2AsU8a(publicKey) : publicKey
+  return encodeAddress(address, ss58Format)
 }
 
 /**

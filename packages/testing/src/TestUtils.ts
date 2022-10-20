@@ -7,16 +7,16 @@
 
 import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto'
 
-import {
+import type {
   DecryptCallback,
   DidDocument,
   DidKey,
   DidServiceEndpoint,
   DidVerificationKey,
   EncryptCallback,
-  EncryptionKeyType,
   KeyRelationship,
   KeyringPair,
+  KiltEncryptionKeypair,
   KiltKeyringPair,
   LightDidSupportedVerificationKeyType,
   NewLightDidVerificationKey,
@@ -26,6 +26,8 @@ import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocument
@@ -40,9 +42,7 @@ export type EncryptionKeyToolCallback = (
  */
 export function makeEncryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-}): EncryptionKeyToolCallback {
+}: KiltEncryptionKeypair): EncryptionKeyToolCallback {
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
       const keyId = didDocument.keyAgreement?.[0].id
@@ -68,15 +68,11 @@ export function makeEncryptCallback({
  *
  * @param secretKey The options parameter.
  * @param secretKey.secretKey The key to use for decryption.
- * @param secretKey.type The X25519 type, only this one is supported.
  * @returns The callback.
  */
 export function makeDecryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: 'x25519'
-}): DecryptCallback {
+}: KiltEncryptionKeypair): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
@@ -89,13 +85,7 @@ export function makeDecryptCallback({
 }
 
 export interface EncryptionKeyTool {
-  keyAgreement: [
-    {
-      secretKey: Uint8Array
-      publicKey: Uint8Array
-      type: EncryptionKeyType
-    }
-  ]
+  keyAgreement: [KiltEncryptionKeypair]
   encrypt: EncryptionKeyToolCallback
   decrypt: DecryptCallback
 }
@@ -107,7 +97,7 @@ export interface EncryptionKeyTool {
  * @returns Object with secret and public key and the key type.
  */
 export function makeEncryptionKeyTool(seed: string): EncryptionKeyTool {
-  const keypair = Crypto.makeEncryptionKeyFromSeed(blake2AsU8a(seed, 256))
+  const keypair = Crypto.makeEncryptionKeypairFromSeed(blake2AsU8a(seed, 256))
 
   const encrypt = makeEncryptCallback(keypair)
   const decrypt = makeDecryptCallback(keypair)
@@ -140,7 +130,7 @@ export function makeSignCallback(keypair: KeyringPair): KeyToolSignCallback {
       const signature = keypair.sign(data, { withType: false })
 
       return {
-        data: signature,
+        signature,
         keyUri: `${didDocument.uri}${keyId}`,
         keyType,
       }
@@ -161,7 +151,7 @@ export function makeStoreDidCallback(
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
-      data: signature,
+      signature,
       keyType: keypair.type,
     }
   }
@@ -313,6 +303,7 @@ export async function createFullDidFromLightDid(
   lightDidForId: DidDocument,
   sign: StoreDidCallback
 ): Promise<DidDocument> {
+  const api = ConfigService.get('api')
   const { authentication, uri } = lightDidForId
   const tx = await Did.getStoreTx(
     {
@@ -326,9 +317,9 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const fullDid = await Did.query(Did.getFullDidUri(uri))
-  if (!fullDid) throw new Error('Could not fetch created DID document')
-  return fullDid
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const encodedDidDetails = await queryFunction(toChain(Did.getFullDidUri(uri)))
+  return linkedInfoFromChain(encodedDidDetails).document
 }
 
 export async function createFullDidFromSeed(

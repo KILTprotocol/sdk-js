@@ -20,11 +20,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import { ApiPromise } from '@polkadot/api'
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
-import {
-  createEndowedTestAccount,
-  initializeApi,
-  submitExtrinsic,
-} from './utils'
+import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
 
 let api: ApiPromise
 beforeAll(async () => {
@@ -39,15 +35,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   function makeCType(): ICType {
     ctypeCounter += 1
-    return CType.fromSchema({
-      $id: `kilt:ctype:0x${ctypeCounter}`,
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: `ctype${ctypeCounter}`,
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    } as ICType['schema'])
+    return CType.fromProperties(`ctype${ctypeCounter}`, {
+      name: { type: 'string' },
+    })
   }
 
   beforeAll(async () => {
@@ -60,96 +50,72 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const { keypair, getSignCallback } = makeSigningKeyTool()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
       getSignCallback(ctypeCreator),
       keypair.address
     )
-    await expect(
-      submitExtrinsic(authorizedStoreTx, keypair)
-    ).rejects.toThrowError()
+    await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedStoreTx, paymentAccount)
+    await submitTx(authorizedStoreTx, paymentAccount)
 
-    expect(CType.fromChain(await api.query.ctype.ctypes(ctype.hash))).toBe(
-      ctypeCreator.uri
-    )
-    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
-
-    ctype.owner = ctypeCreator.uri
+    expect(
+      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
+    ).toBe(ctypeCreator.uri)
     await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
     const storeTx = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx = await Did.authorizeExtrinsic(
+    const authorizedStoreTx = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedStoreTx, paymentAccount)
+    await submitTx(authorizedStoreTx, paymentAccount)
 
     const storeTx2 = api.tx.ctype.add(CType.toChain(ctype))
-    const authorizedStoreTx2 = await Did.authorizeExtrinsic(
+    const authorizedStoreTx2 = await Did.authorizeTx(
       ctypeCreator.uri,
       storeTx2,
       key.getSignCallback(ctypeCreator),
       paymentAccount.address
     )
     await expect(
-      submitExtrinsic(authorizedStoreTx2, paymentAccount)
+      submitTx(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
-    expect(CType.fromChain(await api.query.ctype.ctypes(ctype.hash))).toBe(
-      ctypeCreator.uri
-    )
+    expect(
+      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
+    ).toBe(ctypeCreator.uri)
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
-    const iAmNotThere = CType.fromSchema({
-      $id: 'kilt:ctype:0x2',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'ctype2',
-      properties: {
-        game: { type: 'string' },
-      },
-      type: 'object',
-    } as ICType['schema'])
-
-    const iAmNotThereWithOwner = CType.fromSchema(
-      {
-        $id: 'kilt:ctype:0x3',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        title: 'ctype2',
-        properties: {
-          game: { type: 'string' },
-        },
-        type: 'object',
-      },
-      ctypeCreator.uri
-    )
+    const iAmNotThere = CType.fromProperties('ctype2', {
+      game: { type: 'string' },
+    })
 
     await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
-    expect((await api.query.ctype.ctypes(iAmNotThere.hash)).isNone).toBe(true)
+    expect(
+      (await api.query.ctype.ctypes(CType.idToChain(iAmNotThere.$id))).isNone
+    ).toBe(true)
 
     const fakeHash = Crypto.hashStr('abcdefg')
     expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
-
-    await expect(CType.verifyStored(iAmNotThereWithOwner)).rejects.toThrow()
   })
 })
 

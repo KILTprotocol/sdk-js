@@ -11,8 +11,8 @@ import type {
   DecryptCallback,
   DidDocument,
   EncryptCallback,
-  EncryptionKeyType,
   KeyringPair,
+  KiltEncryptionKeypair,
   KiltKeyringPair,
   NewDidEncryptionKey,
   SignCallback,
@@ -23,6 +23,7 @@ const { kilt } = window
 const {
   Claim,
   Attestation,
+  ConfigService,
   Credential,
   CType,
   Did,
@@ -32,7 +33,7 @@ const {
   BalanceUtils,
 } = kilt
 
-kilt.ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
 function makeSignCallback(
   keypair: KeyringPair
@@ -47,7 +48,7 @@ function makeSignCallback(
         )
       }
       const signature = keypair.sign(data, { withType: false })
-      return { data: signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
+      return { signature, keyUri: `${didDocument.uri}${keyId}`, keyType }
     }
   }
 }
@@ -58,7 +59,7 @@ function makeStoreDidCallback(keypair: KiltKeyringPair): StoreDidCallback {
   return async function sign({ data }) {
     const signature = keypair.sign(data, { withType: false })
     return {
-      data: signature,
+      signature,
       keyType: keypair.type,
     }
   }
@@ -83,11 +84,7 @@ function makeSigningKeypair(
   }
 }
 
-function makeEncryptionKeypair(seed: string): {
-  secretKey: Uint8Array
-  publicKey: Uint8Array
-  type: EncryptionKeyType
-} {
+function makeEncryptionKeypair(seed: string): KiltEncryptionKeypair {
   const { secretKey, publicKey } = Crypto.naclBoxPairFromSecret(
     Crypto.hash(seed, 256)
   )
@@ -100,10 +97,7 @@ function makeEncryptionKeypair(seed: string): {
 
 function makeEncryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): (didDocument: DidDocument) => EncryptCallback {
+}: KiltEncryptionKeypair): (didDocument: DidDocument) => EncryptCallback {
   return (didDocument) => {
     return async function encryptCallback({ data, peerPublicKey }) {
       const keyId = didDocument.keyAgreement?.[0].id
@@ -122,10 +116,7 @@ function makeEncryptCallback({
 
 function makeDecryptCallback({
   secretKey,
-}: {
-  secretKey: Uint8Array
-  type: EncryptionKeyType
-}): DecryptCallback {
+}: KiltEncryptionKeypair): DecryptCallback {
   return async function decryptCallback({ data, nonce, peerPublicKey }) {
     const decrypted = Crypto.decryptAsymmetric(
       { box: data, nonce },
@@ -142,6 +133,7 @@ async function createFullDidFromKeypair(
   keypair: KiltKeyringPair,
   encryptionKey: NewDidEncryptionKey
 ) {
+  const api = ConfigService.get('api')
   const sign = makeStoreDidCallback(keypair)
 
   const storeTx = await Did.getStoreTx(
@@ -156,9 +148,9 @@ async function createFullDidFromKeypair(
   )
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
-  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
-  if (!fullDid) throw new Error('Cannot query created DID')
-  return fullDid
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const encodedDidDetails = await queryFunction(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  return Did.linkedInfoFromChain(encodedDidDetails).document
 }
 
 async function runAll() {
@@ -230,9 +222,9 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
-  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
-  if (!fullDid) throw new Error('Could not fetch created DID document')
-
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const encodedDidDetails = await queryFunction(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  const fullDid = Did.linkedInfoFromChain(encodedDidDetails).document
   const resolved = await Did.resolve(fullDid.uri)
 
   if (
@@ -245,7 +237,7 @@ async function runAll() {
     throw new Error('DIDs do not match')
   }
 
-  const deleteTx = await Did.authorizeExtrinsic(
+  const deleteTx = await Did.authorizeTx(
     fullDid.uri,
     api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
     getSignCallback(fullDid),
@@ -262,22 +254,16 @@ async function runAll() {
 
   // CType workflow
   console.log('CType workflow started')
-  const DriversLicense = CType.fromSchema({
-    $id: 'kilt:ctype:0x1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Drivers License',
-    properties: {
-      name: {
-        type: 'string',
-      },
-      age: {
-        type: 'integer',
-      },
+  const DriversLicense = CType.fromProperties('Drivers License', {
+    name: {
+      type: 'string',
     },
-    type: 'object',
+    age: {
+      type: 'integer',
+    },
   })
 
-  const cTypeStoreTx = await Did.authorizeExtrinsic(
+  const cTypeStoreTx = await Did.authorizeTx(
     alice.uri,
     api.tx.ctype.add(CType.toChain(DriversLicense)),
     aliceSign(alice),
@@ -342,7 +328,7 @@ async function runAll() {
   Attestation.verifyAgainstCredential(attestation, credential)
   console.info('Attestation Data verified')
 
-  const attestationStoreTx = await Did.authorizeExtrinsic(
+  const attestationStoreTx = await Did.authorizeTx(
     alice.uri,
     api.tx.attestation.add(attestation.claimHash, attestation.cTypeHash, null),
     aliceSign(alice),

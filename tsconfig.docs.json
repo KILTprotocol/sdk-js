@@ -14,6 +14,7 @@
       "packages/config/src/index.ts",
       "packages/chain-helpers/src/index.ts",
       "packages/did/src/index.ts",
+      "packages/type-definitions/src/index.ts",
       "packages/core/src/index.ts",
       "packages/messaging/src/index.ts",
       "packages/vc-export/src/index.ts",

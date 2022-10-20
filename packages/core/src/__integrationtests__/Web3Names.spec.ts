@@ -24,11 +24,7 @@ import {
 import * as Did from '@kiltprotocol/did'
 import type { ApiPromise } from '@polkadot/api'
 import { disconnect } from '../kilt'
-import {
-  createEndowedTestAccount,
-  initializeApi,
-  submitExtrinsic,
-} from './utils'
+import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
 
 let api: ApiPromise
 
@@ -74,54 +70,55 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should not be possible to create a w3n name w/o tokens', async () => {
     const tx = api.tx.web3Names.claim(nick)
     const bobbyBroke = makeSigningKeyTool().keypair
-    const authorizedTx = await Did.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeTx(
       w3nCreator.uri,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       bobbyBroke.address
     )
 
-    const p = submitExtrinsic(authorizedTx, bobbyBroke)
+    const p = submitTx(authorizedTx, bobbyBroke)
 
     await expect(p).rejects.toThrowError('Inability to pay some fees')
   }, 30_000)
 
   it('should be possible to create a w3n name with enough tokens', async () => {
     const tx = api.tx.web3Names.claim(nick)
-    const authorizedTx = await Did.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeTx(
       w3nCreator.uri,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
 
-    await submitExtrinsic(authorizedTx, paymentAccount)
+    await submitTx(authorizedTx, paymentAccount)
   }, 30_000)
 
   it('should be possible to lookup the DID uri with the given nick', async () => {
-    const { owner } = Did.web3NameOwnerFromChain(
-      await api.query.web3Names.owner(nick)
-    )
-    expect(owner).toBe(w3nCreator.uri)
+    const {
+      document: { uri },
+    } = Did.linkedInfoFromChain(await api.call.didApi.queryDidByW3n(nick))
+    expect(uri).toStrictEqual(w3nCreator.uri)
   }, 30_000)
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
-    const resolved = Did.web3NameFromChain(
-      await api.query.web3Names.names(Did.toChain(w3nCreator.uri))
+    const encodedDidInfo = await api.call.didApi.queryDid(
+      Did.toChain(w3nCreator.uri)
     )
-    expect(resolved).toBe(nick)
+    const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
+    expect(didInfo.web3Name).toBe(nick)
   }, 30_000)
 
   it('should not be possible to create the same w3n twice', async () => {
     const tx = api.tx.web3Names.claim(nick)
-    const authorizedTx = await Did.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeTx(
       otherWeb3NameCreator.uri,
       tx,
       otherW3NCreatorKey.getSignCallback(otherWeb3NameCreator),
       paymentAccount.address
     )
 
-    const p = submitExtrinsic(authorizedTx, paymentAccount)
+    const p = submitTx(authorizedTx, paymentAccount)
 
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
@@ -131,14 +128,14 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to create a second w3n for the same did', async () => {
     const tx = api.tx.web3Names.claim('nick2')
-    const authorizedTx = await Did.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeTx(
       w3nCreator.uri,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
 
-    const p = submitExtrinsic(authorizedTx, paymentAccount)
+    const p = submitTx(authorizedTx, paymentAccount)
 
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
@@ -148,7 +145,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should not be possible to remove a w3n by another payment account', async () => {
     const tx = api.tx.web3Names.reclaimDeposit(nick)
-    const p = submitExtrinsic(tx, otherPaymentAccount)
+    const p = submitTx(tx, otherPaymentAccount)
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
       name: 'NotAuthorized',
@@ -157,28 +154,28 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
   it('should be possible to remove a w3n by the payment account', async () => {
     const tx = api.tx.web3Names.reclaimDeposit(nick)
-    await submitExtrinsic(tx, paymentAccount)
+    await submitTx(tx, paymentAccount)
   }, 30_000)
 
   it('should be possible to remove a w3n by the owner did', async () => {
     // prepare the w3n on chain
     const prepareTx = api.tx.web3Names.claim(differentNick)
-    const prepareAuthorizedTx = await Did.authorizeExtrinsic(
+    const prepareAuthorizedTx = await Did.authorizeTx(
       w3nCreator.uri,
       prepareTx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
-    await submitExtrinsic(prepareAuthorizedTx, paymentAccount)
+    await submitTx(prepareAuthorizedTx, paymentAccount)
 
     const tx = api.tx.web3Names.releaseByOwner()
-    const authorizedTx = await Did.authorizeExtrinsic(
+    const authorizedTx = await Did.authorizeTx(
       w3nCreator.uri,
       tx,
       w3nCreatorKey.getSignCallback(w3nCreator),
       paymentAccount.address
     )
-    await submitExtrinsic(authorizedTx, paymentAccount)
+    await submitTx(authorizedTx, paymentAccount)
   }, 40_000)
 })
 

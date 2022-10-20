@@ -1234,7 +1234,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"
   dependencies:
-    "@kiltprotocol/type-definitions": ^0.2.0
+    "@kiltprotocol/type-definitions": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/typegen": ^9.4.1
     "@types/websocket": ^1.0.0
@@ -1251,7 +1251,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
@@ -1273,7 +1272,7 @@ __metadata:
     "@polkadot/api": ^9.4.1
     rimraf: ^3.0.2
     typescript: ^4.8.3
-    typescript-logging: ^0.6.4
+    typescript-logging: ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -1286,7 +1285,7 @@ __metadata:
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/testing": "workspace:*"
-    "@kiltprotocol/type-definitions": 0.2.0
+    "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
@@ -1341,7 +1340,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
@@ -1367,9 +1365,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/testing@workspace:packages/testing"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/type-definitions": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.4.1
@@ -1382,25 +1381,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/type-definitions@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@kiltprotocol/type-definitions@npm:0.2.0"
-  checksum: 849c8b54c581bcda0702b243db41fd9ca6377087aaf9a793c74140bb511a96027bbf677a58bba64d788b516a5237d2130a578d637e63aa2e3fdaf234b58b49f0
-  languageName: node
-  linkType: hard
-
-"@kiltprotocol/type-definitions@npm:^0.2.0":
-  version: 0.2.1
-  resolution: "@kiltprotocol/type-definitions@npm:0.2.1"
-  checksum: c8606942d10b65ee1b45180e48273ed58f0df3fa9cdaa376d8b7da0d7c8741ef45d5a81ec4689f64945f06a2789d5fd16b3b47128ffafb23ae729b42876bbca4
-  languageName: node
-  linkType: hard
+"@kiltprotocol/type-definitions@workspace:*, @kiltprotocol/type-definitions@workspace:packages/type-definitions":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
+  dependencies:
+    rimraf: ^3.0.2
+    typescript: ^4.8.3
+  languageName: unknown
+  linkType: soft
 
 "@kiltprotocol/types@workspace:*, @kiltprotocol/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/types@workspace:packages/types"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@polkadot/api": ^9.4.1
     "@polkadot/keyring": ^10.0.0
     "@polkadot/types": ^9.4.1
@@ -1431,7 +1424,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
-    "@kiltprotocol/augment-api": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
@@ -9879,12 +9871,12 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"typescript-logging@npm:^0.6.4":
-  version: 0.6.4
-  resolution: "typescript-logging@npm:0.6.4"
+"typescript-logging@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "typescript-logging@npm:1.0.1"
   dependencies:
     stacktrace-js: 1.3.1
-  checksum: 883304d1c8e5f57420f9b3d925c72e59bf1e65f248c2586a60eeec19a7ad46de52df5d915f1e53d202e8b6bb3e42be21c696bdf8ab1d392f56dc25f8b3a0e974
+  checksum: ded1936be380f20bbe0c82a34cf09b080513105eebd23d13d570e9fb3480d8995d731efec565cd47551e0d08cafa0a722e134bfb7e3a17491768e7468632ab3a
   languageName: node
   linkType: hard
 

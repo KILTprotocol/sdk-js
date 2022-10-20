@@ -16,7 +16,7 @@ import glob from 'glob'
   await writeFile(path, fixed, 'utf8')
 })()
 
-const regex = /^(ex|im)port .+ from '\.[^\.;']+(?=';$)/gm
+const regex = /^(ex|im)port (.+ from )?'\.[^\.;']+(?=';$)/gm
 glob('./src/**/*.ts', async (err, matches) => {
   if (err) throw err
   matches.forEach(async (path) => {

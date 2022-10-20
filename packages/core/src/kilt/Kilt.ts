@@ -16,10 +16,10 @@ import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { latest, rpc, runtime } from '@kiltprotocol/type-definitions'
+import { typesBundle } from '@kiltprotocol/type-definitions'
 
 /**
- * Prepares crypto modules (required e.g. for identity creation) and calls ConfigService.set().
+ * Prepares crypto modules (required for identity creation and others) and calls ConfigService.set().
  *
  * @param configs Arguments to pass on to ConfigService.set().
  * @returns Promise that must be awaited to assure crypto is ready.
@@ -41,9 +41,7 @@ export async function connect(blockchainRpcWsUrl: string): Promise<ApiPromise> {
   const provider = new WsProvider(blockchainRpcWsUrl)
   const api = await ApiPromise.create({
     provider,
-    types: latest,
-    rpc,
-    runtime,
+    typesBundle,
   })
   await init({ api })
   return api.isReadyOrError

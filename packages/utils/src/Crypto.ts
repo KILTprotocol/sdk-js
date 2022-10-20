@@ -15,7 +15,7 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import type {
-  EncryptionKeyType,
+  KiltEncryptionKeypair,
   KeyringPair,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
@@ -117,14 +117,14 @@ export function signStr(
  *
  * @param message Original signed message to be verified.
  * @param signature Signature as hex string or byte array.
- * @param address Substrate address or public key of the signer.
+ * @param addressOrPublicKey Substrate address or public key of the signer.
  */
 export function verify(
   message: CryptoInput,
   signature: CryptoInput,
-  address: Address
+  addressOrPublicKey: Address | HexString | Uint8Array
 ): void {
-  if (signatureVerify(message, signature, address).isValid !== true)
+  if (signatureVerify(message, signature, addressOrPublicKey).isValid !== true)
     throw new SDKErrors.SignatureUnverifiableError()
 }
 
@@ -172,24 +172,6 @@ export function encodeObjectAsStr(
       : value
 
   return input
-}
-
-/**
- * Hashes numbers, booleans, and objects by stringify-ing them. Object keys are sorted to yield consistent hashing.
- *
- * @param value Object or value to be hashed.
- * @param nonce Optional nonce to obscure hashed values that could be guessed.
- * @returns Blake2b hash as hex string.
- */
-export function hashObjectAsStr(
-  value: Record<string, any> | string | number | boolean,
-  nonce?: string
-): HexString {
-  let objectAsStr = encodeObjectAsStr(value)
-  if (nonce) {
-    objectAsStr = nonce + objectAsStr
-  }
-  return hashStr(objectAsStr)
 }
 
 /**
@@ -351,6 +333,13 @@ export function hashStatements(
   })
 }
 
+/**
+ * Generate typed KILT blockchain keypair from a seed or random data.
+ *
+ * @param seed The keypair seed, only optional in the tests.
+ * @param type Optional type of the keypair.
+ * @returns The keypair.
+ */
 export function makeKeypairFromSeed<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(seed = randomAsU8a(32), type?: KeyType): KiltKeyringPair & { type: KeyType } {
@@ -358,6 +347,13 @@ export function makeKeypairFromSeed<
   return keyring.addFromSeed(seed) as KiltKeyringPair & { type: KeyType }
 }
 
+/**
+ * Generate typed KILT blockchain keypair from a polkadot keypair URI.
+ *
+ * @param uri The URI.
+ * @param type Optional type of the keypair.
+ * @returns The keypair.
+ */
 export function makeKeypairFromUri<
   KeyType extends KiltKeyringPair['type'] = 'ed25519'
 >(uri: string, type?: KeyType): KiltKeyringPair & { type: KeyType } {
@@ -365,11 +361,15 @@ export function makeKeypairFromUri<
   return keyring.addFromUri(uri) as KiltKeyringPair & { type: KeyType }
 }
 
-export function makeEncryptionKeyFromSeed(seed = randomAsU8a(32)): {
-  secretKey: Uint8Array
-  publicKey: Uint8Array
-  type: EncryptionKeyType
-} {
+/**
+ * Generate from a seed a x25519 keypair to be used as DID encryption key.
+ *
+ * @param seed The keypair seed, only optional in the tests.
+ * @returns The keypair.
+ */
+export function makeEncryptionKeypairFromSeed(
+  seed = randomAsU8a(32)
+): KiltEncryptionKeypair {
   return {
     ...naclBoxPairFromSecret(seed),
     type: 'x25519',

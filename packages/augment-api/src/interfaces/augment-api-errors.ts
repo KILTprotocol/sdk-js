@@ -529,8 +529,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unknown: AugmentedError<ApiType>;
     };
-    dynFilter: {
-    };
     indices: {
       /**
        * The index was not available.
@@ -853,8 +851,6 @@ declare module '@polkadot/api-base/types/errors' {
        * A call which is incompatible with the proxy type's filter was attempted.
        **/
       Unproxyable: AugmentedError<ApiType>;
-    };
-    relayMigration: {
     };
     scheduler: {
       /**

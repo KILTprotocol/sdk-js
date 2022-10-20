@@ -9,7 +9,5 @@
  * @module @kiltprotocol/chain-helpers
  */
 
-import '@kiltprotocol/augment-api'
-
 export { ErrorHandler } from './errorhandling/index.js'
 export { Blockchain, SubscriptionPromise } from './blockchain/index.js'

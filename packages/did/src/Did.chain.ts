@@ -8,9 +8,7 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import type { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
-import type { Bytes } from '@polkadot/types-codec'
-import { BN, hexToU8a } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 
 import type {
   Deposit,
@@ -18,13 +16,12 @@ import type {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidSignature,
   DidUri,
   DidVerificationKey,
   KiltAddress,
   NewDidEncryptionKey,
   NewDidVerificationKey,
-  SignCallback,
+  SignExtrinsicCallback,
   SignRequestData,
   SignResponseData,
   SubmittableExtrinsic,
@@ -60,14 +57,32 @@ export type ChainDidPublicKeyDetails = DidDidDetailsDidPublicKeyDetails
 
 // ### RAW QUERYING (lowest layer)
 
+/**
+ * Format a DID to be used as a parameter for the blockchain API functions.
+
+ * @param did The DID to format.
+ * @returns The blockchain-formatted DID.
+ */
 export function toChain(did: DidUri): KiltAddress {
   return parse(did).address
 }
 
+/**
+ * Format a DID resource ID to be used as a parameter for the blockchain API functions.
+
+ * @param id The DID resource ID to format.
+ * @returns The blockchain-formatted ID.
+ */
 export function resourceIdToChain(id: UriFragment): string {
   return id.replace(/^#/, '')
 }
 
+/**
+ * Convert the deposit data coming from the blockchain to JS object.
+ *
+ * @param deposit The blockchain-formatted deposit data.
+ * @returns The deposit data.
+ */
 export function depositFromChain(deposit: KiltSupportDeposit): Deposit {
   return {
     owner: Crypto.encodeAddress(deposit.owner, ss58Format),
@@ -101,10 +116,22 @@ function didPublicKeyDetailsFromChain(
   }
 }
 
+/**
+ * Convert the DID data from blockchain format to the DID URI.
+ *
+ * @param encoded The chain-formatted DID.
+ * @returns The DID URI.
+ */
 export function fromChain(encoded: AccountId32): DidUri {
   return getFullDidUri(Crypto.encodeAddress(encoded, ss58Format))
 }
 
+/**
+ * Convert the DID Document data from the blockchain format to a JS object.
+ *
+ * @param encoded The chain-formatted DID Document.
+ * @returns The DID Document.
+ */
 export function documentFromChain(
   encoded: Option<DidDidDetails>
 ): ChainDocument {
@@ -220,9 +247,15 @@ export function validateService(endpoint: DidServiceEndpoint): void {
   })
 }
 
-export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
-  validateService(endpoint)
-  const { id, type, serviceEndpoint } = endpoint
+/**
+ * Format the DID service to be used as a parameter for the blockchain API functions.
+ *
+ * @param service The DID service to format.
+ * @returns The blockchain-formatted DID service.
+ */
+export function serviceToChain(service: DidServiceEndpoint): ChainEndpoint {
+  validateService(service)
+  const { id, type, serviceEndpoint } = service
   return {
     id: resourceIdToChain(id),
     serviceTypes: type,
@@ -230,6 +263,12 @@ export function serviceToChain(endpoint: DidServiceEndpoint): ChainEndpoint {
   }
 }
 
+/**
+ * Convert the DID service data coming from the blockchain to JS object.
+ *
+ * @param encoded The blockchain-formatted DID service data.
+ * @returns The DID service.
+ */
 export function serviceFromChain(
   encoded: Option<DidServiceEndpointsDidEndpoint>
 ): DidServiceEndpoint {
@@ -239,18 +278,6 @@ export function serviceFromChain(
     type: serviceTypes.map((type) => type.toUtf8()),
     serviceEndpoint: urls.map((url) => url.toUtf8()),
   }
-}
-
-/**
- * Decode service endpoint records associated with the full DID from the KILT blockchain.
- *
- * @param encoded The data returned by `api.query.did.serviceEndpoints.entries`.
- * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
- */
-export function servicesFromChain(
-  encoded: Array<[any, Option<DidServiceEndpointsDidEndpoint>]>
-): DidServiceEndpoint[] {
-  return encoded.map(([, encodedValue]) => serviceFromChain(encodedValue))
 }
 
 // ### EXTRINSICS types
@@ -292,7 +319,7 @@ interface GetStoreTxInput {
   service?: DidServiceEndpoint[]
 }
 
-type GetStoreTxSignCallback = (
+export type GetStoreTxSignCallback = (
   signData: Omit<SignRequestData, 'did'>
 ) => Promise<Omit<SignResponseData, 'keyUri'>>
 
@@ -397,13 +424,13 @@ export async function getStoreTx(
     keyRelationship: 'authentication',
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.create(encoded, encodedSignature)
 }
 
 export interface SigningOptions {
-  sign: SignCallback
+  sign: SignExtrinsicCallback
   keyRelationship: VerificationKeyRelationship
 }
 
@@ -448,7 +475,7 @@ export async function generateDidAuthenticatedTx({
     did,
   })
   const encodedSignature = {
-    [signature.keyType]: signature.data,
+    [signature.keyType]: signature.signature,
   } as EncodedSignature
   return api.tx.did.submitDidCall(signableCall, encodedSignature)
 }
@@ -463,7 +490,7 @@ export async function generateDidAuthenticatedTx({
  */
 export function didSignatureToChain(
   key: DidVerificationKey,
-  signature: Pick<DidSignature, 'signature'>
+  signature: Uint8Array
 ): EncodedSignature {
   if (!verificationKeyTypes.includes(key.type)) {
     throw new SDKErrors.DidError(
@@ -471,41 +498,5 @@ export function didSignatureToChain(
     )
   }
 
-  return { [key.type]: hexToU8a(signature.signature) } as EncodedSignature
-}
-
-/**
- * Web3Name is the type of nickname for a DID.
- */
-export type Web3Name = string
-
-/**
- * Decodes the web3name of a DID.
- *
- * @param encoded The value returned by `api.query.web3Names.names()`.
- * @returns The registered web3name for this DID if any.
- */
-export function web3NameFromChain(encoded: Option<Bytes>): Web3Name {
-  return encoded.unwrap().toUtf8()
-}
-
-/**
- * Decodes the DID of the owner of web3name.
- *
- * @param encoded The value returned by `api.query.web3Names.owner()`.
- * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
- */
-export function web3NameOwnerFromChain(
-  encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
-): {
-  owner: DidUri
-  deposit: Deposit
-  claimedAt: BN
-} {
-  const { owner, deposit, claimedAt } = encoded.unwrap()
-  return {
-    owner: fromChain(owner),
-    deposit: depositFromChain(deposit),
-    claimedAt: claimedAt.toBn(),
-  }
+  return { [key.type]: signature } as EncodedSignature
 }

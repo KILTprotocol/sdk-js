@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/core",
-  "version": "0.29.0-rc.2",
+  "version": "0.29.0-rc.3",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -41,7 +41,7 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/type-definitions": "0.2.0",
+    "@kiltprotocol/type-definitions": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^9.4.1",

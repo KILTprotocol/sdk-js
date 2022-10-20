@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/config",
-  "version": "0.29.0-rc.2",
+  "version": "0.29.0-rc.3",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -37,6 +37,6 @@
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^9.4.1",
-    "typescript-logging": "^0.6.4"
+    "typescript-logging": "^1.0.0"
   }
 }

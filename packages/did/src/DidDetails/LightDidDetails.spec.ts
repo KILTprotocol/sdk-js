@@ -27,7 +27,9 @@ import * as Did from '../index.js'
 describe('When creating an instance from the details', () => {
   it('correctly assign the right sr25519 authentication key, x25519 encryption key, and service endpoints', () => {
     const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
-    const encKey = Crypto.makeEncryptionKeyFromSeed(new Uint8Array(32).fill(1))
+    const encKey = Crypto.makeEncryptionKeypairFromSeed(
+      new Uint8Array(32).fill(1)
+    )
     const service: DidServiceEndpoint[] = [
       {
         id: '#service-1',
@@ -80,7 +82,9 @@ describe('When creating an instance from the details', () => {
 
   it('correctly assign the right ed25519 authentication key and encryption key', () => {
     const authKey = Crypto.makeKeypairFromSeed()
-    const encKey = Crypto.makeEncryptionKeyFromSeed(new Uint8Array(32).fill(1))
+    const encKey = Crypto.makeEncryptionKeypairFromSeed(
+      new Uint8Array(32).fill(1)
+    )
 
     const lightDid = Did.createLightDidDocument({
       authentication: [authKey],
@@ -123,7 +127,7 @@ describe('When creating an instance from the details', () => {
 
   it('throws for unsupported encryption key type', () => {
     const authKey = Crypto.makeKeypairFromSeed()
-    const encKey = Crypto.makeEncryptionKeyFromSeed()
+    const encKey = Crypto.makeEncryptionKeypairFromSeed()
     const invalidInput = {
       authentication: [authKey],
       // Not an encryption key type
@@ -140,7 +144,9 @@ describe('When creating an instance from the details', () => {
 describe('When creating an instance from a URI', () => {
   it('correctly assign the right authentication key, encryption key, and service endpoints', () => {
     const authKey = Crypto.makeKeypairFromSeed(undefined, 'sr25519')
-    const encKey = Crypto.makeEncryptionKeyFromSeed(new Uint8Array(32).fill(1))
+    const encKey = Crypto.makeEncryptionKeypairFromSeed(
+      new Uint8Array(32).fill(1)
+    )
     const endpoints: DidServiceEndpoint[] = [
       {
         id: '#service-1',
@@ -197,7 +203,7 @@ describe('When creating an instance from a URI', () => {
 
   it('fail if a fragment is present according to the options', () => {
     const authKey = Crypto.makeKeypairFromSeed()
-    const encKey = Crypto.makeEncryptionKeyFromSeed()
+    const encKey = Crypto.makeEncryptionKeypairFromSeed()
     const service: DidServiceEndpoint[] = [
       {
         id: '#service-1',

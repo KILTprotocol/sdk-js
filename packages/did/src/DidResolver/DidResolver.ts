@@ -7,17 +7,21 @@
 
 import type {
   DidDocument,
+  DidKey,
   DidResolutionResult,
   DidResourceUri,
   DidUri,
+  KeyRelationship,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
+  UriFragment,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
-import { toChain, resourceIdToChain, serviceFromChain } from '../Did.chain.js'
+import { toChain } from '../Did.chain.js'
+import { linkedInfoFromChain } from '../Did.rpc.js'
 import { getFullDidUri, parse } from '../Did.utils.js'
 
 /**
@@ -33,8 +37,20 @@ export async function resolve(
 ): Promise<DidResolutionResult | null> {
   const { type } = parse(did)
   const api = ConfigService.get('api')
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const { section, version } = queryFunction?.meta ?? {}
+  if (version > 2)
+    throw new Error(
+      `This version of the KILT sdk supports runtime api '${section}' <=v2 , but the blockchain runtime implements ${version}. Please upgrade!`
+    )
+  let document: DidDocument | undefined
+  try {
+    const encodedLinkedInfo = await queryFunction(toChain(did))
+    document = linkedInfoFromChain(encodedLinkedInfo).document
+  } catch {
+    // ignore errors
+  }
 
-  const document = await Did.query(getFullDidUri(did))
   if (type === 'full' && document) {
     return {
       document,
@@ -82,36 +98,37 @@ export async function resolve(
   }
 }
 
-type CompliantDidResolutionResult = Omit<DidResolutionResult, 'document'> & {
-  document?: DidDocument | { uri: DidUri }
+/**
+ * Converts the DID key in the format returned by `resolveKey()`, useful for own implementations of `resolveKey`.
+ *
+ * @param key The DID key in the SDK format.
+ * @param did The DID the key belongs to.
+ * @returns The key in the resolveKey-format.
+ */
+export function keyToResolvedKey(key: DidKey, did: DidUri): ResolvedDidKey {
+  const { id, publicKey, includedAt, type } = key
+  return {
+    controller: did,
+    id: `${did}${id}`,
+    publicKey,
+    type,
+    ...(includedAt && { includedAt }),
+  }
 }
 
 /**
- * Resolve a DID URI to the DID document and its metadata.
- * This alternative to `resolve()` behaves closer to the DID specification
- * when it resolves a light DID that has been upgraded to a full DID.
- * In this case `strictResolve()` will return a `document` that only contains `uri`,
- * while `resolve()` takes a more practical approach and does not return `document`.
+ * Converts the DID key returned by the `resolveKey()` into the format used in the SDK.
  *
- * The URI can also identify a key or a service, but it will be ignored during resolution.
- *
- * @param did The subject's DID.
- * @returns The details associated with the DID subject.
+ * @param key The key in the resolveKey-format.
+ * @returns The key in the SDK format.
  */
-export async function strictResolve(
-  did: DidUri
-): Promise<CompliantDidResolutionResult | null> {
-  const resolved = await resolve(did)
-
-  if (!resolved?.metadata.canonicalId) {
-    return resolved
-  }
-
+export function resolvedKeyToKey(key: ResolvedDidKey): DidKey {
+  const { id, publicKey, includedAt, type } = key
   return {
-    document: {
-      uri: did,
-    },
-    metadata: resolved.metadata,
+    id: Did.parse(id).fragment as UriFragment,
+    publicKey,
+    type,
+    ...(includedAt && { includedAt }),
   }
 }
 
@@ -119,11 +136,13 @@ export async function strictResolve(
  * Resolve a DID key URI to the key details.
  *
  * @param keyUri The DID key URI.
+ * @param expectedVerificationMethod Optional key relationship the key has to belong to.
  * @returns The details associated with the key.
  */
 export async function resolveKey(
-  keyUri: DidResourceUri
-): Promise<ResolvedDidKey | null> {
+  keyUri: DidResourceUri,
+  expectedVerificationMethod?: KeyRelationship
+): Promise<ResolvedDidKey> {
   const { did, fragment: keyId } = parse(keyUri)
 
   // A fragment (keyId) IS expected to resolve a key.
@@ -133,7 +152,7 @@ export async function resolveKey(
 
   const resolved = await resolve(did)
   if (!resolved) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const {
@@ -143,25 +162,28 @@ export async function resolveKey(
 
   // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    return null
+    throw new SDKErrors.DidResolveUpgradedDidError()
   }
   if (!document) {
-    return null
+    throw new SDKErrors.DidDeactivatedError()
   }
 
   const key = Did.getKey(document, keyId)
   if (!key) {
-    return null
+    throw new SDKErrors.DidNotFoundError('Key not found in DID')
   }
 
-  const { includedAt } = key
-  return {
-    controller: did,
-    id: `${did}${keyId}`,
-    publicKey: key.publicKey,
-    type: key.type,
-    ...(includedAt && { includedAt }),
+  // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
+  if (
+    expectedVerificationMethod &&
+    !document[expectedVerificationMethod]?.some(({ id }) => keyId === id)
+  ) {
+    throw new SDKErrors.DidError(
+      `No key "${keyUri}" for the verification method "${expectedVerificationMethod}"`
+    )
   }
+
+  return keyToResolvedKey(key, did)
 }
 
 /**
@@ -172,33 +194,17 @@ export async function resolveKey(
  */
 export async function resolveService(
   serviceUri: DidResourceUri
-): Promise<ResolvedDidServiceEndpoint | null> {
-  const { fragment: serviceId, did, type } = parse(serviceUri)
+): Promise<ResolvedDidServiceEndpoint> {
+  const { did, fragment: serviceId } = parse(serviceUri)
 
-  // A fragment (serviceId) IS expected to resolve a service endpoint.
+  // A fragment (serviceId) IS expected to resolve a key.
   if (!serviceId) {
     throw new SDKErrors.InvalidDidFormatError(serviceUri)
-  }
-  const api = ConfigService.get('api')
-
-  if (type === 'full') {
-    const encoded = await api.query.did.serviceEndpoints(
-      toChain(serviceUri),
-      resourceIdToChain(serviceId)
-    )
-    if (encoded.isNone) {
-      return null
-    }
-    const serviceEndpoint = serviceFromChain(encoded)
-    return {
-      ...serviceEndpoint,
-      id: serviceUri,
-    }
   }
 
   const resolved = await resolve(did)
   if (!resolved) {
-    return null
+    throw new SDKErrors.DidNotFoundError()
   }
 
   const {
@@ -206,21 +212,21 @@ export async function resolveService(
     metadata: { canonicalId },
   } = resolved
 
-  // If the light DID has been upgraded we consider the old key URI invalid, the full DID URI should be used instead.
+  // If the light DID has been upgraded we consider the old service URI invalid, the full DID URI should be used instead.
   if (canonicalId) {
-    return null
+    throw new SDKErrors.DidResolveUpgradedDidError()
   }
   if (!document) {
-    return null
+    throw new SDKErrors.DidDeactivatedError()
   }
 
-  const endpoint = Did.getService(document, serviceId)
-  if (!endpoint) {
-    return null
+  const service = Did.getService(document, serviceId)
+  if (!service) {
+    throw new SDKErrors.DidNotFoundError('Service not found in DID')
   }
 
   return {
-    ...endpoint,
+    ...service,
     id: `${did}${serviceId}`,
   }
 }

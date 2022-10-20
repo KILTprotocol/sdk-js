@@ -13,7 +13,7 @@
 
 import type {
   DidDocument,
-  DidResolutionResult,
+  DidResourceUri,
   DidSignature,
   DidUri,
   DidVerificationKey,
@@ -22,7 +22,7 @@ import type {
   IClaimContents,
   ICredential,
   ICredentialPresentation,
-  ICType,
+  ResolvedDidKey,
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
@@ -37,15 +37,9 @@ import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from './Credential'
 
-const rawCType: ICType['schema'] = {
-  $id: 'kilt:ctype:0x2',
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'raw ctype',
-  properties: {
-    name: { type: 'string' },
-  },
-  type: 'object',
-}
+const testCType = CType.fromProperties('raw ctype', {
+  name: { type: 'string' },
+})
 
 function buildCredential(
   claimerDid: DidUri,
@@ -54,10 +48,8 @@ function buildCredential(
 ): ICredential {
   // create claim
 
-  const testCType = CType.fromSchema(rawCType)
-
   const claim: IClaim = {
-    cTypeHash: testCType.hash,
+    cTypeHash: CType.idToHash(testCType.$id),
     contents,
     owner: claimerDid,
   }
@@ -93,7 +85,6 @@ describe('Credential', () => {
     )
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(credential)).not.toThrow()
-    const testCType = CType.fromSchema(rawCType)
     await Credential.verifyCredential(credential, {
       ctype: testCType,
     })
@@ -286,7 +277,6 @@ describe('Credential', () => {
   })
 
   it('should verify the credential claims structure against the ctype', async () => {
-    const testCType = CType.fromSchema(rawCType)
     const builtCredential = buildCredential(
       identityBob,
       {
@@ -315,37 +305,19 @@ describe('Credential', () => {
   let legitimation: ICredentialPresentation
   let identityDave: DidDocument
   let migratedAndDeletedLightDid: DidDocument
-  let migratedAndDeletedFullDid: DidDocument
 
-  async function mockResolve(
-    didUri: DidUri
-  ): Promise<DidResolutionResult | null> {
-    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.parse(didUri)
-    switch (did) {
-      case identityAlice?.uri:
-        return { document: identityAlice, metadata: { deactivated: false } }
-      case identityBob?.uri:
-        return { document: identityBob, metadata: { deactivated: false } }
-      case identityCharlie?.uri:
-        return { document: identityCharlie, metadata: { deactivated: false } }
-      case identityDave?.uri:
-        return { document: identityDave, metadata: { deactivated: false } }
-      case migratedAndDeletedLightDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      case migratedAndDeletedFullDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      default:
-        return null
-    }
+  async function didResolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [
+      identityAlice,
+      identityBob,
+      identityCharlie,
+      identityDave,
+    ].find(({ uri }) => uri === did)
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document.authentication[0], did)
   }
 
   // TODO: Cleanup file by migrating setup functions and removing duplicate tests.
@@ -358,23 +330,11 @@ describe('Credential', () => {
   ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
 
-    const rawCType2: ICType['schema'] = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
+    const ctype = CType.fromProperties('Credential', {
+      name: { type: 'string' },
+    })
 
-    const testCType = CType.fromSchema(rawCType2)
-
-    const claim = Claim.fromCTypeAndClaimContents(
-      testCType,
-      contents,
-      claimer.uri
-    )
+    const claim = Claim.fromCTypeAndClaimContents(ctype, contents, claimer.uri)
     // build credential with legitimations
     const credential = Credential.fromClaim(claim, {
       legitimations,
@@ -427,7 +387,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
   })
   it('verify credentials signed by a light DID', async () => {
@@ -451,7 +411,7 @@ describe('Credential', () => {
     // check proof on complete data
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
   })
 
@@ -465,11 +425,10 @@ describe('Credential', () => {
       },
       [legitimation]
     )
-    const testCType = CType.fromSchema(rawCType)
     await expect(
       Credential.verifyPresentation(credential as ICredentialPresentation, {
         ctype: testCType,
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrow()
   })
@@ -479,10 +438,6 @@ describe('Credential', () => {
     migratedAndDeletedLightDid = Did.createLightDidDocument({
       authentication: migratedAndDeleted.authentication,
     })
-    migratedAndDeletedFullDid = {
-      uri: Did.getFullDidUri(migratedAndDeletedLightDid.uri),
-      authentication: [migratedAndDeletedLightDid.authentication[0]],
-    }
 
     const [presentation] = await buildPresentation(
       migratedAndDeletedLightDid,
@@ -500,7 +455,7 @@ describe('Credential', () => {
     expect(() => Credential.verifyDataIntegrity(presentation)).not.toThrow()
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrowError()
   })
@@ -560,10 +515,10 @@ describe('create presentation', () => {
   let unmigratedClaimerKey: KeyTool
   let migratedThenDeletedClaimerLightDid: DidDocument
   let migratedThenDeletedKey: KeyTool
-  let migratedThenDeletedClaimerFullDid: DidDocument
   let attester: DidDocument
-  let ctype: ICType
   let credential: ICredential
+
+  const ctype = CType.fromProperties(testCType.title, testCType.properties)
 
   // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(
@@ -579,47 +534,18 @@ describe('create presentation', () => {
     }
   }
 
-  async function mockResolve(
-    didUri: DidUri
-  ): Promise<DidResolutionResult | null> {
-    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const { did } = Did.parse(didUri)
-    switch (did) {
-      case migratedClaimerLightDid?.uri:
-        return {
-          document: migratedClaimerLightDid,
-          metadata: {
-            canonicalId: migratedClaimerFullDid.uri,
-            deactivated: false,
-          },
-        }
-      case migratedThenDeletedClaimerLightDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      case migratedThenDeletedClaimerFullDid?.uri:
-        return {
-          metadata: {
-            deactivated: true,
-          },
-        }
-      case unmigratedClaimerLightDid?.uri:
-        return {
-          document: unmigratedClaimerLightDid,
-          metadata: { deactivated: false },
-        }
-      case migratedClaimerFullDid?.uri:
-        return {
-          document: migratedClaimerFullDid,
-          metadata: { deactivated: false },
-        }
-      case attester?.uri:
-        return { document: attester, metadata: { deactivated: false } }
-      default:
-        return null
-    }
+  async function didResolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [
+      migratedClaimerLightDid,
+      unmigratedClaimerLightDid,
+      migratedClaimerFullDid,
+      attester,
+    ].find(({ uri }) => uri === did)
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document.authentication[0], did)
   }
 
   beforeAll(async () => {
@@ -648,11 +574,6 @@ describe('create presentation', () => {
     migratedThenDeletedClaimerLightDid = Did.createLightDidDocument({
       authentication: migratedThenDeletedKey.authentication,
     })
-    migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
-      migratedThenDeletedClaimerLightDid
-    )
-
-    ctype = CType.fromSchema(rawCType, migratedClaimerFullDid.uri)
 
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
@@ -678,13 +599,11 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a light DID', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -707,13 +626,11 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
   it('should create presentation and exclude specific attributes using a migrated DID', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -738,14 +655,12 @@ describe('create presentation', () => {
       challenge,
     })
     await Credential.verifyPresentation(presentation, {
-      didResolve: mockResolve,
+      didResolveKey,
     })
     expect(presentation.claimerSignature?.challenge).toEqual(challenge)
   })
 
   it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -771,14 +686,12 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(att, {
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrow()
   })
 
   it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
-    ctype = CType.fromSchema(rawCType, attester.uri)
-
     // cannot be used since the variable needs to be established in the outer scope
     credential = Credential.fromClaim(
       Claim.fromCTypeAndClaimContents(
@@ -804,7 +717,7 @@ describe('create presentation', () => {
     })
     await expect(
       Credential.verifyPresentation(presentation, {
-        didResolve: mockResolve,
+        didResolveKey,
       })
     ).rejects.toThrow()
   })
