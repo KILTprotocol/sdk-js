@@ -31,13 +31,4 @@ export const types10720: RegistryTypes = {
     lastTxCounter: 'BlockNumber',
     deposit: 'KiltSupportDeposit<AccountId32, Balance>',
   },
-
-  // TODO: Remove when we bump Spiritnet to 10900
-  // ParachainStakingApi get_staking_rates
-  StakingRates: {
-    collatorStakingRate: 'Perquintill',
-    collatorRewardRate: 'Perquintill',
-    delegatorStakingRate: 'Perquintill',
-    delegatorRewardRate: 'Perquintill',
-  },
 }

@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import type { BTreeMap, BTreeSet, Option, Struct, Text, Vec } from '@polkadot/types-codec';
-import type { AccountId32, BlockNumber, Hash, Perquintill } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, BlockNumber, Hash } from '@polkadot/types/interfaces/runtime';
 
 // FIXME: manually added as they are not automatically imported
 import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit } from '@polkadot/types/lookup'
@@ -35,14 +35,6 @@ export interface RawServiceEndpoints extends Struct {
   readonly id: Text;
   readonly serviceTypes: Vec<Text>;
   readonly urls: Vec<Text>;
-}
-
-/** @name StakingRates */
-export interface StakingRates extends Struct {
-  readonly collatorStakingRate: Perquintill;
-  readonly collatorRewardRate: Perquintill;
-  readonly delegatorStakingRate: Perquintill;
-  readonly delegatorRewardRate: Perquintill;
 }
 
 export type PHANTOM_EXTRADEFS = 'extraDefs';

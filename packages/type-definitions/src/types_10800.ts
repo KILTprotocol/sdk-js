@@ -13,4 +13,11 @@ export const types10800: RegistryTypes = {
   ...types10720,
   // DID state_call v2
   DidApiAccountId: 'PalletDidLookupLinkableAccountLinkableAccountId',
+  // ParachainStakingApi get_staking_rates
+  StakingRates: {
+    collatorStakingRate: 'Perquintill',
+    collatorRewardRate: 'Perquintill',
+    delegatorStakingRate: 'Perquintill',
+    delegatorRewardRate: 'Perquintill',
+  },
 }
