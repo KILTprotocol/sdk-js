@@ -174,6 +174,16 @@ describe('Chain returns specific errors, that we check for', () => {
       })
     )
   }, 40000)
+
+  it(`is able to retrieve the fee for a given extrinsic`, async () => {
+    const tx = blockchain.api.tx.balances.transfer(
+      charlie.address,
+      new BN('1000000000000000')
+    )
+
+    const info = await tx.paymentInfo(devFaucet.address)
+    expect(info).toBeDefined()
+  }, 40000)
 })
 
 afterAll(() => {
