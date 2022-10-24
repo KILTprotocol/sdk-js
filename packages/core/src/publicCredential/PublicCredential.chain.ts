@@ -10,27 +10,32 @@ import type {
   IDelegationNode,
   IPublicCredential,
 } from '@kiltprotocol/types'
+import { u8aToHex } from '@polkadot/util'
+import { HexString } from '@polkadot/util/types'
 
 import { encode as cborEncode } from 'cbor'
 
 export type EncodedPublicCredential = {
   ctypeHash: CTypeHash
+  // TODO: Replace with an asset DID
   subject: string
-  claims: Uint8Array
+  claims: HexString
   authorization: IDelegationNode['id'] | null
 }
 
+// TODO: Add integrity checks (e.g., that the claims conform to the specified CType)
 export function toChain(
   publicCredential: Omit<IPublicCredential, 'id'>
 ): EncodedPublicCredential {
-  const { cTypeHash, subject, claims, delegationId } = publicCredential
+  const { cTypeHash, claims, subject, delegationId } = publicCredential
 
-  const cborSerializedClaims = Uint8Array.from(cborEncode(claims))
+  const cborSerializedClaims = cborEncode(claims)
 
   return {
     ctypeHash: cTypeHash,
     subject,
-    claims: cborSerializedClaims,
+    // FIXME: Using Uint8Array directly fails to encode and decode, somehow
+    claims: u8aToHex(new Uint8Array(cborSerializedClaims)),
     authorization: delegationId,
   }
 }
