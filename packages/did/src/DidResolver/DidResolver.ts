@@ -40,7 +40,7 @@ export async function resolve(
 
   let document: DidDocument | undefined
   try {
-    const encodedLinkedInfo = await api.call.didApi.queryDid(toChain(did))
+    const encodedLinkedInfo = await api.call.did.query(toChain(did))
     document = linkedInfoFromChain(encodedLinkedInfo).document
   } catch {
     // ignore errors

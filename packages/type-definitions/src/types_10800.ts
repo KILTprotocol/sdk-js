@@ -13,4 +13,15 @@ export const types10800: RegistryTypes = {
   ...types10720,
   // DID state_call v2
   DidApiAccountId: 'PalletDidLookupLinkableAccountLinkableAccountId',
+
+  // Public credentials state_call
+  PublicCredentialFilter: {
+    _enum: {
+      ctypeHash: 'Hash',
+      attester: 'AccountId32',
+    },
+  },
+  PublicCredentialError: {
+    _enum: ['InvalidSubjectId'],
+  },
 }

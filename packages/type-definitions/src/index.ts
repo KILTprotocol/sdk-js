@@ -29,6 +29,7 @@ import { types10800 } from './types_10800.js'
 
 import { calls as didCalls } from './runtime/did.js'
 import { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 
 export {
   types8,
@@ -50,6 +51,7 @@ export {
 
 export { calls as didCalls } from './runtime/did.js'
 export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+export { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -117,6 +119,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...parachainStakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -124,18 +127,21 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...parachainStakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
     'KILT Mashnet': {
       runtime: {
         ...didCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
     Development: {
       runtime: {
         ...didCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },

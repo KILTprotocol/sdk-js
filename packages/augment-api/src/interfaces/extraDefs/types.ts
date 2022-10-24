@@ -1,14 +1,29 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { BTreeMap, BTreeSet, Option, Struct, Text, Vec } from '@polkadot/types-codec';
+import type { BTreeMap, BTreeSet, Enum, Option, Struct, Text, Vec } from '@polkadot/types-codec';
 import type { AccountId32, BlockNumber, Hash, Perquintill } from '@polkadot/types/interfaces/runtime';
 
 // FIXME: manually added as they are not automatically imported
 import type { DidDidDetailsDidPublicKeyDetails, KiltSupportDeposit, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
 
 /** @name DidApiAccountId */
-export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId {}
+export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId { }
+
+/** @name PublicCredentialError */
+export interface PublicCredentialError extends Enum {
+  readonly isInvalidSubjectId: boolean;
+  readonly type: 'InvalidSubjectId';
+}
+
+/** @name PublicCredentialFilter */
+export interface PublicCredentialFilter extends Enum {
+  readonly isCtypeHash: boolean;
+  readonly asCtypeHash: Hash;
+  readonly isAttester: boolean;
+  readonly asAttester: AccountId32;
+  readonly type: 'CtypeHash' | 'Attester';
+}
 
 /** @name RawDidDetails */
 export interface RawDidDetails extends Struct {
