@@ -37,7 +37,7 @@ export const calls: DefinitionsCall = {
               type: 'Option<PublicCredentialFilter>',
             },
           ],
-          type: 'Result<Vec<Hash, PublicCredentialsCredentialsCredentialEntry>, PublicCredentialError>',
+          type: 'Result<Vec<(Hash, PublicCredentialsCredentialsCredentialEntry)>, PublicCredentialError>',
         },
       },
       version: 1,
