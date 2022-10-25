@@ -1387,6 +1387,7 @@ __metadata:
   resolution: "@kiltprotocol/type-definitions@workspace:packages/type-definitions"
   dependencies:
     rimraf: ^3.0.2
+    rxjs: ^7.5.7
     typescript: ^4.8.3
   languageName: unknown
   linkType: soft
@@ -8749,6 +8750,15 @@ fsevents@^2.3.2:
   dependencies:
     tslib: ^2.1.0
   checksum: fc05f01364a74dac57490fb3e07ea63b422af04017fae1db641a009073f902ef69f285c5daac31359620dc8d9aee7d81e42b370ca2a8573d1feae0b04329383b
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:^7.5.7":
+  version: 7.5.7
+  resolution: "rxjs@npm:7.5.7"
+  dependencies:
+    tslib: ^2.1.0
+  checksum: edabcdb73b0f7e0f5f6e05c2077aff8c52222ac939069729704357d6406438acca831c24210db320aba269e86dbe1a400f3769c89101791885121a342fb15d9c
   languageName: node
   linkType: hard
 

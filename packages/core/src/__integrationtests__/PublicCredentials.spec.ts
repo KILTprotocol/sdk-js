@@ -9,7 +9,11 @@
  * @group integration/publicCredentials
  */
 
-import type { DidDocument, KiltKeyringPair } from '@kiltprotocol/types'
+import type {
+  DidDocument,
+  INewPublicCredential,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
 
 import {
   createFullDidFromSeed,
@@ -27,6 +31,7 @@ import {
   nftNameCType,
   submitTx,
 } from './utils'
+import { fromChain } from '../publicCredential'
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument
@@ -58,13 +63,14 @@ describe('When there is an attester and ctype NFT name', () => {
 
   it('should be possible to issue a public credential', async () => {
     const content = { name: 'Certified NFT collection' }
-    const encodedPublicCredential = PublicCredential.toChain({
+    const credential: INewPublicCredential = {
       claims: content,
       cTypeHash: CType.getHashForSchema(nftNameCType),
       delegationId: null,
       subject:
         'did:asset:eip155:1.erc20:0x6b175474e89094c44da98b954eedeac495271d0f',
-    })
+    }
+    const encodedPublicCredential = PublicCredential.toChain(credential)
     const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
     const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
@@ -73,5 +79,16 @@ describe('When there is an attester and ctype NFT name', () => {
       tokenHolder.address
     )
     await submitTx(authorizedStoreTx, tokenHolder)
+    const credentialId = PublicCredential.getIdForPublicCredentialAndAttester(
+      credential,
+      attester.uri
+    )
+
+    const publicCredentialEntry =
+      await api.call.publicCredentials.getCredential(credentialId)
+    expect(publicCredentialEntry.isSome).toBe(true)
+
+    const completeCredential = await fromChain(publicCredentialEntry)
+    console.log(completeCredential)
   })
 })
