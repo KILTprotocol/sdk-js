@@ -113,15 +113,27 @@ const defaultTypesBundle: OverrideVersionedType[] = [
 // Current runtime version: 10730
 export const typesBundle: OverrideBundleType = {
   chain: {
-    'kilt-spiritnet': {
+    'KILT Spiritnet': {
       runtime: {
         ...didCalls,
         ...parachainStakingCalls,
       },
       types: defaultTypesBundle,
     },
-    // Includes Standalone and Peregrine runtimes
-    'mashnet-node': {
+    'KILT Peregrine': {
+      runtime: {
+        ...didCalls,
+        ...parachainStakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Mashnet': {
+      runtime: {
+        ...didCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    Development: {
       runtime: {
         ...didCalls,
         ...parachainStakingCalls,
