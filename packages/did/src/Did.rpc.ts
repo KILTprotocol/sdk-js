@@ -11,9 +11,9 @@ import type { AccountId32, Hash } from '@polkadot/types/interfaces'
 import type {
   RawDidLinkedInfo,
   KiltSupportDeposit,
-  RawDidDetails,
   DidDidDetailsDidPublicKeyDetails,
-  RawServiceEndpoints,
+  DidDidDetails,
+  DidServiceEndpointsDidEndpoint,
 } from '@kiltprotocol/augment-api'
 import type {
   Deposit,
@@ -72,7 +72,7 @@ function resourceIdToChain(id: UriFragment): string {
   return id.replace(/^#/, '')
 }
 
-function documentFromChain(encoded: RawDidDetails): RpcDocument {
+function documentFromChain(encoded: DidDidDetails): RpcDocument {
   const {
     publicKeys,
     authenticationKey,
@@ -121,17 +121,19 @@ function documentFromChain(encoded: RawDidDetails): RpcDocument {
   return didRecord
 }
 
-function serviceFromChain(encoded: RawServiceEndpoints): DidServiceEndpoint {
+function serviceFromChain(
+  encoded: DidServiceEndpointsDidEndpoint
+): DidServiceEndpoint {
   const { id, serviceTypes, urls } = encoded
   return {
-    id: `#${id.toHuman()}`,
-    type: serviceTypes.map((type) => type.toHuman()),
-    serviceEndpoint: urls.map((url) => url.toHuman()),
+    id: `#${id.toUtf8()}`,
+    type: serviceTypes.map((type) => type.toUtf8()),
+    serviceEndpoint: urls.map((url) => url.toUtf8()),
   }
 }
 
 function servicesFromChain(
-  encoded: RawServiceEndpoints[]
+  encoded: DidServiceEndpointsDidEndpoint[]
 ): DidServiceEndpoint[] {
   return encoded.map((encodedValue) => serviceFromChain(encodedValue))
 }
