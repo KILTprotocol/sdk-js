@@ -29,7 +29,7 @@ import type {
 
 import { encodeAddress } from '@polkadot/keyring'
 import { ethereumEncode } from '@polkadot/util-crypto'
-import { BN } from '@polkadot/util'
+import { BN, u8aToString } from '@polkadot/util'
 import { Crypto, ss58Format } from '@kiltprotocol/utils'
 
 import { Address, SubstrateAddress } from './DidLinks/AccountLinks.chain.js'
@@ -126,9 +126,9 @@ function serviceFromChain(
 ): DidServiceEndpoint {
   const { id, serviceTypes, urls } = encoded
   return {
-    id: `#${id.toUtf8()}`,
-    type: serviceTypes.map((type) => type.toUtf8()),
-    serviceEndpoint: urls.map((url) => url.toUtf8()),
+    id: `#${u8aToString(id)}`,
+    type: serviceTypes.map(u8aToString),
+    serviceEndpoint: urls.map(u8aToString),
   }
 }
 
