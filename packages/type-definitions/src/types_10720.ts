@@ -14,8 +14,8 @@ export const types10720: RegistryTypes = {
     identifier: 'AccountId32',
     accounts: 'Vec<DidApiAccountId>',
     w3n: 'Option<Text>',
-    serviceEndpoints: 'Vec<RawServiceEndpoints>',
-    details: 'RawDidDetails',
+    serviceEndpoints: 'Vec<DidServiceEndpointsDidEndpoint>',
+    details: 'DidDidDetails',
   },
   RawServiceEndpoints: {
     id: 'Text',
