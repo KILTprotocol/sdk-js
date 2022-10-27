@@ -11,7 +11,8 @@ import type {
   INewPublicCredential,
   IPublicCredential,
 } from '@kiltprotocol/types'
-import type { Option } from '@polkadot/types'
+import type { Option, GenericCall, GenericExtrinsic } from '@polkadot/types'
+import type { AccountId32, Call } from '@polkadot/types/interfaces'
 import type {
   DidDidDetailsDidAuthorizedCallOperation,
   PublicCredentialsCredentialsCredentialEntry,
@@ -53,9 +54,11 @@ export function toChain(
 
 // FIXME: I did not get the derives to work properly.
 /**
+ * @param credentialId
  * @param publicCredentialEntry
  */
 export async function fromChain(
+  credentialId: HexString,
   publicCredentialEntry: Option<PublicCredentialsCredentialsCredentialEntry>
 ): Promise<IPublicCredential | null> {
   const api = ConfigService.get('api')
@@ -63,30 +66,75 @@ export async function fromChain(
   const { blockNumber } = publicCredentialEntry.unwrap()
   const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
 
-  // @ts-ignore
-  const publicCredentialCreations = extrinsics.filter(
-    ({ extrinsic, events }) => {
-      if (
-        extrinsic.method.section !== 'did' ||
-        extrinsic.method.method !== 'submitDidCall'
-        // (extrinsic.args as any).did_call === undefined
-      ) {
-        console.log(`Nope: ${extrinsic.method.section} ${extrinsic.method.method}`)
+  extrinsics
+    // Consider only extrinsics that have not failed
+    .filter(({ dispatchError }) => {
+      if (dispatchError !== undefined) {
+        console.log('Failed extrinsic. Ignoring.')
         return false
       }
-      const didProxyExtrinsic = (extrinsic.args as any)
-        .did_call as DidDidDetailsDidAuthorizedCallOperation
-      if (
-        didProxyExtrinsic.call.section !== 'publicCredentials' ||
-        didProxyExtrinsic.call.method !== 'add'
-      ) {
-        console.log(`Nope 2: ${didProxyExtrinsic.call.section} ${didProxyExtrinsic.call.method}`)
-        return false
-      }
-      const publicCredentialCreationCall = api.findCall(didProxyExtrinsic.call.toHex())
-      console.log(publicCredentialCreationCall.toHuman())
       return true
-    }
-  )
+    })
+    // Take each extrinsic and its events
+    .map(({ extrinsic, events }) => ({ extrinsic, events }))
+    // Consider only the extrinsics that have generated the right event type
+    .filter(({ events }) =>
+      events.find(({ section, method }) => {
+        if (section !== 'publicCredentials' || method !== 'add') {
+          console.log(`Event generated for ${section}::${method}(). Ignoring.`)
+          return false
+        }
+        return true
+      })
+    )
+  // // Consider only `did::submit_did_call` extrinsics
+  // .filter(
+  //   (
+  //     extrinsic
+  //   ): extrinsic is GenericExtrinsic<
+  //     typeof api.tx.did.submitDidCall.args
+  //   > => {
+  //     if (
+  //       extrinsic.method.section !== 'did' ||
+  //       extrinsic.method.method !== 'submitDidCall'
+  //     ) {
+  //       console.log(
+  //         `${extrinsic.method.section}::${extrinsic.method.method}() not the right extrinsic. Ignoring.`
+  //       )
+  //       return false
+  //     }
+  //     return true
+  //   }
+  // )
+  // // Take the nested call and submitter DID
+  // .map(
+  //   ({
+  //     method: {
+  //       args: [didCall],
+  //     },
+  //   }) =>
+  //     [didCall.call, didCall.submitter] as [
+  //       GenericCall<typeof api.tx.publicCredentials.add.args>,
+  //       AccountId32
+  //     ]
+  // )
+  // // Consider only DID-authorized `public_credentials::add` calls
+  // .filter(
+  //   (
+  //     callDetails
+  //   ): callDetails is [
+  //     GenericCall<typeof api.tx.publicCredentials.add.args>,
+  //     AccountId32
+  //   ] => {
+  //     const call = callDetails[0]
+  //     if (call.section !== 'publicCredentials' || call.method !== 'add') {
+  //       console.log(
+  //         `${call.section}::${call.method}() not the right call. Ignoring.`
+  //       )
+  //       return false
+  //     }
+  //     return true
+  //   }
+  // )
   return null
 }

@@ -88,7 +88,10 @@ describe('When there is an attester and ctype NFT name', () => {
       await api.call.publicCredentials.getCredential(credentialId)
     expect(publicCredentialEntry.isSome).toBe(true)
 
-    const completeCredential = await fromChain(publicCredentialEntry)
+    const completeCredential = await fromChain(
+      credentialId,
+      publicCredentialEntry
+    )
     console.log(completeCredential)
   })
 })
