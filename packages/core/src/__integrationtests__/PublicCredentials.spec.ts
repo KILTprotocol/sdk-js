@@ -72,9 +72,12 @@ describe('When there is an attester and ctype NFT name', () => {
     }
     const encodedPublicCredential = PublicCredential.toChain(credential)
     const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
+    let batchTx = api.tx.utility.batchAll([storeTx])
+    batchTx = api.tx.utility.batch([batchTx])
+    batchTx = api.tx.utility.forceBatch([batchTx])
     const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
-      storeTx,
+      batchTx,
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )

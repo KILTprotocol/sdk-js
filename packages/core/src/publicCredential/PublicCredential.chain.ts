@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /**
  * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
@@ -5,16 +6,16 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
 import type {
   CTypeHash,
   IDelegationNode,
   INewPublicCredential,
   IPublicCredential,
 } from '@kiltprotocol/types'
-import type { Option, GenericCall, GenericExtrinsic } from '@polkadot/types'
-import type { AccountId32, Call } from '@polkadot/types/interfaces'
+import type { GenericCall, Option } from '@polkadot/types'
+import type { Call } from '@polkadot/types/interfaces'
 import type {
-  DidDidDetailsDidAuthorizedCallOperation,
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
 
@@ -50,6 +51,24 @@ export function toChain(
     claims: u8aToHex(new Uint8Array(cborSerializedClaims)),
     authorization: delegationId,
   }
+}
+
+function extractCallsFromBatch(api: ApiPromise, call: Call, {
+  section,
+  method,
+}: {
+  section: string
+  method?: string
+}): Call[] {
+  // Base recursive case
+  if (call.section !== 'utility' || !['batch', 'batchAll', 'forceBatch'].includes(call.method)) {
+    return []
+  }
+
+  const batchCall = call as GenericCall<typeof api.tx.utility.batch.args>
+  const calls = batch
+  // return batchCall.args[0].reduce((acc, call) => acc.concat(extractCallsFromBatch(api, call)), [])
+  // return  extractCallsFromBatch(api, batch)
 }
 
 // FIXME: I did not get the derives to work properly.
