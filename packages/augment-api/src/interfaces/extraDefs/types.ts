@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import type { Option, Struct, Text, Vec } from '@polkadot/types-codec';
-import type { AccountId32 } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, Perquintill } from '@polkadot/types/interfaces/runtime';
 // FIXME: manually added as they are not automatically imported
 import type { DidServiceEndpointsDidEndpoint, DidDidDetails, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
 
@@ -16,6 +16,14 @@ export interface RawDidLinkedInfo extends Struct {
   readonly w3n: Option<Text>;
   readonly serviceEndpoints: Vec<DidServiceEndpointsDidEndpoint>;
   readonly details: DidDidDetails;
+}
+
+/** @name StakingRates */
+export interface StakingRates extends Struct {
+  readonly collatorStakingRate: Perquintill;
+  readonly collatorRewardRate: Perquintill;
+  readonly delegatorStakingRate: Perquintill;
+  readonly delegatorRewardRate: Perquintill;
 }
 
 export type PHANTOM_EXTRADEFS = 'extraDefs';
