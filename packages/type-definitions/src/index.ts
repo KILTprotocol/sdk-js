@@ -7,6 +7,7 @@
 
 import type {
   OverrideBundleType,
+  OverrideBundleDefinition,
   OverrideVersionedType,
 } from '@polkadot/types/types'
 
@@ -28,7 +29,7 @@ import { types10800 } from './types_10800.js'
 // Custom runtime calls
 
 import { calls as didCalls } from './runtime/did.js'
-import { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+import { calls as stakingCalls } from './runtime/staking.js'
 
 export {
   types8,
@@ -49,7 +50,7 @@ export {
 }
 
 export { calls as didCalls } from './runtime/did.js'
-export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+export { calls as parachainStakingCalls } from './runtime/staking.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -110,34 +111,30 @@ const defaultTypesBundle: OverrideVersionedType[] = [
   },
 ]
 
-// Current runtime version: 10730
-export const typesBundle: OverrideBundleType = {
-  chain: {
-    'KILT Spiritnet': {
+// The KILT chains
+const chainNames: string[] = [
+  'KILT Spiritnet',
+  'KILT Spiritnet Develop',
+  'KILT Peregrine',
+  'KILT Peregrine Develop',
+  'KILT Mashnet',
+  'Development',
+]
+const chainConfiguration = chainNames.reduce(
+  (acc: Record<string, OverrideBundleDefinition>, name: string) => {
+    acc[name] = {
       runtime: {
         ...didCalls,
-        ...parachainStakingCalls,
+        ...stakingCalls,
       },
       types: defaultTypesBundle,
-    },
-    'KILT Peregrine': {
-      runtime: {
-        ...didCalls,
-        ...parachainStakingCalls,
-      },
-      types: defaultTypesBundle,
-    },
-    'KILT Mashnet': {
-      runtime: {
-        ...didCalls,
-      },
-      types: defaultTypesBundle,
-    },
-    Development: {
-      runtime: {
-        ...didCalls,
-      },
-      types: defaultTypesBundle,
-    },
+    }
+    return acc
   },
+  {}
+)
+
+// Current runtime version: 10750
+export const typesBundle: OverrideBundleType = {
+  chain: chainConfiguration,
 }
