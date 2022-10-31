@@ -14,30 +14,7 @@ export const types10720: RegistryTypes = {
     identifier: 'AccountId32',
     accounts: 'Vec<DidApiAccountId>',
     w3n: 'Option<Text>',
-    serviceEndpoints: 'Vec<RawServiceEndpoints>',
-    details: 'RawDidDetails',
-  },
-  RawServiceEndpoints: {
-    id: 'Text',
-    serviceTypes: 'Vec<Text>',
-    urls: 'Vec<Text>',
-  },
-  RawDidDetails: {
-    authenticationKey: 'Hash',
-    keyAgreementKeys: 'BTreeSet<Hash>',
-    delegationKey: 'Option<Hash>',
-    attestationKey: 'Option<Hash>',
-    publicKeys: 'BTreeMap<Hash, DidDidDetailsDidPublicKeyDetails<BlockNumber>>',
-    lastTxCounter: 'BlockNumber',
-    deposit: 'KiltSupportDeposit<AccountId32, Balance>',
-  },
-
-  // TODO: Remove when we bump Spiritnet to 10900
-  // ParachainStakingApi get_staking_rates
-  StakingRates: {
-    collatorStakingRate: 'Perquintill',
-    collatorRewardRate: 'Perquintill',
-    delegatorStakingRate: 'Perquintill',
-    delegatorRewardRate: 'Perquintill',
+    serviceEndpoints: 'Vec<DidServiceEndpointsDidEndpoint>',
+    details: 'DidDidDetails',
   },
 }

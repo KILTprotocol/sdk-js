@@ -193,7 +193,7 @@ export function verifyDataStructure(input: ICredential): void {
 }
 
 /**
- * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[ICType.$schema]] structure.
  *
  * @param credential A [[Credential]] for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
