@@ -102,5 +102,12 @@ export const calls: DefinitionsCall = {
       },
       version: 1,
     },
+    // Same calls, since the type of AccountId is overwritten in the type definitions
+    {
+      methods: {
+        ...newDidApiCalls,
+      },
+      version: 2,
+    },
   ],
 }

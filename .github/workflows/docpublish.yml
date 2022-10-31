@@ -3,6 +3,7 @@ name: Build and Deploy API docs
 on:
   release:
     types: [created]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:

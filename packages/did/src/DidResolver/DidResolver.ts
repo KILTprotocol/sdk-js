@@ -37,10 +37,15 @@ export async function resolve(
 ): Promise<DidResolutionResult | null> {
   const { type } = parse(did)
   const api = ConfigService.get('api')
-
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const { section, version } = queryFunction?.meta ?? {}
+  if (version > 2)
+    throw new Error(
+      `This version of the KILT sdk supports runtime api '${section}' <=v2 , but the blockchain runtime implements ${version}. Please upgrade!`
+    )
   let document: DidDocument | undefined
   try {
-    const encodedLinkedInfo = await api.call.didApi.queryDid(toChain(did))
+    const encodedLinkedInfo = await queryFunction(toChain(did))
     document = linkedInfoFromChain(encodedLinkedInfo).document
   } catch {
     // ignore errors
