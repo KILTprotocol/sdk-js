@@ -21,7 +21,7 @@ import type {
   DidResourceUri,
   ResolvedDidKey,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
@@ -176,9 +176,16 @@ describe('Quote', () => {
           new Uint8Array()
       )
     ).not.toThrow()
-    await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-      didResolveKey: mockResolveKey,
-    })
+    await expect(
+      Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
+        didResolveKey: mockResolveKey,
+      })
+    ).resolves.not.toThrow()
+    await expect(
+      Quote.verifyQuoteAgreement(quoteBothAgreed, {
+        didResolveKey: mockResolveKey,
+      })
+    ).resolves.not.toThrow()
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,
@@ -192,5 +199,71 @@ describe('Quote', () => {
     expect(Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)).toBe(
       false
     )
+  })
+
+  it('detects tampering', async () => {
+    const messedWithCurrency: IQuoteAttesterSigned = {
+      ...validAttesterSignedQuote,
+      currency: 'Bananas',
+    }
+    await expect(
+      Quote.verifyAttesterSignedQuote(messedWithCurrency, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.SignatureUnverifiableError)
+    const messedWithRootHash: IQuoteAgreement = {
+      ...quoteBothAgreed,
+      rootHash: '0x1234',
+    }
+    await expect(
+      Quote.verifyQuoteAgreement(messedWithRootHash, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.SignatureUnverifiableError)
+  })
+
+  it('complains if attesterDid does not match attester signature', async () => {
+    const sign = claimer.getSignCallback(claimerIdentity)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { attesterSignature, ...attesterSignedQuote } =
+      validAttesterSignedQuote
+    const wrongSignerAttester: IQuoteAttesterSigned = {
+      ...attesterSignedQuote,
+      attesterSignature: Did.signatureToJson(
+        await sign({
+          data: Crypto.hash(Crypto.encodeObjectAsStr(attesterSignedQuote)),
+          did: claimerIdentity.uri,
+          keyRelationship: 'authentication',
+        })
+      ),
+    }
+
+    await expect(
+      Quote.verifyAttesterSignedQuote(wrongSignerAttester, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
+  })
+
+  it('complains if claimerDid does not match claimer signature', async () => {
+    const sign = attester.getSignCallback(attesterIdentity)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { claimerSignature, ...restQuote } = quoteBothAgreed
+    const wrongSignerClaimer: IQuoteAgreement = {
+      ...restQuote,
+      claimerSignature: Did.signatureToJson(
+        await sign({
+          data: Crypto.hash(Crypto.encodeObjectAsStr(restQuote)),
+          did: attesterIdentity.uri,
+          keyRelationship: 'authentication',
+        })
+      ),
+    }
+
+    await expect(
+      Quote.verifyQuoteAgreement(wrongSignerClaimer, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
 })

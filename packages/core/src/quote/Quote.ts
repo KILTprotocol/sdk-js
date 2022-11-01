@@ -166,4 +166,33 @@ export async function createQuoteAgreement(
   }
 }
 
-// TODO: Should have a `verifyQuoteAgreement` function
+/**
+ * Verifies a [[IQuoteAgreement]] object.
+ *
+ * @param quote The object to be verified.
+ * @param options Optional settings.
+ * @param options.didResolveKey Resolve function used in the process of verifying the attester signature.
+ */
+export async function verifyQuoteAgreement(
+  quote: IQuoteAgreement,
+  {
+    didResolveKey = resolveKey,
+  }: {
+    didResolveKey?: DidResolveKey
+  } = {}
+): Promise<void> {
+  const { claimerSignature, claimerDid, rootHash, ...attesterSignedQuote } =
+    quote
+  // verify attester signature
+  await verifyAttesterSignedQuote(attesterSignedQuote, { didResolveKey })
+  // verify claimer signature
+  await verifyDidSignature({
+    ...signatureFromJson(claimerSignature),
+    message: Crypto.hashStr(
+      Crypto.encodeObjectAsStr({ ...attesterSignedQuote, claimerDid, rootHash })
+    ),
+    expectedSigner: claimerDid,
+    expectedVerificationMethod: 'authentication',
+    didResolveKey,
+  })
+}
