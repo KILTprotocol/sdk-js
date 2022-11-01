@@ -11,6 +11,7 @@ import {
   DidResolveKey,
   DidResourceUri,
   DidSignature,
+  DidUri,
   SignResponseData,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
@@ -23,6 +24,7 @@ export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: Uint8Array
   keyUri: DidResourceUri
+  expectedSigner?: DidUri
   expectedVerificationMethod?: VerificationKeyRelationship
   didResolveKey?: DidResolveKey
 }
@@ -59,6 +61,7 @@ function verifyDidSignatureDataStructure(
  * @param input.message The message that was signed.
  * @param input.signature Signature bytes.
  * @param input.keyUri DID URI of the key used for signing.
+ * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
  * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
  */
@@ -66,15 +69,21 @@ export async function verifyDidSignature({
   message,
   signature,
   keyUri,
+  expectedSigner,
   expectedVerificationMethod,
   didResolveKey = resolveKey,
 }: DidSignatureVerificationInput): Promise<void> {
   // Verification fails if the signature key URI is not valid
-  const { fragment } = parse(keyUri)
+  const { fragment, did } = parse(keyUri)
   if (!fragment)
     throw new SDKErrors.SignatureMalformedError(
       `Signature key URI "${keyUri}" invalid`
     )
+
+  // checks if key uri points to the right did; alternatively we could check the key's controller
+  if (expectedSigner && expectedSigner !== did) {
+    throw new SDKErrors.DidSubjectMismatchError(did, expectedSigner)
+  }
 
   const { publicKey } = await didResolveKey(keyUri, expectedVerificationMethod)
 

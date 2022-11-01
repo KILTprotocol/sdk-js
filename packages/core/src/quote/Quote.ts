@@ -107,6 +107,7 @@ export async function verifyAttesterSignedQuote(
   await verifyDidSignature({
     ...signatureFromJson(attesterSignature),
     message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
+    expectedSigner: basicQuote.attesterDid,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
   })
