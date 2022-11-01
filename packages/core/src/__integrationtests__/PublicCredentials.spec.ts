@@ -62,17 +62,25 @@ describe('When there is an attester and ctype NFT name', () => {
   }, 60_000)
 
   it('should be possible to issue a public credential', async () => {
-    const content = { name: 'Certified NFT collection' }
-    const credential: INewPublicCredential = {
-      claims: content,
+    const credential1: INewPublicCredential = {
+      claims: { name: 'Certified NFT collection' },
       cTypeHash: CType.getHashForSchema(nftNameCType),
       delegationId: null,
       subject:
         'did:asset:eip155:1.erc20:0x6b175474e89094c44da98b954eedeac495271d0f',
     }
-    const encodedPublicCredential = PublicCredential.toChain(credential)
-    const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
-    let batchTx = api.tx.utility.batchAll([storeTx])
+    const credential2: INewPublicCredential = {
+      claims: { name: 'Certified NFT collection 2' },
+      cTypeHash: CType.getHashForSchema(nftNameCType),
+      delegationId: null,
+      subject:
+        'did:asset:eip155:1.erc20:0x6b175474e89094c44da98b954eedeac495271d0f',
+    }
+    const encodedPublicCredential1 = PublicCredential.toChain(credential1)
+    const storeTx1 = api.tx.publicCredentials.add(encodedPublicCredential1)
+    const encodedPublicCredential2 = PublicCredential.toChain(credential2)
+    const storeTx2 = api.tx.publicCredentials.add(encodedPublicCredential2)
+    let batchTx = api.tx.utility.batchAll([storeTx1, storeTx2])
     batchTx = api.tx.utility.batch([batchTx])
     batchTx = api.tx.utility.forceBatch([batchTx])
     const authorizedStoreTx = await Did.authorizeTx(
@@ -82,19 +90,36 @@ describe('When there is an attester and ctype NFT name', () => {
       tokenHolder.address
     )
     await submitTx(authorizedStoreTx, tokenHolder)
-    const credentialId = PublicCredential.getIdForPublicCredentialAndAttester(
-      credential,
+    const credentialId1 = PublicCredential.getIdForPublicCredentialAndAttester(
+      credential1,
       attester.uri
     )
+    console.log('+++ Credential1 input +++')
+    console.log(JSON.stringify(credential1, null, 2))
+    console.log(attester.uri)
 
-    const publicCredentialEntry =
-      await api.call.publicCredentials.getCredential(credentialId)
-    expect(publicCredentialEntry.isSome).toBe(true)
+    const publicCredentialEntry1 =
+      await api.call.publicCredentials.getCredential(credentialId1)
+    expect(publicCredentialEntry1.isSome).toBe(true)
 
-    const completeCredential = await fromChain(
-      credentialId,
-      publicCredentialEntry
+    const completeCredential1 = await fromChain(
+      credentialId1,
+      publicCredentialEntry1
     )
-    console.log(completeCredential)
+    console.log(JSON.stringify(completeCredential1, null, 2))
+
+    // const credentialId2 = PublicCredential.getIdForPublicCredentialAndAttester(
+    //   credential2,
+    //   attester.uri
+    // )
+    // const publicCredentialEntry2 =
+    //   await api.call.publicCredentials.getCredential(credentialId2)
+    // expect(publicCredentialEntry1.isSome).toBe(true)
+
+    // const completeCredential2 = await fromChain(
+    //   credentialId2,
+    //   publicCredentialEntry2
+    // )
+    // console.log(completeCredential2)
   })
 })

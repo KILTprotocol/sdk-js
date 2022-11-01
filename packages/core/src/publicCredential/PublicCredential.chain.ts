@@ -13,17 +13,21 @@ import type {
   INewPublicCredential,
   IPublicCredential,
 } from '@kiltprotocol/types'
-import type { GenericCall, Option } from '@polkadot/types'
+import type { Option } from '@polkadot/types'
 import type { Call } from '@polkadot/types/interfaces'
 import type {
+  PublicCredentialsCredentialsCredential,
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
 
-import { encode as cborEncode } from 'cbor'
+import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
-import { u8aToHex } from '@polkadot/util'
+import { hexToU8a, u8aToHex } from '@polkadot/util'
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
+import { fromChain as didFromChain } from '@kiltprotocol/did'
+
+import { getIdForPublicCredentialAndAttester } from './PublicCredential.js'
 
 export type EncodedPublicCredential = {
   ctypeHash: CTypeHash
@@ -53,22 +57,22 @@ export function toChain(
   }
 }
 
-function extractCallsFromBatch(api: ApiPromise, call: Call, {
-  section,
-  method,
-}: {
-  section: string
-  method?: string
-}): Call[] {
-  // Base recursive case
-  if (call.section !== 'utility' || !['batch', 'batchAll', 'forceBatch'].includes(call.method)) {
-    return []
+function flattenCalls(api: ApiPromise, call: Call): Call[] {
+  if (api.tx.utility.batch.is(call) || api.tx.utility.batchAll.is(call) || api.tx.utility.forceBatch.is(call)) {
+    return call.args[0].reduce((acc: Call[], c: Call) => acc.concat(flattenCalls(api, c)), [])
   }
+  return [call]
+}
 
-  const batchCall = call as GenericCall<typeof api.tx.utility.batch.args>
-  const calls = batch
-  // return batchCall.args[0].reduce((acc, call) => acc.concat(extractCallsFromBatch(api, call)), [])
-  // return  extractCallsFromBatch(api, batch)
+function credentialInputFromChain(
+  credential: PublicCredentialsCredentialsCredential
+): INewPublicCredential {
+  return {
+    claims: cborDecode(hexToU8a(credential.claims.toHex())),
+    cTypeHash: credential.ctypeHash.toHex(),
+    delegationId: credential.authorization.unwrapOr(undefined)?.toHex() ?? null,
+    subject: credential.subject.toUtf8()
+  }
 }
 
 // FIXME: I did not get the derives to work properly.
@@ -79,81 +83,72 @@ function extractCallsFromBatch(api: ApiPromise, call: Call, {
 export async function fromChain(
   credentialId: HexString,
   publicCredentialEntry: Option<PublicCredentialsCredentialsCredentialEntry>
-): Promise<IPublicCredential | null> {
+): Promise<IPublicCredential> {
   const api = ConfigService.get('api')
 
   const { blockNumber } = publicCredentialEntry.unwrap()
   const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
 
-  extrinsics
+  const exts = extrinsics
     // Consider only extrinsics that have not failed
     .filter(({ dispatchError }) => {
       if (dispatchError !== undefined) {
-        console.log('Failed extrinsic. Ignoring.')
+        // console.log('- Failed extrinsic. Ignoring.')
         return false
       }
       return true
     })
-    // Take each extrinsic and its events
-    .map(({ extrinsic, events }) => ({ extrinsic, events }))
-    // Consider only the extrinsics that have generated the right event type
-    .filter(({ events }) =>
-      events.find(({ section, method }) => {
-        if (section !== 'publicCredentials' || method !== 'add') {
-          console.log(`Event generated for ${section}::${method}(). Ignoring.`)
-          return false
+    // Consider only the extrinsic that contains the right event
+    .find(({ events }) => events.find((event) => {
+      if(event.section === 'publicCredentials' && event.method === 'CredentialStored') {
+        // FIXME: Make use of TS augmentation
+        const eventCredentialId = (event.data as any).credentialId.toString() as HexString
+        if (eventCredentialId === credentialId) {
+          return true
         }
-        return true
-      })
-    )
-  // // Consider only `did::submit_did_call` extrinsics
-  // .filter(
-  //   (
-  //     extrinsic
-  //   ): extrinsic is GenericExtrinsic<
-  //     typeof api.tx.did.submitDidCall.args
-  //   > => {
-  //     if (
-  //       extrinsic.method.section !== 'did' ||
-  //       extrinsic.method.method !== 'submitDidCall'
-  //     ) {
-  //       console.log(
-  //         `${extrinsic.method.section}::${extrinsic.method.method}() not the right extrinsic. Ignoring.`
-  //       )
-  //       return false
-  //     }
-  //     return true
-  //   }
-  // )
-  // // Take the nested call and submitter DID
-  // .map(
-  //   ({
-  //     method: {
-  //       args: [didCall],
-  //     },
-  //   }) =>
-  //     [didCall.call, didCall.submitter] as [
-  //       GenericCall<typeof api.tx.publicCredentials.add.args>,
-  //       AccountId32
-  //     ]
-  // )
-  // // Consider only DID-authorized `public_credentials::add` calls
-  // .filter(
-  //   (
-  //     callDetails
-  //   ): callDetails is [
-  //     GenericCall<typeof api.tx.publicCredentials.add.args>,
-  //     AccountId32
-  //   ] => {
-  //     const call = callDetails[0]
-  //     if (call.section !== 'publicCredentials' || call.method !== 'add') {
-  //       console.log(
-  //         `${call.section}::${call.method}() not the right call. Ignoring.`
-  //       )
-  //       return false
-  //     }
-  //     return true
-  //   }
-  // )
-  return null
+        // console.log(`-- Right event but wrong credential ID. Ignoring.`)
+        return false
+      }
+      // console.log(`--- Event ${event.section}:${event.method} not relevant. Ignoring.`)
+      return false
+    }))
+
+  // if (exts === undefined) {
+  //   console.log(`Exts should be defined.`)
+  // }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const creationExtrinsic = exts!.extrinsic
+  if (!api.tx.did.submitDidCall.is(creationExtrinsic)) {
+    throw new Error('Extrinsic should be a did.submitDidCall extrinsic')
+  }
+  const [extCalls, submitterDid] = [flattenCalls(api, creationExtrinsic.args[0].call), didFromChain(creationExtrinsic.args[0].did)]
+
+  let cred: IPublicCredential | undefined
+  extCalls.forEach((call) => {
+    if (api.tx.publicCredentials.add.is(call)) {
+      // console.log(call.toHuman())
+      const credentialInput = call.args[0]
+      const recomputedCredentialInput = credentialInputFromChain(credentialInput)
+      console.log('+++ Recomputed credential input +++')
+      console.log(JSON.stringify(recomputedCredentialInput, null, 2))
+      console.log(submitterDid)
+      const id = getIdForPublicCredentialAndAttester(
+        recomputedCredentialInput,
+        submitterDid
+      )
+      console.log(credentialId)
+      console.log(id)
+      if (credentialId !== id) {
+        console.log(`---- Found the right call but the wrong credential. Ignoring.`)
+      } else {
+        cred = { ...recomputedCredentialInput, attester: submitterDid, id, blockNumber }
+        return
+      }
+    }
+    console.log(`----- Call ${call.section}::${call.method} not relevant. Ignoring.`)
+  })
+  if (cred === undefined) {
+    throw new Error('Block should always contain the full credential, eventually.')
+  }
+  return cred
 }
