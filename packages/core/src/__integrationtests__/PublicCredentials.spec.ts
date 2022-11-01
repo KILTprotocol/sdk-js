@@ -9,7 +9,7 @@
  * @group integration/publicCredentials
  */
 
-import type {
+import {
   DidDocument,
   INewPublicCredential,
   KiltKeyringPair,
@@ -31,13 +31,17 @@ import {
   nftNameCType,
   submitTx,
 } from './utils'
-import { fromChain } from '../publicCredential'
+import { credentialFromChain, } from '../publicCredential'
+import { disconnect } from '../kilt'
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument
 let attesterKey: KeyTool
 
 let api: ApiPromise
+const assetId =
+  'did:asset:eip155:1.erc20:0x6b175474e89094c44da98b954eedeac495271d0f'
+
 beforeAll(async () => {
   api = await initializeApi()
 }, 30_000)
@@ -61,65 +65,71 @@ describe('When there is an attester and ctype NFT name', () => {
     await submitTx(tx, tokenHolder)
   }, 60_000)
 
-  it('should be possible to issue a public credential', async () => {
-    const credential1: INewPublicCredential = {
+  it('should be possible to issue a credential', async () => {
+    const credential: INewPublicCredential = {
       claims: { name: 'Certified NFT collection' },
       cTypeHash: CType.getHashForSchema(nftNameCType),
       delegationId: null,
-      subject:
-        'did:asset:eip155:1.erc20:0x6b175474e89094c44da98b954eedeac495271d0f',
+      subject: assetId,
     }
-    const credential2: INewPublicCredential = {
-      claims: { name: 'Certified NFT collection 2' },
-      cTypeHash: CType.getHashForSchema(nftNameCType),
-      delegationId: null,
-      subject:
-        'did:asset:eip155:1.erc20:0x6b175474e89094c44da98b954eedeac495271d0f',
-    }
-    const encodedPublicCredential1 = PublicCredential.toChain(credential1)
-    const storeTx1 = api.tx.publicCredentials.add(encodedPublicCredential1)
-    const encodedPublicCredential2 = PublicCredential.toChain(credential2)
-    const storeTx2 = api.tx.publicCredentials.add(encodedPublicCredential2)
-    let batchTx = api.tx.utility.batchAll([storeTx1, storeTx2])
-    batchTx = api.tx.utility.batch([batchTx])
-    batchTx = api.tx.utility.forceBatch([batchTx])
+    const encodedPublicCredential = PublicCredential.toChain(credential)
+    const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
     const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
-      batchTx,
+      storeTx,
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )
     await submitTx(authorizedStoreTx, tokenHolder)
-    const credentialId1 = PublicCredential.getIdForPublicCredentialAndAttester(
-      credential1,
+    const credentialId = PublicCredential.getIdForCredentialAndAttester(
+      credential,
       attester.uri
     )
-    console.log('+++ Credential1 input +++')
-    console.log(JSON.stringify(credential1, null, 2))
-    console.log(attester.uri)
 
     const publicCredentialEntry1 =
-      await api.call.publicCredentials.getCredential(credentialId1)
+      await api.call.publicCredentials.getCredential(credentialId)
     expect(publicCredentialEntry1.isSome).toBe(true)
 
-    const completeCredential1 = await fromChain(
-      credentialId1,
+    const completeCredential = await credentialFromChain(
+      credentialId,
       publicCredentialEntry1
     )
-    console.log(JSON.stringify(completeCredential1, null, 2))
 
-    // const credentialId2 = PublicCredential.getIdForPublicCredentialAndAttester(
-    //   credential2,
-    //   attester.uri
-    // )
-    // const publicCredentialEntry2 =
-    //   await api.call.publicCredentials.getCredential(credentialId2)
-    // expect(publicCredentialEntry1.isSome).toBe(true)
-
-    // const completeCredential2 = await fromChain(
-    //   credentialId2,
-    //   publicCredentialEntry2
-    // )
-    // console.log(completeCredential2)
+    // Verify that the retrieved credential matches the input one, plus the generated ID and the attester DID.
+    expect(completeCredential).toEqual(
+      expect.objectContaining({
+        ...credential,
+        id: credentialId,
+        attester: attester.uri,
+      })
+    )
   })
+
+  it('should be possible to issue a second credential to the same asset and retrieve both of them', async () => {
+    const credential: INewPublicCredential = {
+      claims: { name: 'Certified NFT collection 2' },
+      cTypeHash: CType.getHashForSchema(nftNameCType),
+      delegationId: null,
+      subject: assetId,
+    }
+    const encodedPublicCredential = PublicCredential.toChain(credential)
+    const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
+    const authorizedStoreTx = await Did.authorizeTx(
+      attester.uri,
+      storeTx,
+      attesterKey.getSignCallback(attester),
+      tokenHolder.address
+    )
+    await submitTx(authorizedStoreTx, tokenHolder)
+
+    // const encodedAssetCredentials =
+      await api.call.publicCredentials.getCredentials(assetId, null)
+    // const assetCredentials = await credentialsFromChain(encodedAssetCredentials)
+
+    // expect(assetCredentials).toHaveLength(2)
+  })
+})
+
+afterAll(async () => {
+  await disconnect()
 })

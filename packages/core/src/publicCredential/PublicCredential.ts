@@ -16,7 +16,7 @@ import { toChain as didUriToChain } from '@kiltprotocol/did'
 
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
-export function getIdForPublicCredentialAndAttester(
+export function getIdForCredentialAndAttester(
   credential: INewPublicCredential,
   attester: DidUri
 ): HexString {

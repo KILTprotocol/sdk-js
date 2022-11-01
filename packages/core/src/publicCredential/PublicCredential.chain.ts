@@ -13,9 +13,11 @@ import type {
   INewPublicCredential,
   IPublicCredential,
 } from '@kiltprotocol/types'
-import type { Option } from '@polkadot/types'
-import type { Call } from '@polkadot/types/interfaces'
+import type { Option, Result, u64, Vec } from '@polkadot/types'
+import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { ITuple } from '@polkadot/types/types'
 import type {
+  PublicCredentialError,
   PublicCredentialsCredentialsCredential,
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
@@ -27,7 +29,7 @@ import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain } from '@kiltprotocol/did'
 
-import { getIdForPublicCredentialAndAttester } from './PublicCredential.js'
+import { getIdForCredentialAndAttester } from './PublicCredential.js'
 
 export type EncodedPublicCredential = {
   ctypeHash: CTypeHash
@@ -57,6 +59,7 @@ export function toChain(
   }
 }
 
+// Flatten any nested calls (via batches) into a list of calls
 function flattenCalls(api: ApiPromise, call: Call): Call[] {
   if (api.tx.utility.batch.is(call) || api.tx.utility.batchAll.is(call) || api.tx.utility.forceBatch.is(call)) {
     return call.args[0].reduce((acc: Call[], c: Call) => acc.concat(flattenCalls(api, c)), [])
@@ -75,80 +78,70 @@ function credentialInputFromChain(
   }
 }
 
+async function retrievePublicCredentialCreationExtrinsicsFromBlock(api: ApiPromise, credentialId: HexString, blockNumber: u64): Promise<Extrinsic | null> {
+  const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
+  return extrinsics
+    // Consider only extrinsics that have not failed
+    .filter(({ dispatchError }) => dispatchError === undefined)
+    // Consider only the extrinsics that contains at least the credential creation event with the right credentialId
+    .filter(({ events }) => events.some(((event) => api.events.publicCredentials.CredentialStored.is(event) && event.data[1].toString() === credentialId)))
+    // If there is more than one (e.g., same credential issued multiple times in the same block), take the last one, as that is the one that should be considered
+    .pop()?.extrinsic ?? null
+}
+
 // FIXME: I did not get the derives to work properly.
 /**
  * @param credentialId
  * @param publicCredentialEntry
  */
-export async function fromChain(
+export async function credentialFromChain(
   credentialId: HexString,
   publicCredentialEntry: Option<PublicCredentialsCredentialsCredentialEntry>
 ): Promise<IPublicCredential> {
   const api = ConfigService.get('api')
 
   const { blockNumber } = publicCredentialEntry.unwrap()
-  const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
 
-  const exts = extrinsics
-    // Consider only extrinsics that have not failed
-    .filter(({ dispatchError }) => {
-      if (dispatchError !== undefined) {
-        // console.log('- Failed extrinsic. Ignoring.')
-        return false
-      }
-      return true
-    })
-    // Consider only the extrinsic that contains the right event
-    .find(({ events }) => events.find((event) => {
-      if(event.section === 'publicCredentials' && event.method === 'CredentialStored') {
-        // FIXME: Make use of TS augmentation
-        const eventCredentialId = (event.data as any).credentialId.toString() as HexString
-        if (eventCredentialId === credentialId) {
-          return true
-        }
-        // console.log(`-- Right event but wrong credential ID. Ignoring.`)
-        return false
-      }
-      // console.log(`--- Event ${event.section}:${event.method} not relevant. Ignoring.`)
-      return false
-    }))
+  const extrinsic = await retrievePublicCredentialCreationExtrinsicsFromBlock(api, credentialId, blockNumber)
+  
+  if (extrinsic === null) {
+    throw new Error(`The block number as specified in the provided credential entry (${blockNumber}) does not have any extrinsic that includes a credential creation.`)
+  }
 
-  // if (exts === undefined) {
-  //   console.log(`Exts should be defined.`)
-  // }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const creationExtrinsic = exts!.extrinsic
-  if (!api.tx.did.submitDidCall.is(creationExtrinsic)) {
+  if (!api.tx.did.submitDidCall.is(extrinsic)) {
     throw new Error('Extrinsic should be a did.submitDidCall extrinsic')
   }
-  const [extCalls, submitterDid] = [flattenCalls(api, creationExtrinsic.args[0].call), didFromChain(creationExtrinsic.args[0].did)]
 
-  let cred: IPublicCredential | undefined
-  extCalls.forEach((call) => {
+  const [extrinsicCalls, extrinsicDidOrigin] = [flattenCalls(api, extrinsic.args[0].call), didFromChain(extrinsic.args[0].did)]
+
+  let credentialInput: IPublicCredential | undefined
+
+  extrinsicCalls.forEach((call) => {
     if (api.tx.publicCredentials.add.is(call)) {
-      // console.log(call.toHuman())
-      const credentialInput = call.args[0]
-      const recomputedCredentialInput = credentialInputFromChain(credentialInput)
-      console.log('+++ Recomputed credential input +++')
-      console.log(JSON.stringify(recomputedCredentialInput, null, 2))
-      console.log(submitterDid)
-      const id = getIdForPublicCredentialAndAttester(
-        recomputedCredentialInput,
-        submitterDid
+      const credentialCallArgument = call.args[0]
+      const reconstructedCredentialInput = credentialInputFromChain(credentialCallArgument)
+      const reconstructedId = getIdForCredentialAndAttester(
+        reconstructedCredentialInput,
+        extrinsicDidOrigin
       )
-      console.log(credentialId)
-      console.log(id)
-      if (credentialId !== id) {
-        console.log(`---- Found the right call but the wrong credential. Ignoring.`)
-      } else {
-        cred = { ...recomputedCredentialInput, attester: submitterDid, id, blockNumber }
-        return
+      if (reconstructedId === credentialId) {
+        credentialInput = { ...reconstructedCredentialInput, attester: extrinsicDidOrigin, id: reconstructedId, blockNumber }
       }
     }
-    console.log(`----- Call ${call.section}::${call.method} not relevant. Ignoring.`)
   })
-  if (cred === undefined) {
+  if (credentialInput === undefined) {
     throw new Error('Block should always contain the full credential, eventually.')
   }
-  return cred
+  return credentialInput
+}
+
+export async function credentialsFromChain(
+  credentials: Result<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>, PublicCredentialError>,
+): Promise<IPublicCredential[]> {
+  if (credentials.isErr) {
+    throw new Error(credentials.asErr.toString())
+  }
+  const api = ConfigService.get('api')
+
+  return Promise.all(credentials.asOk.map(([encodedId, encodedCredential]) => credentialFromChain(encodedId.toHex(), api.createType<Option<PublicCredentialsCredentialsCredentialEntry>>('Option<PublicCredentialsCredentialsCredentialEntry>', encodedCredential))))
 }
