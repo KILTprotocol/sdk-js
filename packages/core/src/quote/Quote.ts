@@ -149,15 +149,19 @@ export async function createQuoteAgreement(
     didResolveKey,
   })
 
+  const quoteAgreement = {
+    ...attesterSignedQuote,
+    rootHash: credentialRootHash,
+    claimerDid,
+  }
   const signature = await sign({
-    data: Crypto.hash(Crypto.encodeObjectAsStr(attesterSignedQuote)),
+    data: Crypto.hash(Crypto.encodeObjectAsStr(quoteAgreement)),
     did: claimerDid,
     keyRelationship: 'authentication',
   })
 
   return {
-    ...attesterSignedQuote,
-    rootHash: credentialRootHash,
+    ...quoteAgreement,
     claimerSignature: signatureToJson(signature),
   }
 }

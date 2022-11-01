@@ -142,7 +142,13 @@ describe('Quote', () => {
     const sign = claimer.getSignCallback(claimerIdentity)
     const signature = Did.signatureToJson(
       await sign({
-        data: Crypto.hash(Crypto.encodeObjectAsStr(validAttesterSignedQuote)),
+        data: Crypto.hash(
+          Crypto.encodeObjectAsStr({
+            ...validAttesterSignedQuote,
+            claimerDid: claimerIdentity.uri,
+            rootHash: credential.rootHash,
+          })
+        ),
         did: claimerIdentity.uri,
         keyRelationship: 'authentication',
       })
