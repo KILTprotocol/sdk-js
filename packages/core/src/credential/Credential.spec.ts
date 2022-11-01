@@ -362,13 +362,13 @@ describe('Credential', () => {
     identityCharlie = await createLocalDemoFullDidFromKeypair(
       keyCharlie.keypair
     )
-    ;[legitimation] = await buildPresentation(
-      identityAlice,
-      identityBob.uri,
-      {},
-      [],
-      keyAlice.getSignCallback(identityAlice)
-    )
+      ;[legitimation] = await buildPresentation(
+        identityAlice,
+        identityBob.uri,
+        {},
+        [],
+        keyAlice.getSignCallback(identityAlice)
+      )
   })
 
   it('verify credentials signed by a full DID', async () => {
@@ -431,6 +431,49 @@ describe('Credential', () => {
         didResolveKey,
       })
     ).rejects.toThrow()
+  })
+
+  it('throws if signature is by unrelated did', async () => {
+    const { getSignCallback, authentication } = makeSigningKeyTool('ed25519')
+    identityDave = Did.createLightDidDocument({
+      authentication,
+    })
+
+    const credential = buildCredential(
+      identityBob.uri,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+
+    const presentation = await Credential.createPresentation({ credential, signCallback: getSignCallback(identityDave) })
+
+    await expect(Credential.verifySignature(presentation, {
+      didResolveKey,
+    })).resolves.toThrow()
+  })
+
+  it('throws if signature is by corresponding light did', async () => {
+    const credential = buildCredential(
+      identityAlice.uri,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+
+    const presentation = await Credential.createPresentation({ credential, signCallback: keyAlice.getSignCallback(identityAlice) })
+
+    presentation.claimerSignature.keyUri = `${Did.createLightDidDocument({ authentication: keyAlice.authentication }).uri}${identityAlice.authentication[0].id}`
+
+    await expect(Credential.verifySignature(presentation, {
+      didResolveKey,
+    })).resolves.toThrow()
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
