@@ -71,8 +71,6 @@ describe('Credential', () => {
     legitimation = buildCredential(identityAlice, {}, [])
   })
 
-  it.todo('signing and verification')
-
   it('verify credential', async () => {
     const credential = buildCredential(
       identityBob,
