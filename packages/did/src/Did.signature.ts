@@ -25,6 +25,7 @@ export type DidSignatureVerificationInput = {
   signature: Uint8Array
   keyUri: DidResourceUri
   expectedSigner?: DidUri
+  allowUpgraded?: boolean
   expectedVerificationMethod?: VerificationKeyRelationship
   didResolveKey?: DidResolveKey
 }
@@ -62,6 +63,7 @@ function verifyDidSignatureDataStructure(
  * @param input.signature Signature bytes.
  * @param input.keyUri DID URI of the key used for signing.
  * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
+ * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
  * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
  */
@@ -70,19 +72,34 @@ export async function verifyDidSignature({
   signature,
   keyUri,
   expectedSigner,
+  allowUpgraded = false,
   expectedVerificationMethod,
   didResolveKey = resolveKey,
 }: DidSignatureVerificationInput): Promise<void> {
   // Verification fails if the signature key URI is not valid
-  const { fragment, did } = parse(keyUri)
-  if (!fragment)
+  const signer = parse(keyUri)
+  if (!signer.fragment)
     throw new SDKErrors.SignatureMalformedError(
       `Signature key URI "${keyUri}" invalid`
     )
 
   // checks if key uri points to the right did; alternatively we could check the key's controller
-  if (expectedSigner && expectedSigner !== did) {
-    throw new SDKErrors.DidSubjectMismatchError(did, expectedSigner)
+  if (expectedSigner && expectedSigner !== signer.did) {
+    // check for allowable exceptions
+    const expected = parse(expectedSigner)
+    // NECESSARY CONDITION: subjects and versions match
+    const subjectVersionMatch =
+      expected.address === signer.address && expected.version === signer.version
+    // EITHER: signer is a full did and we allow signatures by corresponding full did
+    const allowedUpgrade = allowUpgraded && signer.type === 'full'
+    // OR: both are light dids and their auth key type matches
+    const keyTypeMatch =
+      signer.type === 'light' &&
+      expected.type === 'light' &&
+      expected.authKeyTypeEncoding === signer.authKeyTypeEncoding
+    if (!(subjectVersionMatch && (allowedUpgrade || keyTypeMatch))) {
+      throw new SDKErrors.DidSubjectMismatchError(signer.did, expected.did)
+    }
   }
 
   const { publicKey } = await didResolveKey(keyUri, expectedVerificationMethod)

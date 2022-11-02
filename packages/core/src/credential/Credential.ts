@@ -23,7 +23,6 @@ import {
   resolveKey,
   signatureToJson,
   signatureFromJson,
-  parse,
 } from '@kiltprotocol/did'
 import type {
   DidResolveKey,
@@ -234,38 +233,14 @@ export async function verifySignature(
       'Challenge differs from expected'
     )
 
-  // check if credential owner matches signer
-  const { owner } = input.claim
-  const {
-    did: signer,
-    address: signerAddress,
-    type: signerType,
-    authKeyTypeEncoding: signerKeyType,
-  } = parse(input.claimerSignature.keyUri)
-  if (owner !== signer) {
-    const {
-      address: ownerAddress,
-      type: ownerType,
-      authKeyTypeEncoding: ownerKeyType,
-    } = parse(owner)
-
-    if (ownerType === 'full') {
-      // owner did is full did -> exact match required (signer cannot be light did)
-      throw new SDKErrors.DidSubjectMismatchError(signer, owner)
-    } else {
-      // owner did is light did -> full- or light did with same subject may sign
-      if (ownerAddress !== signerAddress)
-        throw new SDKErrors.DidSubjectMismatchError(signer, owner)
-      // if signer is also a light did, require both to use the same key type
-      if (signerType === 'light' && ownerKeyType !== signerKeyType)
-        throw new SDKErrors.DidSubjectMismatchError(signer, owner)
-    }
-  }
-
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
     ...signatureFromJson(claimerSignature),
     message: signingData,
+    // check if credential owner matches signer
+    expectedSigner: input.claim.owner,
+    // allow full did to sign presentation if owned by corresponding light did
+    allowUpgraded: true,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
   })
