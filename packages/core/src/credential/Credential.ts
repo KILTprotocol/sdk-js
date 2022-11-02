@@ -17,6 +17,7 @@
  * @packageDocumentation
  */
 
+import { ConfigService } from '@kiltprotocol/config'
 import {
   isDidSignature,
   verifyDidSignature,
@@ -36,6 +37,8 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { fromChain } from '../attestation/Attestation.chain.js'
+import { verifyAgainstCredential } from '../attestation/Attestation.js'
 import * as Claim from '../claim/index.js'
 import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
@@ -426,4 +429,31 @@ export async function createPresentation({
     ...presentation,
     claimerSignature: { ...signatureToJson(signature), challenge },
   }
+}
+
+/**
+ * Allows checking if a credential is currently attested and valid. A credential can be considered valid if the credential status is as follows:
+ *   1. The [[IAttestation]]'s `owner` property contains the DID of the expected (or a trusted) attester.
+ *   2. The `revoked` property is `false`.
+ * If the credential has not been attested, or the attestation deleted, this function throws.
+ *
+ * @param credential The [[ICredential]] or [[ICredentialPresentation]] to check. Note that this does not verify a presentation's signature.
+ * @returns The attestation object.
+ */
+export async function checkStatus(
+  credential: ICredential
+): Promise<IAttestation> {
+  const api = ConfigService.get('api')
+  const { rootHash } = credential
+  const queryResult = await api.query.attestation.attestations(rootHash)
+
+  if (queryResult.isNone) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      `No attestation exists for credential hash ${rootHash}`
+    )
+  }
+  const attestation = fromChain(queryResult, rootHash)
+  verifyAgainstCredential(attestation, credential)
+
+  return attestation
 }
