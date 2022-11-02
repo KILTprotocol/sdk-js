@@ -162,10 +162,7 @@ describe('When there is an attester and ctype NFT name', () => {
 
     const encodedAssetCredentials =
       await api.call.publicCredentials.getCredentials(assetId, null)
-    const before = Date.now()
     const assetCredentials = await credentialsFromChain(encodedAssetCredentials)
-    const after = Date.now()
-    console.log(after - before)
 
     // We only check that we return all the twenty credentials back.
     // We don't check the content of each credential.
