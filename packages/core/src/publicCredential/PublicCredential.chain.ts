@@ -29,9 +29,9 @@ import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain, Assets } from '@kiltprotocol/did'
 
-import { getIdForNewCredentialAndAttester } from './PublicCredential.js'
+import { computeId } from './PublicCredential.js'
 
-export type EncodedPublicCredential = {
+export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
   // TODO: Replace with an asset DID
   subject: string
@@ -151,7 +151,7 @@ export async function credentialFromChain(
       const reconstructedCredentialInput = credentialInputFromChain(
         credentialCallArgument
       )
-      const reconstructedId = getIdForNewCredentialAndAttester(
+      const reconstructedId = computeId(
         reconstructedCredentialInput,
         extrinsicDidOrigin
       )

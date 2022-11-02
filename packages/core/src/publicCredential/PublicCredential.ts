@@ -25,7 +25,7 @@ import { verifyClaimAgainstSchema } from '../ctype/CType.js'
 import { verifyDataStructure as verifyClaimDataStructure } from '../claim/Claim.js'
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
-export function getIdForNewCredentialAndAttester(
+export function computeId(
   credential: INewPublicCredential,
   attester: DidUri
 ): HexString {
@@ -78,20 +78,6 @@ export type Options = {
   delegationId?: IDelegationNode['id'] | null
 }
 
-export function fromClaim(
-  claim: IAssetClaim,
-  { delegationId = null }: Options = {}
-): INewPublicCredential {
-  const credential: INewPublicCredential = {
-    claims: claim.contents,
-    cTypeHash: claim.cTypeHash,
-    subject: claim.subject,
-    delegationId,
-  }
-  verifyDataStructure(credential)
-  return credential
-}
-
 type VerifyOptions = {
   ctype?: ICType
 }
@@ -104,4 +90,18 @@ export function verifyCredential(
   if (ctype) {
     verifyAgainstCType(credential, ctype)
   }
+}
+
+export function fromClaim(
+  claim: IAssetClaim,
+  { delegationId = null }: Options = {}
+): INewPublicCredential {
+  const credential: INewPublicCredential = {
+    claims: claim.contents,
+    cTypeHash: claim.cTypeHash,
+    subject: claim.subject,
+    delegationId,
+  }
+  verifyCredential(credential)
+  return credential
 }

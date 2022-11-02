@@ -16,6 +16,7 @@ export type { KeyringPair } from '@polkadot/keyring/types'
 export * as SubscriptionPromise from './SubscriptionPromise.js'
 
 export * from './Attestation.js'
+export * from './AssetDid.js'
 export * from './Balance.js'
 export * from './CType.js'
 export * from './CTypeMetadata.js'

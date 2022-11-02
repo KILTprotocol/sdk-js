@@ -12,19 +12,7 @@ import type { CTypeHash } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { IClaim, IClaimContents } from './Claim'
 import type { DidUri } from './DidDocument'
-
-export type ChainNamespace = string
-export type ChainReference = string
-export type ChainId = `${ChainNamespace}:${ChainReference}`
-
-export type AssetNamespace = string
-export type AssetReference = string
-export type AssetInstance = string
-export type AssetId =
-  | `${AssetNamespace}:${AssetReference}`
-  | `${AssetNamespace}:${AssetReference}:${AssetInstance}`
-
-export type AssetDidUri = `did:asset:${ChainId}.${AssetId}`
+import type { AssetDidUri } from './AssetDid'
 
 export interface INewPublicCredential {
   cTypeHash: CTypeHash
