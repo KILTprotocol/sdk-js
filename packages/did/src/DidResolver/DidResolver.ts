@@ -147,7 +147,9 @@ export async function resolveKey(
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
-    throw new SDKErrors.InvalidDidFormatError(keyUri)
+    throw new SDKErrors.DidError(
+      `Key URI "${keyUri}" is not a valid DID resource`
+    )
   }
 
   const resolved = await resolve(did)
@@ -199,7 +201,9 @@ export async function resolveService(
 
   // A fragment (serviceId) IS expected to resolve a key.
   if (!serviceId) {
-    throw new SDKErrors.InvalidDidFormatError(serviceUri)
+    throw new SDKErrors.DidError(
+      `Service URI "${serviceUri}" is not a valid DID resource`
+    )
   }
 
   const resolved = await resolve(did)

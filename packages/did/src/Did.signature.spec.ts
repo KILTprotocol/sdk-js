@@ -138,13 +138,12 @@ describe('light DID', () => {
       did: did.uri,
       keyRelationship: 'authentication',
     })
-    keyUri += '1a'
+    keyUri = `${keyUri}1a`
     jest.mocked(resolveKey).mockRejectedValue(new Error('Key not found'))
     await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
-        // @ts-ignore Appending the uri has changed its type
         keyUri,
         expectedVerificationMethod: 'authentication',
       })

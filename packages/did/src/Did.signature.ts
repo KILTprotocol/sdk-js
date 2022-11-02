@@ -76,14 +76,8 @@ export async function verifyDidSignature({
   expectedVerificationMethod,
   didResolveKey = resolveKey,
 }: DidSignatureVerificationInput): Promise<void> {
-  // Verification fails if the signature key URI is not valid
-  const signer = parse(keyUri)
-  if (!signer.fragment)
-    throw new SDKErrors.SignatureMalformedError(
-      `Signature key URI "${keyUri}" invalid`
-    )
-
   // checks if key uri points to the right did; alternatively we could check the key's controller
+  const signer = parse(keyUri)
   if (expectedSigner && expectedSigner !== signer.did) {
     // check for allowable exceptions
     const expected = parse(expectedSigner)
