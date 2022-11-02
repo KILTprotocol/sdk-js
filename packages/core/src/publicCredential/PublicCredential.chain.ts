@@ -135,6 +135,23 @@ export async function credentialFromChain(
   return credentialInput
 }
 
+// export async function* credentialsGenerator(
+//   credentials: Result<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>, PublicCredentialError>,
+// ): AsyncGenerator<IPublicCredential> {
+//   if (credentials.isErr) {
+//     throw new Error(credentials.asErr.toString())
+//   }
+//   const api = ConfigService.get('api')
+
+//   const formattedCredentials: Array<[HexString, Option<PublicCredentialsCredentialsCredentialEntry>]> = credentials.asOk.map(([encodedId, encodedCredentialEntry]) => [encodedId.toHex(), api.createType('Option<PublicCredentialsCredentialsCredentialEntry>', encodedCredentialEntry)])
+
+//   for (let i = 0; i < formattedCredentials.length; i+=1) {
+//     const [id, entry] = formattedCredentials[i]
+//     yield credentialFromChain(id, entry)
+//   }
+// }
+
+// It can fail when there are a lot of credentials stored. An alternative mechanism must be put in place by the app developer.
 export async function credentialsFromChain(
   credentials: Result<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>, PublicCredentialError>,
 ): Promise<IPublicCredential[]> {
@@ -142,6 +159,13 @@ export async function credentialsFromChain(
     throw new Error(credentials.asErr.toString())
   }
   const api = ConfigService.get('api')
+  const formattedCredentials: Array<[HexString, Option<PublicCredentialsCredentialsCredentialEntry>]> = credentials.asOk.map(([encodedId, encodedCredentialEntry]) => [encodedId.toHex(), api.createType('Option<PublicCredentialsCredentialsCredentialEntry>', encodedCredentialEntry)])
+  return Promise.all(formattedCredentials.map(([id, c]) => credentialFromChain(id, c)))
+  // const result: IPublicCredential[] = []
+  // // eslint-disable-next-line no-restricted-syntax
+  // for await (const credential of credentialsGenerator(credentials)) {
+  //   result.push(credential)
+  // }
 
-  return Promise.all(credentials.asOk.map(([encodedId, encodedCredential]) => credentialFromChain(encodedId.toHex(), api.createType<Option<PublicCredentialsCredentialsCredentialEntry>>('Option<PublicCredentialsCredentialsCredentialEntry>', encodedCredential))))
+  // return result
 }
