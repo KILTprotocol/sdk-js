@@ -7,7 +7,6 @@
 
 import type {
   OverrideBundleType,
-  OverrideBundleDefinition,
   OverrideVersionedType,
 } from '@polkadot/types/types'
 
@@ -111,30 +110,49 @@ const defaultTypesBundle: OverrideVersionedType[] = [
   },
 ]
 
-// The KILT chains
-const chainNames: string[] = [
-  'KILT Spiritnet',
-  'KILT Spiritnet Develop',
-  'KILT Peregrine',
-  'KILT Peregrine Develop',
-  'KILT Mashnet',
-  'Development',
-]
-const chainConfiguration = chainNames.reduce(
-  (acc: Record<string, OverrideBundleDefinition>, name: string) => {
-    acc[name] = {
+// Current runtime version: 10730
+export const typesBundle: OverrideBundleType = {
+  chain: {
+    'KILT Spiritnet': {
       runtime: {
         ...didCalls,
         ...stakingCalls,
       },
       types: defaultTypesBundle,
-    }
-    return acc
+    },
+    'KILT Spiritnet Develop': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Peregrine': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Peregrine Develop': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Mashnet': {
+      runtime: {
+        ...didCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    Development: {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
   },
-  {}
-)
-
-// Current runtime version: 10750
-export const typesBundle: OverrideBundleType = {
-  chain: chainConfiguration,
 }
