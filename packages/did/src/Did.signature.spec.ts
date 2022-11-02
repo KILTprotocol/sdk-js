@@ -168,6 +168,7 @@ describe('light DID', () => {
   })
 
   it('fails if key id malformed', async () => {
+    jest.mocked(resolveKey).mockRestore()
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
     let { signature, keyUri } = await sign({
