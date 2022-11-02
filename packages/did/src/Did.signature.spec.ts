@@ -9,16 +9,17 @@
  * @group unit/did
  */
 
-import {
+import type {
   DidDocument,
   DidResourceUri,
   DidSignature,
   KeyringPair,
   KiltKeyringPair,
+  NewLightDidVerificationKey,
   SignCallback,
 } from '@kiltprotocol/types'
 import { randomAsHex, randomAsU8a } from '@polkadot/util-crypto'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 import * as Did from './index.js'
 import {
@@ -119,7 +120,7 @@ describe('light DID', () => {
       did: did.uri,
       keyRelationship: 'authentication',
     })
-    await expect(() =>
+    await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
@@ -137,9 +138,9 @@ describe('light DID', () => {
       did: did.uri,
       keyRelationship: 'authentication',
     })
-    keyUri += '1a'
+    keyUri = `${keyUri}1a`
     jest.mocked(resolveKey).mockRejectedValue(new Error('Key not found'))
-    await expect(() =>
+    await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
@@ -156,7 +157,7 @@ describe('light DID', () => {
       did: did.uri,
       keyRelationship: 'authentication',
     })
-    await expect(() =>
+    await expect(
       verifyDidSignature({
         message: SIGNED_STRING.substring(1),
         signature,
@@ -167,6 +168,7 @@ describe('light DID', () => {
   })
 
   it('fails if key id malformed', async () => {
+    jest.mocked(resolveKey).mockRestore()
     const SIGNED_STRING = 'signed string'
     // eslint-disable-next-line prefer-const
     let { signature, keyUri } = await sign({
@@ -176,7 +178,7 @@ describe('light DID', () => {
     })
     // @ts-expect-error
     keyUri = keyUri.replace('#', '?')
-    await expect(() =>
+    await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
@@ -194,7 +196,7 @@ describe('light DID', () => {
       did: did.uri,
       keyRelationship: 'authentication',
     })
-    await expect(() =>
+    await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
@@ -210,6 +212,60 @@ describe('light DID', () => {
       signature: randomAsHex(32),
     }
     expect(isDidSignature(signature)).toBe(true)
+  })
+
+  it('detects signer expectation mismatch if signature is by unrelated did', async () => {
+    const SIGNED_STRING = 'signed string'
+    const { signature, keyUri } = await sign({
+      data: Crypto.coToUInt8(SIGNED_STRING),
+      did: did.uri,
+      keyRelationship: 'authentication',
+    })
+
+    const expectedSigner = Did.createLightDidDocument({
+      authentication: makeSigningKeyTool().authentication,
+    }).uri
+
+    await expect(
+      verifyDidSignature({
+        message: SIGNED_STRING,
+        signature,
+        keyUri,
+        expectedSigner,
+        expectedVerificationMethod: 'authentication',
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
+  })
+
+  it('allows variations of the same light did', async () => {
+    const SIGNED_STRING = 'signed string'
+    const { signature, keyUri } = await sign({
+      data: Crypto.coToUInt8(SIGNED_STRING),
+      did: did.uri,
+      keyRelationship: 'authentication',
+    })
+
+    const expectedSigner = Did.createLightDidDocument({
+      authentication: did.authentication as [NewLightDidVerificationKey],
+      keyAgreement: [{ type: 'x25519', publicKey: new Uint8Array(32).fill(1) }],
+      service: [
+        {
+          id: '#service',
+          type: ['servingService'],
+          serviceEndpoint: ['http://example.com'],
+        },
+      ],
+    }).uri
+
+    await expect(
+      verifyDidSignature({
+        message: SIGNED_STRING,
+        signature,
+        keyUri,
+        expectedSigner,
+        expectedVerificationMethod: 'authentication',
+      })
+    ).resolves.not.toThrow()
   })
 })
 
@@ -289,7 +345,7 @@ describe('full DID', () => {
       did: did.uri,
       keyRelationship: 'authentication',
     })
-    await expect(() =>
+    await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
@@ -307,7 +363,7 @@ describe('full DID', () => {
       did: did.uri,
       keyRelationship: 'authentication',
     })
-    await expect(() =>
+    await expect(
       verifyDidSignature({
         message: SIGNED_STRING,
         signature,
@@ -315,6 +371,40 @@ describe('full DID', () => {
         expectedVerificationMethod: 'authentication',
       })
     ).rejects.toThrow()
+  })
+
+  it('accepts signature of full did for light did if enabled', async () => {
+    const SIGNED_STRING = 'signed string'
+    const { signature, keyUri } = await sign({
+      data: Crypto.coToUInt8(SIGNED_STRING),
+      did: did.uri,
+      keyRelationship: 'authentication',
+    })
+
+    const expectedSigner = Did.createLightDidDocument({
+      authentication: did.authentication as [NewLightDidVerificationKey],
+    }).uri
+
+    await expect(
+      verifyDidSignature({
+        message: SIGNED_STRING,
+        signature,
+        keyUri,
+        expectedSigner,
+        expectedVerificationMethod: 'authentication',
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
+
+    await expect(
+      verifyDidSignature({
+        message: SIGNED_STRING,
+        signature,
+        keyUri,
+        expectedSigner,
+        allowUpgraded: true,
+        expectedVerificationMethod: 'authentication',
+      })
+    ).resolves.not.toThrow()
   })
 
   it('typeguard accepts legal signature objects', () => {

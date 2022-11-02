@@ -232,10 +232,15 @@ export async function verifySignature(
     throw new SDKErrors.SignatureUnverifiableError(
       'Challenge differs from expected'
     )
+
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
     ...signatureFromJson(claimerSignature),
     message: signingData,
+    // check if credential owner matches signer
+    expectedSigner: input.claim.owner,
+    // allow full did to sign presentation if owned by corresponding light did
+    allowUpgraded: true,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
   })

@@ -71,8 +71,6 @@ describe('Credential', () => {
     legitimation = buildCredential(identityAlice, {}, [])
   })
 
-  it.todo('signing and verification')
-
   it('verify credential', async () => {
     const credential = buildCredential(
       identityBob,
@@ -392,7 +390,7 @@ describe('Credential', () => {
   })
   it('verify credentials signed by a light DID', async () => {
     const { getSignCallback, authentication } = makeSigningKeyTool('ed25519')
-    identityDave = await Did.createLightDidDocument({
+    identityDave = Did.createLightDidDocument({
       authentication,
     })
 
@@ -431,6 +429,66 @@ describe('Credential', () => {
         didResolveKey,
       })
     ).rejects.toThrow()
+  })
+
+  it('throws if signature is by unrelated did', async () => {
+    const { getSignCallback, authentication } = makeSigningKeyTool('ed25519')
+    identityDave = Did.createLightDidDocument({
+      authentication,
+    })
+
+    const credential = buildCredential(
+      identityBob.uri,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+
+    const presentation = await Credential.createPresentation({
+      credential,
+      signCallback: getSignCallback(identityDave),
+    })
+
+    await expect(
+      Credential.verifySignature(presentation, {
+        didResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
+  })
+
+  it('throws if signature is by corresponding light did', async () => {
+    // make mock resolver resolve corresponding light did by assigning it to dave identity
+    identityDave = Did.createLightDidDocument({
+      authentication: keyAlice.authentication,
+    })
+
+    const credential = buildCredential(
+      identityAlice.uri,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+
+    // sign presentation using Alice's authenication key
+    const presentation = await Credential.createPresentation({
+      credential,
+      signCallback: keyAlice.getSignCallback(identityAlice),
+    })
+    // but replace signer key reference with authentication key of light did
+    presentation.claimerSignature.keyUri = `${identityDave.uri}${identityDave.authentication[0].id}`
+
+    // signature would check out but mismatch should be detected
+    await expect(
+      Credential.verifySignature(presentation, {
+        didResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
 
   it('fail to verify credentials signed by a light DID after it has been migrated and deleted', async () => {
@@ -563,7 +621,7 @@ describe('create presentation', () => {
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the credential is still correctly verified.
     newKeyForMigratedClaimerDid = makeSigningKeyTool()
-    migratedClaimerFullDid = await createMinimalFullDidFromLightDid(
+    migratedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedClaimerLightDid,
       {
         ...newKeyForMigratedClaimerDid.authentication[0],
