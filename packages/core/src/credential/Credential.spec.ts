@@ -481,10 +481,7 @@ describe('Credential', () => {
       signCallback: keyAlice.getSignCallback(identityAlice),
     })
     // but replace signer key reference with authentication key of light did
-    presentation.claimerSignature.keyUri = `${
-      Did.createLightDidDocument({ authentication: keyAlice.authentication })
-        .uri
-    }${identityAlice.authentication[0].id}`
+    presentation.claimerSignature.keyUri = `${identityDave.uri}${identityDave.authentication[0].id}`
 
     // signature would check out but mismatch should be detected
     await expect(
