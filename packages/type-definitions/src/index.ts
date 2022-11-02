@@ -150,7 +150,6 @@ export const typesBundle: OverrideBundleType = {
     Development: {
       runtime: {
         ...didCalls,
-        ...stakingCalls,
       },
       types: defaultTypesBundle,
     },
