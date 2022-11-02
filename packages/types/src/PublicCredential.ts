@@ -25,6 +25,7 @@ export interface IPublicCredential extends INewPublicCredential {
   id: HexString
   attester: DidUri
   blockNumber: BN
+  revoked: boolean
 }
 
 export type IAssetClaim = Omit<IClaim, 'owner'> & { subject: AssetDidUri }

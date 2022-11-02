@@ -120,7 +120,7 @@ export async function credentialFromChain(
 ): Promise<IPublicCredential> {
   const api = ConfigService.get('api')
 
-  const { blockNumber } = publicCredentialEntry.unwrap()
+  const { blockNumber, revoked } = publicCredentialEntry.unwrap()
 
   const extrinsic = await retrievePublicCredentialCreationExtrinsicsFromBlock(
     api,
@@ -161,6 +161,7 @@ export async function credentialFromChain(
           attester: extrinsicDidOrigin,
           id: reconstructedId,
           blockNumber,
+          revoked: revoked.toPrimitive(),
         }
       }
     }

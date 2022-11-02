@@ -9,20 +9,21 @@
  * @group integration/publicCredentials
  */
 
-import {
+import type { ApiPromise } from '@polkadot/api'
+import type {
+  AssetDidUri,
   DidDocument,
   INewPublicCredential,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
-import { ApiPromise } from '@polkadot/api'
-import { randomAsHex } from '@polkadot/util-crypto'
 
+import { randomAsHex } from '@polkadot/util-crypto'
+import * as Did from '@kiltprotocol/did'
 import {
   createFullDidFromSeed,
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import * as Did from '@kiltprotocol/did'
 import { UUID } from '@kiltprotocol/utils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
@@ -33,7 +34,6 @@ import {
   nftNameCType,
   submitTx,
 } from './utils'
-import { credentialFromChain, credentialsFromChain } from '../publicCredential'
 import { disconnect } from '../kilt'
 
 let tokenHolder: KiltKeyringPair
@@ -42,7 +42,7 @@ let attesterKey: KeyTool
 
 let api: ApiPromise
 // Generate a random asset ID
-const assetId = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
+const assetId: AssetDidUri = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
 
 beforeAll(async () => {
   api = await initializeApi()
@@ -85,16 +85,13 @@ describe('When there is an attester and ctype NFT name', () => {
       tokenHolder.address
     )
     await submitTx(authorizedStoreTx, tokenHolder)
-    const credentialId = PublicCredential.getIdForCredentialAndAttester(
-      credential,
-      attester.uri
-    )
+    const credentialId = PublicCredential.computeId(credential, attester.uri)
 
     const publicCredentialEntry1 =
       await api.call.publicCredentials.getCredential(credentialId)
     expect(publicCredentialEntry1.isSome).toBe(true)
 
-    const completeCredential = await credentialFromChain(
+    const completeCredential = await PublicCredential.credentialFromChain(
       credentialId,
       publicCredentialEntry1
     )
@@ -105,6 +102,7 @@ describe('When there is an attester and ctype NFT name', () => {
         ...credential,
         id: credentialId,
         attester: attester.uri,
+        revoked: false,
       })
     )
   })
@@ -130,7 +128,9 @@ describe('When there is an attester and ctype NFT name', () => {
 
     const encodedAssetCredentials =
       await api.call.publicCredentials.getCredentials(assetId, null)
-    const assetCredentials = await credentialsFromChain(encodedAssetCredentials)
+    const assetCredentials = await PublicCredential.credentialsFromChain(
+      encodedAssetCredentials
+    )
 
     // We only check that we return two credentials back.
     // We don't check the content of each credential.
@@ -162,7 +162,9 @@ describe('When there is an attester and ctype NFT name', () => {
 
     const encodedAssetCredentials =
       await api.call.publicCredentials.getCredentials(assetId, null)
-    const assetCredentials = await credentialsFromChain(encodedAssetCredentials)
+    const assetCredentials = await PublicCredential.credentialsFromChain(
+      encodedAssetCredentials
+    )
 
     // We only check that we return all the twenty credentials back.
     // We don't check the content of each credential.
