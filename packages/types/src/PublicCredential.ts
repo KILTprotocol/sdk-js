@@ -13,20 +13,6 @@ import type { IDelegationNode } from './Delegation'
 import type { IClaim, IClaimContents } from './Claim'
 import type { DidUri } from './DidDocument'
 
-export interface INewPublicCredential {
-  cTypeHash: CTypeHash
-  delegationId: IDelegationNode['id'] | null
-  // TODO: Replace with Asset DID
-  subject: string
-  claims: IClaimContents
-}
-
-export interface IPublicCredential extends INewPublicCredential {
-  id: HexString
-  attester: DidUri
-  blockNumber: BN
-}
-
 export type ChainNamespace = string
 export type ChainReference = string
 export type ChainId = `${ChainNamespace}:${ChainReference}`
@@ -39,5 +25,18 @@ export type AssetId =
   | `${AssetNamespace}:${AssetReference}:${AssetInstance}`
 
 export type AssetDidUri = `did:asset:${ChainId}.${AssetId}`
+
+export interface INewPublicCredential {
+  cTypeHash: CTypeHash
+  delegationId: IDelegationNode['id'] | null
+  subject: AssetDidUri
+  claims: IClaimContents
+}
+
+export interface IPublicCredential extends INewPublicCredential {
+  id: HexString
+  attester: DidUri
+  blockNumber: BN
+}
 
 export type IAssetClaim = Omit<IClaim, 'owner'> & { subject: AssetDidUri }

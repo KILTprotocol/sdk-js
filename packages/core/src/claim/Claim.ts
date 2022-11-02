@@ -19,7 +19,13 @@
 
 import { hexToBn } from '@polkadot/util'
 import type { HexString } from '@polkadot/util/types'
-import type { DidUri, IClaim, ICType, PartialClaim } from '@kiltprotocol/types'
+import type {
+  DidUri,
+  IAssetClaim,
+  IClaim,
+  ICType,
+  PartialClaim,
+} from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import * as CType from '../ctype/index.js'
@@ -194,12 +200,18 @@ export function verifyDisclosedAttributes(
  *
  * @param input The potentially only partial IClaim.
  */
-export function verifyDataStructure(input: IClaim | PartialClaim): void {
+export function verifyDataStructure(
+  input: IClaim | IAssetClaim | PartialClaim
+): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
-  if (input.owner) {
+  if ('owner' in input) {
+    // input is IClaim
     Did.validateUri(input.owner, 'Did')
+  } else if ('subject' in input) {
+    // input is IAssetClaim
+    Did.Assets.validateUri(input.subject)
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {

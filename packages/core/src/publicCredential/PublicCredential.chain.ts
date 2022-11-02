@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /**
  * Copyright (c) 2018-2022, BOTLabs GmbH.
  *
@@ -8,6 +7,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type {
+  AssetDidUri,
   CTypeHash,
   IDelegationNode,
   INewPublicCredential,
@@ -27,9 +27,9 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { fromChain as didFromChain } from '@kiltprotocol/did'
+import { fromChain as didFromChain, Assets } from '@kiltprotocol/did'
 
-import { getIdForCredentialAndAttester } from './PublicCredential.js'
+import { getIdForNewCredentialAndAttester } from './PublicCredential.js'
 
 export type EncodedPublicCredential = {
   ctypeHash: CTypeHash
@@ -61,8 +61,15 @@ export function toChain(
 
 // Flatten any nested calls (via batches) into a list of calls
 function flattenCalls(api: ApiPromise, call: Call): Call[] {
-  if (api.tx.utility.batch.is(call) || api.tx.utility.batchAll.is(call) || api.tx.utility.forceBatch.is(call)) {
-    return call.args[0].reduce((acc: Call[], c: Call) => acc.concat(flattenCalls(api, c)), [])
+  if (
+    api.tx.utility.batch.is(call) ||
+    api.tx.utility.batchAll.is(call) ||
+    api.tx.utility.forceBatch.is(call)
+  ) {
+    return call.args[0].reduce(
+      (acc: Call[], c: Call) => acc.concat(flattenCalls(api, c)),
+      []
+    )
   }
   return [call]
 }
@@ -70,23 +77,36 @@ function flattenCalls(api: ApiPromise, call: Call): Call[] {
 function credentialInputFromChain(
   credential: PublicCredentialsCredentialsCredential
 ): INewPublicCredential {
+  Assets.validateUri(credential.subject.toUtf8())
   return {
     claims: cborDecode(hexToU8a(credential.claims.toHex())),
     cTypeHash: credential.ctypeHash.toHex(),
     delegationId: credential.authorization.unwrapOr(undefined)?.toHex() ?? null,
-    subject: credential.subject.toUtf8()
+    subject: credential.subject.toUtf8() as AssetDidUri,
   }
 }
 
-async function retrievePublicCredentialCreationExtrinsicsFromBlock(api: ApiPromise, credentialId: HexString, blockNumber: u64): Promise<Extrinsic | null> {
+async function retrievePublicCredentialCreationExtrinsicsFromBlock(
+  api: ApiPromise,
+  credentialId: HexString,
+  blockNumber: u64
+): Promise<Extrinsic | null> {
   const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
-  return extrinsics
-    // Consider only extrinsics that have not failed
-    .filter(({ dispatchError }) => dispatchError === undefined)
-    // Consider only the extrinsics that contains at least the credential creation event with the right credentialId
-    .filter(({ events }) => events.some(((event) => api.events.publicCredentials.CredentialStored.is(event) && event.data[1].toString() === credentialId)))
-    // If there is more than one (e.g., same credential issued multiple times in the same block), take the last one, as that is the one that should be considered
-    .pop()?.extrinsic ?? null
+  return (
+    extrinsics
+      // Consider only extrinsics that have not failed
+      .filter(({ dispatchError }) => dispatchError === undefined)
+      // Consider only the extrinsics that contains at least the credential creation event with the right credentialId
+      .filter(({ events }) =>
+        events.some(
+          (event) =>
+            api.events.publicCredentials.CredentialStored.is(event) &&
+            event.data[1].toString() === credentialId
+        )
+      )
+      // If there is more than one (e.g., same credential issued multiple times in the same block), take the last one, as that is the one that should be considered
+      .pop()?.extrinsic ?? null
+  )
 }
 
 // FIXME: I did not get the derives to work properly.
@@ -102,48 +122,82 @@ export async function credentialFromChain(
 
   const { blockNumber } = publicCredentialEntry.unwrap()
 
-  const extrinsic = await retrievePublicCredentialCreationExtrinsicsFromBlock(api, credentialId, blockNumber)
-  
+  const extrinsic = await retrievePublicCredentialCreationExtrinsicsFromBlock(
+    api,
+    credentialId,
+    blockNumber
+  )
+
   if (extrinsic === null) {
-    throw new Error(`The block number as specified in the provided credential entry (${blockNumber}) does not have any extrinsic that includes a credential creation.`)
+    throw new Error(
+      `The block number as specified in the provided credential entry (${blockNumber}) does not have any extrinsic that includes a credential creation.`
+    )
   }
 
   if (!api.tx.did.submitDidCall.is(extrinsic)) {
     throw new Error('Extrinsic should be a did.submitDidCall extrinsic')
   }
 
-  const [extrinsicCalls, extrinsicDidOrigin] = [flattenCalls(api, extrinsic.args[0].call), didFromChain(extrinsic.args[0].did)]
+  const [extrinsicCalls, extrinsicDidOrigin] = [
+    flattenCalls(api, extrinsic.args[0].call),
+    didFromChain(extrinsic.args[0].did),
+  ]
 
   let credentialInput: IPublicCredential | undefined
 
   extrinsicCalls.forEach((call) => {
     if (api.tx.publicCredentials.add.is(call)) {
       const credentialCallArgument = call.args[0]
-      const reconstructedCredentialInput = credentialInputFromChain(credentialCallArgument)
-      const reconstructedId = getIdForCredentialAndAttester(
+      const reconstructedCredentialInput = credentialInputFromChain(
+        credentialCallArgument
+      )
+      const reconstructedId = getIdForNewCredentialAndAttester(
         reconstructedCredentialInput,
         extrinsicDidOrigin
       )
       if (reconstructedId === credentialId) {
-        credentialInput = { ...reconstructedCredentialInput, attester: extrinsicDidOrigin, id: reconstructedId, blockNumber }
+        credentialInput = {
+          ...reconstructedCredentialInput,
+          attester: extrinsicDidOrigin,
+          id: reconstructedId,
+          blockNumber,
+        }
       }
     }
   })
   if (credentialInput === undefined) {
-    throw new Error('Block should always contain the full credential, eventually.')
+    throw new Error(
+      'Block should always contain the full credential, eventually.'
+    )
   }
   return credentialInput
 }
 
+/**
+ * @param credentials
+ */
 export async function credentialsFromChain(
-  credentials: Result<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>, PublicCredentialError>,
+  credentials: Result<
+    Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>,
+    PublicCredentialError
+  >
 ): Promise<IPublicCredential[]> {
   if (credentials.isErr) {
     throw new Error(credentials.asErr.toString())
   }
 
   const api = ConfigService.get('api')
-  const formattedCredentials: Array<[HexString, Option<PublicCredentialsCredentialsCredentialEntry>]> = credentials.asOk.map(([encodedId, encodedCredentialEntry]) => [encodedId.toHex(), api.createType('Option<PublicCredentialsCredentialsCredentialEntry>', encodedCredentialEntry)])
+  const formattedCredentials: Array<
+    [HexString, Option<PublicCredentialsCredentialsCredentialEntry>]
+  > = credentials.asOk.map(([encodedId, encodedCredentialEntry]) => [
+    encodedId.toHex(),
+    api.createType(
+      'Option<PublicCredentialsCredentialsCredentialEntry>',
+      encodedCredentialEntry
+    ),
+  ])
 
-  return Promise.all(formattedCredentials.map(([id, entry]) => credentialFromChain(id, entry)))
+  return Promise.all(
+    formattedCredentials.map(([id, entry]) => credentialFromChain(id, entry))
+  )
 }

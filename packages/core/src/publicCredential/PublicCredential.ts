@@ -14,24 +14,18 @@ import type {
   ICType,
   IDelegationNode,
   INewPublicCredential,
-  IPublicCredential,
 } from '@kiltprotocol/types'
 
 import { blake2AsHex } from '@polkadot/util-crypto'
 import { ConfigService } from '@kiltprotocol/config'
-import { toChain as didUriToChain } from '@kiltprotocol/did'
-
+import * as Did from '@kiltprotocol/did'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Claim } from '@kiltprotocol/core'
-import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
-import { validateUri } from './AssetDid.js'
-import { verifyClaimAgainstSchema } from '../ctype/CType.js'
 
-/**
- * @param credential
- * @param attester
- */
-export function getIdForCredentialAndAttester(
+import { verifyClaimAgainstSchema } from '../ctype/CType.js'
+import { verifyDataStructure as verifyClaimDataStructure } from '../claim/Claim.js'
+import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
+
+export function getIdForNewCredentialAndAttester(
   credential: INewPublicCredential,
   attester: DidUri
 ): HexString {
@@ -44,7 +38,7 @@ export function getIdForCredentialAndAttester(
     )
     .toU8a()
   const scaleEncodedAttester = api
-    .createType<AccountId>('AccountId', didUriToChain(attester))
+    .createType<AccountId>('AccountId', Did.toChain(attester))
     .toU8a()
 
   return blake2AsHex(
@@ -53,24 +47,18 @@ export function getIdForCredentialAndAttester(
 }
 
 // Taken from Credential.verifyDataStructure()
-/**
- * @param input
- */
 export function verifyDataStructure(input: INewPublicCredential): void {
   if (!('claims' in input)) {
     throw new SDKErrors.ClaimMissingError()
   } else {
-    Claim.verifyDataStructure({
+    verifyClaimDataStructure({
       cTypeHash: input.cTypeHash,
       contents: input.claims,
-      // TODO: verify the AssetDID here
-      owner: input.attester,
+      subject: input.subject,
     })
   }
   if (!input.subject) {
     throw new SDKErrors.SubjectMissingError()
-  } else {
-    validateUri(input.subject)
   }
 
   if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
@@ -78,59 +66,18 @@ export function verifyDataStructure(input: INewPublicCredential): void {
   }
 }
 
-/**
- * @param credential
- * @param ctype
- */
 export function verifyAgainstCType(
-  credential: IPublicCredential,
+  credential: INewPublicCredential,
   ctype: ICType
 ): void {
-  verifyClaimAgainstSchema(credential.claims, ctype)
-}
-
-type VerifyOptions = {
-  ctype?: ICType
-}
-
-/**
- * @param credential
- * @param root0
- * @param root0.ctype
- */
-export function verifyCredential(
-  credential: IPublicCredential,
-  { ctype }: VerifyOptions = {}
-): void {
   verifyDataStructure(credential)
-  if (ctype) {
-    verifyAgainstCType(credential, ctype)
-  }
-}
-
-/**
- * @param input
- */
-export function isIPublicCredential(
-  input: unknown
-): input is IPublicCredential {
-  try {
-    verifyDataStructure(input as IPublicCredential)
-  } catch {
-    return false
-  }
-  return true
+  verifyClaimAgainstSchema(credential.claims, ctype)
 }
 
 export type Options = {
   delegationId?: IDelegationNode['id'] | null
 }
 
-/**
- * @param claim
- * @param root0
- * @param root0.delegationId
- */
 export function fromClaim(
   claim: IAssetClaim,
   { delegationId = null }: Options = {}
@@ -143,4 +90,18 @@ export function fromClaim(
   }
   verifyDataStructure(credential)
   return credential
+}
+
+type VerifyOptions = {
+  ctype?: ICType
+}
+
+export function verifyCredential(
+  credential: INewPublicCredential,
+  { ctype }: VerifyOptions = {}
+): void {
+  verifyDataStructure(credential)
+  if (ctype) {
+    verifyAgainstCType(credential, ctype)
+  }
 }

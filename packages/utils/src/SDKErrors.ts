@@ -208,3 +208,5 @@ export class NoProofForStatementError extends SDKError {
 }
 
 export class CodecMismatchError extends SDKError {}
+
+export class PublicCredentialError extends SDKError {}
