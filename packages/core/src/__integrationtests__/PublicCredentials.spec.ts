@@ -138,9 +138,9 @@ describe('When there is an attester and ctype NFT name', () => {
   })
 
   it('should be possible to retrieve 100 credentials for the same asset', async () => {
+    // Issue 98 more credentials
     const credentialCreationTxs = [...Array(98)].map(() => {
       const credential: INewPublicCredential = {
-        // Start from 3 since 0 and 2 have already been issued in tests above.
         claims: {
           name: `Certified NFT collection with id ${UUID.generate()}`,
         },

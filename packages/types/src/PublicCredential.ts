@@ -10,7 +10,7 @@ import type { BN } from '@polkadot/util'
 
 import type { CTypeHash } from './CType'
 import type { IDelegationNode } from './Delegation'
-import type { IClaimContents } from './Claim'
+import type { IClaim, IClaimContents } from './Claim'
 import type { DidUri } from './DidDocument'
 
 export interface INewPublicCredential {
@@ -26,3 +26,18 @@ export interface IPublicCredential extends INewPublicCredential {
   attester: DidUri
   blockNumber: BN
 }
+
+export type ChainNamespace = string
+export type ChainReference = string
+export type ChainId = `${ChainNamespace}:${ChainReference}`
+
+export type AssetNamespace = string
+export type AssetReference = string
+export type AssetInstance = string
+export type AssetId =
+  | `${AssetNamespace}:${AssetReference}`
+  | `${AssetNamespace}:${AssetReference}:${AssetInstance}`
+
+export type AssetDidUri = `did:asset:${ChainId}.${AssetId}`
+
+export type IAssetClaim = Omit<IClaim, 'owner'> & { subject: AssetDidUri }

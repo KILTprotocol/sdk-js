@@ -5,5 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+export * from './AssetDid.js'
 export * from './PublicCredential.js'
 export * from './PublicCredential.chain.js'
