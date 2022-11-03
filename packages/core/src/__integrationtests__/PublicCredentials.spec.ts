@@ -43,6 +43,7 @@ let attesterKey: KeyTool
 let api: ApiPromise
 // Generate a random asset ID
 const assetId: AssetDidUri = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
+let latestCredential: INewPublicCredential
 
 beforeAll(async () => {
   api = await initializeApi()
@@ -68,7 +69,7 @@ describe('When there is an attester and ctype NFT name', () => {
   }, 60_000)
 
   it('should be possible to issue a credential', async () => {
-    const credential: INewPublicCredential = {
+    latestCredential = {
       claims: {
         name: `Certified NFT collection with id ${UUID.generate()}`,
       },
@@ -76,7 +77,7 @@ describe('When there is an attester and ctype NFT name', () => {
       delegationId: null,
       subject: assetId,
     }
-    const encodedPublicCredential = PublicCredential.toChain(credential)
+    const encodedPublicCredential = PublicCredential.toChain(latestCredential)
     const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
     const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
@@ -85,21 +86,24 @@ describe('When there is an attester and ctype NFT name', () => {
       tokenHolder.address
     )
     await submitTx(authorizedStoreTx, tokenHolder)
-    const credentialId = PublicCredential.computeId(credential, attester.uri)
+    const credentialId = PublicCredential.computeId(
+      latestCredential,
+      attester.uri
+    )
 
-    const publicCredentialEntry1 =
+    const publicCredentialEntry =
       await api.call.publicCredentials.getCredential(credentialId)
-    expect(publicCredentialEntry1.isSome).toBe(true)
+    expect(publicCredentialEntry.isSome).toBe(true)
 
     const completeCredential = await PublicCredential.credentialFromChain(
       credentialId,
-      publicCredentialEntry1
+      publicCredentialEntry
     )
 
     // Verify that the retrieved credential matches the input one, plus the generated ID and the attester DID.
     expect(completeCredential).toEqual(
       expect.objectContaining({
-        ...credential,
+        ...latestCredential,
         id: credentialId,
         attester: attester.uri,
         revoked: false,
@@ -108,7 +112,7 @@ describe('When there is an attester and ctype NFT name', () => {
   })
 
   it('should be possible to issue a second credential to the same asset and retrieve both of them', async () => {
-    const credential: INewPublicCredential = {
+    latestCredential = {
       claims: {
         name: `Certified NFT collection with id ${UUID.generate()}`,
       },
@@ -116,7 +120,7 @@ describe('When there is an attester and ctype NFT name', () => {
       delegationId: null,
       subject: assetId,
     }
-    const encodedPublicCredential = PublicCredential.toChain(credential)
+    const encodedPublicCredential = PublicCredential.toChain(latestCredential)
     const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
     const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
@@ -140,7 +144,7 @@ describe('When there is an attester and ctype NFT name', () => {
   it('should be possible to retrieve 100 credentials for the same asset', async () => {
     // Issue 98 more credentials
     const credentialCreationTxs = [...Array(98)].map(() => {
-      const credential: INewPublicCredential = {
+      latestCredential = {
         claims: {
           name: `Certified NFT collection with id ${UUID.generate()}`,
         },
@@ -148,7 +152,7 @@ describe('When there is an attester and ctype NFT name', () => {
         delegationId: null,
         subject: assetId,
       }
-      const encodedPublicCredential = PublicCredential.toChain(credential)
+      const encodedPublicCredential = PublicCredential.toChain(latestCredential)
       return api.tx.publicCredentials.add(encodedPublicCredential)
     })
     const authorizedBatch = await Did.authorizeBatch({
@@ -169,6 +173,140 @@ describe('When there is an attester and ctype NFT name', () => {
     // We only check that we return all the twenty credentials back.
     // We don't check the content of each credential.
     expect(assetCredentials).toHaveLength(100)
+  })
+
+  it('should be possible to revoke a credential', async () => {
+    const credentialId = PublicCredential.computeId(
+      latestCredential,
+      attester.uri
+    )
+    let encodedAssetCredential = await api.call.publicCredentials.getCredential(
+      credentialId
+    )
+    let assetCredential = await PublicCredential.credentialFromChain(
+      credentialId,
+      encodedAssetCredential
+    )
+    let encodedAllAssetCredentials =
+      await api.call.publicCredentials.getCredentials(assetId, null)
+    const allAssetCredentialsBeforeRevocation =
+      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+    // Verify that credential was not revoked before revocation
+    expect(assetCredential.revoked).toBe(false)
+    const revocationTx = api.tx.publicCredentials.revoke(credentialId, null)
+    const authorizedTx = await Did.authorizeTx(
+      attester.uri,
+      revocationTx,
+      attesterKey.getSignCallback(attester),
+      tokenHolder.address
+    )
+    await submitTx(authorizedTx, tokenHolder)
+
+    encodedAssetCredential = await api.call.publicCredentials.getCredential(
+      credentialId
+    )
+    assetCredential = await PublicCredential.credentialFromChain(
+      credentialId,
+      encodedAssetCredential
+    )
+    encodedAllAssetCredentials =
+      await api.call.publicCredentials.getCredentials(assetId, null)
+    const allAssetCredentialsAfterRevocation =
+      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+
+    expect(assetCredential.revoked).toBe(true)
+    // Verify the number of credentials has not changed after revocation
+    expect(allAssetCredentialsBeforeRevocation.length).toEqual(
+      allAssetCredentialsAfterRevocation.length
+    )
+  })
+
+  it('should be possible to unrevoke a credential', async () => {
+    const credentialId = PublicCredential.computeId(
+      latestCredential,
+      attester.uri
+    )
+    let encodedAssetCredential = await api.call.publicCredentials.getCredential(
+      credentialId
+    )
+    let assetCredential = await PublicCredential.credentialFromChain(
+      credentialId,
+      encodedAssetCredential
+    )
+    let encodedAllAssetCredentials =
+      await api.call.publicCredentials.getCredentials(assetId, null)
+    const allAssetCredentialsBeforeRevocation =
+      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+    // Verify that credential was revoked before un-revocation
+    expect(assetCredential.revoked).toBe(true)
+
+    const unrevocationTx = api.tx.publicCredentials.unrevoke(credentialId, null)
+    const authorizedTx = await Did.authorizeTx(
+      attester.uri,
+      unrevocationTx,
+      attesterKey.getSignCallback(attester),
+      tokenHolder.address
+    )
+    await submitTx(authorizedTx, tokenHolder)
+
+    encodedAssetCredential = await api.call.publicCredentials.getCredential(
+      credentialId
+    )
+    assetCredential = await PublicCredential.credentialFromChain(
+      credentialId,
+      encodedAssetCredential
+    )
+    encodedAllAssetCredentials =
+      await api.call.publicCredentials.getCredentials(assetId, null)
+    const allAssetCredentialsAfterRevocation =
+      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+
+    // Verify it is now not revoked anymore
+    expect(assetCredential.revoked).toBe(false)
+    // Verify the number of credentials has not changed after revocation
+    expect(allAssetCredentialsBeforeRevocation.length).toEqual(
+      allAssetCredentialsAfterRevocation.length
+    )
+  })
+
+  it('should be possible to remove a credential', async () => {
+    const credentialId = PublicCredential.computeId(
+      latestCredential,
+      attester.uri
+    )
+    let encodedAssetCredential = await api.call.publicCredentials.getCredential(
+      credentialId
+    )
+    let encodedAllAssetCredentials =
+      await api.call.publicCredentials.getCredentials(assetId, null)
+    const allAssetCredentialsBeforeRevocation =
+      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+    // Verify that credential existed before removal
+    expect(encodedAssetCredential.isNone).toBe(false)
+
+    const removalTx = api.tx.publicCredentials.remove(credentialId, null)
+    const authorizedTx = await Did.authorizeTx(
+      attester.uri,
+      removalTx,
+      attesterKey.getSignCallback(attester),
+      tokenHolder.address
+    )
+    await submitTx(authorizedTx, tokenHolder)
+
+    encodedAssetCredential = await api.call.publicCredentials.getCredential(
+      credentialId
+    )
+    encodedAllAssetCredentials =
+      await api.call.publicCredentials.getCredentials(assetId, null)
+    const allAssetCredentialsAfterRevocation =
+      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+
+    // Verify it is now removed
+    expect(encodedAssetCredential.isNone).toBe(true)
+    // Verify the number of credentials has decreased by one
+    expect(allAssetCredentialsBeforeRevocation.length).toEqual(
+      allAssetCredentialsAfterRevocation.length + 1
+    )
   })
 })
 
