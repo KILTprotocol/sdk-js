@@ -33,13 +33,11 @@ import { computeId } from './PublicCredential.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
-  // TODO: Replace with an asset DID
-  subject: string
+  subject: AssetDidUri
   claims: HexString
   authorization: IDelegationNode['id'] | null
 }
 
-// TODO: Add integrity checks (e.g., that the claims conform to the specified CType, that the asset DID is correct, unless verified in the INewPublicCredential)
 /**
  * @param publicCredential
  */
@@ -109,7 +107,6 @@ async function retrievePublicCredentialCreationExtrinsicsFromBlock(
   )
 }
 
-// FIXME: I did not get the derives to work properly.
 /**
  * @param credentialId
  * @param publicCredentialEntry
