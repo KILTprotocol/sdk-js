@@ -9,8 +9,6 @@
  * @module @kiltprotocol/did
  */
 
-// Used either as Kilt.Did.Assets.something or Did.Assets.something
-export * as Assets from './AssetDid/index.js'
 export * from './DidDetails/index.js'
 export * from './DidDocumentExporter/index.js'
 export * from './DidResolver/index.js'

@@ -1230,6 +1230,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kiltprotocol/asset-did@workspace:packages/asset-did":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/asset-did@workspace:packages/asset-did"
+  dependencies:
+    "@kiltprotocol/utils": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/augment-api@workspace:*, @kiltprotocol/augment-api@workspace:packages/augment-api":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/augment-api@workspace:packages/augment-api"

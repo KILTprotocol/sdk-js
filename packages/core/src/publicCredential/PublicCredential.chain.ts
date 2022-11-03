@@ -27,7 +27,8 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { fromChain as didFromChain, Assets } from '@kiltprotocol/did'
+import { fromChain as didFromChain } from '@kiltprotocol/did'
+import { validateUri } from '@kiltprotocol/asset-did'
 
 import { computeId } from './PublicCredential.js'
 
@@ -75,7 +76,7 @@ function flattenCalls(api: ApiPromise, call: Call): Call[] {
 function credentialInputFromChain(
   credential: PublicCredentialsCredentialsCredential
 ): INewPublicCredential {
-  Assets.validateUri(credential.subject.toUtf8())
+  validateUri(credential.subject.toUtf8())
   return {
     claims: cborDecode(hexToU8a(credential.claims.toHex())),
     cTypeHash: credential.ctypeHash.toHex(),

@@ -28,6 +28,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
+import * as AssetDid from '@kiltprotocol/asset-did'
 import * as CType from '../ctype/index.js'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
@@ -211,7 +212,7 @@ export function verifyDataStructure(
     Did.validateUri(input.owner, 'Did')
   } else if ('subject' in input) {
     // input is IAssetClaim
-    Did.Assets.validateUri(input.subject)
+    AssetDid.validateUri(input.subject)
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
