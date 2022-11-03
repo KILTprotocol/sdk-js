@@ -31,6 +31,8 @@ import { calls as didCalls } from './runtime/did.js'
 import { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
 import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 
+import { derives as publicCredentialsDerives } from './derive/publicCredentials.js'
+
 export {
   types8,
   types9,
@@ -52,6 +54,8 @@ export {
 export { calls as didCalls } from './runtime/did.js'
 export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
 export { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
+
+export { derives as publicCredentialsDerives } from './derive/publicCredentials.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -121,6 +125,9 @@ export const typesBundle: OverrideBundleType = {
         ...parachainStakingCalls,
         ...publicCredentialsCalls,
       },
+      derives: {
+        ...publicCredentialsDerives,
+      },
       types: defaultTypesBundle,
     },
     'KILT Peregrine': {
@@ -129,6 +136,9 @@ export const typesBundle: OverrideBundleType = {
         ...parachainStakingCalls,
         ...publicCredentialsCalls,
       },
+      derives: {
+        ...publicCredentialsDerives,
+      },
       types: defaultTypesBundle,
     },
     'KILT Mashnet': {
@@ -136,12 +146,18 @@ export const typesBundle: OverrideBundleType = {
         ...didCalls,
         ...publicCredentialsCalls,
       },
+      derives: {
+        ...publicCredentialsDerives,
+      },
       types: defaultTypesBundle,
     },
     Development: {
       runtime: {
         ...didCalls,
         ...publicCredentialsCalls,
+      },
+      derives: {
+        ...publicCredentialsDerives,
       },
       types: defaultTypesBundle,
     },

@@ -34,6 +34,8 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "@kiltprotocol/types": "workspace:*",
+    "@polkadot/api-derive": "^9.4.1",
     "rxjs": "^7.5.7"
   }
 }
