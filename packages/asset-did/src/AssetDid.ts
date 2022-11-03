@@ -17,6 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
+// Matches AssetDIDs as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
 const ASSET_DID_REGEX =
   /^did:asset:(?<chainId>(?<chainNamespace>[-a-z0-9]{3,8}):(?<chainReference>[-a-zA-Z0-9]{1,32}))\.(?<assetId>(?<assetNamespace>[-a-z0-9]{3,8}):(?<assetReference>[-a-zA-Z0-9]{1,64})(:(?<assetInstance>[-a-zA-Z0-9]{1,78}))?)$/
 
@@ -32,7 +33,10 @@ type IAssetDidParsingResult = {
 }
 
 /**
- * @param assetDidUri
+ * Parses an AssetDID uri and returns the information contained within in a structured form.
+
+ * @param assetDidUri An AssetDID uri as a string.
+* @returns Object containing information extracted from the AssetDID uri.
  */
 export function parse(assetDidUri: AssetDidUri): IAssetDidParsingResult {
   const matches = ASSET_DID_REGEX.exec(assetDidUri)?.groups
@@ -53,6 +57,7 @@ export function parse(assetDidUri: AssetDidUri): IAssetDidParsingResult {
   if (!chainId || !assetId) {
     throw new SDKErrors.InvalidDidFormatError(assetDidUri)
   }
+  // TS would complain otherwise. We can be sure since the regex matched.
   const castedChainId = chainId as ChainId
   const castedAssetId = assetId as ChainId
 
@@ -69,7 +74,10 @@ export function parse(assetDidUri: AssetDidUri): IAssetDidParsingResult {
 }
 
 /**
- * @param input
+ * Checks that a string (or other input) is a valid AssetDID uri.
+ * Throws otherwise.
+ *
+ * @param input Arbitrary input.
  */
 export function validateUri(input: unknown): void {
   if (typeof input !== 'string') {

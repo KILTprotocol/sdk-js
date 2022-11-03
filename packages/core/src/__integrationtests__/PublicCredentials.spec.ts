@@ -308,26 +308,6 @@ describe('When there is an attester and ctype NFT name', () => {
       allAssetCredentialsAfterRevocation.length + 1
     )
   })
-
-  it.only('test', async () => {
-    latestCredential = {
-      claims: {
-        name: `Certified NFT collection with id ${UUID.generate()}`,
-      },
-      cTypeHash: CType.getHashForSchema(nftNameCType),
-      delegationId: null,
-      subject: assetId,
-    }
-    // const credentialId = PublicCredential.computeId(
-    //   latestCredential,
-    //   attester.uri
-    // )
-    console.log(JSON.stringify(api.derive, null, 2))
-    // const credential = await (api.derive as any).publicCredentials.credentials(
-    //   credentialId
-    // )
-    // console.log(credential)
-  })
 })
 
 afterAll(async () => {
