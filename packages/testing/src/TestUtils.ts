@@ -317,9 +317,8 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const encodedDidDetails = await api.call.did.query(
-    toChain(Did.getFullDidUri(uri))
-  )
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const encodedDidDetails = await queryFunction(toChain(Did.getFullDidUri(uri)))
   return linkedInfoFromChain(encodedDidDetails).document
 }
 

@@ -11,9 +11,9 @@ import type { AccountId32, Hash } from '@polkadot/types/interfaces'
 import type {
   RawDidLinkedInfo,
   KiltSupportDeposit,
-  RawDidDetails,
   DidDidDetailsDidPublicKeyDetails,
-  RawServiceEndpoints,
+  DidDidDetails,
+  DidServiceEndpointsDidEndpoint,
 } from '@kiltprotocol/augment-api'
 import type {
   Deposit,
@@ -29,7 +29,7 @@ import type {
 
 import { encodeAddress } from '@polkadot/keyring'
 import { ethereumEncode } from '@polkadot/util-crypto'
-import { BN } from '@polkadot/util'
+import { BN, u8aToString } from '@polkadot/util'
 import { Crypto, ss58Format } from '@kiltprotocol/utils'
 
 import { Address, SubstrateAddress } from './DidLinks/AccountLinks.chain.js'
@@ -72,7 +72,7 @@ function resourceIdToChain(id: UriFragment): string {
   return id.replace(/^#/, '')
 }
 
-function documentFromChain(encoded: RawDidDetails): RpcDocument {
+function documentFromChain(encoded: DidDidDetails): RpcDocument {
   const {
     publicKeys,
     authenticationKey,
@@ -121,17 +121,19 @@ function documentFromChain(encoded: RawDidDetails): RpcDocument {
   return didRecord
 }
 
-function serviceFromChain(encoded: RawServiceEndpoints): DidServiceEndpoint {
+function serviceFromChain(
+  encoded: DidServiceEndpointsDidEndpoint
+): DidServiceEndpoint {
   const { id, serviceTypes, urls } = encoded
   return {
-    id: `#${id.toHuman()}`,
-    type: serviceTypes.map((type) => type.toHuman()),
-    serviceEndpoint: urls.map((url) => url.toHuman()),
+    id: `#${u8aToString(id)}`,
+    type: serviceTypes.map(u8aToString),
+    serviceEndpoint: urls.map(u8aToString),
   }
 }
 
 function servicesFromChain(
-  encoded: RawServiceEndpoints[]
+  encoded: DidServiceEndpointsDidEndpoint[]
 ): DidServiceEndpoint[] {
   return encoded.map((encodedValue) => serviceFromChain(encodedValue))
 }

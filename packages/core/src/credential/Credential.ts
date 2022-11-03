@@ -193,7 +193,7 @@ export function verifyDataStructure(input: ICredential): void {
 }
 
 /**
- * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[ICType.$schema]] structure.
  *
  * @param credential A [[Credential]] for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
@@ -232,10 +232,15 @@ export async function verifySignature(
     throw new SDKErrors.SignatureUnverifiableError(
       'Challenge differs from expected'
     )
+
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
     ...signatureFromJson(claimerSignature),
     message: signingData,
+    // check if credential owner matches signer
+    expectedSigner: input.claim.owner,
+    // allow full did to sign presentation if owned by corresponding light did
+    allowUpgraded: true,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
   })

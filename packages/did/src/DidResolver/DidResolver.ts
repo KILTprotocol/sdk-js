@@ -37,10 +37,15 @@ export async function resolve(
 ): Promise<DidResolutionResult | null> {
   const { type } = parse(did)
   const api = ConfigService.get('api')
-
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const { section, version } = queryFunction?.meta ?? {}
+  if (version > 2)
+    throw new Error(
+      `This version of the KILT sdk supports runtime api '${section}' <=v2 , but the blockchain runtime implements ${version}. Please upgrade!`
+    )
   let document: DidDocument | undefined
   try {
-    const encodedLinkedInfo = await api.call.did.query(toChain(did))
+    const encodedLinkedInfo = await queryFunction(toChain(did))
     document = linkedInfoFromChain(encodedLinkedInfo).document
   } catch {
     // ignore errors
@@ -142,7 +147,9 @@ export async function resolveKey(
 
   // A fragment (keyId) IS expected to resolve a key.
   if (!keyId) {
-    throw new SDKErrors.InvalidDidFormatError(keyUri)
+    throw new SDKErrors.DidError(
+      `Key URI "${keyUri}" is not a valid DID resource`
+    )
   }
 
   const resolved = await resolve(did)
@@ -194,7 +201,9 @@ export async function resolveService(
 
   // A fragment (serviceId) IS expected to resolve a key.
   if (!serviceId) {
-    throw new SDKErrors.InvalidDidFormatError(serviceUri)
+    throw new SDKErrors.DidError(
+      `Service URI "${serviceUri}" is not a valid DID resource`
+    )
   }
 
   const resolved = await resolve(did)

@@ -24,4 +24,12 @@ export const types10800: RegistryTypes = {
   PublicCredentialError: {
     _enum: ['InvalidSubjectId'],
   },
+
+  // ParachainStakingApi get_staking_rates
+  StakingRates: {
+    collatorStakingRate: 'Perquintill',
+    collatorRewardRate: 'Perquintill',
+    delegatorStakingRate: 'Perquintill',
+    delegatorRewardRate: 'Perquintill',
+  },
 }

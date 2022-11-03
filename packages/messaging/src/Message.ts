@@ -286,7 +286,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
 }
 
 /**
- * Symmetrically decrypts the result of [[Message.encrypt]].
+ * Symmetrically decrypts the result of [[encrypt]].
  *
  * @param encrypted The encrypted message.
  * @param decryptCallback The callback to decrypt with the secret key.
@@ -374,7 +374,7 @@ export function verify(decryptedMessage: IMessage): void {
 
 /**
  * Constructs a message from a message body.
- * This should be encrypted with [[Message.encrypt]] before sending to the receiver.
+ * This should be encrypted with [[encrypt]] before sending to the receiver.
  *
  * @param body The body of the message.
  * @param sender The DID of the sender.
@@ -396,7 +396,7 @@ export function fromBody(
 }
 
 /**
- * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
+ * Encrypts the [[Message]] as a string. This can be reversed with [[decrypt]].
  *
  * @param message The message to encrypt.
  * @param encryptCallback The callback to encrypt with the secret key.

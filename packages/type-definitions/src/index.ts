@@ -141,6 +141,7 @@ export const typesBundle: OverrideBundleType = {
     Development: {
       runtime: {
         ...didCalls,
+        ...parachainStakingCalls,
         ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,

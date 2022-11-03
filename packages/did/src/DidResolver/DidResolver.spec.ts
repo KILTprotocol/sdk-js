@@ -60,34 +60,32 @@ beforeAll(() => {
 
   // Mock `api.call.didApi.queryDid(didUri)`
   // By default it returns a simple LinkedDidInfo with no web3name and no accounts linked.
-  jest
-    .spyOn(mockedApi.call.didApi, 'queryDid')
-    .mockImplementation((identifier) => {
-      return augmentedApi.createType('Option<RawDidLinkedInfo>', {
-        identifier,
-        accounts: [],
-        w3n: null,
-        serviceEndpoints: [
-          {
-            id: 'foo',
-            serviceTypes: ['type-service-1'],
-            urls: ['x:url-service-1'],
-          },
-        ],
-        details: {
-          authenticationKey: '01234567890123456789012345678901',
-          keyAgreementKeys: [],
-          delegationKey: null,
-          attestationKey: null,
-          publicKeys: [],
-          lastTxCounter: 123,
-          deposit: {
-            owner: addressWithAuthenticationKey,
-            amount: 0,
-          },
+  jest.spyOn(mockedApi.call.did, 'query').mockImplementation((identifier) => {
+    return augmentedApi.createType('Option<RawDidLinkedInfo>', {
+      identifier,
+      accounts: [],
+      w3n: null,
+      serviceEndpoints: [
+        {
+          id: 'foo',
+          serviceTypes: ['type-service-1'],
+          urls: ['x:url-service-1'],
         },
-      })
+      ],
+      details: {
+        authenticationKey: '01234567890123456789012345678901',
+        keyAgreementKeys: [],
+        delegationKey: null,
+        attestationKey: null,
+        publicKeys: [],
+        lastTxCounter: 123,
+        deposit: {
+          owner: addressWithAuthenticationKey,
+          amount: 0,
+        },
+      },
     })
+  })
 })
 
 function generateAuthenticationKey(): DidVerificationKey {
@@ -362,7 +360,7 @@ describe('When resolving a full DID', () => {
   it('correctly resolves a non-existing DID', async () => {
     // RPC call changed to not return anything.
     jest
-      .spyOn(mockedApi.call.didApi, 'queryDid')
+      .spyOn(mockedApi.call.did, 'query')
       .mockRejectedValueOnce(
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
@@ -375,7 +373,7 @@ describe('When resolving a full DID', () => {
   it('correctly resolves a deleted DID', async () => {
     // RPC call changed to not return anything.
     jest
-      .spyOn(mockedApi.call.didApi, 'queryDid')
+      .spyOn(mockedApi.call.did, 'query')
       .mockRejectedValueOnce(
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
@@ -412,7 +410,7 @@ describe('When resolving a light DID', () => {
   beforeEach(() => {
     // RPC call changed to not return anything by default.
     jest
-      .spyOn(mockedApi.call.didApi, 'queryDid')
+      .spyOn(mockedApi.call.did, 'query')
       .mockResolvedValue(
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
@@ -486,7 +484,7 @@ describe('When resolving a light DID', () => {
 
   it('correctly resolves a migrated and not deleted DID', async () => {
     // RPC call changed to return something.
-    jest.spyOn(mockedApi.call.didApi, 'queryDid').mockResolvedValueOnce(
+    jest.spyOn(mockedApi.call.did, 'query').mockResolvedValueOnce(
       augmentedApi.createType('Option<RawDidLinkedInfo>', {
         addressWithAuthenticationKey,
         accounts: [],
