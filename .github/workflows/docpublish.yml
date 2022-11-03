@@ -2,7 +2,7 @@ name: Build and Deploy API docs
 
 on:
   release:
-    types: [created]
+    types: [published]
   workflow_dispatch:
 
 jobs:
