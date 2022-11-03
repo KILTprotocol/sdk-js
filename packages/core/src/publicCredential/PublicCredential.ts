@@ -25,6 +25,13 @@ import { verifyClaimAgainstSchema } from '../ctype/CType.js'
 import { verifyDataStructure as verifyClaimDataStructure } from '../claim/Claim.js'
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
+/**
+ * Calculates the ID of a new credential, to be used to retrieve the full content from the blockchain.
+ *
+ * @param credential The input credential object.
+ * @param attester The DID of the credential attester.
+ * @returns The credential ID.
+ */
 export function computeId(
   credential: INewPublicCredential,
   attester: DidUri
@@ -46,8 +53,15 @@ export function computeId(
   )
 }
 
-// Taken from Credential.verifyDataStructure()
+/**
+ * Checks whether the input meets all the required criteria of an [[INewPublicCredential]] object.
+ * Throws on invalid input.
+ *
+ * @param input - A potentially only partial [[INewPublicCredential]].
+ *
+ */
 export function verifyDataStructure(input: INewPublicCredential): void {
+  // Taken from `Credential.verifyDataStructure()`
   if (!('claims' in input)) {
     throw new SDKErrors.ClaimMissingError()
   } else {
@@ -66,10 +80,17 @@ export function verifyDataStructure(input: INewPublicCredential): void {
   }
 }
 
+/**
+ * Checks the [[INewPublicCredential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ *
+ * @param credential A [[INewPublicCredential]] for the attester.
+ * @param ctype A [[CType]] to verify the [[Claim]] structure.
+ */
 export function verifyAgainstCType(
   credential: INewPublicCredential,
   ctype: ICType
 ): void {
+  // Taken from `Credential.verifyAgainstCType()`
   verifyDataStructure(credential)
   verifyClaimAgainstSchema(credential.claims, ctype)
 }
@@ -82,20 +103,37 @@ type VerifyOptions = {
   ctype?: ICType
 }
 
+/**
+ * Verifies data structure & data integrity of a public credential object.
+ *
+ * @param credential - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ */
 export function verifyCredential(
   credential: INewPublicCredential,
   { ctype }: VerifyOptions = {}
 ): void {
+  // Taken from `Credential.verifyCredential()`
   verifyDataStructure(credential)
   if (ctype) {
     verifyAgainstCType(credential, ctype)
   }
 }
 
+/**
+ * Builds a new [[INewPublicCredential]] object, from a complete set of required parameters.
+ *
+ * @param claim An [[IClaim]] object to build the credential for.
+ * @param option Container for different options that can be passed to this method.
+ * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
+ * @returns A new [[INewPublicCredential]] object.
+ */
 export function fromClaim(
   claim: IAssetClaim,
   { delegationId = null }: Options = {}
 ): INewPublicCredential {
+  // Taken from `Credential.fromClaim()`
   const credential: INewPublicCredential = {
     claims: claim.contents,
     cTypeHash: claim.cTypeHash,

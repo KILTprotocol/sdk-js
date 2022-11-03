@@ -29,6 +29,7 @@ import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain } from '@kiltprotocol/did'
 import { validateUri } from '@kiltprotocol/asset-did'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 import { computeId } from './PublicCredential.js'
 
@@ -40,7 +41,10 @@ export interface EncodedPublicCredential {
 }
 
 /**
- * @param publicCredential
+ * Format a [[INewPublicCredential]] to be used as a parameter for the blockchain API function.
+
+ * @param publicCredential The public credential to format.
+ * @returns The blockchain-formatted public credential.
  */
 export function toChain(
   publicCredential: INewPublicCredential
@@ -58,21 +62,25 @@ export function toChain(
   }
 }
 
-// Flatten any nested calls (via batches) into a list of calls
+// Flatten any nested batch calls into a single list of calls.
 function flattenCalls(api: ApiPromise, call: Call): Call[] {
   if (
     api.tx.utility.batch.is(call) ||
     api.tx.utility.batchAll.is(call) ||
     api.tx.utility.forceBatch.is(call)
   ) {
+    // Inductive case
     return call.args[0].reduce(
       (acc: Call[], c: Call) => acc.concat(flattenCalls(api, c)),
       []
     )
   }
+  // Base case
   return [call]
 }
 
+// Transform a blockchain-formatted public credential into the original [[INewPublicCredential]].
+// It throw if what was written on the chain was garbage.
 function credentialInputFromChain(
   credential: PublicCredentialsCredentialsCredential
 ): INewPublicCredential {
@@ -85,6 +93,7 @@ function credentialInputFromChain(
   }
 }
 
+// Retrieve a given block and looks into it to find a public credential creation tx that matches the provided credential ID.
 async function retrievePublicCredentialCreationExtrinsicsFromBlock(
   api: ApiPromise,
   credentialId: HexString,
@@ -93,9 +102,9 @@ async function retrievePublicCredentialCreationExtrinsicsFromBlock(
   const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
   return (
     extrinsics
-      // Consider only extrinsics that have not failed
+      // Filter out failed extrinsics
       .filter(({ dispatchError }) => dispatchError === undefined)
-      // Consider only the extrinsics that contains at least the credential creation event with the right credentialId
+      // Filter out extrinsics that don't contain a `CredentialStored` event with the right credential ID
       .filter(({ events }) =>
         events.some(
           (event) =>
@@ -103,14 +112,18 @@ async function retrievePublicCredentialCreationExtrinsicsFromBlock(
             event.data[1].toString() === credentialId
         )
       )
-      // If there is more than one (e.g., same credential issued multiple times in the same block), take the last one, as that is the one that should be considered
+      // If there is more than one (e.g., same credential issued multiple times in the same block) it should not matter since the ID is generated over the content, hence same ID -> same content.
+      // Nevertheless, take only the last one, if present, as that is for sure what ended up being in the blockchain state.
       .pop()?.extrinsic ?? null
   )
 }
 
 /**
- * @param credentialId
- * @param publicCredentialEntry
+ * Decodes the public credential details returned by `api.call.publicCredential.getCredential()`.
+
+ * @param credentialId Credential ID to use for the query. It is required to complement the information stored on the blockchain in a [[PublicCredentialsCredentialsCredentialEntry]].
+ * @param publicCredentialEntry The raw public credential details from blockchain.
+ * @returns The [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function credentialFromChain(
   credentialId: HexString,
@@ -127,13 +140,15 @@ export async function credentialFromChain(
   )
 
   if (extrinsic === null) {
-    throw new Error(
+    throw new SDKErrors.PublicCredentialError(
       `The block number as specified in the provided credential entry (${blockNumber}) does not have any extrinsic that includes a credential creation.`
     )
   }
 
   if (!api.tx.did.submitDidCall.is(extrinsic)) {
-    throw new Error('Extrinsic should be a did.submitDidCall extrinsic')
+    throw new SDKErrors.PublicCredentialError(
+      'Extrinsic should be a did.submitDidCall extrinsic'
+    )
   }
 
   const [extrinsicCalls, extrinsicDidOrigin] = [
@@ -143,6 +158,8 @@ export async function credentialFromChain(
 
   let credentialInput: IPublicCredential | undefined
 
+  // Iterate over the calls in the extrinsic to find the right one, and re-create the issued public credential.
+  // If more than a call are present, it always consider the last one as the valid one.
   extrinsicCalls.forEach((call) => {
     if (api.tx.publicCredentials.add.is(call)) {
       const credentialCallArgument = call.args[0]
@@ -164,8 +181,8 @@ export async function credentialFromChain(
       }
     }
   })
-  if (credentialInput === undefined) {
-    throw new Error(
+  if (!credentialInput) {
+    throw new SDKErrors.PublicCredentialError(
       'Block should always contain the full credential, eventually.'
     )
   }
@@ -173,28 +190,33 @@ export async function credentialFromChain(
 }
 
 /**
- * @param credentials
+ * Decodes the public credential details returned by `api.call.publicCredential.getCredentials()`.
+
+ * @param publicCredentialEntries The raw public credential details from blockchain.
+ * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history. If the result is an error, it maps it to the right error type.
  */
 export async function credentialsFromChain(
-  credentials: Result<
+  publicCredentialEntries: Result<
     Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>,
     PublicCredentialError
   >
 ): Promise<IPublicCredential[]> {
-  if (credentials.isErr) {
-    throw new Error(credentials.asErr.toString())
+  if (publicCredentialEntries.isErr) {
+    throw new Error(publicCredentialEntries.asErr.toString())
   }
 
   const api = ConfigService.get('api')
   const formattedCredentials: Array<
     [HexString, Option<PublicCredentialsCredentialsCredentialEntry>]
-  > = credentials.asOk.map(([encodedId, encodedCredentialEntry]) => [
-    encodedId.toHex(),
-    api.createType(
-      'Option<PublicCredentialsCredentialsCredentialEntry>',
-      encodedCredentialEntry
-    ),
-  ])
+  > = publicCredentialEntries.asOk.map(
+    ([encodedId, encodedCredentialEntry]) => [
+      encodedId.toHex(),
+      api.createType(
+        'Option<PublicCredentialsCredentialsCredentialEntry>',
+        encodedCredentialEntry
+      ),
+    ]
+  )
 
   return Promise.all(
     formattedCredentials.map(([id, entry]) => credentialFromChain(id, entry))
