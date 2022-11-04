@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/
 import type { BTreeMap, Bytes, Null, Option, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H256, Weight } from '@polkadot/types/interfaces/runtime';
-import type { AttestationAttestationsAttestationDetails, CumulusPalletDmpQueueConfigData, CumulusPalletDmpQueuePageIndexData, CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot, CumulusPalletXcmpQueueInboundChannelDetails, CumulusPalletXcmpQueueOutboundChannelDetails, CumulusPalletXcmpQueueQueueConfigData, DelegationDelegationHierarchyDelegationHierarchyDetails, DelegationDelegationHierarchyDelegationNode, DidDidDetails, DidServiceEndpointsDidEndpoint, FrameSupportWeightsPerDispatchClassWeight, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, KiltAssetDidsV1AssetDid, PalletAuthorshipUncleEntryItem, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletDidLookupConnectionRecord, PalletDidLookupLinkableAccountLinkableAccountId, PalletPreimageRequestStatus, PalletProxyAnnouncement, PalletProxyProxyDefinition, PalletSchedulerScheduledV3, PalletTipsOpenTip, PalletTransactionPaymentReleases, PalletTreasuryProposal, PalletVestingReleases, PalletVestingVestingInfo, PalletWeb3NamesWeb3NameWeb3NameOwnership, ParachainStakingCandidate, ParachainStakingDelegationCounter, ParachainStakingDelegator, ParachainStakingInflationInflationInfo, ParachainStakingRoundInfo, ParachainStakingStake, ParachainStakingTotalStake, PolkadotCorePrimitivesOutboundHrmpMessage, PolkadotPrimitivesV2AbridgedHostConfiguration, PolkadotPrimitivesV2PersistedValidationData, PolkadotPrimitivesV2UpgradeRestriction, PublicCredentialsCredentialsCredentialEntry, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpConsensusAuraSr25519AppSr25519Public, SpCoreCryptoKeyTypeId, SpRuntimeDigest, SpTrieStorageProof, SpiritnetRuntimeSessionKeys } from '@polkadot/types/lookup';
+import type { AttestationAttestationsAttestationDetails, CumulusPalletDmpQueueConfigData, CumulusPalletDmpQueuePageIndexData, CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot, CumulusPalletXcmpQueueInboundChannelDetails, CumulusPalletXcmpQueueOutboundChannelDetails, CumulusPalletXcmpQueueQueueConfigData, DelegationDelegationHierarchyDelegationHierarchyDetails, DelegationDelegationHierarchyDelegationNode, DidDidDetails, DidServiceEndpointsDidEndpoint, FrameSupportWeightsPerDispatchClassWeight, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, KiltAssetDidsV1AssetDid, PalletAuthorshipUncleEntryItem, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletDidLookupConnectionRecord, PalletDidLookupLinkableAccountLinkableAccountId, PalletPreimageRequestStatus, PalletProxyAnnouncement, PalletProxyProxyDefinition, PalletSchedulerScheduledV3, PalletTipsOpenTip, PalletTransactionPaymentReleases, PalletTreasuryProposal, PalletVestingReleases, PalletVestingVestingInfo, PalletWeb3NamesWeb3NameWeb3NameOwnership, ParachainStakingCandidate, ParachainStakingDelegationCounter, ParachainStakingInflationInflationInfo, ParachainStakingRoundInfo, ParachainStakingStake, ParachainStakingTotalStake, PolkadotCorePrimitivesOutboundHrmpMessage, PolkadotPrimitivesV2AbridgedHostConfiguration, PolkadotPrimitivesV2PersistedValidationData, PolkadotPrimitivesV2UpgradeRestriction, PublicCredentialsCredentialsCredentialEntry, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpConsensusAuraSr25519AppSr25519Public, SpCoreCryptoKeyTypeId, SpRuntimeDigest, SpTrieStorageProof, SpiritnetRuntimeSessionKeys } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -302,6 +302,23 @@ declare module '@polkadot/api-base/types/storage' {
     };
     parachainStaking: {
       /**
+       * The number of authored blocks for collators. It is updated via the
+       * `note_author` hook when authoring a block .
+       **/
+      blocksAuthored: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<u64>, [AccountId32]>;
+      /**
+       * The number of blocks for which rewards have been claimed by an address.
+       * 
+       * For collators, this can be at most BlocksAuthored. It is updated when
+       * incrementing collator rewards, either when calling
+       * `inc_collator_rewards` or updating the `InflationInfo`.
+       * 
+       * For delegators, this can be at most BlocksAuthored of the collator.It is
+       * updated when incrementing delegator rewards, either when calling
+       * `inc_delegator_rewards` or updating the `InflationInfo`.
+       **/
+      blocksRewarded: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<u64>, [AccountId32]>;
+      /**
        * The staking information for a candidate.
        * 
        * It maps from an account to its information.
@@ -317,7 +334,7 @@ declare module '@polkadot/api-base/types/storage' {
        * 
        * It maps from an account to its delegation details.
        **/
-      delegatorState: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<ParachainStakingDelegator>>, [AccountId32]>;
+      delegatorState: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<ParachainStakingStake>>, [AccountId32]>;
       forceNewRound: AugmentedQuery<ApiType, () => Observable<bool>, []>;
       /**
        * Inflation configuration.
@@ -347,6 +364,12 @@ declare module '@polkadot/api-base/types/storage' {
        * The maximum number of collator candidates selected at each round.
        **/
       maxSelectedCandidates: AugmentedQuery<ApiType, () => Observable<u32>, []>;
+      /**
+       * The accumulated rewards for collator candidates and delegators.
+       * 
+       * It maps from accounts to their total rewards since the last payout.
+       **/
+      rewards: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<u128>, [AccountId32]>;
       /**
        * Current round number and next round scheduled transition.
        **/

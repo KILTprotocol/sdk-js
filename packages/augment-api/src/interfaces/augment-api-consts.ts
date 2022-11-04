@@ -232,10 +232,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       exitQueueDelay: u32 & AugmentedConst<ApiType>;
       /**
-       * Maximum number of collators a single delegator can delegate.
-       **/
-      maxCollatorsPerDelegator: u32 & AugmentedConst<ApiType>;
-      /**
        * Maximum number of delegations which can be made within the same
        * round.
        * 
@@ -283,10 +279,6 @@ declare module '@polkadot/api-base/types/consts' {
        * for a round.
        **/
       minCollatorStake: u128 & AugmentedConst<ApiType>;
-      /**
-       * Minimum stake required for any account to be able to delegate.
-       **/
-      minDelegation: u128 & AugmentedConst<ApiType>;
       /**
        * Minimum stake required for any account to become a delegator.
        **/
