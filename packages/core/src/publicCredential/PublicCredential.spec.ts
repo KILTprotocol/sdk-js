@@ -18,6 +18,8 @@ import type {
 } from '@kiltprotocol/types'
 
 import { BN } from '@polkadot/util'
+import { ApiMocks } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
 import { devAlice } from '../__integrationtests__/utils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
@@ -25,6 +27,9 @@ import * as PublicCredential from '../publicCredential'
 const testCType = CType.fromProperties('raw ctype', {
   name: { type: 'string' },
 })
+
+const mockApi = ApiMocks.createAugmentedApi()
+ConfigService.set({ api: mockApi })
 
 // Build a public credential with fake attestation (i.e., attester, block number, revocation status) information.
 function buildCredential(
@@ -37,7 +42,7 @@ function buildCredential(
     subject: assetDid,
   }
   const credential = PublicCredential.fromClaim(claim)
-  const attester = `did:kilt:${devAlice}` as DidUri
+  const attester: DidUri = `did:kilt:${devAlice.address}`
   return {
     ...credential,
     attester,
