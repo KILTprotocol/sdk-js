@@ -28,5 +28,6 @@ export interface IQuoteAttesterSigned extends IQuote {
 
 export interface IQuoteAgreement extends IQuoteAttesterSigned {
   rootHash: ICredential['rootHash']
+  claimerDid: DidUri
   claimerSignature: DidSignature
 }
