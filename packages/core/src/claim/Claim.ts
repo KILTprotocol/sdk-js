@@ -196,7 +196,7 @@ export function verifyDisclosedAttributes(
 }
 
 /**
- * Checks whether the input meets all the required criteria of an [[IClaim]] object.
+ * Checks whether the input meets all the required criteria of an [[IClaim]] or [[IAssetClaim]] object.
  * Throws on invalid input.
  *
  * @param input The potentially only partial IClaim.
