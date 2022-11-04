@@ -49,7 +49,7 @@ export {
 }
 
 export { calls as didCalls } from './runtime/did.js'
-export { calls as parachainStakingCalls } from './runtime/staking.js'
+export { calls as stakingCalls } from './runtime/staking.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
