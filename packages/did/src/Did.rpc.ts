@@ -193,7 +193,7 @@ export interface DidInfo {
 /**
  * Decodes accounts, DID, and web3name linked to the provided account.
  *
- * @param encoded The data returned by `api.call.didApi.queryDidByAccountId()`, `api.call.didApi.queryDid()`, and `api.call.didApi.queryByW3n()`.
+ * @param encoded The data returned by `api.call.did.queryByAccount()`, `api.call.did.query()`, and `api.call.didApi.queryByW3n()`.
  * @param networkPrefix The optional network prefix to use to encode the returned addresses. Defaults to KILT prefix (38). Use `42` for the chain-agnostic wildcard Substrate prefix.
  * @returns The accounts, DID, and web3name.
  */

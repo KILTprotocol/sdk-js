@@ -58,7 +58,7 @@ beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
   ConfigService.set({ api: mockedApi })
 
-  // Mock `api.call.didApi.queryDid(didUri)`
+  // Mock `api.call.did.query(didUri)`
   // By default it returns a simple LinkedDidInfo with no web3name and no accounts linked.
   jest.spyOn(mockedApi.call.did, 'query').mockImplementation((identifier) => {
     return augmentedApi.createType('Option<RawDidLinkedInfo>', {
