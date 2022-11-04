@@ -117,17 +117,6 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       offchainWorker: AugmentedCall<ApiType, (header: Header | { parentHash?: any; number?: any; stateRoot?: any; extrinsicsRoot?: any; digest?: any } | string | Uint8Array) => Observable<Null>>;
     };
-    /** 0xfb74f0e21eea131a/1 */
-    parachainStakingApi: {
-      /**
-       * Calculate the current staking and reward rates for collators and delegators
-       **/
-      getStakingRates: AugmentedCall<ApiType, () => Observable<StakingRates>>;
-      /**
-       * Calculate the claimable staking rewards for a given account address
-       **/
-      getUnclaimedStakingRewards: AugmentedCall<ApiType, (account: AccountId32 | string | Uint8Array) => Observable<Balance>>;
-    };
     /** 0xab3c0572291feb8b/1 */
     sessionKeys: {
       /**
@@ -138,6 +127,17 @@ declare module '@polkadot/api-base/types/calls' {
        * Generate a set of session keys with optionally using the given seed.
        **/
       generateSessionKeys: AugmentedCall<ApiType, (seed: Option<Bytes> | null | Uint8Array | Bytes | string) => Observable<Bytes>>;
+    };
+    /** 0x45bfba51a310b223/1 */
+    staking: {
+      /**
+       * Calculate the current staking and reward rates for collators and delegators
+       **/
+      getStakingRates: AugmentedCall<ApiType, () => Observable<StakingRates>>;
+      /**
+       * Calculate the claimable staking rewards for a given account address
+       **/
+      getUnclaimedStakingRewards: AugmentedCall<ApiType, (account: AccountId32 | string | Uint8Array) => Observable<Balance>>;
     };
     /** 0xd2bc9897eed08f15/3 */
     taggedTransactionQueue: {

@@ -43,6 +43,16 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       add: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array, ctypeHash: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
       /**
+       * Changes the deposit owner.
+       * 
+       * The balance that is reserved by the current deposit owner will be
+       * freed and balance of the new deposit owner will get reserved.
+       * 
+       * The subject of the call must be the attester who issues the
+       * attestation. The sender of the call will be the new deposit owner.
+       **/
+      changeDepositOwner: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
        * Reclaim a storage deposit by removing an attestation
        * 
        * Emits `DepositReclaimed`.
@@ -95,15 +105,11 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       revoke: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
       /**
-       * Transfer the storage deposit from one account to another.
+       * Updates the deposit amount to the current deposit rate.
        * 
-       * If the currently required deposit is different, the new deposit
-       * value will be reserved.
-       * 
-       * The subject of the call must be the attester who issues the
-       * attestation. The sender of the call will be the new deposit owner.
+       * The sender must be the deposit owner.
        **/
-      transferDeposit: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      updateDeposit: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     authorship: {
       /**
@@ -401,6 +407,16 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       addDelegation: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array, parentId: H256 | string | Uint8Array, delegate: AccountId32 | string | Uint8Array, permissions: DelegationDelegationHierarchyPermissions | { bits?: any } | string | Uint8Array, delegateSignature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, H256, AccountId32, DelegationDelegationHierarchyPermissions, DidDidDetailsDidSignature]>;
       /**
+       * Changes the deposit owner.
+       * 
+       * The balance that is reserved by the current deposit owner will be
+       * freed and balance of the new deposit owner will get reserved.
+       * 
+       * The subject of the call must be the owner of the delegation node.
+       * The sender of the call will be the new deposit owner.
+       **/
+      changeDepositOwner: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
        * Create a new delegation root associated with a given CType hash.
        * 
        * The new root will allow a new trust hierarchy to be created by
@@ -519,15 +535,11 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       revokeDelegation: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array, maxParentChecks: u32 | AnyNumber | Uint8Array, maxRevocations: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u32, u32]>;
       /**
-       * Transfer the storage deposit from one account to another.
+       * Updates the deposit amount to the current deposit rate.
        * 
-       * If the currently required deposit is different, the new deposit
-       * value will be reserved.
-       * 
-       * The subject of the call must be the owner of the delegation node.
-       * The sender of the call will be the new deposit owner.
+       * The sender must be the deposit owner.
        **/
-      transferDeposit: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      updateDeposit: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     democracy: {
       /**
@@ -896,6 +908,16 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       addServiceEndpoint: AugmentedSubmittable<(serviceEndpoint: DidServiceEndpointsDidEndpoint | { id?: any; serviceTypes?: any; urls?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidServiceEndpointsDidEndpoint]>;
       /**
+       * Changes the deposit owner.
+       * 
+       * The balance that is reserved by the current deposit owner will be
+       * freed and balance of the new deposit owner will get reserved.
+       * 
+       * The subject of the call must be the did owner.
+       * The sender of the call will be the new deposit owner.
+       **/
+      changeDepositOwner: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
        * Store a new DID on chain, after verifying that the creation
        * operation has been signed by the KILT account associated with the
        * identifier of the DID being created and that a DID with the same
@@ -1143,15 +1165,11 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       submitDidCall: AugmentedSubmittable<(didCall: DidDidDetailsDidAuthorizedCallOperation | { did?: any; txCounter?: any; call?: any; blockNumber?: any; submitter?: any } | string | Uint8Array, signature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidSignature]>;
       /**
-       * Transfer the storage deposit from one account to another.
+       * Updates the deposit amount to the current deposit rate.
        * 
-       * If the currently required deposit is different, the new deposit
-       * value will be reserved.
-       * 
-       * The subject of the call must be the did owner.
-       * The sender of the call will be the new deposit owner.
+       * The sender must be the deposit owner.
        **/
-      transferDeposit: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      updateDeposit: AugmentedSubmittable<(did: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
     };
     didLookup: {
       /**
@@ -1188,6 +1206,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       associateSender: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Changes the deposit owner.
+       * 
+       * The balance that is reserved by the current deposit owner will be
+       * freed and balance of the new deposit owner will get reserved.
+       * 
+       * The subject of the call must be linked to the account.
+       * The sender of the call will be the new deposit owner.
+       **/
+      changeDepositOwner: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
       /**
        * Remove the association of the provided account. This call can only
        * be called from the deposit owner. The reserved deposit will be
@@ -1230,15 +1258,11 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       removeSenderAssociation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
-       * Transfer the storage deposit from one account to another.
+       * Updates the deposit amount to the current deposit rate.
        * 
-       * If the currently required deposit is different, the new deposit
-       * value will be reserved.
-       * 
-       * The subject of the call must be linked to the account.
-       * The sender of the call will be the new deposit owner.
+       * The sender must be the deposit owner.
        **/
-      transferDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
+      updateDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
     };
     dmpQueue: {
       /**
@@ -2074,6 +2098,16 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       add: AugmentedSubmittable<(credential: PublicCredentialsCredentialsCredential | { ctypeHash?: any; subject?: any; claims?: any; authorization?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PublicCredentialsCredentialsCredential]>;
       /**
+       * Changes the deposit owner.
+       * 
+       * The balance that is reserved by the current deposit owner will be
+       * freed and balance of the new deposit owner will get reserved.
+       * 
+       * The subject of the call must be the owner of the credential.
+       * The sender of the call will be the new deposit owner.
+       **/
+      changeDepositOwner: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
        * Removes the information pertaining a public credential from the
        * chain and returns the deposit to its payer.
        * 
@@ -2137,6 +2171,12 @@ declare module '@polkadot/api-base/types/submittable' {
        * Emits `CredentialUnrevoked`.
        **/
       unrevoke: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
+      /**
+       * Updates the deposit amount to the current deposit rate.
+       * 
+       * The sender must be the deposit owner.
+       **/
+      updateDeposit: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     scheduler: {
       /**
@@ -2953,6 +2993,16 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       ban: AugmentedSubmittable<(name: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
       /**
+       * Changes the deposit owner.
+       * 
+       * The balance that is reserved by the current deposit owner will be
+       * freed and balance of the new deposit owner will get reserved.
+       * 
+       * The subject of the call must be the owner of the web3name.
+       * The sender of the call will be the new deposit owner.
+       **/
+      changeDepositOwner: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
        * Assign the specified name to the owner as specified in the
        * origin.
        * 
@@ -3001,16 +3051,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       releaseByOwner: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
-       * Transfer the storage deposit from one account to another.
-       * 
-       * If the currently required deposit is different, the new deposit
-       * value will be reserved.
-       * 
-       * The subject of the call must be the owner of the web3name.
-       * The sender of the call will be the new deposit owner.
-       **/
-      transferDeposit: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
        * Unban a name.
        * 
        * Make a name claimable again.
@@ -3027,6 +3067,12 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       unban: AugmentedSubmittable<(name: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      /**
+       * Updates the deposit amount to the current deposit rate.
+       * 
+       * The sender must be the deposit owner.
+       **/
+      updateDeposit: AugmentedSubmittable<(nameInput: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
     };
     xcmpQueue: {
       /**
