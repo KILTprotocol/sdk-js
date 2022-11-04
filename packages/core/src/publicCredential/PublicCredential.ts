@@ -92,6 +92,62 @@ export function verifyAgainstCType(
   verifyClaimAgainstSchema(credential.claims, ctype)
 }
 
+type VerifyOptions = {
+  ctype?: ICType
+}
+
+/**
+ * Verifies if a received [[IPublicCredential]] is valid, meaning if its content has not been tampered with and optionally if its structure matches a given [[ICType]].
+ *
+ * We recommend consumer of credentials to fetch them themselves using the functions exposed in this SDK.
+ * Nevertheless, for some use cases having a function that verifies the content of a credential directly could be handy.
+ * This function does that: it takes a [[IPublicCredential]], and re-computes its cryptographically-generated ID to verify the content authenticity.
+ *
+ * @param credential The full [[IPublicCredential]] object.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ */
+export async function verifyCredential(
+  credential: IPublicCredential,
+  { ctype }: VerifyOptions = {}
+): Promise<void> {
+  const { id, attester, blockNumber, revoked, ...credentialInput } = credential
+
+  const recomputedId = computeId(credentialInput, attester)
+  if (recomputedId !== id) {
+    throw new SDKErrors.PublicCredentialError(
+      `Id in credential and re-computed ID differ. ${id} != ${recomputedId}`
+    )
+  }
+  const api = ConfigService.get('api')
+
+  // Try to fetch the credential details from the blockchain state.
+  const encodedCredentialEntry = await api.query.publicCredentials.credentials(
+    credentialInput.subject,
+    recomputedId
+  )
+  // If the credential entry can be fetched, it means that the key content has not been tampered with.
+  if (encodedCredentialEntry.isNone) {
+    throw new SDKErrors.PublicCredentialError(
+      'Provided credential does not exist.'
+    )
+  }
+  // Verify remaining properties
+  if (ctype) {
+    verifyAgainstCType(credential, ctype)
+  }
+  if (blockNumber !== credential.blockNumber) {
+    throw new SDKErrors.PublicCredentialError(
+      `Block number in the credential (${credential.blockNumber.toString()}) different than what is stored on the blockchain (${blockNumber.toString()}).`
+    )
+  }
+  if (revoked !== credential.revoked) {
+    throw new SDKErrors.PublicCredentialError(
+      `Revocation status in the credential (${credential.revoked}) different than what is stored on the blockchain (${credential.revoked}).`
+    )
+  }
+}
+
 export type Options = {
   delegationId?: IDelegationNode['id'] | null
 }
