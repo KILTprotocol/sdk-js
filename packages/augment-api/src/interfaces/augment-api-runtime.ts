@@ -118,6 +118,17 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       offchainWorker: AugmentedCall<ApiType, (header: Header | { parentHash?: any; number?: any; stateRoot?: any; extrinsicsRoot?: any; digest?: any } | string | Uint8Array) => Observable<Null>>;
     };
+    /** 0xfb74f0e21eea131a/1 */
+    parachainStakingApi: {
+      /**
+       * Calculate the current staking and reward rates for collators and delegators
+       **/
+      getStakingRates: AugmentedCall<ApiType, () => Observable<StakingRates>>;
+      /**
+       * Calculate the claimable staking rewards for a given account address
+       **/
+      getUnclaimedStakingRewards: AugmentedCall<ApiType, (account: AccountId32 | string | Uint8Array) => Observable<Balance>>;
+    };
     /** 0xa47b7d544994c99b/1 */
     publicCredentials: {
       /**
@@ -130,17 +141,6 @@ declare module '@polkadot/api-base/types/calls' {
                 It returns an error if the provided specified subject ID is not valid.
        **/
       getCredentials: AugmentedCall<ApiType, (subject: Text | string, filter: Option<PublicCredentialFilter> | null | Uint8Array | PublicCredentialFilter | { ctypeHash: any } | { attester: any } | string) => Observable<Result<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>, PublicCredentialError>>>;
-    }
-    /** 0xfb74f0e21eea131a/1 */
-    parachainStakingApi: {
-      /**
-       * Calculate the current staking and reward rates for collators and delegators
-       **/
-      getStakingRates: AugmentedCall<ApiType, () => Observable<StakingRates>>;
-      /**
-       * Calculate the claimable staking rewards for a given account address
-       **/
-      getUnclaimedStakingRewards: AugmentedCall<ApiType, (account: AccountId32 | string | Uint8Array) => Observable<Balance>>;
     };
     /** 0xab3c0572291feb8b/1 */
     sessionKeys: {
