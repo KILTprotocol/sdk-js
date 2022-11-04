@@ -1126,6 +1126,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       OwnerNotFound: AugmentedError<ApiType>;
       /**
+       * The origin was not authorized to perform that action
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+      /**
        * The specified name has already been previously banned.
        **/
       Web3NameAlreadyBanned: AugmentedError<ApiType>;
