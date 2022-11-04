@@ -2695,11 +2695,15 @@ declare module '@polkadot/types/lookup' {
     readonly asReclaimDeposit: {
       readonly claimHash: H256;
     } & Struct;
-    readonly isTransferDeposit: boolean;
-    readonly asTransferDeposit: {
+    readonly isChangeDepositOwner: boolean;
+    readonly asChangeDepositOwner: {
       readonly claimHash: H256;
     } & Struct;
-    readonly type: 'Add' | 'Revoke' | 'Remove' | 'ReclaimDeposit' | 'TransferDeposit';
+    readonly isUpdateDeposit: boolean;
+    readonly asUpdateDeposit: {
+      readonly claimHash: H256;
+    } & Struct;
+    readonly type: 'Add' | 'Revoke' | 'Remove' | 'ReclaimDeposit' | 'ChangeDepositOwner' | 'UpdateDeposit';
   }
 
   /** @name RuntimeCommonAuthorizationPalletAuthorize (279) */
@@ -2749,11 +2753,15 @@ declare module '@polkadot/types/lookup' {
       readonly delegationId: H256;
       readonly maxRemovals: u32;
     } & Struct;
-    readonly isTransferDeposit: boolean;
-    readonly asTransferDeposit: {
+    readonly isChangeDepositOwner: boolean;
+    readonly asChangeDepositOwner: {
       readonly delegationId: H256;
     } & Struct;
-    readonly type: 'CreateHierarchy' | 'AddDelegation' | 'RevokeDelegation' | 'RemoveDelegation' | 'ReclaimDeposit' | 'TransferDeposit';
+    readonly isUpdateDeposit: boolean;
+    readonly asUpdateDeposit: {
+      readonly delegationId: H256;
+    } & Struct;
+    readonly type: 'CreateHierarchy' | 'AddDelegation' | 'RevokeDelegation' | 'RemoveDelegation' | 'ReclaimDeposit' | 'ChangeDepositOwner' | 'UpdateDeposit';
   }
 
   /** @name DidDidDetailsDidSignature (283) */
@@ -2827,8 +2835,12 @@ declare module '@polkadot/types/lookup' {
       readonly didCall: DidDidDetailsDidAuthorizedCallOperation;
       readonly signature: DidDidDetailsDidSignature;
     } & Struct;
-    readonly isTransferDeposit: boolean;
-    readonly type: 'Create' | 'SetAuthenticationKey' | 'SetDelegationKey' | 'RemoveDelegationKey' | 'SetAttestationKey' | 'RemoveAttestationKey' | 'AddKeyAgreementKey' | 'RemoveKeyAgreementKey' | 'AddServiceEndpoint' | 'RemoveServiceEndpoint' | 'Delete' | 'ReclaimDeposit' | 'SubmitDidCall' | 'TransferDeposit';
+    readonly isChangeDepositOwner: boolean;
+    readonly isUpdateDeposit: boolean;
+    readonly asUpdateDeposit: {
+      readonly did: AccountId32;
+    } & Struct;
+    readonly type: 'Create' | 'SetAuthenticationKey' | 'SetDelegationKey' | 'RemoveDelegationKey' | 'SetAttestationKey' | 'RemoveAttestationKey' | 'AddKeyAgreementKey' | 'RemoveKeyAgreementKey' | 'AddServiceEndpoint' | 'RemoveServiceEndpoint' | 'Delete' | 'ReclaimDeposit' | 'SubmitDidCall' | 'ChangeDepositOwner' | 'UpdateDeposit';
   }
 
   /** @name DidDidDetailsDidCreationDetails (290) */
@@ -2898,11 +2910,15 @@ declare module '@polkadot/types/lookup' {
     readonly asReclaimDeposit: {
       readonly account: PalletDidLookupLinkableAccountLinkableAccountId;
     } & Struct;
-    readonly isTransferDeposit: boolean;
-    readonly asTransferDeposit: {
+    readonly isChangeDepositOwner: boolean;
+    readonly asChangeDepositOwner: {
       readonly account: PalletDidLookupLinkableAccountLinkableAccountId;
     } & Struct;
-    readonly type: 'AssociateAccount' | 'AssociateSender' | 'RemoveSenderAssociation' | 'RemoveAccountAssociation' | 'ReclaimDeposit' | 'TransferDeposit';
+    readonly isUpdateDeposit: boolean;
+    readonly asUpdateDeposit: {
+      readonly account: PalletDidLookupLinkableAccountLinkableAccountId;
+    } & Struct;
+    readonly type: 'AssociateAccount' | 'AssociateSender' | 'RemoveSenderAssociation' | 'RemoveAccountAssociation' | 'ReclaimDeposit' | 'ChangeDepositOwner' | 'UpdateDeposit';
   }
 
   /** @name PalletDidLookupAssociateAccountRequest (311) */
@@ -2947,8 +2963,12 @@ declare module '@polkadot/types/lookup' {
     readonly asUnban: {
       readonly name: Bytes;
     } & Struct;
-    readonly isTransferDeposit: boolean;
-    readonly type: 'Claim' | 'ReleaseByOwner' | 'ReclaimDeposit' | 'Ban' | 'Unban' | 'TransferDeposit';
+    readonly isChangeDepositOwner: boolean;
+    readonly isUpdateDeposit: boolean;
+    readonly asUpdateDeposit: {
+      readonly nameInput: Bytes;
+    } & Struct;
+    readonly type: 'Claim' | 'ReleaseByOwner' | 'ReclaimDeposit' | 'Ban' | 'Unban' | 'ChangeDepositOwner' | 'UpdateDeposit';
   }
 
   /** @name PublicCredentialsCall (315) */
@@ -2976,7 +2996,15 @@ declare module '@polkadot/types/lookup' {
     readonly asReclaimDeposit: {
       readonly credentialId: H256;
     } & Struct;
-    readonly type: 'Add' | 'Revoke' | 'Unrevoke' | 'Remove' | 'ReclaimDeposit';
+    readonly isChangeDepositOwner: boolean;
+    readonly asChangeDepositOwner: {
+      readonly credentialId: H256;
+    } & Struct;
+    readonly isUpdateDeposit: boolean;
+    readonly asUpdateDeposit: {
+      readonly credentialId: H256;
+    } & Struct;
+    readonly type: 'Add' | 'Revoke' | 'Unrevoke' | 'Remove' | 'ReclaimDeposit' | 'ChangeDepositOwner' | 'UpdateDeposit';
   }
 
   /** @name PublicCredentialsCredentialsCredential (316) */
@@ -3745,7 +3773,8 @@ declare module '@polkadot/types/lookup' {
     readonly isWeb3NameTooShort: boolean;
     readonly isWeb3NameTooLong: boolean;
     readonly isInvalidWeb3NameCharacter: boolean;
-    readonly type: 'InsufficientFunds' | 'Web3NameAlreadyClaimed' | 'Web3NameNotFound' | 'OwnerAlreadyExists' | 'OwnerNotFound' | 'Web3NameBanned' | 'Web3NameNotBanned' | 'Web3NameAlreadyBanned' | 'NotAuthorized' | 'Web3NameTooShort' | 'Web3NameTooLong' | 'InvalidWeb3NameCharacter';
+    readonly isUnauthorized: boolean;
+    readonly type: 'InsufficientFunds' | 'Web3NameAlreadyClaimed' | 'Web3NameNotFound' | 'OwnerAlreadyExists' | 'OwnerNotFound' | 'Web3NameBanned' | 'Web3NameNotBanned' | 'Web3NameAlreadyBanned' | 'NotAuthorized' | 'Web3NameTooShort' | 'Web3NameTooLong' | 'InvalidWeb3NameCharacter' | 'Unauthorized';
   }
 
   /** @name PublicCredentialsCredentialsCredentialEntry (426) */

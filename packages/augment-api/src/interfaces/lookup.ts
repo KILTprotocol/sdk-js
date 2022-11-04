@@ -2507,7 +2507,10 @@ export default {
       reclaim_deposit: {
         claimHash: 'H256',
       },
-      transfer_deposit: {
+      change_deposit_owner: {
+        claimHash: 'H256',
+      },
+      update_deposit: {
         claimHash: 'H256'
       }
     }
@@ -2560,7 +2563,10 @@ export default {
         delegationId: 'H256',
         maxRemovals: 'u32',
       },
-      transfer_deposit: {
+      change_deposit_owner: {
+        delegationId: 'H256',
+      },
+      update_deposit: {
         delegationId: 'H256'
       }
     }
@@ -2630,7 +2636,10 @@ export default {
         didCall: 'DidDidDetailsDidAuthorizedCallOperation',
         signature: 'DidDidDetailsDidSignature',
       },
-      transfer_deposit: 'Null'
+      change_deposit_owner: 'Null',
+      update_deposit: {
+        did: 'AccountId32'
+      }
     }
   },
   /**
@@ -2705,7 +2714,10 @@ export default {
       reclaim_deposit: {
         account: 'PalletDidLookupLinkableAccountLinkableAccountId',
       },
-      transfer_deposit: {
+      change_deposit_owner: {
+        account: 'PalletDidLookupLinkableAccountLinkableAccountId',
+      },
+      update_deposit: {
         account: 'PalletDidLookupLinkableAccountLinkableAccountId'
       }
     }
@@ -2751,7 +2763,10 @@ export default {
       unban: {
         name: 'Bytes',
       },
-      transfer_deposit: 'Null'
+      change_deposit_owner: 'Null',
+      update_deposit: {
+        nameInput: 'Bytes'
+      }
     }
   },
   /**
@@ -2775,6 +2790,12 @@ export default {
         authorization: 'Option<RuntimeCommonAuthorizationPalletAuthorize>',
       },
       reclaim_deposit: {
+        credentialId: 'H256',
+      },
+      change_deposit_owner: {
+        credentialId: 'H256',
+      },
+      update_deposit: {
         credentialId: 'H256'
       }
     }
@@ -3435,7 +3456,7 @@ export default {
    * Lookup424: pallet_web3_names::pallet::Error<T>
    **/
   PalletWeb3NamesError: {
-    _enum: ['InsufficientFunds', 'Web3NameAlreadyClaimed', 'Web3NameNotFound', 'OwnerAlreadyExists', 'OwnerNotFound', 'Web3NameBanned', 'Web3NameNotBanned', 'Web3NameAlreadyBanned', 'NotAuthorized', 'Web3NameTooShort', 'Web3NameTooLong', 'InvalidWeb3NameCharacter']
+    _enum: ['InsufficientFunds', 'Web3NameAlreadyClaimed', 'Web3NameNotFound', 'OwnerAlreadyExists', 'OwnerNotFound', 'Web3NameBanned', 'Web3NameNotBanned', 'Web3NameAlreadyBanned', 'NotAuthorized', 'Web3NameTooShort', 'Web3NameTooLong', 'InvalidWeb3NameCharacter', 'Unauthorized']
   },
   /**
    * Lookup426: public_credentials::credentials::CredentialEntry<primitive_types::H256, sp_core::crypto::AccountId32, BlockNumber, sp_core::crypto::AccountId32, Balance, runtime_common::authorization::AuthorizationId<primitive_types::H256>>

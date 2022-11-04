@@ -28,7 +28,7 @@ import { types10800 } from './types_10800.js'
 // Custom runtime calls
 
 import { calls as didCalls } from './runtime/did.js'
-import { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+import { calls as stakingCalls } from './runtime/staking.js'
 
 export {
   types8,
@@ -49,7 +49,7 @@ export {
 }
 
 export { calls as didCalls } from './runtime/did.js'
-export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+export { calls as stakingCalls } from './runtime/staking.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -116,14 +116,28 @@ export const typesBundle: OverrideBundleType = {
     'KILT Spiritnet': {
       runtime: {
         ...didCalls,
-        ...parachainStakingCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Spiritnet Develop': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
       },
       types: defaultTypesBundle,
     },
     'KILT Peregrine': {
       runtime: {
         ...didCalls,
-        ...parachainStakingCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Peregrine Develop': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
       },
       types: defaultTypesBundle,
     },
@@ -136,7 +150,6 @@ export const typesBundle: OverrideBundleType = {
     Development: {
       runtime: {
         ...didCalls,
-        ...parachainStakingCalls,
       },
       types: defaultTypesBundle,
     },
