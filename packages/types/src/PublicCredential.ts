@@ -14,18 +14,57 @@ import type { IClaim, IClaimContents } from './Claim'
 import type { DidUri } from './DidDocument'
 import type { AssetDidUri } from './AssetDid'
 
-export interface INewPublicCredential {
+/*
+ * The minimal information required to issue a public credential to a given [[AssetDidUri]].
+ */
+export interface IPublicCredentialInput {
+  /*
+   * The CType has of the public credential.
+   */
   cTypeHash: CTypeHash
+  /*
+   * The optional ID of the delegation node used to issue the credential.
+   */
   delegationId: IDelegationNode['id'] | null
+  /*
+   * The subject of the credential.
+   */
   subject: AssetDidUri
+  /*
+   * The content of the credential. The structure must match what the CType specifies.
+   */
   claims: IClaimContents
 }
 
-export interface IPublicCredential extends INewPublicCredential {
+/*
+ * The full information of a public credential, which contains both initial input and additional information about its issuance.
+ */
+export interface IPublicCredential extends IPublicCredentialInput {
+  /*
+   * The unique ID of the credential. It is cryptographically derived from the credential content.
+   *
+   * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[DidUri]] and then Blake2b hashing the result.
+   */
   id: HexString
+  /*
+   * The KILT DID uri of the credential attester.
+   */
   attester: DidUri
+  /*
+   * The block number at which the credential was issued.
+   */
   blockNumber: BN
+  /*
+   * The revocation status of the credential.
+   *
+   * This is not to be trusted if shared by another party. It is only to trust if the [[IPublicCredential]] object is retrieved via one of the querying methods that this SDK exposes.
+   */
   revoked: boolean
 }
 
+/*
+ * A claim for a public credential.
+ *
+ * Like an [[IClaim]], but with a [[AssetDidUri]] `subject` instead of an [[IClaim]] `owner`.
+ */
 export type IAssetClaim = Omit<IClaim, 'owner'> & { subject: AssetDidUri }

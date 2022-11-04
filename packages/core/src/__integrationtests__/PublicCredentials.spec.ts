@@ -13,7 +13,7 @@ import type { ApiPromise } from '@polkadot/api'
 import type {
   AssetDidUri,
   DidDocument,
-  INewPublicCredential,
+  IPublicCredentialInput,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 
@@ -43,7 +43,7 @@ let attesterKey: KeyTool
 let api: ApiPromise
 // Generate a random asset ID
 const assetId: AssetDidUri = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
-let latestCredential: INewPublicCredential
+let latestCredential: IPublicCredentialInput
 
 beforeAll(async () => {
   api = await initializeApi()

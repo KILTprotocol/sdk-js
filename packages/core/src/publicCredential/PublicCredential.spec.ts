@@ -11,29 +11,40 @@
 
 import type {
   AssetDidUri,
+  DidUri,
   IAssetClaim,
   IClaimContents,
-  INewPublicCredential,
+  IPublicCredential,
 } from '@kiltprotocol/types'
+
+import { BN } from '@polkadot/util'
+import { devAlice } from '../__integrationtests__/utils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
-import { nftNameCType } from '../__integrationtests__/utils'
 
 const testCType = CType.fromProperties('raw ctype', {
   name: { type: 'string' },
 })
 
+// Build a public credential with fake attestation (i.e., attester, block number, revocation status) information.
 function buildCredential(
   assetDid: AssetDidUri,
   contents: IClaimContents
-): INewPublicCredential {
+): IPublicCredential {
   const claim: IAssetClaim = {
     cTypeHash: CType.idToChain(testCType.$id),
     contents,
     subject: assetDid,
   }
   const credential = PublicCredential.fromClaim(claim)
-  return credential
+  const attester = `did:kilt:${devAlice}` as DidUri
+  return {
+    ...credential,
+    attester,
+    id: PublicCredential.computeId(credential, attester),
+    blockNumber: new BN(0),
+    revoked: false,
+  }
 }
 
 describe('Public credential', () => {
@@ -50,79 +61,6 @@ describe('Public credential', () => {
     builtCredential.claims.name = 123
     expect(() =>
       PublicCredential.verifyAgainstCType(builtCredential, testCType)
-    ).toThrow()
-  })
-
-  it('should fail to verify if the credential is not valid', async () => {
-    const builtCredential = buildCredential(assetIdentifier, {
-      name: 'test',
-    })
-    expect(() =>
-      PublicCredential.verifyCredential(builtCredential, {
-        ctype: nftNameCType,
-      })
-    ).not.toThrow()
-    const noClaims = { ...builtCredential }
-    delete (noClaims as any).claims
-    expect(() =>
-      PublicCredential.verifyCredential(noClaims, {
-        ctype: nftNameCType,
-      })
-    ).toThrow()
-    const noCtypeHash = { ...builtCredential }
-    delete (noCtypeHash as any).cTypeHash
-    expect(() =>
-      PublicCredential.verifyCredential(noCtypeHash, {
-        ctype: nftNameCType,
-      })
-    ).toThrow()
-    const noSubject = {
-      ...builtCredential,
-    }
-    delete (noSubject as any).subject
-    expect(() =>
-      PublicCredential.verifyCredential(noSubject, {
-        ctype: nftNameCType,
-      })
-    ).toThrow()
-    const invalidSubject = {
-      ...builtCredential,
-      subject: 'test-subject',
-    }
-    expect(() =>
-      PublicCredential.verifyCredential(invalidSubject as any, {
-        ctype: nftNameCType,
-      })
-    ).toThrow()
-    const invalidCtypeHash = {
-      ...builtCredential,
-      cTypeHash: 49,
-    }
-    expect(() =>
-      PublicCredential.verifyCredential(invalidCtypeHash as any, {
-        ctype: nftNameCType,
-      })
-    ).toThrow()
-    const wrongDelegationIdType = {
-      ...builtCredential,
-      delegationId: 3,
-    }
-    expect(() =>
-      PublicCredential.verifyCredential(wrongDelegationIdType as any, {
-        ctype: nftNameCType,
-      })
-    ).toThrow()
-    const invalidClaimsFormat = {
-      ...builtCredential,
-      claims: {
-        // Numeric value not accepted. The `name` property must be a string.
-        name: 4,
-      },
-    }
-    expect(() =>
-      PublicCredential.verifyCredential(invalidClaimsFormat, {
-        ctype: nftNameCType,
-      })
     ).toThrow()
   })
 })

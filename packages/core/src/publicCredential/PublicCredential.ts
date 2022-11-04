@@ -13,7 +13,8 @@ import type {
   IAssetClaim,
   ICType,
   IDelegationNode,
-  INewPublicCredential,
+  IPublicCredential,
+  IPublicCredentialInput,
 } from '@kiltprotocol/types'
 
 import { blake2AsHex } from '@polkadot/util-crypto'
@@ -26,14 +27,16 @@ import { verifyDataStructure as verifyClaimDataStructure } from '../claim/Claim.
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
 /**
- * Calculates the ID of a new credential, to be used to retrieve the full content from the blockchain.
+ * Calculates the ID of a [[IPublicCredentialInput]], to be used to retrieve the full content from the blockchain.
+ *
+ * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[DidUri]] and then Blake2b hashing the result.
  *
  * @param credential The input credential object.
  * @param attester The DID of the credential attester.
  * @returns The credential ID.
  */
 export function computeId(
-  credential: INewPublicCredential,
+  credential: IPublicCredentialInput,
   attester: DidUri
 ): HexString {
   const api = ConfigService.get('api')
@@ -53,14 +56,8 @@ export function computeId(
   )
 }
 
-/**
- * Checks whether the input meets all the required criteria of an [[INewPublicCredential]] object.
- * Throws on invalid input.
- *
- * @param input - A potentially only partial [[INewPublicCredential]].
- *
- */
-export function verifyDataStructure(input: INewPublicCredential): void {
+// Used internally only when building the [[IPublicCredentialInput]].
+function verifyDataStructure(input: IPublicCredentialInput): void {
   // Taken from `Credential.verifyDataStructure()`
   if (!('claims' in input)) {
     throw new SDKErrors.ClaimMissingError()
@@ -81,17 +78,17 @@ export function verifyDataStructure(input: INewPublicCredential): void {
 }
 
 /**
- * Checks the [[INewPublicCredential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ * Checks the [[IPublicCredential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
  *
- * @param credential A [[INewPublicCredential]] for the attester.
+ * This function is meant to be used by consumers of this [[IPublicCredential]], once they have retrieved the full credential content.
+ *
+ * @param credential A [[IPublicCredential]] for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
  */
 export function verifyAgainstCType(
-  credential: INewPublicCredential,
+  credential: IPublicCredential,
   ctype: ICType
 ): void {
-  // Taken from `Credential.verifyAgainstCType()`
-  verifyDataStructure(credential)
   verifyClaimAgainstSchema(credential.claims, ctype)
 }
 
@@ -99,47 +96,24 @@ export type Options = {
   delegationId?: IDelegationNode['id'] | null
 }
 
-type VerifyOptions = {
-  ctype?: ICType
-}
-
 /**
- * Verifies data structure & data integrity of a public credential object.
- *
- * @param credential - The object to check.
- * @param options - Additional parameter for more verification steps.
- * @param options.ctype - CType which the included claim should be checked against.
- */
-export function verifyCredential(
-  credential: INewPublicCredential,
-  { ctype }: VerifyOptions = {}
-): void {
-  // Taken from `Credential.verifyCredential()`
-  verifyDataStructure(credential)
-  if (ctype) {
-    verifyAgainstCType(credential, ctype)
-  }
-}
-
-/**
- * Builds a new [[INewPublicCredential]] object, from a complete set of required parameters.
+ * Builds a new [[IPublicCredentialInput]] object, from a complete set of required parameters.
  *
  * @param claim An [[IClaim]] object to build the credential for.
  * @param option Container for different options that can be passed to this method.
  * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
- * @returns A new [[INewPublicCredential]] object.
+ * @returns A new [[IPublicCredentialInput]] object ready to be submitted to the blockchain for issuance.
  */
 export function fromClaim(
   claim: IAssetClaim,
   { delegationId = null }: Options = {}
-): INewPublicCredential {
-  // Taken from `Credential.fromClaim()`
-  const credential: INewPublicCredential = {
+): IPublicCredentialInput {
+  const credential: IPublicCredentialInput = {
     claims: claim.contents,
     cTypeHash: claim.cTypeHash,
     subject: claim.subject,
     delegationId,
   }
-  verifyCredential(credential)
+  verifyDataStructure(credential)
   return credential
 }

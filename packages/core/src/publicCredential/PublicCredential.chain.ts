@@ -10,7 +10,7 @@ import type {
   AssetDidUri,
   CTypeHash,
   IDelegationNode,
-  INewPublicCredential,
+  IPublicCredentialInput,
   IPublicCredential,
 } from '@kiltprotocol/types'
 import type { Option, Result, u64, Vec } from '@polkadot/types'
@@ -41,13 +41,13 @@ export interface EncodedPublicCredential {
 }
 
 /**
- * Format a [[INewPublicCredential]] to be used as a parameter for the blockchain API function.
+ * Format a [[IPublicCredentialInput]] to be used as a parameter for the blockchain API function.
 
  * @param publicCredential The public credential to format.
  * @returns The blockchain-formatted public credential.
  */
 export function toChain(
-  publicCredential: INewPublicCredential
+  publicCredential: IPublicCredentialInput
 ): EncodedPublicCredential {
   const { cTypeHash, claims, subject, delegationId } = publicCredential
 
@@ -56,7 +56,7 @@ export function toChain(
   return {
     ctypeHash: cTypeHash,
     subject,
-    // FIXME: Using Uint8Array directly fails to encode and decode, somehow
+    // FIXME: Using Uint8Array directly fails to encode and decode, I guess because the api object assumes the byte array is SCALE-encoded.
     claims: u8aToHex(new Uint8Array(cborSerializedClaims)),
     authorization: delegationId,
   }
@@ -79,11 +79,11 @@ function flattenCalls(api: ApiPromise, call: Call): Call[] {
   return [call]
 }
 
-// Transform a blockchain-formatted public credential into the original [[INewPublicCredential]].
-// It throw if what was written on the chain was garbage.
+// Transform a blockchain-formatted public credential into the original [[IPublicCredentialInput]].
+// It throws if what was written on the chain was garbage.
 function credentialInputFromChain(
   credential: PublicCredentialsCredentialsCredential
-): INewPublicCredential {
+): IPublicCredentialInput {
   validateUri(credential.subject.toUtf8())
   return {
     claims: cborDecode(hexToU8a(credential.claims.toHex())),
@@ -120,7 +120,10 @@ async function retrievePublicCredentialCreationExtrinsicsFromBlock(
 
 /**
  * Decodes the public credential details returned by `api.call.publicCredential.getCredential()`.
-
+ *
+ * This is the **only** secure way for users to retrieve and verify a credential.
+ * Hence, calling `api.call.publicCredentials.getCredential(credentialId)` and then passing the result to this function is the only way to trust that a credential with a given ID is valid.
+ *
  * @param credentialId Credential ID to use for the query. It is required to complement the information stored on the blockchain in a [[PublicCredentialsCredentialsCredentialEntry]].
  * @param publicCredentialEntry The raw public credential details from blockchain.
  * @returns The [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
@@ -191,7 +194,10 @@ export async function credentialFromChain(
 
 /**
  * Decodes the public credential details returned by `api.call.publicCredential.getCredentials()`.
-
+ *
+ * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given [[AssetDidUri]].
+ * Hence, calling `api.call.publicCredentials.getCredentials(asset_id)` and then passing the result to this function is the only way to trust that the credentials for a given AssetDID are valid.
+ *
  * @param publicCredentialEntries The raw public credential details from blockchain.
  * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history. If the result is an error, it maps it to the right error type.
  */
