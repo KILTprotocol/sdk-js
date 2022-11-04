@@ -1379,15 +1379,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * `init_leave_candidates`.
        * 
        * Emits `CollatorCanceledExit`.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], TotalCollatorStake, TopCandidates,
-       * CandidatePool
-       * - Writes: TotalCollatorStake, CandidatePool, TopCandidates
-       * # </weight>
        **/
       cancelLeaveCandidates: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -1406,15 +1397,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * allowed range as set in the pallet's configuration.
        * 
        * Emits `CollatorStakedLess`.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], Unstaking, TopCandidates,
-       * MaxSelectedCandidates, CandidatePool
-       * - Writes: Unstaking, CandidatePool, TotalCollatorStake
-       * # </weight>
        **/
       candidateStakeLess: AugmentedSubmittable<(less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
@@ -1430,61 +1412,26 @@ declare module '@polkadot/api-base/types/submittable' {
        * allowed range as set in the pallet's configuration.
        * 
        * Emits `CollatorStakedMore`.
-       * 
-       * # <weight>
-       * Weight: O(N + D + U) where  where N is `MaxSelectedCandidates`
-       * bounded by `MaxTopCandidates`, D is the number of delegators for
-       * this candidate bounded by `MaxDelegatorsPerCollator` and U is the
-       * number of locked unstaking requests bounded by `MaxUnstakeRequests`.
-       * - Reads: [Origin Account], Locks, TotalCollatorStake,
-       * MaxCollatorCandidateStake, TopCandidates, CandidatePool
-       * - Writes: Locks, TotalCollatorStake, CandidatePool, TopCandidates
-       * # </weight>
        **/
       candidateStakeMore: AugmentedSubmittable<(more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
-       * Delegate another collator's candidate by staking some funds and
-       * increasing the pallet's as well as the collator's total stake.
+       * Claim block authoring rewards for the target address.
        * 
-       * The account that wants to delegate cannot be part of the collator
-       * candidates set as well.
+       * Requires `Rewards` to be set beforehand, which can by triggered by
+       * any of the following options
+       * * Calling increment_{collator, delegator}_rewards (active)
+       * * Altering your stake (active)
+       * * Leaving the network as a collator (active)
+       * * Revoking a delegation as a delegator (active)
+       * * Being a delegator whose collator left the network, altered their
+       * stake or incremented rewards (passive)
        * 
-       * The caller _must_ have delegated before. Otherwise,
-       * `join_delegators` should be called.
+       * The dispatch origin can be any signed one, e.g., anyone can claim
+       * for anyone.
        * 
-       * If the delegator has already delegated the maximum number of
-       * collator candidates, this operation will fail.
-       * 
-       * The amount staked must be larger than the minimum required to become
-       * a delegator as set in the pallet's configuration.
-       * 
-       * As only `MaxDelegatorsPerCollator` are allowed to delegate a given
-       * collator, the amount staked must be larger than the lowest one in
-       * the current set of delegator for the operation to be meaningful.
-       * 
-       * The collator's total stake as well as the pallet's total stake are
-       * increased accordingly.
-       * 
-       * NOTE: This transaction is expected to throw until we increase
-       * `MaxCollatorsPerDelegator` by at least one, since it is currently
-       * set to one.
-       * 
-       * Emits `Delegation`.
-       * Emits `DelegationReplaced` if the candidate has
-       * `MaxDelegatorsPerCollator` many delegations but this delegator
-       * staked more than one of the other delegators of this candidate.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], DelegatorState, TopCandidates,
-       * MaxSelectedCandidates, CandidatePool, LastDelegation, Round
-       * - Writes: Locks, CandidatePool, DelegatorState, TotalCollatorStake,
-       * LastDelegation
-       * # </weight>
+       * Emits `Rewarded`.
        **/
-      delegateAnotherCandidate: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
+      claimRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Reduce the stake for delegating a collator candidate.
        * 
@@ -1502,16 +1449,8 @@ declare module '@polkadot/api-base/types/submittable' {
        * allowed range as set in the pallet's configuration.
        * 
        * Emits `DelegatorStakedLess`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * TopCandidates, CandidatePool, MaxSelectedCandidates
-       * - Writes: Unstaking, DelegatorState, CandidatePool,
-       * TotalCollatorStake
-       * # </weight>
        **/
-      delegatorStakeLess: AugmentedSubmittable<(candidate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
+      delegatorStakeLess: AugmentedSubmittable<(less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
        * Increase the stake for delegating a collator candidate.
        * 
@@ -1519,19 +1458,8 @@ declare module '@polkadot/api-base/types/submittable' {
        * collator candidate to be added to it.
        * 
        * Emits `DelegatorStakedMore`.
-       * 
-       * # <weight>
-       * Weight: O(N) + O(D) where N is `MaxSelectedCandidates` bounded
-       * by `MaxTopCandidates` and D the number of total delegators for
-       * this collator bounded by `MaxCollatorsPerDelegator`.
-       * bounded by `MaxUnstakeRequests`.
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * Locks, TopCandidates, CandidatePool, MaxSelectedCandidates
-       * - Writes: Unstaking, Locks, DelegatorState, CandidatePool,
-       * TotalCollatorStake
-       * # </weight>
        **/
-      delegatorStakeMore: AugmentedSubmittable<(candidate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
+      delegatorStakeMore: AugmentedSubmittable<(more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
        * Execute the network exit of a candidate who requested to leave at
        * least `ExitQueueDelay` rounds ago. Prepares unstaking of the
@@ -1545,20 +1473,26 @@ declare module '@polkadot/api-base/types/submittable' {
        * The exit request can be reversed by calling
        * `cancel_leave_candidates`.
        * 
-       * Emits `CollatorLeft`.
+       * NOTE: Iterates over CandidatePool for each candidate over their
+       * delegators to set rewards. Needs to be improved when scaling up
+       * `MaxTopCandidates`.
        * 
-       * # <weight>
-       * Weight: O(N + D + U) where  where N is `MaxSelectedCandidates`
-       * bounded by `MaxTopCandidates`, D is the number of delegators for
-       * this candidate bounded by `MaxDelegatorsPerCollator` and U is the
-       * number of locked unstaking requests bounded by `MaxUnstakeRequests`.
-       * - Reads: CandidatePool, Round, D * DelegatorState, D
-       * * BlockNumber, D * Unstaking
-       * - Writes: D * Unstaking, D * DelegatorState, Total
-       * - Kills: CandidatePool, DelegatorState
-       * # </weight>
+       * Emits `CollatorLeft`.
        **/
       executeLeaveCandidates: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
+      /**
+       * Executes the annual reduction of the reward rates for collators and
+       * delegators.
+       * 
+       * Moreover, sets rewards for all collators and delegators
+       * before adjusting the inflation.
+       * 
+       * The dispatch origin can be any signed one because we bail if called
+       * too early.
+       * 
+       * Emits `RoundInflationSet`.
+       **/
+      executeScheduledRewardChange: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Forces the start of the new round in the next block.
        * 
@@ -1566,12 +1500,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * ShouldEndSession<_>>::should_end_session.
        * 
        * The dispatch origin must be Root.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account]
-       * - Writes: ForceNewRound
-       * # </weight>
        **/
       forceNewRound: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -1581,28 +1509,32 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * Prepares unstaking of the candidates and their delegators stake
        * which can be unlocked via `unlock_unstaked` after waiting at
-       * least `StakeDuration` many blocks.
+       * least `StakeDuration` many blocks. Also increments rewards for the
+       * collator and their delegators.
+       * 
+       * Increments rewards of candidate and their delegators.
        * 
        * Emits `CandidateRemoved`.
-       * 
-       * # <weight>
-       * - The transaction's complexity is mainly dependent on updating the
-       * `SelectedCandidates` storage in `select_top_candidates` which in
-       * return depends on the number of `MaxSelectedCandidates` (N).
-       * - For each N, we read `CandidatePool` from the storage.
-       * ---------
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators of the
-       * collator candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: MaxCollatorCandidateStake, 2 * N * CandidatePool,
-       * TopCandidates, BlockNumber, D * DelegatorState, D * Unstaking
-       * - Writes: MaxCollatorCandidateStake, N * CandidatePool, D *
-       * DelegatorState, (D + 1) * Unstaking
-       * - Kills: CandidatePool, DelegatorState for all delegators which only
-       * delegated to the candidate
-       * # </weight>
        **/
       forceRemoveCandidate: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
+      /**
+       * Actively increment the rewards of a collator.
+       * 
+       * The same effect is triggered by changing the stake or leaving the
+       * network.
+       * 
+       * The dispatch origin must be a collator.
+       **/
+      incrementCollatorRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Actively increment the rewards of a delegator.
+       * 
+       * The same effect is triggered by changing the stake or revoking
+       * delegations.
+       * 
+       * The dispatch origin must be a delegator.
+       **/
+      incrementDelegatorRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Request to leave the set of collator candidates.
        * 
@@ -1618,7 +1550,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * updated even though the funds of the candidate who signaled to leave
        * are still locked for `ExitDelay` + `StakeDuration` more blocks.
        * 
-       * NOTE: Upon starting a new session_i in `new_session`, the current
+       * NOTE 1: Upon starting a new session_i in `new_session`, the current
        * top candidates are selected to be block authors for session_i+1. Any
        * changes to the top candidates afterwards do not effect the set of
        * authors for session_i+1.
@@ -1626,21 +1558,11 @@ declare module '@polkadot/api-base/types/submittable' {
        * leave before session_i+1 ends by delaying their
        * exit for `ExitDelay` many blocks.
        * 
-       * Emits `CollatorScheduledExit`.
+       * NOTE 2: We do not increment rewards in this extrinsic as the
+       * candidate could still author blocks, and thus be eligible to receive
+       * rewards, until the end of the next session.
        * 
-       * # <weight>
-       * - The transaction's complexity is mainly dependent on updating the
-       * `SelectedCandidates` storage in `select_top_candidates` which in
-       * return depends on the number of `MaxSelectedCandidates` (N).
-       * - For each N, we read `CandidatePool` from the storage.
-       * ---------
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], TopCandidates, (N + 1) * CandidatePool,
-       * TotalCollatorStake
-       * - Writes: CandidatePool, TopCandidates, TotalCollatorStake
-       * # </weight>
+       * Emits `CollatorScheduledExit`.
        **/
       initLeaveCandidates: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -1661,16 +1583,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * candidates nor of the delegators set.
        * 
        * Emits `JoinedCollatorCandidates`.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], DelegatorState,
-       * MaxCollatorCandidateStake, Locks, TotalCollatorStake,
-       * TopCandidates, MaxSelectedCandidates, CandidatePool,
-       * - Writes: Locks, TotalCollatorStake, CandidatePool, TopCandidates,
-       * # </weight>
        **/
       joinCandidates: AugmentedSubmittable<(stake: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
@@ -1679,8 +1591,8 @@ declare module '@polkadot/api-base/types/submittable' {
        * The account that wants to delegate cannot be part of the collator
        * candidates set as well.
        * 
-       * The caller must _not_ have delegated before. Otherwise,
-       * `delegate_another_candidate` should be called.
+       * The caller must _not_ have a delegation. If that is the case, they
+       * are required to first remove the delegation.
        * 
        * The amount staked must be larger than the minimum required to become
        * a delegator as set in the pallet's configuration.
@@ -1696,21 +1608,11 @@ declare module '@polkadot/api-base/types/submittable' {
        * Emits `DelegationReplaced` if the candidate has
        * `MaxDelegatorsPerCollator` many delegations but this delegator
        * staked more than one of the other delegators of this candidate.
-       * 
-       * # <weight>
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators for this
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: [Origin Account], DelegatorState, TopCandidates,
-       * MaxSelectedCandidates, CandidatePool, LastDelegation, Round
-       * - Writes: Locks, CandidatePool, DelegatorState, TotalCollatorStake,
-       * LastDelegation
-       * # </weight>
        **/
       joinDelegators: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
       /**
-       * Leave the set of delegators and, by implication, revoke all ongoing
-       * delegations.
+       * Leave the set of delegators and, by implication, revoke the ongoing
+       * delegation.
        * 
        * All staked funds are not unlocked immediately, but they are added to
        * the queue of pending unstaking, and will effectively be released
@@ -1721,44 +1623,12 @@ declare module '@polkadot/api-base/types/submittable' {
        * their chances to be included in the set of candidates in the next
        * rounds.
        * 
-       * Emits `DelegatorLeft`.
+       * Automatically increments the accumulated rewards of the origin of
+       * the current delegation.
        * 
-       * # <weight>
-       * Weight: O(C) where C is the number of delegations for this delegator
-       * which is bounded by by `MaxCollatorsPerDelegator`.
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * TopCandidates, MaxSelectedCandidates, C * CandidatePool,
-       * - Writes: Unstaking, CandidatePool, TotalCollatorStake,
-       * - Kills: DelegatorState
-       * # </weight>
+       * Emits `DelegatorLeft`.
        **/
       leaveDelegators: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Terminates an ongoing delegation for a given collator candidate.
-       * 
-       * The staked funds are not unlocked immediately, but they are added to
-       * the queue of pending unstaking, and will effectively be released
-       * after `StakeDuration` blocks from the moment the delegation is
-       * terminated.
-       * 
-       * This operation reduces the total stake of the pallet as well as the
-       * stakes of the collator involved, potentially affecting its chances
-       * to be included in the set of candidates in the next rounds.
-       * 
-       * Emits `DelegatorLeft`.
-       * 
-       * # <weight>
-       * Weight: O(C) where C is the number of delegations for this delegator
-       * which is bounded by by `MaxCollatorsPerDelegator`.
-       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
-       * Locks, TopCandidates, CandidatePool, MaxSelectedCandidates
-       * - Writes: Unstaking, Locks, DelegatorState, CandidatePool,
-       * TotalCollatorStake
-       * - Kills: DelegatorState if the delegator has not delegated to
-       * another collator
-       * # </weight>
-       **/
-      revokeDelegation: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
       /**
        * Set the number of blocks each validation round lasts.
        * 
@@ -1771,12 +1641,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * The dispatch origin must be Root.
        * 
        * Emits `BlocksPerRoundSet`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account], Round
-       * - Writes: Round
-       * # </weight>
        **/
       setBlocksPerRound: AugmentedSubmittable<(updated: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
       /**
@@ -1788,15 +1652,13 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * The estimated average block time is twelve seconds.
        * 
+       * NOTE: Iterates over CandidatePool and for each candidate over their
+       * delegators to update their rewards before the reward rates change.
+       * Needs to be improved when scaling up `MaxTopCandidates`.
+       * 
        * The dispatch origin must be Root.
        * 
        * Emits `RoundInflationSet`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account]
-       * - Writes: InflationConfig
-       * # </weight>
        **/
       setInflation: AugmentedSubmittable<(collatorMaxRatePercentage: Perquintill | AnyNumber | Uint8Array, collatorAnnualRewardRatePercentage: Perquintill | AnyNumber | Uint8Array, delegatorMaxRatePercentage: Perquintill | AnyNumber | Uint8Array, delegatorAnnualRewardRatePercentage: Perquintill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Perquintill, Perquintill, Perquintill, Perquintill]>;
       /**
@@ -1806,12 +1668,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * The dispatch origin must be Root.
        * 
        * Emits `MaxCandidateStakeChanged`.
-       * 
-       * # <weight>
-       * Weight: O(1)
-       * - Reads: [Origin Account], MaxCollatorCandidateStake
-       * - Writes: Round
-       * # </weight>
        **/
       setMaxCandidateStake: AugmentedSubmittable<(updated: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
@@ -1826,20 +1682,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * The dispatch origin must be Root.
        * 
        * Emits `MaxSelectedCandidatesSet`.
-       * 
-       * 
-       * # <weight>
-       * - The transaction's complexity is mainly dependent on updating the
-       * `SelectedCandidates` storage in `select_top_candidates` which in
-       * return depends on the number of `MaxSelectedCandidates` (N).
-       * - For each N, we read `CandidatePool` from the storage.
-       * ---------
-       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
-       * `MaxTopCandidates` and D is the number of delegators of a
-       * candidate bounded by `MaxDelegatorsPerCollator`.
-       * - Reads: MaxSelectedCandidates, TopCandidates, N * CandidatePool
-       * - Writes: MaxSelectedCandidates
-       * # </weight>
        **/
       setMaxSelectedCandidates: AugmentedSubmittable<(updated: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
       /**
