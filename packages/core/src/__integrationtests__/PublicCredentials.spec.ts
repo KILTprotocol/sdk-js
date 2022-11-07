@@ -78,10 +78,9 @@ describe('When there is an attester and ctype NFT name', () => {
       subject: assetId,
     }
     const encodedPublicCredential = PublicCredential.toChain(latestCredential)
-    const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
     const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
-      storeTx,
+      api.tx.publicCredentials.add(encodedPublicCredential),
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )
@@ -121,19 +120,16 @@ describe('When there is an attester and ctype NFT name', () => {
       subject: assetId,
     }
     const encodedPublicCredential = PublicCredential.toChain(latestCredential)
-    const storeTx = api.tx.publicCredentials.add(encodedPublicCredential)
     const authorizedStoreTx = await Did.authorizeTx(
       attester.uri,
-      storeTx,
+      api.tx.publicCredentials.add(encodedPublicCredential),
       attesterKey.getSignCallback(attester),
       tokenHolder.address
     )
     await submitTx(authorizedStoreTx, tokenHolder)
 
-    const encodedAssetCredentials =
-      await api.call.publicCredentials.getCredentials(assetId, null)
     const assetCredentials = await PublicCredential.credentialsFromChain(
-      encodedAssetCredentials
+      await api.call.publicCredentials.getCredentials(assetId, null)
     )
 
     // We only check that we return two credentials back.
@@ -164,14 +160,11 @@ describe('When there is an attester and ctype NFT name', () => {
     })
     await submitTx(authorizedBatch, tokenHolder)
 
-    const encodedAssetCredentials =
-      await api.call.publicCredentials.getCredentials(assetId, null)
     const assetCredentials = await PublicCredential.credentialsFromChain(
-      encodedAssetCredentials
+      await api.call.publicCredentials.getCredentials(assetId, null)
     )
 
-    // We only check that we return all the twenty credentials back.
-    // We don't check the content of each credential.
+    // We don't check the content of each credential but only the number of credentials that is returned.
     expect(assetCredentials).toHaveLength(100)
   })
 
@@ -304,8 +297,8 @@ describe('When there is an attester and ctype NFT name', () => {
     // Verify it is now removed
     expect(encodedAssetCredential.isNone).toBe(true)
     // Verify the number of credentials has decreased by one
-    expect(allAssetCredentialsBeforeRevocation.length).toEqual(
-      allAssetCredentialsAfterRevocation.length + 1
+    expect(allAssetCredentialsAfterRevocation.length).toEqual(
+      allAssetCredentialsBeforeRevocation.length - 1
     )
   })
 })

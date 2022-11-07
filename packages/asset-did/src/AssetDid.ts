@@ -52,24 +52,17 @@ export function parse(assetDidUri: AssetDidUri): IAssetDidParsingResult {
     assetNamespace,
     assetReference,
     assetInstance,
-  } = matches
-  // A valid AssetDID must have both a chain ID and an asset ID.
-  if (!chainId || !assetId) {
-    throw new SDKErrors.InvalidDidFormatError(assetDidUri)
-  }
-  // TS would complain otherwise. We can be sure since the regex matched.
-  const castedChainId = chainId as ChainId
-  const castedAssetId = assetId as ChainId
+  } = matches as Omit<IAssetDidParsingResult, 'did'>
 
   return {
-    chainId: castedChainId,
+    chainId,
     chainNamespace,
     chainReference,
-    assetId: castedAssetId,
+    assetId,
     assetNamespace,
     assetReference,
     assetInstance,
-    uri: `did:asset:${castedChainId}.${castedAssetId}`,
+    uri: `did:asset:${chainId}.${assetId}`,
   }
 }
 

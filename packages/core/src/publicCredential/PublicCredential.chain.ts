@@ -34,7 +34,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { computeId } from './PublicCredential.js'
 
 export interface EncodedPublicCredential {
-  ctypeHash: CTypeHash
+  cTypeHash: CTypeHash
   subject: AssetDidUri
   claims: HexString
   authorization: IDelegationNode['id'] | null
@@ -54,7 +54,7 @@ export function toChain(
   const cborSerializedClaims = cborEncode(claims)
 
   return {
-    ctypeHash: cTypeHash,
+    cTypeHash,
     subject,
     // FIXME: Using Uint8Array directly fails to encode and decode, I guess because the api object assumes the byte array is SCALE-encoded.
     claims: u8aToHex(new Uint8Array(cborSerializedClaims)),
@@ -70,10 +70,7 @@ function flattenCalls(api: ApiPromise, call: Call): Call[] {
     api.tx.utility.forceBatch.is(call)
   ) {
     // Inductive case
-    return call.args[0].reduce(
-      (acc: Call[], c: Call) => acc.concat(flattenCalls(api, c)),
-      []
-    )
+    return call.args[0].flatMap((c) => flattenCalls(api, c))
   }
   // Base case
   return [call]
@@ -94,7 +91,7 @@ function credentialInputFromChain(
 }
 
 // Retrieve a given block and looks into it to find a public credential creation tx that matches the provided credential ID.
-async function retrievePublicCredentialCreationExtrinsicsFromBlock(
+async function retrievePublicCredentialCreationExtrinsicFromBlock(
   api: ApiPromise,
   credentialId: HexString,
   blockNumber: u64
@@ -136,7 +133,7 @@ export async function credentialFromChain(
 
   const { blockNumber, revoked } = publicCredentialEntry.unwrap()
 
-  const extrinsic = await retrievePublicCredentialCreationExtrinsicsFromBlock(
+  const extrinsic = await retrievePublicCredentialCreationExtrinsicFromBlock(
     api,
     credentialId,
     blockNumber
@@ -154,15 +151,13 @@ export async function credentialFromChain(
     )
   }
 
-  const [extrinsicCalls, extrinsicDidOrigin] = [
-    flattenCalls(api, extrinsic.args[0].call),
-    didFromChain(extrinsic.args[0].did),
-  ]
+  const extrinsicCalls = flattenCalls(api, extrinsic.args[0].call)
+  const extrinsicDidOrigin = didFromChain(extrinsic.args[0].did)
 
   let credentialInput: IPublicCredential | undefined
 
   // Iterate over the calls in the extrinsic to find the right one, and re-create the issued public credential.
-  // If more than a call are present, it always consider the last one as the valid one.
+  // If more than a call is present, it always considers the last one as the valid one.
   extrinsicCalls.forEach((call) => {
     if (api.tx.publicCredentials.add.is(call)) {
       const credentialCallArgument = call.args[0]

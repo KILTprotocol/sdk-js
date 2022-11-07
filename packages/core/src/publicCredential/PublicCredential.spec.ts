@@ -20,6 +20,7 @@ import type {
 import { BN } from '@polkadot/util'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
+import * as Did from '@kiltprotocol/did'
 import { devAlice } from '../__integrationtests__/utils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
@@ -42,7 +43,7 @@ function buildCredential(
     subject: assetDid,
   }
   const credential = PublicCredential.fromClaim(claim)
-  const attester: DidUri = `did:kilt:${devAlice.address}`
+  const attester: DidUri = Did.getFullDidUri(devAlice.address)
   return {
     ...credential,
     attester,

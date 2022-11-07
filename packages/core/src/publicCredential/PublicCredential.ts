@@ -61,13 +61,12 @@ function verifyDataStructure(input: IPublicCredentialInput): void {
   // Taken from `Credential.verifyDataStructure()`
   if (!('claims' in input)) {
     throw new SDKErrors.ClaimMissingError()
-  } else {
-    verifyClaimDataStructure({
-      cTypeHash: input.cTypeHash,
-      contents: input.claims,
-      subject: input.subject,
-    })
   }
+  verifyClaimDataStructure({
+    cTypeHash: input.cTypeHash,
+    contents: input.claims,
+    subject: input.subject,
+  })
   if (!input.subject) {
     throw new SDKErrors.SubjectMissingError()
   }
@@ -83,17 +82,17 @@ function verifyDataStructure(input: IPublicCredentialInput): void {
  * This function is meant to be used by consumers of this [[IPublicCredential]], once they have retrieved the full credential content.
  *
  * @param credential A [[IPublicCredential]] for the attester.
- * @param ctype A [[CType]] to verify the [[Claim]] structure.
+ * @param cType A [[CType]] to verify the [[Claim]] structure.
  */
 export function verifyAgainstCType(
   credential: IPublicCredential,
-  ctype: ICType
+  cType: ICType
 ): void {
-  verifyClaimAgainstSchema(credential.claims, ctype)
+  verifyClaimAgainstSchema(credential.claims, cType)
 }
 
 type VerifyOptions = {
-  ctype?: ICType
+  cType?: ICType
 }
 
 /**
@@ -105,11 +104,11 @@ type VerifyOptions = {
  *
  * @param credential The full [[IPublicCredential]] object.
  * @param options - Additional parameter for more verification steps.
- * @param options.ctype - CType which the included claim should be checked against.
+ * @param options.cType - CType which the included claim should be checked against.
  */
 export async function verifyCredential(
   credential: IPublicCredential,
-  { ctype }: VerifyOptions = {}
+  { cType }: VerifyOptions = {}
 ): Promise<void> {
   const { id, attester, blockNumber, revoked, ...credentialInput } = credential
 
@@ -133,22 +132,31 @@ export async function verifyCredential(
     )
   }
   // Verify remaining properties
-  if (ctype) {
-    verifyAgainstCType(credential, ctype)
+  if (cType) {
+    verifyAgainstCType(credential, cType)
   }
-  if (blockNumber !== credential.blockNumber) {
+
+  const {
+    blockNumber: retrievedBlockNumber,
+    revoked: retrievedRevocationStatus,
+  } = encodedCredentialEntry.unwrap()
+  if (blockNumber !== retrievedBlockNumber.toBn()) {
     throw new SDKErrors.PublicCredentialError(
-      `Block number in the credential (${credential.blockNumber.toString()}) different than what is stored on the blockchain (${blockNumber.toString()}).`
+      `Block number in the credential (${
+        credential.blockNumber
+      }) different than what is stored on the blockchain (${retrievedBlockNumber.toBn()}).`
     )
   }
-  if (revoked !== credential.revoked) {
+  if (revoked !== retrievedRevocationStatus.toPrimitive()) {
     throw new SDKErrors.PublicCredentialError(
-      `Revocation status in the credential (${credential.revoked}) different than what is stored on the blockchain (${credential.revoked}).`
+      `Revocation status in the credential (${
+        credential.revoked
+      }) different than what is stored on the blockchain (${retrievedRevocationStatus.toPrimitive()}).`
     )
   }
 }
 
-export type Options = {
+export type PublicCredentialCreationOptions = {
   delegationId?: IDelegationNode['id'] | null
 }
 
@@ -162,7 +170,7 @@ export type Options = {
  */
 export function fromClaim(
   claim: IAssetClaim,
-  { delegationId = null }: Options = {}
+  { delegationId = null }: PublicCredentialCreationOptions = {}
 ): IPublicCredentialInput {
   const credential: IPublicCredentialInput = {
     claims: claim.contents,
