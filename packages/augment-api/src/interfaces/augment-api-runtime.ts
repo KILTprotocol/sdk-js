@@ -123,13 +123,13 @@ declare module '@polkadot/api-base/types/calls' {
       /**
        * Return the public credential with the specified ID, if found.
        **/
-      getCredential: AugmentedCall<ApiType, (credential_id: Hash | string | Uint8Array) => Observable<Option<PublicCredentialsCredentialsCredentialEntry>>>;
+      getById: AugmentedCall<ApiType, (credential_id: Hash | string | Uint8Array) => Observable<Option<PublicCredentialsCredentialsCredentialEntry>>>;
       /**
        * Return all the public credentials linked to the specified subject.
                 An optional filter can be passed to be applied to the result before being returned to the client.
                 It returns an error if the provided specified subject ID is not valid.
        **/
-      getCredentials: AugmentedCall<ApiType, (subject: Text | string, filter: Option<PublicCredentialFilter> | null | Uint8Array | PublicCredentialFilter | { ctypeHash: any } | { attester: any } | string) => Observable<Result<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>, PublicCredentialError>>>;
+      getBySubject: AugmentedCall<ApiType, (subject: Text | string, filter: Option<PublicCredentialFilter> | null | Uint8Array | PublicCredentialFilter | { ctypeHash: any } | { attester: any } | string) => Observable<Result<Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>, PublicCredentialError>>>;
     };
     /** 0xab3c0572291feb8b/1 */
     sessionKeys: {
