@@ -11,8 +11,6 @@ import { types10720 } from './types_10720.js'
 
 export const types10800: RegistryTypes = {
   ...types10720,
-  // DID state_call v2
-  DidApiAccountId: 'PalletDidLookupLinkableAccountLinkableAccountId',
 
   // Staking get_staking_rates
   StakingRates: {
