@@ -204,19 +204,15 @@ export async function credentialsFromChain(
   }
 
   const api = ConfigService.get('api')
-  const formattedCredentials: Array<
-    [HexString, Option<PublicCredentialsCredentialsCredentialEntry>]
-  > = publicCredentialEntries.asOk.map(
-    ([encodedId, encodedCredentialEntry]) => [
-      encodedId.toHex(),
-      api.createType(
-        'Option<PublicCredentialsCredentialsCredentialEntry>',
-        encodedCredentialEntry
-      ),
-    ]
-  )
-
   return Promise.all(
-    formattedCredentials.map(([id, entry]) => credentialFromChain(id, entry))
+    publicCredentialEntries.asOk.map(([encodedId, encodedCredentialEntry]) =>
+      credentialFromChain(
+        encodedId.toHex(),
+        api.createType(
+          'Option<PublicCredentialsCredentialsCredentialEntry>',
+          encodedCredentialEntry
+        )
+      )
+    )
   )
 }
