@@ -116,10 +116,10 @@ async function retrievePublicCredentialCreationExtrinsicFromBlock(
 }
 
 /**
- * Decodes the public credential details returned by `api.call.publicCredential.getCredential()`.
+ * Decodes the public credential details returned by `api.call.publicCredentials.getById()`.
  *
  * This is the **only** secure way for users to retrieve and verify a credential.
- * Hence, calling `api.call.publicCredentials.getCredential(credentialId)` and then passing the result to this function is the only way to trust that a credential with a given ID is valid.
+ * Hence, calling `api.call.publicCredentials.getById(credentialId)` and then passing the result to this function is the only way to trust that a credential with a given ID is valid.
  *
  * @param credentialId Credential ID to use for the query. It is required to complement the information stored on the blockchain in a [[PublicCredentialsCredentialsCredentialEntry]].
  * @param publicCredentialEntry The raw public credential details from blockchain.
@@ -185,10 +185,10 @@ export async function credentialFromChain(
 }
 
 /**
- * Decodes the public credential details returned by `api.call.publicCredential.getCredentials()`.
+ * Decodes the public credential details returned by `api.call.publicCredentials.getBySubject()`.
  *
  * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given [[AssetDidUri]].
- * Hence, calling `api.call.publicCredentials.getCredentials(asset_id)` and then passing the result to this function is the only way to trust that the credentials for a given AssetDID are valid.
+ * Hence, calling `api.call.publicCredentials.getBySubject(asset_id)` and then passing the result to this function is the only way to trust that the credentials for a given AssetDID are valid.
  *
  * @param publicCredentialEntries The raw public credential details from blockchain.
  * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history. If the result is an error, it maps it to the right error type.

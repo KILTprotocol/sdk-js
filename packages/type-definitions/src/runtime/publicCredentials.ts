@@ -11,7 +11,7 @@ export const calls: DefinitionsCall = {
   PublicCredentials: [
     {
       methods: {
-        get_credential: {
+        get_by_id: {
           description:
             'Return the public credential with the specified ID, if found.',
           params: [
@@ -22,7 +22,7 @@ export const calls: DefinitionsCall = {
           ],
           type: 'Option<PublicCredentialsCredentialsCredentialEntry>',
         },
-        get_credentials: {
+        get_by_subject: {
           description: `Return all the public credentials linked to the specified subject.
           An optional filter can be passed to be applied to the result before being returned to the client.
           It returns an error if the provided specified subject ID is not valid.

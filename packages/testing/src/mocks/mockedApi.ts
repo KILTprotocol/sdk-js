@@ -227,8 +227,8 @@ export function getMockedApi(): MockApiPromise {
         queryByWeb3Name: jest.fn(),
       },
       publicCredentials: {
-        getCredential: jest.fn(),
-        getCredentials: jest.fn(),
+        getById: jest.fn(),
+        getBySubject: jest.fn(),
       },
     },
     tx: {
