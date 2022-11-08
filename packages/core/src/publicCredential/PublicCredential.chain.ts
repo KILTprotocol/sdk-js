@@ -56,7 +56,7 @@ export function toChain(
   return {
     ctypeHash: cTypeHash,
     subject,
-    // FIXME: Using Uint8Array directly fails to encode and decode, I guess because the api object assumes the byte array is SCALE-encoded.
+    // Using Uint8Array directly fails to encode and decode, I guess because the api object assumes the byte array is SCALE-encoded.
     claims: u8aToHex(new Uint8Array(cborSerializedClaims)),
     authorization: delegationId,
   }
