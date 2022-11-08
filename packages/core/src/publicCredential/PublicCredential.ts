@@ -80,7 +80,7 @@ function verifyClaimsStructure(input: IAssetClaim | PartialAssetClaim): void {
 
 // Used internally only when building the [[IPublicCredentialInput]].
 function verifyDataStructure(input: IPublicCredentialInput): void {
-  if (typeof input.claims !== 'object' && input.claims !== null) {
+  if (typeof input.claims !== 'object' || input.claims === null) {
     throw new SDKErrors.ClaimMissingError()
   }
   if (typeof input.subject !== 'string') {
