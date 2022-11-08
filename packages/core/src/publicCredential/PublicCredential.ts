@@ -15,15 +15,16 @@ import type {
   IDelegationNode,
   IPublicCredential,
   IPublicCredentialInput,
+  PartialAssetClaim,
 } from '@kiltprotocol/types'
 
 import { blake2AsHex } from '@polkadot/util-crypto'
 import { ConfigService } from '@kiltprotocol/config'
+import * as AssetDid from '@kiltprotocol/asset-did'
 import * as Did from '@kiltprotocol/did'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 
 import { verifyClaimAgainstSchema } from '../ctype/CType.js'
-import { verifyDataStructure as verifyClaimDataStructure } from '../claim/Claim.js'
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
 /**
@@ -56,20 +57,42 @@ export function computeId(
   )
 }
 
+function verifyClaimsStructure(input: IAssetClaim | PartialAssetClaim): void {
+  if (!input.cTypeHash) {
+    throw new SDKErrors.CTypeHashMissingError()
+  }
+  if ('subject' in input) {
+    AssetDid.validateUri(input.subject)
+  }
+  if (input.contents !== undefined) {
+    Object.entries(input.contents).forEach(([key, value]) => {
+      if (
+        !key ||
+        typeof key !== 'string' ||
+        !['string', 'number', 'boolean', 'object'].includes(typeof value)
+      ) {
+        throw new SDKErrors.ClaimContentsMalformedError()
+      }
+    })
+  }
+  DataUtils.verifyIsHex(input.cTypeHash, 256)
+}
+
 // Used internally only when building the [[IPublicCredentialInput]].
 function verifyDataStructure(input: IPublicCredentialInput): void {
   // Taken from `Credential.verifyDataStructure()`
   if (!('claims' in input)) {
     throw new SDKErrors.ClaimMissingError()
   }
-  verifyClaimDataStructure({
+  if (!('subject' in input)) {
+    throw new SDKErrors.SubjectMissingError()
+  }
+
+  verifyClaimsStructure({
     cTypeHash: input.cTypeHash,
     contents: input.claims,
     subject: input.subject,
   })
-  if (!input.subject) {
-    throw new SDKErrors.SubjectMissingError()
-  }
 
   if (typeof input.delegationId !== 'string' && input.delegationId !== null) {
     throw new SDKErrors.DelegationIdTypeError()

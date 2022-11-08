@@ -68,3 +68,9 @@ export interface IPublicCredential extends IPublicCredentialInput {
  * Like an [[IClaim]], but with a [[AssetDidUri]] `subject` instead of an [[IClaim]] `owner`.
  */
 export type IAssetClaim = Omit<IClaim, 'owner'> & { subject: AssetDidUri }
+
+/**
+ * The minimal partial claim from which a JSON-LD representation can be built.
+ */
+export type PartialAssetClaim = Partial<IAssetClaim> &
+  Pick<IAssetClaim, 'cTypeHash'>

@@ -13,7 +13,7 @@ import type {
   IPublicCredentialInput,
   IPublicCredential,
 } from '@kiltprotocol/types'
-import type { Option, Result, u64, Vec } from '@polkadot/types'
+import type { GenericCall, Option, Result, u64, Vec } from '@polkadot/types'
 import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { ITuple } from '@polkadot/types/types'
 import type {
@@ -24,7 +24,7 @@ import type {
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
-import { hexToU8a, u8aToHex } from '@polkadot/util'
+import { u8aToHex } from '@polkadot/util'
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain } from '@kiltprotocol/did'
@@ -83,7 +83,7 @@ function credentialInputFromChain(
 ): IPublicCredentialInput {
   validateUri(credential.subject.toUtf8())
   return {
-    claims: cborDecode(hexToU8a(credential.claims.toHex())),
+    claims: cborDecode(credential.claims.toU8a()),
     cTypeHash: credential.ctypeHash.toHex(),
     delegationId: credential.authorization.unwrapOr(undefined)?.toHex() ?? null,
     subject: credential.subject.toUtf8() as AssetDidUri,
@@ -97,22 +97,22 @@ async function retrievePublicCredentialCreationExtrinsicFromBlock(
   blockNumber: u64
 ): Promise<Extrinsic | null> {
   const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
-  return (
-    extrinsics
-      // Filter out failed extrinsics
-      .filter(({ dispatchError }) => dispatchError === undefined)
-      // Filter out extrinsics that don't contain a `CredentialStored` event with the right credential ID
-      .filter(({ events }) =>
-        events.some(
-          (event) =>
-            api.events.publicCredentials.CredentialStored.is(event) &&
-            event.data[1].toString() === credentialId
-        )
-      )
-      // If there is more than one (e.g., same credential issued multiple times in the same block) it should not matter since the ID is generated over the content, hence same ID -> same content.
-      // Nevertheless, take only the last one, if present, as that is for sure what ended up being in the blockchain state.
-      .pop()?.extrinsic ?? null
+  const successfulExtrinsics = extrinsics.filter(
+    ({ dispatchError }) => !dispatchError
   )
+  // If there is more than one (e.g., same credential issued multiple times in the same block) it should not matter since the ID is generated over the content, hence same ID -> same content.
+  // Nevertheless, take only the last one, if present, as that is for sure what ended up being in the blockchain state.
+  const lastPublicCredentialCreationExtrinsic = successfulExtrinsics
+    .reverse()
+    .find(({ events }) =>
+      events.some(
+        (event) =>
+          api.events.publicCredentials.CredentialStored.is(event) &&
+          event.data[1].toString() === credentialId
+      )
+    )
+
+  return lastPublicCredentialCreationExtrinsic?.extrinsic ?? null
 }
 
 /**
@@ -154,37 +154,34 @@ export async function credentialFromChain(
   const extrinsicCalls = flattenCalls(api, extrinsic.args[0].call)
   const extrinsicDidOrigin = didFromChain(extrinsic.args[0].did)
 
-  let credentialInput: IPublicCredential | undefined
-
-  // Iterate over the calls in the extrinsic to find the right one, and re-create the issued public credential.
+  const credentialCreationCalls = extrinsicCalls.filter(
+    (call): call is GenericCall<typeof api.tx.publicCredentials.add.args> =>
+      api.tx.publicCredentials.add.is(call)
+  )
+  // Re-create the issued public credential for each call identified.
+  const callCredentialsContent = credentialCreationCalls.map((call) =>
+    credentialInputFromChain(call.args[0])
+  )
   // If more than a call is present, it always considers the last one as the valid one.
-  extrinsicCalls.forEach((call) => {
-    if (api.tx.publicCredentials.add.is(call)) {
-      const credentialCallArgument = call.args[0]
-      const reconstructedCredentialInput = credentialInputFromChain(
-        credentialCallArgument
-      )
-      const reconstructedId = computeId(
-        reconstructedCredentialInput,
-        extrinsicDidOrigin
-      )
-      if (reconstructedId === credentialId) {
-        credentialInput = {
-          ...reconstructedCredentialInput,
-          attester: extrinsicDidOrigin,
-          id: reconstructedId,
-          blockNumber,
-          revoked: revoked.toPrimitive(),
-        }
-      }
-    }
-  })
-  if (!credentialInput) {
+  const lastRightCredentialCreationCall = callCredentialsContent
+    .reverse()
+    .find((credentialInput) => {
+      const reconstructedId = computeId(credentialInput, extrinsicDidOrigin)
+      return reconstructedId === credentialId
+    })
+
+  if (!lastRightCredentialCreationCall) {
     throw new SDKErrors.PublicCredentialError(
       'Block should always contain the full credential, eventually.'
     )
   }
-  return credentialInput
+  return {
+    ...lastRightCredentialCreationCall,
+    attester: extrinsicDidOrigin,
+    id: computeId(lastRightCredentialCreationCall, extrinsicDidOrigin),
+    blockNumber,
+    revoked: revoked.toPrimitive(),
+  }
 }
 
 /**
