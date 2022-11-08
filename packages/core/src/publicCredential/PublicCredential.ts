@@ -80,11 +80,10 @@ function verifyClaimsStructure(input: IAssetClaim | PartialAssetClaim): void {
 
 // Used internally only when building the [[IPublicCredentialInput]].
 function verifyDataStructure(input: IPublicCredentialInput): void {
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!input.claims) {
+  if (typeof input.claims !== 'object' && input.claims !== null) {
     throw new SDKErrors.ClaimMissingError()
   }
-  if (!input.subject) {
+  if (typeof input.subject !== 'string') {
     throw new SDKErrors.SubjectMissingError()
   }
 
