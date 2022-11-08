@@ -61,10 +61,10 @@ function verifyClaimsStructure(input: IAssetClaim | PartialAssetClaim): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
-  if ('subject' in input) {
+  if (input.subject) {
     AssetDid.validateUri(input.subject)
   }
-  if (input.contents !== undefined) {
+  if (input.contents) {
     Object.entries(input.contents).forEach(([key, value]) => {
       if (
         !key ||
@@ -80,11 +80,11 @@ function verifyClaimsStructure(input: IAssetClaim | PartialAssetClaim): void {
 
 // Used internally only when building the [[IPublicCredentialInput]].
 function verifyDataStructure(input: IPublicCredentialInput): void {
-  // Taken from `Credential.verifyDataStructure()`
-  if (!('claims' in input)) {
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+  if (!input.claims) {
     throw new SDKErrors.ClaimMissingError()
   }
-  if (!('subject' in input)) {
+  if (!input.subject) {
     throw new SDKErrors.SubjectMissingError()
   }
 

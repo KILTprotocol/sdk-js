@@ -10,7 +10,7 @@ import type { BN } from '@polkadot/util'
 
 import type { CTypeHash } from './CType'
 import type { IDelegationNode } from './Delegation'
-import type { IClaim, IClaimContents } from './Claim'
+import type { IClaimContents } from './Claim'
 import type { DidUri } from './DidDocument'
 import type { AssetDidUri } from './AssetDid'
 
@@ -67,7 +67,11 @@ export interface IPublicCredential extends IPublicCredentialInput {
  *
  * Like an [[IClaim]], but with a [[AssetDidUri]] `subject` instead of an [[IClaim]] `owner`.
  */
-export type IAssetClaim = Omit<IClaim, 'owner'> & { subject: AssetDidUri }
+export interface IAssetClaim {
+  cTypeHash: CTypeHash
+  contents: IClaimContents
+  subject: AssetDidUri
+}
 
 /**
  * The minimal partial claim from which a JSON-LD representation can be built.

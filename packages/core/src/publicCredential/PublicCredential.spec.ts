@@ -18,19 +18,16 @@ import type {
 } from '@kiltprotocol/types'
 
 import { BN } from '@polkadot/util'
-import { ApiMocks } from '@kiltprotocol/testing'
-import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import { devAlice } from '../__integrationtests__/utils'
+import { devAlice, nftNameCType } from '../__integrationtests__/utils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
 
 const testCType = CType.fromProperties('raw ctype', {
   name: { type: 'string' },
 })
-
-const mockApi = ApiMocks.createAugmentedApi()
-ConfigService.set({ api: mockApi })
+const assetIdentifier =
+  'did:asset:bip122:000000000019d6689c085ae165831e93.slip44:0'
 
 // Build a public credential with fake attestation (i.e., attester, block number, revocation status) information.
 function buildCredential(
@@ -53,10 +50,7 @@ function buildCredential(
   }
 }
 
-describe('Public credential', () => {
-  const assetIdentifier =
-    'did:asset:bip122:000000000019d6689c085ae165831e93.slip44:0'
-
+describe('Public credential fromClaim', () => {
   it('should verify the credential claims structure against the ctype', async () => {
     const builtCredential = buildCredential(assetIdentifier, {
       name: 'test-name',
@@ -67,6 +61,76 @@ describe('Public credential', () => {
     builtCredential.claims.name = 123
     expect(() =>
       PublicCredential.verifyAgainstCType(builtCredential, testCType)
+    ).toThrow()
+  })
+
+  it('should fail to build a credential from missing claim contents', async () => {
+    expect(() =>
+      PublicCredential.fromClaim({
+        subject: assetIdentifier,
+        cTypeHash: CType.getHashForSchema(nftNameCType),
+      } as unknown as IAssetClaim)
+    ).toThrow()
+  })
+
+  it('should fail to build a credential from missing subject', async () => {
+    expect(() =>
+      PublicCredential.fromClaim({
+        contents: {
+          name: 'test-name',
+        },
+        cTypeHash: CType.getHashForSchema(nftNameCType),
+      } as unknown as IAssetClaim)
+    ).toThrow()
+  })
+
+  it('should fail to build a credential from missing ctype hash', async () => {
+    expect(() =>
+      PublicCredential.fromClaim({
+        contents: {
+          name: 'test-name',
+        },
+        subject: assetIdentifier,
+      } as unknown as IAssetClaim)
+    ).toThrow()
+  })
+
+  it('should fail to build a credential from invalid subject', async () => {
+    expect(() =>
+      PublicCredential.fromClaim({
+        contents: {
+          name: 'test-name',
+        },
+        subject: 'did:asset',
+        cTypeHash: CType.getHashForSchema(nftNameCType),
+      } as unknown as IAssetClaim)
+    ).toThrow()
+  })
+
+  it('should fail to build a credential from ctype hash != than HEX', async () => {
+    expect(() =>
+      PublicCredential.fromClaim({
+        contents: {
+          name: 'test-name',
+        },
+        subject: 'did:asset',
+        cTypeHash: '0x',
+      } as unknown as IAssetClaim)
+    ).toThrow()
+  })
+
+  it('should fail to build a credential from a delegation node != than a string', async () => {
+    expect(() =>
+      PublicCredential.fromClaim(
+        {
+          contents: {
+            name: 'test-name',
+          },
+          subject: 'did:asset',
+          cTypeHash: '0x',
+        } as unknown as IAssetClaim,
+        { delegationId: 3 as any }
+      )
     ).toThrow()
   })
 })
