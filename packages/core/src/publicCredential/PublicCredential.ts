@@ -163,7 +163,7 @@ export async function verifyCredential(
     blockNumber: retrievedBlockNumber,
     revoked: retrievedRevocationStatus,
   } = encodedCredentialEntry.unwrap()
-  if (blockNumber !== retrievedBlockNumber.toBn()) {
+  if (!blockNumber.eq(retrievedBlockNumber)) {
     throw new SDKErrors.PublicCredentialError(
       `Block number in the credential (${
         credential.blockNumber

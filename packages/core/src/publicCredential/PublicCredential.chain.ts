@@ -34,7 +34,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import { computeId } from './PublicCredential.js'
 
 export interface EncodedPublicCredential {
-  cTypeHash: CTypeHash
+  ctypeHash: CTypeHash
   subject: AssetDidUri
   claims: HexString
   authorization: IDelegationNode['id'] | null
@@ -54,7 +54,7 @@ export function toChain(
   const cborSerializedClaims = cborEncode(claims)
 
   return {
-    cTypeHash,
+    ctypeHash: cTypeHash,
     subject,
     // FIXME: Using Uint8Array directly fails to encode and decode, I guess because the api object assumes the byte array is SCALE-encoded.
     claims: u8aToHex(new Uint8Array(cborSerializedClaims)),
@@ -83,7 +83,7 @@ function credentialInputFromChain(
 ): IPublicCredentialInput {
   validateUri(credential.subject.toUtf8())
   return {
-    claims: cborDecode(credential.claims.toU8a()),
+    claims: cborDecode(credential.claims),
     cTypeHash: credential.ctypeHash.toHex(),
     delegationId: credential.authorization.unwrapOr(undefined)?.toHex() ?? null,
     subject: credential.subject.toUtf8() as AssetDidUri,

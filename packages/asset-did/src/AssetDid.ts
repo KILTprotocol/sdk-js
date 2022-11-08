@@ -7,13 +7,13 @@
 
 import type {
   AssetDidUri,
-  AssetId,
-  AssetInstance,
-  AssetNamespace,
-  AssetReference,
-  ChainId,
-  ChainNamespace,
-  ChainReference,
+  Caip19AssetId,
+  Caip19AssetInstance,
+  Caip19AssetNamespace,
+  Caip19AssetReference,
+  Caip2ChainId,
+  Caip2ChainNamespace,
+  Caip2ChainReference,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
@@ -23,13 +23,13 @@ const ASSET_DID_REGEX =
 
 type IAssetDidParsingResult = {
   uri: AssetDidUri
-  chainId: ChainId
-  chainNamespace: ChainNamespace
-  chainReference: ChainReference
-  assetId: AssetId
-  assetNamespace: AssetNamespace
-  assetReference: AssetReference
-  assetInstance?: AssetInstance
+  chainId: Caip2ChainId
+  chainNamespace: Caip2ChainNamespace
+  chainReference: Caip2ChainReference
+  assetId: Caip19AssetId
+  assetNamespace: Caip19AssetNamespace
+  assetReference: Caip19AssetReference
+  assetInstance?: Caip19AssetInstance
 }
 
 /**

@@ -8,36 +8,36 @@
 /**
  * A string containing a chain namespace as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type ChainNamespace = string
+export type Caip2ChainNamespace = string
 /**
  * A string containing a chain reference as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type ChainReference = string
+export type Caip2ChainReference = string
 /**
  * A string containing a chain ID as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type ChainId = `${ChainNamespace}:${ChainReference}`
+export type Caip2ChainId = `${Caip2ChainNamespace}:${Caip2ChainReference}`
 
 /**
  * A string containing an asset namespace as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type AssetNamespace = string
+export type Caip19AssetNamespace = string
 /**
  * A string containing an asset namespace as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type AssetReference = string
+export type Caip19AssetReference = string
 /**
  * A string containing an asset instance as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type AssetInstance = string
+export type Caip19AssetInstance = string
 /**
  * A string containing an asset ID as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type AssetId =
-  | `${AssetNamespace}:${AssetReference}`
-  | `${AssetNamespace}:${AssetReference}:${AssetInstance}`
+export type Caip19AssetId =
+  | `${Caip19AssetNamespace}:${Caip19AssetReference}`
+  | `${Caip19AssetNamespace}:${Caip19AssetReference}:${Caip19AssetInstance}`
 
 /**
  * A string containing an AssetDID as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
-export type AssetDidUri = `did:asset:${ChainId}.${AssetId}`
+export type AssetDidUri = `did:asset:${Caip2ChainId}.${Caip19AssetId}`

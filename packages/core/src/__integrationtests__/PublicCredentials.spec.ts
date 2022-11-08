@@ -47,13 +47,10 @@ let latestCredential: IPublicCredentialInput
 
 beforeAll(async () => {
   api = await initializeApi()
-}, 30_000)
-
-beforeAll(async () => {
   tokenHolder = await createEndowedTestAccount()
   attesterKey = makeSigningKeyTool()
   attester = await createFullDidFromSeed(tokenHolder, attesterKey.keypair)
-}, 60_000)
+}, 30_000)
 
 describe('When there is an attester and ctype NFT name', () => {
   beforeAll(async () => {
