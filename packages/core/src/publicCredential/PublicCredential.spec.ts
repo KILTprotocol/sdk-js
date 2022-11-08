@@ -18,10 +18,15 @@ import type {
 } from '@kiltprotocol/types'
 
 import { BN } from '@polkadot/util'
+import { ApiMocks } from '@kiltprotocol/testing'
+import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import { devAlice, nftNameCType } from '../__integrationtests__/utils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
+
+const mockApi = ApiMocks.createAugmentedApi()
+ConfigService.set({ api: mockApi })
 
 const testCType = CType.fromProperties('raw ctype', {
   name: { type: 'string' },
