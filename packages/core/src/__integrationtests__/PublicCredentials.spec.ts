@@ -10,13 +10,16 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
+import type { HexString } from '@polkadot/util/types'
 import type {
   AssetDidUri,
   DidDocument,
+  IPublicCredential,
   IPublicCredentialInput,
   KiltKeyringPair,
 } from '@kiltprotocol/types'
 
+import { BN } from '@polkadot/util'
 import { randomAsHex } from '@polkadot/util-crypto'
 import * as Did from '@kiltprotocol/did'
 import {
@@ -29,6 +32,7 @@ import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
 import {
   createEndowedTestAccount,
+  devAlice,
   initializeApi,
   isCtypeOnChain,
   nftNameCType,
@@ -45,26 +49,36 @@ let api: ApiPromise
 const assetId: AssetDidUri = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
 let latestCredential: IPublicCredentialInput
 
+async function issueCredential(
+  credential: IPublicCredentialInput
+): Promise<void> {
+  const authorizedStoreTx = await Did.authorizeTx(
+    attester.uri,
+    api.tx.publicCredentials.add(PublicCredential.toChain(credential)),
+    attesterKey.getSignCallback(attester),
+    tokenHolder.address
+  )
+  await submitTx(authorizedStoreTx, tokenHolder)
+}
+
 beforeAll(async () => {
   api = await initializeApi()
   tokenHolder = await createEndowedTestAccount()
   attesterKey = makeSigningKeyTool()
   attester = await createFullDidFromSeed(tokenHolder, attesterKey.keypair)
+
+  const ctypeExists = await isCtypeOnChain(nftNameCType)
+  if (ctypeExists) return
+  const tx = await Did.authorizeTx(
+    attester.uri,
+    api.tx.ctype.add(CType.toChain(nftNameCType)),
+    attesterKey.getSignCallback(attester),
+    tokenHolder.address
+  )
+  await submitTx(tx, tokenHolder)
 }, 30_000)
 
 describe('When there is an attester and ctype NFT name', () => {
-  beforeAll(async () => {
-    const ctypeExists = await isCtypeOnChain(nftNameCType)
-    if (ctypeExists) return
-    const tx = await Did.authorizeTx(
-      attester.uri,
-      api.tx.ctype.add(CType.toChain(nftNameCType)),
-      attesterKey.getSignCallback(attester),
-      tokenHolder.address
-    )
-    await submitTx(tx, tokenHolder)
-  }, 60_000)
-
   it('should be possible to issue a credential', async () => {
     latestCredential = {
       claims: {
@@ -74,14 +88,7 @@ describe('When there is an attester and ctype NFT name', () => {
       delegationId: null,
       subject: assetId,
     }
-    const encodedPublicCredential = PublicCredential.toChain(latestCredential)
-    const authorizedStoreTx = await Did.authorizeTx(
-      attester.uri,
-      api.tx.publicCredentials.add(encodedPublicCredential),
-      attesterKey.getSignCallback(attester),
-      tokenHolder.address
-    )
-    await submitTx(authorizedStoreTx, tokenHolder)
+    await issueCredential(latestCredential)
     const credentialId = PublicCredential.computeId(
       latestCredential,
       attester.uri
@@ -117,14 +124,7 @@ describe('When there is an attester and ctype NFT name', () => {
       delegationId: null,
       subject: assetId,
     }
-    const encodedPublicCredential = PublicCredential.toChain(latestCredential)
-    const authorizedStoreTx = await Did.authorizeTx(
-      attester.uri,
-      api.tx.publicCredentials.add(encodedPublicCredential),
-      attesterKey.getSignCallback(attester),
-      tokenHolder.address
-    )
-    await submitTx(authorizedStoreTx, tokenHolder)
+    await issueCredential(latestCredential)
 
     const assetCredentials = await PublicCredential.credentialsFromChain(
       await api.call.publicCredentials.getBySubject(assetId, null)
@@ -304,6 +304,197 @@ describe('When there is an attester and ctype NFT name', () => {
     expect(allAssetCredentialsAfterRevocation.length).toEqual(
       allAssetCredentialsBeforeRevocation.length - 1
     )
+  })
+})
+
+describe('When there is an issued public credential', () => {
+  let credential: IPublicCredential
+
+  beforeAll(async () => {
+    latestCredential = {
+      claims: {
+        name: `Certified NFT collection with id ${UUID.generate()}`,
+      },
+      cTypeHash: CType.getHashForSchema(nftNameCType),
+      delegationId: null,
+      subject: assetId,
+    }
+
+    await issueCredential(latestCredential)
+    const credentialId = PublicCredential.computeId(
+      latestCredential,
+      attester.uri
+    )
+    credential = await PublicCredential.credentialFromChain(
+      credentialId,
+      await api.call.publicCredentials.getById(credentialId)
+    )
+  })
+
+  it('should be successfully verified when another party receives it', async () => {
+    await expect(
+      PublicCredential.verifyCredential(credential)
+    ).resolves.not.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it does not have an ID', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...credentialWithoutId } = credential
+    await expect(
+      PublicCredential.verifyCredential(credentialWithoutId as any)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it does not have a ctype hash', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { cTypeHash, ...credentialWithoutCTypeHash } = credential
+    await expect(
+      PublicCredential.verifyCredential(credentialWithoutCTypeHash as any)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it has a different ctype hash', async () => {
+    const credentialWithDifferentCTypeHash = {
+      ...credential,
+      cTypeHash:
+        '0x1122334455667788112233445566778811223344556677881122334455667788' as HexString,
+    }
+    await expect(
+      PublicCredential.verifyCredential(credentialWithDifferentCTypeHash)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it has different delegation info', async () => {
+    const credentialWithDifferentDelegationId = {
+      ...credential,
+      delegationId:
+        '0x1122334455667788112233445566778811223344556677881122334455667788' as HexString,
+    }
+    await expect(
+      PublicCredential.verifyCredential(credentialWithDifferentDelegationId)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it does not have a subject', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { subject, ...credentialWithoutSubject } = credential
+    await expect(
+      PublicCredential.verifyCredential(credentialWithoutSubject as any)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it has a different subject', async () => {
+    const credentialWithDifferentSubject = {
+      ...credential,
+      subject:
+        'did:asset:eip155:1.erc721:0x6d19295A5E47199D823D8793942b21a256ef1A4d' as AssetDidUri,
+    }
+    await expect(
+      PublicCredential.verifyCredential(credentialWithDifferentSubject)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it does not have claims', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { claims, ...credentialWithoutClaims } = credential
+    await expect(
+      PublicCredential.verifyCredential(credentialWithoutClaims as any)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it has different claims', async () => {
+    const credentialWithDifferentSubject = {
+      ...credential,
+      claims: {
+        name: 'Just a different name',
+      },
+    }
+    await expect(
+      PublicCredential.verifyCredential(credentialWithDifferentSubject)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it does not have attester info', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { attester: att, ...credentialWithoutAttester } = credential
+    await expect(
+      PublicCredential.verifyCredential(credentialWithoutAttester as any)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it has different attester info', async () => {
+    const credentialWithDifferentAttester = {
+      ...credential,
+      attester: Did.getFullDidUri(devAlice.address),
+    }
+    await expect(
+      PublicCredential.verifyCredential(credentialWithDifferentAttester)
+    ).rejects.toThrow()
+  })
+
+  // CType verification is actually broken
+  it.skip('should not be verified when another party receives it if it does not match a provided ctype', async () => {
+    await expect(
+      PublicCredential.verifyCredential(credential, {
+        cType: CType.fromProperties('Test CType', {
+          name: {
+            type: 'string',
+          },
+        }),
+      })
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it does not have a block number', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { blockNumber, ...credentialWithoutBlockNumber } = credential
+    await expect(
+      PublicCredential.verifyCredential(credentialWithoutBlockNumber as any)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it has a different block number', async () => {
+    const credentialWithDifferentBlockNumber = {
+      ...credential,
+      blockNumber: new BN(99999),
+    }
+    await expect(
+      PublicCredential.verifyCredential(credentialWithDifferentBlockNumber)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it does not have revocation info', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { revoked, ...credentialWithoutRevocationInfo } = credential
+    await expect(
+      PublicCredential.verifyCredential(credentialWithoutRevocationInfo as any)
+    ).rejects.toThrow()
+  })
+
+  it('should not be verified when another party receives it if it has a different revocation info', async () => {
+    // Revoke first
+    const revocationTx = api.tx.publicCredentials.revoke(credential.id, null)
+    const authorizedTx = await Did.authorizeTx(
+      attester.uri,
+      revocationTx,
+      attesterKey.getSignCallback(attester),
+      tokenHolder.address
+    )
+    await submitTx(authorizedTx, tokenHolder)
+
+    // credential has revoked: false, but it is now true
+    await expect(
+      PublicCredential.verifyCredential(credential)
+    ).rejects.toThrow()
+  })
+
+  it('should be successfully verified if the credential content is authentic even if the credential has been revoked', async () => {
+    await expect(
+      PublicCredential.verifyCredential({
+        ...credential,
+        revoked: true,
+      })
+    ).resolves.not.toThrow()
   })
 })
 

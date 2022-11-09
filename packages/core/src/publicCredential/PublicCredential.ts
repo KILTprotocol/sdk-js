@@ -120,6 +120,8 @@ type VerifyOptions = {
 /**
  * Verifies if a received [[IPublicCredential]] is valid, meaning if its content has not been tampered with and optionally if its structure matches a given [[ICType]].
  *
+ * **Successful verification of a public credential still requires the consumer to check the `revoked` property and take the appropriate action**.
+ *
  * We recommend consumer of credentials to fetch them themselves using the functions exposed in this SDK.
  * Nevertheless, for some use cases having a function that verifies the content of a credential directly could be handy.
  * This function does that: it takes a [[IPublicCredential]], and re-computes its cryptographically-generated ID to verify the content authenticity.
@@ -142,9 +144,8 @@ export async function verifyCredential(
   }
   const api = ConfigService.get('api')
 
-  // Try to fetch the credential details from the blockchain state.
-  const encodedCredentialEntry = await api.query.publicCredentials.credentials(
-    credentialInput.subject,
+  // Try to fetch a credential with the same ID.
+  const encodedCredentialEntry = await api.call.publicCredentials.getById(
     recomputedId
   )
   // If the credential entry can be fetched, it means that the key content has not been tampered with.
