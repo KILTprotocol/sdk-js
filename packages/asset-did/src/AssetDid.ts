@@ -44,7 +44,7 @@ export function parse(assetDidUri: AssetDidUri): IAssetDidParsingResult {
     throw new SDKErrors.InvalidDidFormatError(assetDidUri)
   }
 
-  const { chainId, assetId } = matches as Omit<IAssetDidParsingResult, 'did'>
+  const { chainId, assetId } = matches as Omit<IAssetDidParsingResult, 'uri'>
 
   return {
     ...(matches as Omit<IAssetDidParsingResult, 'did'>),

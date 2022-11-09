@@ -89,7 +89,7 @@ describe('When there is an attester and ctype NFT name', () => {
       subject: assetId,
     }
     await issueCredential(latestCredential)
-    const credentialId = PublicCredential.computeId(
+    const credentialId = PublicCredential.getIdForCredential(
       latestCredential,
       attester.uri
     )
@@ -167,7 +167,7 @@ describe('When there is an attester and ctype NFT name', () => {
   })
 
   it('should be possible to revoke a credential', async () => {
-    const credentialId = PublicCredential.computeId(
+    const credentialId = PublicCredential.getIdForCredential(
       latestCredential,
       attester.uri
     )
@@ -215,7 +215,7 @@ describe('When there is an attester and ctype NFT name', () => {
   })
 
   it('should be possible to unrevoke a credential', async () => {
-    const credentialId = PublicCredential.computeId(
+    const credentialId = PublicCredential.getIdForCredential(
       latestCredential,
       attester.uri
     )
@@ -265,7 +265,7 @@ describe('When there is an attester and ctype NFT name', () => {
   })
 
   it('should be possible to remove a credential', async () => {
-    const credentialId = PublicCredential.computeId(
+    const credentialId = PublicCredential.getIdForCredential(
       latestCredential,
       attester.uri
     )
@@ -321,7 +321,7 @@ describe('When there is an issued public credential', () => {
     }
 
     await issueCredential(latestCredential)
-    const credentialId = PublicCredential.computeId(
+    const credentialId = PublicCredential.getIdForCredential(
       latestCredential,
       attester.uri
     )

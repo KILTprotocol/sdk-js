@@ -31,7 +31,7 @@ import { fromChain as didFromChain } from '@kiltprotocol/did'
 import { validateUri } from '@kiltprotocol/asset-did'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { computeId } from './PublicCredential.js'
+import { getIdForCredential } from './PublicCredential.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
@@ -76,17 +76,20 @@ function flattenCalls(api: ApiPromise, call: Call): Call[] {
   return [call]
 }
 
-// Transform a blockchain-formatted public credential into the original [[IPublicCredentialInput]].
+// Transform a blockchain-formatted public credential [[PublicCredentialsCredentialsCredential]] into the original [[IPublicCredentialInput]].
 // It throws if what was written on the chain was garbage.
-function credentialInputFromChain(
-  credential: PublicCredentialsCredentialsCredential
-): IPublicCredentialInput {
-  validateUri(credential.subject.toUtf8())
+function credentialInputFromChain({
+  claims,
+  ctypeHash,
+  authorization,
+  subject,
+}: PublicCredentialsCredentialsCredential): IPublicCredentialInput {
+  validateUri(subject.toUtf8())
   return {
-    claims: cborDecode(credential.claims),
-    cTypeHash: credential.ctypeHash.toHex(),
-    delegationId: credential.authorization.unwrapOr(undefined)?.toHex() ?? null,
-    subject: credential.subject.toUtf8() as AssetDidUri,
+    claims: cborDecode(claims),
+    cTypeHash: ctypeHash.toHex(),
+    delegationId: authorization.unwrapOr(undefined)?.toHex() ?? null,
+    subject: subject.toUtf8() as AssetDidUri,
   }
 }
 
@@ -166,7 +169,10 @@ export async function credentialFromChain(
   const lastRightCredentialCreationCall = callCredentialsContent
     .reverse()
     .find((credentialInput) => {
-      const reconstructedId = computeId(credentialInput, extrinsicDidOrigin)
+      const reconstructedId = getIdForCredential(
+        credentialInput,
+        extrinsicDidOrigin
+      )
       return reconstructedId === credentialId
     })
 
@@ -178,7 +184,7 @@ export async function credentialFromChain(
   return {
     ...lastRightCredentialCreationCall,
     attester: extrinsicDidOrigin,
-    id: computeId(lastRightCredentialCreationCall, extrinsicDidOrigin),
+    id: getIdForCredential(lastRightCredentialCreationCall, extrinsicDidOrigin),
     blockNumber,
     revoked: revoked.toPrimitive(),
   }

@@ -28,7 +28,7 @@ import { verifyClaimAgainstSchema } from '../ctype/CType.js'
 import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
 
 /**
- * Calculates the ID of a [[IPublicCredentialInput]], to be used to retrieve the full content from the blockchain.
+ * Calculates the ID of a [[IPublicCredentialInput]], to be used to retrieve the full credential content from the blockchain.
  *
  * The ID is formed by first concatenating the SCALE-encoded [[IPublicCredentialInput]] with the SCALE-encoded [[DidUri]] and then Blake2b hashing the result.
  *
@@ -36,7 +36,7 @@ import { toChain as publicCredentialToChain } from './PublicCredential.chain.js'
  * @param attester The DID of the credential attester.
  * @returns The credential ID.
  */
-export function computeId(
+export function getIdForCredential(
   credential: IPublicCredentialInput,
   attester: DidUri
 ): HexString {
@@ -57,7 +57,7 @@ export function computeId(
   )
 }
 
-function verifyClaimsStructure(input: IAssetClaim | PartialAssetClaim): void {
+function verifyClaimStructure(input: IAssetClaim | PartialAssetClaim): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
@@ -87,7 +87,7 @@ function verifyDataStructure(input: IPublicCredentialInput): void {
     throw new SDKErrors.SubjectMissingError()
   }
 
-  verifyClaimsStructure({
+  verifyClaimStructure({
     cTypeHash: input.cTypeHash,
     contents: input.claims,
     subject: input.subject,
@@ -136,10 +136,13 @@ export async function verifyCredential(
 ): Promise<void> {
   const { id, attester, blockNumber, revoked, ...credentialInput } = credential
 
-  const recomputedId = computeId(credentialInput, attester)
+  const recomputedId = getIdForCredential(credentialInput, attester)
   if (recomputedId !== id) {
     throw new SDKErrors.PublicCredentialError(
-      `Id in credential and re-computed ID differ. ${id} != ${recomputedId}`
+      `
+      ID in credential and re-computed ID differ: ${id} != ${recomputedId}.
+      This means that the content of the provided credential does not match the original one.
+      `
     )
   }
   const api = ConfigService.get('api')

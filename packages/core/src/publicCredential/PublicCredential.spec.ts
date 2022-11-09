@@ -49,7 +49,7 @@ function buildCredential(
   return {
     ...credential,
     attester,
-    id: PublicCredential.computeId(credential, attester),
+    id: PublicCredential.getIdForCredential(credential, attester),
     blockNumber: new BN(0),
     revoked: false,
   }
