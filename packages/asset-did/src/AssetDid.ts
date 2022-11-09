@@ -47,7 +47,7 @@ export function parse(assetDidUri: AssetDidUri): IAssetDidParsingResult {
   const { chainId, assetId } = matches as Omit<IAssetDidParsingResult, 'uri'>
 
   return {
-    ...(matches as Omit<IAssetDidParsingResult, 'did'>),
+    ...(matches as Omit<IAssetDidParsingResult, 'uri'>),
     uri: `did:asset:${chainId}.${assetId}`,
   }
 }
