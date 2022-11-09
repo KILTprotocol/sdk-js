@@ -84,12 +84,13 @@ function credentialInputFromChain({
   authorization,
   subject,
 }: PublicCredentialsCredentialsCredential): IPublicCredentialInput {
-  validateUri(subject.toUtf8())
+  const credentialSubject = subject.toUtf8()
+  validateUri(credentialSubject)
   return {
     claims: cborDecode(claims),
     cTypeHash: ctypeHash.toHex(),
     delegationId: authorization.unwrapOr(undefined)?.toHex() ?? null,
-    subject: subject.toUtf8() as AssetDidUri,
+    subject: credentialSubject as AssetDidUri,
   }
 }
 
