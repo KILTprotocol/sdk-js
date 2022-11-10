@@ -390,7 +390,6 @@ export function getMockedApi(): MockApiPromise {
       },
     },
     registry: TYPE_REGISTRY,
-    createType: TYPE_REGISTRY.createType,
     hasSubscriptions: true,
   }
   MockedApi.query.did.serviceEndpoints.entries = jest.fn().mockReturnValue([])
