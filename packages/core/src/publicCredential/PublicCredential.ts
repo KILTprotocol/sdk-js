@@ -98,7 +98,15 @@ function verifyDataStructure(input: IPublicCredentialInput): void {
   }
 }
 
-function verifyAgainstCType(
+/**
+ * Checks the [[IPublicCredential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ *
+ * This function is meant to be used by consumers of this [[IPublicCredential]], once they have retrieved the full credential content.
+ *
+ * @param credential A [[IPublicCredential]] for the attester.
+ * @param cType A [[CType]] to verify the [[Claim]] structure.
+ */
+export function verifyAgainstCType(
   credential: IPublicCredential,
   cType: ICType
 ): void {
