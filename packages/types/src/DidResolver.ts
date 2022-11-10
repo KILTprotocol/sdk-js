@@ -45,6 +45,10 @@ export type DidResolutionResult = {
    * The DID resolution metadata.
    */
   metadata: DidResolutionDocumentMetadata
+  /**
+   * The DID's web3Name, if any.
+   */
+  alsoKnownAs?: string
 }
 
 export type ResolvedDidKey = Pick<ConformingDidKey, 'id' | 'controller'> &
