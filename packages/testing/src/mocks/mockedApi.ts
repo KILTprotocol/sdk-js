@@ -226,6 +226,10 @@ export function getMockedApi(): MockApiPromise {
         queryByAccount: jest.fn(),
         queryByWeb3Name: jest.fn(),
       },
+      publicCredentials: {
+        getById: jest.fn(),
+        getBySubject: jest.fn(),
+      },
     },
     tx: {
       attestation: {
@@ -374,6 +378,10 @@ export function getMockedApi(): MockApiPromise {
             new U64(TYPE_REGISTRY, 1)
           )
         ),
+      },
+      publicCredentials: {
+        credentials: jest.fn(),
+        credentialSubjects: jest.fn(),
       },
     },
     runtimeMetadata: {

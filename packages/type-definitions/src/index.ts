@@ -30,6 +30,7 @@ import { types10900 } from './types_10900.js'
 
 import { calls as didCalls } from './runtime/did.js'
 import { calls as stakingCalls } from './runtime/staking.js'
+import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 
 export {
   types8,
@@ -52,6 +53,7 @@ export {
 
 export { calls as didCalls } from './runtime/did.js'
 export { calls as stakingCalls } from './runtime/staking.js'
+export { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -123,6 +125,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -130,6 +133,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -137,6 +141,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -144,18 +149,21 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
     'KILT Mashnet': {
       runtime: {
         ...didCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
     Development: {
       runtime: {
         ...didCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
