@@ -24,7 +24,6 @@ import type {
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 
-import { u8aToHex } from '@polkadot/util'
 import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { fromChain as didFromChain } from '@kiltprotocol/did'
@@ -56,8 +55,7 @@ export function toChain(
   return {
     ctypeHash: cTypeHash,
     subject,
-    // Using Uint8Array directly fails to encode and decode, I guess because the api object assumes the byte array is SCALE-encoded.
-    claims: u8aToHex(new Uint8Array(cborSerializedClaims)),
+    claims: `0x${cborSerializedClaims.toString('hex')}`,
     authorization: delegationId,
   }
 }
