@@ -19,12 +19,18 @@ import type {
 
 import { BN } from '@polkadot/util'
 import { ApiMocks } from '@kiltprotocol/testing'
+import { Crypto } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import { devAlice, nftNameCType } from '../__integrationtests__/utils'
 import * as CType from '../ctype'
 import * as PublicCredential from '../publicCredential'
 
+const devAlice = Crypto.makeKeypairFromUri('//Alice')
+const nftNameCType = CType.fromProperties('NFT collection name', {
+  name: {
+    type: 'string',
+  },
+})
 const mockApi = ApiMocks.createAugmentedApi()
 ConfigService.set({ api: mockApi })
 
