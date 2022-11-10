@@ -24,21 +24,6 @@ export interface PublicCredentialFilter extends Enum {
   readonly type: 'CtypeHash' | 'Attester';
 }
 
-/** @name PublicCredentialError */
-export interface PublicCredentialError extends Enum {
-  readonly isInvalidSubjectId: boolean;
-  readonly type: 'InvalidSubjectId';
-}
-
-/** @name PublicCredentialFilter */
-export interface PublicCredentialFilter extends Enum {
-  readonly isCtypeHash: boolean;
-  readonly asCtypeHash: Hash;
-  readonly isAttester: boolean;
-  readonly asAttester: AccountId32;
-  readonly type: 'CtypeHash' | 'Attester';
-}
-
 /** @name RawDidLinkedInfo */
 export interface RawDidLinkedInfo extends Struct {
   readonly identifier: AccountId32;
