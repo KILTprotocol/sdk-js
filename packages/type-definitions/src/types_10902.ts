@@ -9,7 +9,7 @@ import type { RegistryTypes } from '@polkadot/types/types'
 
 import { types10800 } from './types_10800.js'
 
-export const types10900: RegistryTypes = {
+export const types10902: RegistryTypes = {
   ...types10800,
   // DID state_call v2
   DidApiAccountId: 'PalletDidLookupLinkableAccountLinkableAccountId',
