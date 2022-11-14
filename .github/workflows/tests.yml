@@ -37,10 +37,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 14
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'yarn'
       - name: yarn install
         run: yarn install --immutable
@@ -59,10 +59,10 @@ jobs:
     needs: build
 
     steps:
-      - name: Use Node.js 14
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -79,10 +79,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14, 16]
+        node-version: [16, 18]
         required: ['required']
         include:
-          - node-version: 18
+          - node-version: 14
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
@@ -125,10 +125,10 @@ jobs:
     steps:
       - name: Log out node version
         run: node --version
-      - name: Use Node.js 14
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
       - name: Log out node version
         run: node --version
       - uses: actions/download-artifact@v2
@@ -171,10 +171,10 @@ jobs:
     needs: build
 
     steps:
-      - name: Use Node.js 14
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
       - uses: actions/download-artifact@v2
         with:
           name: build
@@ -202,10 +202,10 @@ jobs:
 
     continue-on-error: ${{ matrix.required == 'optional' }}
     steps:
-      - name: Use Node.js 14
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
       - uses: actions/download-artifact@v2
         with:
           name: build

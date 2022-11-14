@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x]
+        node-version: [16.x, 18.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -68,10 +68,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [16.x, 18.x]
         required: ['required']
         include:
-          - node-version: 16.x
+          - node-version: 14.x
             required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
@@ -103,7 +103,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-14.x
+          name: build-18.x
       - name: unzip
         run: unzip build.zip -d .
 
@@ -143,7 +143,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: deps-14.x
+          name: deps-18.x
       - name: set dependencies env
         run: |
           echo 'DEPS<<EOF' >> $GITHUB_ENV
