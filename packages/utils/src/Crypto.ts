@@ -171,7 +171,7 @@ export function encodeObjectAsStr(
       ? JSON.stringify(value)
       : value
 
-  return input
+  return input.normalize('NFC')
 }
 
 /**
