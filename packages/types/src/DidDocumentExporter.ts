@@ -56,7 +56,7 @@ export type ConformingDidKey = {
    */
   publicKeyBase58: string
   /**
-   * The signing/encryption algorithm type where the key can be used.
+   * The key type signalling the intended signing/encryption algorithm for the use of this key.
    */
   type: ConformingDidDocumentKeyType
 }
