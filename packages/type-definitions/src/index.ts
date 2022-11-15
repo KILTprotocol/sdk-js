@@ -140,6 +140,14 @@ export const typesBundle: OverrideBundleType = {
       },
       types: defaultTypesBundle,
     },
+    'KILT Peregrine Stagenet': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
+        ...publicCredentialsCalls,
+      },
+      types: defaultTypesBundle,
+    },
     'KILT Peregrine Develop': {
       runtime: {
         ...didCalls,
