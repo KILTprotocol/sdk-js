@@ -60,7 +60,7 @@ describe('When there is an on-chain DID', () => {
       // Check that no links exist
       expect(
         (
-          await api.call.didApi.queryDidByAccountId(
+          await api.call.did.queryByAccount(
             Did.accountToChain(paymentAccount.address)
           )
         ).isNone
@@ -90,7 +90,7 @@ describe('When there is an on-chain DID', () => {
           .toString()
       ).toMatchInlineSnapshot('"0"')
       // Check that the link has been created correctly
-      const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+      const encodedQueryByAccount = await api.call.did.queryByAccount(
         Did.accountToChain(paymentAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -118,7 +118,7 @@ describe('When there is an on-chain DID', () => {
         balanceAfter.reserved.sub(balanceBefore.reserved).toString()
       ).toMatchInlineSnapshot('"0"')
       // Check that account is linked to new DID
-      const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+      const encodedQueryByAccount = await api.call.did.queryByAccount(
         Did.accountToChain(paymentAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -139,7 +139,7 @@ describe('When there is an on-chain DID', () => {
       expect(
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
-      const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+      const encodedQueryByAccount = await api.call.did.queryByAccount(
         Did.accountToChain(paymentAccount.address)
       )
       expect(encodedQueryByAccount.isNone).toBe(true)
@@ -196,7 +196,7 @@ describe('When there is an on-chain DID', () => {
             .sub(linkDeposit)
             .toString()
         ).toMatchInlineSnapshot('"0"')
-        const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+        const encodedQueryByAccount = await api.call.did.queryByAccount(
           Did.accountToChain(keypair.address)
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -229,7 +229,7 @@ describe('When there is an on-chain DID', () => {
           balanceAfter.reserved.sub(balanceBefore.reserved).toString()
         ).toMatchInlineSnapshot('"0"')
 
-        const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+        const encodedQueryByAccount = await api.call.did.queryByAccount(
           Did.accountToChain(keypair.address)
         )
         const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -258,11 +258,11 @@ describe('When there is an on-chain DID', () => {
           balanceBefore.reserved.sub(balanceAfter.reserved).toString()
         ).toStrictEqual(linkDeposit.toString())
         // Check that the link has been removed completely
-        const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+        const encodedQueryByAccount = await api.call.did.queryByAccount(
           Did.accountToChain(paymentAccount.address)
         )
         expect(encodedQueryByAccount.isNone).toBe(true)
-        const encodedQueryByDid = await api.call.didApi.queryDid(
+        const encodedQueryByDid = await api.call.did.query(
           Did.toChain(newDid.uri)
         )
         const queryByDid = Did.linkedInfoFromChain(encodedQueryByDid)
@@ -314,7 +314,7 @@ describe('When there is an on-chain DID', () => {
           .sub(linkDeposit)
           .toString()
       ).toMatchInlineSnapshot('"0"')
-      const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+      const encodedQueryByAccount = await api.call.did.queryByAccount(
         Did.accountToChain(genericAccount.address)
       )
       // Use generic substrate address prefix
@@ -334,11 +334,11 @@ describe('When there is an on-chain DID', () => {
       await submitTx(signedTx, paymentAccount)
 
       // Check that the Web3 name has been linked to the DID
-      const encodedQueryByW3n = await api.call.didApi.queryDidByW3n('test-name')
+      const encodedQueryByW3n = await api.call.did.queryByWeb3Name('test-name')
       const queryByW3n = Did.linkedInfoFromChain(encodedQueryByW3n)
       expect(queryByW3n.document.uri).toStrictEqual(did.uri)
       // Check that it is possible to retrieve the web3 name from the account linked to the DID
-      const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+      const encodedQueryByAccount = await api.call.did.queryByAccount(
         Did.accountToChain(genericAccount.address)
       )
       const queryByAccount = Did.linkedInfoFromChain(encodedQueryByAccount)
@@ -361,7 +361,7 @@ describe('When there is an on-chain DID', () => {
         balanceBefore.reserved.sub(balanceAfter.reserved).toString()
       ).toStrictEqual(linkDeposit.toString())
       // Check that the link has been removed completely
-      const encodedQueryByAccount = await api.call.didApi.queryDidByAccountId(
+      const encodedQueryByAccount = await api.call.did.queryByAccount(
         Did.accountToChain(genericAccount.address)
       )
       expect(encodedQueryByAccount.isNone).toBe(true)

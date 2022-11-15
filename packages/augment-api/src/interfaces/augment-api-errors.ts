@@ -647,10 +647,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoMoreUnstaking: AugmentedError<ApiType>;
       /**
-       * The account has not staked enough funds to become a delegator.
-       **/
-      NomStakeBelowMin: AugmentedError<ApiType>;
-      /**
        * The collator candidate wanted to execute the exit but has not
        * requested to leave before by calling `init_leave_candidates`.
        **/
@@ -661,9 +657,18 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotYetDelegating: AugmentedError<ApiType>;
       /**
+       * Cannot claim rewards if empty.
+       **/
+      RewardsNotFound: AugmentedError<ApiType>;
+      /**
        * Provided staked value is zero. Should never be thrown.
        **/
       StakeNotFound: AugmentedError<ApiType>;
+      /**
+       * The reward rate cannot be adjusted yet as an entire year has not
+       * passed.
+       **/
+      TooEarly: AugmentedError<ApiType>;
       /**
        * The set of collator candidates would fall below the required minimum
        * if the collator left.
@@ -1091,6 +1096,10 @@ declare module '@polkadot/api-base/types/errors' {
        * The specified owner does not own any names.
        **/
       OwnerNotFound: AugmentedError<ApiType>;
+      /**
+       * The origin was not authorized to perform that action
+       **/
+      Unauthorized: AugmentedError<ApiType>;
       /**
        * The specified name has already been previously banned.
        **/

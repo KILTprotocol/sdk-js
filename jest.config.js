@@ -29,6 +29,7 @@ module.exports = {
     '!utils/src/json-schema/*',
     '!testing/**',
     '!augment-api/**',
+    '!type-definitions/**',
     '!**/*.chain.ts',
     '!did/src/Did.chain.ts',
     '!did/src/Did.rpc.ts',

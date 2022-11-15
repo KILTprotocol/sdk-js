@@ -97,14 +97,12 @@ describe('When there is an Web3NameCreator and a payer', () => {
   it('should be possible to lookup the DID uri with the given nick', async () => {
     const {
       document: { uri },
-    } = Did.linkedInfoFromChain(await api.call.didApi.queryDidByW3n(nick))
+    } = Did.linkedInfoFromChain(await api.call.did.queryByWeb3Name(nick))
     expect(uri).toStrictEqual(w3nCreator.uri)
   }, 30_000)
 
   it('should be possible to lookup the nick with the given DID uri', async () => {
-    const encodedDidInfo = await api.call.didApi.queryDid(
-      Did.toChain(w3nCreator.uri)
-    )
+    const encodedDidInfo = await api.call.did.query(Did.toChain(w3nCreator.uri))
     const didInfo = Did.linkedInfoFromChain(encodedDidInfo)
     expect(didInfo.web3Name).toBe(nick)
   }, 30_000)

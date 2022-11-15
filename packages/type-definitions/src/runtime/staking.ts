@@ -8,7 +8,7 @@
 import type { DefinitionsCall } from '@polkadot/types/types'
 
 export const calls: DefinitionsCall = {
-  ParachainStakingApi: [
+  Staking: [
     {
       methods: {
         get_staking_rates: {

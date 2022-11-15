@@ -24,11 +24,12 @@ import { types25 } from './types_25.js'
 import { types2700 } from './types_2700.js'
 import { types10720 } from './types_10720.js'
 import { types10800 } from './types_10800.js'
+import { types10900 } from './types_10900.js'
 
 // Custom runtime calls
 
 import { calls as didCalls } from './runtime/did.js'
-import { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+import { calls as stakingCalls } from './runtime/staking.js'
 
 export {
   types8,
@@ -45,11 +46,12 @@ export {
   types2700,
   types10720,
   types10800,
-  types10720 as types,
+  types10900,
+  types10800 as types,
 }
 
 export { calls as didCalls } from './runtime/did.js'
-export { calls as parachainStakingCalls } from './runtime/parachainStaking.js'
+export { calls as stakingCalls } from './runtime/staking.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -105,8 +107,12 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types10720,
   },
   {
-    minmax: [10800, undefined],
+    minmax: [10800, 10899],
     types: types10800,
+  },
+  {
+    minmax: [10900, undefined],
+    types: types10900,
   },
 ]
 
@@ -116,14 +122,35 @@ export const typesBundle: OverrideBundleType = {
     'KILT Spiritnet': {
       runtime: {
         ...didCalls,
-        ...parachainStakingCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Spiritnet Develop': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
       },
       types: defaultTypesBundle,
     },
     'KILT Peregrine': {
       runtime: {
         ...didCalls,
-        ...parachainStakingCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Peregrine Stagenet': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
+      },
+      types: defaultTypesBundle,
+    },
+    'KILT Peregrine Develop': {
+      runtime: {
+        ...didCalls,
+        ...stakingCalls,
       },
       types: defaultTypesBundle,
     },
@@ -136,7 +163,6 @@ export const typesBundle: OverrideBundleType = {
     Development: {
       runtime: {
         ...didCalls,
-        ...parachainStakingCalls,
       },
       types: defaultTypesBundle,
     },

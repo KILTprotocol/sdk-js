@@ -232,10 +232,15 @@ export async function verifySignature(
     throw new SDKErrors.SignatureUnverifiableError(
       'Challenge differs from expected'
     )
+
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
     ...signatureFromJson(claimerSignature),
     message: signingData,
+    // check if credential owner matches signer
+    expectedSigner: input.claim.owner,
+    // allow full did to sign presentation if owned by corresponding light did
+    allowUpgraded: true,
     expectedVerificationMethod: 'authentication',
     didResolveKey,
   })
@@ -406,8 +411,8 @@ export async function createPresentation({
   // filter attributes that are not in public attributes
   const excludedClaimProperties = selectedAttributes
     ? Array.from(getAttributes(credential)).filter(
-      (property) => !selectedAttributes.includes(property)
-    )
+        (property) => !selectedAttributes.includes(property)
+      )
     : []
 
   // remove these attributes
@@ -424,6 +429,9 @@ export async function createPresentation({
 
   return {
     ...presentation,
-    claimerSignature: { ...signatureToJson(signature), challenge },
+    claimerSignature: {
+      ...signatureToJson(signature),
+      ...(challenge && { challenge }),
+    },
   }
 }
