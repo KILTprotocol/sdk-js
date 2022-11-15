@@ -429,6 +429,9 @@ export async function createPresentation({
 
   return {
     ...presentation,
-    claimerSignature: { ...signatureToJson(signature), challenge },
+    claimerSignature: {
+      ...signatureToJson(signature),
+      ...(challenge && { challenge }),
+    },
   }
 }
