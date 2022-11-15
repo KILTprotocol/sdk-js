@@ -346,21 +346,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       proxyDepositFactor: u128 & AugmentedConst<ApiType>;
     };
-    publicCredentials: {
-      /**
-       * The amount of tokens to reserve when attesting a public credential.
-       **/
-      deposit: u128 & AugmentedConst<ApiType>;
-      /**
-       * The maximum length in bytes of the encoded claims of a credential.
-       **/
-      maxEncodedClaimsLength: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum length in bytes of the raw credential subject
-       * identifier.
-       **/
-      maxSubjectIdLength: u32 & AugmentedConst<ApiType>;
-    };
     scheduler: {
       /**
        * The maximum weight that may be scheduled per block for any dispatchables of less
