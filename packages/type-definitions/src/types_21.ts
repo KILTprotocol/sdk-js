@@ -66,4 +66,5 @@ export const types21: RegistryTypes = {
     delegations: 'Vec<Stake>',
     total: 'Balance',
   },
+  Lookup80: '[u8; 34]',
 }

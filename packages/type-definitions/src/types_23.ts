@@ -13,6 +13,7 @@ delete types21.MaxCollatorCandidates
 delete types21.MinSelectedCandidates
 delete types21.Collator
 delete types21.CollatorStatus
+delete types21.Lookup80
 
 export const types23: RegistryTypes = {
   ...types21,
