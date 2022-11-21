@@ -6,15 +6,16 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
+import { subtype } from './subtyper.js'
 import { types17 } from './types_17.js'
 
-// Remove old DID types
-delete types17.DidCreationOperation
-delete types17.DidUpdateOperation
-delete types17.DidDeletionOperation
-
 export const types18: RegistryTypes = {
-  ...types17,
+  // Remove old DID types
+  ...subtype(types17, [
+    'DidCreationOperation',
+    'DidUpdateOperation',
+    'DidDeletionOperation',
+  ]),
 
   // DID management update
   DidCreationDetails: {

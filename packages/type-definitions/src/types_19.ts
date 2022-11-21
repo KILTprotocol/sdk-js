@@ -6,13 +6,11 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
+import { subtype } from './subtyper.js'
 import { types18 } from './types_18.js'
 
-// Remove old types
-delete types18.DidVerificationKeyUpdateAction
-
 export const types19: RegistryTypes = {
-  ...types18,
+  ...subtype(types18, ['DidVerificationKeyUpdateAction']),
 
   // New types
   ServiceEndpoints: {

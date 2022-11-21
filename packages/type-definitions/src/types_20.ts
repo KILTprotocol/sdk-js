@@ -6,13 +6,11 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
+import { subtype } from './subtyper.js'
 import { types19 } from './types_19.js'
 
-// Remove old types
-delete types19.CollatorSnapshot
-
 export const types20: RegistryTypes = {
-  ...types19,
+  ...subtype(types19, ['CollatorSnapshot']),
 
   // Staking
   OrderedSet: 'BoundedVec<Stake, MaxCollatorCandidates>',

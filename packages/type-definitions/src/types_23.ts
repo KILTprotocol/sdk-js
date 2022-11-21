@@ -6,17 +6,25 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
+import { subtype } from './subtyper.js'
 import { types21 } from './types_21.js'
 
-// Delete old types
-delete types21.MaxCollatorCandidates
-delete types21.MinSelectedCandidates
-delete types21.Collator
-delete types21.CollatorStatus
-delete types21.Lookup80
+// Delete old types on a copy of the types21 (we want to retain these types for runtime version 21)
+const types21Adjusted = { ...types21 }
+delete types21Adjusted.MaxCollatorCandidates
+delete types21Adjusted.MinSelectedCandidates
+delete types21Adjusted.Collator
+delete types21Adjusted.CollatorStatus
+delete types21Adjusted.Lookup80
 
 export const types23: RegistryTypes = {
-  ...types21,
+  ...subtype(types21, [
+    'MaxCollatorCandidates',
+    'MinSelectedCandidates',
+    'Collator',
+    'CollatorStatus',
+    'Lookup80',
+  ]),
 
   MinCollators: 'u32',
   MaxTopCandidates: 'u32',

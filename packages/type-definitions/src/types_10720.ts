@@ -7,7 +7,12 @@
 
 import type { RegistryTypes } from '@polkadot/types/types'
 
+// Starting with this version we no longer need to define our custom types manually. They are contained in the runtime metadata.
+// We therefore do not add the types of runtime version 2700 to the type definition here.
 export const types10720: RegistryTypes = {
+  // we need to keep the custom dispatch error since it was changed at some point
+  DispatchError: 'DispatchErrorPre6First',
+
   // DID state_call
   DidApiAccountId: 'AccountId32',
   RawDidLinkedInfo: {

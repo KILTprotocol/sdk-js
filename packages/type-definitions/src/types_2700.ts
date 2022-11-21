@@ -6,22 +6,22 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
+import { subtype } from './subtyper.js'
 import { types25 } from './types_25.js'
 
-// Delete deprecated types
-delete types25.ServiceEndpoints
-delete types25.UrlError
-delete types25.ContentType
-delete types25.Url
-delete types25.HttpUrl
-delete types25.FtpUrl
-delete types25.IpfsUrl
-delete types25.MaxEndpointUrlsCount
-delete types25.MaxUrlLength
-delete types25.DelegationRoot
-
 export const types2700: RegistryTypes = {
-  ...types25,
+  ...subtype(types25, [
+    'ServiceEndpoints',
+    'UrlError',
+    'ContentType',
+    'Url',
+    'HttpUrl',
+    'FtpUrl',
+    'IpfsUrl',
+    'MaxEndpointUrlsCount',
+    'MaxUrlLength',
+    'DelegationRoot',
+  ]),
 
   // Add deposit for attestations
   Deposit: {

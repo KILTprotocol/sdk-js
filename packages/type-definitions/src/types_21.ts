@@ -6,14 +6,11 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
+import { subtype } from './subtyper.js'
 import { types20 } from './types_20.js'
 
-// Delete old types
-delete types20.DidUpdateDetails
-delete types20.OrderedSet
-
 export const types21: RegistryTypes = {
-  ...types20,
+  ...subtype(types20, ['DidUpdateDetails', 'OrderedSet']),
 
   StorageError: {
     _enum: {
