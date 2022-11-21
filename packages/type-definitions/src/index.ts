@@ -31,6 +31,7 @@ import { types10900 } from './types_10900.js'
 import { calls as didCalls } from './runtime/did.js'
 import { calls as stakingCalls } from './runtime/staking.js'
 import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
+import { types10410 } from './types_10410.js'
 
 export {
   types8,
@@ -101,8 +102,12 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types25,
   },
   {
-    minmax: [2700, 10710],
+    minmax: [2700, 10409],
     types: types2700,
+  },
+  {
+    minmax: [10410, 10719],
+    types: types10410,
   },
   {
     minmax: [10720, 10750],

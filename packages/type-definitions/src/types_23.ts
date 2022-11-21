@@ -6,7 +6,7 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
-import { subtype } from './subtyper.js'
+import { subtype } from './subtype.js'
 import { types21 } from './types_21.js'
 
 // Delete old types on a copy of the types21 (we want to retain these types for runtime version 21)

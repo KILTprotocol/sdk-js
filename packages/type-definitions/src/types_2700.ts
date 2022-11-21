@@ -6,7 +6,7 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
-import { subtype } from './subtyper.js'
+import { subtype } from './subtype.js'
 import { types25 } from './types_25.js'
 
 export const types2700: RegistryTypes = {
