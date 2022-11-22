@@ -6,9 +6,16 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
-import { subtype } from './subtype.js'
+import { mergeType } from './mergeType.js'
 import { types2700 } from './types_2700.js'
 
-export const types10410: RegistryTypes = {
-  ...subtype(types2700, ['DispatchError']),
-}
+export const types10410: RegistryTypes = mergeType(
+  // Use the old types as the base of the new types.
+  types2700,
+
+  // We add these new type:
+  {},
+
+  // Remove old DID types:
+  ['DispatchError']
+)

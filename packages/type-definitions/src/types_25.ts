@@ -9,7 +9,10 @@ import type { RegistryTypes } from '@polkadot/types/types'
 import { types23 } from './types_23.js'
 
 export const types25: RegistryTypes = {
+  // Use the old types as the base of the new types.
   ...types23,
+
+  // We add these new type:
   DidAuthorizedCallOperation: {
     did: 'DidIdentifierOf',
     txCounter: 'u64',

@@ -22,6 +22,7 @@ import { types21 } from './types_21.js'
 import { types23 } from './types_23.js'
 import { types25 } from './types_25.js'
 import { types2700 } from './types_2700.js'
+import { types10410 } from './types_10410.js'
 import { types10720 } from './types_10720.js'
 import { types10800 } from './types_10800.js'
 import { types10900 } from './types_10900.js'
@@ -31,7 +32,6 @@ import { types10900 } from './types_10900.js'
 import { calls as didCalls } from './runtime/did.js'
 import { calls as stakingCalls } from './runtime/staking.js'
 import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
-import { types10410 } from './types_10410.js'
 
 export {
   types8,
@@ -46,6 +46,7 @@ export {
   types23,
   types25,
   types2700,
+  types10410,
   types10720,
   types10800,
   types10900,
