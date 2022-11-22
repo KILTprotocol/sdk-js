@@ -8,16 +8,21 @@
 import { readFile, writeFile } from 'fs/promises'
 import glob from 'glob'
 ;(async () => {
-  const path = 'src/interfaces/augment-api-tx.ts'
-  const source = await readFile(path, 'utf8')
-  const fixed = source.replace(/\b(Ed25519|Sr25519|X25519|Ecdsa)\b/g, (match) =>
-    match.toLowerCase()
-  )
-  await writeFile(path, fixed, 'utf8')
+  glob('./src/*/interfaces/augment-api-tx.ts', async (err, matches) => {
+    if (err) throw err
+    matches.forEach(async (path) => {
+      const source = await readFile(path, 'utf8')
+      const fixed = source.replace(
+        /\b(Ed25519|Sr25519|X25519|Ecdsa)\b/g,
+        (match) => match.toLowerCase()
+      )
+      await writeFile(path, fixed, 'utf8')
+    })
+  })
 })()
 
 const regex = /^(ex|im)port (.+ from )?'\.[^\.;']+(?=';$)/gm
-glob('./src/**/*.ts', async (err, matches) => {
+glob('./src/*/interfaces/**/*.ts', async (err, matches) => {
   if (err) throw err
   matches.forEach(async (path) => {
     const source = await readFile(path, 'utf8')

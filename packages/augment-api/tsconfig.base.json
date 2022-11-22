@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "outDir": "./lib/cjs",
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "baseUrl": ".",
+    "composite": true,
+    "declaration": true,
+    "paths": {
+      "spiritnet": ["spiritnet/src"],
+      "peregrine": ["peregrine/src"],
+    }
+  },
+  "exclude": [
+    "coverage",
+    "**/*.spec.ts",
+    "lib",
+    "**/definitions.ts",
+  ],
+}

@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../../lib/cjs",
+    "paths": {
+      "@kiltprotocol/augment-api/spiritnet/*": ["src/spiritnet/*"],
+      "@polkadot/api/augment": ["src/spiritnet/interfaces/augment-api.ts"],
+      "@polkadot/types/augment": ["src/spiritnet/interfaces/augment-types.ts"],
+      "@polkadot/types/lookup": ["src/spiritnet/interfaces/types-lookup.ts"]
+    }
+  },
+}

@@ -8,12 +8,34 @@
   "exports": {
     ".": {
       "types": "./lib/cjs/index.d.ts",
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.js"
+      "require": "./lib/cjs/index.js",
+      "default": "./lib/esm/index.js"
+    },
+    "./spiritnet": {
+      "types": "./lib/cjs/index.d.ts",
+      "require": "./lib/cjs/index.js",
+      "default": "./lib/esm/index.js"
+    },
+    "./peregrine": {
+      "types": "./lib/cjs/peregrine/index.d.ts",
+      "require": "./lib/cjs/peregrine/index.js",
+      "default": "./lib/esm/peregrine/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "spiritnet": [
+        "lib/cjs/index.d.ts"
+      ],
+      "peregrine": [
+        "lib/cjs/peregrine/index.d.ts"
+      ]
     }
   },
   "files": [
-    "lib/**/*"
+    "lib/**/*",
+    "!**/*.tsbuildinfo",
+    "!**/*.tgz"
   ],
   "scripts": {
     "clean": "rimraf ./lib",
@@ -21,11 +43,15 @@
     "build:types": "yarn generate:defs && yarn generate:meta && yarn build:fixes",
     "build:fixes": "node scripts/fixTypes.mjs",
     "build:ts": "yarn build:cjs && yarn build:esm",
-    "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
-    "generate:defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/augment-api --input ./src/interfaces --endpoint ./metadata/spiritnet.json",
-    "generate:meta": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/augment-api --endpoint ./metadata/spiritnet.json --output ./src/interfaces  --strict",
-    "update-metadata": "node ./scripts/fetchMetadata.js -o './metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/'"
+    "build:cjs": "tsc -b tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
+    "build:esm": "tsc -b tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
+    "generate:defs": "yarn run generate:defs:spiritnet && yarn run generate:defs:peregrine",
+    "generate:defs:spiritnet": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/augment-api/spiritnet/interfaces --input ./src/spiritnet/interfaces --endpoint ./metadata/spiritnet.json",
+    "generate:defs:peregrine": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/augment-api/peregrine/interfaces --input ./src/peregrine/interfaces --endpoint ./metadata/peregrine.json",
+    "generate:meta": "yarn run generate:meta:spiritnet && yarn run generate:meta:peregrine",
+    "generate:meta:spiritnet": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --endpoint ./metadata/spiritnet.json --package @kiltprotocol/augment-api/spiritnet/interfaces --output ./src/spiritnet/interfaces",
+    "generate:meta:peregrine": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --endpoint ./metadata/peregrine.json --package @kiltprotocol/augment-api/peregrine/interfaces --output ./src/peregrine/interfaces",
+    "update-metadata": "node ./scripts/fetchMetadata.js -o './metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/' && node ./scripts/fetchMetadata.js -o './metadata/peregrine.json' -e 'wss://peregrine.kilt.io/parachain-public-ws/'"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {

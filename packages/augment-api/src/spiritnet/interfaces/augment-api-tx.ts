@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { Bytes, Compact, Option, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H256, MultiAddress, Perbill, Perquintill, Weight } from '@polkadot/types/interfaces/runtime';
-import type { CumulusPrimitivesParachainInherentParachainInherentData, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, FrameSupportScheduleMaybeHashed, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletDidLookupAssociateAccountRequest, PalletDidLookupLinkableAccountLinkableAccountId, PalletVestingVestingInfo, PublicCredentialsCredentialsCredential, RuntimeCommonAuthorizationPalletAuthorize, SpRuntimeHeader, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeSessionKeys, XcmV1MultiLocation, XcmV2WeightLimit, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
+import type { CumulusPrimitivesParachainInherentParachainInherentData, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, FrameSupportScheduleMaybeHashed, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletVestingVestingInfo, RuntimeCommonAuthorizationPalletAuthorize, SpRuntimeHeader, SpRuntimeMultiSignature, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeSessionKeys, XcmV1MultiLocation, XcmV2WeightLimit, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -42,16 +42,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       add: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array, ctypeHash: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
-      /**
-       * Changes the deposit owner.
-       * 
-       * The balance that is reserved by the current deposit owner will be
-       * freed and balance of the new deposit owner will get reserved.
-       * 
-       * The subject of the call must be the attester who issues the
-       * attestation. The sender of the call will be the new deposit owner.
-       **/
-      changeDepositOwner: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
       /**
        * Reclaim a storage deposit by removing an attestation
        * 
@@ -105,17 +95,19 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       revoke: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
       /**
-       * Updates the deposit amount to the current deposit rate.
-       * 
-       * The sender must be the deposit owner.
+       * Generic tx
        **/
-      updateDeposit: AugmentedSubmittable<(claimHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     authorship: {
       /**
        * Provide a set of uncles.
        **/
       setUncles: AugmentedSubmittable<(newUncles: Vec<SpRuntimeHeader> | (SpRuntimeHeader | { parentHash?: any; number?: any; stateRoot?: any; extrinsicsRoot?: any; digest?: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<SpRuntimeHeader>]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     balances: {
       /**
@@ -201,6 +193,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * [`transfer`]: struct.Pallet.html#method.transfer
        **/
       transferKeepAlive: AugmentedSubmittable<(dest: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, Compact<u128>]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     council: {
       /**
@@ -352,6 +348,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       vote: AugmentedSubmittable<(proposal: H256 | string | Uint8Array, index: Compact<u32> | AnyNumber | Uint8Array, approve: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>, bool]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     ctype: {
       /**
@@ -369,6 +369,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       add: AugmentedSubmittable<(ctype: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     delegation: {
       /**
@@ -406,16 +410,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       addDelegation: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array, parentId: H256 | string | Uint8Array, delegate: AccountId32 | string | Uint8Array, permissions: DelegationDelegationHierarchyPermissions | { bits?: any } | string | Uint8Array, delegateSignature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, H256, AccountId32, DelegationDelegationHierarchyPermissions, DidDidDetailsDidSignature]>;
-      /**
-       * Changes the deposit owner.
-       * 
-       * The balance that is reserved by the current deposit owner will be
-       * freed and balance of the new deposit owner will get reserved.
-       * 
-       * The subject of the call must be the owner of the delegation node.
-       * The sender of the call will be the new deposit owner.
-       **/
-      changeDepositOwner: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
       /**
        * Create a new delegation root associated with a given CType hash.
        * 
@@ -535,11 +529,9 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       revokeDelegation: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array, maxParentChecks: u32 | AnyNumber | Uint8Array, maxRevocations: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u32, u32]>;
       /**
-       * Updates the deposit amount to the current deposit rate.
-       * 
-       * The sender must be the deposit owner.
+       * Generic tx
        **/
-      updateDeposit: AugmentedSubmittable<(delegationId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     democracy: {
       /**
@@ -873,6 +865,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * Weight: `O(R)` where R is the number of referendums the voter has voted on.
        **/
       vote: AugmentedSubmittable<(refIndex: Compact<u32> | AnyNumber | Uint8Array, vote: PalletDemocracyVoteAccountVote | { Standard: any } | { Split: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, PalletDemocracyVoteAccountVote]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     did: {
       /**
@@ -907,16 +903,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       addServiceEndpoint: AugmentedSubmittable<(serviceEndpoint: DidServiceEndpointsDidEndpoint | { id?: any; serviceTypes?: any; urls?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidServiceEndpointsDidEndpoint]>;
-      /**
-       * Changes the deposit owner.
-       * 
-       * The balance that is reserved by the current deposit owner will be
-       * freed and balance of the new deposit owner will get reserved.
-       * 
-       * The subject of the call must be the did owner.
-       * The sender of the call will be the new deposit owner.
-       **/
-      changeDepositOwner: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Store a new DID on chain, after verifying that the creation
        * operation has been signed by the KILT account associated with the
@@ -1165,11 +1151,9 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       submitDidCall: AugmentedSubmittable<(didCall: DidDidDetailsDidAuthorizedCallOperation | { did?: any; txCounter?: any; call?: any; blockNumber?: any; submitter?: any } | string | Uint8Array, signature: DidDidDetailsDidSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidSignature]>;
       /**
-       * Updates the deposit amount to the current deposit rate.
-       * 
-       * The sender must be the deposit owner.
+       * Generic tx
        **/
-      updateDeposit: AugmentedSubmittable<(did: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     didLookup: {
       /**
@@ -1191,7 +1175,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids + ConnectedAccounts
        * # </weight>
        **/
-      associateAccount: AugmentedSubmittable<(req: PalletDidLookupAssociateAccountRequest | { Dotsama: any } | { Ethereum: any } | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupAssociateAccountRequest, u64]>;
+      associateAccount: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array, proof: SpRuntimeMultiSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64, SpRuntimeMultiSignature]>;
       /**
        * Associate the sender of the call to the DID that authorized this
        * call.
@@ -1207,16 +1191,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       associateSender: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
-       * Changes the deposit owner.
-       * 
-       * The balance that is reserved by the current deposit owner will be
-       * freed and balance of the new deposit owner will get reserved.
-       * 
-       * The subject of the call must be linked to the account.
-       * The sender of the call will be the new deposit owner.
-       **/
-      changeDepositOwner: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
-      /**
        * Remove the association of the provided account. This call can only
        * be called from the deposit owner. The reserved deposit will be
        * freed.
@@ -1229,7 +1203,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids
        * # </weight>
        **/
-      reclaimDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
+      reclaimDeposit: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       /**
        * Remove the association of the provided account ID. This call doesn't
        * require the authorization of the account ID, but the associated DID
@@ -1243,7 +1217,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids + ConnectedAccounts
        * # </weight>
        **/
-      removeAccountAssociation: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
+      removeAccountAssociation: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       /**
        * Remove the association of the sender account. This call doesn't
        * require the authorization of the DID, but requires a signed origin.
@@ -1258,11 +1232,9 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       removeSenderAssociation: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
-       * Updates the deposit amount to the current deposit rate.
-       * 
-       * The sender must be the deposit owner.
+       * Generic tx
        **/
-      updateDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     dmpQueue: {
       /**
@@ -1280,6 +1252,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `OverweightServiced`: On success.
        **/
       serviceOverweight: AugmentedSubmittable<(index: u64 | AnyNumber | Uint8Array, weightLimit: Weight | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, Weight]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     indices: {
       /**
@@ -1392,6 +1368,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       transfer: AugmentedSubmittable<(updated: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, index: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u64]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     parachainStaking: {
       /**
@@ -1403,6 +1383,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * `init_leave_candidates`.
        * 
        * Emits `CollatorCanceledExit`.
+       * 
+       * # <weight>
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators for this
+       * candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: [Origin Account], TotalCollatorStake, TopCandidates,
+       * CandidatePool
+       * - Writes: TotalCollatorStake, CandidatePool, TopCandidates
+       * # </weight>
        **/
       cancelLeaveCandidates: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -1421,6 +1410,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * allowed range as set in the pallet's configuration.
        * 
        * Emits `CollatorStakedLess`.
+       * 
+       * # <weight>
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators for this
+       * candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: [Origin Account], Unstaking, TopCandidates,
+       * MaxSelectedCandidates, CandidatePool
+       * - Writes: Unstaking, CandidatePool, TotalCollatorStake
+       * # </weight>
        **/
       candidateStakeLess: AugmentedSubmittable<(less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
@@ -1436,26 +1434,61 @@ declare module '@polkadot/api-base/types/submittable' {
        * allowed range as set in the pallet's configuration.
        * 
        * Emits `CollatorStakedMore`.
+       * 
+       * # <weight>
+       * Weight: O(N + D + U) where  where N is `MaxSelectedCandidates`
+       * bounded by `MaxTopCandidates`, D is the number of delegators for
+       * this candidate bounded by `MaxDelegatorsPerCollator` and U is the
+       * number of locked unstaking requests bounded by `MaxUnstakeRequests`.
+       * - Reads: [Origin Account], Locks, TotalCollatorStake,
+       * MaxCollatorCandidateStake, TopCandidates, CandidatePool
+       * - Writes: Locks, TotalCollatorStake, CandidatePool, TopCandidates
+       * # </weight>
        **/
       candidateStakeMore: AugmentedSubmittable<(more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
-       * Claim block authoring rewards for the target address.
+       * Delegate another collator's candidate by staking some funds and
+       * increasing the pallet's as well as the collator's total stake.
        * 
-       * Requires `Rewards` to be set beforehand, which can by triggered by
-       * any of the following options
-       * * Calling increment_{collator, delegator}_rewards (active)
-       * * Altering your stake (active)
-       * * Leaving the network as a collator (active)
-       * * Revoking a delegation as a delegator (active)
-       * * Being a delegator whose collator left the network, altered their
-       * stake or incremented rewards (passive)
+       * The account that wants to delegate cannot be part of the collator
+       * candidates set as well.
        * 
-       * The dispatch origin can be any signed one, e.g., anyone can claim
-       * for anyone.
+       * The caller _must_ have delegated before. Otherwise,
+       * `join_delegators` should be called.
        * 
-       * Emits `Rewarded`.
+       * If the delegator has already delegated the maximum number of
+       * collator candidates, this operation will fail.
+       * 
+       * The amount staked must be larger than the minimum required to become
+       * a delegator as set in the pallet's configuration.
+       * 
+       * As only `MaxDelegatorsPerCollator` are allowed to delegate a given
+       * collator, the amount staked must be larger than the lowest one in
+       * the current set of delegator for the operation to be meaningful.
+       * 
+       * The collator's total stake as well as the pallet's total stake are
+       * increased accordingly.
+       * 
+       * NOTE: This transaction is expected to throw until we increase
+       * `MaxCollatorsPerDelegator` by at least one, since it is currently
+       * set to one.
+       * 
+       * Emits `Delegation`.
+       * Emits `DelegationReplaced` if the candidate has
+       * `MaxDelegatorsPerCollator` many delegations but this delegator
+       * staked more than one of the other delegators of this candidate.
+       * 
+       * # <weight>
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators for this
+       * candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: [Origin Account], DelegatorState, TopCandidates,
+       * MaxSelectedCandidates, CandidatePool, LastDelegation, Round
+       * - Writes: Locks, CandidatePool, DelegatorState, TotalCollatorStake,
+       * LastDelegation
+       * # </weight>
        **/
-      claimRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      delegateAnotherCandidate: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
       /**
        * Reduce the stake for delegating a collator candidate.
        * 
@@ -1473,8 +1506,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * allowed range as set in the pallet's configuration.
        * 
        * Emits `DelegatorStakedLess`.
+       * 
+       * # <weight>
+       * Weight: O(1)
+       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
+       * TopCandidates, CandidatePool, MaxSelectedCandidates
+       * - Writes: Unstaking, DelegatorState, CandidatePool,
+       * TotalCollatorStake
+       * # </weight>
        **/
-      delegatorStakeLess: AugmentedSubmittable<(less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      delegatorStakeLess: AugmentedSubmittable<(candidate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, less: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
       /**
        * Increase the stake for delegating a collator candidate.
        * 
@@ -1482,8 +1523,19 @@ declare module '@polkadot/api-base/types/submittable' {
        * collator candidate to be added to it.
        * 
        * Emits `DelegatorStakedMore`.
+       * 
+       * # <weight>
+       * Weight: O(N) + O(D) where N is `MaxSelectedCandidates` bounded
+       * by `MaxTopCandidates` and D the number of total delegators for
+       * this collator bounded by `MaxCollatorsPerDelegator`.
+       * bounded by `MaxUnstakeRequests`.
+       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
+       * Locks, TopCandidates, CandidatePool, MaxSelectedCandidates
+       * - Writes: Unstaking, Locks, DelegatorState, CandidatePool,
+       * TotalCollatorStake
+       * # </weight>
        **/
-      delegatorStakeMore: AugmentedSubmittable<(more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      delegatorStakeMore: AugmentedSubmittable<(candidate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, more: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
       /**
        * Execute the network exit of a candidate who requested to leave at
        * least `ExitQueueDelay` rounds ago. Prepares unstaking of the
@@ -1497,26 +1549,20 @@ declare module '@polkadot/api-base/types/submittable' {
        * The exit request can be reversed by calling
        * `cancel_leave_candidates`.
        * 
-       * NOTE: Iterates over CandidatePool for each candidate over their
-       * delegators to set rewards. Needs to be improved when scaling up
-       * `MaxTopCandidates`.
-       * 
        * Emits `CollatorLeft`.
+       * 
+       * # <weight>
+       * Weight: O(N + D + U) where  where N is `MaxSelectedCandidates`
+       * bounded by `MaxTopCandidates`, D is the number of delegators for
+       * this candidate bounded by `MaxDelegatorsPerCollator` and U is the
+       * number of locked unstaking requests bounded by `MaxUnstakeRequests`.
+       * - Reads: CandidatePool, Round, D * DelegatorState, D
+       * * BlockNumber, D * Unstaking
+       * - Writes: D * Unstaking, D * DelegatorState, Total
+       * - Kills: CandidatePool, DelegatorState
+       * # </weight>
        **/
       executeLeaveCandidates: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
-      /**
-       * Executes the annual reduction of the reward rates for collators and
-       * delegators.
-       * 
-       * Moreover, sets rewards for all collators and delegators
-       * before adjusting the inflation.
-       * 
-       * The dispatch origin can be any signed one because we bail if called
-       * too early.
-       * 
-       * Emits `RoundInflationSet`.
-       **/
-      executeScheduledRewardChange: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Forces the start of the new round in the next block.
        * 
@@ -1524,6 +1570,12 @@ declare module '@polkadot/api-base/types/submittable' {
        * ShouldEndSession<_>>::should_end_session.
        * 
        * The dispatch origin must be Root.
+       * 
+       * # <weight>
+       * Weight: O(1)
+       * - Reads: [Origin Account]
+       * - Writes: ForceNewRound
+       * # </weight>
        **/
       forceNewRound: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -1533,32 +1585,28 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * Prepares unstaking of the candidates and their delegators stake
        * which can be unlocked via `unlock_unstaked` after waiting at
-       * least `StakeDuration` many blocks. Also increments rewards for the
-       * collator and their delegators.
-       * 
-       * Increments rewards of candidate and their delegators.
+       * least `StakeDuration` many blocks.
        * 
        * Emits `CandidateRemoved`.
+       * 
+       * # <weight>
+       * - The transaction's complexity is mainly dependent on updating the
+       * `SelectedCandidates` storage in `select_top_candidates` which in
+       * return depends on the number of `MaxSelectedCandidates` (N).
+       * - For each N, we read `CandidatePool` from the storage.
+       * ---------
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators of the
+       * collator candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: MaxCollatorCandidateStake, 2 * N * CandidatePool,
+       * TopCandidates, BlockNumber, D * DelegatorState, D * Unstaking
+       * - Writes: MaxCollatorCandidateStake, N * CandidatePool, D *
+       * DelegatorState, (D + 1) * Unstaking
+       * - Kills: CandidatePool, DelegatorState for all delegators which only
+       * delegated to the candidate
+       * # </weight>
        **/
       forceRemoveCandidate: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
-      /**
-       * Actively increment the rewards of a collator.
-       * 
-       * The same effect is triggered by changing the stake or leaving the
-       * network.
-       * 
-       * The dispatch origin must be a collator.
-       **/
-      incrementCollatorRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Actively increment the rewards of a delegator.
-       * 
-       * The same effect is triggered by changing the stake or revoking
-       * delegations.
-       * 
-       * The dispatch origin must be a delegator.
-       **/
-      incrementDelegatorRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Request to leave the set of collator candidates.
        * 
@@ -1574,7 +1622,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * updated even though the funds of the candidate who signaled to leave
        * are still locked for `ExitDelay` + `StakeDuration` more blocks.
        * 
-       * NOTE 1: Upon starting a new session_i in `new_session`, the current
+       * NOTE: Upon starting a new session_i in `new_session`, the current
        * top candidates are selected to be block authors for session_i+1. Any
        * changes to the top candidates afterwards do not effect the set of
        * authors for session_i+1.
@@ -1582,11 +1630,21 @@ declare module '@polkadot/api-base/types/submittable' {
        * leave before session_i+1 ends by delaying their
        * exit for `ExitDelay` many blocks.
        * 
-       * NOTE 2: We do not increment rewards in this extrinsic as the
-       * candidate could still author blocks, and thus be eligible to receive
-       * rewards, until the end of the next session.
-       * 
        * Emits `CollatorScheduledExit`.
+       * 
+       * # <weight>
+       * - The transaction's complexity is mainly dependent on updating the
+       * `SelectedCandidates` storage in `select_top_candidates` which in
+       * return depends on the number of `MaxSelectedCandidates` (N).
+       * - For each N, we read `CandidatePool` from the storage.
+       * ---------
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators for this
+       * candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: [Origin Account], TopCandidates, (N + 1) * CandidatePool,
+       * TotalCollatorStake
+       * - Writes: CandidatePool, TopCandidates, TotalCollatorStake
+       * # </weight>
        **/
       initLeaveCandidates: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -1607,6 +1665,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * candidates nor of the delegators set.
        * 
        * Emits `JoinedCollatorCandidates`.
+       * 
+       * # <weight>
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators for this
+       * candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: [Origin Account], DelegatorState,
+       * MaxCollatorCandidateStake, Locks, TotalCollatorStake,
+       * TopCandidates, MaxSelectedCandidates, CandidatePool,
+       * - Writes: Locks, TotalCollatorStake, CandidatePool, TopCandidates,
+       * # </weight>
        **/
       joinCandidates: AugmentedSubmittable<(stake: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
@@ -1615,8 +1683,8 @@ declare module '@polkadot/api-base/types/submittable' {
        * The account that wants to delegate cannot be part of the collator
        * candidates set as well.
        * 
-       * The caller must _not_ have a delegation. If that is the case, they
-       * are required to first remove the delegation.
+       * The caller must _not_ have delegated before. Otherwise,
+       * `delegate_another_candidate` should be called.
        * 
        * The amount staked must be larger than the minimum required to become
        * a delegator as set in the pallet's configuration.
@@ -1632,11 +1700,21 @@ declare module '@polkadot/api-base/types/submittable' {
        * Emits `DelegationReplaced` if the candidate has
        * `MaxDelegatorsPerCollator` many delegations but this delegator
        * staked more than one of the other delegators of this candidate.
+       * 
+       * # <weight>
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators for this
+       * candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: [Origin Account], DelegatorState, TopCandidates,
+       * MaxSelectedCandidates, CandidatePool, LastDelegation, Round
+       * - Writes: Locks, CandidatePool, DelegatorState, TotalCollatorStake,
+       * LastDelegation
+       * # </weight>
        **/
       joinDelegators: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, u128]>;
       /**
-       * Leave the set of delegators and, by implication, revoke the ongoing
-       * delegation.
+       * Leave the set of delegators and, by implication, revoke all ongoing
+       * delegations.
        * 
        * All staked funds are not unlocked immediately, but they are added to
        * the queue of pending unstaking, and will effectively be released
@@ -1647,12 +1725,44 @@ declare module '@polkadot/api-base/types/submittable' {
        * their chances to be included in the set of candidates in the next
        * rounds.
        * 
-       * Automatically increments the accumulated rewards of the origin of
-       * the current delegation.
-       * 
        * Emits `DelegatorLeft`.
+       * 
+       * # <weight>
+       * Weight: O(C) where C is the number of delegations for this delegator
+       * which is bounded by by `MaxCollatorsPerDelegator`.
+       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
+       * TopCandidates, MaxSelectedCandidates, C * CandidatePool,
+       * - Writes: Unstaking, CandidatePool, TotalCollatorStake,
+       * - Kills: DelegatorState
+       * # </weight>
        **/
       leaveDelegators: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Terminates an ongoing delegation for a given collator candidate.
+       * 
+       * The staked funds are not unlocked immediately, but they are added to
+       * the queue of pending unstaking, and will effectively be released
+       * after `StakeDuration` blocks from the moment the delegation is
+       * terminated.
+       * 
+       * This operation reduces the total stake of the pallet as well as the
+       * stakes of the collator involved, potentially affecting its chances
+       * to be included in the set of candidates in the next rounds.
+       * 
+       * Emits `DelegatorLeft`.
+       * 
+       * # <weight>
+       * Weight: O(C) where C is the number of delegations for this delegator
+       * which is bounded by by `MaxCollatorsPerDelegator`.
+       * - Reads: [Origin Account], DelegatorState, BlockNumber, Unstaking,
+       * Locks, TopCandidates, CandidatePool, MaxSelectedCandidates
+       * - Writes: Unstaking, Locks, DelegatorState, CandidatePool,
+       * TotalCollatorStake
+       * - Kills: DelegatorState if the delegator has not delegated to
+       * another collator
+       * # </weight>
+       **/
+      revokeDelegation: AugmentedSubmittable<(collator: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
       /**
        * Set the number of blocks each validation round lasts.
        * 
@@ -1665,6 +1775,12 @@ declare module '@polkadot/api-base/types/submittable' {
        * The dispatch origin must be Root.
        * 
        * Emits `BlocksPerRoundSet`.
+       * 
+       * # <weight>
+       * Weight: O(1)
+       * - Reads: [Origin Account], Round
+       * - Writes: Round
+       * # </weight>
        **/
       setBlocksPerRound: AugmentedSubmittable<(updated: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
       /**
@@ -1676,13 +1792,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * The estimated average block time is twelve seconds.
        * 
-       * NOTE: Iterates over CandidatePool and for each candidate over their
-       * delegators to update their rewards before the reward rates change.
-       * Needs to be improved when scaling up `MaxTopCandidates`.
-       * 
        * The dispatch origin must be Root.
        * 
        * Emits `RoundInflationSet`.
+       * 
+       * # <weight>
+       * Weight: O(1)
+       * - Reads: [Origin Account]
+       * - Writes: InflationConfig
+       * # </weight>
        **/
       setInflation: AugmentedSubmittable<(collatorMaxRatePercentage: Perquintill | AnyNumber | Uint8Array, collatorAnnualRewardRatePercentage: Perquintill | AnyNumber | Uint8Array, delegatorMaxRatePercentage: Perquintill | AnyNumber | Uint8Array, delegatorAnnualRewardRatePercentage: Perquintill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Perquintill, Perquintill, Perquintill, Perquintill]>;
       /**
@@ -1692,6 +1810,12 @@ declare module '@polkadot/api-base/types/submittable' {
        * The dispatch origin must be Root.
        * 
        * Emits `MaxCandidateStakeChanged`.
+       * 
+       * # <weight>
+       * Weight: O(1)
+       * - Reads: [Origin Account], MaxCollatorCandidateStake
+       * - Writes: Round
+       * # </weight>
        **/
       setMaxCandidateStake: AugmentedSubmittable<(updated: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
@@ -1706,6 +1830,20 @@ declare module '@polkadot/api-base/types/submittable' {
        * The dispatch origin must be Root.
        * 
        * Emits `MaxSelectedCandidatesSet`.
+       * 
+       * 
+       * # <weight>
+       * - The transaction's complexity is mainly dependent on updating the
+       * `SelectedCandidates` storage in `select_top_candidates` which in
+       * return depends on the number of `MaxSelectedCandidates` (N).
+       * - For each N, we read `CandidatePool` from the storage.
+       * ---------
+       * Weight: O(N + D) where N is `MaxSelectedCandidates` bounded by
+       * `MaxTopCandidates` and D is the number of delegators of a
+       * candidate bounded by `MaxDelegatorsPerCollator`.
+       * - Reads: MaxSelectedCandidates, TopCandidates, N * CandidatePool
+       * - Writes: MaxSelectedCandidates
+       * # </weight>
        **/
       setMaxSelectedCandidates: AugmentedSubmittable<(updated: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
       /**
@@ -1721,6 +1859,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       unlockUnstaked: AugmentedSubmittable<(target: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     parachainSystem: {
       authorizeUpgrade: AugmentedSubmittable<(codeHash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
@@ -1738,6 +1880,10 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       setValidationData: AugmentedSubmittable<(data: CumulusPrimitivesParachainInherentParachainInherentData | { validationData?: any; relayChainState?: any; downwardMessages?: any; horizontalMessages?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CumulusPrimitivesParachainInherentParachainInherentData]>;
       sudoSendUpwardMessage: AugmentedSubmittable<(message: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     polkadotXcm: {
       /**
@@ -1866,6 +2012,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * fees.
        **/
       teleportAssets: AugmentedSubmittable<(dest: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, beneficiary: XcmVersionedMultiLocation | { V0: any } | { V1: any } | string | Uint8Array, assets: XcmVersionedMultiAssets | { V0: any } | { V1: any } | string | Uint8Array, feeAssetItem: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [XcmVersionedMultiLocation, XcmVersionedMultiLocation, XcmVersionedMultiAssets, u32]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     preimage: {
       /**
@@ -1892,6 +2042,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * NOTE: THIS MUST NOT BE CALLED ON `hash` MORE TIMES THAN `request_preimage`.
        **/
       unrequestPreimage: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     proxy: {
       /**
@@ -2086,97 +2240,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       removeProxy: AugmentedSubmittable<(delegate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, proxyType: SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, SpiritnetRuntimeProxyType, u64]>;
-    };
-    publicCredentials: {
       /**
-       * Register a new public credential on chain.
-       * 
-       * This function fails if a credential with the same identifier already
-       * exists for the specified subject.
-       * 
-       * Emits `CredentialStored`.
+       * Generic tx
        **/
-      add: AugmentedSubmittable<(credential: PublicCredentialsCredentialsCredential | { ctypeHash?: any; subject?: any; claims?: any; authorization?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PublicCredentialsCredentialsCredential]>;
-      /**
-       * Changes the deposit owner.
-       * 
-       * The balance that is reserved by the current deposit owner will be
-       * freed and balance of the new deposit owner will get reserved.
-       * 
-       * The subject of the call must be the owner of the credential.
-       * The sender of the call will be the new deposit owner.
-       **/
-      changeDepositOwner: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Removes the information pertaining a public credential from the
-       * chain and returns the deposit to its payer.
-       * 
-       * The removal of the credential does not delete it entirely from the
-       * blockchain history, but only its link *from* the blockchain state
-       * *to* the blockchain history is removed.
-       * 
-       * Clients parsing public credentials should interpret
-       * the lack of such a link as the fact that the credential has been
-       * removed by its attester some time in the past.
-       * 
-       * This function fails if a credential already exists for the specified
-       * subject.
-       * 
-       * The dispatch origin must be the owner of the deposit, hence not the
-       * credential's attester.
-       * 
-       * Emits `CredentialRemoved`.
-       **/
-      reclaimDeposit: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
-      /**
-       * Removes the information pertaining a public credential from the
-       * chain.
-       * 
-       * The removal of the credential does not delete it entirely from the
-       * blockchain history, but only its link *from* the blockchain state
-       * *to* the blockchain history is removed.
-       * 
-       * Clients parsing public credentials should interpret
-       * the lack of such a link as the fact that the credential has been
-       * removed by its attester some time in the past.
-       * 
-       * This function fails if a credential already exists for the specified
-       * subject.
-       * 
-       * The dispatch origin must be authorized to remove the credential.
-       * 
-       * Emits `CredentialRemoved`.
-       **/
-      remove: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
-      /**
-       * Revokes a public credential.
-       * 
-       * If a credential was already revoked, this function does not fail but
-       * simply results in a noop.
-       * 
-       * The dispatch origin must be authorized to revoke the credential.
-       * 
-       * Emits `CredentialRevoked`.
-       **/
-      revoke: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
-      /**
-       * Unrevokes a public credential.
-       * 
-       * If a credential was not revoked, this function does not fail but
-       * simply results in a noop.
-       * 
-       * The dispatch origin must be authorized to unrevoke the
-       * credential.
-       * 
-       * Emits `CredentialUnrevoked`.
-       **/
-      unrevoke: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
-      /**
-       * Updates the deposit amount to the current deposit rate.
-       * 
-       * The sender must be the deposit owner.
-       **/
-      updateDeposit: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     scheduler: {
       /**
@@ -2211,6 +2278,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       scheduleNamedAfter: AugmentedSubmittable<(id: Bytes | string | Uint8Array, after: u64 | AnyNumber | Uint8Array, maybePeriodic: Option<ITuple<[u64, u32]>> | null | Uint8Array | ITuple<[u64, u32]> | [u64 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], priority: u8 | AnyNumber | Uint8Array, call: FrameSupportScheduleMaybeHashed | { Value: any } | { Hash: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u64, Option<ITuple<[u64, u32]>>, u8, FrameSupportScheduleMaybeHashed]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     session: {
       /**
@@ -2249,6 +2320,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       setKeys: AugmentedSubmittable<(keys: SpiritnetRuntimeSessionKeys | { aura?: any } | string | Uint8Array, proof: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpiritnetRuntimeSessionKeys, Bytes]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     system: {
       /**
@@ -2313,6 +2388,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * Set some items of storage.
        **/
       setStorage: AugmentedSubmittable<(items: Vec<ITuple<[Bytes, Bytes]>> | ([Bytes | string | Uint8Array, Bytes | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[Bytes, Bytes]>>]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     technicalCommittee: {
       /**
@@ -2464,6 +2543,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       vote: AugmentedSubmittable<(proposal: H256 | string | Uint8Array, index: Compact<u32> | AnyNumber | Uint8Array, approve: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>, bool]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     technicalMembership: {
       /**
@@ -2513,6 +2596,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * Prime membership is *not* passed from `remove` to `add`, if extant.
        **/
       swapMember: AugmentedSubmittable<(remove: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, add: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, MultiAddress]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     timestamp: {
       /**
@@ -2534,6 +2621,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       set: AugmentedSubmittable<(now: Compact<u64> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u64>]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     tips: {
       /**
@@ -2666,6 +2757,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       tipNew: AugmentedSubmittable<(reason: Bytes | string | Uint8Array, who: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, tipValue: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, MultiAddress, Compact<u128>]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     tipsMembership: {
       /**
@@ -2715,6 +2810,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * Prime membership is *not* passed from `remove` to `add`, if extant.
        **/
       swapMember: AugmentedSubmittable<(remove: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, add: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, MultiAddress]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     treasury: {
       /**
@@ -2783,6 +2882,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * beneficiary.
        **/
       spend: AugmentedSubmittable<(amount: Compact<u128> | AnyNumber | Uint8Array, beneficiary: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u128>, MultiAddress]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     utility: {
       /**
@@ -2870,6 +2973,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       forceBatch: AugmentedSubmittable<(calls: Vec<Call> | (Call | IMethod | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<Call>]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     vesting: {
       /**
@@ -2971,6 +3078,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       vestOther: AugmentedSubmittable<(target: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     web3Names: {
       /**
@@ -2992,16 +3103,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       ban: AugmentedSubmittable<(name: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
-      /**
-       * Changes the deposit owner.
-       * 
-       * The balance that is reserved by the current deposit owner will be
-       * freed and balance of the new deposit owner will get reserved.
-       * 
-       * The subject of the call must be the owner of the web3name.
-       * The sender of the call will be the new deposit owner.
-       **/
-      changeDepositOwner: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Assign the specified name to the owner as specified in the
        * origin.
@@ -3068,11 +3169,9 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       unban: AugmentedSubmittable<(name: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
       /**
-       * Updates the deposit amount to the current deposit rate.
-       * 
-       * The sender must be the deposit owner.
+       * Generic tx
        **/
-      updateDeposit: AugmentedSubmittable<(nameInput: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
     xcmpQueue: {
       /**
@@ -3152,6 +3251,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `new`: Desired value for `QueueConfigData.xcmp_max_individual_weight`.
        **/
       updateXcmpMaxIndividualWeight: AugmentedSubmittable<(updated: Weight | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Weight]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
   } // AugmentedSubmittables
 } // declare module

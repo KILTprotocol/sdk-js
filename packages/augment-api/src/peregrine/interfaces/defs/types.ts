@@ -3,11 +3,12 @@
 
 import type { Enum, Option, Struct, Text, Vec } from '@polkadot/types-codec';
 import type { AccountId32, Hash, Perquintill } from '@polkadot/types/interfaces/runtime';
-// FIXME: manually added as they are not automatically imported
-import type { DidServiceEndpointsDidEndpoint, DidDidDetails, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
+
+// FIXME: had to be added manually
+import type { DidServiceEndpointsDidEndpoint, DidDidDetails } from '../types-lookup.js'
 
 /** @name DidApiAccountId */
-export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId { }
+export interface DidApiAccountId extends AccountId32 {}
 
 /** @name PublicCredentialError */
 export interface PublicCredentialError extends Enum {
@@ -41,4 +42,4 @@ export interface StakingRates extends Struct {
   readonly delegatorRewardRate: Perquintill;
 }
 
-export type PHANTOM_EXTRADEFS = 'extraDefs';
+export type PHANTOM_DEFS = 'defs';

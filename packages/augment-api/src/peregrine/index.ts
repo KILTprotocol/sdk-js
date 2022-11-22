@@ -5,9 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import './interfaces/augment-api.js'
-import './interfaces/augment-types.js'
-import './interfaces/registry.js'
-import './interfaces/types-lookup.js'
+import './interfaces/types-lookup'
+import './interfaces/augment-api'
+import './interfaces/augment-types'
 
-export * from './types.js'
+export * from './interfaces/types.js';
+export * from '@polkadot/types/lookup'

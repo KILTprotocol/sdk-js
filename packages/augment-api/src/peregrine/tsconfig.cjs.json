@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../../lib/cjs/peregrine",
+    "paths": {
+      "@kiltprotocol/augment-api/peregrine/*": ["src/peregrine/*"],
+      "@polkadot/api/augment": ["src/peregrine/interfaces/augment-api.ts"],
+      "@polkadot/types/augment": ["src/peregrine/interfaces/augment-types.ts"],
+      "@polkadot/types/lookup": ["src/peregrine/interfaces/types-lookup.ts"]
+    }
+  },
+}
