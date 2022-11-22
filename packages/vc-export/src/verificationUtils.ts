@@ -44,17 +44,9 @@ export interface AttestationVerificationResult extends VerificationResult {
   status: AttestationStatus
 }
 
-export class CredentialMalformedError extends SDKErrors.SDKError {
-  constructor(reason: string) {
-    super(`Credential malformed: ${reason}`)
-  }
-}
+export class CredentialMalformedError extends SDKErrors.SDKError {}
 
-export class ProofMalformedError extends SDKErrors.SDKError {
-  constructor(reason: string) {
-    super(`Proof malformed: ${reason}`)
-  }
-}
+export class ProofMalformedError extends SDKErrors.SDKError {}
 
 /**
  * Verifies a KILT self-signed proof (claimer signature) against a KILT style Verifiable Credential.

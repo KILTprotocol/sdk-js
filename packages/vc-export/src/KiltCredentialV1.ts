@@ -6,29 +6,38 @@
  */
 
 import { hexToU8a, u8aToHex } from '@polkadot/util'
-import { Claim, CType } from '@kiltprotocol/core'
+import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type {
   ICType,
   ICredential,
   DidUri,
   Caip2ChainId,
+  IDelegationNode,
 } from '@kiltprotocol/types'
-import { base58Decode, base58Encode } from '@polkadot/util-crypto'
+import { JsonSchema } from '@kiltprotocol/utils'
+import { CType } from '@kiltprotocol/core'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   DEFAULT_CREDENTIAL_TYPES,
   JSON_SCHEMA_TYPE,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
+  KILT_CREDENTIAL_CONTEXT_URL,
   KILT_CREDENTIAL_IRI_PREFIX,
+  KILT_CREDENTIAL_TYPE,
   KILT_REVOCATION_STATUS_V1_TYPE,
+  W3C_CREDENTIAL_CONTEXT_URL,
+  W3C_CREDENTIAL_TYPE,
 } from './constants.js'
 import type {
   JsonSchemaValidator2018,
   KiltAttesterDelegationV1,
+  KiltAttesterLegitimationV1,
   KiltRevocationStatusV1,
   VerifiableCredential,
 } from './types.js'
+import { CredentialMalformedError } from './verificationUtils.js'
+import * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
 
 /**
  * Extracts the credential root hash from a KILT VC's id.
@@ -64,45 +73,67 @@ export function credentialIdFromRootHash(
   return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(rootHash, false)}`
 }
 
-/**
- * Transforms an [[ICredential]] object to conform to the KiltCredentialV1 data model.
- *
- * @param input
- * @param issuer
- * @param timestamp
- * @param chainGenesisHash
- * @param ctype
- */
-export function fromICredential(
-  input: ICredential,
-  issuer: DidUri,
-  timestamp: number,
-  chainGenesisHash: Uint8Array,
-  ctype?: ICType
-): Omit<VerifiableCredential, 'proof'> {
-  const { legitimations, delegationId, rootHash, claim } = input
+interface CredentialInput {
+  subject: DidUri
+  claims: ICredential['claim']['contents']
+  cType: ICType | Pick<ICType, '$id'>
+  issuer: DidUri
+  timestamp: number
+  chainGenesisHash: Uint8Array
+  claimHash?: ICredential['rootHash']
+  legitimations?: Array<VerifiableCredential | Pick<VerifiableCredential, 'id'>>
+  delegationId?: IDelegationNode['id']
+}
+interface CredentialInputWithRootHash extends CredentialInput {
+  claimHash: ICredential['rootHash']
+}
 
+export function fromInput(
+  input: CredentialInputWithRootHash
+): Omit<VerifiableCredential, 'proof'>
+/**
+ * @param input
+ * @param input.claimHash
+ * @param input.subject
+ * @param input.claims
+ * @param input.cType
+ * @param input.issuer
+ * @param input.timestamp
+ * @param input.chainGenesisHash
+ * @param input.legitimations
+ * @param input.delegationId
+ */
+export function fromInput({
+  claimHash,
+  subject,
+  claims,
+  cType,
+  issuer,
+  timestamp,
+  chainGenesisHash,
+  legitimations,
+  delegationId,
+}: CredentialInput): Omit<VerifiableCredential, 'proof' | 'id'> {
   // write root hash to id
-  const id = credentialIdFromRootHash(hexToU8a(rootHash))
+  const id = credentialIdFromRootHash(hexToU8a(claimHash))
 
   // transform & annotate claim to be json-ld and VC conformant
-  const { credentialSubject } = Claim.toJsonLD(claim, false) as {
-    credentialSubject: VerifiableCredential['credentialSubject']
+  const credentialSubject = {
+    '@context': { '@vocab': cType.$id },
+    id: subject,
   }
 
-  let credentialSchema: JsonSchemaValidator2018
-  if (ctype && ctype.$id !== CType.hashToId(claim.cTypeHash)) {
-    credentialSchema = {
-      id: ctype.$id,
-      type: JSON_SCHEMA_TYPE,
-      name: ctype.title,
-      schema: ctype,
-    }
-  } else {
-    credentialSchema = {
-      id: CType.hashToId(claim.cTypeHash),
-      type: JSON_SCHEMA_TYPE,
-    }
+  for (const key in claims) {
+    credentialSubject[`#${key}`] = claims[key]
+  }
+
+  const credentialSchema: JsonSchemaValidator2018 = {
+    id: cType.$id,
+    type: JSON_SCHEMA_TYPE,
+  }
+  if ('properties' in cType) {
+    credentialSchema.name = cType.title
+    credentialSchema.schema = cType
   }
 
   const chainId: Caip2ChainId = `polkadot:${u8aToHex(
@@ -115,11 +146,17 @@ export function fromICredential(
     type: KILT_REVOCATION_STATUS_V1_TYPE,
   }
 
-  const federatedTrustModel: VerifiableCredential['federatedTrustModel'] =
-    legitimations.map(({ rootHash }) => ({
-      id: credentialIdFromRootHash(hexToU8a(rootHash)),
+  const federatedTrustModel: VerifiableCredential['federatedTrustModel'] = []
+  legitimations?.forEach((legitimation) => {
+    const entry: KiltAttesterLegitimationV1 = {
+      id: legitimation.id,
       type: KILT_ATTESTER_LEGITIMATION_V1_TYPE,
-    }))
+    }
+    if ('credentialSubject' in legitimation) {
+      entry.verifiableCredential = legitimation
+    }
+    federatedTrustModel.push(entry)
+  })
   if (delegationId) {
     const delegation: KiltAttesterDelegationV1 = {
       id: `${chainId}/kilt:delegation/${base58Encode(hexToU8a(delegationId))}`,
@@ -133,13 +170,166 @@ export function fromICredential(
   return {
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
     type: DEFAULT_CREDENTIAL_TYPES,
-    id,
+    ...(id && { id }),
     nonTransferable: true,
     credentialSubject,
     credentialSchema,
     issuer,
     issuanceDate,
     credentialStatus,
-    federatedTrustModel,
+    ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
   }
+}
+
+export const credentialSchema: JsonSchema.Schema = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  properties: {
+    '@context': {
+      type: 'array',
+      const: DEFAULT_CREDENTIAL_CONTEXTS,
+    },
+    type: {
+      type: 'array',
+      uniqueItems: true,
+      minItems: 2,
+      maxItems: 2,
+      oneOf: [
+        { contains: DEFAULT_CREDENTIAL_TYPES },
+        {
+          contains: [
+            `${W3C_CREDENTIAL_CONTEXT_URL}#${W3C_CREDENTIAL_TYPE}`,
+            `${KILT_CREDENTIAL_CONTEXT_URL}#${KILT_CREDENTIAL_TYPE}`,
+          ],
+        },
+      ],
+    },
+    id: {
+      type: 'string',
+      format: 'uri',
+    },
+    nonTransferable: {
+      type: 'boolean',
+    },
+    credentialSubject: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          format: 'uri',
+        },
+      },
+      required: ['id'],
+    },
+    issuer: {
+      type: 'string',
+      format: 'uri',
+    },
+    issuanceDate: {
+      type: 'string',
+      // not sure if there is difference between format: 'date-time' and the XSD date format
+    },
+    credentialStatus: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          format: 'uri',
+        },
+        type: {
+          // public credentials may have a different revocation check
+          type: 'string',
+        },
+      },
+      required: ['id', 'type'],
+    },
+    federatedTrustModel: {
+      type: 'array',
+      minLength: 1,
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uri',
+          },
+          type: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  },
+  additionalProperties: false,
+  required: [
+    '@context',
+    'type',
+    'id',
+    'credentialSubject',
+    'issuer',
+    'issuanceDate',
+    'credentialStatus',
+  ],
+}
+
+const schemaValidator = new JsonSchema.Validator(credentialSchema)
+
+/**
+ * @param credential
+ */
+export function validateStructure(credential: VerifiableCredential): void {
+  const { errors, valid } = schemaValidator.validate(credential)
+  if (!valid)
+    throw new CredentialMalformedError(
+      `Object not matching ${KILT_CREDENTIAL_TYPE} data model`,
+      {
+        cause: errors,
+      }
+    )
+}
+
+/**
+ * Transforms an [[ICredential]] object to conform to the KiltCredentialV1 data model.
+ *
+ * @param input
+ * @param issuer
+ * @param timestamp
+ * @param chainGenesisHash
+ * @param blockHash
+ * @param ctype
+ */
+export function fromICredential(
+  input: ICredential,
+  issuer: DidUri,
+  timestamp: number,
+  chainGenesisHash: Uint8Array,
+  blockHash: Uint8Array,
+  ctype?: ICType
+): VerifiableCredential {
+  const {
+    legitimations: legitimationsInput,
+    delegationId,
+    rootHash,
+    claim,
+  } = input
+  const cType = ctype ?? { $id: CType.hashToId(claim.cTypeHash) }
+
+  const legitimations = legitimationsInput.map(({ rootHash }) => ({
+    id: credentialIdFromRootHash(hexToU8a(rootHash)),
+  }))
+
+  const vc = fromInput({
+    claimHash: rootHash,
+    subject: claim.owner,
+    claims: claim.contents,
+    chainGenesisHash,
+    cType,
+    issuer,
+    timestamp,
+    legitimations,
+    ...(delegationId && { delegationId }),
+  })
+
+  const proof = KiltAttestationProofV1.fromICredential(input, blockHash)
+  return { ...vc, proof }
 }

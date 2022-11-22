@@ -106,10 +106,10 @@ export interface VerifiableCredential {
   /**
    * If true, this credential can only be presented and used by its subject.
    */
-  nonTransferable?: boolean
   credentialSchema: JsonSchemaValidator2018
   credentialStatus: KiltRevocationStatusV1
-  federatedTrustModel: Array<
+  nonTransferable?: boolean
+  federatedTrustModel?: Array<
     KiltAttesterDelegationV1 | KiltAttesterLegitimationV1
   >
 }
