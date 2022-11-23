@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "coverage",
+    "**/*.spec.ts",
+  ],
+  "references": [
+    {"path": "../config"},
+    {"path": "../types"},
+    {"path": "../utils"},
+  ]
+}

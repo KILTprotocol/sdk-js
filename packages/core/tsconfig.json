@@ -1,0 +1,35 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts",
+    "jest.config.js",
+    "docs",
+    "**/*.spec.ts",
+    "src/__integrationtests__",
+    "**/test"
+  ],
+  "references": [
+    {"path": "../asset-did"},
+    {"path": "../augment-api"},
+    {"path": "../chain-helpers"},
+    {"path": "../config"},
+    {"path": "../did"},
+    {"path": "../type-definitions"},
+    {"path": "../types"},
+    {"path": "../utils"},
+  ]
+}

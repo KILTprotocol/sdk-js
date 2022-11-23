@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "sourceMap": false,
+    "strict": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "jsx": "preserve",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "importHelpers": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "composite": true,
+    "declaration": true,
+    "baseUrl": "./packages/",
+    "paths": {
+      "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
+      "@kiltprotocol/config": ["config/src"],
+      "@kiltprotocol/core": ["core/src"],
+      "@kiltprotocol/messaging": ["messaging/src"],
+      "@kiltprotocol/sdk-js": ["sdk-js/src"],
+      "@kiltprotocol/types": ["types/src"],
+      "@kiltprotocol/utils": ["utils/src"],
+      "@kiltprotocol/vc-export": ["vc-export/src"],
+      "@kiltprotocol/did": ["did/src"],
+      "@kiltprotocol/asset-did": ["asset-did/src"],
+      "@kiltprotocol/docs": ["docs/src"],
+      "@kiltprotocol/testing": ["testing/src"],
+      "@kiltprotocol/augment-api": ["augment-api/src"],
+      "@kiltprotocol/type-definitions": ["type-definitions/src"],
+      }
+  },
+  "exclude": [
+    "**/node_modules",
+    "**/lib"
+  ]
+}

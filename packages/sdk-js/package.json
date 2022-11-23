@@ -17,10 +17,9 @@
   ],
   "scripts": {
     "clean": "rimraf ./lib dist",
-    "build": "yarn clean && yarn build:ts",
-    "build:ts": "yarn build:cjs && yarn build:esm",
-    "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
+    "build": "yarn build:cjs && yarn build:esm",
+    "build:cjs": "tsc -b tsconfig.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
+    "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
     "bundle": "rimraf ./dist && webpack --config webpack.config.js"
   },
   "repository": "github:kiltprotocol/sdk-js",

@@ -29,13 +29,12 @@ lib
 .env.test.local
 .env.production.local
 settings.json
+tsconfig.tsbuildinfo
 
 # doc 
 **/docs/api
+/docs/api
 
 # misc
 /.idea
 .vscode
-
-# doc
-/docs/api

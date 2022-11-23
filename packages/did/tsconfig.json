@@ -1,15 +1,12 @@
 {
-  "extends": "../../tsconfig.build.json",
-
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
     "outDir": "./lib/cjs"
   },
-
   "include": [
-    "src/**/*.ts", "src/**/*.js"
+    "src/**/*.ts",
+    "src/**/*.js"
   ],
-
   "exclude": [
     "node_modules",
     "coverage",
@@ -24,5 +21,11 @@
     "**/*.spec.ts",
     "src/__integrationtests__",
     "**/test"
+  ],
+  "references": [
+    {"path": "../augment-api"},
+    {"path": "../config"},
+    {"path": "../types"},
+    {"path": "../utils"},
   ]
 }

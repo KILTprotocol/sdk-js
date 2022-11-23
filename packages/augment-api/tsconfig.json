@@ -1,7 +1,6 @@
 {
-  "extends": "../../tsconfig.build.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
     "outDir": "./lib/cjs",
     "skipLibCheck": true,
     "noUnusedLocals": false,
@@ -26,4 +25,9 @@
     "**/*.spec.ts",
     "src/**/definitions.ts",
   ],
+  "references": [
+    {
+      "path": "../type-definitions"
+    },
+  ]
 }
