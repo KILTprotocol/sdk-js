@@ -26,7 +26,7 @@ import * as Did from '@kiltprotocol/did'
 import type {
   DelegationDelegationHierarchyDelegationHierarchyDetails,
   DelegationDelegationHierarchyDelegationNode,
-} from '@kiltprotocol/augment-api'
+} from '@kiltprotocol/augment-api/types'
 
 export type CodecWithId<C> = {
   id: string

@@ -7,7 +7,7 @@
 
 import type { HexString } from '@polkadot/util/types'
 import type { AccountId } from '@polkadot/types/interfaces'
-import type { PublicCredentialsCredentialsCredential } from '@kiltprotocol/augment-api'
+import type { PublicCredentialsCredentialsCredential } from '@kiltprotocol/augment-api/types'
 import type {
   DidUri,
   IAssetClaim,

@@ -38,7 +38,7 @@ import type {
   DidDidDetailsDidPublicKeyDetails,
   DidServiceEndpointsDidEndpoint,
   KiltSupportDeposit,
-} from '@kiltprotocol/augment-api'
+} from '@kiltprotocol/augment-api/types'
 
 import {
   EncodedEncryptionKey,

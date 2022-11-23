@@ -9,7 +9,7 @@ import type { Option } from '@polkadot/types'
 import type { IAttestation, ICredential } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
+import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api/types'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 

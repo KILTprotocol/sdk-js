@@ -11,6 +11,11 @@
       "require": "./lib/cjs/index.js",
       "default": "./lib/esm/index.js"
     },
+    "./types": {
+      "types": "./lib/cjs/types/index.d.ts",
+      "require": "./lib/cjs/types/index.ts",
+      "default": "./lib/esm/types/index.js"
+    },
     "./spiritnet": {
       "types": "./lib/cjs/index.d.ts",
       "require": "./lib/cjs/index.js",
@@ -20,15 +25,34 @@
       "types": "./lib/cjs/peregrine/index.d.ts",
       "require": "./lib/cjs/peregrine/index.js",
       "default": "./lib/esm/peregrine/index.js"
+    },
+    "./spiritnet/types": {
+      "types": "./lib/cjs/types/index.d.ts",
+      "require": "./lib/cjs/types/index.ts",
+      "default": "./lib/esm/types/index.js"
+    },
+    "./peregrine/types": {
+      "types": "./lib/cjs/peregrine/types/index.d.ts",
+      "require": "./lib/cjs/peregrine/types/index.js",
+      "default": "./lib/esm/peregrine/types/index.js"
     }
   },
   "typesVersions": {
     "*": {
+      "types": [
+        "lib/cjs/types/index.d.ts"
+      ],
       "spiritnet": [
         "lib/cjs/index.d.ts"
       ],
       "peregrine": [
         "lib/cjs/peregrine/index.d.ts"
+      ],
+      "spiritnet/types": [
+        "lib/cjs/types/index.d.ts"
+      ],
+      "peregrine/types": [
+        "lib/cjs/peregrine/types/index.d.ts"
       ]
     }
   },
