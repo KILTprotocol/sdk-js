@@ -35,6 +35,16 @@
       "types": "./lib/cjs/peregrine/types/index.d.ts",
       "require": "./lib/cjs/peregrine/types/index.js",
       "default": "./lib/esm/peregrine/types/index.js"
+    },
+    "./spiritnet/interfaces/defs": {
+      "types": "./lib/cjs/interfaces/defs/index.d.ts",
+      "require": "./lib/cjs/interfaces/defs/index.ts",
+      "default": "./lib/esm/interfaces/defs/index.js"
+    },
+    "./peregrine/interfaces/defs": {
+      "types": "./lib/cjs/peregrine/interfaces/defs/index.d.ts",
+      "require": "./lib/cjs/peregrine/interfaces/defs/index.ts",
+      "default": "./lib/esm/peregrine/interfaces/defs/index.js"
     }
   },
   "typesVersions": {
@@ -53,6 +63,12 @@
       ],
       "peregrine/types": [
         "lib/cjs/peregrine/types/index.d.ts"
+      ],
+      "spiritnet/interfaces/defs": [
+        "lib/cjs/interfaces/defs/index.d.ts"
+      ],
+      "peregrine/interfaces/defs": [
+        "lib/cjs/peregrine/interfaces/defs/index.d.ts"
       ]
     }
   },

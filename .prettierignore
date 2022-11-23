@@ -6,4 +6,4 @@ lib
 !package.json
 jest.*
 coverage
-**/augment-api/src/interfaces/**/*.ts
+packages/augment-api/src/*/interfaces/**/*.ts

@@ -5,7 +5,7 @@ import type { Option, Struct, Text, Vec } from '@polkadot/types-codec';
 import type { AccountId32 } from '@polkadot/types/interfaces/runtime';
 
 // FIXME: had to be added manually
-import type { DidServiceEndpointsDidEndpoint, DidDidDetails } from '../types-lookup.js';
+import type { DidServiceEndpointsDidEndpoint, DidDidDetails } from '@kiltprotocol/augment-api/spiritnet/types';
 
 /** @name DidApiAccountId */
 export interface DidApiAccountId extends AccountId32 {}
