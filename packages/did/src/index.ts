@@ -9,6 +9,8 @@
  * @module @kiltprotocol/did
  */
 
+import '@kiltprotocol/augment-api'
+
 export * from './DidDetails/index.js'
 export * from './DidDocumentExporter/index.js'
 export * from './DidResolver/index.js'

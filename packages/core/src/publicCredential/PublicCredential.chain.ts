@@ -20,7 +20,7 @@ import type {
   PublicCredentialError,
   PublicCredentialsCredentialsCredential,
   PublicCredentialsCredentialsCredentialEntry,
-} from '@kiltprotocol/augment-api/peregrine/types'
+} from '@kiltprotocol/augment-api/types'
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 

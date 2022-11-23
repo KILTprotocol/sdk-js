@@ -18,10 +18,16 @@
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "./packages",
+    "paths": {
+      // uncomment the following lines to check against testnet types during package build
+      // "@kiltprotocol/augment-api": ["augment-api/lib/cjs/peregrine"],
+      // "@kiltprotocol/augment-api/*": ["augment-api/lib/cjs/peregrine/*"],
+    }
   },
   "exclude": [
     "**/node_modules",
     "**/lib"
-  ]
+  ],
 }
