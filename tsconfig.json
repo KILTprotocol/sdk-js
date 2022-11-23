@@ -1,24 +1,20 @@
 {
-  "extends": "./tsconfig.build.json",
-  "include": ["packages/**/*", "jest-setup/*", "docs/*"],
-  "compilerOptions": {
-    "baseUrl": "./packages",
-    "sourceMap": true,
-    "paths": {
-      "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
-      "@kiltprotocol/config": ["config/src"],
-      "@kiltprotocol/core": ["core/src"],
-      "@kiltprotocol/messaging": ["messaging/src"],
-      "@kiltprotocol/sdk-js": ["sdk-js/src"],
-      "@kiltprotocol/types": ["types/src"],
-      "@kiltprotocol/utils": ["utils/src"],
-      "@kiltprotocol/vc-export": ["vc-export/src"],
-      "@kiltprotocol/did": ["did/src"],
-      "@kiltprotocol/asset-did": ["asset-did/src"],
-      "@kiltprotocol/docs": ["docs/src"],
-      "@kiltprotocol/testing": ["testing/src"],
-      "@kiltprotocol/augment-api": ["augment-api/src"],
-      "@kiltprotocol/type-definitions": ["type-definitions/src"],
-      }
-  },
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "compilerOptions": {"noEmit": true, "declarationMap": true},
+  "references": [
+    {"path": "packages/chain-helpers"}, 
+    {"path": "packages/config"}, 
+    {"path": "packages/core"}, 
+    {"path": "packages/messaging"}, 
+    {"path": "packages/sdk-js"}, 
+    {"path": "packages/types"}, 
+    {"path": "packages/type-definitions"}, 
+    {"path": "packages/utils"}, 
+    {"path": "packages/vc-export"}, 
+    {"path": "packages/did"}, 
+    {"path": "packages/asset-did"}, 
+    {"path": "packages/testing"}, 
+    {"path": "packages/augment-api"}, 
+  ]
 }

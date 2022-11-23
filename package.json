@@ -8,7 +8,7 @@
   ],
   "license": "BSD-4-Clause",
   "scripts": {
-    "check": "tsc -p tsconfig.json --noEmit",
+    "check": "tsc -b tsconfig.json",
     "prebuild": "yarn clean",
     "build": "yarn workspaces foreach -pt --exclude 'root-workspace' run build",
     "build:dev": "yarn workspaces foreach -pt --exclude 'root-workspace' run build:cjs",
