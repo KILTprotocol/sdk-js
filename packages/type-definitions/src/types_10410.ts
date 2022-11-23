@@ -6,17 +6,16 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
-import { types23 } from './types_23.js'
+import { mergeType } from './mergeType.js'
+import { types2700 } from './types_2700.js'
 
-export const types25: RegistryTypes = {
+export const types10410: RegistryTypes = mergeType(
   // Use the old types as the base of the new types.
-  ...types23,
+  types2700,
 
   // We add these new type:
-  DidAuthorizedCallOperation: {
-    did: 'DidIdentifierOf',
-    txCounter: 'u64',
-    call: 'DidCallableOf',
-    submitter: 'AccountId',
-  },
-}
+  {},
+
+  // Remove old DID types:
+  ['DispatchError']
+)

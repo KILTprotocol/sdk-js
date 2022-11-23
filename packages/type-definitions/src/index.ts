@@ -22,6 +22,7 @@ import { types21 } from './types_21.js'
 import { types23 } from './types_23.js'
 import { types25 } from './types_25.js'
 import { types2700 } from './types_2700.js'
+import { types10410 } from './types_10410.js'
 import { types10720 } from './types_10720.js'
 import { types10800 } from './types_10800.js'
 import { types10900 } from './types_10900.js'
@@ -45,6 +46,7 @@ export {
   types23,
   types25,
   types2700,
+  types10410,
   types10720,
   types10800,
   types10900,
@@ -101,8 +103,12 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types25,
   },
   {
-    minmax: [2700, 10710],
+    minmax: [2700, 10409],
     types: types2700,
+  },
+  {
+    minmax: [10410, 10719],
+    types: types10410,
   },
   {
     minmax: [10720, 10750],

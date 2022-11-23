@@ -6,30 +6,33 @@
  */
 
 import type { RegistryTypes } from '@polkadot/types/types'
+import { mergeType } from './mergeType.js'
 import { types17 } from './types_17.js'
 
-// Remove old DID types
-delete types17.DidCreationOperation
-delete types17.DidUpdateOperation
-delete types17.DidDeletionOperation
+export const types18: RegistryTypes = mergeType(
+  // Use the old types as the base of the new types.
+  types17,
 
-export const types18: RegistryTypes = {
-  ...types17,
+  // We add these new type:
+  {
+    // DID management update
+    DidCreationDetails: {
+      did: 'DidIdentifierOf',
+      newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
+      newAttestationKey: 'Option<DidVerificationKey>',
+      newDelegationKey: 'Option<DidVerificationKey>',
+      newEndpointUrl: 'Option<Url>',
+    },
+    DidUpdateDetails: {
+      newAuthenticationKey: 'Option<DidVerificationKey>',
+      newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
+      attestationKeyUpdate: 'DidVerificationKeyUpdateAction',
+      delegationKeyUpdate: 'DidVerificationKeyUpdateAction',
+      publicKeysToRemove: 'BTreeSet<KeyIdOf>',
+      newEndpointUrl: 'Option<Url>',
+    },
+  },
 
-  // DID management update
-  DidCreationDetails: {
-    did: 'DidIdentifierOf',
-    newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
-    newAttestationKey: 'Option<DidVerificationKey>',
-    newDelegationKey: 'Option<DidVerificationKey>',
-    newEndpointUrl: 'Option<Url>',
-  },
-  DidUpdateDetails: {
-    newAuthenticationKey: 'Option<DidVerificationKey>',
-    newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
-    attestationKeyUpdate: 'DidVerificationKeyUpdateAction',
-    delegationKeyUpdate: 'DidVerificationKeyUpdateAction',
-    publicKeysToRemove: 'BTreeSet<KeyIdOf>',
-    newEndpointUrl: 'Option<Url>',
-  },
-}
+  // Remove old DID types
+  ['DidCreationOperation', 'DidUpdateOperation', 'DidDeletionOperation']
+)
