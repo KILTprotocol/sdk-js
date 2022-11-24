@@ -52,39 +52,49 @@ yarn add @kiltprotocol/vc-export
 Given we are in possession of an attested KILT claim and the associated KILT identity:
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk-js'
-import type { Credential, Identity } from '@kiltprotocol/sdk-js'
-import VCUtils from '@kiltprotocol/vc-export'
+import { Attestation, ICredential } from '@kiltprotocol/sdk-js'
+import * as vcExport from '@kiltprotocol/vc-export'
 
-let credential: Credential
-let identity: Identity
+let credential: ICredential
 
+// fetch the attestion
+const api = await kilt.connect('wss://spiritnet.kilt.io/')
+const attestation = Attestation.fromChain(
+  await api.query.attestation.attestations(credential.rootHash),
+  credential.rootHash
+)
 // turn the KILT credential into a VerifiableCredential
-const VC = VCUtils.fromCredentialAndAttestation(credential)
+const VC = vcExport.fromCredentialAndAttestation(credential, attestation)
 
 // produce a reduced copy of the VC where only selected attributes are disclosed
-const nameOnly = await VCUtils.presentation.removeProperties(VC, ['name'])
+const nameOnly = await vcExport.presentation.removeProperties(VC, ['name'])
 // or directly produce a VerifiablePresentation, which implicitly performs the step above
-const presentation = await VCUtils.presentation.makePresentation(VC, ['name'])
+const presentation = await vcExport.presentation.makePresentation(VC, ['name'])
 ```
 
 A verifier can now check the proofs attached to the VerifiableCredential but can only see the disclosed attributes:
 
 ```typescript
 // Here's an example for verifying the attestation proof
-let result
-presentation.verifiableCredential.proof.foreach((proof) => {
-  if (proof.type === VCUtils.types.KILT_ATTESTED_PROOF_TYPE)
-    VCUtils.verification.verifyAttestedProof(proof)
-})
+const api = await kilt.connect('wss://spiritnet.kilt.io/')
+try {
+  presentation.verifiableCredential.proof.foreach((proof) => {
+    if (proof.type === vcExport.constants.KILT_ATTESTED_PROOF_TYPE)
+      vcExport.verification.verifyAttestedProof(
+        presentation.verifiableCredential,
+        proof,
+        api
+      )
+  })
 
-if (result && result.verified) {
   console.log(
     `Name of the crook: ${presentation.verifiableCredential.credentialSubject.name}`
   ) // prints 'Billy The Kid'
   console.log(
     `Reward: ${presentation.verifiableCredential.credentialSubject.reward}`
   ) // undefined
+} catch (e) {
+  console.error('Failed verification', e)
 }
 ```
 
@@ -93,23 +103,24 @@ if (result && result.verified) {
 Assuming we have a KILT credential expressed as a VC (`credential`), for example as produced by the example above.
 
 ```typescript
-import kilt from '@kiltprotocol/sdk-js'
-import { vcjsSuites } from '@kiltprotocol/vc-export'
+import * as kilt from '@kiltprotocol/sdk-js'
+import { vcjsSuites, verification } from '@kiltprotocol/vc-export'
 import vcjs from 'vc-js'
 import jsigs from 'jsonld-signatures'
 
 // 1. set up suites
 const { KiltIntegritySuite, KiltSignatureSuite, KiltAttestedSuite } =
   vcjsSuites.suites
-const signatureSuite = new KiltSignatureSuite()
-const integritySuite = new KiltIntegritySuite()
+const signatureSuite = new KiltSignatureSuite.KiltSignatureSuite()
+const integritySuite = new KiltIntegritySuite.KiltDisclosureSuite()
 // the KiltAttestedSuite requires a connection object that allows access to the KILT blockchain, which we can obtain via the KILT sdk
-await kilt.init({ address: 'wss://full-nodes.kilt.io:443' })
-const KiltConnection = await kilt.connect()
-const attestedSuite = new KiltAttestedSuite({ KiltConnection })
+const KiltConnection = await kilt.connect('wss://spiritnet.kilt.io/')
+const attestedSuite = new KiltAttestedSuite.KiltAttestedSuite({
+  KiltConnection,
+})
 
 // 2. verify credential schema
-const schemaVerified = verificationUtils.validateSchema(credential).verified
+const schemaVerified = verification.validateSchema(credential).verified
 // unfortunately the VC credentialSchema definition is underspecified in their context - we therefore have to remove it before credential verification
 delete credential['credentialSchema']
 
