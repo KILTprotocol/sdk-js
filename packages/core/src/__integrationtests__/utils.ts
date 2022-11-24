@@ -128,6 +128,12 @@ export const driversLicenseCTypeForDeposit = CType.fromProperties(
   }
 )
 
+export const nftNameCType = CType.fromProperties('NFT collection name', {
+  name: {
+    type: 'string',
+  },
+})
+
 // Submits resolving when IS_IN_BLOCK
 export async function submitTx(
   extrinsic: SubmittableExtrinsic,

@@ -12,6 +12,17 @@ import { types10720 } from './types_10720.js'
 export const types10800: RegistryTypes = {
   ...types10720,
 
+  // Public credentials state_call
+  PublicCredentialFilter: {
+    _enum: {
+      ctypeHash: 'Hash',
+      attester: 'AccountId32',
+    },
+  },
+  PublicCredentialError: {
+    _enum: ['InvalidSubjectId'],
+  },
+
   // Staking get_staking_rates
   StakingRates: {
     collatorStakingRate: 'Perquintill',

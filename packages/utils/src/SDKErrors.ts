@@ -61,6 +61,8 @@ export class RevokedTypeError extends SDKError {}
 
 export class OwnerMissingError extends SDKError {}
 
+export class SubjectMissingError extends SDKError {}
+
 export class LegitimationsMissingError extends SDKError {}
 
 export class ClaimNonceMapMissingError extends SDKError {}
@@ -206,3 +208,5 @@ export class NoProofForStatementError extends SDKError {
 }
 
 export class CodecMismatchError extends SDKError {}
+
+export class PublicCredentialError extends SDKError {}

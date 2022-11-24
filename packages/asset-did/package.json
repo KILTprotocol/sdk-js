@@ -1,6 +1,6 @@
 {
-  "name": "@kiltprotocol/core",
-  "version": "0.30.0",
+  "name": "@kiltprotocol/asset-did",
+  "version": "0.30.0-48",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -29,27 +29,8 @@
   "license": "BSD-4-Clause",
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
-  "devDependencies": {
-    "@kiltprotocol/testing": "workspace:*",
-    "@types/uuid": "^8.0.0",
-    "rimraf": "^3.0.2",
-    "testcontainers": "^8.6.1",
-    "typescript": "^4.8.3"
-  },
   "dependencies": {
-    "@kiltprotocol/asset-did": "workspace:*",
-    "@kiltprotocol/augment-api": "workspace:*",
-    "@kiltprotocol/chain-helpers": "workspace:*",
-    "@kiltprotocol/config": "workspace:*",
-    "@kiltprotocol/did": "workspace:*",
-    "@kiltprotocol/type-definitions": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.4.1",
-    "@polkadot/keyring": "^10.0.0",
-    "@polkadot/types": "^9.4.1",
-    "@polkadot/util": "^10.0.0",
-    "@polkadot/util-crypto": "^10.0.0",
-    "cbor": "^8.1.0"
+    "@kiltprotocol/utils": "workspace:*"
   }
 }

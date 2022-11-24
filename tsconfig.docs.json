@@ -7,6 +7,7 @@
       "packages/types/src/index.ts",
       "packages/augment-api/src/index.ts",
       "packages/utils/src/index.ts",
+      "packages/asset-did/src/index.ts",
       "packages/config/src/index.ts",
       "packages/chain-helpers/src/index.ts",
       "packages/did/src/index.ts",
