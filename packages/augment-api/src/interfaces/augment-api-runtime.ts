@@ -88,7 +88,7 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       version: AugmentedCall<ApiType, () => Observable<RuntimeVersion>>;
     };
-    /** 0x26609555c0656603/1 */
+    /** 0x26609555c0656603/2 */
     did: {
       /**
        * Return the information relative to the owner of the provided DID, if present.
@@ -97,7 +97,7 @@ declare module '@polkadot/api-base/types/calls' {
       /**
        * Return the information relative to the DID to which the provided account is linked, if any.
        **/
-      queryByAccount: AugmentedCall<ApiType, (account: DidApiAccountId | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
+      queryByAccount: AugmentedCall<ApiType, (account: DidApiAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => Observable<Option<RawDidLinkedInfo>>>;
       /**
        * Return the information relative to the owner of the provided web3name, if any.
        **/

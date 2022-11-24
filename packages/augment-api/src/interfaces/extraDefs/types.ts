@@ -4,10 +4,10 @@
 import type { Option, Struct, Text, Vec } from '@polkadot/types-codec';
 import type { AccountId32, Perquintill } from '@polkadot/types/interfaces/runtime';
 // FIXME: manually added as they are not automatically imported
-import type { DidServiceEndpointsDidEndpoint, DidDidDetails } from '@polkadot/types/lookup'
+import type { DidServiceEndpointsDidEndpoint, DidDidDetails, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
 
 /** @name DidApiAccountId */
-export interface DidApiAccountId extends AccountId32 {}
+export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId {}
 
 /** @name RawDidLinkedInfo */
 export interface RawDidLinkedInfo extends Struct {

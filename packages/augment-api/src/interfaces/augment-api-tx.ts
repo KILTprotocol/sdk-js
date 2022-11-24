@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { Bytes, Compact, Option, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H256, MultiAddress, Perbill, Perquintill, Weight } from '@polkadot/types/interfaces/runtime';
-import type { CumulusPrimitivesParachainInherentParachainInherentData, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, FrameSupportScheduleMaybeHashed, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletVestingVestingInfo, RuntimeCommonAuthorizationPalletAuthorize, SpRuntimeHeader, SpRuntimeMultiSignature, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeSessionKeys, XcmV1MultiLocation, XcmV2WeightLimit, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
+import type { CumulusPrimitivesParachainInherentParachainInherentData, DelegationDelegationHierarchyPermissions, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidServiceEndpointsDidEndpoint, FrameSupportScheduleMaybeHashed, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletDidLookupAssociateAccountRequest, PalletDidLookupLinkableAccountLinkableAccountId, PalletVestingVestingInfo, PublicCredentialsCredentialsCredential, RuntimeCommonAuthorizationPalletAuthorize, SpRuntimeHeader, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeSessionKeys, XcmV1MultiLocation, XcmV2WeightLimit, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -1191,7 +1191,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids + ConnectedAccounts
        * # </weight>
        **/
-      associateAccount: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array, proof: SpRuntimeMultiSignature | { ed25519: any } | { sr25519: any } | { ecdsa: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u64, SpRuntimeMultiSignature]>;
+      associateAccount: AugmentedSubmittable<(req: PalletDidLookupAssociateAccountRequest | { Dotsama: any } | { Ethereum: any } | string | Uint8Array, expiration: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupAssociateAccountRequest, u64]>;
       /**
        * Associate the sender of the call to the DID that authorized this
        * call.
@@ -1215,7 +1215,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * The subject of the call must be linked to the account.
        * The sender of the call will be the new deposit owner.
        **/
-      changeDepositOwner: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      changeDepositOwner: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
       /**
        * Remove the association of the provided account. This call can only
        * be called from the deposit owner. The reserved deposit will be
@@ -1229,7 +1229,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids
        * # </weight>
        **/
-      reclaimDeposit: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      reclaimDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
       /**
        * Remove the association of the provided account ID. This call doesn't
        * require the authorization of the account ID, but the associated DID
@@ -1243,7 +1243,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Writes: ConnectedDids + ConnectedAccounts
        * # </weight>
        **/
-      removeAccountAssociation: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      removeAccountAssociation: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
       /**
        * Remove the association of the sender account. This call doesn't
        * require the authorization of the DID, but requires a signed origin.
@@ -1262,7 +1262,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * The sender must be the deposit owner.
        **/
-      updateDeposit: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      updateDeposit: AugmentedSubmittable<(account: PalletDidLookupLinkableAccountLinkableAccountId | { AccountId20: any } | { AccountId32: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PalletDidLookupLinkableAccountLinkableAccountId]>;
     };
     dmpQueue: {
       /**
@@ -2086,6 +2086,97 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       removeProxy: AugmentedSubmittable<(delegate: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, proxyType: SpiritnetRuntimeProxyType | 'Any' | 'NonTransfer' | 'Governance' | 'ParachainStaking' | 'CancelProxy' | 'NonDepositClaiming' | number | Uint8Array, delay: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [MultiAddress, SpiritnetRuntimeProxyType, u64]>;
+    };
+    publicCredentials: {
+      /**
+       * Register a new public credential on chain.
+       * 
+       * This function fails if a credential with the same identifier already
+       * exists for the specified subject.
+       * 
+       * Emits `CredentialStored`.
+       **/
+      add: AugmentedSubmittable<(credential: PublicCredentialsCredentialsCredential | { ctypeHash?: any; subject?: any; claims?: any; authorization?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [PublicCredentialsCredentialsCredential]>;
+      /**
+       * Changes the deposit owner.
+       * 
+       * The balance that is reserved by the current deposit owner will be
+       * freed and balance of the new deposit owner will get reserved.
+       * 
+       * The subject of the call must be the owner of the credential.
+       * The sender of the call will be the new deposit owner.
+       **/
+      changeDepositOwner: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Removes the information pertaining a public credential from the
+       * chain and returns the deposit to its payer.
+       * 
+       * The removal of the credential does not delete it entirely from the
+       * blockchain history, but only its link *from* the blockchain state
+       * *to* the blockchain history is removed.
+       * 
+       * Clients parsing public credentials should interpret
+       * the lack of such a link as the fact that the credential has been
+       * removed by its attester some time in the past.
+       * 
+       * This function fails if a credential already exists for the specified
+       * subject.
+       * 
+       * The dispatch origin must be the owner of the deposit, hence not the
+       * credential's attester.
+       * 
+       * Emits `CredentialRemoved`.
+       **/
+      reclaimDeposit: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Removes the information pertaining a public credential from the
+       * chain.
+       * 
+       * The removal of the credential does not delete it entirely from the
+       * blockchain history, but only its link *from* the blockchain state
+       * *to* the blockchain history is removed.
+       * 
+       * Clients parsing public credentials should interpret
+       * the lack of such a link as the fact that the credential has been
+       * removed by its attester some time in the past.
+       * 
+       * This function fails if a credential already exists for the specified
+       * subject.
+       * 
+       * The dispatch origin must be authorized to remove the credential.
+       * 
+       * Emits `CredentialRemoved`.
+       **/
+      remove: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
+      /**
+       * Revokes a public credential.
+       * 
+       * If a credential was already revoked, this function does not fail but
+       * simply results in a noop.
+       * 
+       * The dispatch origin must be authorized to revoke the credential.
+       * 
+       * Emits `CredentialRevoked`.
+       **/
+      revoke: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
+      /**
+       * Unrevokes a public credential.
+       * 
+       * If a credential was not revoked, this function does not fail but
+       * simply results in a noop.
+       * 
+       * The dispatch origin must be authorized to unrevoke the
+       * credential.
+       * 
+       * Emits `CredentialUnrevoked`.
+       **/
+      unrevoke: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array, authorization: Option<RuntimeCommonAuthorizationPalletAuthorize> | null | Uint8Array | RuntimeCommonAuthorizationPalletAuthorize | { Delegation: any } | string) => SubmittableExtrinsic<ApiType>, [H256, Option<RuntimeCommonAuthorizationPalletAuthorize>]>;
+      /**
+       * Updates the deposit amount to the current deposit rate.
+       * 
+       * The sender must be the deposit owner.
+       **/
+      updateDeposit: AugmentedSubmittable<(credentialId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     scheduler: {
       /**

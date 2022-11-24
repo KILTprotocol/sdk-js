@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H256, Perquintill, Weight } from '@polkadot/types/interfaces/runtime';
-import type { DelegationDelegationHierarchyPermissions, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpiritnetRuntimeProxyType, XcmV1MultiLocation, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { DelegationDelegationHierarchyPermissions, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletDidLookupLinkableAccountLinkableAccountId, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, SpRuntimeDispatchError, SpiritnetRuntimeProxyType, XcmV1MultiLocation, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -283,11 +283,11 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * A new association between a DID and an account ID was created.
        **/
-      AssociationEstablished: AugmentedEvent<ApiType, [AccountId32, AccountId32]>;
+      AssociationEstablished: AugmentedEvent<ApiType, [PalletDidLookupLinkableAccountLinkableAccountId, AccountId32]>;
       /**
        * An association between a DID and an account ID was removed.
        **/
-      AssociationRemoved: AugmentedEvent<ApiType, [AccountId32, AccountId32]>;
+      AssociationRemoved: AugmentedEvent<ApiType, [PalletDidLookupLinkableAccountLinkableAccountId, AccountId32]>;
     };
     dmpQueue: {
       /**
@@ -629,6 +629,24 @@ declare module '@polkadot/api-base/types/events' {
        * A proxy was removed.
        **/
       ProxyRemoved: AugmentedEvent<ApiType, [delegator: AccountId32, delegatee: AccountId32, proxyType: SpiritnetRuntimeProxyType, delay: u64], { delegator: AccountId32, delegatee: AccountId32, proxyType: SpiritnetRuntimeProxyType, delay: u64 }>;
+    };
+    publicCredentials: {
+      /**
+       * A public credentials has been removed.
+       **/
+      CredentialRemoved: AugmentedEvent<ApiType, [subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256], { subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256 }>;
+      /**
+       * A public credential has been revoked.
+       **/
+      CredentialRevoked: AugmentedEvent<ApiType, [credentialId: H256], { credentialId: H256 }>;
+      /**
+       * A new public credential has been issued.
+       **/
+      CredentialStored: AugmentedEvent<ApiType, [subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256], { subjectId: RuntimeCommonAssetsAssetDid, credentialId: H256 }>;
+      /**
+       * A public credential has been unrevoked.
+       **/
+      CredentialUnrevoked: AugmentedEvent<ApiType, [credentialId: H256], { credentialId: H256 }>;
     };
     scheduler: {
       /**
