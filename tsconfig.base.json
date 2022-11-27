@@ -21,23 +21,7 @@
     "skipLibCheck": true,
     "composite": true,
     "declaration": true,
-    "baseUrl": "./packages/",
-    "paths": {
-      "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
-      "@kiltprotocol/config": ["config/src"],
-      "@kiltprotocol/core": ["core/src"],
-      "@kiltprotocol/messaging": ["messaging/src"],
-      "@kiltprotocol/sdk-js": ["sdk-js/src"],
-      "@kiltprotocol/types": ["types/src"],
-      "@kiltprotocol/utils": ["utils/src"],
-      "@kiltprotocol/vc-export": ["vc-export/src"],
-      "@kiltprotocol/did": ["did/src"],
-      "@kiltprotocol/asset-did": ["asset-did/src"],
-      "@kiltprotocol/docs": ["docs/src"],
-      "@kiltprotocol/testing": ["testing/src"],
-      "@kiltprotocol/augment-api": ["augment-api/src"],
-      "@kiltprotocol/type-definitions": ["type-definitions/src"],
-      }
+    "baseUrl": "./packages/"
   },
   "exclude": [
     "**/node_modules",
