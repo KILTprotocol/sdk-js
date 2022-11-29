@@ -9,9 +9,9 @@
   "license": "BSD-4-Clause",
   "scripts": {
     "check": "tsc -b tsconfig.json",
-    "prebuild": "yarn clean",
-    "build": "yarn workspaces foreach -pt --exclude 'root-workspace' run build",
+    "build": "yarn clean && yarn workspaces foreach -pt --exclude 'root-workspace' run build",
     "build:dev": "yarn workspaces foreach -pt --exclude 'root-workspace' run build:cjs",
+    "build:watch": "yarn build:dev && tsc -b tsconfig.json --watch",
     "build:docs": "typedoc --theme default --out docs/api --tsconfig tsconfig.docs.json && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
     "clean": "rimraf tests/dist && yarn workspaces foreach -p --exclude 'root-workspace' run clean",
