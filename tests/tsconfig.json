@@ -7,6 +7,8 @@
     "sourceMap": false,
     "outDir": "dist"
   },
+  // indicates package dependencies; must be in sync with @kiltprotocol imports in package.json
+  // note that circular dependcies are not allowed; to avoid them, none of the other packages are marked as depending on this.
   "references": [
     {"path": "../packages/types"},
     {"path": "../packages/sdk-js"},

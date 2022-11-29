@@ -1,4 +1,5 @@
-{
+{  
+  // this file functions as a central entry point e.g. for type checking; references to all packages make sure the entire project is being built.
   "extends": "./tsconfig.base.json",
   "files": [],
   "compilerOptions": { "declarationMap": true },

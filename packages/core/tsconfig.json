@@ -20,6 +20,7 @@
     "src/__integrationtests__",
     "**/test"
   ],
+  // indicates package dependencies; must be in sync with @kiltprotocol imports in package.json
   "references": [
     { "path": "../asset-did" },
     { "path": "../augment-api" },

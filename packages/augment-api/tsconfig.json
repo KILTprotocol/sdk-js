@@ -13,6 +13,7 @@
   },
   "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": ["coverage", "**/*.spec.ts", "src/**/definitions.ts"],
+  // indicates package dependencies; must be in sync with @kiltprotocol imports in package.json
   "references": [
     {
       "path": "../type-definitions"
