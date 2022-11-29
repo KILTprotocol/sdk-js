@@ -23,8 +23,5 @@
     "declaration": true,
     "baseUrl": "./packages/"
   },
-  "exclude": [
-    "**/node_modules",
-    "**/lib"
-  ]
+  "exclude": ["**/node_modules", "**/lib"]
 }

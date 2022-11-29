@@ -4,10 +4,7 @@
     "outDir": "./lib/cjs",
     "rootDir": "./src"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
     "node_modules",
     "coverage",
@@ -24,13 +21,13 @@
     "**/test"
   ],
   "references": [
-    {"path": "../asset-did"},
-    {"path": "../augment-api"},
-    {"path": "../chain-helpers"},
-    {"path": "../config"},
-    {"path": "../did"},
-    {"path": "../type-definitions"},
-    {"path": "../types"},
-    {"path": "../utils"},
+    { "path": "../asset-did" },
+    { "path": "../augment-api" },
+    { "path": "../chain-helpers" },
+    { "path": "../config" },
+    { "path": "../did" },
+    { "path": "../type-definitions" },
+    { "path": "../types" },
+    { "path": "../utils" }
   ]
 }

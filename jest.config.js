@@ -6,7 +6,9 @@ module.exports = {
   // Parachain block time is 12s
   testTimeout: 15000,
   setupFilesAfterEnv: ['../jest-setup/setup.js'],
-  transformIgnorePatterns: ['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)',
+  ],
   coverageThreshold: {
     global: {
       branches: 70,
@@ -16,8 +18,8 @@ module.exports = {
     },
   },
   transform: {
-    "\\.js$": "babel-jest",
-    "\\.ts$": "ts-jest"
+    '\\.js$': 'babel-jest',
+    '\\.ts$': 'ts-jest',
   },
   collectCoverageFrom: [
     '**/*/src/**/*.ts',
@@ -40,7 +42,7 @@ module.exports = {
     '!did/src/Did.utils.ts',
     '!utils/src/jsonabc.ts',
   ],
-  resolver: "ts-jest-resolver",
+  resolver: 'ts-jest-resolver',
   rootDir: 'packages',
   coverageDirectory: 'coverage',
   globals: {

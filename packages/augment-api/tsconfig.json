@@ -6,29 +6,16 @@
     "skipLibCheck": true,
     "noUnusedLocals": false,
     "paths": {
-      "@kiltprotocol/augment-api/*": [
-        "./src/*"
-      ],
-      "@polkadot/api/augment": [
-        "./src/interfaces/augment-api.ts"
-      ],
-      "@polkadot/types/augment": [
-        "./src/interfaces/augment-types.ts"
-      ]
+      "@kiltprotocol/augment-api/*": ["./src/*"],
+      "@polkadot/api/augment": ["./src/interfaces/augment-api.ts"],
+      "@polkadot/types/augment": ["./src/interfaces/augment-types.ts"]
     }
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
-  "exclude": [
-    "coverage",
-    "**/*.spec.ts",
-    "src/**/definitions.ts",
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["coverage", "**/*.spec.ts", "src/**/definitions.ts"],
   "references": [
     {
       "path": "../type-definitions"
-    },
+    }
   ]
 }

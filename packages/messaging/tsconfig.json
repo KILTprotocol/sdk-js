@@ -4,18 +4,12 @@
     "outDir": "./lib/cjs",
     "rootDir": "./src"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
-  "exclude": [
-    "coverage",
-    "**/*.spec.ts",
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["coverage", "**/*.spec.ts"],
   "references": [
-    {"path": "../core"},
-    {"path": "../did"},
-    {"path": "../types"},
-    {"path": "../utils"},
+    { "path": "../core" },
+    { "path": "../did" },
+    { "path": "../types" },
+    { "path": "../utils" }
   ]
 }

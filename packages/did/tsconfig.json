@@ -4,10 +4,7 @@
     "outDir": "./lib/cjs",
     "rootDir": "./src"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
     "node_modules",
     "coverage",
@@ -24,9 +21,9 @@
     "**/test"
   ],
   "references": [
-    {"path": "../augment-api"},
-    {"path": "../config"},
-    {"path": "../types"},
-    {"path": "../utils"},
+    { "path": "../augment-api" },
+    { "path": "../config" },
+    { "path": "../types" },
+    { "path": "../utils" }
   ]
 }
