@@ -46,5 +46,10 @@ module.exports = {
   moduleDirectories: [
     "node_modules",
     "packages/*/src"
-  ]
+  ],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.base.json',
+    },
+  },
 }
