@@ -43,10 +43,6 @@ module.exports = {
   resolver: "ts-jest-resolver",
   rootDir: 'packages',
   coverageDirectory: 'coverage',
-  moduleDirectories: [
-    "node_modules",
-    "packages/*/src"
-  ],
   globals: {
     'ts-jest': {
       tsconfig: 'tsconfig.base.json',
