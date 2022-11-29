@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "files": [],
-  "compilerOptions": { "noEmit": true, "declarationMap": true },
+  "compilerOptions": { "declarationMap": true },
   "references": [
     { "path": "packages/chain-helpers" },
     { "path": "packages/config" },
