@@ -25,6 +25,8 @@ export class UnauthorizedError extends SDKError {}
 
 export class CTypeHashMissingError extends SDKError {}
 
+export class CTypeError extends SDKError {}
+
 export class CTypeIdMismatchError extends SDKError {
   constructor(fromSchema: string, provided: string) {
     super(

@@ -72,7 +72,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await submitTx(authorizedStoreTx, paymentAccount)
 
     expect(
-      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
+      CType.ownerFromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
     ).toBe(ctypeCreator.uri)
     await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
   }, 40_000)
@@ -100,7 +100,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
     expect(
-      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
+      CType.ownerFromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
     ).toBe(ctypeCreator.uri)
   }, 45_000)
 
