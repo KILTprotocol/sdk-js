@@ -369,6 +369,12 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       add: AugmentedSubmittable<(ctype: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      /**
+       * Set the creation block number for a given CType, if found.
+       * 
+       * Emits `CTypeUpdated`.
+       **/
+      setBlockNumber: AugmentedSubmittable<(ctypeHash: H256 | string | Uint8Array, blockNumber: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u64]>;
     };
     delegation: {
       /**
