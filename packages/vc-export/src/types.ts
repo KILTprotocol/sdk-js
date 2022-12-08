@@ -74,7 +74,7 @@ export interface KiltAttesterDelegationV1 extends IssuerBacking {
   delegators?: DidUri[]
 }
 
-export interface VerifiableCredential {
+export interface CredentialBase {
   /**
    * References to json-ld contexts defining the terms used.
    */
@@ -100,10 +100,6 @@ export interface VerifiableCredential {
    */
   issuanceDate: string
   /**
-   *  Cryptographic proof that makes the credential tamper-evident.
-   */
-  proof: KiltAttestationProofV1
-  /**
    * If true, this credential can only be presented and used by its subject.
    */
   credentialSchema: JsonSchemaValidator2018
@@ -112,6 +108,13 @@ export interface VerifiableCredential {
   federatedTrustModel?: Array<
     KiltAttesterDelegationV1 | KiltAttesterLegitimationV1
   >
+}
+
+export interface VerifiableCredential extends CredentialBase {
+  /**
+   *  Cryptographic proof that makes the credential tamper-evident.
+   */
+  proof: KiltAttestationProofV1
 }
 
 export interface VerifiablePresentation {

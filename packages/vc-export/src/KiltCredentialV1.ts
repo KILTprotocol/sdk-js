@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { hexToU8a, u8aToHex } from '@polkadot/util'
+import { hexToU8a } from '@polkadot/util'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type {
   ICType,
@@ -30,6 +30,7 @@ import {
   W3C_CREDENTIAL_TYPE,
 } from './constants.js'
 import type {
+  CredentialBase,
   JsonSchemaValidator2018,
   KiltAttesterDelegationV1,
   KiltAttesterLegitimationV1,
@@ -38,6 +39,7 @@ import type {
 } from './types.js'
 import { CredentialMalformedError } from './verificationUtils.js'
 import * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
+import { Caip2 } from './CAIP/index.js'
 
 /**
  * Extracts the credential root hash from a KILT VC's id.
@@ -136,11 +138,7 @@ export function fromInput({
     credentialSchema.schema = cType
   }
 
-  const chainId: Caip2ChainId = `polkadot:${u8aToHex(
-    chainGenesisHash,
-    128,
-    false
-  )}`
+  const chainId: Caip2ChainId = Caip2.chainIdFromGenesis(chainGenesisHash)
   const credentialStatus: KiltRevocationStatusV1 = {
     id: chainId,
     type: KILT_REVOCATION_STATUS_V1_TYPE,
@@ -277,7 +275,7 @@ const schemaValidator = new JsonSchema.Validator(credentialSchema)
 /**
  * @param credential
  */
-export function validateStructure(credential: VerifiableCredential): void {
+export function validateStructure(credential: CredentialBase): void {
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
     throw new CredentialMalformedError(
