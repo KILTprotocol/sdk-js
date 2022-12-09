@@ -131,7 +131,8 @@ it('exports credential to VC', () => {
     attestation.owner,
     timestamp,
     mockedApi.genesisHash,
-    blockHash
+    blockHash,
+    ctype
   )
   expect(exported).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
@@ -155,16 +156,15 @@ it('exports credential to VC', () => {
 })
 
 it('exports includes ctype as schema', () => {
-  expect(
-    fromICredential(
-      credential,
-      attestation.owner,
-      timestamp,
-      mockedApi.genesisHash,
-      blockHash,
-      ctype
-    )
-  ).toMatchObject({
+  const exported = fromICredential(
+    credential,
+    attestation.owner,
+    timestamp,
+    mockedApi.genesisHash,
+    blockHash,
+    ctype
+  )
+  expect(exported).toMatchObject({
     credentialSchema: {
       id: ctype.$id,
       name: ctype.title,
@@ -172,6 +172,7 @@ it('exports includes ctype as schema', () => {
       schema: ctype,
     },
   })
+  expect(() => validateCredentialStructure(exported)).not.toThrow()
 })
 
 it('VC has correct format (full example)', () => {

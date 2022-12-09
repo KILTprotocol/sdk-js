@@ -193,12 +193,14 @@ export const credentialSchema: JsonSchema.Schema = {
       minItems: 2,
       maxItems: 2,
       oneOf: [
-        { contains: DEFAULT_CREDENTIAL_TYPES },
+        { items: { enum: DEFAULT_CREDENTIAL_TYPES } },
         {
-          contains: [
-            `${W3C_CREDENTIAL_CONTEXT_URL}#${W3C_CREDENTIAL_TYPE}`,
-            `${KILT_CREDENTIAL_CONTEXT_URL}#${KILT_CREDENTIAL_TYPE}`,
-          ],
+          items: {
+            enum: [
+              `${W3C_CREDENTIAL_CONTEXT_URL}#${W3C_CREDENTIAL_TYPE}`,
+              `${KILT_CREDENTIAL_CONTEXT_URL}#${KILT_CREDENTIAL_TYPE}`,
+            ],
+          },
         },
       ],
     },
@@ -257,6 +259,30 @@ export const credentialSchema: JsonSchema.Schema = {
         },
       },
     },
+    credentialSchema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          format: 'uri',
+        },
+        type: {
+          type: 'string',
+          const: JSON_SCHEMA_TYPE,
+        },
+        schema: { $ref: CType.Schemas.CTypeModel.$id },
+      },
+      required: ['id', 'type'],
+    },
+    proof: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+        },
+      },
+      required: ['type'],
+    },
   },
   additionalProperties: false,
   required: [
@@ -267,10 +293,12 @@ export const credentialSchema: JsonSchema.Schema = {
     'issuer',
     'issuanceDate',
     'credentialStatus',
+    'credentialSchema',
   ],
 }
 
-const schemaValidator = new JsonSchema.Validator(credentialSchema)
+const schemaValidator = new JsonSchema.Validator(credentialSchema, '7')
+schemaValidator.addSchema(CType.Schemas.CTypeModel)
 
 /**
  * @param credential
