@@ -35,7 +35,7 @@ export class ProofMalformedError extends SDKErrors.SDKError {}
 export function validateSchema(
   credential: VerifiableCredential
 ): VerificationResult {
-  const { schema } = credential.credentialSchema || {}
+  const { schema } = credential.credentialSchema ?? {}
   // if present, perform schema validation
   if (schema) {
     // there's no rule against additional properties, so we can just validate the ones that are there

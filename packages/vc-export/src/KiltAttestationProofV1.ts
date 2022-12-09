@@ -47,8 +47,9 @@ export interface KiltAttestationProofV1 {
 /**
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].
  *
- * @param credential
- * @param blockHash
+ * @param credential Input credential.
+ * @param blockHash Hash of a block at which the proof must be verifiable.
+ * @returns An embedded proof for a verifiable credential derived from the input.
  */
 export function fromICredential(
   credential: ICredential,
@@ -158,7 +159,7 @@ export async function verifyProof(
     // 6. json-ld expand credentialSubject
     const expandedContents = {}
     const vocabulary = credentialSubject['@context']['@vocab']
-    Object.entries(credentialSubject || {}).forEach(([key, value]) => {
+    Object.entries(credentialSubject).forEach(([key, value]) => {
       if (key.startsWith('@')) return
       if (key === 'id') {
         expandedContents['@id'] = value
@@ -225,9 +226,11 @@ export async function verifyProof(
       throw new Error('root hash not verifiable')
 
     // 13. check that api is connected to the right network
-    const chainId = Caip2.chainIdFromGenesis(api.genesisHash)
-    if (chainId !== credential.credentialStatus.id)
-      throw new Error(`api must be connected to network ${chainId}`)
+    const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
+    if (apiChainId !== credential.credentialStatus.id)
+      throw new Error(
+        `api must be connected to network ${credential.credentialStatus.id} to verify this credential`
+      )
     // 14. query info from chain
     const apiAtBlock = await api.at(proof.block)
     const [timestamp, attestation] = await Promise.all([
@@ -274,7 +277,7 @@ export async function verifyProof(
               `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${i.id}`
             )
           if (
-            chainId !== Caip2.chainIdFromGenesis(api.genesisHash) ||
+            chainId !== apiChainId ||
             u8aCmp(
               base58Decode(assetInstance),
               hexToU8a(onChain.delegationId)
@@ -284,7 +287,7 @@ export async function verifyProof(
               `Delegation ${i.id} does not match on-chain records`
             )
           // TODO: check delegators
-          if (i.delegators?.length) {
+          if (i.delegators) {
             // const node = await DelegationNode.fetch(onChain.delegationId as string)
             throw new Error('not implemented')
           }

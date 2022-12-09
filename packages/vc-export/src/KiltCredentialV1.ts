@@ -125,9 +125,9 @@ export function fromInput({
     id: subject,
   }
 
-  for (const key in claims) {
-    credentialSubject[`#${key}`] = claims[key]
-  }
+  Object.entries(claims).forEach(([key, claim]) => {
+    credentialSubject[`#${key}`] = claim
+  })
 
   const credentialSchema: JsonSchemaValidator2018 = {
     id: cType.$id,
@@ -340,8 +340,8 @@ export function fromICredential(
   } = input
   const cType = ctype ?? { $id: CType.hashToId(claim.cTypeHash) }
 
-  const legitimations = legitimationsInput.map(({ rootHash }) => ({
-    id: credentialIdFromRootHash(hexToU8a(rootHash)),
+  const legitimations = legitimationsInput.map(({ rootHash: legHash }) => ({
+    id: credentialIdFromRootHash(hexToU8a(legHash)),
   }))
 
   const vc = fromInput({
