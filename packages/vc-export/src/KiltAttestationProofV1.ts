@@ -31,7 +31,7 @@ import {
   credentialIdToRootHash,
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1.js'
-import type { CredentialBase } from './types.js'
+import type { VerifiableCredential } from './types.js'
 import {
   CredentialMalformedError,
   ProofMalformedError,
@@ -125,17 +125,19 @@ export interface VerificationResult {
  * This includes querying the KILT blockchain with the credential id, which returns an attestation record if attested.
  * This record is then compared against attester address and delegation id (the latter of which is taken directly from the credential).
  *
- * @param credential Verifiable Credential to verify proof against.
- * @param proof KILT self-signed proof object.
- * @param api The API connection.
+ * @param credentialInput Verifiable Credential to verify proof against.
+ * @param proof KiltAttestationProofV1 proof object to be verified. Any proofs embedded in the credentialInput are stripped and ignored.
+ * @param api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @returns Object indicating whether proof could be verified.
  */
 export async function verifyProof(
-  credential: CredentialBase,
+  credentialInput: VerifiableCredential,
   proof: KiltAttestationProofV1,
   api: ApiPromise
 ): Promise<VerificationResult> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { proof: _, ...credential } = credentialInput
     // 0. check proof structure
     validateStructure(proof)
     // 1 - 3. check credential structure
@@ -205,7 +207,7 @@ export async function verifyProof(
       ...federatedTrustModel.map(({ type, id }) => {
         if (type === KILT_ATTESTER_LEGITIMATION_V1_TYPE) {
           // get root hash from credential id
-          return credentialIdToRootHash(id as CredentialBase['id'])
+          return credentialIdToRootHash(id as VerifiableCredential['id'])
         }
         if (type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
           // get on-chain id from delegation id
@@ -301,7 +303,7 @@ export async function verifyProof(
             i.verifiableCredential
           const { verified, errors } = await verifyProof(
             legitimation,
-            legitimationProof,
+            legitimationProof as KiltAttestationProofV1,
             api
           )
           if (!verified)

@@ -30,7 +30,6 @@ import {
   W3C_CREDENTIAL_TYPE,
 } from './constants.js'
 import type {
-  CredentialBase,
   JsonSchemaValidator2018,
   KiltAttesterDelegationV1,
   KiltAttesterLegitimationV1,
@@ -303,7 +302,7 @@ schemaValidator.addSchema(CType.Schemas.CTypeModel)
 /**
  * @param credential
  */
-export function validateStructure(credential: CredentialBase): void {
+export function validateStructure(credential: VerifiableCredential): void {
   const { errors, valid } = schemaValidator.validate(credential)
   if (!valid)
     throw new CredentialMalformedError(
