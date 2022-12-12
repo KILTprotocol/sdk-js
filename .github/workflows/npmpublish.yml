@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: 14
       - run: yarn install --immutable
-      - run: yarn build
+      - run: yarn build:release
       - run: yarn test:ci
 
   publish-npm:

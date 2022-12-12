@@ -23,7 +23,7 @@ We're using [typedoc][typedoc] to generate the API doc from the docBlocks.
 
 ### Documenting modules
 
-Direct child folders of `src` such as `attestation` should be marked as `@modules`, so that they're listed in the [online API Doc][apidoc] main menu.
+Direct child folders of `src` such as `attestation` should be marked as `@module`, so that they're listed in the [online API Doc][apidoc] main menu.
 
 Some of these modules are purely technical utilities, such as `crypto`. Others map to KILT concepts, such as `attestation`.
 
@@ -71,6 +71,16 @@ If you have a doubt:
 * Open any of the generated files in your browser, such as `sdk-js/docs/api/index.html`. You can now use the menu or inline links to navigate across modules and classes.
 
 ⚠️ Make sure you don't commit these generated files.
+
+## Building and testing
+
+For development purposes you can build the SDK from typescript sources by running `yarn build` in the root folder of the repository.
+After switching branches of if you experience issues during building or testing it is recommended to run `yarn clean` before building to delete all build artifacts and thus force a fresh build.
+
+Before packaging the SDK e.g. for release on npm, you must run `yarn build:release`, which not only forces a clean build but also produces ES6 modules code in addition to CJS output.
+Building ESM code is skipped in `yarn build` to speed up the build/rebuild process.
+
+When running jest in `--watch` mode, you should have `yarn build:watch` running in a separate terminal window to make sure file changes are immediately picked up an trigger a rebuild.
 
 ## Tests
 

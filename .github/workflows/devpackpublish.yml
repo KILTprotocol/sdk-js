@@ -36,7 +36,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.package_version.outputs.package_version }}
         run: yarn set:version $PACKAGE_VERSION --allow-same-version
       - name: Build packages
-        run: yarn run build
+        run: yarn run build:release
       - name: Bundle library
         run: yarn run bundle
       - name: Publish to npm
