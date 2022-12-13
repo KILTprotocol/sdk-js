@@ -5,14 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
-import type { Bytes, GenericCall, Option, u64 } from '@polkadot/types'
-import type { AccountId, Call, Extrinsic } from '@polkadot/types/interfaces'
+import type { Bytes, GenericCall, Option } from '@polkadot/types'
+import type { AccountId } from '@polkadot/types/interfaces'
 
 import type { CtypeCtypeEntry } from '@kiltprotocol/augment-api'
 import type { CTypeHash, DidUri, ICType } from '@kiltprotocol/types'
 
-import { HexString } from '@polkadot/util/types'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -24,9 +22,10 @@ import {
   serializeForHash,
   verifyDataStructure,
 } from './CType.js'
+import { flattenBatchCalls, retrieveExtrinsicFromBlock } from '../utils.js'
 
 /**
- * Encodes the provided CType for use in `api.tx.ctype.add()`.
+ * Encodes the provided [[ICType]] for use in `api.tx.ctype.add()`.
  *
  * @param ctype The CType to write on the blockchain.
  * @returns Encoded CType.
@@ -43,20 +42,6 @@ export function toChain(ctype: ICType): string {
  */
 export function idToChain(cTypeId: ICType['$id']): CTypeHash {
   return idToHash(cTypeId)
-}
-
-// Same as in the public credentials module.
-function flattenCalls(api: ApiPromise, call: Call): Call[] {
-  if (
-    api.tx.utility.batch.is(call) ||
-    api.tx.utility.batchAll.is(call) ||
-    api.tx.utility.forceBatch.is(call)
-  ) {
-    // Inductive case
-    return call.args[0].flatMap((c) => flattenCalls(api, c))
-  }
-  // Base case
-  return [call]
 }
 
 // Same as in the public credentials module.
@@ -79,30 +64,6 @@ function cTypeInputFromChain(input: Bytes): ICType {
   }
 }
 
-// Logic very similar to the one for public credentials.
-async function retrieveCTypeCreationExtrinsicFromBlock(
-  api: ApiPromise,
-  cTypeHash: HexString,
-  blockNumber: u64
-): Promise<Extrinsic | null> {
-  const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
-  const successfulExtrinsics = extrinsics.filter(
-    ({ dispatchError }) => !dispatchError
-  )
-
-  const lastCTypeCreationExtrinsic = successfulExtrinsics
-    .reverse()
-    .find(({ events }) =>
-      events.some(
-        (event) =>
-          api.events.ctype.CTypeUpdated.is(event) &&
-          event.data[0].toString() === cTypeHash
-      )
-    )
-
-  return lastCTypeCreationExtrinsic?.extrinsic ?? null
-}
-
 /**
  * Decodes the CType details returned by `api.query.ctype.ctypes()`.
  *
@@ -119,10 +80,15 @@ export async function fromChain(
 
   const { creationBlockNumber } = cTypeEntry.unwrap()
 
-  const extrinsic = await retrieveCTypeCreationExtrinsicFromBlock(
+  const extrinsic = await retrieveExtrinsicFromBlock(
     api,
-    cTypeHash,
-    creationBlockNumber
+    creationBlockNumber,
+    ({ events }) =>
+      events.some(
+        (event) =>
+          api.events.ctype.CTypeCreated.is(event) &&
+          event.data[0].toString() === cTypeHash
+      )
   )
 
   if (extrinsic === null) {
@@ -137,7 +103,7 @@ export async function fromChain(
     )
   }
 
-  const extrinsicCalls = flattenCalls(api, extrinsic.args[0].call)
+  const extrinsicCalls = flattenBatchCalls(api, extrinsic.args[0].call)
 
   const cTypeCreationCalls = extrinsicCalls.filter(
     (call): call is GenericCall<typeof api.tx.ctype.add.args> =>

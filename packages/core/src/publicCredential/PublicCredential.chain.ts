@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
 import type {
   AssetDidUri,
   CTypeHash,
@@ -13,8 +12,8 @@ import type {
   IPublicCredentialInput,
   IPublicCredential,
 } from '@kiltprotocol/types'
-import type { GenericCall, Option, Result, u64, Vec } from '@polkadot/types'
-import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { GenericCall, Option, Result, Vec } from '@polkadot/types'
+import type { Hash } from '@polkadot/types/interfaces'
 import type { ITuple } from '@polkadot/types/types'
 import type {
   PublicCredentialError,
@@ -31,6 +30,7 @@ import { validateUri } from '@kiltprotocol/asset-did'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
+import { flattenBatchCalls, retrieveExtrinsicFromBlock } from '../utils.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
@@ -60,20 +60,6 @@ export function toChain(
   }
 }
 
-// Flatten any nested batch calls into a single list of calls.
-function flattenCalls(api: ApiPromise, call: Call): Call[] {
-  if (
-    api.tx.utility.batch.is(call) ||
-    api.tx.utility.batchAll.is(call) ||
-    api.tx.utility.forceBatch.is(call)
-  ) {
-    // Inductive case
-    return call.args[0].flatMap((c) => flattenCalls(api, c))
-  }
-  // Base case
-  return [call]
-}
-
 // Transform a blockchain-formatted public credential [[PublicCredentialsCredentialsCredential]] into the original [[IPublicCredentialInput]].
 // It throws if what was written on the chain was garbage.
 function credentialInputFromChain({
@@ -90,31 +76,6 @@ function credentialInputFromChain({
     delegationId: authorization.unwrapOr(undefined)?.toHex() ?? null,
     subject: credentialSubject as AssetDidUri,
   }
-}
-
-// Retrieve a given block and looks into it to find a public credential creation tx that matches the provided credential ID.
-async function retrievePublicCredentialCreationExtrinsicFromBlock(
-  api: ApiPromise,
-  credentialId: HexString,
-  blockNumber: u64
-): Promise<Extrinsic | null> {
-  const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
-  const successfulExtrinsics = extrinsics.filter(
-    ({ dispatchError }) => !dispatchError
-  )
-  // If there is more than one (e.g., same credential issued multiple times in the same block) it should not matter since the ID is generated over the content, hence same ID -> same content.
-  // Nevertheless, take only the last one, if present, as that is for sure what ended up being in the blockchain state.
-  const lastPublicCredentialCreationExtrinsic = successfulExtrinsics
-    .reverse()
-    .find(({ events }) =>
-      events.some(
-        (event) =>
-          api.events.publicCredentials.CredentialStored.is(event) &&
-          event.data[1].toString() === credentialId
-      )
-    )
-
-  return lastPublicCredentialCreationExtrinsic?.extrinsic ?? null
 }
 
 /**
@@ -135,10 +96,15 @@ export async function credentialFromChain(
 
   const { blockNumber, revoked } = publicCredentialEntry.unwrap()
 
-  const extrinsic = await retrievePublicCredentialCreationExtrinsicFromBlock(
+  const extrinsic = await retrieveExtrinsicFromBlock(
     api,
-    credentialId,
-    blockNumber
+    blockNumber,
+    ({ events }) =>
+      events.some(
+        (event) =>
+          api.events.publicCredentials.CredentialStored.is(event) &&
+          event.data[1].toString() === credentialId
+      )
   )
 
   if (extrinsic === null) {
@@ -153,7 +119,7 @@ export async function credentialFromChain(
     )
   }
 
-  const extrinsicCalls = flattenCalls(api, extrinsic.args[0].call)
+  const extrinsicCalls = flattenBatchCalls(api, extrinsic.args[0].call)
   const extrinsicDidOrigin = didFromChain(extrinsic.args[0].did)
 
   const credentialCreationCalls = extrinsicCalls.filter(
