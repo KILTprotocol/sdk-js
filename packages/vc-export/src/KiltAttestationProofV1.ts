@@ -15,7 +15,6 @@ import {
   stringToU8a,
   u8aCmp,
   u8aConcatStrict,
-  u8aSorted,
   u8aToHex,
 } from '@polkadot/util'
 import { base58Decode, base58Encode, blake2AsU8a } from '@polkadot/util-crypto'
@@ -29,9 +28,11 @@ import {
 import {
   credentialIdFromRootHash,
   credentialIdToRootHash,
+  ExpandedContents,
+  jsonLdExpandCredentialSubject,
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1.js'
-import type { VerifiableCredential } from './types.js'
+import type { CredentialSubject, VerifiableCredential } from './types.js'
 import {
   CredentialMalformedError,
   ProofMalformedError,
@@ -119,6 +120,31 @@ export interface VerificationResult {
   verified: boolean
   errors: Error[]
 }
+/**
+ * Normalizes claims in credentialSubject for the commitment scheme of this proof method.
+ * This involves sorting the normalized representation of claims by their blake2b digests.
+ *
+ * @param expandedContents JSON-LD expansion of credentialSubject, where keys are either '@id' or full URIs.
+ * @returns An array of normalized `statements` sorted by their digests, and the sorted array of `digests`.
+ */
+export function normalizeClaims(
+  expandedContents: ExpandedContents<CredentialSubject>
+) {
+  const statements = Object.entries(expandedContents).map(([key, value]) =>
+    JSON.stringify({ [key]: value }).normalize('NFC')
+  )
+  const statementsAndDigests = statements.map((statement) => ({
+    digest: blake2AsU8a(stringToU8a(statement), 256),
+    statement,
+  }))
+  const sorted = statementsAndDigests.sort((a, b) => {
+    return u8aCmp(a.digest, b.digest)
+  })
+  return {
+    statements: sorted.map(({ statement }) => statement),
+    digests: sorted.map(({ digest }) => digest),
+  }
+}
 
 /**
  * Verifies a KILT attestation proof by querying data from the KILT blockchain.
@@ -159,27 +185,13 @@ export async function verifyProof(
         `credentialStatus must have type ${KILT_REVOCATION_STATUS_V1_TYPE}`
       )
     // 6. json-ld expand credentialSubject
-    const expandedContents = {}
-    const vocabulary = credentialSubject['@context']['@vocab']
-    Object.entries(credentialSubject).forEach(([key, value]) => {
-      if (key.startsWith('@')) return
-      if (key === 'id') {
-        expandedContents['@id'] = value
-      } else {
-        expandedContents[vocabulary + key] = value
-      }
-    })
+    const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
     // 7. Transform to normalized statments and hash
-    const statements = Object.entries(expandedContents).map(([key, value]) =>
-      JSON.stringify({ [key]: value }).normalize('NFC')
-    )
+    const { statements, digests } = normalizeClaims(expandedContents)
     if (statements.length !== proof.revealProof.length)
       throw new Error(
         'Violated expectation: number of normalized statements === number of revealProofs'
       )
-    const digests = u8aSorted(
-      statements.map((s) => blake2AsU8a(stringToU8a(s), 256))
-    )
     // 8. Re-compute commitments
     digests.forEach((digest, index) => {
       // initialize array with 36 + 2 + 64 bytes
@@ -322,4 +334,71 @@ export async function verifyProof(
     }
   }
   return { verified: true, errors: [] }
+}
+
+/**
+ * Helps with producing a derivative proof for selective disclosure of claims in credentialSubject.
+ *
+ * @param credentialSubject The original credentialSubject.
+ * @param proof The original proof.
+ * @param disclosedClaims An array of claims that are to be revealed. The `id` of the credentialSubject is always revealed.
+ * @returns A copy of `credentialSubject` containing only selected claims and a copy of `proof` containing only revealProof entries for these.
+ * @example
+ * ```
+ * const {
+ *   proof: originalProof,
+ *   credentialSubject: originalSubject,
+ *   ...credential
+ * } = VC as VerifiableCredential
+ * const { proof, credentialSubject } = deriveProof(
+ *  originalSubject,
+ *  originalProof!,
+ *  ['name', 'address']
+ * )
+ * const derived = { ...credential, proof, credentialSubject }
+ * ```
+ */
+export function deriveProof(
+  credentialSubject: CredentialSubject,
+  proof: KiltAttestationProofV1,
+  disclosedClaims: Array<keyof CredentialSubject>
+): {
+  credentialSubject: CredentialSubject
+  proof: KiltAttestationProofV1
+} {
+  // 1. Make normalized statements sorted by their hash value
+  const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
+  const { statements: statementsOriginal } = normalizeClaims(expandedContents)
+  if (statementsOriginal.length !== proof.revealProof.length)
+    throw new Error(
+      'Violated expectation: number of normalized statements === number of revealProofs'
+    )
+  // 2. Filter credentialSubject for claims to be revealed
+  const reducedSubject = Object.entries(credentialSubject).reduce(
+    (copy, [key, value]) => {
+      if (disclosedClaims.includes(key)) {
+        return { ...copy, [key]: value }
+      }
+      return copy
+    },
+    // context and id is always revealed
+    { '@context': credentialSubject['@context'], id: credentialSubject.id }
+  )
+  // 3. Make normalized statements from reduced credentialSubject
+  const { statements: reducedSet } = normalizeClaims(
+    jsonLdExpandCredentialSubject(reducedSubject)
+  )
+  // 4. The order of the original statements (sorted by their hash) allows mapping them to the respective revealProof.
+  // If a statement from the original set is also contained within the reduced set, keep the revealProof at the respective index.
+  const revealProof = statementsOriginal.reduce((arr, statement, index) => {
+    if (reducedSet.includes(statement)) {
+      return [...arr, proof.revealProof[index]]
+    }
+    return arr
+  }, [] as string[])
+
+  return {
+    credentialSubject: reducedSubject,
+    proof: { ...proof, revealProof },
+  }
 }

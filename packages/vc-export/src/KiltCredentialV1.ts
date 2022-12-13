@@ -358,3 +358,30 @@ export function fromICredential(
   const proof = KiltAttestationProofV1.fromICredential(input, blockHash)
   return { ...vc, proof }
 }
+
+export type ExpandedContents<
+  T extends VerifiableCredential['credentialSubject']
+> = {
+  [Key in keyof T as `${T['@context']['@vocab']}`]: T[Key]
+} & { '@id': T['id'] }
+
+/**
+ * Transforms credentialSubject to an expanded JSON-LD representation.
+ *
+ * @param credentialSubject The object containing claims about the credentialSubject.
+ * @returns The `credentialSubject` where each key is either `@id` or the result of concatenating the `@vocab` with the original key.
+ */
+export function jsonLdExpandCredentialSubject<
+  T extends VerifiableCredential['credentialSubject']
+>(credentialSubject: T): ExpandedContents<T> {
+  const expandedContents = {}
+  const vocabulary = credentialSubject['@context']['@vocab']
+  Object.entries(credentialSubject).forEach(([key, value]) => {
+    if (key === 'id' || key === '@id') {
+      expandedContents['@id'] = value
+    } else if (!key.startsWith('@')) {
+      expandedContents[vocabulary + key] = value
+    }
+  })
+  return expandedContents as ExpandedContents<T>
+}
