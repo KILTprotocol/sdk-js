@@ -6,7 +6,7 @@
  */
 
 import type { Bytes, GenericCall, Option } from '@polkadot/types'
-import type { AccountId } from '@polkadot/types/interfaces'
+import type { BN } from '@polkadot/util'
 
 import type { CtypeCtypeEntry } from '@kiltprotocol/augment-api'
 import type { CTypeHash, DidUri, ICType } from '@kiltprotocol/types'
@@ -64,21 +64,26 @@ function cTypeInputFromChain(input: Bytes): ICType {
   }
 }
 
+export interface ICTypeDetails extends ICType {
+  creator: DidUri
+  createdAt: BN
+}
+
 /**
  * Decodes the CType details returned by `api.query.ctype.ctypes()`.
  *
  * @param cTypeId CType ID to use for the query. It is required to complement the information stored on the blockchain in a [[CtypeCtypeEntry]].
  * @param cTypeEntry The raw CType details from blockchain.
- * @returns The [[ICType]] as the result of combining the on-chain information and the information present in the tx history.
+ * @returns The [[ICTypeDetails]] as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function fromChain(
   cTypeId: ICType['$id'],
   cTypeEntry: Option<CtypeCtypeEntry>
-): Promise<ICType> {
+): Promise<ICTypeDetails> {
   const api = ConfigService.get('api')
   const cTypeHash = idToHash(cTypeId)
 
-  const { creationBlockNumber } = cTypeEntry.unwrap()
+  const { creator, creationBlockNumber } = cTypeEntry.unwrap()
 
   const extrinsic = await retrieveExtrinsicFromBlock(
     api,
@@ -128,15 +133,7 @@ export async function fromChain(
   return {
     ...lastRightCTypeCreationCall,
     $id: cTypeId,
+    creator: Did.fromChain(creator),
+    createdAt: creationBlockNumber.toBn(),
   }
-}
-
-/**
- * Decodes the owner DID from the return value of `api.query.ctype.ctypes(ctypeHash)`.
- *
- * @param encoded The data from the blockchain.
- * @returns The owner DID.
- */
-export function ownerFromChain(encoded: Option<AccountId>): DidUri {
-  return Did.fromChain(encoded.unwrap())
 }
