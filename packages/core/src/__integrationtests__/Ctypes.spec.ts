@@ -71,10 +71,12 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitTx(authorizedStoreTx, paymentAccount)
 
-    expect(
-      CType.ownerFromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
-    ).toBe(ctypeCreator.uri)
-    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+    const retrievedCType = await CType.fromChain(
+      ctype.$id,
+      await api.query.ctype.ctypes(CType.idToChain(ctype.$id))
+    )
+    expect(retrievedCType.creator).toBe(ctypeCreator.uri)
+    await expect(CType.verifyStored(retrievedCType)).resolves.not.toThrow()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
@@ -99,9 +101,11 @@ describe('When there is an CtypeCreator and a verifier', () => {
       submitTx(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
-    expect(
-      CType.ownerFromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
-    ).toBe(ctypeCreator.uri)
+    const retrievedCType = await CType.fromChain(
+      ctype.$id,
+      await api.query.ctype.ctypes(CType.idToChain(ctype.$id))
+    )
+    expect(retrievedCType.creator).toBe(ctypeCreator.uri)
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {

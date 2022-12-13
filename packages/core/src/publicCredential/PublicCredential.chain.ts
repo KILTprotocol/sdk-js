@@ -89,7 +89,7 @@ function credentialInputFromChain({
  * @returns The [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function credentialFromChain(
-  credentialId: HexString,
+  credentialId: IPublicCredential['id'],
   publicCredentialEntry: Option<PublicCredentialsCredentialsCredentialEntry>
 ): Promise<IPublicCredential> {
   const api = ConfigService.get('api')

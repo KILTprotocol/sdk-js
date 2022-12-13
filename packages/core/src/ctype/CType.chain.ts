@@ -25,7 +25,7 @@ import {
 import { flattenBatchCalls, retrieveExtrinsicFromBlock } from '../utils.js'
 
 /**
- * Encodes the provided [[ICType]] for use in `api.tx.ctype.add()`.
+ * Encodes the provided CType for use in `api.tx.ctype.add()`.
  *
  * @param ctype The CType to write on the blockchain.
  * @returns Encoded CType.
@@ -44,17 +44,19 @@ export function idToChain(cTypeId: ICType['$id']): CTypeHash {
   return idToHash(cTypeId)
 }
 
-// Same as in the public credentials module.
+// Transform a blockchain-formatted CType input (represented as Bytes) into the original [[IPublicCredentialInput]].
+// It throws if what was written on the chain was garbage.
 function cTypeInputFromChain(input: Bytes): ICType {
   try {
-    // Throws on invalid JSON input.
+    // Throws on invalid JSON input. CType is expected to be a valid JSON document.
     const reconstructedObject = JSON.parse(input.toUtf8())
-    // Re-compute the ID to validate the resulting ICType. It will fail if not valid.
-    const attemptedCTypeId = hashToId(getHashForSchema(reconstructedObject))
+    // Re-compute the ID to validate the resulting ICType.
+    const reconstructedCTypeId = hashToId(getHashForSchema(reconstructedObject))
     const reconstructedCType: ICType = {
       ...reconstructedObject,
-      $id: attemptedCTypeId,
+      $id: reconstructedCTypeId,
     }
+    // If throws if the input was a valid JSON but not a valid CType.
     verifyDataStructure(reconstructedCType)
     return reconstructedCType
   } catch {
@@ -64,8 +66,17 @@ function cTypeInputFromChain(input: Bytes): ICType {
   }
 }
 
+/**
+ * The complete details of a CType, which combines on-chain and off-chain information.
+ */
 export interface ICTypeDetails extends ICType {
+  /**
+   * The DID of the CType's creator.
+   */
   creator: DidUri
+  /**
+   * The block number in which the CType was created.
+   */
   createdAt: BN
 }
 
