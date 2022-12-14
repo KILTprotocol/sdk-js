@@ -16,7 +16,7 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, UUID } from '@kiltprotocol/utils'
 import { ApiPromise } from '@polkadot/api'
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -30,12 +30,10 @@ beforeAll(async () => {
 describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCreator: DidDocument
   let paymentAccount: KiltKeyringPair
-  let ctypeCounter = 0
   let key: KeyTool
 
   function makeCType(): ICType {
-    ctypeCounter += 1
-    return CType.fromProperties(`ctype${ctypeCounter}`, {
+    return CType.fromProperties(`Ctype ${UUID.generate()}`, {
       name: { type: 'string' },
     })
   }

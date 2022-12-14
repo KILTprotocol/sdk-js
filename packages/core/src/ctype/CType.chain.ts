@@ -103,7 +103,7 @@ export async function fromChain(
       events.some(
         (event) =>
           api.events.ctype.CTypeCreated.is(event) &&
-          event.data[0].toString() === cTypeHash
+          event.data[1].toString() === cTypeHash
       )
   )
 
