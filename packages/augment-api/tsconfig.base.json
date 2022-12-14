@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs",
+    "noUnusedLocals": false,
+    "baseUrl": ".",
+    "composite": true,
+    "declaration": true,
+    "paths": {
+      "spiritnet": ["spiritnet"],
+      "peregrine": ["peregrine"],
+    }
+  },
+  "exclude": [
+    "coverage",
+    "**/*.spec.ts",
+    "lib",
+    "**/definitions.ts",
+  ],
+}

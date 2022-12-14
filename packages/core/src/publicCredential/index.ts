@@ -5,6 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+// TODO: Replace with Spiritnet once available
+import '@kiltprotocol/augment-api/peregrine'
+
 // Don't export `verifyAgainstCType`
 export {
   fromClaim,

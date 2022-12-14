@@ -1,7 +1,11 @@
 {
-  "extends": "./tsconfig.build.json",
-  "compilerOptions": {
-    "module": "ES6",
-    "outDir": "./lib/esm"
-  }
+  "files": [],
+  "references": [
+    {
+      "path": "./src/spiritnet/tsconfig.esm.json"
+    },
+    {
+      "path": "./src/peregrine/tsconfig.esm.json"
+    },
+  ]
 }

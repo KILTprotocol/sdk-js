@@ -17,8 +17,10 @@
       "@kiltprotocol/asset-did": ["asset-did/src"],
       "@kiltprotocol/docs": ["docs/src"],
       "@kiltprotocol/testing": ["testing/src"],
-      "@kiltprotocol/augment-api": ["augment-api/src"],
       "@kiltprotocol/type-definitions": ["type-definitions/src"],
+      // replace 'spiritnet' with 'peregrine' the following lines for type checking against testnet types
+      "@kiltprotocol/augment-api": [ "augment-api/src/spiritnet" ],
+      "@kiltprotocol/augment-api/*": [ "augment-api/src/spiritnet/*" ],
       }
   },
 }

@@ -14,7 +14,7 @@ import type {
   DidDidDetailsDidPublicKeyDetails,
   DidDidDetails,
   DidServiceEndpointsDidEndpoint,
-} from '@kiltprotocol/augment-api'
+} from '@kiltprotocol/augment-api/spiritnet/types'
 import type {
   Deposit,
   DidDocument,

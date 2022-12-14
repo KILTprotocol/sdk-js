@@ -1,6 +1,11 @@
 /* eslint-disable */
 
-import { types, didCalls, stakingCalls, publicCredentialsCalls } from '@kiltprotocol/type-definitions'
+import {
+  types10720 as types,
+  didCalls,
+  stakingCalls,
+  publicCredentialsCalls,
+} from '@kiltprotocol/type-definitions'
 
 // Only types and runtime calls can be exported from here.
 export default {
@@ -9,5 +14,5 @@ export default {
     ...didCalls,
     ...stakingCalls,
     ...publicCredentialsCalls,
-  }
+  },
 }

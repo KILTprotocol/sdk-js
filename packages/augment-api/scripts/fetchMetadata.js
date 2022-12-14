@@ -43,6 +43,7 @@ let exitCode
 async function fetch() {
   await provider.connect()
   await provider.isReady
+  console.log(`connected to ${argv.endpoint}`)
   const result = await provider.send('state_getMetadata')
 
   const metadata = JSON.stringify({ result })
