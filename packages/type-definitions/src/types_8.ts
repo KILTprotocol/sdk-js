@@ -8,6 +8,7 @@
 import type { RegistryTypes } from '@polkadot/types/types'
 
 export const types8: RegistryTypes = {
+  DispatchError: 'DispatchErrorPre6First',
   AccountInfo: 'AccountInfoWithDualRefCount',
   Address: 'AccountId',
   Attestation: {

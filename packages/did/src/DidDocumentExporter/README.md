@@ -11,12 +11,18 @@ Currently, the exporter supports DID Documents in `application/json` and `applic
 ```typescript
 import * as Did from '@kiltprotocol/did'
 
-import type { ConformingDidDocument, JsonLDDidDocument } from '@kiltprotocol/types'
+import type {
+  ConformingDidDocument,
+  DidDocument,
+} from '@kiltprotocol/types'
 
 // Create `DidDocument` with the required information
 const lightDid: DidDocument = Did.createLightDidDocument({ ... })
 
-const lightDidDocument: ConformingDidDocument = Did.exportToDidDocument(lightDid, 'application/json')
+const lightDidDocument: ConformingDidDocument = Did.exportToDidDocument(
+  lightDid,
+  'application/json'
+)
 
 // Will print the light DID.
 console.log(lightDidDocument.id)
@@ -38,10 +44,14 @@ console.log(lightDidDocument.service)
 
 // Let's export `DidDocument` using the `application/ld+json` format.
 
-const fullDid = await Did.fetch('...')
+const fullDid = (await Did.resolve('...'))?.document
+if (!fullDid) throw new Error('This DID does not exist or has been deactivated')
 
 // The document type will be a `JsonLDDidDocument`, which extends the simpler `ConformingDidDocument`.
-const fullDidDocument: JsonLDDidDocument = Did.exportToDidDocument(fullDid, 'application/ld+json')
+const fullDidDocument: ConformingDidDocument = Did.exportToDidDocument(
+  fullDid,
+  'application/ld+json'
+)
 
 // The same properties of `ConformingDidDocument` can be accessed, plus a `@context` property required by the JSON-LD specification.
 console.log(fullDidDocument['@context'])

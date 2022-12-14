@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'ts-jest/presets/js-with-ts',
+  preset: 'ts-jest',
   testEnvironment: 'node',
   clearMocks: true,
   runner: 'groups',
@@ -14,6 +14,10 @@ module.exports = {
       lines: 80,
       statements: 80,
     },
+  },
+  transform: {
+    "\\.js$": "babel-jest",
+    "\\.ts$": "ts-jest"
   },
   collectCoverageFrom: [
     '**/*/src/**/*.ts',
