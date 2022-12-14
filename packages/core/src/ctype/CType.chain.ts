@@ -94,11 +94,11 @@ export async function fromChain(
   const api = ConfigService.get('api')
   const cTypeHash = idToHash(cTypeId)
 
-  const { creator, creationBlockNumber } = cTypeEntry.unwrap()
+  const { creator, createdAt } = cTypeEntry.unwrap()
 
   const extrinsic = await retrieveExtrinsicFromBlock(
     api,
-    creationBlockNumber,
+    createdAt,
     ({ events }) =>
       events.some(
         (event) =>
@@ -145,6 +145,6 @@ export async function fromChain(
     ...lastRightCTypeCreationCall,
     $id: cTypeId,
     creator: Did.fromChain(creator),
-    createdAt: creationBlockNumber.toBn(),
+    createdAt: createdAt.toBn(),
   }
 }
