@@ -39,7 +39,7 @@
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.4.1",
-    "@polkadot/types": "^9.4.1"
+    "@polkadot/api": "^9.10.2",
+    "@polkadot/types": "^9.10.2"
   }
 }
