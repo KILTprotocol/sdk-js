@@ -9,8 +9,6 @@
  * @module @kiltprotocol/core
  */
 
-import '@kiltprotocol/augment-api'
-
 export * as Attestation from './attestation/index.js'
 export * as Credential from './credential/index.js'
 export { BalanceUtils } from './balance/index.js'

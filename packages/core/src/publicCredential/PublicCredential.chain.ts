@@ -16,11 +16,12 @@ import type {
 import type { GenericCall, Option, Result, u64, Vec } from '@polkadot/types'
 import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { ITuple } from '@polkadot/types/types'
+// TODO: Replace with Spiritnet types once available
 import type {
   PublicCredentialError,
   PublicCredentialsCredentialsCredential,
   PublicCredentialsCredentialsCredentialEntry,
-} from '@kiltprotocol/augment-api/types'
+} from '@kiltprotocol/augment-api/peregrine/types'
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 

@@ -2,6 +2,6 @@
   "extends": "./tsconfig.cjs.json",
   "compilerOptions": {
     "module": "ES6",
-    "outDir": "../../lib/esm",
+    "outDir": "../../lib/esm/spiritnet",
   }
 }

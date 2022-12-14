@@ -9,7 +9,7 @@
  * @module @kiltprotocol/did
  */
 
-import '@kiltprotocol/augment-api'
+import '@kiltprotocol/augment-api/spiritnet'
 
 export * from './DidDetails/index.js'
 export * from './DidDocumentExporter/index.js'

@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "../../lib/cjs",
+    "outDir": "../../lib/cjs/spiritnet",
     "paths": {
       "@kiltprotocol/augment-api/spiritnet/*": ["src/spiritnet/*"],
       "@polkadot/api/augment": ["src/spiritnet/interfaces/augment-api.ts"],
