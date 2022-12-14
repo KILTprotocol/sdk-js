@@ -47,10 +47,9 @@ export function idToChain(cTypeId: ICType['$id']): CTypeHash {
 // Transform a blockchain-formatted CType input (represented as Bytes) into the original [[IPublicCredentialInput]].
 // It throws if what was written on the chain was garbage.
 function cTypeInputFromChain(input: Bytes): ICType {
-  const utf8Input = input.toUtf8()
   try {
     // Throws on invalid JSON input. CType is expected to be a valid JSON document.
-    const reconstructedObject = JSON.parse(utf8Input)
+    const reconstructedObject = JSON.parse(input.toUtf8())
     // Re-compute the ID to validate the resulting ICType.
     const reconstructedCTypeId = hashToId(getHashForSchema(reconstructedObject))
     const reconstructedCType: ICType = {
@@ -62,7 +61,7 @@ function cTypeInputFromChain(input: Bytes): ICType {
     return reconstructedCType
   } catch (cause) {
     throw new SDKErrors.CTypeError(
-      `The provided payload cannot be parsed as a CType: ${utf8Input}`,
+      `The provided payload cannot be parsed as a CType: ${input.toHuman()}`,
       { cause }
     )
   }
