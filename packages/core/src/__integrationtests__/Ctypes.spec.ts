@@ -58,6 +58,13 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
+    await expect(
+      CType.fromChain(
+        ctype.$id,
+        // This is None
+        await api.query.ctype.ctypes(CType.idToChain(ctype.$id))
+      )
+    ).rejects.toThrow()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
@@ -75,7 +82,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctype.$id,
       await api.query.ctype.ctypes(CType.idToChain(ctype.$id))
     )
-    expect(retrievedCType.creator).toBe(ctypeCreator.uri)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { createdAt, creator, ...originalCtype } = retrievedCType
+    expect(originalCtype).toStrictEqual(ctype)
+    expect(creator).toBe(ctypeCreator.uri)
     await expect(CType.verifyStored(retrievedCType)).resolves.not.toThrow()
   }, 40_000)
 
@@ -114,9 +124,13 @@ describe('When there is an CtypeCreator and a verifier', () => {
     })
 
     await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
-    expect(
-      (await api.query.ctype.ctypes(CType.idToChain(iAmNotThere.$id))).isNone
-    ).toBe(true)
+    await expect(
+      CType.fromChain(
+        iAmNotThere.$id,
+        // This is None
+        await api.query.ctype.ctypes(CType.idToChain(iAmNotThere.$id))
+      )
+    ).rejects.toThrow()
 
     const fakeHash = Crypto.hashStr('abcdefg')
     expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
