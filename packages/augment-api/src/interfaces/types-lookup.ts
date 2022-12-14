@@ -3062,7 +3062,7 @@ declare module '@polkadot/types/lookup' {
   /** @name CtypeCtypeEntry (322) */
   interface CtypeCtypeEntry extends Struct {
     readonly creator: AccountId32;
-    readonly creationBlockNumber: u64;
+    readonly createdAt: u64;
   }
 
   /** @name SpTrieStorageProof (323) */

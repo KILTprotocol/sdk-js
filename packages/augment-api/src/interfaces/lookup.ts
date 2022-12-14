@@ -3342,7 +3342,7 @@ export default {
    **/
   CtypeCtypeEntry: {
     creator: 'AccountId32',
-    creationBlockNumber: 'u64'
+    createdAt: 'u64'
   },
   /**
    * Lookup398: pallet_tips::pallet::Error<T, I>
