@@ -198,172 +198,160 @@ export async function verifyProof(
   credentialInput: VerifiableCredential,
   proof: KiltAttestationProofV1,
   api: ApiPromise
-): Promise<VerificationResult> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { proof: _, ...credential } = credentialInput
-    // 0. check proof structure
-    validateStructure(proof)
-    // 1 - 3. check credential structure
-    validateCredentialStructure(credential)
-    const {
-      nonTransferable,
-      credentialStatus,
-      credentialSubject,
-      issuer,
-      federatedTrustModel = [],
-    } = credential
-    validateUri(issuer, 'Did')
-    // 4. check nonTransferable
-    if (nonTransferable !== true)
-      throw new CredentialMalformedError('nonTransferable must be true')
-    // 5. check credentialStatus type
-    if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
-      throw new CredentialMalformedError(
-        `credentialStatus must have type ${KILT_REVOCATION_STATUS_V1_TYPE}`
-      )
-    // 6. json-ld expand credentialSubject
-    const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
-    // 7. Transform to normalized statments and hash
-    const { statements, digests } = normalizeClaims(expandedContents)
-    if (statements.length !== proof.revealProof.length)
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { proof: _, ...credential } = credentialInput
+  // 0. check proof structure
+  validateStructure(proof)
+  // 1 - 3. check credential structure
+  validateCredentialStructure(credential)
+  const {
+    nonTransferable,
+    credentialStatus,
+    credentialSubject,
+    issuer,
+    federatedTrustModel = [],
+  } = credential
+  validateUri(issuer, 'Did')
+  // 4. check nonTransferable
+  if (nonTransferable !== true)
+    throw new CredentialMalformedError('nonTransferable must be true')
+  // 5. check credentialStatus type
+  if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
+    throw new CredentialMalformedError(
+      `credentialStatus must have type ${KILT_REVOCATION_STATUS_V1_TYPE}`
+    )
+  // 6. json-ld expand credentialSubject
+  const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
+  // 7. Transform to normalized statments and hash
+  const { statements, digests } = normalizeClaims(expandedContents)
+  if (statements.length !== proof.revealProof.length)
+    throw new Error(
+      'Violated expectation: number of normalized statements === number of revealProofs'
+    )
+  // 8. Re-compute commitments
+  digests.forEach((digest, index) => {
+    // initialize array with 36 + 2 + 64 bytes
+    const bytes = new Uint8Array(102)
+    // decode salt and add to array
+    const salt = proof.revealProof[index]
+    bytes.set(base58Decode(salt))
+    // add bytes 0x30 & 0x78
+    bytes.set([48, 120], 36)
+    // add hex encoded digest
+    bytes.set(stringToU8a(u8aToHex(digest, undefined, false)), 38)
+    // recompute commitment
+    const recomputed = blake2AsU8a(bytes, 256)
+    if (!proof.commitments.includes(base58Encode(recomputed)))
       throw new Error(
-        'Violated expectation: number of normalized statements === number of revealProofs'
+        `No commitment for statement with digest ${u8aToHex(
+          digest
+        )} and salt ${salt}`
       )
-    // 8. Re-compute commitments
-    digests.forEach((digest, index) => {
-      // initialize array with 36 + 2 + 64 bytes
-      const bytes = new Uint8Array(102)
-      // decode salt and add to array
-      const salt = proof.revealProof[index]
-      bytes.set(base58Decode(salt))
-      // add bytes 0x30 & 0x78
-      bytes.set([48, 120], 36)
-      // add hex encoded digest
-      bytes.set(stringToU8a(u8aToHex(digest, undefined, false)), 38)
-      // recompute commitment
-      const recomputed = blake2AsU8a(bytes, 256)
-      if (!proof.commitments.includes(base58Encode(recomputed)))
-        throw new Error(
-          `No commitment for statement with digest ${u8aToHex(
-            digest
-          )} and salt ${salt}`
-        )
-    })
-    const rootHashInputs = [
-      // 9. Collect commitments for root hash
-      ...proof.commitments.map((i) => base58Decode(i)),
-      // 10. Collect trust model items for root hash
-      ...federatedTrustModel.map(({ type, id }) => {
-        if (type === KILT_ATTESTER_LEGITIMATION_V1_TYPE) {
-          // get root hash from credential id
-          return credentialIdToRootHash(id as VerifiableCredential['id'])
-        }
-        if (type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
-          // get on-chain id from delegation id
-          const { assetInstance } = Caip19.parse(id)
-          if (!assetInstance)
-            throw new Error(
-              `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${id}`
-            )
-          return base58Decode(id)
-        }
-        throw new Error(`unknown type ${type} in federatedTrustModel`)
-      }),
-    ]
-    // 11. Concatenate and hash
-    const rootHash = blake2AsU8a(u8aConcatStrict(rootHashInputs), 256)
-    // 12. Compare against credential id
-    if (credentialIdFromRootHash(rootHash) !== credential.id)
-      throw new Error('root hash not verifiable')
+  })
+  const rootHashInputs = [
+    // 9. Collect commitments for root hash
+    ...proof.commitments.map((i) => base58Decode(i)),
+    // 10. Collect trust model items for root hash
+    ...federatedTrustModel.map(({ type, id }) => {
+      if (type === KILT_ATTESTER_LEGITIMATION_V1_TYPE) {
+        // get root hash from credential id
+        return credentialIdToRootHash(id as VerifiableCredential['id'])
+      }
+      if (type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
+        // get on-chain id from delegation id
+        const { assetInstance } = Caip19.parse(id)
+        if (!assetInstance)
+          throw new Error(
+            `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${id}`
+          )
+        return base58Decode(id)
+      }
+      throw new Error(`unknown type ${type} in federatedTrustModel`)
+    }),
+  ]
+  // 11. Concatenate and hash
+  const rootHash = blake2AsU8a(u8aConcatStrict(rootHashInputs), 256)
+  // 12. Compare against credential id
+  if (credentialIdFromRootHash(rootHash) !== credential.id)
+    throw new Error('root hash not verifiable')
 
-    // 13. check that api is connected to the right network
-    const apiChainId = assertMatchingConnection(api, credential)
-    // 14. query info from chain
-    const { decoded: attestation, timestamp } = await getOnChainAttestationData(
-      api,
-      rootHash,
-      base58Decode(proof.block)
+  // 13. check that api is connected to the right network
+  const apiChainId = assertMatchingConnection(api, credential)
+  // 14. query info from chain
+  const { decoded: attestation, timestamp } = await getOnChainAttestationData(
+    api,
+    rootHash,
+    base58Decode(proof.block)
+  )
+  const onChainCType = CType.hashToId(attestation.cTypeHash)
+  if (
+    attestation.owner !== issuer ||
+    onChainCType !== credential.credentialSchema.id
+  ) {
+    throw new Error(
+      `Credential not matching on-chain data: issuer "${attestation.owner}", CType: "${onChainCType}"`
     )
-    const onChainCType = CType.hashToId(attestation.cTypeHash)
-    if (
-      attestation.owner !== issuer ||
-      onChainCType !== credential.credentialSchema.id
-    ) {
-      throw new Error(
-        `Credential not matching on-chain data: issuer "${attestation.owner}", CType: "${onChainCType}"`
-      )
-    }
-    // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
-    if (attestation.revoked !== false) {
-      throw new Error('Attestation revoked')
-    }
-    // 16. Check timestamp
-    if (timestamp !== new Date(credential.issuanceDate).getTime())
-      throw new Error(
-        `block time ${new Date(
-          timestamp
-        ).toISOString()} does not match issuedAt`
-      )
-    // 17. + 18. validate federatedTrustModel items
-    await Promise.all(
-      credential.federatedTrustModel?.map(async (i) => {
-        if (i.type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
-          // make sure on-chain delegation matches delegation on credential
-          const { assetInstance, chainId, assetNamespace, assetReference } =
-            Caip19.parse(i.id)
-          if (
-            !assetInstance ||
-            assetNamespace !== 'kilt' ||
-            assetReference !== 'delegation'
-          )
-            throw new Error(
-              `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${i.id}`
-            )
-          if (
-            chainId !== apiChainId ||
-            u8aCmp(
-              base58Decode(assetInstance),
-              hexToU8a(attestation.delegationId)
-            ) !== 0
-          )
-            throw new Error(
-              `Delegation ${i.id} does not match on-chain records`
-            )
-          // TODO: check delegators
-          if (i.delegators) {
-            // const node = await DelegationNode.fetch(onChain.delegationId as string)
-            throw new Error('not implemented')
-          }
-          return
-        }
-        if (
-          i.type === KILT_ATTESTER_LEGITIMATION_V1_TYPE &&
-          i.verifiableCredential
-        ) {
-          const { proof: legitimationProof, ...legitimation } =
-            i.verifiableCredential
-          const { verified, errors } = await verifyProof(
-            legitimation,
-            legitimationProof as KiltAttestationProofV1,
-            api
-          )
-          if (!verified)
-            throw new Error(`failed to verify legitimation ${i.id}`, {
-              cause: errors,
-            })
-          return
-        }
-        throw new Error(`unknown type ${i.type} in federatedTrustModel`)
-      }) ?? []
-    )
-  } catch (e) {
-    return {
-      verified: false,
-      errors: [e as Error],
-    }
   }
-  return { verified: true, errors: [] }
+  // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
+  if (attestation.revoked !== false) {
+    throw new Error('Attestation revoked')
+  }
+  // 16. Check timestamp
+  if (timestamp !== new Date(credential.issuanceDate).getTime())
+    throw new Error(
+      `block time ${new Date(timestamp).toISOString()} does not match issuedAt`
+    )
+  // 17. + 18. validate federatedTrustModel items
+  await Promise.all(
+    credential.federatedTrustModel?.map(async (i) => {
+      if (i.type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
+        // make sure on-chain delegation matches delegation on credential
+        const { assetInstance, chainId, assetNamespace, assetReference } =
+          Caip19.parse(i.id)
+        if (
+          !assetInstance ||
+          assetNamespace !== 'kilt' ||
+          assetReference !== 'delegation'
+        )
+          throw new Error(
+            `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${i.id}`
+          )
+        if (
+          chainId !== apiChainId ||
+          u8aCmp(
+            base58Decode(assetInstance),
+            hexToU8a(attestation.delegationId)
+          ) !== 0
+        )
+          throw new Error(`Delegation ${i.id} does not match on-chain records`)
+        // TODO: check delegators
+        if (i.delegators) {
+          // const node = await DelegationNode.fetch(onChain.delegationId as string)
+          throw new Error('not implemented')
+        }
+        return
+      }
+      if (
+        i.type === KILT_ATTESTER_LEGITIMATION_V1_TYPE &&
+        i.verifiableCredential
+      ) {
+        const { proof: legitimationProof, ...legitimation } =
+          i.verifiableCredential
+        await verifyProof(
+          legitimation,
+          legitimationProof as KiltAttestationProofV1,
+          api
+        ).catch((cause) => {
+          throw new Error(`failed to verify legitimation ${i.id}`, {
+            cause,
+          })
+        })
+        return
+      }
+      throw new Error(`unknown type ${i.type} in federatedTrustModel`)
+    }) ?? []
+  )
 }
 
 /**

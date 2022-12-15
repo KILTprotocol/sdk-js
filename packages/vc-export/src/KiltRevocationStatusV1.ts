@@ -12,7 +12,6 @@ import { Caip2 } from './CAIP/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
 import { credentialIdToRootHash } from './KiltCredentialV1.js'
 import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
-import type { VerificationResult } from './verificationUtils.js'
 
 /**
  * Check attestation and revocation status of a credential at the latest block available.
@@ -26,40 +25,32 @@ export async function checkStatus(
   api: ApiPromise,
   credentialStatus: KiltRevocationStatusV1,
   credential: VerifiableCredential
-): Promise<VerificationResult> {
-  try {
-    if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
-      throw new Error('method type mismatch')
-    const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
-    if (apiChainId !== credentialStatus.id)
-      throw new Error(
-        `api must be connected to network ${credentialStatus.id} to verify this credential`
-      )
-    const rootHash = credentialIdToRootHash(credential.id)
-    const encoded = await api.query.attestation.attestations(rootHash)
-    if (encoded.isNone)
-      throw new Error(
-        `Attestation data not found at latest block ${encoded.createdAtHash}`
-      )
+): Promise<void> {
+  if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
+    throw new Error('method type mismatch')
+  const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
+  if (apiChainId !== credentialStatus.id)
+    throw new Error(
+      `api must be connected to network ${credentialStatus.id} to verify this credential`
+    )
+  const rootHash = credentialIdToRootHash(credential.id)
+  const encoded = await api.query.attestation.attestations(rootHash)
+  if (encoded.isNone)
+    throw new Error(
+      `Attestation data not found at latest block ${encoded.createdAtHash}`
+    )
 
-    const decoded = Attestation.fromChain(encoded, u8aToHex(rootHash))
-    const onChainCType = CType.hashToId(decoded.cTypeHash)
-    if (
-      decoded.owner !== credential.issuer ||
-      onChainCType !== credential.credentialSchema.id
-    ) {
-      throw new Error(
-        `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`
-      )
-    }
-    if (decoded.revoked !== false) {
-      throw new Error('Attestation revoked')
-    }
-  } catch (e) {
-    return {
-      verified: false,
-      errors: [e as Error],
-    }
+  const decoded = Attestation.fromChain(encoded, u8aToHex(rootHash))
+  const onChainCType = CType.hashToId(decoded.cTypeHash)
+  if (
+    decoded.owner !== credential.issuer ||
+    onChainCType !== credential.credentialSchema.id
+  ) {
+    throw new Error(
+      `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`
+    )
   }
-  return { verified: true, errors: [] }
+  if (decoded.revoked !== false) {
+    throw new Error('Attestation revoked')
+  }
 }

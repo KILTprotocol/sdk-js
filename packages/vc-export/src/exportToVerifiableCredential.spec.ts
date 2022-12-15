@@ -248,9 +248,7 @@ describe('proofs', () => {
   it('it verifies self-signed proof', async () => {
     // verify
     const { proof, ...cred } = VC
-    expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
-      verified: true,
-    })
+    await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
   })
 
   // it('it verifies schema', () => {
@@ -269,11 +267,7 @@ describe('proofs', () => {
   it('it verifies credential with all properties revealed', async () => {
     expect(VC.proof?.revealProof).toHaveLength(4)
     const { proof, ...cred } = VC
-    const result = await verifyProof(cred, proof!, mockedApi)
-    expect(result.errors).toEqual([])
-    expect(result).toMatchObject({
-      verified: true,
-    })
+    await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
   })
 
   it('it verifies credential with selected properties revealed', async () => {
@@ -289,11 +283,9 @@ describe('proofs', () => {
       timestamp
     )
 
-    const result = await verifyProof(reducedVC, proof!, mockedApi)
-    expect(result.errors).toEqual([])
-    expect(result).toMatchObject({
-      verified: true,
-    })
+    await expect(
+      verifyProof(reducedVC, proof!, mockedApi)
+    ).resolves.not.toThrow()
   })
 
   // it('makes presentation', async () => {
@@ -332,11 +324,9 @@ describe('proofs', () => {
     it('errors on proof mismatch', async () => {
       // @ts-ignore
       delete VC.proof
-      expect(
-        await verifyProof(VC, { type: 'SomeOtherProof' } as any, mockedApi)
-      ).toMatchObject({
-        verified: false,
-      })
+      await expect(
+        verifyProof(VC, { type: 'SomeOtherProof' } as any, mockedApi)
+      ).rejects.toThrow()
     })
 
     // it('rejects selecting non-existent properties for presentation', async () => {
@@ -360,9 +350,7 @@ describe('proofs', () => {
       // @ts-ignore
       VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
-        verified: false,
-      })
+      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
     })
 
     it('it detects tampering with credential fields', async () => {
@@ -373,17 +361,13 @@ describe('proofs', () => {
         },
       ]
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
-        verified: false,
-      })
+      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
     })
 
     it('it detects tampering on claimed properties', async () => {
       VC.credentialSubject.name = 'Kort'
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
-        verified: false,
-      })
+      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
     })
 
     // it('it detects schema violations', () => {
@@ -403,9 +387,7 @@ describe('proofs', () => {
           ) as any
         )
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
-        verified: false,
-      })
+      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
     })
 
     // it('fails if attestation on chain not identical', async () => {
@@ -429,9 +411,7 @@ describe('proofs', () => {
       })
 
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
-        verified: false,
-      })
+      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
     })
   })
 })
