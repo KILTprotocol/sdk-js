@@ -29,7 +29,6 @@ import {
 } from '@kiltprotocol/testing'
 import { UUID } from '@kiltprotocol/utils'
 import * as CType from '../ctype'
-import { connect, disconnect } from '../kilt'
 import * as PublicCredential from '../publicCredential'
 import {
   createEndowedTestAccount,
@@ -39,6 +38,7 @@ import {
   nftNameCType,
   submitTx,
 } from './utils'
+import { connect, disconnect } from '../kilt'
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument
@@ -331,7 +331,7 @@ describe('When there is an issued public credential', () => {
     )
   })
 
-  it.only('should be successfully verified when another party receives it', async () => {
+  it('should be successfully verified when another party receives it', async () => {
     await expect(
       PublicCredential.verifyCredential(credential)
     ).resolves.not.toThrow()
@@ -503,6 +503,7 @@ describe('When connected to Peregrine', () => {
     api = await connect('wss://peregrine.kilt.io/parachain-public-ws')
   })
 
+  // TODO: Find a better way to mock block information and change these tests to unit tests.
   it('should be possible to parse block #2128207 containing a batch of submit_did_call txs', async () => {
     const encodedCredentials = await api.call.publicCredentials.getBySubject(
       'did:asset:eip155:1.erc721:0x6fdc11ca6df2975e88d5f03c335476990de331cc:1380',

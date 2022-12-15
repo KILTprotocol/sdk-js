@@ -69,7 +69,7 @@ function flattenCalls(api: ApiPromise, call: Call): Call[] {
     api.tx.utility.forceBatch.is(call)
   ) {
     // Inductive case
-    return call.args[0].flatMap((innerC) => flattenCalls(api, innerC))
+    return call.args[0].flatMap((c) => flattenCalls(api, c))
   }
   // Base case
   return [call]
