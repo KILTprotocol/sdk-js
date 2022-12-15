@@ -175,12 +175,13 @@ async function getOnChainAttestationData(
 function assertMatchingConnection(
   api: ApiPromise,
   credential: VerifiableCredential
-): void {
+): `polkadot:${string}` {
   const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
   if (apiChainId !== credential.credentialStatus.id)
     throw new Error(
       `api must be connected to network ${credential.credentialStatus.id} to verify this credential`
     )
+  return apiChainId
 }
 
 /**
@@ -277,11 +278,7 @@ export async function verifyProof(
       throw new Error('root hash not verifiable')
 
     // 13. check that api is connected to the right network
-    const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
-    if (apiChainId !== credential.credentialStatus.id)
-      throw new Error(
-        `api must be connected to network ${credential.credentialStatus.id} to verify this credential`
-      )
+    const apiChainId = assertMatchingConnection(api, credential)
     // 14. query info from chain
     const { decoded: attestation, timestamp } = await getOnChainAttestationData(
       api,
