@@ -93,16 +93,19 @@ export function fromInput(
   input: CredentialInputWithRootHash
 ): Omit<VerifiableCredential, 'proof'>
 /**
- * @param input
- * @param input.claimHash
- * @param input.subject
- * @param input.claims
- * @param input.cType
- * @param input.issuer
- * @param input.timestamp
- * @param input.chainGenesisHash
- * @param input.legitimations
- * @param input.delegationId
+ * Produces a KiltCredentialV1 from input data.
+ *
+ * @param input Container for input data.
+ * @param input.subject Did of the credential subject (claimer).
+ * @param input.claims A record of claims about the subject.
+ * @param input.cType The CType (or alternatively its id) to which the claims conform.
+ * @param input.issuer The issuer of the credential.
+ * @param input.timestamp Timestamp of a block at which the credential can be verified, in milliseconds since January 1, 1970, UTC (UNIX epoch).
+ * @param input.chainGenesisHash Genesis hash of the chain against which this credential is verifiable.
+ * @param input.claimHash Optional: digest of the credential contents needed to produce a credential id.
+ * @param input.legitimations Optional: array of credentials which function as legitimations to this credential.
+ * @param input.delegationId Optional: the id of a delegation node which was used in attesting this credential.
+ * @returns A VerfiableCredential (without proof) conforming to the KiltCredentialV1 data model. The `id` is omitted if no `claimHash` was specified.
  */
 export function fromInput({
   claimHash,
@@ -300,7 +303,10 @@ const schemaValidator = new JsonSchema.Validator(credentialSchema, '7')
 schemaValidator.addSchema(CType.Schemas.CTypeModel)
 
 /**
- * @param credential
+ * Validates an object against the KiltCredentialV1 data model.
+ * Throws if object violates the [[credentialSchema]].
+ *
+ * @param credential Credential or object to be validated.
  */
 export function validateStructure(credential: VerifiableCredential): void {
   const { errors, valid } = schemaValidator.validate(credential)
@@ -316,19 +322,20 @@ export function validateStructure(credential: VerifiableCredential): void {
 /**
  * Transforms an [[ICredential]] object to conform to the KiltCredentialV1 data model.
  *
- * @param input
- * @param issuer
- * @param timestamp
- * @param chainGenesisHash
- * @param blockHash
- * @param ctype
+ * @param input An [[ICredential]] object.
+ * @param issuer The issuer of the attestation to this credential (attester).
+ * @param chainGenesisHash Genesis hash of the chain against which the credential is verifiable.
+ * @param blockHash Hash of any block at which the credential is verifiable (i.e. Attested and not revoked).
+ * @param timestamp Timestamp of the block referenced by blockHash in milliseconds since January 1, 1970, UTC (UNIX epoch).
+ * @param ctype Optional: The CType object referenced by the [[ICredential]].
+ * @returns A KiltCredentialV1 with embedded KiltAttestationProofV1 proof.
  */
 export function fromICredential(
   input: ICredential,
   issuer: DidUri,
-  timestamp: number,
   chainGenesisHash: Uint8Array,
   blockHash: Uint8Array,
+  timestamp: number,
   ctype?: ICType
 ): VerifiableCredential {
   const {

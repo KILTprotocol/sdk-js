@@ -129,9 +129,9 @@ it('exports credential to VC', () => {
   const exported = fromICredential(
     credential,
     attestation.owner,
-    timestamp,
     mockedApi.genesisHash,
     blockHash,
+    timestamp,
     ctype
   )
   expect(exported).toMatchObject({
@@ -159,9 +159,9 @@ it('exports includes ctype as schema', () => {
   const exported = fromICredential(
     credential,
     attestation.owner,
-    timestamp,
     mockedApi.genesisHash,
     blockHash,
+    timestamp,
     ctype
   )
   expect(exported).toMatchObject({
@@ -180,9 +180,9 @@ it('VC has correct format (full example)', () => {
     fromICredential(
       credential,
       attestation.owner,
-      timestamp,
       mockedApi.genesisHash,
       blockHash,
+      timestamp,
       ctype
     )
   ).toMatchObject({
@@ -239,16 +239,16 @@ describe('proofs', () => {
     VC = fromICredential(
       credential,
       attestation.owner,
-      timestamp,
       mockedApi.genesisHash,
-      blockHash
+      blockHash,
+      timestamp
     )
   })
 
   it('it verifies self-signed proof', async () => {
     // verify
     const { proof, ...cred } = VC
-    expect(await verifyProof(cred, proof, mockedApi)).toMatchObject({
+    expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
       verified: true,
     })
   })
@@ -267,9 +267,9 @@ describe('proofs', () => {
   // })
 
   it('it verifies credential with all properties revealed', async () => {
-    expect(VC.proof.revealProof).toHaveLength(4)
+    expect(VC.proof?.revealProof).toHaveLength(4)
     const { proof, ...cred } = VC
-    const result = await verifyProof(cred, proof, mockedApi)
+    const result = await verifyProof(cred, proof!, mockedApi)
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
@@ -284,12 +284,12 @@ describe('proofs', () => {
     const { proof, ...reducedVC } = fromICredential(
       reducedCredential,
       attestation.owner,
-      timestamp,
       mockedApi.genesisHash,
-      blockHash
+      blockHash,
+      timestamp
     )
 
-    const result = await verifyProof(reducedVC, proof, mockedApi)
+    const result = await verifyProof(reducedVC, proof!, mockedApi)
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
@@ -323,9 +323,9 @@ describe('proofs', () => {
       VC = fromICredential(
         credential,
         attestation.owner,
-        timestamp,
         mockedApi.genesisHash,
-        blockHash
+        blockHash,
+        timestamp
       )
     })
 
@@ -360,7 +360,7 @@ describe('proofs', () => {
       // @ts-ignore
       VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof, mockedApi)).toMatchObject({
+      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
         verified: false,
       })
     })
@@ -373,7 +373,7 @@ describe('proofs', () => {
         },
       ]
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof, mockedApi)).toMatchObject({
+      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
         verified: false,
       })
     })
@@ -381,7 +381,7 @@ describe('proofs', () => {
     it('it detects tampering on claimed properties', async () => {
       VC.credentialSubject.name = 'Kort'
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof, mockedApi)).toMatchObject({
+      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
         verified: false,
       })
     })
@@ -403,7 +403,7 @@ describe('proofs', () => {
           ) as any
         )
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof, mockedApi)).toMatchObject({
+      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
         verified: false,
       })
     })
@@ -429,7 +429,7 @@ describe('proofs', () => {
       })
 
       const { proof, ...cred } = VC
-      expect(await verifyProof(cred, proof, mockedApi)).toMatchObject({
+      expect(await verifyProof(cred, proof!, mockedApi)).toMatchObject({
         verified: false,
       })
     })

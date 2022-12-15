@@ -105,10 +105,13 @@ export const proofSchema: JsonSchema.Schema = {
 const schemaValidator = new JsonSchema.Validator(proofSchema)
 
 /**
- * @param credential
+ * Validates a proof object against the KiltAttestationProofV1 data model.
+ * Throws if object violates the [[proofSchema]].
+ *
+ * @param proof Proof object to be validated.
  */
-export function validateStructure(credential: KiltAttestationProofV1): void {
-  const { errors, valid } = schemaValidator.validate(credential)
+export function validateStructure(proof: KiltAttestationProofV1): void {
+  const { errors, valid } = schemaValidator.validate(proof)
   if (!valid)
     throw new ProofMalformedError(
       `Object not matching ${ATTESTATION_PROOF_V1_TYPE} data model`,
@@ -131,7 +134,7 @@ export interface VerificationResult {
  */
 export function normalizeClaims(
   expandedContents: ExpandedContents<CredentialSubject>
-) {
+): { statements: string[]; digests: Uint8Array[] } {
   const statements = Object.entries(expandedContents).map(([key, value]) =>
     JSON.stringify({ [key]: value }).normalize('NFC')
   )
