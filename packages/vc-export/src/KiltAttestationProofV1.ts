@@ -5,11 +5,13 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
 import { Attestation, CType } from '@kiltprotocol/core'
 import { validateUri } from '@kiltprotocol/did'
-import type { ICredential } from '@kiltprotocol/types'
+import type { IAttestation, ICredential } from '@kiltprotocol/types'
 import { JsonSchema } from '@kiltprotocol/utils'
 import type { ApiPromise } from '@polkadot/api'
+import type { Option } from '@polkadot/types'
 import {
   hexToU8a,
   stringToU8a,
@@ -146,6 +148,38 @@ export function normalizeClaims(
   }
 }
 
+async function getOnChainAttestationData(
+  api: ApiPromise,
+  rootHash: Uint8Array,
+  block: Uint8Array
+): Promise<{
+  encoded: Option<AttestationAttestationsAttestationDetails>
+  decoded: IAttestation
+  timestamp: number
+}> {
+  const apiAtBlock = await api.at(block)
+  const [timestamp, encoded] = await Promise.all([
+    apiAtBlock.query.timestamp.now(),
+    apiAtBlock.query.attestation.attestations(rootHash),
+  ])
+  if (timestamp.isEmpty || encoded.isNone)
+    throw new Error("Attestation data not found at 'block'")
+  // 15. compare attestation info to credential
+  const decoded = Attestation.fromChain(encoded, u8aToHex(rootHash))
+  return { encoded, decoded, timestamp: timestamp.toNumber() }
+}
+
+function assertMatchingConnection(
+  api: ApiPromise,
+  credential: VerifiableCredential
+): void {
+  const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
+  if (apiChainId !== credential.credentialStatus.id)
+    throw new Error(
+      `api must be connected to network ${credential.credentialStatus.id} to verify this credential`
+    )
+}
+
 /**
  * Verifies a KILT attestation proof by querying data from the KILT blockchain.
  * This includes querying the KILT blockchain with the credential id, which returns an attestation record if attested.
@@ -246,33 +280,29 @@ export async function verifyProof(
         `api must be connected to network ${credential.credentialStatus.id} to verify this credential`
       )
     // 14. query info from chain
-    const apiAtBlock = await api.at(proof.block)
-    const [timestamp, attestation] = await Promise.all([
-      apiAtBlock.query.timestamp.now(),
-      apiAtBlock.query.attestation.attestations(rootHash),
-    ])
-    if (timestamp.isEmpty || attestation.isNone)
-      throw new Error("Attestation data not found at 'block'")
-    // 15. compare attestation info to credential
-    const onChain = Attestation.fromChain(attestation, u8aToHex(rootHash))
-    const onChainCType = CType.hashToId(onChain.cTypeHash)
+    const { decoded: attestation, timestamp } = await getOnChainAttestationData(
+      api,
+      rootHash,
+      base58Decode(proof.block)
+    )
+    const onChainCType = CType.hashToId(attestation.cTypeHash)
     if (
-      onChain.owner !== issuer ||
+      attestation.owner !== issuer ||
       onChainCType !== credential.credentialSchema.id
     ) {
       throw new Error(
-        `Credential not matching on-chain data: issuer "${onChain.owner}", CType: "${onChainCType}"`
+        `Credential not matching on-chain data: issuer "${attestation.owner}", CType: "${onChainCType}"`
       )
     }
     // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
-    if (onChain.revoked !== false) {
+    if (attestation.revoked !== false) {
       throw new Error('Attestation revoked')
     }
     // 16. Check timestamp
-    if (!timestamp.eqn(new Date(credential.issuanceDate).getTime()))
+    if (timestamp !== new Date(credential.issuanceDate).getTime())
       throw new Error(
         `block time ${new Date(
-          timestamp.toNumber()
+          timestamp
         ).toISOString()} does not match issuedAt`
       )
     // 17. + 18. validate federatedTrustModel items
@@ -294,7 +324,7 @@ export async function verifyProof(
             chainId !== apiChainId ||
             u8aCmp(
               base58Decode(assetInstance),
-              hexToU8a(onChain.delegationId)
+              hexToU8a(attestation.delegationId)
             ) !== 0
           )
             throw new Error(
@@ -339,37 +369,34 @@ export async function verifyProof(
 /**
  * Helps with producing a derivative proof for selective disclosure of claims in credentialSubject.
  *
- * @param credentialSubject The original credentialSubject.
- * @param proof The original proof.
+ * @param credentialInput The original credentialSubject.
+ * @param proofInput The original proof.
  * @param disclosedClaims An array of claims that are to be revealed. The `id` of the credentialSubject is always revealed.
- * @returns A copy of `credentialSubject` containing only selected claims and a copy of `proof` containing only revealProof entries for these.
+ * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `revealProof` entries for these.
  * @example
  * ```
- * const {
- *   proof: originalProof,
- *   credentialSubject: originalSubject,
- *   ...credential
- * } = VC as VerifiableCredential
- * const { proof, credentialSubject } = deriveProof(
- *  originalSubject,
- *  originalProof!,
+ * const { proof, credential } = deriveProof(
+ *  originalCredential,
+ *  originalProof,
  *  ['name', 'address']
  * )
- * const derived = { ...credential, proof, credentialSubject }
+ * const derivedCredential = { ...credential, proof }
  * ```
  */
 export function deriveProof(
-  credentialSubject: CredentialSubject,
-  proof: KiltAttestationProofV1,
+  credentialInput: VerifiableCredential,
+  proofInput: KiltAttestationProofV1,
   disclosedClaims: Array<keyof CredentialSubject>
 ): {
-  credentialSubject: CredentialSubject
+  credential: VerifiableCredential
   proof: KiltAttestationProofV1
 } {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const { credentialSubject, proof: _, ...remainder } = credentialInput
   // 1. Make normalized statements sorted by their hash value
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   const { statements: statementsOriginal } = normalizeClaims(expandedContents)
-  if (statementsOriginal.length !== proof.revealProof.length)
+  if (statementsOriginal.length !== proofInput.revealProof.length)
     throw new Error(
       'Violated expectation: number of normalized statements === number of revealProofs'
     )
@@ -392,13 +419,63 @@ export function deriveProof(
   // If a statement from the original set is also contained within the reduced set, keep the revealProof at the respective index.
   const revealProof = statementsOriginal.reduce((arr, statement, index) => {
     if (reducedSet.includes(statement)) {
-      return [...arr, proof.revealProof[index]]
+      return [...arr, proofInput.revealProof[index]]
     }
     return arr
   }, [] as string[])
 
   return {
-    credentialSubject: reducedSubject,
-    proof: { ...proof, revealProof },
+    credential: { ...remainder, credentialSubject: reducedSubject },
+    proof: { ...proofInput, revealProof },
   }
+}
+
+/**
+ * Produces a derived proof with an updated block number on the proof and issuedAt timestamp on the credential.
+ * Optionally allows removing claims from the proof and credential for selective disclosure.
+ *
+ * @param api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
+ * @param credentialInput The original credentialSubject.
+ * @param proofInput The original proof.
+ * @param disclosedClaims Optional array of credentialSubject keys identifying claims to be disclosed. If omitted, all claims on credentialInput are disclosed.
+ * @param atBlock Optional block hash at which the proof is verifiable (detemines issuedAt). Defaults to the latest finalized block.
+ * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `revealProof` entries for these.
+ */
+export async function deriveProofAt(
+  api: ApiPromise,
+  credentialInput: VerifiableCredential,
+  proofInput: KiltAttestationProofV1,
+  disclosedClaims?: Array<keyof CredentialSubject>,
+  atBlock?: Uint8Array
+): Promise<{
+  credential: VerifiableCredential
+  proof: KiltAttestationProofV1
+}> {
+  assertMatchingConnection(api, credentialInput)
+  const { id, issuer, credentialSchema } = credentialInput
+  const block = atBlock ?? (await api.rpc.chain.getFinalizedHead())
+  const { decoded, timestamp } = await getOnChainAttestationData(
+    api,
+    credentialIdToRootHash(id),
+    block
+  )
+  const onChainCType = CType.hashToId(decoded.cTypeHash)
+  if (decoded.owner !== issuer || onChainCType !== credentialSchema.id) {
+    throw new Error(
+      `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`
+    )
+  }
+  if (decoded.revoked !== false) {
+    throw new Error('Attestation revoked')
+  }
+  const credential = {
+    ...credentialInput,
+    timestamp: new Date(timestamp).toISOString(),
+  }
+  delete credential.proof
+  const proof = { ...proofInput, block: base58Encode(block) }
+  if (!disclosedClaims) {
+    return { credential, proof }
+  }
+  return deriveProof(credential, proof, disclosedClaims)
 }
