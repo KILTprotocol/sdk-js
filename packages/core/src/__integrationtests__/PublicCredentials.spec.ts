@@ -38,7 +38,7 @@ import {
   nftNameCType,
   submitTx,
 } from './utils'
-import { connect, disconnect } from '../kilt'
+import { disconnect } from '../kilt'
 
 let tokenHolder: KiltKeyringPair
 let attester: DidDocument
@@ -46,7 +46,7 @@ let attesterKey: KeyTool
 
 let api: ApiPromise
 // Generate a random asset ID
-const assetId: AssetDidUri = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
+let assetId: AssetDidUri = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
 let latestCredential: IPublicCredentialInput
 
 async function issueCredential(
@@ -498,25 +498,85 @@ describe('When there is an issued public credential', () => {
   })
 })
 
-describe('When connected to Peregrine', () => {
+describe('When there is a batch which contains a credential creation', () => {
   beforeAll(async () => {
-    api = await connect('wss://peregrine.kilt.io/parachain-public-ws')
+    assetId = `did:asset:eip155:1.erc20:${randomAsHex(20)}`
+    const credential1 = {
+      claims: {
+        name: `Certified NFT collection with id ${UUID.generate()}`,
+      },
+      cTypeHash: CType.getHashForSchema(nftNameCType),
+      delegationId: null,
+      subject: assetId,
+    }
+    const credential2 = {
+      claims: {
+        name: `Certified NFT collection with id ${UUID.generate()}`,
+      },
+      cTypeHash: CType.getHashForSchema(nftNameCType),
+      delegationId: null,
+      subject: assetId,
+    }
+    const credential3 = {
+      claims: {
+        name: `Certified NFT collection with id ${UUID.generate()}`,
+      },
+      cTypeHash: CType.getHashForSchema(nftNameCType),
+      delegationId: null,
+      subject: assetId,
+    }
+    // A batchAll with a DID call, and a nested batch with a second DID call and a nested forceBatch batch with a third DID call.
+    const currentAttesterNonce = Did.documentFromChain(
+      await api.query.did.did(Did.toChain(attester.uri))
+    ).lastTxCounter
+    const batchTx = api.tx.utility.batchAll([
+      await Did.authorizeTx(
+        attester.uri,
+        api.tx.publicCredentials.add(PublicCredential.toChain(credential1)),
+        attesterKey.getSignCallback(attester),
+        tokenHolder.address,
+        { txCounter: currentAttesterNonce.addn(1) }
+      ),
+      api.tx.utility.batch([
+        await Did.authorizeTx(
+          attester.uri,
+          api.tx.publicCredentials.add(PublicCredential.toChain(credential2)),
+          attesterKey.getSignCallback(attester),
+          tokenHolder.address,
+          { txCounter: currentAttesterNonce.addn(2) }
+        ),
+        api.tx.utility.forceBatch([
+          await Did.authorizeTx(
+            attester.uri,
+            api.tx.publicCredentials.add(PublicCredential.toChain(credential3)),
+            attesterKey.getSignCallback(attester),
+            tokenHolder.address,
+            { txCounter: currentAttesterNonce.addn(3) }
+          ),
+        ]),
+      ]),
+    ])
+    await submitTx(batchTx, tokenHolder)
   })
 
-  // TODO: Find a better way to mock block information and change these tests to unit tests.
-  it('should be possible to parse block #2128207 containing a batch of submit_did_call txs', async () => {
+  it('should correctly parse the block and retrieve the original credentials', async () => {
     const encodedCredentials = await api.call.publicCredentials.getBySubject(
-      'did:asset:eip155:1.erc721:0x6fdc11ca6df2975e88d5f03c335476990de331cc:1380',
+      assetId,
       null
     )
-    const credentials = await PublicCredential.credentialsFromChain(
+    const retrievedCredentials = await PublicCredential.credentialsFromChain(
       encodedCredentials
     )
-    await Promise.all(
-      credentials.map((c) =>
-        expect(PublicCredential.verifyCredential(c)).resolves.not.toThrow()
-      )
-    )
+    expect(retrievedCredentials.length).toEqual(3)
+    await expect(
+      PublicCredential.verifyCredential(retrievedCredentials[0])
+    ).resolves.not.toThrow()
+    await expect(
+      PublicCredential.verifyCredential(retrievedCredentials[1])
+    ).resolves.not.toThrow()
+    await expect(
+      PublicCredential.verifyCredential(retrievedCredentials[2])
+    ).resolves.not.toThrow()
   })
 })
 
