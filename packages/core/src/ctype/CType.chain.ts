@@ -22,7 +22,7 @@ import {
   serializeForHash,
   verifyDataStructure,
 } from './CType.js'
-import { flattenBatchCalls, retrieveExtrinsicFromBlock } from '../utils.js'
+import { flattenCalls, retrieveExtrinsicFromBlock } from '../utils.js'
 
 /**
  * Encodes the provided CType for use in `api.tx.ctype.add()`.
@@ -136,7 +136,7 @@ export async function fetchFromChain(
     )
   }
 
-  const extrinsicCalls = flattenBatchCalls(api, extrinsic.args[0].call)
+  const extrinsicCalls = flattenCalls(api, extrinsic.args[0].call)
 
   const cTypeCreationCalls = extrinsicCalls.filter(
     (call): call is GenericCall<typeof api.tx.ctype.add.args> =>

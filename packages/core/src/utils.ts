@@ -7,8 +7,38 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
+import type { GenericCall, GenericExtrinsic } from '@polkadot/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
+
+/**
+ * Checks wheather the provided extrinsic or call represents a batch.
+ *
+ * @param api The [[ApiPromise]].
+ * @param extrinsic The input [[Extrinsic]] or [[Call]].
+ *
+ * @returns True if it's a batch, false otherwise.
+ */
+export function isBatch(
+  api: ApiPromise,
+  extrinsic: Extrinsic | Call
+): extrinsic is
+  | GenericExtrinsic<
+      | typeof api.tx.utility.batch.args
+      | typeof api.tx.utility.batchAll.args
+      | typeof api.tx.utility.forceBatch.args
+    >
+  | GenericCall<
+      | typeof api.tx.utility.batch.args
+      | typeof api.tx.utility.batchAll.args
+      | typeof api.tx.utility.forceBatch.args
+    > {
+  return (
+    api.tx.utility.batch.is(extrinsic) ||
+    api.tx.utility.batchAll.is(extrinsic) ||
+    api.tx.utility.forceBatch.is(extrinsic)
+  )
+}
 
 /**
  * Flatten all calls into a single array following a DFS approach.
@@ -20,14 +50,10 @@ import type { BN } from '@polkadot/util'
  *
  * @returns A list of [[Call]] nested according to the rules above.
  */
-export function flattenBatchCalls(api: ApiPromise, call: Call): Call[] {
-  if (
-    api.tx.utility.batch.is(call) ||
-    api.tx.utility.batchAll.is(call) ||
-    api.tx.utility.forceBatch.is(call)
-  ) {
+export function flattenCalls(api: ApiPromise, call: Call): Call[] {
+  if (isBatch(api, call)) {
     // Inductive case
-    return call.args[0].flatMap((c) => flattenBatchCalls(api, c))
+    return call.args[0].flatMap((c) => flattenCalls(api, c))
   }
   // Base case
   return [call]

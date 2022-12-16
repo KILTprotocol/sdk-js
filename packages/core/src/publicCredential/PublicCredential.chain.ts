@@ -13,7 +13,9 @@ import type {
   IPublicCredential,
   DidUri,
 } from '@kiltprotocol/types'
+import type { ApiPromise } from '@polkadot/api'
 import type { GenericCall, Option } from '@polkadot/types'
+import type { Call } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
 import type {
   PublicCredentialsCredentialsCredential,
@@ -29,7 +31,7 @@ import { validateUri } from '@kiltprotocol/asset-did'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
-import { flattenBatchCalls, retrieveExtrinsicFromBlock } from '../utils.js'
+import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
@@ -125,6 +127,30 @@ export function fromChain(
   }
 }
 
+// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.publicCredentials.add`.
+function extractPublicCredentialCreationCallsFromDidCall(
+  api: ApiPromise,
+  call: Call
+): Array<GenericCall<typeof api.tx.publicCredentials.add.args>> {
+  const extrinsicCalls = flattenCalls(api, call)
+  return extrinsicCalls.filter(
+    (c): c is GenericCall<typeof api.tx.publicCredentials.add.args> =>
+      api.tx.publicCredentials.add.is(c)
+  )
+}
+
+// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall`.
+function extractDidCallsFromBatchCall(
+  api: ApiPromise,
+  call: Call
+): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
+  const extrinsicCalls = flattenCalls(api, call)
+  return extrinsicCalls.filter(
+    (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
+      api.tx.did.submitDidCall.is(c)
+  )
+}
+
 /**
  * Decodes the public credential details returned by `api.call.publicCredentials.getById()`.
  *
@@ -161,31 +187,40 @@ export async function fetchCredentialFromChain(
     )
   }
 
-  if (!api.tx.did.submitDidCall.is(extrinsic)) {
+  if (!isBatch(api, extrinsic) && !api.tx.did.submitDidCall.is(extrinsic)) {
     throw new SDKErrors.PublicCredentialError(
-      'Extrinsic should be a did.submitDidCall extrinsic'
+      'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
     )
   }
 
-  const extrinsicCalls = flattenBatchCalls(api, extrinsic.args[0].call)
-  const extrinsicDidOrigin = didFromChain(extrinsic.args[0].did)
+  // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
+  // otherwise the extrinsic is itself a submit_did_call, so just take it.
+  const didCalls = isBatch(api, extrinsic)
+    ? extrinsic.args[0].flatMap((batchCall) =>
+        extractDidCallsFromBatchCall(api, batchCall)
+      )
+    : [extrinsic]
 
-  const credentialCreationCalls = extrinsicCalls.filter(
-    (call): call is GenericCall<typeof api.tx.publicCredentials.add.args> =>
-      api.tx.publicCredentials.add.is(call)
-  )
-  // Re-create the issued public credential for each call identified.
-  const callCredentialsContent = credentialCreationCalls.map((call) =>
-    credentialInputFromChain(call.args[0])
-  )
-  // If more than a call is present, it always considers the last one as the valid one.
+  // From the list of DID calls, only consider public_credentials::add calls, bundling each of them with their DID submitter.
+  // It returns a list of [reconstructedCredential, attesterDid].
+  const callCredentialsContent = didCalls.flatMap((didCall) => {
+    const publicCredentialCalls =
+      extractPublicCredentialCreationCallsFromDidCall(api, didCall.args[0].call)
+    // Re-create the issued public credential for each call identified.
+    return publicCredentialCalls.map(
+      (credentialCreationCall) =>
+        [
+          credentialInputFromChain(credentialCreationCall.args[0]),
+          didFromChain(didCall.args[0].did),
+        ] as const
+    )
+  })
+
+  // If more than one call is present, it always considers the last one as the valid one, and takes its attester.
   const lastRightCredentialCreationCall = callCredentialsContent
     .reverse()
-    .find((credentialInput) => {
-      const reconstructedId = getIdForCredential(
-        credentialInput,
-        extrinsicDidOrigin
-      )
+    .find(([credential, attester]) => {
+      const reconstructedId = getIdForCredential(credential, attester)
       return reconstructedId === credentialId
     })
 
@@ -194,10 +229,13 @@ export async function fetchCredentialFromChain(
       'Block should always contain the full credential, eventually.'
     )
   }
+
+  const [credentialInput, attester] = lastRightCredentialCreationCall
+
   return {
-    ...lastRightCredentialCreationCall,
-    attester: extrinsicDidOrigin,
-    id: getIdForCredential(lastRightCredentialCreationCall, extrinsicDidOrigin),
+    ...credentialInput,
+    attester,
+    id: getIdForCredential(credentialInput, attester),
     blockNumber,
     revoked: revoked.toPrimitive(),
   }
