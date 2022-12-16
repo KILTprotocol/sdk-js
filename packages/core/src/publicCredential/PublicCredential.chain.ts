@@ -12,7 +12,6 @@ import type {
   IDelegationNode,
   IPublicCredentialInput,
   IPublicCredential,
-  DidUri,
 } from '@kiltprotocol/types'
 import type { GenericCall, Option, Result, u64, Vec } from '@polkadot/types'
 import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
@@ -64,7 +63,7 @@ export function toChain(
 
 // Flatten any nested batch calls into a single list of calls.
 function flattenCalls(api: ApiPromise, call: Call): Call[] {
-  if (isBatch(call)) {
+  if (isBatch(api, call)) {
     // Inductive case
     return call.args[0].flatMap((c) => flattenCalls(api, c))
   }
@@ -169,74 +168,51 @@ export async function credentialFromChain(
     )
   }
 
-  let credentialInput: IPublicCredentialInput | undefined
-  let submitter: DidUri | undefined
-
-  // The extrinsic to create a public credential can either be a did::submit_did_call extrinsic...
-  if (api.tx.did.submitDidCall.is(extrinsic)) {
-    const credentialCreationCalls =
-      extractPublicCredentialCreationCallsFromDidCall(
-        api,
-        extrinsic.args[0].call
-      )
-    const extrinsicDidOrigin = didFromChain(extrinsic.args[0].did)
-
-    // Re-create the issued public credential for each call identified.
-    const callCredentialsContent = credentialCreationCalls.map((call) =>
-      credentialInputFromChain(call.args[0])
-    )
-    // If more than a call is present, it always considers the last one as the valid one.
-    const lastRightCredentialCreationCall = callCredentialsContent
-      .reverse()
-      .find((c) => {
-        const reconstructedId = getIdForCredential(c, extrinsicDidOrigin)
-        return reconstructedId === credentialId
-      })
-    credentialInput = lastRightCredentialCreationCall
-    submitter = extrinsicDidOrigin
-  }
-  // ... or a utility::{batch,batch_all,force_batch} extrinsic which include a DID-authorized call
-  else if (isBatch(extrinsic)) {
-    // From the batch, only consider did::submit_did calls
-    const didCalls = extrinsic.args[0].flatMap((batchCall) =>
-      extractDidCallsFromBatchCall(api, batchCall)
-    )
-    // From the list of DID calls, only consider public_credentials::add calls, bundling each of them with their DID submitter
-    const credentialCreationCalls = didCalls.flatMap((didCall) => {
-      const publicCredentialCalls =
-        extractPublicCredentialCreationCallsFromDidCall(
-          api,
-          didCall.args[0].call
-        )
-      return publicCredentialCalls.map(
-        (c) => [c, didFromChain(didCall.args[0].did)] as const
-      )
-    })
-    // Re-create the issued public credential for each call identified.
-    const callCredentialsContent = credentialCreationCalls.map(
-      ([c, s]) => [credentialInputFromChain(c.args[0]), s] as const
-    )
-    // If more than a call is present, it always considers the last one as the valid one, and take its submitter.
-    const lastRightCredentialCreationCall = callCredentialsContent
-      .reverse()
-      .find(([c, s]) => {
-        const reconstructedId = getIdForCredential(c, s)
-        return reconstructedId === credentialId
-      })
-    credentialInput = lastRightCredentialCreationCall?.[0]
-    submitter = lastRightCredentialCreationCall?.[1]
-  } else {
+  if (!isBatch(api, extrinsic) && !api.tx.did.submitDidCall.is(extrinsic)) {
     throw new SDKErrors.PublicCredentialError(
       'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
     )
   }
 
-  // Right calls found, but no relevant information contained in any of them
-  if (credentialInput === undefined || submitter === undefined) {
+  // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
+  // otherwise the extrinsic is itself a submit_did_call, so just take it.
+  const didCalls = isBatch(api, extrinsic)
+    ? extrinsic.args[0].flatMap((batchCall) =>
+        extractDidCallsFromBatchCall(api, batchCall)
+      )
+    : [extrinsic]
+
+  // From the list of DID calls, only consider public_credentials::add calls, bundling each of them with their DID submitter.
+  // Re-create the issued public credential for each call identified.
+  // It returns a list of [reconstructedCredential, attesterDid].
+  const callCredentialsContent = didCalls.flatMap((didCall) => {
+    const publicCredentialCalls =
+      extractPublicCredentialCreationCallsFromDidCall(api, didCall.args[0].call)
+    return publicCredentialCalls.map(
+      (c) =>
+        [
+          credentialInputFromChain(c.args[0]),
+          didFromChain(didCall.args[0].did),
+        ] as const
+    )
+  })
+
+  // If more than one call is present, it always considers the last one as the valid one, and takes its submitter.
+  const lastRightCredentialCreationCall = callCredentialsContent
+    .reverse()
+    .find(([c, s]) => {
+      const reconstructedId = getIdForCredential(c, s)
+      return reconstructedId === credentialId
+    })
+
+  if (!lastRightCredentialCreationCall) {
     throw new SDKErrors.PublicCredentialError(
       'Block should always contain the full credential, eventually.'
     )
   }
+
+  const [credentialInput, submitter] = lastRightCredentialCreationCall
+
   return {
     ...credentialInput,
     attester: submitter,

@@ -5,27 +5,27 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
 
-import { ConfigService } from '@kiltprotocol/config'
 import { GenericExtrinsic } from '@polkadot/types'
 
 /**
- * Checks wheather the provided extrinsic is one of the potential batch extrinsics.
+ * Checks wheather the provided extrinsic or call represents a batch.
  *
- * @param extrinsic The input [[Extrinsic]].
+ * @param api The [[ApiPromise]].
+ * @param extrinsic The input [[Extrinsic]] or [[Call]].
  *
- * @returns True if the extrinsic is a batch extrinsic, false otherwise.
+ * @returns True if it's a batch, false otherwise.
  */
 export function isBatch(
+  api: ApiPromise,
   extrinsic: Extrinsic | Call
 ): extrinsic is GenericExtrinsic<
   | typeof api.tx.utility.batch.args
   | typeof api.tx.utility.batchAll.args
   | typeof api.tx.utility.forceBatch.args
 > {
-  const api = ConfigService.get('api')
-
   return (
     api.tx.utility.batch.is(extrinsic) ||
     api.tx.utility.batchAll.is(extrinsic) ||
