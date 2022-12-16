@@ -5,7 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
 import type { Bytes, GenericCall, Option } from '@polkadot/types'
+import type { Call } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
 
 import type { CtypeCtypeEntry } from '@kiltprotocol/augment-api'
@@ -22,7 +24,7 @@ import {
   serializeForHash,
   verifyDataStructure,
 } from './CType.js'
-import { flattenCalls, retrieveExtrinsicFromBlock } from '../utils.js'
+import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
 
 /**
  * Encodes the provided CType for use in `api.tx.ctype.add()`.
@@ -97,6 +99,30 @@ export function fromChain(encoded: Option<CtypeCtypeEntry>): CTypeChainDetails {
   }
 }
 
+// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.ctype.add`.
+function extractCTypeCreationCallsFromDidCall(
+  api: ApiPromise,
+  call: Call
+): Array<GenericCall<typeof api.tx.ctype.add.args>> {
+  const extrinsicCalls = flattenCalls(api, call)
+  return extrinsicCalls.filter(
+    (c): c is GenericCall<typeof api.tx.ctype.add.args> =>
+      api.tx.publicCredentials.add.is(c)
+  )
+}
+
+// Given a (nested) call, flattens them and filter by calls that are of type `api.tx.did.submitDidCall`.
+function extractDidCallsFromBatchCall(
+  api: ApiPromise,
+  call: Call
+): Array<GenericCall<typeof api.tx.did.submitDidCall.args>> {
+  const extrinsicCalls = flattenCalls(api, call)
+  return extrinsicCalls.filter(
+    (c): c is GenericCall<typeof api.tx.did.submitDidCall.args> =>
+      api.tx.did.submitDidCall.is(c)
+  )
+}
+
 /**
  * Combines on-chain and off-chain information for a CType to fetch the CType definition`.
  *
@@ -111,7 +137,7 @@ export async function fetchFromChain(
   const cTypeHash = idToHash(cTypeId)
 
   const cTypeEntry = await api.query.ctype.ctypes(cTypeHash)
-  const { creator, createdAt } = fromChain(cTypeEntry)
+  const { createdAt } = fromChain(cTypeEntry)
 
   const extrinsic = await retrieveExtrinsicFromBlock(
     api,
@@ -130,27 +156,42 @@ export async function fetchFromChain(
     )
   }
 
-  if (!api.tx.did.submitDidCall.is(extrinsic)) {
-    throw new SDKErrors.CTypeError(
-      'Extrinsic should be a did.submitDidCall extrinsic'
+  if (!isBatch(api, extrinsic) && !api.tx.did.submitDidCall.is(extrinsic)) {
+    throw new SDKErrors.PublicCredentialError(
+      'Extrinsic should be either a `did.submitDidCall` extrinsic or a batch with at least a `did.submitDidCall` extrinsic'
     )
   }
 
-  const extrinsicCalls = flattenCalls(api, extrinsic.args[0].call)
+  // If we're dealing with a batch, flatten any nested `submit_did_call` calls,
+  // otherwise the extrinsic is itself a submit_did_call, so just take it.
+  const didCalls = isBatch(api, extrinsic)
+    ? extrinsic.args[0].flatMap((batchCall) =>
+        extractDidCallsFromBatchCall(api, batchCall)
+      )
+    : [extrinsic]
 
-  const cTypeCreationCalls = extrinsicCalls.filter(
-    (call): call is GenericCall<typeof api.tx.ctype.add.args> =>
-      api.tx.ctype.add.is(call)
-  )
-  // Re-create the created CType for each call identified.
-  const callCTypeContent = cTypeCreationCalls.map((call) =>
-    cTypeInputFromChain(call.args[0])
-  )
+  // From the list of DID calls, only consider ctype::add calls, bundling each of them with their DID submitter.
+  // It returns a list of [reconstructedCType, attesterDid].
+  const ctypeCallContent = didCalls.flatMap((didCall) => {
+    const ctypeCreationCalls = extractCTypeCreationCallsFromDidCall(
+      api,
+      didCall.args[0].call
+    )
+    // Re-create the issued public credential for each call identified.
+    return ctypeCreationCalls.map(
+      (ctypeCreationCall) =>
+        [
+          cTypeInputFromChain(ctypeCreationCall.args[0]),
+          Did.fromChain(didCall.args[0].did),
+        ] as const
+    )
+  })
+
   // If more than a call is present, it always considers the last one as the valid one.
-  const lastRightCTypeCreationCall = callCTypeContent
+  const lastRightCTypeCreationCall = ctypeCallContent
     .reverse()
     .find((cTypeInput) => {
-      return cTypeInput.$id === cTypeId
+      return cTypeInput[0].$id === cTypeId
     })
 
   if (!lastRightCTypeCreationCall) {
@@ -158,8 +199,11 @@ export async function fetchFromChain(
       'Block should always contain the full CType, eventually.'
     )
   }
+
+  const [ctypeInput, creator] = lastRightCTypeCreationCall
+
   return {
-    ...lastRightCTypeCreationCall,
+    ...ctypeInput,
     $id: cTypeId,
     creator,
     createdAt,
