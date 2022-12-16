@@ -57,7 +57,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
     await expect(
-      CType.fromChain(
+      CType.fetchFromChain(
         ctype.$id,
         // This is None
         await api.query.ctype.ctypes(CType.idToChain(ctype.$id))
@@ -76,7 +76,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitTx(authorizedStoreTx, paymentAccount)
 
-    const retrievedCType = await CType.fromChain(
+    const retrievedCType = await CType.fetchFromChain(
       ctype.$id,
       await api.query.ctype.ctypes(CType.idToChain(ctype.$id))
     )
@@ -109,7 +109,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       submitTx(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
-    const retrievedCType = await CType.fromChain(
+    const retrievedCType = await CType.fetchFromChain(
       ctype.$id,
       await api.query.ctype.ctypes(CType.idToChain(ctype.$id))
     )
@@ -123,7 +123,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
     await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
     await expect(
-      CType.fromChain(
+      CType.fetchFromChain(
         iAmNotThere.$id,
         // This is None
         await api.query.ctype.ctypes(CType.idToChain(iAmNotThere.$id))

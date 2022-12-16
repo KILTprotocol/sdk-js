@@ -6,9 +6,9 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
-import type { u64 } from '@polkadot/types'
 import type { TxWithEvent } from '@polkadot/api-derive/types'
 import type { Call, Extrinsic } from '@polkadot/types/interfaces'
+import type { BN } from '@polkadot/util'
 
 /**
  * Flatten all calls into a single array following a DFS approach.
@@ -46,7 +46,7 @@ export function flattenBatchCalls(api: ApiPromise, call: Call): Call[] {
  */
 export async function retrieveExtrinsicFromBlock(
   api: ApiPromise,
-  blockNumber: u64,
+  blockNumber: BN,
   filter: (tx: TxWithEvent) => boolean
 ): Promise<Extrinsic | null> {
   const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)

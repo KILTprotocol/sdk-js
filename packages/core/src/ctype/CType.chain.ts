@@ -68,9 +68,9 @@ function cTypeInputFromChain(input: Bytes): ICType {
 }
 
 /**
- * The complete details of a CType, which combines on-chain and off-chain information.
+ * The details of a CType that are stored on chain.
  */
-export interface ICTypeDetails extends ICType {
+export interface CTypeChainDetails {
   /**
    * The DID of the CType's creator.
    */
@@ -82,20 +82,40 @@ export interface ICTypeDetails extends ICType {
 }
 
 /**
+ * The complete details of a CType, which combines on-chain and off-chain information.
+ */
+export type ICTypeDetails = ICType & CTypeChainDetails
+
+/**
  * Decodes the CType details returned by `api.query.ctype.ctypes()`.
  *
+ * @param encoded The data from the blockchain.
+ * @returns The decoded data.
+ */
+export function fromChain(encoded: Option<CtypeCtypeEntry>): CTypeChainDetails {
+  const unwrapped = encoded.unwrap()
+  return {
+    creator: Did.fromChain(unwrapped.creator),
+    createdAt: unwrapped.createdAt.toBn(),
+  }
+}
+
+/**
+ * Combines on-chain and off-chain information for a CType to fetch the CType definition`.
+ *
  * @param cTypeId CType ID to use for the query. It is required to complement the information stored on the blockchain in a [[CtypeCtypeEntry]].
- * @param cTypeEntry The raw CType details from blockchain.
+ *
  * @returns The [[ICTypeDetails]] as the result of combining the on-chain information and the information present in the tx history.
  */
-export async function fromChain(
-  cTypeId: ICType['$id'],
-  cTypeEntry: Option<CtypeCtypeEntry>
+export async function fetchFromChain(
+  cTypeId: ICType['$id']
 ): Promise<ICTypeDetails> {
   const api = ConfigService.get('api')
   const cTypeHash = idToHash(cTypeId)
 
-  const { creator, createdAt } = cTypeEntry.unwrap()
+  const cTypeEntry = await api.query.ctype.ctypes(cTypeHash)
+
+  const { creator, createdAt } = fromChain(cTypeEntry)
 
   const extrinsic = await retrieveExtrinsicFromBlock(
     api,
@@ -145,7 +165,7 @@ export async function fromChain(
   return {
     ...lastRightCTypeCreationCall,
     $id: cTypeId,
-    creator: Did.fromChain(creator),
-    createdAt: createdAt.toBn(),
+    creator,
+    createdAt,
   }
 }
