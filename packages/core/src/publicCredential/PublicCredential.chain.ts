@@ -32,6 +32,7 @@ import { validateUri } from '@kiltprotocol/asset-did'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
+import { isBatch } from '../utils.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
@@ -63,11 +64,7 @@ export function toChain(
 
 // Flatten any nested batch calls into a single list of calls.
 function flattenCalls(api: ApiPromise, call: Call): Call[] {
-  if (
-    api.tx.utility.batch.is(call) ||
-    api.tx.utility.batchAll.is(call) ||
-    api.tx.utility.forceBatch.is(call)
-  ) {
+  if (isBatch(call)) {
     // Inductive case
     return call.args[0].flatMap((c) => flattenCalls(api, c))
   }
@@ -199,11 +196,7 @@ export async function credentialFromChain(
     submitter = extrinsicDidOrigin
   }
   // ... or a utility::{batch,batch_all,force_batch} extrinsic which include a DID-authorized call
-  else if (
-    api.tx.utility.batch.is(extrinsic) ||
-    api.tx.utility.batchAll.is(extrinsic) ||
-    api.tx.utility.forceBatch.is(extrinsic)
-  ) {
+  else if (isBatch(extrinsic)) {
     // From the batch, only consider did::submit_did calls
     const didCalls = extrinsic.args[0].flatMap((batchCall) =>
       extractDidCallsFromBatchCall(api, batchCall)
