@@ -111,7 +111,6 @@ export async function fetchFromChain(
   const cTypeHash = idToHash(cTypeId)
 
   const cTypeEntry = await api.query.ctype.ctypes(cTypeHash)
-
   const { creator, createdAt } = fromChain(cTypeEntry)
 
   const extrinsic = await retrieveExtrinsicFromBlock(

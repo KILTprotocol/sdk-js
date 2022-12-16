@@ -14,6 +14,7 @@ import type {
   DidUri,
 } from '@kiltprotocol/types'
 import type { GenericCall, Option } from '@polkadot/types'
+import type { BN } from '@polkadot/util'
 import type {
   PublicCredentialsCredentialsCredential,
   PublicCredentialsCredentialsCredentialEntry,
@@ -27,7 +28,6 @@ import { fromChain as didFromChain } from '@kiltprotocol/did'
 import { validateUri } from '@kiltprotocol/asset-did'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-import { BN } from '@polkadot/util'
 import { getIdForCredential } from './PublicCredential.js'
 import { flattenBatchCalls, retrieveExtrinsicFromBlock } from '../utils.js'
 
