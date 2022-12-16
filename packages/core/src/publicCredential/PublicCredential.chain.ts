@@ -11,14 +11,10 @@ import type {
   IDelegationNode,
   IPublicCredentialInput,
   IPublicCredential,
-  ICType,
   DidUri,
 } from '@kiltprotocol/types'
-import type { GenericCall, Option, Result, Vec } from '@polkadot/types'
-import type { Hash } from '@polkadot/types/interfaces'
-import type { ITuple } from '@polkadot/types/types'
+import type { GenericCall, Option } from '@polkadot/types'
 import type {
-  PublicCredentialError,
   PublicCredentialsCredentialsCredential,
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
