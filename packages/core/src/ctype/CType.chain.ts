@@ -81,9 +81,6 @@ export interface CTypeChainDetails {
   createdAt: BN
 }
 
-/**
- * The complete details of a CType, which combines on-chain and off-chain information.
- */
 export type ICTypeDetails = ICType & CTypeChainDetails
 
 /**
@@ -93,10 +90,10 @@ export type ICTypeDetails = ICType & CTypeChainDetails
  * @returns The decoded data.
  */
 export function fromChain(encoded: Option<CtypeCtypeEntry>): CTypeChainDetails {
-  const unwrapped = encoded.unwrap()
+  const { creator, createdAt } = encoded.unwrap()
   return {
-    creator: Did.fromChain(unwrapped.creator),
-    createdAt: unwrapped.createdAt.toBn(),
+    creator: Did.fromChain(creator),
+    createdAt: createdAt.toBn(),
   }
 }
 

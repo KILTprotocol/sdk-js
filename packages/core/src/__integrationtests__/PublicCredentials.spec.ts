@@ -99,7 +99,7 @@ describe('When there is an attester and ctype NFT name', () => {
     )
     expect(publicCredentialEntry.isSome).toBe(true)
 
-    const completeCredential = await PublicCredential.credentialFromChain(
+    const completeCredential = await PublicCredential.fetchCredentialFromChain(
       credentialId,
       publicCredentialEntry
     )
@@ -126,7 +126,7 @@ describe('When there is an attester and ctype NFT name', () => {
     }
     await issueCredential(latestCredential)
 
-    const assetCredentials = await PublicCredential.credentialsFromChain(
+    const assetCredentials = await PublicCredential.fetchCredentialsFromChain(
       await api.call.publicCredentials.getBySubject(assetId, null)
     )
 
@@ -158,7 +158,7 @@ describe('When there is an attester and ctype NFT name', () => {
     })
     await submitTx(authorizedBatch, tokenHolder)
 
-    const assetCredentials = await PublicCredential.credentialsFromChain(
+    const assetCredentials = await PublicCredential.fetchCredentialsFromChain(
       await api.call.publicCredentials.getBySubject(assetId, null)
     )
 
@@ -174,14 +174,14 @@ describe('When there is an attester and ctype NFT name', () => {
     let encodedAssetCredential = await api.call.publicCredentials.getById(
       credentialId
     )
-    let assetCredential = await PublicCredential.credentialFromChain(
+    let assetCredential = await PublicCredential.fetchCredentialFromChain(
       credentialId,
       encodedAssetCredential
     )
     let encodedAllAssetCredentials =
       await api.call.publicCredentials.getBySubject(assetId, null)
     const allAssetCredentialsBeforeRevocation =
-      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+      await PublicCredential.fetchCredentialsFromChain(encodedAllAssetCredentials)
     // Verify that credential was not revoked before revocation
     expect(assetCredential.revoked).toBe(false)
     const revocationTx = api.tx.publicCredentials.revoke(credentialId, null)
@@ -196,7 +196,7 @@ describe('When there is an attester and ctype NFT name', () => {
     encodedAssetCredential = await api.call.publicCredentials.getById(
       credentialId
     )
-    assetCredential = await PublicCredential.credentialFromChain(
+    assetCredential = await PublicCredential.fetchCredentialFromChain(
       credentialId,
       encodedAssetCredential
     )
@@ -205,7 +205,7 @@ describe('When there is an attester and ctype NFT name', () => {
       null
     )
     const allAssetCredentialsAfterRevocation =
-      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+      await PublicCredential.fetchCredentialsFromChain(encodedAllAssetCredentials)
 
     expect(assetCredential.revoked).toBe(true)
     // Verify the number of credentials has not changed after revocation
@@ -222,14 +222,14 @@ describe('When there is an attester and ctype NFT name', () => {
     let encodedAssetCredential = await api.call.publicCredentials.getById(
       credentialId
     )
-    let assetCredential = await PublicCredential.credentialFromChain(
+    let assetCredential = await PublicCredential.fetchCredentialFromChain(
       credentialId,
       encodedAssetCredential
     )
     let encodedAllAssetCredentials =
       await api.call.publicCredentials.getBySubject(assetId, null)
     const allAssetCredentialsBeforeRevocation =
-      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+      await PublicCredential.fetchCredentialsFromChain(encodedAllAssetCredentials)
     // Verify that credential was revoked before un-revocation
     expect(assetCredential.revoked).toBe(true)
 
@@ -245,7 +245,7 @@ describe('When there is an attester and ctype NFT name', () => {
     encodedAssetCredential = await api.call.publicCredentials.getById(
       credentialId
     )
-    assetCredential = await PublicCredential.credentialFromChain(
+    assetCredential = await PublicCredential.fetchCredentialFromChain(
       credentialId,
       encodedAssetCredential
     )
@@ -254,7 +254,7 @@ describe('When there is an attester and ctype NFT name', () => {
       null
     )
     const allAssetCredentialsAfterRevocation =
-      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+      await PublicCredential.fetchCredentialsFromChain(encodedAllAssetCredentials)
 
     // Verify it is now not revoked anymore
     expect(assetCredential.revoked).toBe(false)
@@ -275,7 +275,7 @@ describe('When there is an attester and ctype NFT name', () => {
     let encodedAllAssetCredentials =
       await api.call.publicCredentials.getBySubject(assetId, null)
     const allAssetCredentialsBeforeRevocation =
-      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+      await PublicCredential.fetchCredentialsFromChain(encodedAllAssetCredentials)
     // Verify that credential existed before removal
     expect(encodedAssetCredential.isNone).toBe(false)
 
@@ -296,7 +296,7 @@ describe('When there is an attester and ctype NFT name', () => {
       null
     )
     const allAssetCredentialsAfterRevocation =
-      await PublicCredential.credentialsFromChain(encodedAllAssetCredentials)
+      await PublicCredential.fetchCredentialsFromChain(encodedAllAssetCredentials)
 
     // Verify it is now removed
     expect(encodedAssetCredential.isNone).toBe(true)
@@ -325,7 +325,7 @@ describe('When there is an issued public credential', () => {
       latestCredential,
       attester.uri
     )
-    credential = await PublicCredential.credentialFromChain(
+    credential = await PublicCredential.fetchCredentialFromChain(
       credentialId,
       await api.call.publicCredentials.getById(credentialId)
     )
