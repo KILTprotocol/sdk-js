@@ -18,7 +18,7 @@
   "dependencies": {
     "@kiltprotocol/sdk-js": "workspace:*",
     "@polkadot/keyring": "^10.0.0",
-    "@polkadot/types": "^9.4.1",
+    "@polkadot/types": "^9.10.2",
     "@polkadot/util": "^10.0.0",
     "typescript-logging": "^0.6.4",
     "@polkadot/util-crypto": "^10.0.0",
