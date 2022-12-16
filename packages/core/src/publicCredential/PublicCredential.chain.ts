@@ -183,25 +183,25 @@ export async function credentialFromChain(
     : [extrinsic]
 
   // From the list of DID calls, only consider public_credentials::add calls, bundling each of them with their DID submitter.
-  // Re-create the issued public credential for each call identified.
   // It returns a list of [reconstructedCredential, attesterDid].
   const callCredentialsContent = didCalls.flatMap((didCall) => {
     const publicCredentialCalls =
       extractPublicCredentialCreationCallsFromDidCall(api, didCall.args[0].call)
+    // Re-create the issued public credential for each call identified.
     return publicCredentialCalls.map(
-      (c) =>
+      (credentialCreationCall) =>
         [
-          credentialInputFromChain(c.args[0]),
+          credentialInputFromChain(credentialCreationCall.args[0]),
           didFromChain(didCall.args[0].did),
         ] as const
     )
   })
 
-  // If more than one call is present, it always considers the last one as the valid one, and takes its submitter.
+  // If more than one call is present, it always considers the last one as the valid one, and takes its attester.
   const lastRightCredentialCreationCall = callCredentialsContent
     .reverse()
-    .find(([c, s]) => {
-      const reconstructedId = getIdForCredential(c, s)
+    .find(([credential, attester]) => {
+      const reconstructedId = getIdForCredential(credential, attester)
       return reconstructedId === credentialId
     })
 
@@ -211,12 +211,12 @@ export async function credentialFromChain(
     )
   }
 
-  const [credentialInput, submitter] = lastRightCredentialCreationCall
+  const [credentialInput, attester] = lastRightCredentialCreationCall
 
   return {
     ...credentialInput,
-    attester: submitter,
-    id: getIdForCredential(credentialInput, submitter),
+    attester,
+    id: getIdForCredential(credentialInput, attester),
     blockNumber,
     revoked: revoked.toPrimitive(),
   }
