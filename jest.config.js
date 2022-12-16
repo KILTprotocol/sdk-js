@@ -39,6 +39,7 @@ module.exports = {
     '!did/src/Did.rpc.ts',
     '!did/src/Did.utils.ts',
     '!utils/src/jsonabc.ts',
+    '!core/src/utils.ts',
   ],
   resolver: "ts-jest-resolver",
   rootDir: 'packages',
