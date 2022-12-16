@@ -36,8 +36,8 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@polkadot/api": "^9.4.1",
-    "@polkadot/typegen": "^9.4.1",
+    "@polkadot/api": "^9.10.2",
+    "@polkadot/typegen": "^9.10.2",
     "@types/websocket": "^1.0.0",
     "glob": "^7.1.1",
     "rimraf": "^3.0.2",
