@@ -30,6 +30,7 @@ import {
 } from './constants'
 
 import { verifyProof } from './KiltAttestationProofV1.js'
+import { validateSchema } from './verificationUtils.js'
 
 const mockedApi = ApiMocks.createAugmentedApi()
 
@@ -251,18 +252,21 @@ describe('proofs', () => {
     await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
   })
 
-  // it('it verifies schema', () => {
-  //   const VCWithSchema = toVC.fromCredentialAndAttestation(
-  //     credential,
-  //     attestation,
-  //     ctype
-  //   )
-  //   const result = verificationUtils.validateSchema(VCWithSchema)
-  //   expect(result.errors).toEqual([])
-  //   expect(result).toMatchObject({
-  //     verified: true,
-  //   })
-  // })
+  it('it verifies schema', () => {
+    const VCWithSchema = fromICredential(
+      credential,
+      attestation.owner,
+      mockedApi.genesisHash,
+      blockHash,
+      timestamp,
+      ctype
+    )
+    expect(() => validateSchema(VCWithSchema)).not.toThrow()
+
+    VCWithSchema.credentialSubject['#name'] = 5
+
+    expect(() => validateSchema(VCWithSchema)).toThrow()
+  })
 
   it('it verifies credential with all properties revealed', async () => {
     expect(VC.proof?.revealProof).toHaveLength(4)
