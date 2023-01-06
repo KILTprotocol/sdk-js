@@ -1,4 +1,4 @@
-{
+export default {
   "@context": {
     "@version": 1.1,
     "@protected": true,
