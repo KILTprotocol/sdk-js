@@ -6,12 +6,8 @@
  */
 
 /* eslint-disable class-methods-use-this */
-import {
-  DocumentLoader,
-  ExpansionMap,
-  purposes,
-  suites,
-} from 'jsonld-signatures'
+// CJS import; does not support named exports
+import jsigs from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import jsonld from 'jsonld'
 import type {
@@ -25,7 +21,7 @@ import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
 } from '../../constants.js'
 
-export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
+export abstract class KiltAbstractSuite extends jsigs.suites.LinkedDataProof {
   public readonly verificationMethod?: string | IPublicKeyRecord
 
   constructor({
@@ -42,8 +38,8 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
   protected async compactProof<ProofType extends Proof>(
     proof: JsonLdObj,
     options: {
-      documentLoader?: DocumentLoader
-      expansionMap?: ExpansionMap
+      documentLoader?: jsigs.DocumentLoader
+      expansionMap?: jsigs.ExpansionMap
       [key: string]: unknown
     }
   ): Promise<ProofType> {
@@ -58,8 +54,8 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
   protected async compactDoc(
     document: JsonLdObj,
     options: {
-      documentLoader?: DocumentLoader
-      expansionMap?: ExpansionMap
+      documentLoader?: jsigs.DocumentLoader
+      expansionMap?: jsigs.ExpansionMap
       [key: string]: unknown
     }
   ): Promise<VerifiableCredential> {
@@ -77,9 +73,9 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
   public async matchProof(options: {
     proof: JsonLdObj
     document?: JsonLdObj
-    purpose?: purposes.ProofPurpose
-    documentLoader?: DocumentLoader
-    expansionMap?: ExpansionMap
+    purpose?: jsigs.purposes.ProofPurpose
+    documentLoader?: jsigs.DocumentLoader
+    expansionMap?: jsigs.ExpansionMap
   }): Promise<boolean> {
     const { proof } = options
     const compact = await this.compactProof(proof, options)
@@ -93,9 +89,9 @@ export abstract class KiltAbstractSuite extends suites.LinkedDataProof {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async createProof(options: {
     document: JsonLdObj
-    purpose?: purposes.ProofPurpose
-    documentLoader?: DocumentLoader
-    expansionMap?: ExpansionMap
+    purpose?: jsigs.purposes.ProofPurpose
+    documentLoader?: jsigs.DocumentLoader
+    expansionMap?: jsigs.ExpansionMap
   }): Promise<never> {
     throw new Error(
       'Credential issuance through vc-js is not supported. For credential issuance, use @kiltprotocol/sdk-js and export your KILT credential to a VC representation using @kiltprotocol/vc-export'
