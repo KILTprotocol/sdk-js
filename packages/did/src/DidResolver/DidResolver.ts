@@ -7,7 +7,6 @@
 
 import type {
   ConformingDidResolutionResult,
-  DidDocument,
   DidKey,
   DidResolutionResult,
   DidResourceUri,
@@ -22,7 +21,7 @@ import { ConfigService } from '@kiltprotocol/config'
 
 import * as Did from '../index.js'
 import { toChain } from '../Did.chain.js'
-import { linkedInfoFromChain, Web3Name } from '../Did.rpc.js'
+import { linkedInfoFromChain } from '../Did.rpc.js'
 import { getFullDidUri, parse } from '../Did.utils.js'
 import { exportToDidDocument } from '../DidDocumentExporter/DidDocumentExporter.js'
 
@@ -45,14 +44,9 @@ export async function resolve(
     throw new Error(
       `This version of the KILT sdk supports runtime api '${section}' <=v2 , but the blockchain runtime implements ${version}. Please upgrade!`
     )
-  const {
-    document,
-    web3Name,
-  }: { document?: DidDocument; web3Name?: Web3Name } = await queryFunction(
-    toChain(did)
-  )
+  const { document, web3Name } = await queryFunction(toChain(did))
     .then(linkedInfoFromChain)
-    .catch(() => ({}))
+    .catch(() => ({ document: undefined, web3Name: undefined }))
 
   if (type === 'full' && document) {
     return {
@@ -60,7 +54,7 @@ export async function resolve(
       metadata: {
         deactivated: false,
       },
-      ...(web3Name && { alsoKnownAs: web3Name }),
+      ...(web3Name && { web3Name }),
     }
   }
 
@@ -134,14 +128,14 @@ export async function resolveCompliant(
     result.didResolutionMetadata.errorMessage = `DID ${did} not found (on chain)`
     return result
   }
-  const { metadata, document, alsoKnownAs } = resolutionResult
+  const { metadata, document, web3Name } = resolutionResult
   result.didDocumentMetadata = metadata
   result.didDocument = document
     ? exportToDidDocument(document, 'application/json')
     : { id: did }
 
-  if (alsoKnownAs) {
-    result.didDocument.alsoKnownAs = alsoKnownAs
+  if (web3Name) {
+    result.didDocument.alsoKnownAs = [`w3n:${web3Name}`]
   }
 
   return result
