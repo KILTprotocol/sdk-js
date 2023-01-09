@@ -9,7 +9,8 @@
  * @group unit/vc-js
  */
 
-import jsigs, { DocumentLoader, purposes } from 'jsonld-signatures'
+import jsigs from 'jsonld-signatures'
+import type { DocumentLoader, purposes } from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
 
@@ -36,7 +37,7 @@ let documentLoader: DocumentLoader
 
 beforeAll(async () => {
   suite = new Suite()
-  purpose = new purposes.AssertionProofPurpose()
+  purpose = new jsigs.purposes.AssertionProofPurpose()
   credential.proof.some((p) => {
     if (p.type === KILT_SELF_SIGNED_PROOF_TYPE) {
       proof = p as SelfSignedProof

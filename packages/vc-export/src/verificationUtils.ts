@@ -17,7 +17,7 @@ import jsonld from 'jsonld'
 import { ApiPromise } from '@polkadot/api'
 import { Attestation, CType } from '@kiltprotocol/core'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import { DocumentLoader } from 'jsonld-signatures'
+import type { DocumentLoader } from 'jsonld-signatures'
 import { verificationKeyTypesMap } from '@kiltprotocol/types'
 import {
   KILT_SELF_SIGNED_PROOF_TYPE,
