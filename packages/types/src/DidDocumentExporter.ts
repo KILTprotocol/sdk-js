@@ -92,9 +92,7 @@ export type ConformingDidDocument = {
 export type JsonLDDidDocument = ConformingDidDocument & { '@context': string[] }
 
 /**
- * DID Resolution Metadata returned by the DID `resolve` function as described by DID specifications.
- *
- * @link https://www.w3.org/TR/did-core/#did-resolution-metadata
+ * DID Resolution Metadata returned by the DID `resolve` function as described by DID specifications (https://www.w3.org/TR/did-core/#did-resolution-metadata).
  */
 export interface DidResolutionMetadata {
   error?: 'notFound' | 'invalidDid'
@@ -102,9 +100,7 @@ export interface DidResolutionMetadata {
 }
 
 /**
- * Object containing the return values of the DID `resolve` function as described by DID specifications.
- *
- * @link https://www.w3.org/TR/did-core/#did-resolution
+ * Object containing the return values of the DID `resolve` function as described by DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
  */
 export interface ConformingDidResolutionResult {
   didDocumentMetadata: Partial<DidResolutionDocumentMetadata>
