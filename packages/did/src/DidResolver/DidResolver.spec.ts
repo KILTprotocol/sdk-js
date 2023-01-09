@@ -256,7 +256,7 @@ describe('When resolving a service endpoint', () => {
 describe('When resolving a full DID', () => {
   it('correctly resolves the document with an authentication key', async () => {
     const fullDidWithAuthenticationKey = didWithAuthenticationKey
-    const { document, metadata } = (await resolve(
+    const { document, metadata, web3Name } = (await resolve(
       fullDidWithAuthenticationKey
     )) as DidResolutionResult
     if (document === undefined) throw new Error('Document unresolved')
@@ -272,6 +272,7 @@ describe('When resolving a full DID', () => {
         publicKey: new Uint8Array(32).fill(0),
       },
     ])
+    expect(web3Name).toBeUndefined()
   })
 
   it('correctly resolves the document with all keys', async () => {
@@ -366,6 +367,33 @@ describe('When resolving a full DID', () => {
         serviceEndpoint: ['x:url-id-2'],
       },
     ])
+  })
+
+  it('correctly resolves the document with web3Name', async () => {
+    // Mock transform function changed to return two service endpoints.
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          authentication: [generateAuthenticationKey()],
+          service: [],
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+        },
+        web3Name: 'w3nick',
+      }
+    })
+    const { document, metadata, web3Name } = (await resolve(
+      didWithAuthenticationKey
+    )) as DidResolutionResult
+    if (document === undefined) throw new Error('Document unresolved')
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+    })
+    expect(document.uri).toStrictEqual<DidUri>(didWithAuthenticationKey)
+    expect(web3Name).toStrictEqual('w3nick')
   })
 
   it('correctly resolves a non-existing DID', async () => {
@@ -580,6 +608,7 @@ describe('When resolving with the spec compliant resolver', () => {
           ],
           uri: `did:kilt:${identifier as unknown as KiltAddress}`,
         },
+        web3Name: 'w3nick',
       }
     })
   })
@@ -615,6 +644,7 @@ describe('When resolving with the spec compliant resolver', () => {
         serviceEndpoint: ['x:url-id-2'],
       },
     ])
+    expect(didDocument).toHaveProperty('alsoKnownAs', ['w3n:w3nick'])
   })
 
   it('correctly resolves a non-existing DID', async () => {
