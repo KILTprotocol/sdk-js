@@ -69,32 +69,34 @@ beforeAll(() => {
 
   // Mock `api.call.did.query(didUri)`
   // By default it returns a simple LinkedDidInfo with no web3name and no accounts linked.
-  jest.spyOn(mockedApi.call.did, 'query').mockImplementation((identifier) => {
-    return augmentedApi.createType('Option<RawDidLinkedInfo>', {
-      identifier,
-      accounts: [],
-      w3n: null,
-      serviceEndpoints: [
-        {
-          id: 'foo',
-          serviceTypes: ['type-service-1'],
-          urls: ['x:url-service-1'],
+  jest
+    .spyOn(mockedApi.call.did, 'query')
+    .mockImplementation(async (identifier) => {
+      return augmentedApi.createType('Option<RawDidLinkedInfo>', {
+        identifier,
+        accounts: [],
+        w3n: null,
+        serviceEndpoints: [
+          {
+            id: 'foo',
+            serviceTypes: ['type-service-1'],
+            urls: ['x:url-service-1'],
+          },
+        ],
+        details: {
+          authenticationKey: '01234567890123456789012345678901',
+          keyAgreementKeys: [],
+          delegationKey: null,
+          attestationKey: null,
+          publicKeys: [],
+          lastTxCounter: 123,
+          deposit: {
+            owner: addressWithAuthenticationKey,
+            amount: 0,
+          },
         },
-      ],
-      details: {
-        authenticationKey: '01234567890123456789012345678901',
-        keyAgreementKeys: [],
-        delegationKey: null,
-        attestationKey: null,
-        publicKeys: [],
-        lastTxCounter: 123,
-        deposit: {
-          owner: addressWithAuthenticationKey,
-          amount: 0,
-        },
-      },
+      })
     })
-  })
 })
 
 function generateAuthenticationKey(): DidVerificationKey {
@@ -370,7 +372,7 @@ describe('When resolving a full DID', () => {
     // RPC call changed to not return anything.
     jest
       .spyOn(mockedApi.call.did, 'query')
-      .mockRejectedValueOnce(
+      .mockResolvedValueOnce(
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
     const randomDid = getFullDidUriFromKey(
@@ -383,7 +385,7 @@ describe('When resolving a full DID', () => {
     // RPC call changed to not return anything.
     jest
       .spyOn(mockedApi.call.did, 'query')
-      .mockRejectedValueOnce(
+      .mockResolvedValueOnce(
         augmentedApi.createType('Option<RawDidLinkedInfo>', null)
       )
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
@@ -556,7 +558,14 @@ describe('When resolving a light DID', () => {
 })
 
 describe('When resolving with the spec compliant resolver', () => {
-  it('returns a spec-compliant DID document', async () => {
+  beforeAll(() => {
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockImplementation(async (identifier) => {
+        return augmentedApi.createType('Option<RawDidLinkedInfo>', {
+          identifier,
+        })
+      })
     // Mock transform function changed to return two service endpoints.
     jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
       const { identifier } = linkedInfo.unwrap()
@@ -573,9 +582,11 @@ describe('When resolving with the spec compliant resolver', () => {
         },
       }
     })
-    const fullDidWithAuthenticationKey = didWithAuthenticationKey
+  })
+
+  it('returns a spec-compliant DID document', async () => {
     const { didDocument, didDocumentMetadata, didResolutionMetadata } =
-      await resolveCompliant(fullDidWithAuthenticationKey)
+      await resolveCompliant(didWithAuthenticationKey)
     if (didDocument === undefined) throw new Error('Document unresolved')
 
     expect(didDocumentMetadata).toStrictEqual<DidResolutionDocumentMetadata>({
@@ -584,23 +595,22 @@ describe('When resolving with the spec compliant resolver', () => {
 
     expect(didResolutionMetadata).toStrictEqual({})
 
-    expect(didDocument.id).toStrictEqual<DidUri>(fullDidWithAuthenticationKey)
-    expect(didDocument.authentication).toStrictEqual<[ConformingDidKey]>([
-      {
-        id: `${fullDidWithAuthenticationKey}${'#auth'}`,
-        controller: fullDidWithAuthenticationKey,
-        type: 'Ed25519VerificationKey2018',
-        publicKeyBase58: base58Encode(new Uint8Array(32).fill(0)),
-      },
-    ])
+    expect(didDocument.id).toStrictEqual<DidUri>(didWithAuthenticationKey)
+    expect(didDocument.authentication).toStrictEqual(['#auth'])
+    expect(didDocument.verificationMethod).toContainEqual<ConformingDidKey>({
+      id: `${didWithAuthenticationKey}${'#auth'}`,
+      controller: didWithAuthenticationKey,
+      type: 'Ed25519VerificationKey2018',
+      publicKeyBase58: base58Encode(new Uint8Array(32).fill(0)),
+    })
     expect(didDocument.service).toStrictEqual<ConformingDidServiceEndpoint[]>([
       {
-        id: `${fullDidWithAuthenticationKey}#id-1`,
+        id: `${didWithAuthenticationKey}#id-1`,
         type: ['type-id-1'],
         serviceEndpoint: ['x:url-id-1'],
       },
       {
-        id: `${fullDidWithAuthenticationKey}#id-2`,
+        id: `${didWithAuthenticationKey}#id-2`,
         type: ['type-id-2'],
         serviceEndpoint: ['x:url-id-2'],
       },
@@ -610,8 +620,8 @@ describe('When resolving with the spec compliant resolver', () => {
   it('correctly resolves a non-existing DID', async () => {
     // RPC call changed to not return anything.
     jest
-      .spyOn(mockedApi.call.didApi, 'queryDid')
-      .mockRejectedValueOnce(
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValueOnce(
         augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
       )
     const randomDid = getFullDidUriFromKey(
@@ -629,8 +639,8 @@ describe('When resolving with the spec compliant resolver', () => {
   it('correctly resolves a deleted DID', async () => {
     // RPC call changed to not return anything.
     jest
-      .spyOn(mockedApi.call.didApi, 'queryDid')
-      .mockRejectedValueOnce(
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValueOnce(
         augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
       )
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
