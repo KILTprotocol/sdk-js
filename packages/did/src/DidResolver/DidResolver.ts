@@ -6,7 +6,7 @@
  */
 
 import type {
-  DidDocument,
+  ConformingDidResolutionResult,
   DidKey,
   DidResolutionResult,
   DidResourceUri,
@@ -23,6 +23,7 @@ import * as Did from '../index.js'
 import { toChain } from '../Did.chain.js'
 import { linkedInfoFromChain } from '../Did.rpc.js'
 import { getFullDidUri, parse } from '../Did.utils.js'
+import { exportToDidDocument } from '../DidDocumentExporter/DidDocumentExporter.js'
 
 /**
  * Resolve a DID URI to the DID document and its metadata.
@@ -43,13 +44,9 @@ export async function resolve(
     throw new Error(
       `This version of the KILT sdk supports runtime api '${section}' <=v2 , but the blockchain runtime implements ${version}. Please upgrade!`
     )
-  let document: DidDocument | undefined
-  try {
-    const encodedLinkedInfo = await queryFunction(toChain(did))
-    document = linkedInfoFromChain(encodedLinkedInfo).document
-  } catch {
-    // ignore errors
-  }
+  const { document, web3Name } = await queryFunction(toChain(did))
+    .then(linkedInfoFromChain)
+    .catch(() => ({ document: undefined, web3Name: undefined }))
 
   if (type === 'full' && document) {
     return {
@@ -57,6 +54,7 @@ export async function resolve(
       metadata: {
         deactivated: false,
       },
+      ...(web3Name && { web3Name }),
     }
   }
 
@@ -96,6 +94,51 @@ export async function resolve(
       deactivated: false,
     },
   }
+}
+
+/**
+ * Implementation of `resolve` compliant with W3C DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ * As opposed to `resolve`, which takes a more pragmatic approach, the `didDocument` property contains a fully compliant DID document abstract data model.
+ * Additionally, this function returns an id-only DID document in the case where a DID has been deleted or upgraded.
+ * If a DID is invalid or has not been registered, this is indicated by the `error` property on the `didResolutionMetadata`.
+ *
+ * @param did The DID to resolve.
+ * @returns An object with the properties `didDocument` (a spec-conforming DID document or `undefined`), `didDocumentMetadata` (equivalent to `metadata` returned by [[resolve]]), as well as `didResolutionMetadata` (indicating an `error` if any).
+ */
+export async function resolveCompliant(
+  did: DidUri
+): Promise<ConformingDidResolutionResult> {
+  const result: ConformingDidResolutionResult = {
+    didDocumentMetadata: {},
+    didResolutionMetadata: {},
+  }
+  try {
+    Did.validateUri(did, 'Did')
+  } catch (error) {
+    result.didResolutionMetadata.error = 'invalidDid'
+    if (error instanceof Error) {
+      result.didResolutionMetadata.errorMessage =
+        error.name + error.message ? `: ${error.message}` : ''
+    }
+    return result
+  }
+  const resolutionResult = await resolve(did)
+  if (!resolutionResult) {
+    result.didResolutionMetadata.error = 'notFound'
+    result.didResolutionMetadata.errorMessage = `DID ${did} not found (on chain)`
+    return result
+  }
+  const { metadata, document, web3Name } = resolutionResult
+  result.didDocumentMetadata = metadata
+  result.didDocument = document
+    ? exportToDidDocument(document, 'application/json')
+    : { id: did }
+
+  if (web3Name) {
+    result.didDocument.alsoKnownAs = [`w3n:${web3Name}`]
+  }
+
+  return result
 }
 
 /**
