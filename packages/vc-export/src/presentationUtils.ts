@@ -6,8 +6,9 @@
  */
 
 import { DidResourceUri, DidUri, KeyringPair } from '@kiltprotocol/types'
-import { toString } from 'uint8arrays'
-import { stringToU8a } from '@polkadot/util'
+import { toString, fromString } from 'uint8arrays'
+import { stringToU8a, u8aToString } from '@polkadot/util'
+import { verifyDidSignature } from '@kiltprotocol/did'
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_PRESENTATION_TYPE,
@@ -17,7 +18,7 @@ import type { VerifiableCredential, VerifiablePresentation } from './types.js'
 /**
  * Checks that an identity can act as a legitimate holder of a set of credentials and thus include them in a presentation they sign.
  * Credentials where `nonTransferable === true` and `credentialSubject.id !== holder` are disallowed and will cause this to fail.
- * 
+ *
  * @param holder A DID.
  * @param credentials An array of credentials.
  */
@@ -59,6 +60,10 @@ export function makePresentation(
 
 function encodeBase64url(bytes: Uint8Array): string {
   return toString(bytes, 'base64url')
+}
+
+function decodeBase64url(encoded: string): Uint8Array {
+  return fromString(encoded, 'base64url')
 }
 
 export function signPresentationJWT(
@@ -109,4 +114,47 @@ export function signPresentationJWT(
   const signature = encodeBase64url(signingKey.sign(stringToU8a(signData)))
 
   return `${signData}.${signature}`
+}
+
+export async function verifyJwtPresentation(
+  jwt: string,
+  { audience, challenge }: { audience?: string; challenge?: string }
+) {
+  const parts = jwt.match(
+    /^([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)$/
+  )
+  if (!parts) throw new Error('not a valid JWT')
+  const message = `${parts[1]}.${parts[2]}`
+  const signature = decodeBase64url(parts[3])
+  const header = JSON.parse(u8aToString(decodeBase64url(parts[1])))
+  const payload = JSON.parse(u8aToString(decodeBase64url(parts[2])))
+  await verifyDidSignature({
+    message,
+    signature,
+    keyUri: header.kid,
+    expectedSigner: payload.iss,
+  })
+  if (audience && payload.aud !== audience)
+    throw new Error('expected audience not matching presentation')
+  if (challenge && payload.nonce !== challenge)
+    throw new Error('expected challenge not matching presentation')
+  const now = Date.now() / 1000
+  if (typeof payload.nbf === 'number' && payload.nbf > now)
+    throw new Error('Time of validity is in the future')
+  if (typeof payload.exp === 'number' && payload.exp < now)
+    throw new Error('Time of validity is in the past')
+  const presentation: VerifiablePresentation = {
+    ...payload.vp,
+    holder: payload.iss,
+    ...(typeof payload.jti === 'string' && { id: payload.jti }),
+  }
+  const credentials = Array.isArray(presentation.verifiableCredential)
+    ? presentation.verifiableCredential
+    : [presentation.verifiableCredential]
+  assertHolderCanPresentCredentials(presentation.holder, credentials)
+  return {
+    presentation,
+    payload,
+    header,
+  }
 }
