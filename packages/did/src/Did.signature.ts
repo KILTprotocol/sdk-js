@@ -5,7 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { isHex } from '@polkadot/util'
+import { isHex, stringToU8a } from '@polkadot/util'
+import { signatureVerify } from '@polkadot/util-crypto'
 
 import {
   DidResolveKey,
@@ -14,12 +15,18 @@ import {
   DidUri,
   SignResponseData,
   VerificationKeyRelationship,
+  VerificationKeyType,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
 import { resolveKey } from './DidResolver/index.js'
 import { parse, validateUri } from './Did.utils.js'
 
+export type VerifierFunction = (
+  message: Uint8Array,
+  signature: Uint8Array,
+  publicKey: Uint8Array
+) => boolean
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
   signature: Uint8Array
@@ -28,6 +35,7 @@ export type DidSignatureVerificationInput = {
   allowUpgraded?: boolean
   expectedVerificationMethod?: VerificationKeyRelationship
   didResolveKey?: DidResolveKey
+  verifiers?: Record<VerificationKeyType, VerifierFunction>
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
@@ -54,6 +62,14 @@ function verifyDidSignatureDataStructure(
   validateUri(keyUri, 'ResourceUri')
 }
 
+const polkadotVerify: VerifierFunction = (message, signature, publicKey) =>
+  signatureVerify(message, signature, publicKey).isValid
+const polkadotVerifiers: Record<VerificationKeyType, VerifierFunction> = {
+  ecdsa: polkadotVerify,
+  ed25519: polkadotVerify,
+  sr25519: polkadotVerify,
+}
+
 /**
  * Verify a DID signature given the key URI of the signature.
  * A signature verification returns false if a migrated and then deleted DID is used.
@@ -66,6 +82,7 @@ function verifyDidSignatureDataStructure(
  * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
  * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
+ * @param input.verifiers An object mapping key types to a verification function. Defaults to using polkadot-js's `signatureVerify` for all known key types.
  */
 export async function verifyDidSignature({
   message,
@@ -75,6 +92,7 @@ export async function verifyDidSignature({
   allowUpgraded = false,
   expectedVerificationMethod,
   didResolveKey = resolveKey,
+  verifiers = polkadotVerifiers,
 }: DidSignatureVerificationInput): Promise<void> {
   // checks if key uri points to the right did; alternatively we could check the key's controller
   const signer = parse(keyUri)
@@ -96,9 +114,22 @@ export async function verifyDidSignature({
     }
   }
 
-  const { publicKey } = await didResolveKey(keyUri, expectedVerificationMethod)
-
-  Crypto.verify(message, signature, publicKey)
+  const { publicKey, type } = await didResolveKey(
+    keyUri,
+    expectedVerificationMethod
+  )
+  if (!Object.hasOwn(verifiers, type))
+    throw new Error(
+      `no signature verification function available for key type ${type}`
+    )
+  if (
+    verifiers[type](
+      typeof message === 'string' ? stringToU8a(message) : message,
+      signature,
+      publicKey
+    ) !== true
+  )
+    throw new SDKErrors.SignatureUnverifiableError()
 }
 
 /**

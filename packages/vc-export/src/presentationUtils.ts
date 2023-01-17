@@ -5,10 +5,20 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidResourceUri, DidUri, KeyringPair } from '@kiltprotocol/types'
+import {
+  DidResourceUri,
+  DidUri,
+  VerificationKeyType,
+} from '@kiltprotocol/types'
 import { toString, fromString } from 'uint8arrays'
 import { stringToU8a, u8aToString } from '@polkadot/util'
-import { verifyDidSignature } from '@kiltprotocol/did'
+import { VerifierFunction, verifyDidSignature } from '@kiltprotocol/did'
+import {
+  signSync as secp256k1Sign,
+  verify as secp256k1Verify,
+} from '@noble/secp256k1'
+import { ed25519Sign, ed25519Verify, sha256AsU8a } from '@polkadot/util-crypto'
+import { AnyJson } from '@polkadot/types/types/codec.js'
 import {
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_PRESENTATION_TYPE,
@@ -25,7 +35,7 @@ import type { VerifiableCredential, VerifiablePresentation } from './types.js'
 export function assertHolderCanPresentCredentials(
   holder: DidUri,
   credentials: VerifiableCredential[]
-) {
+): void {
   credentials.forEach(({ nonTransferable, credentialSubject, id }) => {
     if (nonTransferable && credentialSubject.id !== holder)
       throw new Error(
@@ -66,10 +76,43 @@ function decodeBase64url(encoded: string): Uint8Array {
   return fromString(encoded, 'base64url')
 }
 
+type supportedKeys = 'ed25519' | 'ecdsa'
+
+const signers: Record<
+  supportedKeys,
+  (data: Uint8Array, secretKey: Uint8Array) => Uint8Array
+> = {
+  ecdsa: (data, secretKey) =>
+    secp256k1Sign(sha256AsU8a(data), secretKey, {
+      recovered: false,
+      canonical: true,
+      der: false,
+    }),
+  ed25519: (data, secretKey) => ed25519Sign(data, { secretKey }, true),
+}
+
+/**
+ * Signs a presentation in its JWT rendering.
+ *
+ * @param presentation The VerifiablePresentation (without proof).
+ * @param signingKey Key object required for signing.
+ * @param signingKey.secretKey The bytes of the secret key.
+ * @param signingKey.keyUri The key uri by which the public key can be looked up from a DID document.
+ * @param signingKey.type The key type. Ed25519 and ecdsa (secp256k1) are supported.
+ * @param options Additional optional configuration.
+ * @param options.validFrom Timestamp (in ms since the epoch) indicating the earliest point in time where the presentation becomes valid. Defaults to the current time.
+ * @param options.expiresIn Duration of validity of the presentation in ms. If omitted, the presentation's validity is unlimited.
+ * @param options.challenge Optional challenge provided by a verifier that can be used to prevent replay attacks.
+ * @param options.audience Identifier of the verifier to prevent unintended re-use of the presentation.
+ * @returns A signed JWT in compact representation containing a VerifiablePresentation.
+ */
 export function signPresentationJWT(
-  signingKey: KeyringPair,
-  signingKeyUri: DidResourceUri,
   presentation: VerifiablePresentation,
+  signingKey: {
+    secretKey: Uint8Array
+    keyUri: DidResourceUri
+    type: supportedKeys
+  },
   {
     validFrom = Date.now(),
     expiresIn,
@@ -95,15 +138,13 @@ export function signPresentationJWT(
     nonce: challenge,
   })
 
-  const alg = {
-    ecdsa: 'ES256K',
-    ed25519: 'EdDSA',
-    sr25519: 'EdDSA',
-    ethereum: 'ES256K',
-  }[signingKey.type]
+  const { type, keyUri, secretKey } = signingKey
+  const alg = { ecdsa: 'ES256K', ed25519: 'EdDSA' }[type]
+  if (!alg)
+    throw new Error(`no signature algorithm available for key type ${type}`)
   const jwtHeader = JSON.stringify({
     alg,
-    kid: signingKeyUri,
+    kid: keyUri,
     type: 'JWT',
   })
 
@@ -111,15 +152,39 @@ export function signPresentationJWT(
     stringToU8a(jwtHeader)
   )}.${encodeBase64url(stringToU8a(jwtClaims))}`
 
-  const signature = encodeBase64url(signingKey.sign(stringToU8a(signData)))
+  const signature = encodeBase64url(
+    signers[type](stringToU8a(signData), secretKey)
+  )
 
   return `${signData}.${signature}`
 }
 
+const verifiers: Record<VerificationKeyType, VerifierFunction> = {
+  ecdsa: (message, signature, publicKey) =>
+    secp256k1Verify(signature, sha256AsU8a(message), publicKey),
+  ed25519: ed25519Verify,
+  sr25519: () => {
+    throw new Error('not implemented')
+  },
+}
+
+/**
+ * Verifies a JWT rendering of a VerifiablePresentation.
+ *
+ * @param jwt The JWT in compact (string) encoding.
+ * @param options Optional configuration.
+ * @param options.audience Expected audience. Verification fails if the aud claim in the JWT is not equal to this value.
+ * @param options.challenge Expected challenge. Verification fails if the nonce claim in the JWT is not equal to this value.
+ * @returns The VerifiablePresentation (without proof), the decoded JWT payload containing all claims, and the decoded JWT header.
+ */
 export async function verifyJwtPresentation(
   jwt: string,
   { audience, challenge }: { audience?: string; challenge?: string }
-) {
+): Promise<{
+  presentation: VerifiablePresentation
+  payload: Record<string, AnyJson>
+  header: Record<string, AnyJson>
+}> {
   const parts = jwt.match(
     /^([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)$/
   )
@@ -133,6 +198,7 @@ export async function verifyJwtPresentation(
     signature,
     keyUri: header.kid,
     expectedSigner: payload.iss,
+    verifiers,
   })
   if (audience && payload.aud !== audience)
     throw new Error('expected audience not matching presentation')
