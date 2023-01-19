@@ -123,12 +123,16 @@ export function fromInput({
 
   // transform & annotate claim to be json-ld and VC conformant
   const credentialSubject = {
-    '@context': { '@vocab': cType.$id },
+    '@context': { '@vocab': `${cType.$id}#` },
     id: subject,
   }
 
   Object.entries(claims).forEach(([key, claim]) => {
-    credentialSubject[`#${key}`] = claim
+    if (key.startsWith('@') || key === 'id' || key === 'type') {
+      credentialSubject[`${cType.$id}#${key}`] = claim
+    } else {
+      credentialSubject[key] = claim
+    }
   })
 
   const credentialSchema: JsonSchemaValidator2018 = {
@@ -384,9 +388,12 @@ export function jsonLdExpandCredentialSubject<
   const expandedContents = {}
   const vocabulary = credentialSubject['@context']['@vocab']
   Object.entries(credentialSubject).forEach(([key, value]) => {
-    if (key === 'id' || key === '@id') {
-      expandedContents['@id'] = value
-    } else if (!key.startsWith('@')) {
+    if (key === '@context') return
+    if (key === 'id' || key === 'type') {
+      expandedContents[`@${key}`] = value
+    } else if (key.startsWith(vocabulary) || key.startsWith('@')) {
+      expandedContents[key] = value
+    } else {
       expandedContents[vocabulary + key] = value
     }
   })

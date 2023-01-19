@@ -140,9 +140,9 @@ it('exports credential to VC', () => {
     type: DEFAULT_CREDENTIAL_TYPES,
     credentialSubject: {
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
-      '#birthday': '1991-01-01',
-      '#name': 'Kurt',
-      '#premium': true,
+      birthday: '1991-01-01',
+      name: 'Kurt',
+      premium: true,
     },
     id: credentialIdFromRootHash(
       hexToU8a(
@@ -217,9 +217,9 @@ it('VC has correct format (full example)', () => {
         '@vocab': expect.any(String),
       },
       id: expect.any(String),
-      '#birthday': '1991-01-01',
-      '#name': 'Kurt',
-      '#premium': true,
+      birthday: '1991-01-01',
+      name: 'Kurt',
+      premium: true,
     },
     id: expect.any(String),
     issuanceDate: expect.any(String),
@@ -263,7 +263,7 @@ describe('proofs', () => {
     )
     expect(() => validateSchema(VCWithSchema)).not.toThrow()
 
-    VCWithSchema.credentialSubject['#name'] = 5
+    VCWithSchema.credentialSubject.name = 5
 
     expect(() => validateSchema(VCWithSchema)).toThrow()
   })

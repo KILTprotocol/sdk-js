@@ -9,6 +9,7 @@
 
 import { CType } from '@kiltprotocol/core'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { jsonLdExpandCredentialSubject } from './KiltCredentialV1.js'
 import type { VerifiableCredential } from './types.js'
 
 export interface VerificationResult {
@@ -38,15 +39,18 @@ export function validateSchema(credential: VerifiableCredential): void {
     throw new Error(
       'Schema validation can only be performed if schema is present in credentialSchema'
     )
-  // there's no rule against additional properties, so we can just validate the ones that are there
-  const claims = Object.entries(credential.credentialSubject).reduce(
-    (obj, [key, value]) => {
-      if (key.startsWith('#')) {
-        return { ...obj, [key.substring(1)]: value }
-      }
-      return obj
-    },
-    {}
+
+  const expandedClaims: Record<string, unknown> = jsonLdExpandCredentialSubject(
+    credential.credentialSubject
   )
+  delete expandedClaims['@id']
+  const vocab = `${schema.$id}#`
+  const claims = Object.entries(expandedClaims).reduce((obj, [key, value]) => {
+    return {
+      ...obj,
+      [key.startsWith(vocab) ? key.substring(vocab.length) : key]: value,
+    }
+  }, {})
+
   CType.verifyClaimAgainstSchema(claims, schema)
 }
