@@ -107,7 +107,7 @@ function extractCTypeCreationCallsFromDidCall(
   const extrinsicCalls = flattenCalls(api, call)
   return extrinsicCalls.filter(
     (c): c is GenericCall<typeof api.tx.ctype.add.args> =>
-      api.tx.publicCredentials.add.is(c)
+      api.tx.ctype.add.is(c)
   )
 }
 
