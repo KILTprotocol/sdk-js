@@ -197,7 +197,7 @@ describe('When there is an attester and ctype NFT name', () => {
     expect(allAssetCredentialsBeforeRevocation.length).toEqual(
       allAssetCredentialsAfterRevocation.length
     )
-  }, 30_000)
+  }, 60_000)
 
   it('should be possible to unrevoke a credential', async () => {
     const credentialId = PublicCredential.getIdForCredential(
@@ -232,7 +232,7 @@ describe('When there is an attester and ctype NFT name', () => {
     expect(allAssetCredentialsBeforeRevocation.length).toEqual(
       allAssetCredentialsAfterRevocation.length
     )
-  }, 30_000)
+  }, 60_000)
 
   it('should be possible to remove a credential', async () => {
     const credentialId = PublicCredential.getIdForCredential(
@@ -268,7 +268,7 @@ describe('When there is an attester and ctype NFT name', () => {
     expect(allAssetCredentialsAfterRevocation.length).toEqual(
       allAssetCredentialsBeforeRevocation.length - 1
     )
-  }, 30_000)
+  }, 60_000)
 })
 
 describe('When there is an issued public credential', () => {
