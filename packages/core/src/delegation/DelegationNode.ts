@@ -341,14 +341,15 @@ export class DelegationNode implements IDelegationNode {
   /**
    * Checks on chain whether an identity with the given DID is delegating to the current node.
    *
-   * @param did The DID to search for.
+   * @param dids A DID or an array of DIDs to search for.
    *
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    did: DidUri
+    dids: DidUri | DidUri[]
   ): Promise<{ steps: number; node: DelegationNode | null }> {
-    if (this.account === did) {
+    const acceptedDids = Array.isArray(dids) ? dids : [dids]
+    if (acceptedDids.includes(this.account)) {
       return {
         steps: 0,
         node: this,
@@ -362,7 +363,7 @@ export class DelegationNode implements IDelegationNode {
     }
     try {
       const parent = await fetch(this.parentId)
-      const result = await parent.findAncestorOwnedBy(did)
+      const result = await parent.findAncestorOwnedBy(acceptedDids)
       result.steps += 1
       return result
     } catch {
