@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -14,6 +14,7 @@ import {
   EncryptionKeyType,
   VerificationKeyType,
 } from './DidDocument.js'
+import { DidResolutionDocumentMetadata } from './DidResolver.js'
 
 export type ConformingDidDocumentKeyType =
   | 'Ed25519VerificationKey2018'
@@ -82,9 +83,28 @@ export type ConformingDidDocument = {
   keyAgreement?: [DidEncryptionKey['id']]
   capabilityDelegation?: [DidVerificationKey['id']]
   service?: ConformingDidServiceEndpoint[]
+  alsoKnownAs?: [`w3n:${string}`]
 }
 
 /**
  * A JSON+LD DID Document that extends a traditional DID Document with additional semantic information.
  */
 export type JsonLDDidDocument = ConformingDidDocument & { '@context': string[] }
+
+/**
+ * DID Resolution Metadata returned by the DID `resolve` function as described by DID specifications (https://www.w3.org/TR/did-core/#did-resolution-metadata).
+ */
+export interface DidResolutionMetadata {
+  error?: 'notFound' | 'invalidDid'
+  errorMessage?: string
+}
+
+/**
+ * Object containing the return values of the DID `resolve` function as described by DID specifications (https://www.w3.org/TR/did-core/#did-resolution).
+ */
+export interface ConformingDidResolutionResult {
+  didDocumentMetadata: Partial<DidResolutionDocumentMetadata>
+  didResolutionMetadata: DidResolutionMetadata
+  didDocument?: Partial<ConformingDidDocument> &
+    Pick<ConformingDidDocument, 'id'>
+}
