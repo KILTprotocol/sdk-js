@@ -46,7 +46,7 @@ export function idToChain(cTypeId: ICType['$id']): CTypeHash {
   return idToHash(cTypeId)
 }
 
-// Transform a blockchain-formatted CType input (represented as Bytes) into the original [[IPublicCredentialInput]].
+// Transform a blockchain-formatted CType input (represented as Bytes) into the original [[ICType]].
 // It throws if what was written on the chain was garbage.
 function cTypeInputFromChain(input: Bytes): ICType {
   try {
@@ -124,7 +124,7 @@ function extractDidCallsFromBatchCall(
 }
 
 /**
- * Combines on-chain and off-chain information for a CType to fetch the CType definition`.
+ * Resolves a CType identifier to the CType definition by fetching data from the block containing the transaction that registered the CType on chain.
  *
  * @param cTypeId CType ID to use for the query. It is required to complement the information stored on the blockchain in a [[CtypeCtypeEntry]].
  *
