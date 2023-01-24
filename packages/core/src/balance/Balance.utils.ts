@@ -120,7 +120,7 @@ export function toFemtoKilt(
     throw new Error(
       `Too many decimal places: input with unit "${unit}" and value "${stringRepresentation}" exceeds the ${
         unitVal + 15
-      } possible decimal places by ${fraction.length - unitVal + 15}`
+      } possible decimal places by ${fraction.length - (unitVal + 15)}`
     )
   }
   const fractionBN = fraction

@@ -258,6 +258,11 @@ describe('toFemtoKilt', () => {
     expect(() => toFemtoKilt('').toString()).toThrowError()
     expect(() => toFemtoKilt('.').toString()).toThrowError()
     expect(() => toFemtoKilt('1.').toString()).toThrowError()
+    expect(() =>
+      toFemtoKilt('-0.0000001', 'nano').toString()
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Too many decimal places: input with unit \\"nano\\" and value \\"-0.0000001\\" exceeds the 6 possible decimal places by 1"`
+    )
     expect(toFemtoKilt('-0').toString()).toEqual(new BN('0').toString())
     expect(toFemtoKilt('-0.000001', 'nano').toString()).toEqual(
       new BN('-1').toString()
