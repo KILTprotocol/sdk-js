@@ -5,13 +5,24 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
-import { Attestation, CType } from '@kiltprotocol/core'
-import { validateUri } from '@kiltprotocol/did'
-import type { IAttestation, ICredential } from '@kiltprotocol/types'
-import { JsonSchema } from '@kiltprotocol/utils'
+import type {
+  FrameSystemEventRecord,
+  RuntimeCommonAuthorizationAuthorizationId,
+} from '@kiltprotocol/augment-api'
+import { CType } from '@kiltprotocol/core'
+import { getFullDidUri, validateUri } from '@kiltprotocol/did'
+import type {
+  DidUri,
+  ICredential,
+  ICType,
+  IDelegationNode,
+} from '@kiltprotocol/types'
+import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import type { ApiPromise } from '@polkadot/api'
-import type { Option } from '@polkadot/types'
+import type { QueryableStorageEntry } from '@polkadot/api/types/storage.js'
+import type { Option, u64, Vec } from '@polkadot/types'
+import type { AccountId, Hash } from '@polkadot/types/interfaces/types.js'
+import type { IEventData } from '@polkadot/types/types/events.js'
 import {
   hexToU8a,
   stringToU8a,
@@ -19,7 +30,12 @@ import {
   u8aConcatStrict,
   u8aToHex,
 } from '@polkadot/util'
-import { base58Decode, base58Encode, blake2AsU8a } from '@polkadot/util-crypto'
+import {
+  base58Decode,
+  base58Encode,
+  blake2AsU8a,
+  encodeAddress,
+} from '@polkadot/util-crypto'
 import { Caip2, Caip19 } from './CAIP/index.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
@@ -151,25 +167,63 @@ export function normalizeClaims(
   }
 }
 
-async function getOnChainAttestationData(
+async function verifyAttestedAt(
   api: ApiPromise,
-  rootHash: Uint8Array,
-  block: Uint8Array
+  claimHash: Uint8Array,
+  blockHash: Uint8Array
 ): Promise<{
-  encoded: Option<AttestationAttestationsAttestationDetails>
-  decoded: IAttestation
+  verified: boolean
   timestamp: number
+  attester: DidUri
+  cTypeId: ICType['$id']
+  delegationId: IDelegationNode['id'] | null
 }> {
-  const apiAtBlock = await api.at(block)
-  const [timestamp, encoded] = await Promise.all([
-    apiAtBlock.query.timestamp.now(),
-    apiAtBlock.query.attestation.attestations(rootHash),
+  const apiAt = await api.at(blockHash)
+  // TODO: should we look up attestation storage as well and take attestation info from there? That gives us the definitive attestation state in this block (e.g. makes sure it hasn't been removed after)
+  const [events, time] = await apiAt.queryMulti<
+    [Vec<FrameSystemEventRecord>, u64]
+  >([
+    [api.query.system.events as QueryableStorageEntry<'promise'>],
+    [api.query.timestamp.now as QueryableStorageEntry<'promise'>],
   ])
-  if (timestamp.isEmpty || encoded.isNone)
-    throw new Error("Attestation data not found at 'block'")
-  // 15. compare attestation info to credential
-  const decoded = Attestation.fromChain(encoded, u8aToHex(rootHash))
-  return { encoded, decoded, timestamp: timestamp.toNumber() }
+
+  const timestamp = time.toNumber()
+  const attestationEvent = events
+    .reverse()
+    .find(
+      ({ phase, event }) =>
+        phase.isApplyExtrinsic &&
+        api.events.attestation.AttestationCreated.is(event) &&
+        u8aCmp(event.data[1], claimHash) === 0
+    )
+  if (!attestationEvent)
+    throw new SDKErrors.CredentialUnverifiableError(
+      `Matching attestation event for root hash ${u8aToHex(
+        claimHash
+      )} not found at block ${u8aToHex(blockHash)}`
+    )
+  const [att, , cTypeHash, authorization] = attestationEvent.event.data as [
+    AccountId,
+    Hash,
+    Hash,
+    Option<Hash> | Option<RuntimeCommonAuthorizationAuthorizationId>
+  ] &
+    IEventData
+  const attester = getFullDidUri(encodeAddress(att.toU8a(), 38))
+  const cTypeId = CType.hashToId(cTypeHash.toHex())
+  const delegationId = authorization.isSome
+    ? (
+        (authorization.unwrap() as RuntimeCommonAuthorizationAuthorizationId)
+          .value ?? authorization.unwrap()
+      ).toHex()
+    : null
+  return {
+    verified: true,
+    timestamp,
+    attester,
+    cTypeId,
+    delegationId,
+  }
 }
 
 function assertMatchingConnection(
@@ -279,23 +333,17 @@ export async function verifyProof(
   // 13. check that api is connected to the right network
   const apiChainId = assertMatchingConnection(api, credential)
   // 14. query info from chain
-  const { decoded: attestation, timestamp } = await getOnChainAttestationData(
-    api,
-    rootHash,
-    base58Decode(proof.block)
-  )
-  const onChainCType = CType.hashToId(attestation.cTypeHash)
-  if (
-    attestation.owner !== issuer ||
-    onChainCType !== credential.credentialSchema.id
-  ) {
+  const {
+    cTypeId: onChainCType,
+    attester,
+    timestamp,
+    delegationId,
+  } = await verifyAttestedAt(api, rootHash, base58Decode(proof.block))
+
+  if (attester !== issuer || onChainCType !== credential.credentialSchema.id) {
     throw new Error(
-      `Credential not matching on-chain data: issuer "${attestation.owner}", CType: "${onChainCType}"`
+      `Credential not matching on-chain data: issuer "${attester}", CType: "${onChainCType}"`
     )
-  }
-  // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
-  if (attestation.revoked !== false) {
-    throw new Error('Attestation revoked')
   }
   // 16. Check timestamp
   if (timestamp !== new Date(credential.issuanceDate).getTime())
@@ -319,10 +367,7 @@ export async function verifyProof(
           )
         if (
           chainId !== apiChainId ||
-          u8aCmp(
-            base58Decode(assetInstance),
-            hexToU8a(attestation.delegationId)
-          ) !== 0
+          u8aCmp(base58Decode(assetInstance), hexToU8a(delegationId)) !== 0
         )
           throw new Error(`Delegation ${i.id} does not match on-chain records`)
         // TODO: check delegators
@@ -416,54 +461,4 @@ export function deriveProof(
     credential: { ...remainder, credentialSubject: reducedSubject },
     proof: { ...proofInput, revealProof },
   }
-}
-
-/**
- * Produces a derived proof with an updated block number on the proof and issuedAt timestamp on the credential.
- * Optionally allows removing claims from the proof and credential for selective disclosure.
- *
- * @param api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
- * @param credentialInput The original credentialSubject.
- * @param proofInput The original proof.
- * @param disclosedClaims Optional array of credentialSubject keys identifying claims to be disclosed. If omitted, all claims on credentialInput are disclosed.
- * @param atBlock Optional block hash at which the proof is verifiable (detemines issuedAt). Defaults to the latest finalized block.
- * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `revealProof` entries for these.
- */
-export async function deriveProofAt(
-  api: ApiPromise,
-  credentialInput: VerifiableCredential,
-  proofInput: KiltAttestationProofV1,
-  disclosedClaims?: Array<keyof CredentialSubject>,
-  atBlock?: Uint8Array
-): Promise<{
-  credential: VerifiableCredential
-  proof: KiltAttestationProofV1
-}> {
-  assertMatchingConnection(api, credentialInput)
-  const { id, issuer, credentialSchema } = credentialInput
-  const block = atBlock ?? (await api.rpc.chain.getFinalizedHead())
-  const { decoded, timestamp } = await getOnChainAttestationData(
-    api,
-    credentialIdToRootHash(id),
-    block
-  )
-  const onChainCType = CType.hashToId(decoded.cTypeHash)
-  if (decoded.owner !== issuer || onChainCType !== credentialSchema.id) {
-    throw new Error(
-      `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`
-    )
-  }
-  if (decoded.revoked !== false) {
-    throw new Error('Attestation revoked')
-  }
-  const credential = {
-    ...credentialInput,
-    timestamp: new Date(timestamp).toISOString(),
-  }
-  delete credential.proof
-  const proof = { ...proofInput, block: base58Encode(block) }
-  if (!disclosedClaims) {
-    return { credential, proof }
-  }
-  return deriveProof(credential, proof, disclosedClaims)
 }
