@@ -17,6 +17,7 @@
  * @packageDocumentation
  */
 
+import { ConfigService } from '@kiltprotocol/config'
 import {
   isDidSignature,
   verifyDidSignature,
@@ -26,6 +27,7 @@ import {
 } from '@kiltprotocol/did'
 import type {
   DidResolveKey,
+  DidUri,
   Hash,
   IAttestation,
   IClaim,
@@ -36,9 +38,11 @@ import type {
   SignCallback,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import * as Attestation from '../attestation/index.js'
 import * as Claim from '../claim/index.js'
 import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
+import { DelegationNode } from '../delegation/DelegationNode.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)
@@ -293,6 +297,8 @@ type VerifyOptions = {
 
 /**
  * Verifies data structure & data integrity of a credential object.
+ * THIS DOES NOT VERIFY THAT A CREDENTIAL HAS BEEN ATTESTED, OR BY WHOM!
+ * For this, you need to call [[verifyAttestation]].
  *
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
@@ -312,8 +318,9 @@ export async function verifyCredential(
 
 /**
  * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
+ * THIS DOES NOT VERIFY THAT A CREDENTIAL HAS BEEN ATTESTED, OR BY WHOM!
  *
- * Upon presentation of a credential, a verifier would call this function.
+ * Upon presentation of a credential, a verifier would call this function, then call [[verifyAttestation]] to check the credential's attestation status.
  *
  * @param presentation - The object to check.
  * @param options - Additional parameter for more verification steps.
@@ -330,6 +337,43 @@ export async function verifyPresentation(
     challenge,
     didResolveKey,
   })
+}
+
+/**
+ * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attester is unknown.
+ *
+ * @param credential The [[ICredential]] whose attestation status should be checked.
+ * @param trustedAttesters A list of one or more attesters who are accepted as issuers of the credential. If the actual attester is not in trustedAttesters, and this is not a delegated attestation, verification fails.
+ * @param trustedDelegators An optional list of accepted delegators. If this is a delegated attestation and its issuer is not trusted, verification will still be successful if any of these identities is the owner of an ancestor node in the delegation tree.
+ */
+export async function verifyAttestation(
+  credential: ICredential,
+  trustedAttesters: DidUri[],
+  trustedDelegators: DidUri[] = []
+): Promise<void> {
+  const api = ConfigService.get('api')
+  const { rootHash } = credential
+  const maybeAttestation = await api.query.attestation.attestations(rootHash)
+  if (maybeAttestation.isNone)
+    throw new SDKErrors.CredentialUnverifiableError('Attestation not found')
+  const attestation = Attestation.fromChain(maybeAttestation, rootHash)
+  if (
+    credential.claim.cTypeHash !== attestation.cTypeHash ||
+    credential.delegationId !== attestation.delegationId
+  ) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Attestation does not match credential'
+    )
+  }
+  if (attestation.revoked)
+    throw new SDKErrors.RevokedTypeError('Attestation revoked')
+  if (trustedAttesters.includes(attestation.owner)) return
+  if (credential.delegationId && trustedDelegators?.length > 0) {
+    const delegation = await DelegationNode.fetch(credential.delegationId)
+    const { node } = await delegation.findAncestorOwnedBy(trustedDelegators)
+    if (node) return
+  }
+  throw new SDKErrors.CredentialUnverifiableError('Attester unknown')
 }
 
 /**
