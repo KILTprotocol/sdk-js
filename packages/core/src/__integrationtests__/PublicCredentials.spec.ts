@@ -126,7 +126,7 @@ describe('When there is an attester and ctype NFT name', () => {
     await issueCredential(latestCredential)
 
     const assetCredentials = await PublicCredential.fetchCredentialsFromChain(
-      await api.call.publicCredentials.getBySubject(assetId, null)
+      assetId
     )
 
     // We only check that we return two credentials back.
@@ -158,7 +158,7 @@ describe('When there is an attester and ctype NFT name', () => {
     await submitTx(authorizedBatch, tokenHolder)
 
     const assetCredentials = await PublicCredential.fetchCredentialsFromChain(
-      await api.call.publicCredentials.getBySubject(assetId, null)
+      assetId
     )
 
     // We don't check the content of each credential but only the number of credentials that is returned.
@@ -197,7 +197,7 @@ describe('When there is an attester and ctype NFT name', () => {
     expect(allAssetCredentialsBeforeRevocation.length).toEqual(
       allAssetCredentialsAfterRevocation.length
     )
-  })
+  }, 30_000)
 
   it('should be possible to unrevoke a credential', async () => {
     const credentialId = PublicCredential.getIdForCredential(
@@ -232,7 +232,7 @@ describe('When there is an attester and ctype NFT name', () => {
     expect(allAssetCredentialsBeforeRevocation.length).toEqual(
       allAssetCredentialsAfterRevocation.length
     )
-  })
+  }, 30_000)
 
   it('should be possible to remove a credential', async () => {
     const credentialId = PublicCredential.getIdForCredential(
@@ -268,7 +268,7 @@ describe('When there is an attester and ctype NFT name', () => {
     expect(allAssetCredentialsAfterRevocation.length).toEqual(
       allAssetCredentialsBeforeRevocation.length - 1
     )
-  })
+  }, 30_000)
 })
 
 describe('When there is an issued public credential', () => {
