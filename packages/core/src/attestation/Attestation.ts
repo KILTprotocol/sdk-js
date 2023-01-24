@@ -138,7 +138,8 @@ export function verifyAgainstCredential(
 ): void {
   if (
     credential.claim.cTypeHash !== attestation.cTypeHash ||
-    credential.rootHash !== attestation.claimHash
+    credential.rootHash !== attestation.claimHash ||
+    credential.delegationId !== attestation.delegationId
   ) {
     throw new SDKErrors.CredentialUnverifiableError(
       'Attestation does not match credential'
