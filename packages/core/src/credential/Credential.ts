@@ -132,8 +132,9 @@ export function makeSigningData(
  * @param input - The credential to check.
  */
 export function verifyRootHash(input: ICredential): void {
-  if (input.rootHash !== calculateRootHash(input))
+  if (input.rootHash !== calculateRootHash(input)) {
     throw new SDKErrors.RootHashUnverifiableError()
+  }
 }
 
 /**
@@ -179,12 +180,14 @@ export function verifyDataStructure(input: ICredential): void {
   if (!('claimNonceMap' in input)) {
     throw new SDKErrors.ClaimNonceMapMissingError()
   }
-  if (typeof input.claimNonceMap !== 'object')
+  if (typeof input.claimNonceMap !== 'object') {
     throw new SDKErrors.ClaimNonceMapMalformedError()
+  }
   Object.entries(input.claimNonceMap).forEach(([digest, nonce]) => {
     DataUtils.verifyIsHex(digest, 256)
-    if (!digest || typeof nonce !== 'string' || !nonce)
+    if (!digest || typeof nonce !== 'string' || !nonce) {
       throw new SDKErrors.ClaimNonceMapMalformedError()
+    }
   })
 
   if (!('claimHashes' in input)) {
@@ -232,11 +235,11 @@ export async function verifySignature(
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
-  if (challenge && challenge !== claimerSignature.challenge)
+  if (challenge && challenge !== claimerSignature.challenge) {
     throw new SDKErrors.SignatureUnverifiableError(
       'Challenge differs from expected'
     )
-
+  }
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
     ...signatureFromJson(claimerSignature),
@@ -321,8 +324,9 @@ export async function verifyAttested(
   const api = ConfigService.get('api')
   const { rootHash } = credential
   const maybeAttestation = await api.query.attestation.attestations(rootHash)
-  if (maybeAttestation.isNone)
+  if (maybeAttestation.isNone) {
     throw new SDKErrors.CredentialUnverifiableError('Attestation not found')
+  }
   const {
     cTypeHash,
     delegationId,
@@ -337,13 +341,13 @@ export async function verifyAttested(
       'Attestation does not match credential'
     )
   }
-  if (revoked && allowRevoked !== true)
+  if (revoked && allowRevoked !== true) {
     throw new SDKErrors.RevokedTypeError('Attestation revoked')
-  if (typeof allowedAuthorities === 'undefined')
+  } else if (typeof allowedAuthorities === 'undefined') {
     return { attester, revoked, matchedTrustPolicy: {} }
-  if (allowedAuthorities[attester]?.isAttester === true)
+  } else if (allowedAuthorities[attester]?.isAttester === true) {
     return { attester, revoked, matchedTrustPolicy: { isAttester: attester } }
-  if (credential.delegationId) {
+  } else if (credential.delegationId) {
     const trustedDelegators: DidUri[] = []
     Object.entries(allowedAuthorities).forEach(([did, trust]) => {
       if (trust.isDelegator === true) {
@@ -353,12 +357,13 @@ export async function verifyAttested(
     if (trustedDelegators.length > 0) {
       const delegation = await DelegationNode.fetch(credential.delegationId)
       const { node } = await delegation.findAncestorOwnedBy(trustedDelegators)
-      if (node)
+      if (node) {
         return {
           attester,
           revoked,
           matchedTrustPolicy: { isDelegator: node.account },
         }
+      }
     }
   }
   throw new SDKErrors.CredentialUnverifiableError(
