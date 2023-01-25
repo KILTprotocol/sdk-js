@@ -333,12 +333,16 @@ export async function verifyAttested(
     owner: attester,
     revoked,
   } = Attestation.fromChain(maybeAttestation, rootHash)
-  if (
-    credential.claim.cTypeHash !== cTypeHash ||
-    credential.delegationId !== delegationId
-  ) {
+  const ctypeMismatch = credential.claim.cTypeHash !== cTypeHash
+  const delegationMismatch = credential.delegationId !== delegationId
+  if (ctypeMismatch || delegationMismatch) {
     throw new SDKErrors.CredentialUnverifiableError(
-      'Attestation does not match credential'
+      `Some attributes of the on-chain attestation diverge from the credential: ${[
+        'cTypeHash',
+        'delegationId',
+      ]
+        .filter((_, i) => [ctypeMismatch, delegationMismatch][i])
+        .join(', ')})}`
     )
   }
   if (revoked && allowRevoked !== true) {
