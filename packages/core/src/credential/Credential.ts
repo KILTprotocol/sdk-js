@@ -339,41 +339,81 @@ export async function verifyPresentation(
   })
 }
 
+export interface TrustPolicy {
+  /**
+   * If set to true, attestations issued directly by this identity are accepted.
+   */
+  isAttester?: boolean
+  /**
+   * If set to true, attestations linked to a delegation node which this identity has control over are accepted.
+   */
+  isDelegator?: boolean
+}
+export type TrustPolicies = Record<DidUri, TrustPolicy>
+
 /**
  * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attester is unknown.
  *
  * @param credential The [[ICredential]] whose attestation status should be checked.
- * @param trustedAttesters A list of one or more attesters who are accepted as issuers of the credential. If the actual attester is not in trustedAttesters, and this is not a delegated attestation, verification fails.
- * @param trustedDelegators An optional list of accepted delegators. If this is a delegated attestation and its issuer is not trusted, verification will still be successful if any of these identities is the owner of an ancestor node in the delegation tree.
+ * @param allowedAuthorities A map from DIDs to trust policies to be applied for that DID. If the credential's attestation cannot be linked to one of the identies in this set, verifiation will fail. If omitted, the issuer of the attestation will not be checked.
+ * @param allowRevoked If true, a revoked attestation will not fail verification.
+ * @returns Information on the attester and revocation status of the on-chain attestation, as well as info on which trust policy led to acceptance of the credential.
  */
-export async function verifyAttestation(
+export async function verifyAttested(
   credential: ICredential,
-  trustedAttesters: DidUri[],
-  trustedDelegators: DidUri[] = []
-): Promise<void> {
+  allowedAuthorities?: TrustPolicies,
+  allowRevoked = false
+): Promise<{
+  attester: DidUri
+  revoked: boolean
+  matchedTrustPolicy: Partial<Record<keyof TrustPolicy, DidUri>>
+}> {
   const api = ConfigService.get('api')
   const { rootHash } = credential
   const maybeAttestation = await api.query.attestation.attestations(rootHash)
   if (maybeAttestation.isNone)
     throw new SDKErrors.CredentialUnverifiableError('Attestation not found')
-  const attestation = Attestation.fromChain(maybeAttestation, rootHash)
+  const {
+    cTypeHash,
+    delegationId,
+    owner: attester,
+    revoked,
+  } = Attestation.fromChain(maybeAttestation, rootHash)
   if (
-    credential.claim.cTypeHash !== attestation.cTypeHash ||
-    credential.delegationId !== attestation.delegationId
+    credential.claim.cTypeHash !== cTypeHash ||
+    credential.delegationId !== delegationId
   ) {
     throw new SDKErrors.CredentialUnverifiableError(
       'Attestation does not match credential'
     )
   }
-  if (attestation.revoked)
+  if (revoked && allowRevoked !== true)
     throw new SDKErrors.RevokedTypeError('Attestation revoked')
-  if (trustedAttesters.includes(attestation.owner)) return
-  if (credential.delegationId && trustedDelegators?.length > 0) {
-    const delegation = await DelegationNode.fetch(credential.delegationId)
-    const { node } = await delegation.findAncestorOwnedBy(trustedDelegators)
-    if (node) return
+  if (typeof allowedAuthorities === 'undefined')
+    return { attester, revoked, matchedTrustPolicy: {} }
+  if (allowedAuthorities[attester]?.isAttester === true)
+    return { attester, revoked, matchedTrustPolicy: { isAttester: attester } }
+  if (credential.delegationId) {
+    const trustedDelegators: DidUri[] = []
+    Object.entries(allowedAuthorities).forEach(([did, trust]) => {
+      if (trust.isDelegator === true) {
+        trustedDelegators.push(did as DidUri)
+      }
+    })
+    if (trustedDelegators.length > 0) {
+      const delegation = await DelegationNode.fetch(credential.delegationId)
+      const { node } = await delegation.findAncestorOwnedBy(trustedDelegators)
+      if (node)
+        return {
+          attester,
+          revoked,
+          matchedTrustPolicy: { isDelegator: node.account },
+        }
+    }
   }
-  throw new SDKErrors.CredentialUnverifiableError('Attester unknown')
+  throw new SDKErrors.CredentialUnverifiableError(
+    'This attestation does not match any given trust policy and thus is not trusted'
+  )
 }
 
 /**
