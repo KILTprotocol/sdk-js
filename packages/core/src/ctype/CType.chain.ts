@@ -7,7 +7,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Bytes, GenericCall, Option } from '@polkadot/types'
-import type { Call } from '@polkadot/types/interfaces'
+import type { AccountId, Call } from '@polkadot/types/interfaces'
 import type { BN } from '@polkadot/util'
 
 import type { CtypeCtypeEntry } from '@kiltprotocol/augment-api'
@@ -89,13 +89,32 @@ export type ICTypeDetails = ICType & CTypeChainDetails
  * Decodes the CType details returned by `api.query.ctype.ctypes()`.
  *
  * @param encoded The data from the blockchain.
- * @returns The decoded data.
+ * @returns An object indicating the CType creator.
  */
-export function fromChain(encoded: Option<CtypeCtypeEntry>): CTypeChainDetails {
-  const { creator, createdAt } = encoded.unwrap()
+export function fromChain(
+  encoded: Option<AccountId>
+): Pick<CTypeChainDetails, 'creator'>
+/**
+ * Decodes the CType details returned by `api.query.ctype.ctypes()`.
+ *
+ * @param encoded The data from the blockchain.
+ * @returns An object indicating the CType creator and createdAt block.
+ */
+export function fromChain(encoded: Option<CtypeCtypeEntry>): CTypeChainDetails
+// eslint-disable-next-line jsdoc/require-jsdoc
+export function fromChain(
+  encoded: Option<CtypeCtypeEntry> | Option<AccountId>
+): CTypeChainDetails | Pick<CTypeChainDetails, 'creator'> {
+  const unwrapped = encoded.unwrap()
+  if ('creator' in unwrapped && 'createdAt' in unwrapped) {
+    const { creator, createdAt } = unwrapped
+    return {
+      creator: Did.fromChain(creator),
+      createdAt: createdAt.toBn(),
+    }
+  }
   return {
-    creator: Did.fromChain(creator),
-    createdAt: createdAt.toBn(),
+    creator: Did.fromChain(unwrapped),
   }
 }
 
