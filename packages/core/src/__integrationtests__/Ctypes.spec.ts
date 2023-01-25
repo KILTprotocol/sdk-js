@@ -23,8 +23,12 @@ import { disconnect } from '../kilt'
 import { createEndowedTestAccount, initializeApi, submitTx } from './utils'
 
 let api: ApiPromise
+// we skip fetching CTypes from chain for the old pallet version, where the necessary information was not yet on chain.
+let hasBlockNumbers: boolean
 beforeAll(async () => {
   api = await initializeApi()
+  // @ts-ignore not decorated for some reason
+  hasBlockNumbers = typeof api.tx.ctype.setBlockNumber !== 'undefined'
 }, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {
@@ -56,7 +60,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
-    await expect(CType.fetchFromChain(ctype.$id)).rejects.toThrow()
+    if (hasBlockNumbers) {
+      await expect(CType.fetchFromChain(ctype.$id)).rejects.toThrow()
+    }
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
@@ -70,12 +76,14 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitTx(authorizedStoreTx, paymentAccount)
 
-    const retrievedCType = await CType.fetchFromChain(ctype.$id)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { createdAt, creator, ...originalCtype } = retrievedCType
-    expect(originalCtype).toStrictEqual(ctype)
-    expect(creator).toBe(ctypeCreator.uri)
-    await expect(CType.verifyStored(retrievedCType)).resolves.not.toThrow()
+    if (hasBlockNumbers) {
+      const retrievedCType = await CType.fetchFromChain(ctype.$id)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { createdAt, creator, ...originalCtype } = retrievedCType
+      expect(originalCtype).toStrictEqual(ctype)
+      expect(creator).toBe(ctypeCreator.uri)
+      await expect(CType.verifyStored(retrievedCType)).resolves.not.toThrow()
+    }
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
@@ -100,8 +108,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
       submitTx(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
-    const retrievedCType = await CType.fetchFromChain(ctype.$id)
-    expect(retrievedCType.creator).toBe(ctypeCreator.uri)
+    if (hasBlockNumbers) {
+      const retrievedCType = await CType.fetchFromChain(ctype.$id)
+      expect(retrievedCType.creator).toBe(ctypeCreator.uri)
+    }
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -110,8 +120,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     })
 
     await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
-    await expect(CType.fetchFromChain(iAmNotThere.$id)).rejects.toThrow()
-
+    if (hasBlockNumbers) {
+      await expect(CType.fetchFromChain(iAmNotThere.$id)).rejects.toThrow()
+    }
     const fakeHash = Crypto.hashStr('abcdefg')
     expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
   })
