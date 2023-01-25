@@ -119,6 +119,11 @@ declare module '@polkadot/api-base/types/events' {
        * \[creator identifier, CType hash\]
        **/
       CTypeCreated: AugmentedEvent<ApiType, [AccountId32, H256]>;
+      /**
+       * Information about a CType has been updated.
+       * \[CType hash\]
+       **/
+      CTypeUpdated: AugmentedEvent<ApiType, [H256]>;
     };
     cumulusXcm: {
       /**

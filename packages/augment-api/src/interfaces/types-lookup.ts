@@ -704,7 +704,9 @@ declare module '@polkadot/types/lookup' {
   interface CtypeEvent extends Enum {
     readonly isCTypeCreated: boolean;
     readonly asCTypeCreated: ITuple<[AccountId32, H256]>;
-    readonly type: 'CTypeCreated';
+    readonly isCTypeUpdated: boolean;
+    readonly asCTypeUpdated: H256;
+    readonly type: 'CTypeCreated' | 'CTypeUpdated';
   }
 
   /** @name AttestationEvent (60) */
@@ -783,7 +785,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name PalletDidLookupAccountAccountId20 (68) */
-  interface PalletDidLookupAccountAccountId20 extends U8aFixed {}
+  interface PalletDidLookupAccountAccountId20 extends U8aFixed { }
 
   /** @name PalletWeb3NamesEvent (70) */
   interface PalletWeb3NamesEvent extends Enum {
@@ -832,7 +834,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name RuntimeCommonAssetsAssetDid (74) */
-  interface RuntimeCommonAssetsAssetDid extends KiltAssetDidsV1AssetDid {}
+  interface RuntimeCommonAssetsAssetDid extends KiltAssetDidsV1AssetDid { }
 
   /** @name KiltAssetDidsV1AssetDid (75) */
   interface KiltAssetDidsV1AssetDid extends Struct {
@@ -856,7 +858,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name KiltAssetDidsChainV1GenesisHexHash32Reference (78) */
-  interface KiltAssetDidsChainV1GenesisHexHash32Reference extends U8aFixed {}
+  interface KiltAssetDidsChainV1GenesisHexHash32Reference extends U8aFixed { }
 
   /** @name KiltAssetDidsChainV1GenericChainId (82) */
   interface KiltAssetDidsChainV1GenericChainId extends Struct {
@@ -880,10 +882,10 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name KiltAssetDidsAssetV1EvmSmartContractFungibleReference (90) */
-  interface KiltAssetDidsAssetV1EvmSmartContractFungibleReference extends U8aFixed {}
+  interface KiltAssetDidsAssetV1EvmSmartContractFungibleReference extends U8aFixed { }
 
   /** @name KiltAssetDidsAssetV1EvmSmartContractNonFungibleReference (91) */
-  interface KiltAssetDidsAssetV1EvmSmartContractNonFungibleReference extends ITuple<[KiltAssetDidsAssetV1EvmSmartContractFungibleReference, Option<Bytes>]> {}
+  interface KiltAssetDidsAssetV1EvmSmartContractNonFungibleReference extends ITuple<[KiltAssetDidsAssetV1EvmSmartContractFungibleReference, Option<Bytes>]> { }
 
   /** @name KiltAssetDidsAssetV1GenericAssetId (95) */
   interface KiltAssetDidsAssetV1GenericAssetId extends Struct {
@@ -1153,7 +1155,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name XcmV2Xcm (118) */
-  interface XcmV2Xcm extends Vec<XcmV2Instruction> {}
+  interface XcmV2Xcm extends Vec<XcmV2Instruction> { }
 
   /** @name XcmV2Instruction (120) */
   interface XcmV2Instruction extends Enum {
@@ -1276,7 +1278,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name XcmV1MultiassetMultiAssets (121) */
-  interface XcmV1MultiassetMultiAssets extends Vec<XcmV1MultiAsset> {}
+  interface XcmV1MultiassetMultiAssets extends Vec<XcmV1MultiAsset> { }
 
   /** @name XcmV1MultiAsset (123) */
   interface XcmV1MultiAsset extends Struct {
@@ -1800,10 +1802,10 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name SpConsensusAuraSr25519AppSr25519Public (188) */
-  interface SpConsensusAuraSr25519AppSr25519Public extends SpCoreSr25519Public {}
+  interface SpConsensusAuraSr25519AppSr25519Public extends SpCoreSr25519Public { }
 
   /** @name SpCoreSr25519Public (189) */
-  interface SpCoreSr25519Public extends U8aFixed {}
+  interface SpCoreSr25519Public extends U8aFixed { }
 
   /** @name SpiritnetRuntimeSessionKeys (194) */
   interface SpiritnetRuntimeSessionKeys extends Struct {
@@ -1811,7 +1813,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name SpCoreCryptoKeyTypeId (197) */
-  interface SpCoreCryptoKeyTypeId extends U8aFixed {}
+  interface SpCoreCryptoKeyTypeId extends U8aFixed { }
 
   /** @name PalletSessionCall (198) */
   interface PalletSessionCall extends Enum {
@@ -1863,7 +1865,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name ParachainStakingSetOrderedSet (204) */
-  interface ParachainStakingSetOrderedSet extends Vec<ParachainStakingStake> {}
+  interface ParachainStakingSetOrderedSet extends Vec<ParachainStakingStake> { }
 
   /** @name ParachainStakingCandidateStatus (207) */
   interface ParachainStakingCandidateStatus extends Enum {
@@ -2113,7 +2115,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name PalletDemocracyVotePriorLock (241) */
-  interface PalletDemocracyVotePriorLock extends ITuple<[u64, u128]> {}
+  interface PalletDemocracyVotePriorLock extends ITuple<[u64, u128]> { }
 
   /** @name PalletDemocracyConviction (242) */
   interface PalletDemocracyConviction extends Enum {
@@ -2670,7 +2672,12 @@ declare module '@polkadot/types/lookup' {
     readonly asAdd: {
       readonly ctype: Bytes;
     } & Struct;
-    readonly type: 'Add';
+    readonly isSetBlockNumber: boolean;
+    readonly asSetBlockNumber: {
+      readonly ctypeHash: H256;
+      readonly blockNumber: u64;
+    } & Struct;
+    readonly type: 'Add' | 'SetBlockNumber';
   }
 
   /** @name AttestationCall (277) */
@@ -2776,13 +2783,13 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name SpCoreEd25519Signature (284) */
-  interface SpCoreEd25519Signature extends U8aFixed {}
+  interface SpCoreEd25519Signature extends U8aFixed { }
 
   /** @name SpCoreSr25519Signature (286) */
-  interface SpCoreSr25519Signature extends U8aFixed {}
+  interface SpCoreSr25519Signature extends U8aFixed { }
 
   /** @name SpCoreEcdsaSignature (287) */
-  interface SpCoreEcdsaSignature extends U8aFixed {}
+  interface SpCoreEcdsaSignature extends U8aFixed { }
 
   /** @name DidCall (289) */
   interface DidCall extends Enum {
@@ -2872,10 +2879,10 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name SpCoreEd25519Public (297) */
-  interface SpCoreEd25519Public extends U8aFixed {}
+  interface SpCoreEd25519Public extends U8aFixed { }
 
   /** @name SpCoreEcdsaPublic (298) */
-  interface SpCoreEcdsaPublic extends U8aFixed {}
+  interface SpCoreEcdsaPublic extends U8aFixed { }
 
   /** @name DidServiceEndpointsDidEndpoint (301) */
   interface DidServiceEndpointsDidEndpoint extends Struct {
@@ -2942,7 +2949,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name PalletDidLookupAccountEthereumSignature (313) */
-  interface PalletDidLookupAccountEthereumSignature extends SpCoreEcdsaSignature {}
+  interface PalletDidLookupAccountEthereumSignature extends SpCoreEcdsaSignature { }
 
   /** @name PalletWeb3NamesCall (314) */
   interface PalletWeb3NamesCall extends Enum {
@@ -3050,6 +3057,12 @@ declare module '@polkadot/types/lookup' {
     readonly relayParentNumber: u32;
     readonly relayParentStorageRoot: H256;
     readonly maxPovSize: u32;
+  }
+
+  /** @name CtypeCtypeEntry (322) */
+  interface CtypeCtypeEntry extends Struct {
+    readonly creator: AccountId32;
+    readonly createdAt: u64;
   }
 
   /** @name SpTrieStorageProof (323) */
@@ -3475,7 +3488,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name FrameSupportPalletId (369) */
-  interface FrameSupportPalletId extends U8aFixed {}
+  interface FrameSupportPalletId extends U8aFixed { }
 
   /** @name PalletTreasuryError (370) */
   interface PalletTreasuryError extends Enum {
@@ -3965,12 +3978,12 @@ declare module '@polkadot/types/lookup' {
   type FrameSystemExtensionsCheckGenesis = Null;
 
   /** @name FrameSystemExtensionsCheckNonce (472) */
-  interface FrameSystemExtensionsCheckNonce extends Compact<u64> {}
+  interface FrameSystemExtensionsCheckNonce extends Compact<u64> { }
 
   /** @name FrameSystemExtensionsCheckWeight (473) */
   type FrameSystemExtensionsCheckWeight = Null;
 
   /** @name PalletTransactionPaymentChargeTransactionPayment (474) */
-  interface PalletTransactionPaymentChargeTransactionPayment extends Compact<u128> {}
+  interface PalletTransactionPaymentChargeTransactionPayment extends Compact<u128> { }
 
 } // declare module

@@ -5,19 +5,19 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
 import type {
   AssetDidUri,
   CTypeHash,
   IDelegationNode,
   IPublicCredentialInput,
   IPublicCredential,
+  DidUri,
 } from '@kiltprotocol/types'
-import type { GenericCall, Option, Result, u64, Vec } from '@polkadot/types'
-import type { Call, Extrinsic, Hash } from '@polkadot/types/interfaces'
-import type { ITuple } from '@polkadot/types/types'
+import type { ApiPromise } from '@polkadot/api'
+import type { GenericCall, Option } from '@polkadot/types'
+import type { Call } from '@polkadot/types/interfaces'
+import type { BN } from '@polkadot/util'
 import type {
-  PublicCredentialError,
   PublicCredentialsCredentialsCredential,
   PublicCredentialsCredentialsCredentialEntry,
 } from '@kiltprotocol/augment-api'
@@ -31,7 +31,7 @@ import { validateUri } from '@kiltprotocol/asset-did'
 import { SDKErrors } from '@kiltprotocol/utils'
 
 import { getIdForCredential } from './PublicCredential.js'
-import { isBatch } from '../utils.js'
+import { flattenCalls, isBatch, retrieveExtrinsicFromBlock } from '../utils.js'
 
 export interface EncodedPublicCredential {
   ctypeHash: CTypeHash
@@ -61,16 +61,6 @@ export function toChain(
   }
 }
 
-// Flatten any nested batch calls into a single list of calls.
-function flattenCalls(api: ApiPromise, call: Call): Call[] {
-  if (isBatch(api, call)) {
-    // Inductive case
-    return call.args[0].flatMap((c) => flattenCalls(api, c))
-  }
-  // Base case
-  return [call]
-}
-
 // Transform a blockchain-formatted public credential [[PublicCredentialsCredentialsCredential]] into the original [[IPublicCredentialInput]].
 // It throws if what was written on the chain was garbage.
 function credentialInputFromChain({
@@ -89,29 +79,52 @@ function credentialInputFromChain({
   }
 }
 
-// Retrieve a given block and looks into it to find a public credential creation tx that matches the provided credential ID.
-async function retrievePublicCredentialCreationExtrinsicFromBlock(
-  api: ApiPromise,
-  credentialId: HexString,
-  blockNumber: u64
-): Promise<Extrinsic | null> {
-  const { extrinsics } = await api.derive.chain.getBlockByNumber(blockNumber)
-  const successfulExtrinsics = extrinsics.filter(
-    ({ dispatchError }) => !dispatchError
-  )
-  // If there is more than one (e.g., same credential issued multiple times in the same block) it should not matter since the ID is generated over the content, hence same ID -> same content.
-  // Nevertheless, take only the last one, if present, as that is for sure what ended up being in the blockchain state.
-  const lastPublicCredentialCreationExtrinsic = successfulExtrinsics
-    .reverse()
-    .find(({ events }) =>
-      events.some(
-        (event) =>
-          api.events.publicCredentials.CredentialStored.is(event) &&
-          event.data[1].toString() === credentialId
-      )
-    )
+/**
+ * The details of a public credential that are stored on chain.
+ */
+export interface PublicCredentialEntry {
+  /**
+   * CType hash of the public credential.
+   */
+  ctypeHash: HexString
+  /**
+   * DID URI of the attester.
+   */
+  attester: DidUri
+  /**
+   * Flag indicating whether the credential is currently revoked.
+   */
+  revoked: boolean
+  /**
+   * Issuance block number of the credential.
+   */
+  blockNumber: BN
+  /**
+   * Authorization information used by the attester when issuing the credential.
+   */
+  authorizationId: IDelegationNode['id'] | null
+}
 
-  return lastPublicCredentialCreationExtrinsic?.extrinsic ?? null
+/**
+ * Decodes the public credential details returned by `api.query.publicCredentials.credentials(subjectId)`.
+ *
+ * @param encoded The data from the blockchain.
+ * @returns The decoded data.
+ */
+export function fromChain(
+  encoded: Option<PublicCredentialsCredentialsCredentialEntry>
+): PublicCredentialEntry {
+  const { attester, authorizationId, blockNumber, ctypeHash, revoked } =
+    encoded.unwrap()
+  return {
+    ctypeHash: ctypeHash.toHex(),
+    attester: didFromChain(attester),
+    revoked: revoked.toPrimitive(),
+    authorizationId: authorizationId.isSome
+      ? authorizationId.unwrap().toHex()
+      : null,
+    blockNumber: blockNumber.toBn(),
+  }
 }
 
 // Given a (nested) call, flattens them and filter by calls that are of type `api.tx.publicCredentials.add`.
@@ -145,21 +158,27 @@ function extractDidCallsFromBatchCall(
  * Hence, calling `api.call.publicCredentials.getById(credentialId)` and then passing the result to this function is the only way to trust that a credential with a given ID is valid.
  *
  * @param credentialId Credential ID to use for the query. It is required to complement the information stored on the blockchain in a [[PublicCredentialsCredentialsCredentialEntry]].
- * @param publicCredentialEntry The raw public credential details from blockchain.
  * @returns The [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
  */
-export async function credentialFromChain(
-  credentialId: HexString,
-  publicCredentialEntry: Option<PublicCredentialsCredentialsCredentialEntry>
+export async function fetchCredentialFromChain(
+  credentialId: IPublicCredential['id']
 ): Promise<IPublicCredential> {
   const api = ConfigService.get('api')
 
+  const publicCredentialEntry = await api.call.publicCredentials.getById(
+    credentialId
+  )
   const { blockNumber, revoked } = publicCredentialEntry.unwrap()
 
-  const extrinsic = await retrievePublicCredentialCreationExtrinsicFromBlock(
+  const extrinsic = await retrieveExtrinsicFromBlock(
     api,
-    credentialId,
-    blockNumber
+    blockNumber,
+    ({ events }) =>
+      events.some(
+        (event) =>
+          api.events.publicCredentials.CredentialStored.is(event) &&
+          event.data[1].toString() === credentialId
+      )
   )
 
   if (extrinsic === null) {
@@ -228,29 +247,25 @@ export async function credentialFromChain(
  * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given [[AssetDidUri]].
  * Hence, calling `api.call.publicCredentials.getBySubject(asset_id)` and then passing the result to this function is the only way to trust that the credentials for a given AssetDID are valid.
  *
- * @param publicCredentialEntries The raw public credential details from blockchain.
+ * @param subject The AssetDID of the subject.
  * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history. If the result is an error, it maps it to the right error type.
  */
-export async function credentialsFromChain(
-  publicCredentialEntries: Result<
-    Vec<ITuple<[Hash, PublicCredentialsCredentialsCredentialEntry]>>,
-    PublicCredentialError
-  >
+export async function fetchCredentialsFromChain(
+  subject: AssetDidUri
 ): Promise<IPublicCredential[]> {
+  const api = ConfigService.get('api')
+
+  const publicCredentialEntries = await api.call.publicCredentials.getBySubject(
+    subject,
+    null
+  )
   if (publicCredentialEntries.isErr) {
     throw new Error(publicCredentialEntries.asErr.toString())
   }
 
-  const api = ConfigService.get('api')
   return Promise.all(
-    publicCredentialEntries.asOk.map(([encodedId, encodedCredentialEntry]) =>
-      credentialFromChain(
-        encodedId.toHex(),
-        api.createType(
-          'Option<PublicCredentialsCredentialsCredentialEntry>',
-          encodedCredentialEntry
-        )
-      )
+    publicCredentialEntries.asOk.map(([encodedId]) =>
+      fetchCredentialFromChain(encodedId.toHex())
     )
   )
 }

@@ -16,7 +16,7 @@ import {
   KeyTool,
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, UUID } from '@kiltprotocol/utils'
 import { ApiPromise } from '@polkadot/api'
 import * as CType from '../ctype'
 import { disconnect } from '../kilt'
@@ -30,12 +30,10 @@ beforeAll(async () => {
 describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCreator: DidDocument
   let paymentAccount: KiltKeyringPair
-  let ctypeCounter = 0
   let key: KeyTool
 
   function makeCType(): ICType {
-    ctypeCounter += 1
-    return CType.fromProperties(`ctype${ctypeCounter}`, {
+    return CType.fromProperties(`Ctype ${UUID.generate()}`, {
       name: { type: 'string' },
     })
   }
@@ -58,6 +56,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await expect(submitTx(authorizedStoreTx, keypair)).rejects.toThrowError()
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
+    await expect(CType.fetchFromChain(ctype.$id)).rejects.toThrow()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
@@ -71,10 +70,12 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await submitTx(authorizedStoreTx, paymentAccount)
 
-    expect(
-      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
-    ).toBe(ctypeCreator.uri)
-    await expect(CType.verifyStored(ctype)).resolves.not.toThrow()
+    const retrievedCType = await CType.fetchFromChain(ctype.$id)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { createdAt, creator, ...originalCtype } = retrievedCType
+    expect(originalCtype).toStrictEqual(ctype)
+    expect(creator).toBe(ctypeCreator.uri)
+    await expect(CType.verifyStored(retrievedCType)).resolves.not.toThrow()
   }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
@@ -99,9 +100,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
       submitTx(authorizedStoreTx2, paymentAccount)
     ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
 
-    expect(
-      CType.fromChain(await api.query.ctype.ctypes(CType.idToChain(ctype.$id)))
-    ).toBe(ctypeCreator.uri)
+    const retrievedCType = await CType.fetchFromChain(ctype.$id)
+    expect(retrievedCType.creator).toBe(ctypeCreator.uri)
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -110,9 +110,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     })
 
     await expect(CType.verifyStored(iAmNotThere)).rejects.toThrow()
-    expect(
-      (await api.query.ctype.ctypes(CType.idToChain(iAmNotThere.$id))).isNone
-    ).toBe(true)
+    await expect(CType.fetchFromChain(iAmNotThere.$id)).rejects.toThrow()
 
     const fakeHash = Crypto.hashStr('abcdefg')
     expect((await api.query.ctype.ctypes(fakeHash)).isNone).toBe(true)
