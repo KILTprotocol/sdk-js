@@ -408,7 +408,7 @@ describe('Credential', () => {
     await expect(
       Credential.refreshRevocationStatus({ ...credential, revoked, attester })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"Attestation does not match credential"`
+      `"Some attributes of the on-chain attestation diverge from the credential: claimHash"`
     )
 
     jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
@@ -426,7 +426,7 @@ describe('Credential', () => {
     await expect(
       Credential.refreshRevocationStatus({ ...credential, revoked, attester })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"Attestation does not match credential"`
+      `"Some attributes of the on-chain attestation diverge from the credential: delegationId"`
     )
   })
 })
