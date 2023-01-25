@@ -157,6 +157,10 @@ export async function fetchFromChain(
 
   const cTypeEntry = await api.query.ctype.ctypes(cTypeHash)
   const { createdAt } = fromChain(cTypeEntry)
+  if (typeof createdAt === 'undefined')
+    throw new SDKErrors.CTypeError(
+      'Cannot fetch CType definitions on a chain that does not store the createdAt block'
+    )
 
   const extrinsic = await retrieveExtrinsicFromBlock(
     api,
