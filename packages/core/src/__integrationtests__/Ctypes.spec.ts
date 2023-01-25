@@ -27,8 +27,13 @@ let api: ApiPromise
 let hasBlockNumbers: boolean
 beforeAll(async () => {
   api = await initializeApi()
-  // @ts-ignore not decorated for some reason
+  // this extrinsic should only exist in the new pallet version
   hasBlockNumbers = typeof api.tx.ctype.setBlockNumber !== 'undefined'
+  if (!hasBlockNumbers) {
+    console.warn(
+      'detected pallet version 1, skipping CType fetching which is not yet supported'
+    )
+  }
 }, 30_000)
 
 describe('When there is an CtypeCreator and a verifier', () => {
