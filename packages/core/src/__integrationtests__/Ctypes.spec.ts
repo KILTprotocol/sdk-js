@@ -27,11 +27,11 @@ let api: ApiPromise
 let hasBlockNumbers: boolean
 beforeAll(async () => {
   api = await initializeApi()
-  // this extrinsic should only exist in the new pallet version
-  hasBlockNumbers = typeof api.tx.ctype.setBlockNumber !== 'undefined'
+  // @ts-ignore Not augmented for some reason
+  hasBlockNumbers = (await api.query.ctype.palletVersion()).toNumber() >= 2
   if (!hasBlockNumbers) {
     console.warn(
-      'detected pallet version 1, skipping CType fetching which is not yet supported'
+      'detected pallet version < 2, skipping CType fetching which is not yet supported'
     )
   }
 }, 30_000)
