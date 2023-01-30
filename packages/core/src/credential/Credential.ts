@@ -292,6 +292,56 @@ export function fromClaim(
   return credential
 }
 
+type VerifyOptions = {
+  ctype?: ICType
+  challenge?: string
+  didResolveKey?: DidResolveKey
+}
+
+/**
+ * Verifies data structure & data integrity of a credential object.
+ * THIS DOES NOT VERIFY THAT A CREDENTIAL HAS BEEN ATTESTED, OR BY WHOM!
+ * For this, you need to call [[verifyAttestation]].
+ *
+ * @param credential - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ */
+export async function verifyCredential(
+  credential: ICredential,
+  { ctype }: VerifyOptions = {}
+): Promise<void> {
+  verifyDataStructure(credential)
+  verifyDataIntegrity(credential)
+
+  if (ctype) {
+    verifyAgainstCType(credential, ctype)
+  }
+}
+
+/**
+ * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
+ * THIS DOES NOT VERIFY THAT A CREDENTIAL HAS BEEN ATTESTED, OR BY WHOM!
+ *
+ * Upon presentation of a credential, a verifier would call this function, then call [[verifyAttestation]] to check the credential's attestation status.
+ *
+ * @param presentation - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
+ * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
+ */
+export async function verifyPresentation(
+  presentation: ICredentialPresentation,
+  { ctype, challenge, didResolveKey = resolveKey }: VerifyOptions = {}
+): Promise<void> {
+  await verifyCredential(presentation, { ctype })
+  await verifySignature(presentation, {
+    challenge,
+    didResolveKey,
+  })
+}
+
 export interface TrustPolicy {
   /**
    * If set to true, attestations issued directly by this identity are accepted.
@@ -373,61 +423,6 @@ export async function verifyAttested(
   throw new SDKErrors.CredentialUnverifiableError(
     'This attestation does not match any given trust policy and thus is not trusted'
   )
-}
-
-type VerifyOptions = {
-  ctype?: ICType
-  challenge?: string
-  didResolveKey?: DidResolveKey
-  allowedAuthorities?: TrustPolicies
-  allowRevoked?: boolean
-}
-
-/**
- * Verifies data structure & data integrity of a credential object and its on-chain attestation.
- *
- * @param credential - The object to check.
- * @param options - Additional parameter for more verification steps.
- * @param options.ctype - CType which the included claim should be checked against.
- * @param options.allowedAuthorities A map from DIDs to trust policies to be applied for that DID. If the credential's attestation cannot be linked to one of the identies in this set, verifiation will fail. If omitted, the issuer of the attestation will not be checked.
- * @param options.allowRevoked If true, a revoked attestation will not fail verification.
- */
-export async function verifyCredential(
-  credential: ICredential,
-  { ctype, allowedAuthorities, allowRevoked }: VerifyOptions = {}
-): Promise<void> {
-  verifyDataStructure(credential)
-  verifyDataIntegrity(credential)
-
-  if (ctype) {
-    verifyAgainstCType(credential, ctype)
-  }
-
-  await verifyAttested(credential, allowedAuthorities, allowRevoked)
-}
-
-/**
- * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
- *
- * Upon presentation of a credential, a verifier would call this function.
- *
- * @param presentation - The object to check.
- * @param options - Additional parameter for more verification steps.
- * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
- * @param options.ctype - CType which the included claim should be checked against.
- * @param options.allowedAuthorities A map from DIDs to trust policies to be applied for that DID. If the credential's attestation cannot be linked to one of the identies in this set, verifiation will fail. If omitted, the issuer of the attestation will not be checked.
- * @param options.allowRevoked If true, a revoked attestation will not fail verification.
- */
-export async function verifyPresentation(
-  presentation: ICredentialPresentation,
-  { challenge, didResolveKey = resolveKey, ...passDownOpts }: VerifyOptions = {}
-): Promise<void> {
-  await verifyCredential(presentation, passDownOpts)
-  await verifySignature(presentation, {
-    challenge,
-    didResolveKey,
-  })
 }
 
 /**
