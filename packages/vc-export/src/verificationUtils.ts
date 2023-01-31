@@ -193,7 +193,7 @@ export async function verifyAttestedProof(
         `Attestation for credential with id "${claimHash}" not found`
       )
     }
-    const onChain = Attestation.fromChain(encoded, claimHash)
+    const onChain = Attestation.fromChain(encoded, { rootHash: claimHash })
     // if data on proof does not correspond to data on chain, proof is incorrect
     if (onChain.owner !== attester || onChain.delegationId !== delegationId) {
       status = 'invalid'

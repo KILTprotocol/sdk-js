@@ -14,7 +14,6 @@ import type {
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import { DelegationNode } from '../delegation/DelegationNode.js'
-import * as Credential from '../credential/index.js'
 
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[Credential]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
@@ -136,14 +135,19 @@ export function verifyAgainstCredential(
   attestation: IAttestation,
   credential: ICredential
 ): void {
-  if (
-    credential.claim.cTypeHash !== attestation.cTypeHash ||
-    credential.rootHash !== attestation.claimHash ||
-    credential.delegationId !== attestation.delegationId
-  ) {
+  if (credential.rootHash !== attestation.claimHash) {
     throw new SDKErrors.CredentialUnverifiableError(
-      'Attestation does not match credential'
+      'Attestation does not match credential root hash'
     )
   }
-  Credential.verifyDataIntegrity(credential)
+  if (credential.claim.cTypeHash !== attestation.cTypeHash) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Invalid attestation – mismatching cTypeHash in attestation and credential'
+    )
+  }
+  if (credential.delegationId !== attestation.delegationId) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Invalid attestation – mismatching delegationId in attestation and credential'
+    )
+  }
 }

@@ -373,28 +373,10 @@ export async function verifyAttested(
 }> {
   const api = ConfigService.get('api')
   const { rootHash } = credential
-  const maybeAttestation = await api.query.attestation.attestations(rootHash)
-  if (maybeAttestation.isNone) {
-    throw new SDKErrors.CredentialUnverifiableError('Attestation not found')
-  }
-  const {
-    cTypeHash,
-    delegationId,
-    owner: attester,
-    revoked,
-  } = Attestation.fromChain(maybeAttestation, rootHash)
-  const ctypeMismatch = credential.claim.cTypeHash !== cTypeHash
-  const delegationMismatch = credential.delegationId !== delegationId
-  if (ctypeMismatch || delegationMismatch) {
-    throw new SDKErrors.CredentialUnverifiableError(
-      `Some attributes of the on-chain attestation diverge from the credential: ${[
-        'cTypeHash',
-        'delegationId',
-      ]
-        .filter((_, i) => [ctypeMismatch, delegationMismatch][i])
-        .join(', ')})}`
-    )
-  }
+  const { owner: attester, revoked } = Attestation.fromChain(
+    await api.query.attestation.attestations(rootHash),
+    credential
+  )
   if (revoked && allowRevoked !== true) {
     throw new SDKErrors.RevokedTypeError('Attestation revoked')
   } else if (typeof allowedAuthorities === 'undefined') {

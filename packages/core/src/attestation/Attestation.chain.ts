@@ -10,31 +10,40 @@ import type { IAttestation, ICredential } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
 import type { AttestationAttestationsAttestationDetails } from '@kiltprotocol/augment-api'
+import { SDKErrors } from '@kiltprotocol/utils'
+import { verifyAgainstCredential } from './Attestation.js'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 /**
- * Decodes the attestation returned by `api.query.attestation.attestations()`.
+ * Decodes the attestation returned by `api.query.attestation.attestations()` and matches it against the corresponing credential.
  *
  * @param encoded Raw attestation data from blockchain.
- * @param claimHash The attestation claimHash.
- * @returns The attestation.
+ * @param credential The credential for which the attestation record was queried.
+ * The credential, CType, and delegation node references in the attestation record are compared against the (integrity-protected) data contained within the credential to avoid decoding an invalid attestation.
+ * @returns The attestation record.
  */
 export function fromChain(
   encoded: Option<AttestationAttestationsAttestationDetails>,
-  claimHash: ICredential['rootHash'] // all the other decoders do not use extra data; they just return partial types
+  credential: ICredential | Pick<ICredential, 'rootHash'>
 ): IAttestation {
-  const chainAttestation = encoded.unwrap()
-  const delegationId = chainAttestation.authorizationId
-    .unwrapOr(undefined)
-    ?.value.toHex()
+  if (encoded.isNone) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'No attestation record for this credential'
+    )
+  }
+  const { authorizationId, ctypeHash, attester, revoked } = encoded.unwrap()
+  const delegationId = authorizationId.unwrapOr(undefined)?.value.toHex()
   const attestation: IAttestation = {
-    claimHash,
-    cTypeHash: chainAttestation.ctypeHash.toHex(),
-    owner: Did.fromChain(chainAttestation.attester),
+    claimHash: credential.rootHash,
+    cTypeHash: ctypeHash.toHex(),
+    owner: Did.fromChain(attester),
     delegationId: delegationId || null,
-    revoked: chainAttestation.revoked.valueOf(),
+    revoked: revoked.valueOf(),
   }
   log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
+  if ('cTypeHash' in credential || 'delegationId' in credential) {
+    verifyAgainstCredential(attestation, credential as ICredential)
+  }
   return attestation
 }

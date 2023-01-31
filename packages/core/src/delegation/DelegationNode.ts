@@ -214,7 +214,7 @@ export class DelegationNode implements IDelegationNode {
       attestationHashes.map(async (claimHash) => {
         const encoded = await api.query.attestation.attestations(claimHash)
         if (encoded.isNone) return undefined
-        return attestationFromChain(encoded, claimHash)
+        return attestationFromChain(encoded, { rootHash: claimHash })
       })
     )
 
