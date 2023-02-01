@@ -42,7 +42,6 @@ import * as Attestation from '../attestation/index.js'
 import * as Claim from '../claim/index.js'
 import { hashClaimContents } from '../claim/index.js'
 import { verifyClaimAgainstSchema } from '../ctype/index.js'
-import { DelegationNode } from '../delegation/DelegationNode.js'
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = Crypto.u8aConcat(...leaves)
@@ -200,20 +199,6 @@ export function verifyDataStructure(input: ICredential): void {
 }
 
 /**
- * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[ICType.$schema]] structure.
- *
- * @param credential A [[Credential]] for the attester.
- * @param ctype A [[CType]] to verify the [[Claim]] structure.
- */
-export function verifyAgainstCType(
-  credential: ICredential,
-  ctype: ICType
-): void {
-  verifyDataStructure(credential)
-  verifyClaimAgainstSchema(credential.claim.contents, ctype)
-}
-
-/**
  * Verifies the signature of the [[ICredentialPresentation]].
  * It supports migrated DIDs, meaning that if the original claim within the [[ICredential]] included a light DID that was afterwards upgraded,
  * the signature over the presentation **must** be generated with the full DID in order for the verification to be successful.
@@ -292,34 +277,48 @@ export function fromClaim(
   return credential
 }
 
-export interface TrustPolicy {
-  /**
-   * If set to true, attestations issued directly by this identity are accepted.
-   */
-  isAttester?: boolean
-  /**
-   * If set to true, attestations linked to a delegation node which this identity has control over are accepted.
-   */
-  isDelegator?: boolean
+type VerifyOptions = {
+  ctype?: ICType
+  challenge?: string
+  didResolveKey?: DidResolveKey
+  throwOnRevoked?: boolean
 }
-export type TrustPolicies = Record<DidUri, TrustPolicy>
+
+/**
+ * Verifies data structure & data integrity of a credential object.
+ * This combines all offline sanity checks that can be performed on an ICredential object.
+ * A credential is valid only iff it is well formed and there is an onchain attestation record referencing its root hash.
+ * To check the latter condition as well, you need to call [[verifyCredential]] or [[verifyPresentation]].
+ *
+ * @param credential - The object to check.
+ * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
+ */
+export function verifyWellFormed(
+  credential: ICredential,
+  { ctype }: VerifyOptions = {}
+): void {
+  verifyDataStructure(credential)
+  verifyDataIntegrity(credential)
+
+  if (ctype) {
+    verifyClaimAgainstSchema(credential.claim.contents, ctype)
+  }
+}
 
 /**
  * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attester is unknown.
  *
  * @param credential The [[ICredential]] whose attestation status should be checked.
- * @param allowedAuthorities A map from DIDs to trust policies to be applied for that DID. If the credential's attestation cannot be linked to one of the identies in this set, verifiation will fail. If omitted, the issuer of the attestation will not be checked.
- * @param allowRevoked If true, a revoked attestation will not fail verification.
+ * @param throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
  * @returns Information on the attester and revocation status of the on-chain attestation, as well as info on which trust policy led to acceptance of the credential.
  */
 export async function verifyAttested(
   credential: ICredential,
-  allowedAuthorities?: TrustPolicies,
-  allowRevoked = false
+  throwOnRevoked = true
 ): Promise<{
   attester: DidUri
   revoked: boolean
-  matchedTrustPolicy: Partial<Record<keyof TrustPolicy, DidUri>>
 }> {
   const api = ConfigService.get('api')
   const { rootHash } = credential
@@ -327,83 +326,65 @@ export async function verifyAttested(
   if (maybeAttestation.isNone) {
     throw new SDKErrors.CredentialUnverifiableError('Attestation not found')
   }
-  const {
-    cTypeHash,
-    delegationId,
-    owner: attester,
-    revoked,
-  } = Attestation.fromChain(maybeAttestation, rootHash)
-  const ctypeMismatch = credential.claim.cTypeHash !== cTypeHash
-  const delegationMismatch = credential.delegationId !== delegationId
-  if (ctypeMismatch || delegationMismatch) {
-    throw new SDKErrors.CredentialUnverifiableError(
-      `Some attributes of the on-chain attestation diverge from the credential: ${[
-        'cTypeHash',
-        'delegationId',
-      ]
-        .filter((_, i) => [ctypeMismatch, delegationMismatch][i])
-        .join(', ')})}`
-    )
-  }
-  if (revoked && allowRevoked !== true) {
-    throw new SDKErrors.RevokedTypeError('Attestation revoked')
-  } else if (typeof allowedAuthorities === 'undefined') {
-    return { attester, revoked, matchedTrustPolicy: {} }
-  } else if (allowedAuthorities[attester]?.isAttester === true) {
-    return { attester, revoked, matchedTrustPolicy: { isAttester: attester } }
-  } else if (credential.delegationId) {
-    const trustedDelegators: DidUri[] = []
-    Object.entries(allowedAuthorities).forEach(([did, trust]) => {
-      if (trust.isDelegator === true) {
-        trustedDelegators.push(did as DidUri)
-      }
-    })
-    if (trustedDelegators.length > 0) {
-      const delegation = await DelegationNode.fetch(credential.delegationId)
-      const { node } = await delegation.findAncestorOwnedBy(trustedDelegators)
-      if (node) {
-        return {
-          attester,
-          revoked,
-          matchedTrustPolicy: { isDelegator: node.account },
-        }
-      }
-    }
-  }
-  throw new SDKErrors.CredentialUnverifiableError(
-    'This attestation does not match any given trust policy and thus is not trusted'
+  const attestation = Attestation.fromChain(
+    maybeAttestation,
+    credential.rootHash
   )
+  Attestation.verifyAgainstCredential(attestation, credential)
+  const { owner: attester, revoked } = attestation
+  if (revoked && throwOnRevoked !== false) {
+    throw new SDKErrors.RevokedTypeError('Attestation revoked')
+  }
+  return { attester, revoked }
 }
 
-type VerifyOptions = {
-  ctype?: ICType
-  challenge?: string
-  didResolveKey?: DidResolveKey
-  allowedAuthorities?: TrustPolicies
-  allowRevoked?: boolean
+export interface VerifiedCredential extends ICredential {
+  revoked: boolean
+  attester: DidUri
 }
 
 /**
- * Verifies data structure & data integrity of a credential object and its on-chain attestation.
+ * Updates the revocation status of a previously verified credential to allow checking if it is still valid.
+ *
+ * @param verifiedCredential The output of [[verifyCredential]] or [[verifyPresentation]], which adds a `revoked` and `attester` property.
+ * @param throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
+ * @returns A promise of resolving to the same object but with the `revoked` property updated. The promise rejects if the attestation has been deleted or its data changed since verification.
+ */
+export async function recheckRevocationStatus(
+  verifiedCredential: VerifiedCredential,
+  throwOnRevoked = true
+): Promise<VerifiedCredential> {
+  const { revoked, attester } = await verifyAttested(
+    verifiedCredential,
+    throwOnRevoked
+  )
+  if (attester !== verifiedCredential.attester) {
+    throw new SDKErrors.CredentialUnverifiableError(
+      'Attester has changed since first verification'
+    )
+  }
+  return { ...verifiedCredential, revoked }
+}
+
+/**
+ * Verifies a credential, which includes looking up its attestation on the KILT blockchain.
  *
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
- * @param options.allowedAuthorities A map from DIDs to trust policies to be applied for that DID. If the credential's attestation cannot be linked to one of the identies in this set, verifiation will fail. If omitted, the issuer of the attestation will not be checked.
- * @param options.allowRevoked If true, a revoked attestation will not fail verification.
+ * @param options.throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
  */
 export async function verifyCredential(
   credential: ICredential,
-  { ctype, allowedAuthorities, allowRevoked }: VerifyOptions = {}
-): Promise<void> {
-  verifyDataStructure(credential)
-  verifyDataIntegrity(credential)
-
-  if (ctype) {
-    verifyAgainstCType(credential, ctype)
+  { ctype, throwOnRevoked = true }: VerifyOptions = {}
+): Promise<VerifiedCredential> {
+  verifyWellFormed(credential, { ctype })
+  const { revoked, attester } = await verifyAttested(credential, throwOnRevoked)
+  return {
+    ...credential,
+    revoked,
+    attester,
   }
-
-  await verifyAttested(credential, allowedAuthorities, allowRevoked)
 }
 
 /**
@@ -413,21 +394,25 @@ export async function verifyCredential(
  *
  * @param presentation - The object to check.
  * @param options - Additional parameter for more verification steps.
+ * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
- * @param options.ctype - CType which the included claim should be checked against.
- * @param options.allowedAuthorities A map from DIDs to trust policies to be applied for that DID. If the credential's attestation cannot be linked to one of the identies in this set, verifiation will fail. If omitted, the issuer of the attestation will not be checked.
- * @param options.allowRevoked If true, a revoked attestation will not fail verification.
+ * @param options.throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
  */
 export async function verifyPresentation(
   presentation: ICredentialPresentation,
-  { challenge, didResolveKey = resolveKey, ...passDownOpts }: VerifyOptions = {}
-): Promise<void> {
-  await verifyCredential(presentation, passDownOpts)
+  {
+    ctype,
+    challenge,
+    didResolveKey = resolveKey,
+    throwOnRevoked = true,
+  }: VerifyOptions = {}
+): Promise<VerifiedCredential> {
   await verifySignature(presentation, {
     challenge,
     didResolveKey,
   })
+  return verifyCredential(presentation, { ctype, throwOnRevoked })
 }
 
 /**
