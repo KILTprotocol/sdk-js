@@ -23,7 +23,8 @@ type DeriveAllSections<AllSections> = {
   [S in keyof AllSections]: DeriveSection<AllSections[S]>
 }
 
+// extends the api augmentation of derives
 declare module '@polkadot/api-derive/derive' {
-  // extend, add our custom section
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   export interface ExactDerive extends DeriveAllSections<typeof allDerives> {}
 }

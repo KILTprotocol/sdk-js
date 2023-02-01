@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { ICredential } from '@kiltprotocol/types'
-import { Observable } from '@polkadot/types/types'
+import type { DidUri, ICredential } from '@kiltprotocol/types'
+import type { Observable } from '@polkadot/types/types'
 import { map } from 'rxjs'
 import type { DeriveApi } from '@polkadot/api-derive/types'
 import { memo } from '@polkadot/api-derive/util'
@@ -25,6 +25,11 @@ function makeDeriveCreator<P extends any[], R>(
   }
 }
 
+export type CredentialWithAttesterInfo = ICredential & {
+  attester: DidUri
+  revoked: boolean
+}
+
 export const verifyAttested = makeDeriveCreator((api) => {
   return (credential: ICredential) => {
     return api.query.attestation.attestations(credential.rootHash).pipe(
@@ -34,12 +39,32 @@ export const verifyAttested = makeDeriveCreator((api) => {
             attestationQueryResult,
             credential.rootHash
           )
-          const { revoked, owner: attester } = attestation
           Attestation.verifyAgainstCredential(attestation, credential)
-          return { attester, revoked }
+          const { revoked, owner: attester } = attestation
+          return { ...credential, attester, revoked }
         } catch (error) {
           return { error }
         }
+      })
+    )
+  }
+})
+
+export const updateRevocationStatus = makeDeriveCreator((api) => {
+  return (credential: CredentialWithAttesterInfo) => {
+    return api.derive.credentials.verifyAttested(credential).pipe(
+      map((result) => {
+        if ('error' in result) {
+          return result
+        }
+        if (result.attester !== credential.attester) {
+          return {
+            error: new Error(
+              'Attest is different from when the credential was originally verified'
+            ),
+          }
+        }
+        return result
       })
     )
   }
