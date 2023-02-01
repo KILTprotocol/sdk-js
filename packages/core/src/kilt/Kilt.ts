@@ -18,6 +18,7 @@ import type { ApiOptions } from '@polkadot/api/types'
 
 import { ConfigService } from '@kiltprotocol/config'
 import { typesBundle } from '@kiltprotocol/type-definitions'
+import { derives } from './derives.js'
 
 /**
  * Prepares crypto modules (required for identity creation and others) and calls ConfigService.set().
@@ -53,6 +54,7 @@ export async function connect(
     provider,
     typesBundle,
     noInitWarn,
+    derives,
     ...apiOpts,
   })
   await init({ api })
