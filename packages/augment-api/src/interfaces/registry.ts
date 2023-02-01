@@ -5,7 +5,7 @@
 // this is required to allow for ambient/previous definitions
 import '@polkadot/types/types/registry';
 
-import type { AttestationAttestationsAttestationDetails, AttestationCall, AttestationError, AttestationEvent, CtypeCall, CtypeError, CtypeCtypeEntry, CtypeEvent, CumulusPalletDmpQueueCall, CumulusPalletDmpQueueConfigData, CumulusPalletDmpQueueError, CumulusPalletDmpQueueEvent, CumulusPalletDmpQueuePageIndexData, CumulusPalletParachainSystemCall, CumulusPalletParachainSystemError, CumulusPalletParachainSystemEvent, CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot, CumulusPalletXcmError, CumulusPalletXcmEvent, CumulusPalletXcmOrigin, CumulusPalletXcmpQueueCall, CumulusPalletXcmpQueueError, CumulusPalletXcmpQueueEvent, CumulusPalletXcmpQueueInboundChannelDetails, CumulusPalletXcmpQueueInboundState, CumulusPalletXcmpQueueOutboundChannelDetails, CumulusPalletXcmpQueueOutboundState, CumulusPalletXcmpQueueQueueConfigData, CumulusPrimitivesParachainInherentParachainInherentData, DelegationAccessControlDelegationAc, DelegationCall, DelegationDelegationHierarchyDelegationDetails, DelegationDelegationHierarchyDelegationHierarchyDetails, DelegationDelegationHierarchyDelegationNode, DelegationDelegationHierarchyPermissions, DelegationError, DelegationEvent, DidCall, DidDidDetails, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidPublicKey, DidDidDetailsDidPublicKeyDetails, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidError, DidEvent, DidOriginDidRawOrigin, DidServiceEndpointsDidEndpoint, FrameSupportDispatchRawOrigin, FrameSupportPalletId, FrameSupportScheduleLookupError, FrameSupportScheduleMaybeHashed, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchClass, FrameSupportWeightsDispatchInfo, FrameSupportWeightsPays, FrameSupportWeightsPerDispatchClassU32, FrameSupportWeightsPerDispatchClassWeight, FrameSupportWeightsPerDispatchClassWeightsPerClass, FrameSupportWeightsRuntimeDbWeight, FrameSystemAccountInfo, FrameSystemCall, FrameSystemError, FrameSystemEvent, FrameSystemEventRecord, FrameSystemExtensionsCheckGenesis, FrameSystemExtensionsCheckNonZeroSender, FrameSystemExtensionsCheckNonce, FrameSystemExtensionsCheckSpecVersion, FrameSystemExtensionsCheckTxVersion, FrameSystemExtensionsCheckWeight, FrameSystemLastRuntimeUpgradeInfo, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, FrameSystemLimitsWeightsPerClass, FrameSystemPhase, KiltAssetDidsAssetV1AssetId, KiltAssetDidsAssetV1EvmSmartContractFungibleReference, KiltAssetDidsAssetV1EvmSmartContractNonFungibleReference, KiltAssetDidsAssetV1GenericAssetId, KiltAssetDidsChainV1ChainId, KiltAssetDidsChainV1GenericChainId, KiltAssetDidsChainV1GenesisHexHash32Reference, KiltAssetDidsV1AssetDid, KiltSupportDeposit, PalletAuthorshipCall, PalletAuthorshipError, PalletAuthorshipUncleEntryItem, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesCall, PalletBalancesError, PalletBalancesEvent, PalletBalancesReasons, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveCall, PalletCollectiveError, PalletCollectiveEvent, PalletCollectiveRawOrigin, PalletCollectiveVotes, PalletDemocracyCall, PalletDemocracyConviction, PalletDemocracyDelegations, PalletDemocracyError, PalletDemocracyEvent, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReferendumStatus, PalletDemocracyReleases, PalletDemocracyTally, PalletDemocracyVoteAccountVote, PalletDemocracyVotePriorLock, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletDidLookupAccountAccountId20, PalletDidLookupAccountEthereumSignature, PalletDidLookupAssociateAccountRequest, PalletDidLookupCall, PalletDidLookupConnectionRecord, PalletDidLookupError, PalletDidLookupEvent, PalletDidLookupLinkableAccountLinkableAccountId, PalletIndicesCall, PalletIndicesError, PalletIndicesEvent, PalletMembershipCall, PalletMembershipError, PalletMembershipEvent, PalletPreimageCall, PalletPreimageError, PalletPreimageEvent, PalletPreimageRequestStatus, PalletProxyAnnouncement, PalletProxyCall, PalletProxyError, PalletProxyEvent, PalletProxyProxyDefinition, PalletSchedulerCall, PalletSchedulerError, PalletSchedulerEvent, PalletSchedulerScheduledV3, PalletSessionCall, PalletSessionError, PalletSessionEvent, PalletTimestampCall, PalletTipsCall, PalletTipsError, PalletTipsEvent, PalletTipsOpenTip, PalletTransactionPaymentChargeTransactionPayment, PalletTransactionPaymentEvent, PalletTransactionPaymentReleases, PalletTreasuryCall, PalletTreasuryError, PalletTreasuryEvent, PalletTreasuryProposal, PalletUtilityCall, PalletUtilityError, PalletUtilityEvent, PalletVestingCall, PalletVestingError, PalletVestingEvent, PalletVestingReleases, PalletVestingVestingInfo, PalletWeb3NamesCall, PalletWeb3NamesError, PalletWeb3NamesEvent, PalletWeb3NamesWeb3NameWeb3NameOwnership, PalletXcmCall, PalletXcmError, PalletXcmEvent, PalletXcmOrigin, ParachainStakingCall, ParachainStakingCandidate, ParachainStakingCandidateStatus, ParachainStakingDelegationCounter, ParachainStakingError, ParachainStakingEvent, ParachainStakingInflationInflationInfo, ParachainStakingInflationRewardRate, ParachainStakingInflationStakingInfo, ParachainStakingRoundInfo, ParachainStakingSetOrderedSet, ParachainStakingStake, ParachainStakingTotalStake, PolkadotCorePrimitivesInboundDownwardMessage, PolkadotCorePrimitivesInboundHrmpMessage, PolkadotCorePrimitivesOutboundHrmpMessage, PolkadotParachainPrimitivesXcmpMessageFormat, PolkadotPrimitivesV2AbridgedHostConfiguration, PolkadotPrimitivesV2AbridgedHrmpChannel, PolkadotPrimitivesV2PersistedValidationData, PolkadotPrimitivesV2UpgradeRestriction, PublicCredentialsCall, PublicCredentialsCredentialsCredential, PublicCredentialsCredentialsCredentialEntry, PublicCredentialsError, PublicCredentialsEvent, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, RuntimeCommonAuthorizationPalletAuthorize, SpConsensusAuraSr25519AppSr25519Public, SpCoreCryptoKeyTypeId, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpCoreEd25519Public, SpCoreEd25519Signature, SpCoreSr25519Public, SpCoreSr25519Signature, SpCoreVoid, SpRuntimeArithmeticError, SpRuntimeBlakeTwo256, SpRuntimeDigest, SpRuntimeDigestDigestItem, SpRuntimeDispatchError, SpRuntimeHeader, SpRuntimeModuleError, SpRuntimeMultiSignature, SpRuntimeTokenError, SpRuntimeTransactionalError, SpTrieStorageProof, SpVersionRuntimeVersion, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeRuntime, SpiritnetRuntimeSessionKeys, XcmDoubleEncoded, XcmV0Junction, XcmV0JunctionBodyId, XcmV0JunctionBodyPart, XcmV0JunctionNetworkId, XcmV0MultiAsset, XcmV0MultiLocation, XcmV0Order, XcmV0OriginKind, XcmV0Response, XcmV0Xcm, XcmV1Junction, XcmV1MultiAsset, XcmV1MultiLocation, XcmV1MultiassetAssetId, XcmV1MultiassetAssetInstance, XcmV1MultiassetFungibility, XcmV1MultiassetMultiAssetFilter, XcmV1MultiassetMultiAssets, XcmV1MultiassetWildFungibility, XcmV1MultiassetWildMultiAsset, XcmV1MultilocationJunctions, XcmV1Order, XcmV1Response, XcmV1Xcm, XcmV2Instruction, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2WeightLimit, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
+import type { AttestationAttestationsAttestationDetails, AttestationCall, AttestationError, AttestationEvent, CtypeCall, CtypeCtypeEntry, CtypeError, CtypeEvent, CumulusPalletDmpQueueCall, CumulusPalletDmpQueueConfigData, CumulusPalletDmpQueueError, CumulusPalletDmpQueueEvent, CumulusPalletDmpQueuePageIndexData, CumulusPalletParachainSystemCall, CumulusPalletParachainSystemError, CumulusPalletParachainSystemEvent, CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot, CumulusPalletXcmError, CumulusPalletXcmEvent, CumulusPalletXcmOrigin, CumulusPalletXcmpQueueCall, CumulusPalletXcmpQueueError, CumulusPalletXcmpQueueEvent, CumulusPalletXcmpQueueInboundChannelDetails, CumulusPalletXcmpQueueInboundState, CumulusPalletXcmpQueueOutboundChannelDetails, CumulusPalletXcmpQueueOutboundState, CumulusPalletXcmpQueueQueueConfigData, CumulusPrimitivesParachainInherentParachainInherentData, DelegationAccessControlDelegationAc, DelegationCall, DelegationDelegationHierarchyDelegationDetails, DelegationDelegationHierarchyDelegationHierarchyDetails, DelegationDelegationHierarchyDelegationNode, DelegationDelegationHierarchyPermissions, DelegationError, DelegationEvent, DidCall, DidDidDetails, DidDidDetailsDidAuthorizedCallOperation, DidDidDetailsDidCreationDetails, DidDidDetailsDidEncryptionKey, DidDidDetailsDidPublicKey, DidDidDetailsDidPublicKeyDetails, DidDidDetailsDidSignature, DidDidDetailsDidVerificationKey, DidError, DidEvent, DidOriginDidRawOrigin, DidServiceEndpointsDidEndpoint, FrameSupportDispatchDispatchClass, FrameSupportDispatchDispatchInfo, FrameSupportDispatchPays, FrameSupportDispatchPerDispatchClassU32, FrameSupportDispatchPerDispatchClassWeight, FrameSupportDispatchPerDispatchClassWeightsPerClass, FrameSupportDispatchRawOrigin, FrameSupportPalletId, FrameSupportPreimagesBounded, FrameSupportTokensMiscBalanceStatus, FrameSystemAccountInfo, FrameSystemCall, FrameSystemError, FrameSystemEvent, FrameSystemEventRecord, FrameSystemExtensionsCheckGenesis, FrameSystemExtensionsCheckNonZeroSender, FrameSystemExtensionsCheckNonce, FrameSystemExtensionsCheckSpecVersion, FrameSystemExtensionsCheckTxVersion, FrameSystemExtensionsCheckWeight, FrameSystemLastRuntimeUpgradeInfo, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, FrameSystemLimitsWeightsPerClass, FrameSystemPhase, KiltAssetDidsAssetV1AssetId, KiltAssetDidsAssetV1EvmSmartContractFungibleReference, KiltAssetDidsAssetV1EvmSmartContractNonFungibleReference, KiltAssetDidsAssetV1GenericAssetId, KiltAssetDidsChainV1ChainId, KiltAssetDidsChainV1GenericChainId, KiltAssetDidsChainV1GenesisHexHash32Reference, KiltAssetDidsV1AssetDid, KiltSupportDeposit, PalletAuthorshipCall, PalletAuthorshipError, PalletAuthorshipUncleEntryItem, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesCall, PalletBalancesError, PalletBalancesEvent, PalletBalancesReasons, PalletBalancesReserveData, PalletCollectiveCall, PalletCollectiveError, PalletCollectiveEvent, PalletCollectiveRawOrigin, PalletCollectiveVotes, PalletDemocracyCall, PalletDemocracyConviction, PalletDemocracyDelegations, PalletDemocracyError, PalletDemocracyEvent, PalletDemocracyReferendumInfo, PalletDemocracyReferendumStatus, PalletDemocracyTally, PalletDemocracyVoteAccountVote, PalletDemocracyVotePriorLock, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletDidLookupCall, PalletDidLookupConnectionRecord, PalletDidLookupError, PalletDidLookupEvent, PalletIndicesCall, PalletIndicesError, PalletIndicesEvent, PalletMembershipCall, PalletMembershipError, PalletMembershipEvent, PalletPreimageCall, PalletPreimageError, PalletPreimageEvent, PalletPreimageRequestStatus, PalletProxyAnnouncement, PalletProxyCall, PalletProxyError, PalletProxyEvent, PalletProxyProxyDefinition, PalletSchedulerCall, PalletSchedulerError, PalletSchedulerEvent, PalletSchedulerScheduled, PalletSessionCall, PalletSessionError, PalletSessionEvent, PalletTimestampCall, PalletTipsCall, PalletTipsError, PalletTipsEvent, PalletTipsOpenTip, PalletTransactionPaymentChargeTransactionPayment, PalletTransactionPaymentEvent, PalletTransactionPaymentReleases, PalletTreasuryCall, PalletTreasuryError, PalletTreasuryEvent, PalletTreasuryProposal, PalletUtilityCall, PalletUtilityError, PalletUtilityEvent, PalletVestingCall, PalletVestingError, PalletVestingEvent, PalletVestingReleases, PalletVestingVestingInfo, PalletWeb3NamesCall, PalletWeb3NamesError, PalletWeb3NamesEvent, PalletWeb3NamesWeb3NameWeb3NameOwnership, PalletXcmCall, PalletXcmError, PalletXcmEvent, PalletXcmOrigin, ParachainStakingCall, ParachainStakingCandidate, ParachainStakingCandidateStatus, ParachainStakingDelegationCounter, ParachainStakingError, ParachainStakingEvent, ParachainStakingInflationInflationInfo, ParachainStakingInflationRewardRate, ParachainStakingInflationStakingInfo, ParachainStakingRoundInfo, ParachainStakingSetOrderedSet, ParachainStakingStake, ParachainStakingTotalStake, PolkadotCorePrimitivesInboundDownwardMessage, PolkadotCorePrimitivesInboundHrmpMessage, PolkadotCorePrimitivesOutboundHrmpMessage, PolkadotParachainPrimitivesXcmpMessageFormat, PolkadotPrimitivesV2AbridgedHostConfiguration, PolkadotPrimitivesV2AbridgedHrmpChannel, PolkadotPrimitivesV2PersistedValidationData, PolkadotPrimitivesV2UpgradeRestriction, PublicCredentialsCall, PublicCredentialsCredentialsCredential, PublicCredentialsCredentialsCredentialEntry, PublicCredentialsError, PublicCredentialsEvent, RuntimeCommonAssetsAssetDid, RuntimeCommonAuthorizationAuthorizationId, RuntimeCommonAuthorizationPalletAuthorize, SpArithmeticArithmeticError, SpConsensusAuraSr25519AppSr25519Public, SpCoreCryptoKeyTypeId, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpCoreEd25519Public, SpCoreEd25519Signature, SpCoreSr25519Public, SpCoreSr25519Signature, SpCoreVoid, SpRuntimeBlakeTwo256, SpRuntimeDigest, SpRuntimeDigestDigestItem, SpRuntimeDispatchError, SpRuntimeHeader, SpRuntimeModuleError, SpRuntimeMultiSignature, SpRuntimeTokenError, SpRuntimeTransactionalError, SpTrieStorageProof, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight, SpWeightsWeightV2Weight, SpiritnetRuntimeOriginCaller, SpiritnetRuntimeProxyType, SpiritnetRuntimeRuntime, SpiritnetRuntimeSessionKeys, XcmDoubleEncoded, XcmV0Junction, XcmV0JunctionBodyId, XcmV0JunctionBodyPart, XcmV0JunctionNetworkId, XcmV0MultiAsset, XcmV0MultiLocation, XcmV0Order, XcmV0OriginKind, XcmV0Response, XcmV0Xcm, XcmV1Junction, XcmV1MultiAsset, XcmV1MultiLocation, XcmV1MultiassetAssetId, XcmV1MultiassetAssetInstance, XcmV1MultiassetFungibility, XcmV1MultiassetMultiAssetFilter, XcmV1MultiassetMultiAssets, XcmV1MultiassetWildFungibility, XcmV1MultiassetWildMultiAsset, XcmV1MultilocationJunctions, XcmV1Order, XcmV1Response, XcmV1Xcm, XcmV2Instruction, XcmV2Response, XcmV2TraitsError, XcmV2TraitsOutcome, XcmV2WeightLimit, XcmV2Xcm, XcmVersionedMultiAssets, XcmVersionedMultiLocation, XcmVersionedXcm } from '@polkadot/types/lookup';
 
 declare module '@polkadot/types/types/registry' {
   interface InterfaceTypes {
@@ -59,18 +59,16 @@ declare module '@polkadot/types/types/registry' {
     DidEvent: DidEvent;
     DidOriginDidRawOrigin: DidOriginDidRawOrigin;
     DidServiceEndpointsDidEndpoint: DidServiceEndpointsDidEndpoint;
+    FrameSupportDispatchDispatchClass: FrameSupportDispatchDispatchClass;
+    FrameSupportDispatchDispatchInfo: FrameSupportDispatchDispatchInfo;
+    FrameSupportDispatchPays: FrameSupportDispatchPays;
+    FrameSupportDispatchPerDispatchClassU32: FrameSupportDispatchPerDispatchClassU32;
+    FrameSupportDispatchPerDispatchClassWeight: FrameSupportDispatchPerDispatchClassWeight;
+    FrameSupportDispatchPerDispatchClassWeightsPerClass: FrameSupportDispatchPerDispatchClassWeightsPerClass;
     FrameSupportDispatchRawOrigin: FrameSupportDispatchRawOrigin;
     FrameSupportPalletId: FrameSupportPalletId;
-    FrameSupportScheduleLookupError: FrameSupportScheduleLookupError;
-    FrameSupportScheduleMaybeHashed: FrameSupportScheduleMaybeHashed;
+    FrameSupportPreimagesBounded: FrameSupportPreimagesBounded;
     FrameSupportTokensMiscBalanceStatus: FrameSupportTokensMiscBalanceStatus;
-    FrameSupportWeightsDispatchClass: FrameSupportWeightsDispatchClass;
-    FrameSupportWeightsDispatchInfo: FrameSupportWeightsDispatchInfo;
-    FrameSupportWeightsPays: FrameSupportWeightsPays;
-    FrameSupportWeightsPerDispatchClassU32: FrameSupportWeightsPerDispatchClassU32;
-    FrameSupportWeightsPerDispatchClassWeight: FrameSupportWeightsPerDispatchClassWeight;
-    FrameSupportWeightsPerDispatchClassWeightsPerClass: FrameSupportWeightsPerDispatchClassWeightsPerClass;
-    FrameSupportWeightsRuntimeDbWeight: FrameSupportWeightsRuntimeDbWeight;
     FrameSystemAccountInfo: FrameSystemAccountInfo;
     FrameSystemCall: FrameSystemCall;
     FrameSystemError: FrameSystemError;
@@ -105,7 +103,6 @@ declare module '@polkadot/types/types/registry' {
     PalletBalancesError: PalletBalancesError;
     PalletBalancesEvent: PalletBalancesEvent;
     PalletBalancesReasons: PalletBalancesReasons;
-    PalletBalancesReleases: PalletBalancesReleases;
     PalletBalancesReserveData: PalletBalancesReserveData;
     PalletCollectiveCall: PalletCollectiveCall;
     PalletCollectiveError: PalletCollectiveError;
@@ -117,23 +114,17 @@ declare module '@polkadot/types/types/registry' {
     PalletDemocracyDelegations: PalletDemocracyDelegations;
     PalletDemocracyError: PalletDemocracyError;
     PalletDemocracyEvent: PalletDemocracyEvent;
-    PalletDemocracyPreimageStatus: PalletDemocracyPreimageStatus;
     PalletDemocracyReferendumInfo: PalletDemocracyReferendumInfo;
     PalletDemocracyReferendumStatus: PalletDemocracyReferendumStatus;
-    PalletDemocracyReleases: PalletDemocracyReleases;
     PalletDemocracyTally: PalletDemocracyTally;
     PalletDemocracyVoteAccountVote: PalletDemocracyVoteAccountVote;
     PalletDemocracyVotePriorLock: PalletDemocracyVotePriorLock;
     PalletDemocracyVoteThreshold: PalletDemocracyVoteThreshold;
     PalletDemocracyVoteVoting: PalletDemocracyVoteVoting;
-    PalletDidLookupAccountAccountId20: PalletDidLookupAccountAccountId20;
-    PalletDidLookupAccountEthereumSignature: PalletDidLookupAccountEthereumSignature;
-    PalletDidLookupAssociateAccountRequest: PalletDidLookupAssociateAccountRequest;
     PalletDidLookupCall: PalletDidLookupCall;
     PalletDidLookupConnectionRecord: PalletDidLookupConnectionRecord;
     PalletDidLookupError: PalletDidLookupError;
     PalletDidLookupEvent: PalletDidLookupEvent;
-    PalletDidLookupLinkableAccountLinkableAccountId: PalletDidLookupLinkableAccountLinkableAccountId;
     PalletIndicesCall: PalletIndicesCall;
     PalletIndicesError: PalletIndicesError;
     PalletIndicesEvent: PalletIndicesEvent;
@@ -152,7 +143,7 @@ declare module '@polkadot/types/types/registry' {
     PalletSchedulerCall: PalletSchedulerCall;
     PalletSchedulerError: PalletSchedulerError;
     PalletSchedulerEvent: PalletSchedulerEvent;
-    PalletSchedulerScheduledV3: PalletSchedulerScheduledV3;
+    PalletSchedulerScheduled: PalletSchedulerScheduled;
     PalletSessionCall: PalletSessionCall;
     PalletSessionError: PalletSessionError;
     PalletSessionEvent: PalletSessionEvent;
@@ -213,6 +204,7 @@ declare module '@polkadot/types/types/registry' {
     RuntimeCommonAssetsAssetDid: RuntimeCommonAssetsAssetDid;
     RuntimeCommonAuthorizationAuthorizationId: RuntimeCommonAuthorizationAuthorizationId;
     RuntimeCommonAuthorizationPalletAuthorize: RuntimeCommonAuthorizationPalletAuthorize;
+    SpArithmeticArithmeticError: SpArithmeticArithmeticError;
     SpConsensusAuraSr25519AppSr25519Public: SpConsensusAuraSr25519AppSr25519Public;
     SpCoreCryptoKeyTypeId: SpCoreCryptoKeyTypeId;
     SpCoreEcdsaPublic: SpCoreEcdsaPublic;
@@ -222,7 +214,6 @@ declare module '@polkadot/types/types/registry' {
     SpCoreSr25519Public: SpCoreSr25519Public;
     SpCoreSr25519Signature: SpCoreSr25519Signature;
     SpCoreVoid: SpCoreVoid;
-    SpRuntimeArithmeticError: SpRuntimeArithmeticError;
     SpRuntimeBlakeTwo256: SpRuntimeBlakeTwo256;
     SpRuntimeDigest: SpRuntimeDigest;
     SpRuntimeDigestDigestItem: SpRuntimeDigestDigestItem;
@@ -234,6 +225,8 @@ declare module '@polkadot/types/types/registry' {
     SpRuntimeTransactionalError: SpRuntimeTransactionalError;
     SpTrieStorageProof: SpTrieStorageProof;
     SpVersionRuntimeVersion: SpVersionRuntimeVersion;
+    SpWeightsRuntimeDbWeight: SpWeightsRuntimeDbWeight;
+    SpWeightsWeightV2Weight: SpWeightsWeightV2Weight;
     SpiritnetRuntimeOriginCaller: SpiritnetRuntimeOriginCaller;
     SpiritnetRuntimeProxyType: SpiritnetRuntimeProxyType;
     SpiritnetRuntimeRuntime: SpiritnetRuntimeRuntime;
