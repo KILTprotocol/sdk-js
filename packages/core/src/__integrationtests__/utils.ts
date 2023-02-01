@@ -9,7 +9,7 @@
 /* eslint-disable no-console */
 
 import { BN } from '@polkadot/util'
-import { ApiPromise, WsProvider } from '@polkadot/api'
+import { ApiPromise } from '@polkadot/api'
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
 import { Crypto } from '@kiltprotocol/utils'
@@ -23,11 +23,10 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { typesBundle } from '@kiltprotocol/type-definitions'
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as CType from '../ctype'
-import { init } from '../kilt'
+import { connect, init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
@@ -54,10 +53,8 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 }
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
-  const provider = new WsProvider(wsEndpoint)
-  const api = new ApiPromise({ provider, typesBundle })
-  await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
-  return api.isReadyOrError
+  await init({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+  return connect(wsEndpoint)
 }
 
 export async function initializeApi(): Promise<ApiPromise> {
