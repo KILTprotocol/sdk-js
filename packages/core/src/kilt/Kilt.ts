@@ -37,7 +37,8 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
  *
  * @param blockchainRpcWsUrl WebSocket URL of the RPC endpoint exposed by a node that is part of the Kilt blockchain network you wish to connect to.
  * @param apiOpts Additional parameters to be passed to ApiPromise.create().
- * @param apiOpts.noInitWarn Allows suppressing warnings related to runtime types and augmentation. Enabled by default if the global log level is 'error' or higher.
+ * @param apiOpts.noInitWarn Allows suppressing warnings related to runtime types and augmentation.
+ * By default warnings are shown if the global log level is 'warn' or lower and disabled on 'error' or higher.
  * @returns An instance of ApiPromise.
  */
 export async function connect(
