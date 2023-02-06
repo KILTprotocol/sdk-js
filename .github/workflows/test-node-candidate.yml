@@ -35,52 +35,6 @@ jobs:
           name: build
           path: build.zip
 
-  lint:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Use Node.js 14
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - uses: actions/download-artifact@v2
-        with:
-          name: build
-      - name: unzip
-        run: unzip build.zip -d .
-      - name: lint
-        run: yarn lint
-      - name: check dependency duplication
-        run: if ! yarn dedupe --check; then echo "::warning ::Dependencies may be deduplicated"; fi;
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-
-    strategy:
-      matrix:
-        node-version: [14, 16]
-        required: ['required']
-        include:
-          - node-version: 18
-            required: 'optional'
-
-    continue-on-error: ${{ matrix.required == 'optional' }}
-
-    steps:
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-      - uses: actions/download-artifact@v2
-        with:
-          name: build
-      - name: unzip
-        run: unzip build.zip -d .
-      - name: unit tests
-        run: yarn test:ci
-
   cache_imgs:
     runs-on: ubuntu-latest
     needs: build
