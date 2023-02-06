@@ -268,7 +268,7 @@ describe('When exporting a DID Document from a light DID', () => {
       Object {
         "@context": Array [
           "https://www.w3.org/ns/did/v1",
-          "ipfs://bafybeicvyhf3mcmbc4gupvrip5iekntsyrl5326qxoedagzqbvlc4ktqp4",
+          "ipfs://QmU7QkuTCPz7NmD5bD7Z7mQVz2UsSPaEK58B5sYnjnPRNW",
         ],
         "authentication": Array [
           "#authentication",

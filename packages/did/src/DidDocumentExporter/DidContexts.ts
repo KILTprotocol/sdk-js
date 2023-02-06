@@ -10,7 +10,7 @@
  * Should be the second entry in the ordered set of contexts after [[W3C_DID_CONTEXT_URL]] in the JSON-LD representation of a KILT DID document.
  */
 export const KILT_DID_CONTEXT_URL =
-  'ipfs://bafybeicvyhf3mcmbc4gupvrip5iekntsyrl5326qxoedagzqbvlc4ktqp4'
+  'ipfs://QmU7QkuTCPz7NmD5bD7Z7mQVz2UsSPaEK58B5sYnjnPRNW'
 /**
  * URL identifying the JSON-LD context file that is part of the W3C DID core specifications describing the terms defined by the core data model.
  * Must be the first entry in the ordered set of contexts in a JSON-LD representation of a DID document.
