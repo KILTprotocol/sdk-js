@@ -1868,7 +1868,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.10.2
-    "@polkadot/keyring": ^10.0.0
+    "@polkadot/keyring": ^10.2.1
     "@polkadot/types": ^9.10.2
     rimraf: ^3.0.2
     typescript: ^4.8.3
