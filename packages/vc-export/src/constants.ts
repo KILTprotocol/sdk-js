@@ -13,6 +13,9 @@ export const DEFAULT_VERIFIABLECREDENTIAL_CONTEXT =
 
 export const KILT_CREDENTIAL_CONTEXT_URL =
   'https://www.kilt.io/contexts/credentials'
+
+export const DID_CONFIGURATION_CONTEXT =
+      'https://identity.foundation/.well-known/did-configuration/v1';
 /**
  * Constant for default type.
  */
