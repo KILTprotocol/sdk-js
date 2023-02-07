@@ -19,6 +19,7 @@ import type {
 
 import { exportToDidDocument } from './DidDocumentExporter.js'
 import * as Did from '../index.js'
+import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from '../index.js'
 
 /**
  * @group unit/did
@@ -138,7 +139,7 @@ describe('When exporting a DID Document from a full DID', () => {
     const didDoc = exportToDidDocument(fullDid, 'application/ld+json')
 
     expect(didDoc).toStrictEqual({
-      '@context': ['https://www.w3.org/ns/did/v1'],
+      '@context': [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL],
       id: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       verificationMethod: [
         {
@@ -267,6 +268,7 @@ describe('When exporting a DID Document from a light DID', () => {
       Object {
         "@context": Array [
           "https://www.w3.org/ns/did/v1",
+          "ipfs://QmU7QkuTCPz7NmD5bD7Z7mQVz2UsSPaEK58B5sYnjnPRNW",
         ],
         "authentication": Array [
           "#authentication",
