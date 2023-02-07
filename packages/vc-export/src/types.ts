@@ -71,7 +71,7 @@ export interface KiltAttesterLegitimationV1 extends IssuerBacking {
 }
 
 export interface KiltAttesterDelegationV1 extends IssuerBacking {
-  id: `${Caip2ChainId}${string}`
+  id: `kilt:delegation/${string}`
   type: typeof KILT_ATTESTER_DELEGATION_V1_TYPE
   delegators?: DidUri[]
 }

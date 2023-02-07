@@ -8,10 +8,16 @@
 import { Attestation, CType } from '@kiltprotocol/core'
 import type { ApiPromise } from '@polkadot/api'
 import { u8aToHex } from '@polkadot/util'
-import { Caip2 } from './CAIP/index.js'
-import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
-import { credentialIdToRootHash } from './KiltCredentialV1.js'
-import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
+import {
+  KILT_ATTESTER_DELEGATION_V1_TYPE,
+  KILT_REVOCATION_STATUS_V1_TYPE,
+} from './constants.js'
+import { delegationIdFromAttesterDelegation } from './KiltCredentialV1.js'
+import type {
+  KiltAttesterDelegationV1,
+  KiltRevocationStatusV1,
+  VerifiableCredential,
+} from './types.js'
 
 /**
  * Check attestation and revocation status of a credential at the latest block available.
@@ -42,10 +48,17 @@ export async function checkStatus(
 
   const decoded = Attestation.fromChain(encoded, u8aToHex(rootHash))
   const onChainCType = CType.hashToId(decoded.cTypeHash)
+  const delegation = credential.federatedTrustModel?.find(
+    (i): i is KiltAttesterDelegationV1 =>
+      i.type === KILT_ATTESTER_DELEGATION_V1_TYPE
+  )
+  const delegationId = delegation
+    ? u8aToHex(delegationIdFromAttesterDelegation(delegation))
+    : null
   if (
     decoded.owner !== credential.issuer ||
-    onChainCType !== credential.credentialSchema.id
-    // TODO: this must also check that the delegation hasn't changed.
+    onChainCType !== credential.credentialSchema.id ||
+    delegationId !== decoded.delegationId
   ) {
     throw new Error(
       `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`

@@ -163,7 +163,7 @@ export function fromInput({
   })
   if (delegationId) {
     const delegation: KiltAttesterDelegationV1 = {
-      id: `${chainId}/kilt:delegation/${base58Encode(hexToU8a(delegationId))}`,
+      id: `kilt:delegation/${base58Encode(hexToU8a(delegationId))}`,
       type: KILT_ATTESTER_DELEGATION_V1_TYPE,
     }
     federatedTrustModel.push(delegation)
@@ -398,4 +398,24 @@ export function jsonLdExpandCredentialSubject<
     }
   })
   return expandedContents as ExpandedContents<T>
+}
+
+const delegationIdPattern =
+  /^kilt:delegation\/(?<delegationId>[-a-zA-Z0-9]{1,78})$/
+
+/**
+ * @param delegation
+ */
+export function delegationIdFromAttesterDelegation(
+  delegation: KiltAttesterDelegationV1
+): Uint8Array {
+  if (delegation.type !== KILT_ATTESTER_DELEGATION_V1_TYPE) {
+    throw new Error(`type must be ${KILT_ATTESTER_DELEGATION_V1_TYPE}`)
+  }
+  const match = delegationIdPattern.exec(delegation.id)
+  if (!match || !match.groups?.delegationId)
+    throw new Error(
+      `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${delegation.id}`
+    )
+  return base58Decode(match.groups.delegationId)
 }

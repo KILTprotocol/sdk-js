@@ -28,6 +28,7 @@ import {
   stringToU8a,
   u8aCmp,
   u8aConcatStrict,
+  u8aEq,
   u8aToHex,
 } from '@polkadot/util'
 import {
@@ -47,6 +48,7 @@ import {
 import {
   credentialIdFromRootHash,
   credentialIdToRootHash,
+  delegationIdFromAttesterDelegation,
   ExpandedContents,
   jsonLdExpandCredentialSubject,
   validateStructure as validateCredentialStructure,
@@ -199,7 +201,7 @@ async function verifyAttestedAt(
       ({ phase, event }) =>
         phase.isApplyExtrinsic &&
         api.events.attestation.AttestationCreated.is(event) &&
-        u8aCmp(event.data[1], claimHash) === 0
+        u8aEq(event.data[1], claimHash)
     )
   if (!attestationEvent)
     throw new SDKErrors.CredentialUnverifiableError(
@@ -319,12 +321,7 @@ export async function verifyProof(
       }
       if (type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
         // get on-chain id from delegation id
-        const { assetInstance } = Caip19.parse(id)
-        if (!assetInstance)
-          throw new Error(
-            `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${id}`
-          )
-        return base58Decode(id)
+        return delegationIdFromAttesterDelegation({ type, id })
       }
       throw new Error(`unknown type ${type} in federatedTrustModel`)
     }),
@@ -336,7 +333,7 @@ export async function verifyProof(
     throw new Error('root hash not verifiable')
 
   // 13. check that api is connected to the right network
-  const apiChainId = assertMatchingConnection(api, credential)
+  assertMatchingConnection(api, credential)
   // 14. query info from chain
   const {
     cTypeId: onChainCType,
@@ -366,19 +363,8 @@ export async function verifyProof(
     credential.federatedTrustModel?.map(async (i) => {
       if (i.type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
         // make sure on-chain delegation matches delegation on credential
-        const { assetInstance, chainId, assetNamespace, assetReference } =
-          Caip19.parse(i.id)
         if (
-          !assetInstance ||
-          assetNamespace !== 'kilt' ||
-          assetReference !== 'delegation'
-        )
-          throw new Error(
-            `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${i.id}`
-          )
-        if (
-          chainId !== apiChainId ||
-          u8aCmp(base58Decode(assetInstance), hexToU8a(delegationId)) !== 0
+          !u8aEq(delegationIdFromAttesterDelegation(i), hexToU8a(delegationId))
         )
           throw new Error(`Delegation ${i.id} does not match on-chain records`)
         // TODO: check delegators
