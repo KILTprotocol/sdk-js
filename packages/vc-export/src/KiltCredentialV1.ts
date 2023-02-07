@@ -146,7 +146,7 @@ export function fromInput({
 
   const chainId: Caip2ChainId = Caip2.chainIdFromGenesis(chainGenesisHash)
   const credentialStatus: KiltRevocationStatusV1 = {
-    id: chainId,
+    id: `${chainId}/kilt:attestation/${base58Encode(hexToU8a(claimHash))}`,
     type: KILT_REVOCATION_STATUS_V1_TYPE,
   }
 
@@ -243,7 +243,7 @@ export const credentialSchema: JsonSchema.Schema = {
           format: 'uri',
         },
         type: {
-          // public credentials may have a different revocation check
+          // public credentials may have a different revocation check, so we don't force the type here
           type: 'string',
         },
       },

@@ -8,6 +8,8 @@
 import { Attestation, CType } from '@kiltprotocol/core'
 import type { ApiPromise } from '@polkadot/api'
 import { u8aToHex } from '@polkadot/util'
+import { base58Decode } from '@polkadot/util-crypto'
+import { Caip19, Caip2 } from './CAIP/index.js'
 import {
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_REVOCATION_STATUS_V1_TYPE,
@@ -35,11 +37,24 @@ export async function checkStatus(
   if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
     throw new Error('method type mismatch')
   const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
-  if (apiChainId !== credentialStatus.id)
+  const { chainId, assetInstance, assetNamespace, assetReference } =
+    Caip19.parse(credentialStatus.id)
+  if (apiChainId !== chainId) {
     throw new Error(
-      `api must be connected to network ${credentialStatus.id} to verify this credential`
+      `api must be connected to network ${chainId} to verify this credential`
     )
-  const rootHash = credentialIdToRootHash(credential.id)
+  }
+  if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
+    throw new Error(
+      `cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
+    )
+  }
+  if (!assetInstance) {
+    throw new Error(
+      'The CAIP-19 identifier must contain a token id decoding to the credential root hash'
+    )
+  }
+  const rootHash = base58Decode(assetInstance)
   const encoded = await api.query.attestation.attestations(rootHash)
   if (encoded.isNone)
     throw new Error(

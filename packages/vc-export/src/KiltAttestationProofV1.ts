@@ -43,6 +43,7 @@ import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
+  KILT_CREDENTIAL_IRI_PREFIX,
   KILT_REVOCATION_STATUS_V1_TYPE,
 } from './constants.js'
 import {
@@ -235,13 +236,15 @@ async function verifyAttestedAt(
 
 function assertMatchingConnection(
   api: ApiPromise,
-  credential: VerifiableCredential
+  { credentialStatus }: VerifiableCredential
 ): `polkadot:${string}` {
   const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
-  if (apiChainId !== credential.credentialStatus.id)
+  const { chainId } = Caip19.parse(credentialStatus.id)
+  if (apiChainId !== chainId) {
     throw new Error(
-      `api must be connected to network ${credential.credentialStatus.id} to verify this credential`
+      `api must be connected to network ${chainId} to verify this credential`
     )
+  }
   return apiChainId
 }
 
@@ -277,11 +280,25 @@ export async function verifyProof(
   // 4. check nonTransferable
   if (nonTransferable !== true)
     throw new CredentialMalformedError('nonTransferable must be true')
-  // 5. check credentialStatus type
+  // 5. check credentialStatus
   if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
     throw new CredentialMalformedError(
       `credentialStatus must have type ${KILT_REVOCATION_STATUS_V1_TYPE}`
     )
+  const { assetInstance, assetNamespace, assetReference } = Caip19.parse(
+    credentialStatus.id
+  )
+  if (
+    assetNamespace !== 'kilt' ||
+    assetReference !== 'attestation' ||
+    assetInstance !== credential.id.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
+  ) {
+    throw new Error(
+      `credentialStatus.id must end on 'kilt:attestation/${credential.id.substring(
+        KILT_CREDENTIAL_IRI_PREFIX.length
+      )} in order to be verifiable with this proof`
+    )
+  }
   // 6. json-ld expand credentialSubject
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   // 7. Transform to normalized statments and hash
