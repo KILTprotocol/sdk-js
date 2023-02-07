@@ -21,7 +21,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 
-export type IAssetDidParsingResult = {
+export type ResolvedAssetDid = {
   uri: AssetDidUri
   chainId: Caip2ChainId
   chainNamespace: Caip2ChainNamespace
@@ -42,16 +42,16 @@ const ASSET_DID_REGEX =
  * @param assetDidUri An AssetDID uri as a string.
 * @returns Object containing information extracted from the AssetDID uri.
  */
-export function resolve(assetDidUri: AssetDidUri): IAssetDidParsingResult {
+export function resolve(assetDidUri: AssetDidUri): ResolvedAssetDid {
   const matches = ASSET_DID_REGEX.exec(assetDidUri)?.groups
   if (!matches) {
     throw new SDKErrors.InvalidDidFormatError(assetDidUri)
   }
 
-  const { chainId, assetId } = matches as Omit<IAssetDidParsingResult, 'uri'>
+  const { chainId, assetId } = matches as Omit<ResolvedAssetDid, 'uri'>
 
   return {
-    ...(matches as Omit<IAssetDidParsingResult, 'uri'>),
+    ...(matches as Omit<ResolvedAssetDid, 'uri'>),
     uri: `did:asset:${chainId}.${assetId}`,
   }
 }
@@ -92,7 +92,7 @@ export function resolveCompliant(
         reference: assetReference,
         identifier: assetInstance,
       },
-    },
+    }
   } catch (e) {
     didResolutionMetadata.error = 'invalidDid'
     if (e instanceof Error) {
@@ -103,6 +103,6 @@ export function resolveCompliant(
   return {
     didDocumentMetadata,
     didResolutionMetadata,
-    didDocument
+    didDocument,
   }
 }

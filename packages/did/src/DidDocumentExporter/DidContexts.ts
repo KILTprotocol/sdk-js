@@ -11,6 +11,14 @@
  */
 export const KILT_DID_CONTEXT_URL =
   'ipfs://QmU7QkuTCPz7NmD5bD7Z7mQVz2UsSPaEK58B5sYnjnPRNW'
+
+/**
+ * IPFS URL identifying a JSON-LD context file describing terms used in DID documents of the AssetDID method that are not defined in the W3C DID core context.
+ * Should be the second entry in the ordered set of contexts after [[W3C_DID_CONTEXT_URL]] in the JSON-LD representation of an AssetDID document.
+ */
+export const ASSET_DID_CONTEXT_URL =
+  'ipfs://QmUAcsTVNfjGoZ3dcuHKikFJZpRiUkXCpbWcfxb1j5qnv4'
+
 /**
  * URL identifying the JSON-LD context file that is part of the W3C DID core specifications describing the terms defined by the core data model.
  * Must be the first entry in the ordered set of contexts in a JSON-LD representation of a DID document.
