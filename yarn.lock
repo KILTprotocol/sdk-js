@@ -1849,12 +1849,12 @@ __metadata:
     "@kiltprotocol/type-definitions": "workspace:*"
     "@polkadot/api": ^9.10.2
     "@polkadot/typegen": ^9.10.2
-    "@types/websocket": ^1.0.0
+    "@types/websocket": ^1.0.5
     glob: ^7.1.1
     rimraf: ^3.0.2
     ts-node: ^10.4.0
     typescript: ^4.8.3
-    websocket: ^1.0.31
+    websocket: ^1.0.34
     yargs: ^16.2.0
   languageName: unknown
   linkType: soft
@@ -1868,7 +1868,7 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.10.2
-    "@polkadot/keyring": ^10.0.0
+    "@polkadot/keyring": ^10.2.1
     "@polkadot/types": ^9.10.2
     rimraf: ^3.0.2
     typescript: ^4.8.3
@@ -1902,10 +1902,10 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.10.2
-    "@polkadot/keyring": ^10.0.0
+    "@polkadot/keyring": ^10.2.1
     "@polkadot/types": ^9.10.2
-    "@polkadot/util": ^10.0.0
-    "@polkadot/util-crypto": ^10.0.0
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
     "@types/uuid": ^8.0.0
     cbor: ^8.1.0
     rimraf: ^3.0.2
@@ -1924,12 +1924,12 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.10.2
-    "@polkadot/keyring": ^10.0.0
+    "@polkadot/keyring": ^10.2.1
     "@polkadot/types": ^9.10.2
     "@polkadot/types-codec": ^9.10.2
-    "@polkadot/util": ^10.0.0
-    "@polkadot/util-crypto": ^10.0.0
-    cbor: ^8.0.2
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
+    cbor: ^8.1.0
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -1944,7 +1944,7 @@ __metadata:
     "@kiltprotocol/testing": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/util": ^10.0.0
+    "@polkadot/util": ^10.2.1
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -1986,10 +1986,10 @@ __metadata:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.10.2
-    "@polkadot/keyring": ^10.0.0
+    "@polkadot/keyring": ^10.2.1
     "@polkadot/types": ^9.10.2
-    "@polkadot/util": ^10.0.0
-    "@polkadot/util-crypto": ^10.0.0
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -2009,10 +2009,10 @@ __metadata:
   resolution: "@kiltprotocol/types@workspace:packages/types"
   dependencies:
     "@polkadot/api": ^9.10.2
-    "@polkadot/keyring": ^10.0.0
+    "@polkadot/keyring": ^10.2.1
     "@polkadot/types": ^9.10.2
-    "@polkadot/util": ^10.0.0
-    "@polkadot/util-crypto": ^10.0.0
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
     rimraf: ^3.0.2
     typescript: ^4.8.3
   languageName: unknown
@@ -2024,9 +2024,9 @@ __metadata:
   dependencies:
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^9.10.2
-    "@polkadot/keyring": ^10.0.0
-    "@polkadot/util": ^10.0.0
-    "@polkadot/util-crypto": ^10.0.0
+    "@polkadot/keyring": ^10.2.1
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
     typescript: ^4.8.3
@@ -2046,8 +2046,8 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^9.10.2
     "@polkadot/types": ^9.10.2
-    "@polkadot/util": ^10.0.0
-    "@polkadot/util-crypto": ^10.0.0
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
     "@types/jsonld": 1.5.1
     jsonld: ^2.0.2
     jsonld-signatures: ^5.0.0
@@ -2201,7 +2201,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/keyring@npm:^10.0.0, @polkadot/keyring@npm:^10.2.1":
+"@polkadot/keyring@npm:^10.2.1":
   version: 10.2.1
   resolution: "@polkadot/keyring@npm:10.2.1"
   dependencies:
@@ -2380,7 +2380,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util-crypto@npm:10.2.1, @polkadot/util-crypto@npm:^10.0.0, @polkadot/util-crypto@npm:^10.2.1":
+"@polkadot/util-crypto@npm:10.2.1, @polkadot/util-crypto@npm:^10.2.1":
   version: 10.2.1
   resolution: "@polkadot/util-crypto@npm:10.2.1"
   dependencies:
@@ -2401,7 +2401,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util@npm:10.2.1, @polkadot/util@npm:^10.0.0, @polkadot/util@npm:^10.2.1":
+"@polkadot/util@npm:10.2.1, @polkadot/util@npm:^10.2.1":
   version: 10.2.1
   resolution: "@polkadot/util@npm:10.2.1"
   dependencies:
@@ -2935,7 +2935,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/websocket@npm:^1.0.0, @types/websocket@npm:^1.0.5":
+"@types/websocket@npm:^1.0.5":
   version: 1.0.5
   resolution: "@types/websocket@npm:1.0.5"
   dependencies:
@@ -4150,7 +4150,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cbor@npm:^8.0.2, cbor@npm:^8.1.0":
+"cbor@npm:^8.1.0":
   version: 8.1.0
   resolution: "cbor@npm:8.1.0"
   dependencies:
@@ -10726,7 +10726,7 @@ typescript@^4.8.3:
   languageName: node
   linkType: hard
 
-"websocket@npm:^1.0.31, websocket@npm:^1.0.34":
+"websocket@npm:^1.0.34":
   version: 1.0.34
   resolution: "websocket@npm:1.0.34"
   dependencies:
