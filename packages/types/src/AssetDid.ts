@@ -41,3 +41,32 @@ export type Caip19AssetId =
  * A string containing an AssetDID as per the [AssetDID specification](https://github.com/KILTprotocol/spec-asset-did).
  */
 export type AssetDidUri = `did:asset:${Caip2ChainId}.${Caip19AssetId}`
+
+export interface AssetDidDocument {
+  id: AssetDidUri
+
+  chain: {
+    namespace: Caip2ChainNamespace
+    reference: Caip2ChainReference
+  }
+  asset: {
+    namespace: Caip19AssetNamespace
+    reference: Caip19AssetReference
+    identifier?: Caip19AssetInstance
+  }
+}
+
+export interface AssetDidResolutionMetadata {
+  error?: 'invalidDid'
+  errorMessage?: string
+}
+
+export interface AssetDidResolutionDocumentMetadata {
+  canonicalId?: AssetDidUri
+}
+
+export interface ConformingAssetDidResolutionResult {
+  didDocumentMetadata: AssetDidResolutionDocumentMetadata
+  didResolutionMetadata: AssetDidResolutionMetadata
+  didDocument?: AssetDidDocument
+}

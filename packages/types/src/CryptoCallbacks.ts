@@ -10,7 +10,7 @@ import type {
   DidUri,
   DidVerificationKey,
   VerificationKeyRelationship,
-} from './DidDocument.js'
+} from './KiltDidDocument.js'
 
 /**
  * Base interface for all signing requests.

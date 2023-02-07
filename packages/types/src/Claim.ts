@@ -6,7 +6,7 @@
  */
 
 import type { CTypeHash } from './CType'
-import type { DidUri } from './DidDocument'
+import type { DidUri } from './KiltDidDocument'
 
 export type IClaimContents = Record<
   string,

@@ -6,3 +6,4 @@
  */
 
 export * from './AssetDid.js'
+export * from './Resolver.js'

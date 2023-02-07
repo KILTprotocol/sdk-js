@@ -8,14 +8,14 @@
 import {
   ConformingDidKey,
   ConformingDidServiceEndpoint,
-} from './DidDocumentExporter.js'
+} from './KiltDidDocumentExporter.js'
 import type {
   DidDocument,
   DidKey,
   DidResourceUri,
   DidUri,
   KeyRelationship,
-} from './DidDocument.js'
+} from './KiltDidDocument.js'
 
 /**
  * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
