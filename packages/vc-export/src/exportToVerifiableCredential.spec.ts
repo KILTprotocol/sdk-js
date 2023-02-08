@@ -14,10 +14,11 @@ import {
   ICType,
   ICredentialPresentation,
 } from '@kiltprotocol/types'
-import { Attestation, Credential } from '@kiltprotocol/core'
+import { Credential } from '@kiltprotocol/core'
 import { ApiMocks } from '@kiltprotocol/testing'
 import { randomAsU8a } from '@polkadot/util-crypto'
-import { hexToU8a } from '@polkadot/util'
+import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
+import { U8aLike } from '@polkadot/util/types'
 import type { VerifiableCredential } from './types'
 import {
   credentialIdFromRootHash,
@@ -31,8 +32,24 @@ import {
 
 import { verifyProof } from './KiltAttestationProofV1.js'
 import { validateSchema } from './verificationUtils.js'
+import { checkStatus } from './KiltRevocationStatusV1'
 
 const mockedApi = ApiMocks.createAugmentedApi()
+
+function makeEvent(idx: U8aLike, eventData: unknown[]) {
+  const index = u8aToU8a(idx)
+  return mockedApi.createType('Vec<FrameSystemEventRecord>', [
+    {
+      event: u8aConcat(
+        index,
+        new (mockedApi.registry.findMetaEvent(index))(
+          mockedApi.registry,
+          eventData
+        ).toU8a()
+      ),
+    },
+  ])
+}
 
 const ctype: ICType = {
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -104,7 +121,14 @@ const attestation: IAttestation = {
 const timestamp = 1234567
 const blockHash = randomAsU8a(32)
 const genesisHash = randomAsU8a(32)
-mockedApi.at = () => Promise.resolve(mockedApi)
+jest.spyOn(mockedApi, 'at').mockImplementation(() => Promise.resolve(mockedApi))
+jest
+  .spyOn(mockedApi, 'queryMulti')
+  .mockImplementation((calls) =>
+    Promise.all(
+      calls.map((call) => (Array.isArray(call) ? call[0](call[1]) : call()))
+    )
+  )
 jest
   .spyOn(mockedApi, 'genesisHash', 'get')
   .mockImplementation(() => genesisHash as any)
@@ -124,6 +148,23 @@ mockedApi.query.attestation = {
 } as any
 mockedApi.query.timestamp = {
   now: jest.fn().mockResolvedValue(mockedApi.createType('u64', timestamp)),
+} as any
+
+const attestationCreatedIndex = [
+  62,
+  mockedApi.events.attestation.AttestationCreated.meta.index.toNumber(),
+]
+mockedApi.query.system = {
+  events: jest
+    .fn()
+    .mockResolvedValue(
+      makeEvent(attestationCreatedIndex, [
+        '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+        '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+        '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+        null,
+      ])
+    ),
 } as any
 
 it('exports credential to VC', () => {
@@ -246,10 +287,18 @@ describe('proofs', () => {
     )
   })
 
-  it('it verifies self-signed proof', async () => {
+  it('it verifies proof', async () => {
     // verify
     const { proof, ...cred } = VC
     await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
+  })
+
+  it('it verifies status', async () => {
+    // verify
+    const { proof, ...cred } = VC
+    await expect(
+      checkStatus(mockedApi, cred.credentialStatus, cred)
+    ).resolves.not.toThrow()
   })
 
   it('it verifies schema', () => {
@@ -382,7 +431,7 @@ describe('proofs', () => {
     //   })
     // })
 
-    it('fails if attestation not on chain', async () => {
+    it('it fails if attestation not on chain', async () => {
       jest
         .mocked(mockedApi.query.attestation.attestations)
         .mockResolvedValueOnce(
@@ -390,32 +439,61 @@ describe('proofs', () => {
             'Option<AttestationAttestationsAttestationDetails>'
           ) as any
         )
+      jest
+        .mocked(mockedApi.query.system.events)
+        .mockResolvedValueOnce(
+          mockedApi.createType('Vec<FrameSystemEventRecord>', []) as any
+        )
       const { proof, ...cred } = VC
       await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
+      await expect(
+        checkStatus(mockedApi, cred.credentialStatus, cred)
+      ).rejects.toThrow()
     })
 
-    // it('fails if attestation on chain not identical', async () => {
-    //   jest
-    //     .mocked(mockedApi.query.attestation.attestations)
-    //     .mockResolvedValueOnce(
-    //       mockedApi.createType(
-    //         'Option<AttestationAttestationsAttestationDetails>'
-    //       ) as any
-    //     )
-    //   const { proof, ...cred } = VC
-    //   expect(await verifyProof(cred, proof, mockedApi)).toMatchObject({
-    //     verified: false,
-    //   })
-    // })
-
-    it('fails if attestation revoked', async () => {
-      jest.spyOn(Attestation, 'fromChain').mockReturnValue({
-        ...attestation,
-        revoked: true,
-      })
-
+    it('fails if attestation on chain not identical', async () => {
+      jest
+        .mocked(mockedApi.query.attestation.attestations)
+        .mockResolvedValueOnce(
+          mockedApi.createType(
+            'Option<AttestationAttestationsAttestationDetails>',
+            {}
+          ) as any
+        )
+      jest
+        .mocked(mockedApi.query.system.events)
+        .mockResolvedValueOnce(makeEvent(attestationCreatedIndex, []) as any)
       const { proof, ...cred } = VC
       await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
+      await expect(
+        checkStatus(mockedApi, cred.credentialStatus, cred)
+      ).rejects.toThrow()
+    })
+
+    it('verifies proof but not status if attestation revoked', async () => {
+      jest
+        .mocked(mockedApi.query.attestation.attestations)
+        .mockResolvedValueOnce(
+          mockedApi.createType(
+            'Option<AttestationAttestationsAttestationDetails>',
+            {
+              ctypeHash:
+                '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
+              attester: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+              revoked: true,
+              deposit: {
+                owner: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+                amount: 0,
+              },
+            }
+          ) as any
+        )
+
+      const { proof, ...cred } = VC
+      await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
+      await expect(
+        checkStatus(mockedApi, cred.credentialStatus, cred)
+      ).rejects.toThrow()
     })
   })
 })

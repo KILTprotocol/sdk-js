@@ -27,7 +27,6 @@ import type {
  * @param api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @param credentialStatus A [[KiltRevocationStatusV1]] object.
  * @param credential The KiltCredentialV1 to which the status method is linked to.
- * @returns Object indicating whether the credential is currently attested or revoked.
  */
 export async function checkStatus(
   api: ApiPromise,
