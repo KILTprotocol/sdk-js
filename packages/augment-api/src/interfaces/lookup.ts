@@ -623,8 +623,7 @@ export default {
    **/
   CtypeEvent: {
     _enum: {
-      CTypeCreated: '(AccountId32,H256)',
-      CTypeUpdated: 'H256'
+      CTypeCreated: '(AccountId32,H256)'
     }
   },
   /**
@@ -2483,11 +2482,7 @@ export default {
   CtypeCall: {
     _enum: {
       add: {
-        ctype: 'Bytes',
-      },
-      set_block_number: {
-        ctypeHash: 'H256',
-        blockNumber: 'u64'
+        ctype: 'Bytes'
       }
     }
   },
@@ -3336,13 +3331,6 @@ export default {
     closes: 'Option<u64>',
     tips: 'Vec<(AccountId32,u128)>',
     findersFee: 'bool'
-  },
-  /**
-   * Lookup396: ctype::ctype_entry::CtypeEntry<sp_core::crypto::AccountId32, BlockNumber>
-   **/
-  CtypeCtypeEntry: {
-    creator: 'AccountId32',
-    createdAt: 'u64'
   },
   /**
    * Lookup398: pallet_tips::pallet::Error<T, I>

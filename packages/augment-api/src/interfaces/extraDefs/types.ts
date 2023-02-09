@@ -7,7 +7,7 @@ import type { AccountId32, Hash, Perquintill } from '@polkadot/types/interfaces/
 import type { DidServiceEndpointsDidEndpoint, DidDidDetails, PalletDidLookupLinkableAccountLinkableAccountId } from '@polkadot/types/lookup'
 
 /** @name DidApiAccountId */
-export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId { }
+export interface DidApiAccountId extends PalletDidLookupLinkableAccountLinkableAccountId {}
 
 /** @name PublicCredentialError */
 export interface PublicCredentialError extends Enum {
