@@ -85,7 +85,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ExistingVestingSchedule: AugmentedError<ApiType>;
       /**
-       * Balance too low to send value.
+       * Balance too low to send value
        **/
       InsufficientBalance: AugmentedError<ApiType>;
       /**
@@ -273,9 +273,17 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyVetoed: AugmentedError<ApiType>;
       /**
+       * Preimage already noted
+       **/
+      DuplicatePreimage: AugmentedError<ApiType>;
+      /**
        * Proposal already made
        **/
       DuplicateProposal: AugmentedError<ApiType>;
+      /**
+       * Imminent
+       **/
+      Imminent: AugmentedError<ApiType>;
       /**
        * The instant referendum origin is currently disallowed.
        **/
@@ -313,6 +321,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotDelegating: AugmentedError<ApiType>;
       /**
+       * Not imminent
+       **/
+      NotImminent: AugmentedError<ApiType>;
+      /**
        * Next external proposal not simple majority
        **/
       NotSimpleMajority: AugmentedError<ApiType>;
@@ -320,6 +332,14 @@ declare module '@polkadot/api-base/types/errors' {
        * The given account did not vote on the referendum.
        **/
       NotVoter: AugmentedError<ApiType>;
+      /**
+       * Invalid preimage
+       **/
+      PreimageInvalid: AugmentedError<ApiType>;
+      /**
+       * Preimage not found
+       **/
+      PreimageMissing: AugmentedError<ApiType>;
       /**
        * Proposal still blacklisted
        **/
@@ -333,9 +353,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ReferendumInvalid: AugmentedError<ApiType>;
       /**
-       * Maximum number of items reached.
+       * Too early
        **/
-      TooMany: AugmentedError<ApiType>;
+      TooEarly: AugmentedError<ApiType>;
+      /**
+       * Maximum number of proposals reached.
+       **/
+      TooManyProposals: AugmentedError<ApiType>;
       /**
        * Value too low
        **/
@@ -797,7 +821,7 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * Preimage is too large to store on-chain.
        **/
-      TooBig: AugmentedError<ApiType>;
+      TooLarge: AugmentedError<ApiType>;
     };
     proxy: {
       /**
@@ -867,10 +891,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Failed to schedule a call
        **/
       FailedToSchedule: AugmentedError<ApiType>;
-      /**
-       * Attempt to use a non-named function on a named task.
-       **/
-      Named: AugmentedError<ApiType>;
       /**
        * Cannot find the scheduled call.
        **/
