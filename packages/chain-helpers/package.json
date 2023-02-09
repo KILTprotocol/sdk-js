@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.30.1-13",
+  "version": "0.31.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
     "@kiltprotocol/testing": "workspace:*",
-    "@polkadot/keyring": "^10.0.0",
+    "@polkadot/keyring": "^10.2.1",
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
   },
