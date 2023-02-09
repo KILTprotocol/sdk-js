@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -20,7 +20,7 @@ import { Attestation } from '@kiltprotocol/core'
 import * as Did from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
-import { DocumentLoader } from 'jsonld-signatures'
+import type { DocumentLoader } from 'jsonld-signatures'
 import { base58Encode } from '@polkadot/util-crypto'
 import * as toVC from './exportToVerifiableCredential'
 import * as verificationUtils from './verificationUtils'

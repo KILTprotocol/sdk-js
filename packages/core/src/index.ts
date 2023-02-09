@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -15,6 +15,7 @@ export { BalanceUtils } from './balance/index.js'
 export * as Claim from './claim/index.js'
 export * as CType from './ctype/index.js'
 export { DelegationNode, DelegationNodeUtils } from './delegation/index.js'
+export * as PublicCredential from './publicCredential/index.js'
 export * as Quote from './quote/index.js'
 
 export { connect, disconnect, init } from './kilt/index.js'

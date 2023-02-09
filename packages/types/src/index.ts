@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -16,6 +16,7 @@ export type { KeyringPair } from '@polkadot/keyring/types'
 export * as SubscriptionPromise from './SubscriptionPromise.js'
 
 export * from './Attestation.js'
+export * from './AssetDid.js'
 export * from './Balance.js'
 export * from './CType.js'
 export * from './CTypeMetadata.js'
@@ -31,3 +32,4 @@ export * from './DidDocument.js'
 export * from './CryptoCallbacks.js'
 export * from './DidResolver.js'
 export * from './DidDocumentExporter.js'
+export * from './PublicCredential.js'

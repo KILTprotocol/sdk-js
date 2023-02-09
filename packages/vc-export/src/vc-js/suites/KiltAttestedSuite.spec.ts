@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,7 +10,7 @@
  */
 
 import { ApiMocks } from '@kiltprotocol/testing'
-import jsigs, { purposes } from 'jsonld-signatures'
+import jsigs from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
 import type { IAttestation } from '@kiltprotocol/types'
 import vcjs from 'vc-js'
@@ -49,12 +49,12 @@ mockedApi.query.attestation.attestations.mockResolvedValue(encodedAttestation)
 const spy = jest.spyOn(Attestation, 'fromChain').mockReturnValue(attestation)
 
 let suite: AttestationSuite
-let purpose: purposes.ProofPurpose
+let purpose: jsigs.purposes.ProofPurpose
 let proof: AttestedProof
 
 beforeAll(async () => {
   suite = new AttestationSuite({ KiltConnection: mockedApi })
-  purpose = new purposes.AssertionProofPurpose()
+  purpose = new jsigs.purposes.AssertionProofPurpose()
   credential.proof.some((p) => {
     if (p.type === KILT_ATTESTED_PROOF_TYPE) {
       proof = p as AttestedProof

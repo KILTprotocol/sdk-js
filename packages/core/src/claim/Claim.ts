@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -198,7 +198,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
-  if (input.owner) {
+  if ('owner' in input) {
     Did.validateUri(input.owner, 'Did')
   }
   if (input.contents !== undefined) {

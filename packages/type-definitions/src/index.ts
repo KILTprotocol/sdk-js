@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -22,6 +22,7 @@ import { types21 } from './types_21.js'
 import { types23 } from './types_23.js'
 import { types25 } from './types_25.js'
 import { types2700 } from './types_2700.js'
+import { types10410 } from './types_10410.js'
 import { types10720 } from './types_10720.js'
 import { types10800 } from './types_10800.js'
 import { types10900 } from './types_10900.js'
@@ -30,6 +31,7 @@ import { types10900 } from './types_10900.js'
 
 import { calls as didCalls } from './runtime/did.js'
 import { calls as stakingCalls } from './runtime/staking.js'
+import { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 
 export {
   types8,
@@ -44,6 +46,7 @@ export {
   types23,
   types25,
   types2700,
+  types10410,
   types10720,
   types10800,
   types10900,
@@ -52,6 +55,7 @@ export {
 
 export { calls as didCalls } from './runtime/did.js'
 export { calls as stakingCalls } from './runtime/staking.js'
+export { calls as publicCredentialsCalls } from './runtime/publicCredentials.js'
 
 const defaultTypesBundle: OverrideVersionedType[] = [
   {
@@ -99,8 +103,12 @@ const defaultTypesBundle: OverrideVersionedType[] = [
     types: types25,
   },
   {
-    minmax: [2700, 10710],
+    minmax: [2700, 10409],
     types: types2700,
+  },
+  {
+    minmax: [10410, 10719],
+    types: types10410,
   },
   {
     minmax: [10720, 10750],
@@ -123,6 +131,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -130,6 +139,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -137,6 +147,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -144,6 +155,7 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
@@ -151,18 +163,21 @@ export const typesBundle: OverrideBundleType = {
       runtime: {
         ...didCalls,
         ...stakingCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
     'KILT Mashnet': {
       runtime: {
         ...didCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },
     Development: {
       runtime: {
         ...didCalls,
+        ...publicCredentialsCalls,
       },
       types: defaultTypesBundle,
     },

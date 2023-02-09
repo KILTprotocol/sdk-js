@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/augment-api",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -36,14 +36,14 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@polkadot/api": "^9.4.1",
-    "@polkadot/typegen": "^9.4.1",
-    "@types/websocket": "^1.0.0",
+    "@polkadot/api": "^9.10.2",
+    "@polkadot/typegen": "^9.10.2",
+    "@types/websocket": "^1.0.5",
     "glob": "^7.1.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
     "typescript": "^4.8.3",
-    "websocket": "^1.0.31",
+    "websocket": "^1.0.34",
     "yargs": "^16.2.0"
   },
   "dependencies": {

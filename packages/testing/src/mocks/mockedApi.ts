@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -226,6 +226,10 @@ export function getMockedApi(): MockApiPromise {
         queryByAccount: jest.fn(),
         queryByWeb3Name: jest.fn(),
       },
+      publicCredentials: {
+        getById: jest.fn(),
+        getBySubject: jest.fn(),
+      },
     },
     tx: {
       attestation: {
@@ -374,6 +378,10 @@ export function getMockedApi(): MockApiPromise {
             new U64(TYPE_REGISTRY, 1)
           )
         ),
+      },
+      publicCredentials: {
+        credentials: jest.fn(),
+        credentialSubjects: jest.fn(),
       },
     },
     runtimeMetadata: {

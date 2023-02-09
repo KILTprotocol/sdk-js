@@ -14,6 +14,7 @@
       "@kiltprotocol/utils": ["utils/src"],
       "@kiltprotocol/vc-export": ["vc-export/src"],
       "@kiltprotocol/did": ["did/src"],
+      "@kiltprotocol/asset-did": ["asset-did/src"],
       "@kiltprotocol/docs": ["docs/src"],
       "@kiltprotocol/testing": ["testing/src"],
       "@kiltprotocol/augment-api": ["augment-api/src"],

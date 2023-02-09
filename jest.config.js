@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'ts-jest/presets/js-with-ts',
+  preset: 'ts-jest',
   testEnvironment: 'node',
   clearMocks: true,
   runner: 'groups',
@@ -14,6 +14,10 @@ module.exports = {
       lines: 80,
       statements: 80,
     },
+  },
+  transform: {
+    "\\.js$": "babel-jest",
+    "\\.ts$": "ts-jest"
   },
   collectCoverageFrom: [
     '**/*/src/**/*.ts',
@@ -35,6 +39,7 @@ module.exports = {
     '!did/src/Did.rpc.ts',
     '!did/src/Did.utils.ts',
     '!utils/src/jsonabc.ts',
+    '!core/src/utils.ts',
   ],
   resolver: "ts-jest-resolver",
   rootDir: 'packages',
