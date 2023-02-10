@@ -30,7 +30,7 @@ export const W3C_DID_CONTEXT_URL = 'https://www.w3.org/ns/did/v1'
  * See https://w3c-ccg.github.io/security-vocab/.
  * This document is extended by the context file available under the [[KILT_DID_CONTEXT_URL]].
  */
-export const W3C_SECURITY_CONTEXT_URI = 'https://w3id.org/security/v2'
+export const W3C_SECURITY_CONTEXT_URL = 'https://w3id.org/security/v2'
 /**
  * An object containing static copies of JSON-LD context files relevant to KILT DID documents, of the form <context URL> -> context.
  * These context definitions are not supposed to change; therefore, a cached version can (and should) be used to avoid unexpected changes in definitions.
@@ -38,7 +38,7 @@ export const W3C_SECURITY_CONTEXT_URI = 'https://w3id.org/security/v2'
 export const DID_CONTEXTS = {
   [KILT_DID_CONTEXT_URL]: {
     '@context': [
-      W3C_SECURITY_CONTEXT_URI,
+      W3C_SECURITY_CONTEXT_URL,
       {
         '@protected': true,
         KiltPublishedCredentialCollectionV1:
@@ -106,7 +106,7 @@ export const DID_CONTEXTS = {
       },
     },
   },
-  [W3C_SECURITY_CONTEXT_URI]: {
+  [W3C_SECURITY_CONTEXT_URL]: {
     '@context': [
       {
         '@version': 1.1,

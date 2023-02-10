@@ -10,7 +10,7 @@ import type { DidApiAccountId, PublicCredentialError, PublicCredentialFilter, Ra
 
 import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, Vec, u32 } from '@polkadot/types-codec';
-import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
+import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { CheckInherentsResult, InherentData } from '@polkadot/types/interfaces/blockbuilder';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
@@ -18,7 +18,7 @@ import type { CollationInfo } from '@polkadot/types/interfaces/cumulus';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import type { OpaqueMetadata } from '@polkadot/types/interfaces/metadata';
 import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
-import type { AccountId, AccountId32, Balance, Block, Hash, Header, Index, KeyTypeId, SlotDuration } from '@polkadot/types/interfaces/runtime';
+import type { AccountId, AccountId32, Balance, Block, Call, Hash, Header, Index, KeyTypeId, SlotDuration } from '@polkadot/types/interfaces/runtime';
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
@@ -160,7 +160,7 @@ declare module '@polkadot/api-base/types/calls' {
        **/
       validateTransaction: AugmentedCall<ApiType, (source: TransactionSource | 'InBlock' | 'Local' | 'External' | number | Uint8Array, tx: Extrinsic | IExtrinsic | string | Uint8Array, blockHash: BlockHash | string | Uint8Array) => Observable<TransactionValidity>>;
     };
-    /** 0x37c8bb1350a9a2a8/1 */
+    /** 0x37c8bb1350a9a2a8/2 */
     transactionPaymentApi: {
       /**
        * The transaction fee details
@@ -170,6 +170,17 @@ declare module '@polkadot/api-base/types/calls' {
        * The transaction info
        **/
       queryInfo: AugmentedCall<ApiType, (uxt: Extrinsic | IExtrinsic | string | Uint8Array, len: u32 | AnyNumber | Uint8Array) => Observable<RuntimeDispatchInfo>>;
+    };
+    /** 0xf3ff14d5ab527059/2 */
+    transactionPaymentCallApi: {
+      /**
+       * The call fee details
+       **/
+      queryCallFeeDetails: AugmentedCall<ApiType, (call: Call | IMethod | string | Uint8Array, len: u32 | AnyNumber | Uint8Array) => Observable<FeeDetails>>;
+      /**
+       * The call info
+       **/
+      queryCallInfo: AugmentedCall<ApiType, (call: Call | IMethod | string | Uint8Array, len: u32 | AnyNumber | Uint8Array) => Observable<RuntimeDispatchInfo>>;
     };
   } // AugmentedCalls
 } // declare module
