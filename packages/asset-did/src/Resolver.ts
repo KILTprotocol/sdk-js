@@ -40,7 +40,7 @@ const ASSET_DID_REGEX =
  * Parses an AssetDID URI and returns the information contained within in a structured form.
 
  * @param assetDidUri An AssetDID uri as a string.
-* @returns Object containing information extracted from the AssetDID uri.
+ * @returns Object containing information extracted from the AssetDID uri.
  */
 export function resolve(assetDidUri: AssetDidUri): ResolvedAssetDid {
   const matches = ASSET_DID_REGEX.exec(assetDidUri)?.groups

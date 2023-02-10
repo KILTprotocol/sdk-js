@@ -43,6 +43,7 @@ export type Caip19AssetId =
 export type AssetDidUri = `did:asset:${Caip2ChainId}.${Caip19AssetId}`
 
 export interface AssetDidDocument {
+  '@context'?: string[]
   id: AssetDidUri
 
   chain: {

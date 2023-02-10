@@ -8,9 +8,8 @@
 import type { AssetDidDocument } from '@kiltprotocol/types'
 
 import { ASSET_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from '@kiltprotocol/did'
-import { SDKErrors } from '@kiltprotocol/utils'
 
-import { resolveCompliant, ResolvedAssetDid } from './Resolver.js'
+import { ResolvedAssetDid } from './Resolver.js'
 
 /**
  * Export a [[ResolvedAssetDid]] to a W3C-spec conforming DID Document in the format provided.
@@ -23,12 +22,25 @@ export function exportToDidDocument(
   did: ResolvedAssetDid,
   mimeType: 'application/json' | 'application/ld+json'
 ): AssetDidDocument {
-  const { didDocument, didResolutionMetadata } = resolveCompliant(did.uri)
-  // Error cases should never happen if the `ResolvedAssetDid` is created via the `resolve` function.
-  if (didResolutionMetadata.errorMessage) {
-    throw new Error(didResolutionMetadata.errorMessage)
-  } else if (!didDocument) {
-    throw new SDKErrors.InvalidDidFormatError(did.uri)
+  const {
+    uri,
+    chainNamespace,
+    chainReference,
+    assetNamespace,
+    assetReference,
+    assetInstance,
+  } = did
+  const didDocument: AssetDidDocument = {
+    id: uri,
+    chain: {
+      namespace: chainNamespace,
+      reference: chainReference,
+    },
+    asset: {
+      namespace: assetNamespace,
+      reference: assetReference,
+      identifier: assetInstance,
+    },
   }
   if (mimeType === 'application/ld+json') {
     didDocument['@context'] = [W3C_DID_CONTEXT_URL, ASSET_DID_CONTEXT_URL]
