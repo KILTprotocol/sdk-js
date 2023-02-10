@@ -6,7 +6,7 @@
  */
 
 /**
- * @group unit/did
+ * @group unit/assetdid
  */
 
 import type {

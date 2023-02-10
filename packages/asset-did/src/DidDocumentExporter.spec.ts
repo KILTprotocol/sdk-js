@@ -11,7 +11,7 @@ import { exportToDidDocument } from './DidDocumentExporter'
 import { resolve } from './Resolver'
 
 /**
- * @group unit/did
+ * @group unit/assetdid
  */
 
 const assetDid =
