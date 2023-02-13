@@ -36,7 +36,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@digitalbazaar/vc": "^1.0.0",
+    "@digitalbazaar/vc": "^2.1.0",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/did": "workspace:*",

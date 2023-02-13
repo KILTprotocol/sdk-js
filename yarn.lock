@@ -1511,14 +1511,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@digitalbazaar/vc@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@digitalbazaar/vc@npm:1.0.0"
+"@digitalbazaar/vc@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@digitalbazaar/vc@npm:2.1.0"
   dependencies:
-    credentials-context: ^1.0.0
+    credentials-context: ^2.0.0
     jsonld: ^5.2.0
-    jsonld-signatures: ^9.0.2
-  checksum: 9b16c9122d2c885e1855ab62ef09e0201b521aac392a93fb98a1ed9140dce9412e317a931d4e78b4ada22afc2078f664e21ec220d2fbb32142b642572f54e3f9
+    jsonld-signatures: ^9.3.0
+  checksum: c59adbacd5a06650a628a85cab5e004e2e56e4f2a420e2f82e148b51ed38277b853732b52683a4124f9b79df1f7a96ce7dc42087d03e538412d4f42fca0ba269
   languageName: node
   linkType: hard
 
@@ -2070,7 +2070,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
-    "@digitalbazaar/vc": ^1.0.0
+    "@digitalbazaar/vc": ^2.1.0
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
@@ -4615,10 +4615,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"credentials-context@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "credentials-context@npm:1.0.0"
-  checksum: f7c1df5339e15a6496e4760ad8a3a75cad22dbdd263f23b9c13fd4c8da49c4f5258f2940e92cd5628c1882da54d895c014bbabd7c1f87e9c8b68f02bba0feca2
+"credentials-context@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "credentials-context@npm:2.0.0"
+  checksum: c5ba6d257ef2fb1c21399238f5b1e0b2f7622b1f496f499edbac2d2e0faba40ebc06e0c5acee4bb2fbe712abfa3cbebdcc152f4bcf5a7481430f2731f2c514db
   languageName: node
   linkType: hard
 
@@ -7338,7 +7338,7 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"jsonld-signatures@npm:^9.0.2":
+"jsonld-signatures@npm:^9.0.2, jsonld-signatures@npm:^9.3.0":
   version: 9.3.1
   resolution: "jsonld-signatures@npm:9.3.1"
   dependencies:
