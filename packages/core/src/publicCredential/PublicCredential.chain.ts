@@ -152,12 +152,11 @@ function extractDidCallsFromBatchCall(
 }
 
 /**
- * Decodes the public credential details returned by `api.call.publicCredentials.getById()`.
+ * Retrieves from the blockchain the [[IPublicCredential]] that is identified by the provided identifier.
  *
  * This is the **only** secure way for users to retrieve and verify a credential.
- * Hence, calling `api.call.publicCredentials.getById(credentialId)` and then passing the result to this function is the only way to trust that a credential with a given ID is valid.
  *
- * @param credentialId Credential ID to use for the query. It is required to complement the information stored on the blockchain in a [[PublicCredentialsCredentialsCredentialEntry]].
+ * @param credentialId Credential ID to use for the query.
  * @returns The [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function fetchCredentialFromChain(
@@ -242,13 +241,12 @@ export async function fetchCredentialFromChain(
 }
 
 /**
- * Decodes the public credential details returned by `api.call.publicCredentials.getBySubject()`.
+ * Retrieves from the blockchain the [[IPublicCredential]]s that have been issued to the provided AssetDID.
  *
  * This is the **only** secure way for users to retrieve and verify all the credentials issued to a given [[AssetDidUri]].
- * Hence, calling `api.call.publicCredentials.getBySubject(asset_id)` and then passing the result to this function is the only way to trust that the credentials for a given AssetDID are valid.
  *
  * @param subject The AssetDID of the subject.
- * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history. If the result is an error, it maps it to the right error type.
+ * @returns An array of [[IPublicCredential]] as the result of combining the on-chain information and the information present in the tx history.
  */
 export async function fetchCredentialsFromChain(
   subject: AssetDidUri
