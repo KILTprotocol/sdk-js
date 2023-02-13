@@ -48,6 +48,22 @@ export const DID_CONTEXTS = {
       },
     ],
   },
+  [ASSET_DID_CONTEXT_URL]: {
+    '@context': {
+      '@protected': true,
+      id: '@id',
+      chain:
+        'https://github.com/KILTprotocol/spec-asset-did/blob/43457f9d1119bff1c3152e368ddd4e3bdb9558cb/README.md',
+      namespace:
+        'https://github.com/KILTprotocol/spec-asset-did/blob/43457f9d1119bff1c3152e368ddd4e3bdb9558cb/README.md',
+      reference:
+        'https://github.com/KILTprotocol/spec-asset-did/blob/43457f9d1119bff1c3152e368ddd4e3bdb9558cb/README.md',
+      asset:
+        'https://github.com/KILTprotocol/spec-asset-did/blob/43457f9d1119bff1c3152e368ddd4e3bdb9558cb/README.md',
+      identifier:
+        'https://github.com/KILTprotocol/spec-asset-did/blob/43457f9d1119bff1c3152e368ddd4e3bdb9558cb/README.md',
+    },
+  },
   [W3C_DID_CONTEXT_URL]: {
     '@context': {
       '@protected': true,
