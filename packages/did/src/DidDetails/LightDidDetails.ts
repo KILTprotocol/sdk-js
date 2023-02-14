@@ -136,13 +136,10 @@ function serializeAdditionalLightDidDetails({
     objectToSerialize[KEY_AGREEMENT_MAP_KEY] = key
   }
   if (service && service.length > 0) {
-    objectToSerialize[SERVICES_MAP_KEY] = service.map(
-      ({ id, serviceEndpoint, type }) => ({
-        id: resourceIdToChain(id),
-        serviceEndpoint,
-        type,
-      })
-    )
+    objectToSerialize[SERVICES_MAP_KEY] = service.map(({ id, ...rest }) => ({
+      id: resourceIdToChain(id),
+      ...rest,
+    }))
   }
 
   if (Object.keys(objectToSerialize).length === 0) {
