@@ -478,19 +478,6 @@ describe('When resolving a light DID', () => {
     ])
   })
 
-  it.only('correctly resolves the universal resolver examples', async () => {
-    const exampleDids: DidUri[] = [
-      // 'did:kilt:4rNTX3ihuxyWkB7wG3oLgUWSBLa2gva1NBKJsBFm7jJZUYfc',
-      // 'did:kilt:light:004pqDzaWi3w7TzYzGnQDyrasK6UnyNnW6JQvWRrq6r8HzNNGy',
-      'did:kilt:light:004pqDzaWi3w7TzYzGnQDyrasK6UnyNnW6JQvWRrq6r8HzNNGy:z14mMLbhZGB6YYU7ud2eFvUiHz3Mwo6UdttffCxB5s4hB3pxV2UgTQrgTyV6MZ8FAvqqKZQpxsJTFRYHzYhjzDUbxMtyxQtTrBu4F9YZx99AuEHuNSPCCd8RqpLeczkuDTGMP7eBDmmNbPbiXhKv5hb6ibYPCpZjUtjPBDqUQ1wXmBv3',
-    ]
-
-    const results = await Promise.all(
-      exampleDids.map(async (did) => resolve(did))
-    )
-    console.log(results)
-  })
-
   it('correctly resolves the document with authentication key, encryption key, and two service endpoints', async () => {
     const lightDid = Did.createLightDidDocument({
       authentication: [{ publicKey: authKey.publicKey, type: 'sr25519' }],
