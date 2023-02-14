@@ -110,7 +110,11 @@ const SERVICES_MAP_KEY = 's'
 
 interface SerializableStructure {
   [KEY_AGREEMENT_MAP_KEY]?: NewDidEncryptionKey
-  [SERVICES_MAP_KEY]?: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>
+  [SERVICES_MAP_KEY]?: Array<
+    Partial<Omit<DidServiceEndpoint, 'id'>> & {
+      id: string
+    } & { types?: string[]; urls?: string[] } // This below was mistakenly not accounted for during the SDK refactor, meaning there are light DIDs that contain these keys in their service endpoints.
+  >
 }
 
 /**
@@ -132,10 +136,13 @@ function serializeAdditionalLightDidDetails({
     objectToSerialize[KEY_AGREEMENT_MAP_KEY] = key
   }
   if (service && service.length > 0) {
-    objectToSerialize[SERVICES_MAP_KEY] = service.map(({ id, ...rest }) => ({
-      id: resourceIdToChain(id),
-      ...rest,
-    }))
+    objectToSerialize[SERVICES_MAP_KEY] = service.map(
+      ({ id, serviceEndpoint, type }) => ({
+        id: resourceIdToChain(id),
+        serviceEndpoint,
+        type,
+      })
+    )
   }
 
   if (Object.keys(objectToSerialize).length === 0) {
@@ -167,10 +174,15 @@ function deserializeAdditionalLightDidDetails(
   const keyAgreement = deserialized[KEY_AGREEMENT_MAP_KEY]
   return {
     keyAgreement: keyAgreement && [keyAgreement],
-    service: deserialized[SERVICES_MAP_KEY]?.map(({ id, ...rest }) => ({
-      id: `#${id}`,
-      ...rest,
-    })),
+    service: deserialized[SERVICES_MAP_KEY]?.map(
+      ({ id, type, serviceEndpoint, types, urls }) => ({
+        id: `#${id}`,
+        // types for retro-compatibility
+        type: (type ?? types) as string[],
+        // urls for retro-compatibility
+        serviceEndpoint: (serviceEndpoint ?? urls) as string[],
+      })
+    ),
   }
 }
 
