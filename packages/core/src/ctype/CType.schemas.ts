@@ -136,11 +136,6 @@ const CTypeModelV2: JsonSchema.Schema & { $id: string } = {
   ],
 }
 
-export const CTypeModels: Record<string, JsonSchema.Schema> = Object.freeze({
-  [CTypeModelV1.$id]: CTypeModelV1,
-  [CTypeModelV2.$id]: CTypeModelV2,
-})
-
 export const CTypeModel: JsonSchema.Schema = {
   oneOf: [
     CTypeModelV1,

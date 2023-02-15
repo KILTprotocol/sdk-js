@@ -159,8 +159,6 @@ export class CredentialUnverifiableError extends SDKError {}
 
 export class ClaimUnverifiableError extends SDKError {}
 
-export class NestedClaimUnverifiableError extends SDKError {}
-
 export class IdentityMismatchError extends SDKError {
   constructor(context?: string, type?: string) {
     if (type && context) {

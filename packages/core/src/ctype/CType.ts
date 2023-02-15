@@ -23,7 +23,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { CTypeModel, CTypeModels, MetadataModel } from './CType.schemas.js'
+import { CTypeModel, MetadataModel } from './CType.schemas.js'
 
 /**
  * Utility for (re)creating CType hashes. Sorts the schema and strips the $id property (which contains the CType hash) before stringifying.
@@ -93,18 +93,17 @@ export function getIdForSchema(
  * @param object Data to be verified against schema.
  * @param schema Schema to verify against.
  * @param messages Optional empty array. If passed, this receives all verification errors.
+ * @param referencedSchemas If schema contains references ($ref) to other schemas, their definitions must be added here in form of an array.
  */
 export function verifyObjectAgainstSchema(
   object: Record<string, any>,
   schema: Record<string, any>,
-  messages?: string[]
+  messages?: string[],
+  referencedSchemas?: Array<Record<string, any>>
 ): void {
   const validator = new JsonSchema.Validator(schema, '7', false)
-  if (
-    typeof schema.$schema === 'string' &&
-    Object.hasOwn(CTypeModels, schema.$schema)
-  ) {
-    validator.addSchema(CTypeModels[schema.$schema])
+  if (referencedSchemas) {
+    referencedSchemas.forEach((i) => validator.addSchema(i))
   }
   const { valid, errors } = validator.validate(object)
   if (valid === true) return
@@ -178,21 +177,8 @@ export function verifyClaimAgainstNestedSchemas(
   claimContents: Record<string, any>,
   messages?: string[]
 ): void {
-  const validator = new JsonSchema.Validator(cType, '7', false)
-  nestedCTypes.forEach((ctype) => {
-    validator.addSchema(ctype)
-  })
-  Object.values(CTypeModels).forEach((schema) => validator.addSchema(schema))
-  const { valid, errors } = validator.validate(claimContents)
-  if (valid === true) return
-  if (messages) {
-    errors.forEach((error) => {
-      messages.push(error.error)
-    })
-  }
-  throw new SDKErrors.NestedClaimUnverifiableError(undefined, {
-    cause: errors,
-  })
+  verifyObjectAgainstSchema(cType, CTypeModel, messages)
+  verifyObjectAgainstSchema(claimContents, cType, messages, nestedCTypes)
 }
 
 /**
