@@ -23,7 +23,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { CTypeModel, MetadataModel } from './CType.schemas.js'
+import { CTypeModel, CTypeModels, MetadataModel } from './CType.schemas.js'
 
 /**
  * Utility for (re)creating CType hashes. Sorts the schema and strips the $id property (which contains the CType hash) before stringifying.
@@ -100,8 +100,11 @@ export function verifyObjectAgainstSchema(
   messages?: string[]
 ): void {
   const validator = new JsonSchema.Validator(schema, '7', false)
-  if (schema.$id !== CTypeModel.$id) {
-    validator.addSchema(CTypeModel)
+  if (
+    typeof schema.$schema === 'string' &&
+    Object.hasOwn(CTypeModels, schema.$schema)
+  ) {
+    validator.addSchema(CTypeModels[schema.$schema])
   }
   const { valid, errors } = validator.validate(object)
   if (valid === true) return
@@ -179,7 +182,7 @@ export function verifyClaimAgainstNestedSchemas(
   nestedCTypes.forEach((ctype) => {
     validator.addSchema(ctype)
   })
-  validator.addSchema(CTypeModel)
+  Object.values(CTypeModels).forEach((schema) => validator.addSchema(schema))
   const { valid, errors } = validator.validate(claimContents)
   if (valid === true) return
   if (messages) {
