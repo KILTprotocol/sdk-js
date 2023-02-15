@@ -67,73 +67,54 @@ export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
 
 export const CTypeModelV2: JsonSchema.Schema & { $id: string } = {
   // $id is not contained in schema when fetched from ipfs bc that is impossible with a content-addressed system
-  $id: 'ipfs://bafybeigphkblu3nvk5tpz4xog3flpv4h6o4x6fjml6haead3pul2mny3ee',
+  $id: 'ipfs://bafybeigtj5ebagctpyfwl56sin54qwe4bltjcsu3j7nuq2uzrg6gs525fi',
   $schema: 'http://json-schema.org/draft-07/schema#',
-  type: 'object',
+  additionalProperties: false,
   properties: {
-    $id: {
-      type: 'string',
-      pattern: '^kilt:ctype:0x[0-9a-f]+$',
-    },
+    $id: { pattern: '^kilt:ctype:0x[0-9a-f]+$', type: 'string' },
     $schema: {
       type: 'string',
       // can't use a const refercing schema id for a content-addressed schema
     },
-    title: {
-      type: 'string',
-    },
-    type: {
-      type: 'string',
-      const: 'object',
-    },
-    additionalProperties: {
-      type: 'boolean',
-      const: false,
-    },
+    additionalProperties: { const: false, type: 'boolean' },
     properties: {
-      type: 'object',
       patternProperties: {
         '^.*$': {
-          type: 'object',
           oneOf: [
             {
+              additionalProperties: false,
+              properties: { $ref: { format: 'uri', type: 'string' } },
+              required: ['$ref'],
+            },
+            {
+              additionalProperties: false,
               properties: {
+                format: { enum: ['date', 'time', 'uri'], type: 'string' },
                 type: {
+                  enum: ['boolean', 'integer', 'number', 'string'],
                   type: 'string',
-                  enum: ['string', 'integer', 'number', 'boolean'],
-                },
-                format: {
-                  type: 'string',
-                  enum: ['date', 'time', 'uri'],
                 },
               },
               required: ['type'],
-              additionalProperties: false,
-            },
-            {
-              properties: {
-                $ref: {
-                  type: 'string',
-                  format: 'uri',
-                },
-              },
-              required: ['$ref'],
-              additionalProperties: false,
             },
           ],
+          type: 'object',
         },
       },
+      type: 'object',
     },
+    title: { type: 'string' },
+    type: { const: 'object', type: 'string' },
   },
-  additionalProperties: false,
   required: [
     '$id',
-    'title',
     '$schema',
-    'properties',
-    'type',
     'additionalProperties',
+    'properties',
+    'title',
+    'type',
   ],
+  type: 'object',
 }
 
 export const CTypeModel: JsonSchema.Schema = {

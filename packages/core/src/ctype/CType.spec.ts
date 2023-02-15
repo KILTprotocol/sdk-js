@@ -34,7 +34,7 @@ it('consistent CType id generation', () => {
   })
 
   expect(ctype.$id).toMatchInlineSnapshot(
-    `"kilt:ctype:0x80b6203f477aa7454cfa10bd3900226e251398e8a9c47ecc526d718c47832e96"`
+    `"kilt:ctype:0x7ad15687b7e68a694c64cbe3b99a817e26a3bafc9aadb24d5fab19cff1eef319"`
   )
 })
 
