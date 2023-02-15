@@ -84,17 +84,14 @@ describe('blank ctypes', () => {
   })
 })
 
-const cTypeV1: ICType = {
-  $id: 'kilt:ctype:0x',
-  $schema: CTypeModelV1.$id,
-  title: 'Ctype Title',
-  properties: {
+const cTypeV1: ICType = CType.fromProperties(
+  'name',
+  {
     'first-property': { type: 'integer' },
     'second-property': { type: 'string' },
   },
-  type: 'object',
-}
-cTypeV1.$id = CType.getIdForSchema(cTypeV1)
+  'draft-01'
+)
 
 const cTypeV2: ICType = CType.fromProperties('name', {
   'first-property': { type: 'integer' },

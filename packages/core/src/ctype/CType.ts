@@ -23,7 +23,12 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { CTypeModel, MetadataModel, CTypeModelV2 } from './CType.schemas.js'
+import {
+  CTypeModel,
+  MetadataModel,
+  CTypeModelV2,
+  CTypeModelV1,
+} from './CType.schemas.js'
 
 /**
  * Utility for (re)creating CType hashes. Sorts the schema and strips the $id property (which contains the CType hash) before stringifying.
@@ -190,24 +195,33 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
   verifyObjectAgainstSchema(metadata, MetadataModel)
 }
 
+const cTypeVersionToSchema = {
+  'draft-01': CTypeModelV1.$id,
+  V1: CTypeModelV2.$id,
+}
+
 /**
  * Creates a new [[ICType]] object from a set of atomic claims and a title.
  * The CType id will be automatically generated.
  *
  * @param title The new CType's title as a string.
  * @param properties Key-value pairs describing the admissible atomic claims for a credential with this CType. The value of each property is a json-schema (for example `{ "type": "number" }`) used to validate that property.
- * @returns A ctype object, including cTypeId, $schema, and type.
+ * @param version Use 'V1' to create a CType according to the latest metaschema version (default) and 'draft-01' to produce a legacy CType. Included for backwards-compatibility.
+ * @returns A complete json schema (CType) with an $id derived from the hashed schema. The referenced meta $schema varies by CType version.
  */
 export function fromProperties(
   title: ICType['title'],
-  properties: ICType['properties']
+  properties: ICType['properties'],
+  version: 'draft-01' | 'V1' = 'V1'
 ): ICType {
   const schema: Omit<ICType, '$id'> = {
     properties,
     title,
-    $schema: CTypeModelV2.$id,
+    $schema: cTypeVersionToSchema[version],
     type: 'object',
-    additionalProperties: false,
+  }
+  if (version === 'V1') {
+    schema.additionalProperties = false
   }
   const ctype = jsonabc.sortObj({ ...schema, $id: getIdForSchema(schema) })
   verifyDataStructure(ctype)
