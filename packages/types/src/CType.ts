@@ -23,7 +23,8 @@ export interface ICType {
   $schema: string
   title: string
   properties: {
-    [key: string]: { $ref?: string; type?: InstanceType; format?: string }
+    [key: string]: { type: InstanceType; format?: string } | { $ref: string }
   }
   type: 'object'
+  additionalProperties?: false
 }

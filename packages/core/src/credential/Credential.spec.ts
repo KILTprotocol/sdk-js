@@ -37,8 +37,10 @@ import * as Claim from '../claim'
 import * as CType from '../ctype'
 import * as Credential from './Credential'
 
-const testCType = CType.fromProperties('raw ctype', {
-  name: { type: 'string' },
+const testCType = CType.fromProperties('Credential', {
+  a: { type: 'string' },
+  b: { type: 'string' },
+  c: { type: 'string' },
 })
 
 function buildCredential(
@@ -292,9 +294,19 @@ describe('Credential', () => {
       Credential.verifyAgainstCType(builtCredential, testCType)
     ).toThrow()
   })
+
+  it('two Credentials on an empty ctype will have different root hashes', async () => {
+    const ctype = CType.fromProperties('CType', {})
+    const claimA1 = Claim.fromCTypeAndClaimContents(ctype, {}, identityAlice)
+    const claimA2 = Claim.fromCTypeAndClaimContents(ctype, {}, identityAlice)
+
+    expect(Credential.fromClaim(claimA1).rootHash).not.toEqual(
+      Credential.fromClaim(claimA2).rootHash
+    )
+  })
 })
 
-describe('Credential', () => {
+describe('Presentations', () => {
   let keyAlice: KeyTool
   let keyCharlie: KeyTool
   let identityAlice: DidDocument
@@ -327,12 +339,11 @@ describe('Credential', () => {
     sign: SignCallback
   ): Promise<[ICredentialPresentation, IAttestation]> {
     // create claim
-
-    const ctype = CType.fromProperties('Credential', {
-      name: { type: 'string' },
-    })
-
-    const claim = Claim.fromCTypeAndClaimContents(ctype, contents, claimer.uri)
+    const claim = Claim.fromCTypeAndClaimContents(
+      testCType,
+      contents,
+      claimer.uri
+    )
     // build credential with legitimations
     const credential = Credential.fromClaim(claim, {
       legitimations,
@@ -576,7 +587,10 @@ describe('create presentation', () => {
   let attester: DidDocument
   let credential: ICredential
 
-  const ctype = CType.fromProperties(testCType.title, testCType.properties)
+  const ctype = CType.fromProperties('otherCType', {
+    name: { type: 'string' },
+    age: { type: 'number' },
+  })
 
   // Returns a full DID that has the same subject of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
   function createMinimalFullDidFromLightDid(

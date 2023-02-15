@@ -7,7 +7,7 @@
 
 import { JsonSchema } from '@kiltprotocol/utils'
 
-const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
+export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
   $id: 'http://kilt-protocol.org/draft-01/ctype#',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
@@ -65,7 +65,7 @@ const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
   required: ['$id', 'title', '$schema', 'properties', 'type'],
 }
 
-const CTypeModelV2: JsonSchema.Schema & { $id: string } = {
+export const CTypeModelV2: JsonSchema.Schema & { $id: string } = {
   // $id is not contained in schema when fetched from ipfs bc that is impossible with a content-addressed system
   $id: 'ipfs://bafybeigphkblu3nvk5tpz4xog3flpv4h6o4x6fjml6haead3pul2mny3ee',
   $schema: 'http://json-schema.org/draft-07/schema#',

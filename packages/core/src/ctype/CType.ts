@@ -23,7 +23,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { CTypeModel, MetadataModel } from './CType.schemas.js'
+import { CTypeModel, MetadataModel, CTypeModelV2 } from './CType.schemas.js'
 
 /**
  * Utility for (re)creating CType hashes. Sorts the schema and strips the $id property (which contains the CType hash) before stringifying.
@@ -205,8 +205,9 @@ export function fromProperties(
   const schema: Omit<ICType, '$id'> = {
     properties,
     title,
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    $schema: CTypeModelV2.$id,
     type: 'object',
+    additionalProperties: false,
   }
   const ctype = jsonabc.sortObj({ ...schema, $id: getIdForSchema(schema) })
   verifyDataStructure(ctype)
