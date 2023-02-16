@@ -26,7 +26,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import {
   CTypeModel,
   MetadataModel,
-  CTypeModelV2,
+  CTypeModelDraft01,
   CTypeModelV1,
 } from './CType.schemas.js'
 
@@ -196,8 +196,8 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
 }
 
 const cTypeVersionToSchema = {
-  'draft-01': CTypeModelV1.$id,
-  V1: CTypeModelV2.$id,
+  'draft-01': CTypeModelDraft01.$id,
+  V1: CTypeModelV1.$id,
 }
 
 /**

@@ -15,7 +15,7 @@ import { ApiMocks } from '@kiltprotocol/testing'
 import type { ICType } from '@kiltprotocol/types'
 import * as Claim from '../claim'
 import * as CType from './CType.js'
-import { CTypeModel, CTypeModelV1 } from './CType.schemas'
+import { CTypeModel, CTypeModelDraft01 } from './CType.schemas'
 
 const mockedApi: any = ApiMocks.getMockedApi()
 ConfigService.set({ api: mockedApi })
@@ -34,7 +34,7 @@ it('consistent CType id generation', () => {
   })
 
   expect(ctype.$id).toMatchInlineSnapshot(
-    `"kilt:ctype:0x7ad15687b7e68a694c64cbe3b99a817e26a3bafc9aadb24d5fab19cff1eef319"`
+    `"kilt:ctype:0xdfe0fd007b86ef280f366d25547873da0305538d8190a2eae2f2d875cb5cf30d"`
   )
 })
 
@@ -84,7 +84,7 @@ describe('blank ctypes', () => {
   })
 })
 
-const cTypeV1: ICType = CType.fromProperties(
+const cTypeDraft01: ICType = CType.fromProperties(
   'name',
   {
     'first-property': { type: 'integer' },
@@ -93,12 +93,12 @@ const cTypeV1: ICType = CType.fromProperties(
   'draft-01'
 )
 
-const cTypeV2: ICType = CType.fromProperties('name', {
+const cTypeV1: ICType = CType.fromProperties('name', {
   'first-property': { type: 'integer' },
   'second-property': { type: 'string' },
 })
 
-describe.each([[cTypeV1], [cTypeV2]])(
+describe.each([[cTypeDraft01], [cTypeV1]])(
   'Claim verification with CType of schema version %#',
   (cType) => {
     const goodClaim = {
@@ -138,7 +138,7 @@ describe.each([[cTypeV1], [cTypeV2]])(
         SDKErrors.ObjectUnverifiableError
       )
       // only the CTypes following the newer model protect against additional properties
-      if (cType.$schema === CTypeModelV1.$id) {
+      if (cType.$schema === CTypeModelDraft01.$id) {
         expect(() =>
           CType.verifyClaimAgainstSchema(unexpectedPropsClaim, cType)
         ).not.toThrow()
@@ -151,7 +151,7 @@ describe.each([[cTypeV1], [cTypeV2]])(
   }
 )
 
-describe.each([[cTypeV1], [cTypeV2]])(
+describe.each([[cTypeDraft01], [cTypeV1]])(
   'CType verification with schema version %#',
   (cType) => {
     it('id verification', () => {
