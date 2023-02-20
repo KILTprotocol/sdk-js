@@ -102,9 +102,9 @@ export function getIdForSchema(
  */
 export function verifyObjectAgainstSchema(
   object: Record<string, any>,
-  schema: Record<string, any>,
+  schema: JsonSchema.Schema,
   messages?: string[],
-  referencedSchemas?: Array<Record<string, any>>
+  referencedSchemas?: JsonSchema.Schema[]
 ): void {
   const validator = new JsonSchema.Validator(schema, '7', false)
   if (referencedSchemas) {

@@ -159,7 +159,7 @@ export const CTypeModel: JsonSchema.Schema = {
   },
 }
 
-export const MetadataModel = {
+export const MetadataModel: JsonSchema.Schema = {
   $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
