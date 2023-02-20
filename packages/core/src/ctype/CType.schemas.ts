@@ -18,7 +18,7 @@ export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
     $id: { pattern: '^kilt:ctype:0x[0-9a-f]+$', type: 'string' },
     $schema: {
       type: 'string',
-      // can't use a const refercing schema id for a content-addressed schema
+      // can't use a const referencing schema id for a content-addressed schema
     },
     additionalProperties: { const: false, type: 'boolean' },
     properties: {
@@ -66,7 +66,7 @@ export const CTypeModelDraft01: JsonSchema.Schema & { $id: string } = {
   $id: 'http://kilt-protocol.org/draft-01/ctype#',
   $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'CType Metaschema (draft-01)',
-  description: `Describes a CType, which is a json schema for validating KILT claim types. This version has known issues, the use of schema ${CTypeModelV1.$id} is recommended instead.`,
+  description: `Describes a CType, which is a JSON schema for validating KILT claim types. This version has known issues, the use of schema ${CTypeModelV1.$id} is recommended instead.`,
   type: 'object',
   properties: {
     $id: {

@@ -195,7 +195,7 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
   verifyObjectAgainstSchema(metadata, MetadataModel)
 }
 
-const cTypeVersionToSchema = {
+const cTypeVersionToSchemaId = {
   'draft-01': CTypeModelDraft01.$id,
   V1: CTypeModelV1.$id,
 }
@@ -207,7 +207,7 @@ const cTypeVersionToSchema = {
  * @param title The new CType's title as a string.
  * @param properties Key-value pairs describing the admissible atomic claims for a credential with this CType. The value of each property is a json-schema (for example `{ "type": "number" }`) used to validate that property.
  * @param version Use 'V1' to create a CType according to the latest metaschema version (default) and 'draft-01' to produce a legacy CType. Included for backwards-compatibility.
- * @returns A complete json schema (CType) with an $id derived from the hashed schema. The referenced meta $schema varies by CType version.
+ * @returns A complete JSON schema (CType) with an $id derived from the hashed schema. Each CType references a meta schema that applies to it via the $schema property; its value depends on the `version` parameter.
  */
 export function fromProperties(
   title: ICType['title'],
@@ -217,7 +217,7 @@ export function fromProperties(
   const schema: Omit<ICType, '$id'> = {
     properties,
     title,
-    $schema: cTypeVersionToSchema[version],
+    $schema: cTypeVersionToSchemaId[version],
     type: 'object',
   }
   if (version === 'V1') {
