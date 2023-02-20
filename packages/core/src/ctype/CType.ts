@@ -135,7 +135,7 @@ export function verifyClaimAgainstSchema(
   schema: ICType,
   messages?: string[]
 ): void {
-  verifyObjectAgainstSchema(schema, CTypeModel)
+  verifyObjectAgainstSchema(schema, CTypeModel, messages)
   verifyObjectAgainstSchema(claimContents, schema, messages)
 }
 
