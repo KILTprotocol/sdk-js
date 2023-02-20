@@ -286,7 +286,7 @@ type VerifyOptions = {
 /**
  * Verifies data structure & data integrity of a credential object.
  * This combines all offline sanity checks that can be performed on an ICredential object.
- * A credential is valid only iff it is well formed and there is an onchain attestation record referencing its root hash.
+ * A credential is valid only if it is well formed AND there is an on-chain attestation record referencing its root hash.
  * To check the latter condition as well, you need to call [[verifyCredential]] or [[verifyPresentation]].
  *
  * @param credential - The object to check.
@@ -306,10 +306,10 @@ export function verifyWellFormed(
 }
 
 /**
- * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attester is unknown.
+ * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attestation data does not match the credential.
  *
  * @param credential The [[ICredential]] whose attestation status should be checked.
- * @returns Information on the attester and revocation status of the on-chain attestation, as well as info on which trust policy led to acceptance of the credential.
+ * @returns Information on the attester and revocation status of the on-chain attestation.
  */
 export async function verifyAttested(credential: ICredential): Promise<{
   attester: DidUri
@@ -354,7 +354,9 @@ export async function refreshRevocationStatus(
 }
 
 /**
- * Verifies a credential, which includes looking up its attestation on the KILT blockchain.
+ * Performs all steps to verify a credential (unsigned), which includes verifying data structure, data integrity, and looking up its attestation on the KILT blockchain.
+ * In most cases, credentials submitted by a third party would be expected to be signed (a 'presentation').
+ * To verify the additional signature as well, use `verifyPresentation`.
  *
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
@@ -374,9 +376,10 @@ export async function verifyCredential(
 }
 
 /**
- * Verifies data structure, data integrity and the claimer's signature of a credential presentation.
+ * Performs all steps to verify a credential presentation (signed).
+ * In addition to verifying data structure, data integrity, and looking up the attestation record on the KILT blockchain, this involves verifying the claimer's signature over the credential.
  *
- * Upon presentation of a credential, a verifier would call this function.
+ * This is the function verifiers would typically call upon receiving a credential presentation from a third party.
  *
  * @param presentation - The object to check.
  * @param options - Additional parameter for more verification steps.
