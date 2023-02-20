@@ -281,7 +281,6 @@ type VerifyOptions = {
   ctype?: ICType
   challenge?: string
   didResolveKey?: DidResolveKey
-  throwOnRevoked?: boolean
 }
 
 /**
@@ -310,13 +309,9 @@ export function verifyWellFormed(
  * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attester is unknown.
  *
  * @param credential The [[ICredential]] whose attestation status should be checked.
- * @param throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
  * @returns Information on the attester and revocation status of the on-chain attestation, as well as info on which trust policy led to acceptance of the credential.
  */
-export async function verifyAttested(
-  credential: ICredential,
-  throwOnRevoked = true
-): Promise<{
+export async function verifyAttested(credential: ICredential): Promise<{
   attester: DidUri
   revoked: boolean
 }> {
@@ -332,9 +327,6 @@ export async function verifyAttested(
   )
   Attestation.verifyAgainstCredential(attestation, credential)
   const { owner: attester, revoked } = attestation
-  if (revoked && throwOnRevoked !== false) {
-    throw new SDKErrors.RevokedTypeError('Attestation revoked')
-  }
   return { attester, revoked }
 }
 
@@ -347,17 +339,12 @@ export interface VerifiedCredential extends ICredential {
  * Updates the revocation status of a previously verified credential to allow checking if it is still valid.
  *
  * @param verifiedCredential The output of [[verifyCredential]] or [[verifyPresentation]], which adds a `revoked` and `attester` property.
- * @param throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
  * @returns A promise of resolving to the same object but with the `revoked` property updated. The promise rejects if the attestation has been deleted or its data changed since verification.
  */
-export async function recheckRevocationStatus(
-  verifiedCredential: VerifiedCredential,
-  throwOnRevoked = true
+export async function refreshRevocationStatus(
+  verifiedCredential: VerifiedCredential
 ): Promise<VerifiedCredential> {
-  const { revoked, attester } = await verifyAttested(
-    verifiedCredential,
-    throwOnRevoked
-  )
+  const { revoked, attester } = await verifyAttested(verifiedCredential)
   if (attester !== verifiedCredential.attester) {
     throw new SDKErrors.CredentialUnverifiableError(
       'Attester has changed since first verification'
@@ -372,14 +359,13 @@ export async function recheckRevocationStatus(
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
- * @param options.throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
  */
 export async function verifyCredential(
   credential: ICredential,
-  { ctype, throwOnRevoked = true }: VerifyOptions = {}
+  { ctype }: VerifyOptions = {}
 ): Promise<VerifiedCredential> {
   verifyWellFormed(credential, { ctype })
-  const { revoked, attester } = await verifyAttested(credential, throwOnRevoked)
+  const { revoked, attester } = await verifyAttested(credential)
   return {
     ...credential,
     revoked,
@@ -397,22 +383,16 @@ export async function verifyCredential(
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
- * @param options.throwOnRevoked If not set to false, a revoked attestation will result in a rejected Promise.
  */
 export async function verifyPresentation(
   presentation: ICredentialPresentation,
-  {
-    ctype,
-    challenge,
-    didResolveKey = resolveKey,
-    throwOnRevoked = true,
-  }: VerifyOptions = {}
+  { ctype, challenge, didResolveKey = resolveKey }: VerifyOptions = {}
 ): Promise<VerifiedCredential> {
   await verifySignature(presentation, {
     challenge,
     didResolveKey,
   })
-  return verifyCredential(presentation, { ctype, throwOnRevoked })
+  return verifyCredential(presentation, { ctype })
 }
 
 /**
