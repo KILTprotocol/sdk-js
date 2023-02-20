@@ -197,7 +197,6 @@ export const MetadataModel: JsonSchema.Schema = {
         },
         properties: {
           type: 'object',
-          properties: {},
           patternProperties: {
             '^.*$': {
               type: 'object',
