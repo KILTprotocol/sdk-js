@@ -9,25 +9,33 @@ import { JsonSchema } from '@kiltprotocol/utils'
 
 export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
   // $id is not contained in schema when fetched from ipfs bc that is impossible with a content-addressed system
-  $id: 'ipfs://bafybeibjbq3tmmy7wuihhhwvbladjsd3gx3kfjepxzkq6wylik6wc3whzy',
+  $id: 'ipfs://bafybeifzfxz6tfd2xo7ijxbfceaxo3l655yg7sovlsnpxgq2rwfl4kbfgm',
   $schema: 'http://json-schema.org/draft-07/schema#',
-  additionalProperties: false,
+  title: 'CType Metaschema (V1)',
   description:
-    'Describes a CType, which is a json schema for validating KILT claim types.',
+    'Describes a CType, which is a JSON schema for validating KILT claim types.',
+  type: 'object',
   properties: {
     $id: { pattern: '^kilt:ctype:0x[0-9a-f]+$', type: 'string' },
     $schema: {
       type: 'string',
       // can't use a const referencing schema id for a content-addressed schema
     },
-    additionalProperties: { const: false, type: 'boolean' },
+    title: { type: 'string' },
+    type: { const: 'object', type: 'string' },
     properties: {
       patternProperties: {
-        '^.*$': {
+        '^.+$': {
           oneOf: [
             {
               additionalProperties: false,
-              properties: { $ref: { format: 'uri', type: 'string' } },
+              properties: {
+                $ref: {
+                  pattern: '^kilt:ctype:0x[0-9a-f]+(#/properties/.+)?$',
+                  format: 'uri',
+                  type: 'string',
+                },
+              },
               required: ['$ref'],
             },
             {
@@ -47,9 +55,9 @@ export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
       },
       type: 'object',
     },
-    title: { type: 'string' },
-    type: { const: 'object', type: 'string' },
+    additionalProperties: { const: false, type: 'boolean' },
   },
+  additionalProperties: false,
   required: [
     '$id',
     '$schema',
@@ -58,8 +66,6 @@ export const CTypeModelV1: JsonSchema.Schema & { $id: string } = {
     'title',
     'type',
   ],
-  title: 'CType Metaschema (V1)',
-  type: 'object',
 }
 
 export const CTypeModelDraft01: JsonSchema.Schema & { $id: string } = {
