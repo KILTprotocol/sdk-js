@@ -28,13 +28,26 @@ const encodedAliceDid = ApiMocks.mockChainQueryReturn(
 const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
 
 it('consistent CType id generation', () => {
-  const ctype = CType.fromProperties('CtypeModel 1', {
+  const ctypeV1 = CType.fromProperties('CtypeModel 1', {
     'first-property': { type: 'integer' },
     'second-property': { type: 'string' },
   })
 
-  expect(ctype.$id).toMatchInlineSnapshot(
+  expect(ctypeV1.$id).toMatchInlineSnapshot(
     `"kilt:ctype:0x12c8edb42b455aa6c29fabda8f3768bd1e8577f0618f122072828e41b6f4f728"`
+  )
+
+  const ctypeV0 = CType.fromProperties(
+    'CtypeModel 1',
+    {
+      'first-property': { type: 'integer' },
+      'second-property': { type: 'string' },
+    },
+    'draft-01'
+  )
+
+  expect(ctypeV0.$id).toMatchInlineSnapshot(
+    `"kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84"`
   )
 })
 
