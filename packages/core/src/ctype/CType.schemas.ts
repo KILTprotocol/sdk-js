@@ -122,12 +122,22 @@ export const CTypeModelDraft01: JsonSchema.Schema & { $id: string } = {
   required: ['$id', 'title', '$schema', 'properties', 'type'],
 }
 
+/**
+ * Schema describing any currently known CType; this means it either conforms to V1 or draft-01 of the CType schema.
+ * Using this schema allows CType validation to be agnostic to which version is used.
+ */
 export const CTypeModel: JsonSchema.Schema = {
+  $schema: 'http://json-schema.org/draft-07/schema',
   oneOf: [
-    CTypeModelDraft01,
+    // Option A): conforms to draft-01 of the CType meta sschema, which defines that the CType's $schema property must be equal to the CType meta schema's $id.
+    { $ref: CTypeModelDraft01.$id },
+    // Option B): The CType's $schema property references V1 of the CType meta schema, in which case this meta schema must apply.
+    // The structure is different because V1 does not define the exact value of the $schema property because its $id is derived from the hash of its contents.
     {
       allOf: [
+        // verifies that both of two (sub-)schemas validate against CType object.
         {
+          // subschema 1: $schema is equal to CType meta schema V1's $id.
           properties: {
             $schema: {
               type: 'string',
@@ -135,10 +145,18 @@ export const CTypeModel: JsonSchema.Schema = {
             },
           },
         },
-        CTypeModelV1,
+        {
+          // subschema 2: CType meta schema V1.
+          $ref: CTypeModelV1.$id,
+        },
       ],
     },
   ],
+  // CType meta schemas are embedded here, so that the references ($ref) can be resolved without having to load them first.
+  definitions: {
+    [CTypeModelDraft01.$id]: CTypeModelDraft01,
+    [CTypeModelV1.$id]: CTypeModelV1,
+  },
 }
 
 export const MetadataModel = {
