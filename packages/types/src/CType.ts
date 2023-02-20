@@ -7,14 +7,7 @@
 
 import type { HexString } from '@polkadot/util/types'
 
-export type InstanceType =
-  | 'array'
-  | 'boolean'
-  | 'integer'
-  | 'null'
-  | 'number'
-  | 'object'
-  | 'string'
+export type InstanceType = 'boolean' | 'integer' | 'number' | 'string'
 
 export type CTypeHash = HexString
 
