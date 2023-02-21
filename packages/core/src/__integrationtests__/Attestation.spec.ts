@@ -158,7 +158,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(
       Credential.verifySignature(presentation)
     ).resolves.not.toThrow()
-    await Credential.verifyPresentation(presentation)
+    Credential.verifyWellFormed(presentation, { ctype: driversLicenseCType })
 
     const attestation = Attestation.fromCredentialAndDid(
       presentation,
@@ -183,6 +183,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     expect(storedAttestation).not.toBeNull()
     expect(storedAttestation?.revoked).toBe(false)
 
+    await expect(
+      Credential.verifyPresentation(presentation)
+    ).resolves.toMatchObject({ attester: attester.uri, revoked: false })
+
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
     const reclaimTx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
     await submitTx(reclaimTx, tokenHolder)
@@ -191,6 +195,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     expect(
       (await api.query.attestation.attestations(attestation.claimHash)).isNone
     ).toBe(true)
+
+    await expect(
+      Credential.verifyPresentation(presentation)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`"Attestation not found"`)
   }, 60_000)
 
   it('should not be possible to attest a claim without enough tokens', async () => {
@@ -399,6 +407,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       expect(storedAttestationAfter).not.toBeNull()
       expect(storedAttestationAfter?.revoked).toBe(true)
+
+      await expect(
+        Credential.verifyCredential(credential)
+      ).resolves.toMatchObject({ attester: attester.uri, revoked: true })
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
