@@ -34,6 +34,7 @@ import {
   makeSigningKeyTool,
 } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
+import { randomAsHex } from '@polkadot/util-crypto'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
 import * as CType from '../ctype'
@@ -329,6 +330,103 @@ describe('Credential', () => {
 
     expect(Credential.fromClaim(claimA1).rootHash).not.toEqual(
       Credential.fromClaim(claimA2).rootHash
+    )
+  })
+
+  it('re-checks attestation status', async () => {
+    const api = ConfigService.get('api')
+    const credential = buildCredential(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+
+    const { attester, revoked } = await Credential.verifyAttested(credential)
+    expect(revoked).toBe(false)
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).resolves.toMatchObject({ revoked, attester })
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+        revoked: true,
+        attester: Did.toChain(attester),
+        ctypeHash: credential.claim.cTypeHash,
+      } as any) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).resolves.toMatchObject({ revoked: true, attester })
+
+    await expect(
+      Credential.refreshRevocationStatus(credential as any)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Attester has changed since first verification"`
+    )
+
+    jest
+      .mocked(api.query.attestation.attestations)
+      .mockResolvedValueOnce(
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations') as any
+      )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`"Attestation not found"`)
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn(
+        'attestation',
+        'attestations',
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: false,
+          attester: Did.toChain(identityAlice),
+          ctypeHash: credential.claim.cTypeHash,
+        } as any) as any
+      ) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Attester has changed since first verification"`
+    )
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn(
+        'attestation',
+        'attestations',
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: true,
+          attester: Did.toChain(attester),
+          ctypeHash: randomAsHex(),
+        } as any) as any
+      ) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Attestation does not match credential"`
+    )
+
+    jest.mocked(api.query.attestation.attestations).mockResolvedValueOnce(
+      ApiMocks.mockChainQueryReturn(
+        'attestation',
+        'attestations',
+        ApiMocks.mockChainQueryReturn('attestation', 'attestations', {
+          revoked: true,
+          attester: Did.toChain(attester),
+          ctypeHash: credential.claim.cTypeHash,
+          authorizationId: { Delegation: randomAsHex() },
+        } as any) as any
+      ) as any
+    )
+    await expect(
+      Credential.refreshRevocationStatus({ ...credential, revoked, attester })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"Attestation does not match credential"`
     )
   })
 })
