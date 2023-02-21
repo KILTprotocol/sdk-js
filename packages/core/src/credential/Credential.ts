@@ -344,6 +344,14 @@ export interface VerifiedCredential extends ICredential {
 export async function refreshRevocationStatus(
   verifiedCredential: VerifiedCredential
 ): Promise<VerifiedCredential> {
+  if (
+    typeof verifiedCredential.attester !== 'string' ||
+    typeof verifiedCredential.revoked !== 'boolean'
+  ) {
+    throw new TypeError(
+      'This function expects a VerifiedCredential with properties `revoked` (boolean) and `attester` (string)'
+    )
+  }
   const { revoked, attester } = await verifyAttested(verifiedCredential)
   if (attester !== verifiedCredential.attester) {
     throw new SDKErrors.CredentialUnverifiableError(

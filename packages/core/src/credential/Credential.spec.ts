@@ -365,7 +365,7 @@ describe('Credential', () => {
     await expect(
       Credential.refreshRevocationStatus(credential as any)
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"Attester has changed since first verification"`
+      `"This function expects a VerifiedCredential with properties \`revoked\` (boolean) and \`attester\` (string)"`
     )
 
     jest
