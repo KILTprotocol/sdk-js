@@ -134,7 +134,7 @@ describe('Nested CTypes', () => {
         claimContents,
         didAlice
       )
-    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
     expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
         deeplyNestedCType,
@@ -164,6 +164,6 @@ describe('Nested CTypes', () => {
         claimDeepContents,
         didAlice
       )
-    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
   })
 })

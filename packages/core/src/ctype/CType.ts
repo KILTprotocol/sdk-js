@@ -23,7 +23,12 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, JsonSchema, jsonabc } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { CTypeModel, MetadataModel } from './CType.schemas.js'
+import {
+  CTypeModel,
+  MetadataModel,
+  CTypeModelDraft01,
+  CTypeModelV1,
+} from './CType.schemas.js'
 
 /**
  * Utility for (re)creating CType hashes. Sorts the schema and strips the $id property (which contains the CType hash) before stringifying.
@@ -93,15 +98,17 @@ export function getIdForSchema(
  * @param object Data to be verified against schema.
  * @param schema Schema to verify against.
  * @param messages Optional empty array. If passed, this receives all verification errors.
+ * @param referencedSchemas If schema contains references ($ref) to other schemas, their definitions must be added here in form of an array.
  */
 export function verifyObjectAgainstSchema(
   object: Record<string, any>,
-  schema: Record<string, any>,
-  messages?: string[]
+  schema: JsonSchema.Schema,
+  messages?: string[],
+  referencedSchemas?: JsonSchema.Schema[]
 ): void {
   const validator = new JsonSchema.Validator(schema, '7', false)
-  if (schema.$id !== CTypeModel.$id) {
-    validator.addSchema(CTypeModel)
+  if (referencedSchemas) {
+    referencedSchemas.forEach((i) => validator.addSchema(i))
   }
   const { valid, errors } = validator.validate(object)
   if (valid === true) return
@@ -128,7 +135,7 @@ export function verifyClaimAgainstSchema(
   schema: ICType,
   messages?: string[]
 ): void {
-  verifyObjectAgainstSchema(schema, CTypeModel)
+  verifyObjectAgainstSchema(schema, CTypeModel, messages)
   verifyObjectAgainstSchema(claimContents, schema, messages)
 }
 
@@ -175,21 +182,8 @@ export function verifyClaimAgainstNestedSchemas(
   claimContents: Record<string, any>,
   messages?: string[]
 ): void {
-  const validator = new JsonSchema.Validator(cType, '7', false)
-  nestedCTypes.forEach((ctype) => {
-    validator.addSchema(ctype)
-  })
-  validator.addSchema(CTypeModel)
-  const { valid, errors } = validator.validate(claimContents)
-  if (valid === true) return
-  if (messages) {
-    errors.forEach((error) => {
-      messages.push(error.error)
-    })
-  }
-  throw new SDKErrors.NestedClaimUnverifiableError(undefined, {
-    cause: errors,
-  })
+  verifyObjectAgainstSchema(cType, CTypeModel, messages)
+  verifyObjectAgainstSchema(claimContents, cType, messages, nestedCTypes)
 }
 
 /**
@@ -201,23 +195,33 @@ export function verifyCTypeMetadata(metadata: ICTypeMetadata): void {
   verifyObjectAgainstSchema(metadata, MetadataModel)
 }
 
+const cTypeVersionToSchemaId = {
+  'draft-01': CTypeModelDraft01.$id,
+  V1: CTypeModelV1.$id,
+}
+
 /**
  * Creates a new [[ICType]] object from a set of atomic claims and a title.
  * The CType id will be automatically generated.
  *
  * @param title The new CType's title as a string.
  * @param properties Key-value pairs describing the admissible atomic claims for a credential with this CType. The value of each property is a json-schema (for example `{ "type": "number" }`) used to validate that property.
- * @returns A ctype object, including cTypeId, $schema, and type.
+ * @param version Use 'V1' to create a CType according to the latest metaschema version (default) and 'draft-01' to produce a legacy CType. Included for backwards-compatibility.
+ * @returns A complete JSON schema (CType) with an $id derived from the hashed schema. Each CType references a meta schema that applies to it via the $schema property; its value depends on the `version` parameter.
  */
 export function fromProperties(
   title: ICType['title'],
-  properties: ICType['properties']
+  properties: ICType['properties'],
+  version: 'draft-01' | 'V1' = 'V1'
 ): ICType {
   const schema: Omit<ICType, '$id'> = {
     properties,
     title,
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    $schema: cTypeVersionToSchemaId[version],
     type: 'object',
+  }
+  if (version === 'V1') {
+    schema.additionalProperties = false
   }
   const ctype = jsonabc.sortObj({ ...schema, $id: getIdForSchema(schema) })
   verifyDataStructure(ctype)
