@@ -39,3 +39,4 @@ settings.json
 
 # doc
 /docs/api
+.nojekyll
