@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -58,7 +58,7 @@ function makeLightDidFromSeed(seed: string) {
 function makeResolveKey(document: DidDocument) {
   return async function resolveKey(
     keyUri: DidResourceUri
-  ): Promise<ResolvedDidKey | null> {
+  ): Promise<ResolvedDidKey> {
     const { fragment } = Did.parse(keyUri)
     const key = Did.getKey(document, fragment!) as DidKey
     return {
@@ -129,8 +129,8 @@ describe('Breaking Changes', () => {
         '0xa748f38e896ddc52b6e5cc5baa754f7f841381ef32bf1d86d51026857c6c05dc'
       )
 
-      const rawCType: ICType['schema'] = {
-        $id: 'kilt:ctype:0x2',
+      const cType: ICType = {
+        $id: 'kilt:ctype:0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
         title: 'CtypeModel 2',
         properties: {
@@ -139,15 +139,13 @@ describe('Breaking Changes', () => {
         type: 'object',
       }
 
-      const cType = CType.fromSchema(rawCType, attester.did.uri)
-
       const requestTerms: MessageBody = {
         type: 'request-terms',
         content: {
-          cTypeHash: cType.hash,
+          cTypeHash: CType.idToHash(cType.$id),
         },
       }
-      expect(requestTerms).toMatchSnapshot()
+      expect(requestTerms).toMatchSnapshot('request-terms')
 
       const claim = Claim.fromCTypeAndClaimContents(
         cType,
@@ -161,7 +159,7 @@ describe('Breaking Changes', () => {
           legitimations: [],
         },
       }
-      expect(submitTerms).toMatchSnapshot()
+      expect(submitTerms).toMatchSnapshot('submit-terms')
 
       claim.owner = user.did.uri
       const credential = Credential.fromClaim(claim, { legitimations: [] })
@@ -169,7 +167,7 @@ describe('Breaking Changes', () => {
         type: 'request-attestation',
         content: { credential },
       }
-      expect(requestAttestation).toMatchSnapshot()
+      expect(requestAttestation).toMatchSnapshot('request-attestation')
 
       const attestation = Attestation.fromCredentialAndDid(
         credential,
@@ -179,7 +177,7 @@ describe('Breaking Changes', () => {
         type: 'submit-attestation',
         content: { attestation },
       }
-      expect(submitAttestation).toMatchSnapshot()
+      expect(submitAttestation).toMatchSnapshot('submit-attestation')
 
       // verification flow
 
@@ -189,7 +187,7 @@ describe('Breaking Changes', () => {
         content: {
           cTypes: [
             {
-              cTypeHash: cType.hash,
+              cTypeHash: CType.idToHash(cType.$id),
               requiredProperties: ['name'],
               trustedAttesters: [attester.did.uri],
             },
@@ -197,7 +195,7 @@ describe('Breaking Changes', () => {
           challenge,
         },
       }
-      expect(requestCredential).toMatchSnapshot()
+      expect(requestCredential).toMatchSnapshot('request-credential')
 
       const presentation = await Credential.createPresentation({
         credential,
@@ -212,7 +210,7 @@ describe('Breaking Changes', () => {
         type: 'submit-credential',
         content: [presentation],
       }
-      expect(submitCredential).toMatchSnapshot()
+      expect(submitCredential).toMatchSnapshot('submit-credential')
     })
   })
 })

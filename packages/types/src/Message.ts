@@ -1,20 +1,20 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
 import type { AnyJson } from '@polkadot/types/types/codec'
-import type { DidSignature, DidUri } from './DidDocument.js'
+
+import type { DidResourceUri, DidSignature, DidUri } from './DidDocument.js'
 import type { IAttestation } from './Attestation.js'
 import type { PartialClaim } from './Claim.js'
-import type { ICType } from './CType.js'
 import type { IDelegationNode } from './Delegation.js'
 import type { IQuoteAgreement } from './Quote.js'
 import type { ICredential, ICredentialPresentation } from './Credential.js'
 import type { ITerms } from './Terms.js'
-import type { DidResourceUri } from './index.js'
+import type { CTypeHash } from './CType.js'
 
 export type MessageBodyType =
   | 'error'
@@ -86,12 +86,12 @@ export interface ISubmitCredential extends IMessageBodyBase {
 }
 
 export interface IAcceptCredential extends IMessageBodyBase {
-  content: Array<ICType['hash']>
+  content: CTypeHash[]
   type: 'accept-credential'
 }
 
 export interface IRejectCredential extends IMessageBodyBase {
-  content: Array<ICType['hash']>
+  content: CTypeHash[]
   type: 'reject-credential'
 }
 
@@ -140,7 +140,7 @@ export interface IConfirmPayment extends IMessageBodyBase {
 
 export interface IRequestCredentialContent {
   cTypes: Array<{
-    cTypeHash: ICType['hash']
+    cTypeHash: CTypeHash
     trustedAttesters?: DidUri[]
     requiredProperties?: string[]
   }>

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -34,7 +34,7 @@ import {
   endowAccounts,
   initializeApi,
   isCtypeOnChain,
-  submitExtrinsic,
+  submitTx,
 } from './utils'
 import * as Attestation from '../attestation'
 import * as Claim from '../claim'
@@ -58,12 +58,7 @@ async function checkDeleteFullDid(
   )
   const deleteDid = api.tx.did.delete(storedEndpointsCount)
 
-  tx = await Did.authorizeExtrinsic(
-    fullDid.uri,
-    deleteDid,
-    sign,
-    identity.address
-  )
+  tx = await Did.authorizeTx(fullDid.uri, deleteDid, sign, identity.address)
 
   const balanceBeforeDeleting = (
     await api.query.system.account(identity.address)
@@ -74,7 +69,7 @@ async function checkDeleteFullDid(
   )
   const didDeposit = didResult.deposit
 
-  await submitExtrinsic(tx, identity)
+  await submitTx(tx, identity)
 
   const balanceAfterDeleting = (
     await api.query.system.account(identity.address)
@@ -103,7 +98,7 @@ async function checkReclaimFullDid(
   )
   const didDeposit = didResult.deposit
 
-  await submitExtrinsic(tx, identity)
+  await submitTx(tx, identity)
 
   const balanceAfterRevoking = (
     await api.query.system.account(identity.address)
@@ -127,14 +122,9 @@ async function checkRemoveFullDidAttestation(
     attestation.cTypeHash,
     null
   )
-  authorizedTx = await Did.authorizeExtrinsic(
-    fullDid.uri,
-    tx,
-    sign,
-    identity.address
-  )
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
 
-  await submitExtrinsic(authorizedTx, identity)
+  await submitTx(authorizedTx, identity)
 
   const attestationResult = await api.query.attestation.attestations(
     attestation.claimHash
@@ -149,14 +139,9 @@ async function checkRemoveFullDidAttestation(
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   tx = api.tx.attestation.remove(attestation.claimHash, null)
-  authorizedTx = await Did.authorizeExtrinsic(
-    fullDid.uri,
-    tx,
-    sign,
-    identity.address
-  )
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
 
-  await submitExtrinsic(authorizedTx, identity)
+  await submitTx(authorizedTx, identity)
 
   const balanceAfterRemoving = (
     await api.query.system.account(identity.address)
@@ -180,14 +165,9 @@ async function checkReclaimFullDidAttestation(
     attestation.cTypeHash,
     null
   )
-  authorizedTx = await Did.authorizeExtrinsic(
-    fullDid.uri,
-    tx,
-    sign,
-    identity.address
-  )
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
 
-  await submitExtrinsic(authorizedTx, identity)
+  await submitTx(authorizedTx, identity)
 
   const balanceBeforeReclaiming = (
     await api.query.system.account(identity.address)
@@ -203,7 +183,7 @@ async function checkReclaimFullDidAttestation(
     ? attestationResult.unwrap().deposit.amount.toBn()
     : new BN(0)
 
-  await submitExtrinsic(tx, identity)
+  await submitTx(tx, identity)
 
   const balanceAfterDeleting = (
     await api.query.system.account(identity.address)
@@ -227,14 +207,9 @@ async function checkDeletedDidReclaimAttestation(
     attestation.cTypeHash,
     null
   )
-  authorizedTx = await Did.authorizeExtrinsic(
-    fullDid.uri,
-    tx,
-    sign,
-    identity.address
-  )
+  authorizedTx = await Did.authorizeTx(fullDid.uri, tx, sign, identity.address)
 
-  await submitExtrinsic(authorizedTx, identity)
+  await submitTx(authorizedTx, identity)
 
   storedEndpointsCount = await api.query.did.didEndpointsCount(
     Did.toChain(fullDid.uri)
@@ -243,18 +218,13 @@ async function checkDeletedDidReclaimAttestation(
   attestation = Attestation.fromCredentialAndDid(credential, fullDid.uri)
 
   const deleteDid = api.tx.did.delete(storedEndpointsCount)
-  tx = await Did.authorizeExtrinsic(
-    fullDid.uri,
-    deleteDid,
-    sign,
-    identity.address
-  )
+  tx = await Did.authorizeTx(fullDid.uri, deleteDid, sign, identity.address)
 
-  await submitExtrinsic(tx, identity)
+  await submitTx(tx, identity)
 
   tx = api.tx.attestation.reclaimDeposit(attestation.claimHash)
 
-  await submitExtrinsic(tx, identity)
+  await submitTx(tx, identity)
 }
 
 async function checkWeb3Deposit(
@@ -269,13 +239,13 @@ async function checkWeb3Deposit(
 
   const depositAmount = api.consts.web3Names.deposit.toBn()
   const claimTx = api.tx.web3Names.claim(web3Name)
-  let didAuthorizedTx = await Did.authorizeExtrinsic(
+  let didAuthorizedTx = await Did.authorizeTx(
     fullDid.uri,
     claimTx,
     sign,
     identity.address
   )
-  await submitExtrinsic(didAuthorizedTx, identity)
+  await submitTx(didAuthorizedTx, identity)
   const balanceAfterClaiming = (
     await api.query.system.account(identity.address)
   ).data
@@ -288,13 +258,13 @@ async function checkWeb3Deposit(
   }
 
   const releaseTx = api.tx.web3Names.releaseByOwner()
-  didAuthorizedTx = await Did.authorizeExtrinsic(
+  didAuthorizedTx = await Did.authorizeTx(
     fullDid.uri,
     releaseTx,
     sign,
     identity.address
   )
-  await submitExtrinsic(didAuthorizedTx, identity)
+  await submitTx(didAuthorizedTx, identity)
   const balanceAfterReleasing = (
     await api.query.system.account(identity.address)
   ).data
@@ -330,13 +300,13 @@ beforeAll(async () => {
 
   const ctypeExists = await isCtypeOnChain(driversLicenseCType)
   if (!ctypeExists) {
-    const extrinsic = await Did.authorizeExtrinsic(
+    const extrinsic = await Did.authorizeTx(
       attester.uri,
       api.tx.ctype.add(CType.toChain(driversLicenseCType)),
       attesterKey.getSignCallback(attester),
       devFaucet.address
     )
-    await submitExtrinsic(extrinsic, devFaucet)
+    await submitTx(extrinsic, devFaucet)
   }
 
   const rawClaim = {

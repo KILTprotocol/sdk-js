@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -18,6 +18,7 @@ import {
   verificationKeyTypesMap,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { KILT_DID_CONTEXT_URL, W3C_DID_CONTEXT_URL } from './DidContexts.js'
 
 function exportToJsonDidDocument(did: DidDocument): ConformingDidDocument {
   const {
@@ -77,7 +78,7 @@ function exportToJsonDidDocument(did: DidDocument): ConformingDidDocument {
 
 function exportToJsonLdDidDocument(did: DidDocument): JsonLDDidDocument {
   const document = exportToJsonDidDocument(did)
-  document['@context'] = ['https://www.w3.org/ns/did/v1']
+  document['@context'] = [W3C_DID_CONTEXT_URL, KILT_DID_CONTEXT_URL]
   return document as JsonLDDidDocument
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -46,23 +46,21 @@ export function addDelegationToChainArgs(
 }
 
 /**
- * Query a delegation node from the blockchain given its identifier.
+ * Fetch a delegation node from the blockchain given its identifier.
  *
- * @param delegationId The delegation node ID to query.
- * @returns Either the retrieved [[DelegationNode]] or null.
+ * @param delegationId The delegation node ID to fetch.
+ * @returns The retrieved [[DelegationNode]].
  */
-export async function query(
+export async function fetch(
   delegationId: IDelegationNode['id']
-): Promise<DelegationNode | null> {
+): Promise<DelegationNode> {
   const api = ConfigService.get('api')
-  const decoded = delegationNodeFromChain(
-    await api.query.delegation.delegationNodes(delegationId)
-  )
-  if (!decoded) {
-    return null
+  const chainNode = await api.query.delegation.delegationNodes(delegationId)
+  if (chainNode.isNone) {
+    throw new SDKErrors.DelegationIdMissingError()
   }
   return new DelegationNode({
-    ...decoded,
+    ...delegationNodeFromChain(chainNode),
     id: delegationId,
   })
 }
@@ -77,15 +75,7 @@ export async function getChildren(
   delegationNode: DelegationNode
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNode.id}')`)
-  const childrenNodes = await Promise.all(
-    delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
-      const childNode = await query(childId)
-      if (!childNode) {
-        throw new SDKErrors.DelegationIdMissingError()
-      }
-      return childNode
-    })
-  )
+  const childrenNodes = await Promise.all(delegationNode.childrenIds.map(fetch))
   log.info(`children: ${JSON.stringify(childrenNodes)}`)
   return childrenNodes
 }

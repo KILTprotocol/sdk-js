@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -11,14 +11,13 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import type { HexString } from '@polkadot/util/types'
-
 import type {
   IAttestation,
   DidUri,
   ICType,
   IClaim,
   ICredential,
+  CTypeHash,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ApiMocks } from '@kiltprotocol/testing'
@@ -41,24 +40,15 @@ describe('Attestation', () => {
     'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
   const identityBob: DidUri =
     'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
-  let rawCTypeSchema: ICType['schema']
   let testCType: ICType
   let testContents: any
   let testClaim: IClaim
   let credential: ICredential
 
   beforeAll(async () => {
-    rawCTypeSchema = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Attestation',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    testCType = CType.fromSchema(rawCTypeSchema, identityAlice)
+    testCType = CType.fromProperties('Attestation', {
+      name: { type: 'string' },
+    })
 
     testContents = {}
     testClaim = Claim.fromCTypeAndClaimContents(
@@ -70,9 +60,9 @@ describe('Attestation', () => {
   })
 
   it('error check should throw errors on faulty Attestations', () => {
-    const cTypeHash: HexString =
+    const cTypeHash: CTypeHash =
       '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff'
-    const claimHash: HexString =
+    const claimHash: CTypeHash =
       '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557'
 
     const everything = {

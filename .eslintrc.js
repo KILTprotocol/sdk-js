@@ -149,6 +149,7 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
+        'no-console': 'off',
       },
     },
     {
@@ -156,6 +157,7 @@ module.exports = {
       rules: {
         'import/extensions': 'off',
         'jsdoc/require-jsdoc': 'off',
+        'no-console': 'off',
       },
     },
     {

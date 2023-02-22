@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -16,7 +16,7 @@ import glob from 'glob'
   await writeFile(path, fixed, 'utf8')
 })()
 
-const regex = /^(ex|im)port .+ from '\.[^\.;']+(?=';$)/gm
+const regex = /^(ex|im)port (.+ from )?'\.[^\.;']+(?=';$)/gm
 glob('./src/**/*.ts', async (err, matches) => {
   if (err) throw err
   matches.forEach(async (path) => {

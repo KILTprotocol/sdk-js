@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -229,7 +229,7 @@ export function verifyRequiredCTypeProperties(
   CType.verifyDataStructure(cType as ICType)
 
   const unknownProperties = requiredProperties.find(
-    (property) => !(property in cType.schema.properties)
+    (property) => !(property in cType.properties)
   )
   if (unknownProperties) {
     throw new SDKErrors.CTypeUnknownPropertiesError()
@@ -286,7 +286,7 @@ export function ensureOwnerIsSender({ body, sender }: IMessage): void {
 }
 
 /**
- * Symmetrically decrypts the result of [[Message.encrypt]].
+ * Symmetrically decrypts the result of [[encrypt]].
  *
  * @param encrypted The encrypted message.
  * @param decryptCallback The callback to decrypt with the secret key.
@@ -306,12 +306,8 @@ export async function decrypt(
   const { senderKeyUri, receiverKeyUri, ciphertext, nonce, receivedAt } =
     encrypted
 
-  const senderKeyDetails = await resolveKey(senderKeyUri)
-  if (!senderKeyDetails) {
-    throw new SDKErrors.DidError(
-      `Could not resolve sender encryption key "${senderKeyUri}"`
-    )
-  }
+  const senderKeyDetails = await resolveKey(senderKeyUri, 'keyAgreement')
+
   const { fragment } = Did.parse(receiverKeyUri)
   if (!fragment) {
     throw new SDKErrors.DidError(
@@ -378,7 +374,7 @@ export function verify(decryptedMessage: IMessage): void {
 
 /**
  * Constructs a message from a message body.
- * This should be encrypted with [[Message.encrypt]] before sending to the receiver.
+ * This should be encrypted with [[encrypt]] before sending to the receiver.
  *
  * @param body The body of the message.
  * @param sender The DID of the sender.
@@ -400,7 +396,7 @@ export function fromBody(
 }
 
 /**
- * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
+ * Encrypts the [[Message]] as a string. This can be reversed with [[decrypt]].
  *
  * @param message The message to encrypt.
  * @param encryptCallback The callback to encrypt with the secret key.
@@ -420,10 +416,7 @@ export async function encrypt(
     resolveKey?: DidResolveKey
   } = {}
 ): Promise<IEncryptedMessage> {
-  const receiverKey = await resolveKey(receiverKeyUri)
-  if (!receiverKey) {
-    throw new SDKErrors.DidError(`Cannot resolve key "${receiverKeyUri}"`)
-  }
+  const receiverKey = await resolveKey(receiverKeyUri, 'keyAgreement')
   if (message.receiver !== receiverKey.controller) {
     throw new SDKErrors.IdentityMismatchError('receiver public key', 'receiver')
   }

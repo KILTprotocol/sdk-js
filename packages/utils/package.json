@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/utils",
-  "version": "0.30.0-23",
+  "version": "0.32.0-6",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -35,10 +35,10 @@
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/api": "^9.0.0",
-    "@polkadot/keyring": "^10.0.0",
-    "@polkadot/util": "^10.0.0",
-    "@polkadot/util-crypto": "^10.0.0",
+    "@polkadot/api": "^9.10.2",
+    "@polkadot/keyring": "^10.2.1",
+    "@polkadot/util": "^10.2.1",
+    "@polkadot/util-crypto": "^10.2.1",
     "tweetnacl": "^1.0.3",
     "uuid": "^9.0.0"
   }

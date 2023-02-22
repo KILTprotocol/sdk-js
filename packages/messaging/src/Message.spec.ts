@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -11,8 +11,6 @@
 
 import type {
   DidDocument,
-  DidKey,
-  DidResolutionResult,
   DidResourceUri,
   DidUri,
   IEncryptedMessage,
@@ -85,58 +83,21 @@ describe('Messaging', () => {
   let bobSign: KeyToolSignCallback
   const bobEncKey = makeEncryptionKeyTool('Bob//enc')
 
-  async function didResolve(did: DidUri): Promise<DidResolutionResult | null> {
-    // The light dids are regarded as not upgraded.
-    if (did.startsWith(aliceLightDidWithDetails.uri)) {
-      return {
-        document: aliceLightDidWithDetails,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(aliceLightDid.uri)) {
-      return {
-        document: aliceLightDid,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(aliceFullDid.uri)) {
-      return { document: aliceFullDid, metadata: { deactivated: false } }
-    }
-
-    // The light dids are regarded as not upgraded.
-    if (did.startsWith(bobLightDidWithDetails.uri)) {
-      return {
-        document: bobLightDidWithDetails,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(bobLightDid.uri)) {
-      return {
-        document: bobLightDid,
-        metadata: { deactivated: false },
-      }
-    }
-    if (did.startsWith(bobFullDid.uri)) {
-      return { document: bobFullDid, metadata: { deactivated: false } }
-    }
-    return null
-  }
-
   async function resolveKey(
-    keyUri: DidResourceUri
-  ): Promise<ResolvedDidKey | null> {
-    const { fragment, did } = Did.parse(keyUri)
-    const { document } = (await didResolve(
-      did as DidUri
-    )) as DidResolutionResult
-    if (document === undefined) throw new Error('Could not resolve details')
-    const key = Did.getKey(document, fragment!) as DidKey
-    return {
-      controller: document!.uri,
-      id: keyUri,
-      publicKey: key.publicKey,
-      type: key.type,
-    }
+    keyUri: DidResourceUri,
+    keyRelationship = 'authentication'
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [
+      aliceLightDidWithDetails,
+      aliceLightDid,
+      aliceFullDid,
+      bobLightDidWithDetails,
+      bobLightDid,
+      bobFullDid,
+    ].find(({ uri }) => uri === did)
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document[keyRelationship][0], did)
   }
 
   beforeAll(async () => {
@@ -267,7 +228,7 @@ describe('Messaging', () => {
       credential.rootHash,
       aliceSign(aliceFullDid),
       aliceFullDid.uri,
-      { didResolve }
+      { didResolveKey: resolveKey }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -435,7 +396,7 @@ describe('Messaging', () => {
       credential.rootHash,
       aliceSign(aliceLightDid),
       aliceLightDid.uri,
-      { didResolve }
+      { didResolveKey: resolveKey }
     )
     const requestAttestationBody: IRequestAttestation = {
       content: {
@@ -477,7 +438,7 @@ describe('Messaging', () => {
       credential.rootHash,
       aliceSign(aliceLightDidWithDetails),
       aliceLightDidWithDetails.uri,
-      { didResolve }
+      { didResolveKey: resolveKey }
     )
     const requestAttestationBodyWithEncodedDetails: IRequestAttestation = {
       content: {
@@ -704,17 +665,9 @@ describe('Error checking / Verification', () => {
   ): Promise<[ICredential, IAttestation]> {
     // create claim
 
-    const rawCType: ICType['schema'] = {
-      $id: Crypto.hashStr('kilt:ctype:0x1'),
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Credential',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    const testCType = CType.fromSchema(rawCType)
+    const testCType = CType.fromProperties('Credential', {
+      name: { type: 'string' },
+    })
 
     const claim = Claim.fromCTypeAndClaimContents(
       testCType,
@@ -740,8 +693,6 @@ describe('Error checking / Verification', () => {
   let keyBob: KeyTool
 
   let date: string
-  let rawCType: ICType['schema']
-  let rawCTypeWithMultipleProperties: ICType['schema']
   let testCType: ICType
   let testCTypeWithMultipleProperties: ICType
   let claim: IClaim
@@ -804,55 +755,28 @@ describe('Error checking / Verification', () => {
       name: 'Bob',
     }
 
-    async function didResolve(
-      didUri: DidUri
-    ): Promise<DidResolutionResult | null> {
-      const { did } = Did.parse(didUri)
-      if (did === identityAlice.uri) {
-        return {
-          metadata: {
-            deactivated: false,
-          },
-          document: identityAlice,
-        }
-      }
-      if (did === identityBob.uri) {
-        return {
-          metadata: {
-            deactivated: false,
-          },
-          document: identityBob,
-        }
-      }
-      return null
+    async function didResolveKey(
+      keyUri: DidResourceUri
+    ): Promise<ResolvedDidKey> {
+      const { did } = Did.parse(keyUri)
+      const document = [identityAlice, identityBob].find(
+        ({ uri }) => uri === did
+      )
+      if (!document) throw new Error('Cannot resolve mocked DID')
+      return Did.keyToResolvedKey(document.authentication[0], did)
     }
 
-    rawCTypeWithMultipleProperties = {
-      $id: Crypto.hashStr('kilt:ctype:0x2'),
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Drivers license Claim',
-      properties: {
+    // CType
+    testCType = CType.fromProperties('ClaimCtype', {
+      name: { type: 'string' },
+    })
+    testCTypeWithMultipleProperties = CType.fromProperties(
+      'Drivers license Claim',
+      {
         name: { type: 'string' },
         id: { type: 'string' },
         age: { type: 'string' },
-      },
-      type: 'object',
-    }
-    // CType Schema
-    rawCType = {
-      $id: Crypto.hashStr('kilt:ctype:0x1'),
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'ClaimCtype',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-    // CType
-    testCType = CType.fromSchema(rawCType, identityAlice.uri)
-    testCTypeWithMultipleProperties = CType.fromSchema(
-      rawCTypeWithMultipleProperties,
-      identityAlice.uri
+      }
     )
 
     // Claim
@@ -892,7 +816,7 @@ describe('Error checking / Verification', () => {
       legitimation.rootHash,
       keyBob.getSignCallback(identityBob),
       identityBob.uri,
-      { didResolve }
+      { didResolveKey }
     )
     // Request Terms content
     requestTermsContent = {
@@ -965,10 +889,12 @@ describe('Error checking / Verification', () => {
       },
       metaData: {},
       signatures: {
-        inviter: await Did.signPayload(
-          identityAlice.uri,
-          'signature',
-          keyAlice.getSignCallback(identityAlice)
+        inviter: Did.signatureToJson(
+          await keyAlice.getSignCallback(identityAlice)({
+            data: Crypto.coToUInt8('signature'),
+            did: identityAlice.uri,
+            keyRelationship: 'authentication',
+          })
         ),
       },
     }
@@ -982,15 +908,19 @@ describe('Error checking / Verification', () => {
         isPCR: false,
       },
       signatures: {
-        inviter: await Did.signPayload(
-          identityAlice.uri,
-          'signature',
-          keyAlice.getSignCallback(identityAlice)
+        inviter: Did.signatureToJson(
+          await keyAlice.getSignCallback(identityAlice)({
+            data: Crypto.coToUInt8('signature'),
+            did: identityAlice.uri,
+            keyRelationship: 'authentication',
+          })
         ),
-        invitee: await Did.signPayload(
-          identityBob.uri,
-          'signature',
-          keyBob.getSignCallback(identityBob)
+        invitee: Did.signatureToJson(
+          await keyBob.getSignCallback(identityBob)({
+            data: Crypto.coToUInt8('signature'),
+            did: identityBob.uri,
+            keyRelationship: 'authentication',
+          })
         ),
       },
     }

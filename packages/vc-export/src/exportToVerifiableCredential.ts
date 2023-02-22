@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -100,13 +100,11 @@ export function fromCredentialAndAttestation(
   // if ctype is given, add as credential schema
   let credentialSchema: CredentialSchema | undefined
   if (ctype) {
-    const { schema, owner } = ctype
     credentialSchema = {
-      '@id': schema.$id,
+      '@id': ctype.$id,
       '@type': JSON_SCHEMA_TYPE,
-      name: schema.title,
-      schema,
-      author: owner || undefined,
+      name: ctype.title,
+      schema: ctype,
     }
   }
 

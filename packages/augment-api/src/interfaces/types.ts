@@ -2,4 +2,3 @@
 /* eslint-disable */
 
 export * from './extraDefs/types.js';
-export * from './did/types.js';

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -25,6 +25,8 @@ export class UnauthorizedError extends SDKError {}
 
 export class CTypeHashMissingError extends SDKError {}
 
+export class CTypeError extends SDKError {}
+
 export class CTypeIdMismatchError extends SDKError {
   constructor(fromSchema: string, provided: string) {
     super(
@@ -49,11 +51,19 @@ export class DidExporterError extends SDKError {}
 
 export class DidBatchError extends SDKError {}
 
+export class DidNotFoundError extends SDKError {}
+
+export class DidResolveUpgradedDidError extends SDKError {}
+
+export class DidDeactivatedError extends SDKError {}
+
 export class ClaimHashMissingError extends SDKError {}
 
 export class RevokedTypeError extends SDKError {}
 
 export class OwnerMissingError extends SDKError {}
+
+export class SubjectMissingError extends SDKError {}
 
 export class LegitimationsMissingError extends SDKError {}
 
@@ -149,8 +159,6 @@ export class CredentialUnverifiableError extends SDKError {}
 
 export class ClaimUnverifiableError extends SDKError {}
 
-export class NestedClaimUnverifiableError extends SDKError {}
-
 export class IdentityMismatchError extends SDKError {
   constructor(context?: string, type?: string) {
     if (type && context) {
@@ -200,3 +208,5 @@ export class NoProofForStatementError extends SDKError {
 }
 
 export class CodecMismatchError extends SDKError {}
+
+export class PublicCredentialError extends SDKError {}

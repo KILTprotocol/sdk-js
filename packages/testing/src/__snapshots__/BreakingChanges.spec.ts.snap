@@ -25,32 +25,7 @@ Object {
 }
 `;
 
-exports[`Breaking Changes Messages does not break for attestation flow 1`] = `
-Object {
-  "content": Object {
-    "cTypeHash": "0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c",
-  },
-  "type": "request-terms",
-}
-`;
-
-exports[`Breaking Changes Messages does not break for attestation flow 2`] = `
-Object {
-  "content": Object {
-    "claim": Object {
-      "cTypeHash": "0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c",
-      "contents": Object {
-        "name": "Bob",
-      },
-      "owner": "did:kilt:light:004rn1Xps9QSMiAb2aMoKQbAred94wh1iLjGmNBYy1FVCS81ry:z1msTRicERqs59nwMvp3yzMRBhRatQoZZaiSZfyN7TzqeEs1bHHTCH3RURC6zWk5B8HXGZThZos9PJFJrkiYchNGbAGQRKSKucBVDVoXBLDyEm4P1dsco9wyoaWa5kkFw6DZgnKrTJg8Y8iCy7k2yo8GeMXAuR8qoBFFXj7Up7DxKJrMoQudvFHTy2uk2HPNfqkzJX17Wqsny1MKHD82eC3TcjrGCkhMZy3NmzkySmLsDmmHnG2csZ5vvefFRFZ1hSKfUtcV8EnLd3zozsiZByaLrED2XVbuHqPVzqcnrCJF8fSm49NcGDgsQkwnQwbuKfMkov9WwJoxhDSYG6e7WP",
-    },
-    "legitimations": Array [],
-  },
-  "type": "submit-terms",
-}
-`;
-
-exports[`Breaking Changes Messages does not break for attestation flow 3`] = `
+exports[`Breaking Changes Messages does not break for attestation flow: request-attestation 1`] = `
 Object {
   "content": Object {
     "credential": Object {
@@ -78,22 +53,7 @@ Object {
 }
 `;
 
-exports[`Breaking Changes Messages does not break for attestation flow 4`] = `
-Object {
-  "content": Object {
-    "attestation": Object {
-      "cTypeHash": "0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c",
-      "claimHash": "0x453559279a1816c20673194e21eb72f121e7b31f5b33ea3a8d3264d6f4d319ac",
-      "delegationId": null,
-      "owner": "did:kilt:light:004rn1Xps9QSMiAb2aMoKQbAred94wh1iLjGmNBYy1FVCS81ry:z1msTRicERqs59nwMvp3yzMRBhRatQoZZaiSZfyN7TzqeEs1bHHTCH3RURC6zWk5B8HXGZThZos9PJFJrkiYchNGbAGQRKSKucBVDVoXBLDyEm4P1dsco9wyoaWa5kkFw6DZgnKrTJg8Y8iCy7k2yo8GeMXAuR8qoBFFXj7Up7DxKJrMoQudvFHTy2uk2HPNfqkzJX17Wqsny1MKHD82eC3TcjrGCkhMZy3NmzkySmLsDmmHnG2csZ5vvefFRFZ1hSKfUtcV8EnLd3zozsiZByaLrED2XVbuHqPVzqcnrCJF8fSm49NcGDgsQkwnQwbuKfMkov9WwJoxhDSYG6e7WP",
-      "revoked": false,
-    },
-  },
-  "type": "submit-attestation",
-}
-`;
-
-exports[`Breaking Changes Messages does not break for attestation flow 5`] = `
+exports[`Breaking Changes Messages does not break for attestation flow: request-credential 1`] = `
 Object {
   "content": Object {
     "cTypes": Array [
@@ -113,7 +73,31 @@ Object {
 }
 `;
 
-exports[`Breaking Changes Messages does not break for attestation flow 6`] = `
+exports[`Breaking Changes Messages does not break for attestation flow: request-terms 1`] = `
+Object {
+  "content": Object {
+    "cTypeHash": "0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c",
+  },
+  "type": "request-terms",
+}
+`;
+
+exports[`Breaking Changes Messages does not break for attestation flow: submit-attestation 1`] = `
+Object {
+  "content": Object {
+    "attestation": Object {
+      "cTypeHash": "0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c",
+      "claimHash": "0x453559279a1816c20673194e21eb72f121e7b31f5b33ea3a8d3264d6f4d319ac",
+      "delegationId": null,
+      "owner": "did:kilt:light:004rn1Xps9QSMiAb2aMoKQbAred94wh1iLjGmNBYy1FVCS81ry:z1msTRicERqs59nwMvp3yzMRBhRatQoZZaiSZfyN7TzqeEs1bHHTCH3RURC6zWk5B8HXGZThZos9PJFJrkiYchNGbAGQRKSKucBVDVoXBLDyEm4P1dsco9wyoaWa5kkFw6DZgnKrTJg8Y8iCy7k2yo8GeMXAuR8qoBFFXj7Up7DxKJrMoQudvFHTy2uk2HPNfqkzJX17Wqsny1MKHD82eC3TcjrGCkhMZy3NmzkySmLsDmmHnG2csZ5vvefFRFZ1hSKfUtcV8EnLd3zozsiZByaLrED2XVbuHqPVzqcnrCJF8fSm49NcGDgsQkwnQwbuKfMkov9WwJoxhDSYG6e7WP",
+      "revoked": false,
+    },
+  },
+  "type": "submit-attestation",
+}
+`;
+
+exports[`Breaking Changes Messages does not break for attestation flow: submit-credential 1`] = `
 Object {
   "content": Array [
     Object {
@@ -143,5 +127,21 @@ Object {
     },
   ],
   "type": "submit-credential",
+}
+`;
+
+exports[`Breaking Changes Messages does not break for attestation flow: submit-terms 1`] = `
+Object {
+  "content": Object {
+    "claim": Object {
+      "cTypeHash": "0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c",
+      "contents": Object {
+        "name": "Bob",
+      },
+      "owner": "did:kilt:light:004rn1Xps9QSMiAb2aMoKQbAred94wh1iLjGmNBYy1FVCS81ry:z1msTRicERqs59nwMvp3yzMRBhRatQoZZaiSZfyN7TzqeEs1bHHTCH3RURC6zWk5B8HXGZThZos9PJFJrkiYchNGbAGQRKSKucBVDVoXBLDyEm4P1dsco9wyoaWa5kkFw6DZgnKrTJg8Y8iCy7k2yo8GeMXAuR8qoBFFXj7Up7DxKJrMoQudvFHTy2uk2HPNfqkzJX17Wqsny1MKHD82eC3TcjrGCkhMZy3NmzkySmLsDmmHnG2csZ5vvefFRFZ1hSKfUtcV8EnLd3zozsiZByaLrED2XVbuHqPVzqcnrCJF8fSm49NcGDgsQkwnQwbuKfMkov9WwJoxhDSYG6e7WP",
+    },
+    "legitimations": Array [],
+  },
+  "type": "submit-terms",
 }
 `;

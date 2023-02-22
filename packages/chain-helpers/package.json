@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.30.0-23",
+  "version": "0.32.0-6",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -31,16 +31,15 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
     "@kiltprotocol/testing": "workspace:*",
-    "@polkadot/keyring": "^10.0.0",
+    "@polkadot/keyring": "^10.2.1",
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@kiltprotocol/augment-api": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.4.1",
-    "@polkadot/types": "^9.4.1"
+    "@polkadot/api": "^9.10.2",
+    "@polkadot/types": "^9.10.2"
   }
 }

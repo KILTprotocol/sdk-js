@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -22,7 +22,7 @@ import {
   devFaucet,
   EXISTENTIAL_DEPOSIT,
   initializeApi,
-  submitExtrinsic,
+  submitTx,
 } from './utils'
 
 let api: ApiPromise
@@ -70,7 +70,7 @@ describe('when there is a dev chain with a faucet', () => {
     api.query.system.account(address, spy)
     const balanceBefore = (await api.query.system.account(faucet.address)).data
     const transferTx = api.tx.balances.transfer(address, EXISTENTIAL_DEPOSIT)
-    await submitExtrinsic(transferTx, faucet)
+    await submitTx(transferTx, faucet)
     const balanceAfter = (await api.query.system.account(faucet.address)).data
     const balanceIdent = (await api.query.system.account(address)).data
 
@@ -100,7 +100,7 @@ describe('When there are haves and have-nots', () => {
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
-    await submitExtrinsic(transferTx, richieRich)
+    await submitTx(transferTx, richieRich)
     const balanceTo = (await api.query.system.account(stormyD.address)).data
     expect(balanceTo.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
   }, 40_000)
@@ -112,7 +112,7 @@ describe('When there are haves and have-nots', () => {
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
-    await expect(submitExtrinsic(transferTx, bobbyBroke)).rejects.toThrowError(
+    await expect(submitTx(transferTx, bobbyBroke)).rejects.toThrowError(
       '1010: Invalid Transaction'
     )
 
@@ -130,7 +130,7 @@ describe('When there are haves and have-nots', () => {
       bobbyBroke.address,
       RichieBalance.free
     )
-    await expect(submitExtrinsic(transferTx, richieRich)).rejects.toThrowError()
+    await expect(submitTx(transferTx, richieRich)).rejects.toThrowError()
 
     const newBalance = (await api.query.system.account(stormyD.address)).data
     const zeroBalance = (await api.query.system.account(bobbyBroke.address))
@@ -147,12 +147,12 @@ describe('When there are haves and have-nots', () => {
       richieRich.address,
       EXISTENTIAL_DEPOSIT
     )
-    await submitExtrinsic(transferTx1, faucet)
+    await submitTx(transferTx1, faucet)
     const transferTx2 = api.tx.balances.transfer(
       stormyD.address,
       EXISTENTIAL_DEPOSIT
     )
-    await submitExtrinsic(transferTx2, faucet)
+    await submitTx(transferTx2, faucet)
 
     expect(spy).toBeCalledTimes(3)
   }, 30_000)
@@ -165,7 +165,7 @@ describe('When there are haves and have-nots', () => {
       api.tx.balances.transfer(richieRich.address, EXISTENTIAL_DEPOSIT),
       api.tx.balances.transfer(stormyD.address, EXISTENTIAL_DEPOSIT),
     ])
-    await submitExtrinsic(batch, faucet)
+    await submitTx(batch, faucet)
 
     expect(listener).toBeCalledTimes(2)
   }, 50_000)

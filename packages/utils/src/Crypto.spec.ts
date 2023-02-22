@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -52,35 +52,21 @@ describe('helper functions', () => {
     expect(Crypto.hashStr('123')).not.toEqual(Crypto.hashStr(message))
   })
 
-  it('should sort objects when hashing', () => {
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 })).toEqual(
-      Crypto.hashObjectAsStr({ b: 2, a: 1 })
-    )
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 })).not.toEqual(
-      Crypto.hashObjectAsStr({ b: 1, a: 2 })
-    )
-    // with nonce
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 }, 'abc')).toEqual(
-      Crypto.hashObjectAsStr({ b: 2, a: 1 }, 'abc')
-    )
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 }, 'abc')).not.toEqual(
-      Crypto.hashObjectAsStr({ b: 1, a: 2 }, 'abc')
-    )
-    expect(Crypto.hashObjectAsStr({ a: 1, b: 2 }, 'abc')).not.toEqual(
-      Crypto.hashObjectAsStr({ b: 2, a: 1 }, 'acab')
+  it('encodeObjectAsStr should sort objects', () => {
+    expect(Crypto.encodeObjectAsStr({ b: 2, a: 1 })).toEqual('{"a":1,"b":2}')
+    expect(Crypto.encodeObjectAsStr({ a: 1, b: 2 })).toEqual('{"a":1,"b":2}')
+    expect(Crypto.encodeObjectAsStr({ a: 1, b: 2 })).not.toEqual(
+      '{"a":2,"b":1}'
     )
   })
 
-  it('hashObjectAsStr hashes numbers as strings', () => {
-    expect(Crypto.hashObjectAsStr(1)).toEqual(Crypto.hashStr('1'))
-    expect(Crypto.hashObjectAsStr(1)).not.toEqual(
-      Crypto.hashStr(Uint8Array.from([1]))
-    )
+  it('encodeObjectAsStr converts numbers to strings', () => {
+    expect(Crypto.encodeObjectAsStr(1)).toEqual('1')
   })
 
-  it('hashObjectAsStr hashes boolean as strings', () => {
-    expect(Crypto.hashObjectAsStr(true)).toEqual(Crypto.hashStr('true'))
-    expect(Crypto.hashObjectAsStr(false)).toEqual(Crypto.hashStr('false'))
+  it('encodeObjectAsStr converts boolean to strings', () => {
+    expect(Crypto.encodeObjectAsStr(true)).toEqual('true')
+    expect(Crypto.encodeObjectAsStr(false)).toEqual('false')
   })
 
   it('converts buffer to Uint8Array', () => {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -17,7 +17,7 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { makeSigningKeyTool } from '@kiltprotocol/testing'
 
 import { toFemtoKilt } from '../balance/Balance.utils'
-import { devCharlie, devFaucet, initializeApi, submitExtrinsic } from './utils'
+import { devCharlie, devFaucet, initializeApi, submitTx } from './utils'
 import { disconnect } from '../kilt'
 
 let api: ApiPromise
@@ -38,7 +38,7 @@ describe('Chain returns specific errors, that we check for', () => {
       testIdentity.address,
       toFemtoKilt(10000)
     )
-    await submitExtrinsic(transferTx, faucet)
+    await submitTx(transferTx, faucet)
   }, 40000)
 
   it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {

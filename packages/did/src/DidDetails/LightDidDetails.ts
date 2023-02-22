@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -69,33 +69,32 @@ export type CreateDocumentInput = {
   service?: DidServiceEndpoint[]
 }
 
-function validateCreateDocumentInput(input: CreateDocumentInput): void {
+function validateCreateDocumentInput({
+  authentication,
+  keyAgreement,
+  service: services,
+}: CreateDocumentInput): void {
   // Check authentication key type
   const authenticationKeyTypeEncoding =
-    verificationKeyTypeToLightDidEncoding[input.authentication[0].type]
+    verificationKeyTypeToLightDidEncoding[authentication[0].type]
 
   if (!authenticationKeyTypeEncoding) {
-    throw new SDKErrors.UnsupportedKeyError(input.authentication[0].type)
+    throw new SDKErrors.UnsupportedKeyError(authentication[0].type)
   }
 
   if (
-    input.keyAgreement?.[0].type &&
-    !encryptionKeyTypes.includes(input.keyAgreement[0].type)
+    keyAgreement?.[0].type &&
+    !encryptionKeyTypes.includes(keyAgreement[0].type)
   ) {
     throw new SDKErrors.DidError(
-      `Encryption key type "${input.keyAgreement[0].type}" is not supported`
+      `Encryption key type "${keyAgreement[0].type}" is not supported`
     )
-  }
-
-  // Check service endpoints
-  if (!input.service) {
-    return
   }
 
   // Checks that for all service IDs have regular strings as their ID and not a full DID.
   // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
   // when upgrading to a full DID.
-  input.service?.forEach((service) => {
+  services?.forEach((service) => {
     // A service ID cannot have a reserved ID that is used for key IDs.
     if (service.id === '#authentication' || service.id === '#encryption') {
       throw new SDKErrors.DidError(
@@ -111,11 +110,15 @@ const SERVICES_MAP_KEY = 's'
 
 interface SerializableStructure {
   [KEY_AGREEMENT_MAP_KEY]?: NewDidEncryptionKey
-  [SERVICES_MAP_KEY]?: Array<Omit<DidServiceEndpoint, 'id'> & { id: string }>
+  [SERVICES_MAP_KEY]?: Array<
+    Partial<Omit<DidServiceEndpoint, 'id'>> & {
+      id: string
+    } & { types?: string[]; urls?: string[] } // This below was mistakenly not accounted for during the SDK refactor, meaning there are light DIDs that contain these keys in their service endpoints.
+  >
 }
 
 /**
- * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm
+ * Serialize the optional encryption key and service endpoints of an off-chain DID using the CBOR serialization algorithm
  * and encoding the result in Base58 format with a multibase prefix.
  *
  * @param details The light DID details to encode.
@@ -123,7 +126,7 @@ interface SerializableStructure {
  * @param details.service The DID service endpoints.
  * @returns The Base58-encoded and CBOR-serialized off-chain DID optional details.
  */
-function serializeAndEncodeAdditionalLightDidDetails({
+function serializeAdditionalLightDidDetails({
   keyAgreement,
   service,
 }: Pick<CreateDocumentInput, 'keyAgreement' | 'service'>): string | undefined {
@@ -148,7 +151,7 @@ function serializeAndEncodeAdditionalLightDidDetails({
   return base58Encode([serializationVersion, ...serialized], true)
 }
 
-function decodeAndDeserializeAdditionalLightDidDetails(
+function deserializeAdditionalLightDidDetails(
   rawInput: string,
   version = 1
 ): Pick<CreateDocumentInput, 'keyAgreement' | 'service'> {
@@ -168,10 +171,15 @@ function decodeAndDeserializeAdditionalLightDidDetails(
   const keyAgreement = deserialized[KEY_AGREEMENT_MAP_KEY]
   return {
     keyAgreement: keyAgreement && [keyAgreement],
-    service: deserialized[SERVICES_MAP_KEY]?.map(({ id, ...rest }) => ({
-      id: `#${id}`,
-      ...rest,
-    })),
+    service: deserialized[SERVICES_MAP_KEY]?.map(
+      ({ id, type, serviceEndpoint, types, urls }) => ({
+        id: `#${id}`,
+        // types for retro-compatibility
+        type: (type ?? types) as string[],
+        // urls for retro-compatibility
+        serviceEndpoint: (serviceEndpoint ?? urls) as string[],
+      })
+    ),
   }
 }
 
@@ -197,7 +205,7 @@ export function createLightDidDocument({
     keyAgreement,
     service,
   })
-  const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
+  const encodedDetails = serializeAdditionalLightDidDetails({
     keyAgreement,
     service,
   })
@@ -287,8 +295,10 @@ export function parseDocumentFromLightDid(
   if (!encodedDetails) {
     return createLightDidDocument({ authentication })
   }
-  const { keyAgreement, service } =
-    decodeAndDeserializeAdditionalLightDidDetails(encodedDetails, version)
+  const { keyAgreement, service } = deserializeAdditionalLightDidDetails(
+    encodedDetails,
+    version
+  )
   return createLightDidDocument({
     authentication,
     keyAgreement,

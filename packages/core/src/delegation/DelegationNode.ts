@@ -1,16 +1,16 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
 import type {
+  CTypeHash,
   DidDocument,
   DidUri,
   DidVerificationKey,
   IAttestation,
-  ICType,
   IDelegationHierarchyDetails,
   IDelegationNode,
   SignCallback,
@@ -19,16 +19,16 @@ import type {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import * as Did from '@kiltprotocol/did'
-import type { HexString } from '@polkadot/util/types'
+
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { fromChain as attestationFromChain } from '../attestation/Attestation.chain.js'
 import {
   addDelegationToChainArgs,
   getAttestationHashes,
   getChildren,
-  query,
+  fetch,
 } from './DelegationNode.chain.js'
-import { query as queryDetails } from './DelegationHierarchyDetails.chain.js'
+import { fetch as fetchDetails } from './DelegationHierarchyDetails.chain.js'
 import * as DelegationNodeUtils from './DelegationNode.utils.js'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
@@ -155,7 +155,7 @@ export class DelegationNode implements IDelegationNode {
    *
    * @returns The CType hash associated with the delegation hierarchy.
    */
-  public async getCTypeHash(): Promise<ICType['hash']> {
+  public async getCTypeHash(): Promise<CTypeHash> {
     const { cTypeHash } = await this.getHierarchyDetails()
     return cTypeHash
   }
@@ -167,12 +167,7 @@ export class DelegationNode implements IDelegationNode {
    */
   public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
     if (!this.hierarchyDetails) {
-      const hierarchyDetails = await queryDetails(this.hierarchyId)
-      if (!hierarchyDetails) {
-        throw new SDKErrors.HierarchyQueryError(this.hierarchyId)
-      }
-      this.hierarchyDetails = hierarchyDetails
-      return hierarchyDetails
+      this.hierarchyDetails = await fetchDetails(this.hierarchyId)
     }
     return this.hierarchyDetails
   }
@@ -183,7 +178,12 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the parent as [[DelegationNode]] or [null].
    */
   public async getParent(): Promise<DelegationNode | null> {
-    return this.parentId ? query(this.parentId) : null
+    try {
+      if (!this.parentId) return null
+      return fetch(this.parentId)
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -192,10 +192,11 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
-    const refreshedNodeDetails = await query(this.id)
-    // Updates the children info with the latest information available on chain.
-    if (refreshedNodeDetails) {
-      this.childrenIdentifiers = refreshedNodeDetails.childrenIds
+    try {
+      // Updates the children info with the latest information available on chain.
+      this.childrenIdentifiers = (await fetch(this.id)).childrenIds
+    } catch {
+      // ignore missing
     }
     return getChildren(this)
   }
@@ -238,19 +239,17 @@ export class DelegationNode implements IDelegationNode {
    * This hash is signed by the delegate and later stored along with the delegation to
    * make sure delegation data (such as permissions) has not been tampered with.
    *
-   * @returns The hash representation of this delegation **as a hex string**.
+   * @returns The hash representation of this delegation **as a byte array**.
    */
-  public generateHash(): HexString {
+  public generateHash(): Uint8Array {
     const propsToHash = [this.id, this.hierarchyId]
     if (this.parentId) {
       propsToHash.push(this.parentId)
     }
     const uint8Props = propsToHash.map((value) => Crypto.coToUInt8(value))
     uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
-    const generated = Crypto.u8aToHex(
-      Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
-    )
-    log.debug(`generateHash(): ${generated}`)
+    const generated = Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
+    log.debug(`generateHash(): ${Crypto.u8aToHex(generated)}`)
     return generated
   }
 
@@ -267,11 +266,11 @@ export class DelegationNode implements IDelegationNode {
     delegateDid: DidDocument,
     sign: SignCallback
   ): Promise<Did.EncodedSignature> {
-    const delegateSignature = await Did.signPayload(
-      delegateDid.uri,
-      this.generateHash(),
-      sign
-    )
+    const delegateSignature = await sign({
+      data: this.generateHash(),
+      did: delegateDid.uri,
+      keyRelationship: 'authentication',
+    })
     const { fragment } = Did.parse(delegateSignature.keyUri)
     if (!fragment) {
       throw new SDKErrors.DidError(
@@ -284,7 +283,10 @@ export class DelegationNode implements IDelegationNode {
         `Key with fragment "${fragment}" was not found on DID: "${delegateDid.uri}"`
       )
     }
-    return Did.didSignatureToChain(key as DidVerificationKey, delegateSignature)
+    return Did.didSignatureToChain(
+      key as DidVerificationKey,
+      delegateSignature.signature
+    )
   }
 
   /**
@@ -293,11 +295,7 @@ export class DelegationNode implements IDelegationNode {
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
   public async getLatestState(): Promise<DelegationNode> {
-    const newNodeState = await query(this.id)
-    if (!newNodeState) {
-      throw new SDKErrors.DelegationIdMissingError()
-    }
-    return newNodeState
+    return fetch(this.id)
   }
 
   /**
@@ -331,14 +329,12 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Verifies the delegation node by querying it from chain and checking its revocation status.
+   * Verifies the delegation node by fetching it from chain and checking its revocation status.
    */
   public async verify(): Promise<void> {
-    const node = await query(this.id)
-    if (!node || node.revoked !== false) {
-      throw new SDKErrors.InvalidDelegationNodeError(
-        'Delegation node not found or revoked'
-      )
+    const node = await fetch(this.id)
+    if (node.revoked !== false) {
+      throw new SDKErrors.InvalidDelegationNodeError('Delegation node revoked')
     }
   }
 
@@ -358,15 +354,22 @@ export class DelegationNode implements IDelegationNode {
         node: this,
       }
     }
-    const parent = await this.getParent()
-    if (parent) {
+    if (!this.parentId) {
+      return {
+        steps: 0,
+        node: null,
+      }
+    }
+    try {
+      const parent = await fetch(this.parentId)
       const result = await parent.findAncestorOwnedBy(did)
       result.steps += 1
       return result
-    }
-    return {
-      steps: 0,
-      node: null,
+    } catch {
+      return {
+        steps: 0,
+        node: null,
+      }
     }
   }
 
@@ -442,13 +445,13 @@ export class DelegationNode implements IDelegationNode {
    * Queries the delegation node with its [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
-   * @returns Promise containing the [[DelegationNode]] or [null].
+   * @returns Promise containing the [[DelegationNode]].
    */
-  public static async query(
+  public static async fetch(
     delegationId: IDelegationNode['id']
-  ): Promise<DelegationNode | null> {
-    log.info(`:: query('${delegationId}')`)
-    const result = await query(delegationId)
+  ): Promise<DelegationNode> {
+    log.info(`:: fetch('${delegationId}')`)
+    const result = await fetch(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
     return result
   }

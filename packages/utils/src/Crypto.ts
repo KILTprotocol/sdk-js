@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -117,14 +117,14 @@ export function signStr(
  *
  * @param message Original signed message to be verified.
  * @param signature Signature as hex string or byte array.
- * @param address Substrate address or public key of the signer.
+ * @param addressOrPublicKey Substrate address or public key of the signer.
  */
 export function verify(
   message: CryptoInput,
   signature: CryptoInput,
-  address: Address
+  addressOrPublicKey: Address | HexString | Uint8Array
 ): void {
-  if (signatureVerify(message, signature, address).isValid !== true)
+  if (signatureVerify(message, signature, addressOrPublicKey).isValid !== true)
     throw new SDKErrors.SignatureUnverifiableError()
 }
 
@@ -171,25 +171,7 @@ export function encodeObjectAsStr(
       ? JSON.stringify(value)
       : value
 
-  return input
-}
-
-/**
- * Hashes numbers, booleans, and objects by stringify-ing them. Object keys are sorted to yield consistent hashing.
- *
- * @param value Object or value to be hashed.
- * @param nonce Optional nonce to obscure hashed values that could be guessed.
- * @returns Blake2b hash as hex string.
- */
-export function hashObjectAsStr(
-  value: Record<string, any> | string | number | boolean,
-  nonce?: string
-): HexString {
-  let objectAsStr = encodeObjectAsStr(value)
-  if (nonce) {
-    objectAsStr = nonce + objectAsStr
-  }
-  return hashStr(objectAsStr)
+  return input.normalize('NFC')
 }
 
 /**

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -20,11 +20,12 @@
 import {
   isDidSignature,
   verifyDidSignature,
-  resolve,
-  signPayload,
+  resolveKey,
+  signatureToJson,
+  signatureFromJson,
 } from '@kiltprotocol/did'
 import type {
-  DidResolve,
+  DidResolveKey,
   Hash,
   IAttestation,
   IClaim,
@@ -192,7 +193,7 @@ export function verifyDataStructure(input: ICredential): void {
 }
 
 /**
- * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[schema]] structure.
+ * Checks the [[Credential]] with a given [[CType]] to check if the included claim meets the [[ICType.$schema]] structure.
  *
  * @param credential A [[Credential]] for the attester.
  * @param ctype A [[CType]] to verify the [[Claim]] structure.
@@ -202,7 +203,7 @@ export function verifyAgainstCType(
   ctype: ICType
 ): void {
   verifyDataStructure(credential)
-  verifyClaimAgainstSchema(credential.claim.contents, ctype.schema)
+  verifyClaimAgainstSchema(credential.claim.contents, ctype)
 }
 
 /**
@@ -213,17 +214,17 @@ export function verifyAgainstCType(
  *
  * @param input - The [[ICredentialPresentation]].
  * @param verificationOpts Additional verification options.
- * @param verificationOpts.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
+ * @param verificationOpts.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
  * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
  */
 export async function verifySignature(
   input: ICredentialPresentation,
   {
     challenge,
-    didResolve = resolve,
+    didResolveKey = resolveKey,
   }: {
     challenge?: string
-    didResolve?: DidResolve
+    didResolveKey?: DidResolveKey
   } = {}
 ): Promise<void> {
   const { claimerSignature } = input
@@ -231,12 +232,17 @@ export async function verifySignature(
     throw new SDKErrors.SignatureUnverifiableError(
       'Challenge differs from expected'
     )
+
   const signingData = makeSigningData(input, claimerSignature.challenge)
   await verifyDidSignature({
-    signature: claimerSignature,
+    ...signatureFromJson(claimerSignature),
     message: signingData,
+    // check if credential owner matches signer
+    expectedSigner: input.claim.owner,
+    // allow full did to sign presentation if owned by corresponding light did
+    allowUpgraded: true,
     expectedVerificationMethod: 'authentication',
-    didResolve,
+    didResolveKey,
   })
 }
 
@@ -282,7 +288,7 @@ export function fromClaim(
 type VerifyOptions = {
   ctype?: ICType
   challenge?: string
-  didResolve?: DidResolve
+  didResolveKey?: DidResolveKey
 }
 
 /**
@@ -313,16 +319,16 @@ export async function verifyCredential(
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
- * @param options.didResolve - The function used to resolve the claimer's identity. Defaults to [[resolve]].
+ * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
  */
 export async function verifyPresentation(
   presentation: ICredentialPresentation,
-  { ctype, challenge, didResolve = resolve }: VerifyOptions = {}
+  { ctype, challenge, didResolveKey = resolveKey }: VerifyOptions = {}
 ): Promise<void> {
   await verifyCredential(presentation, { ctype })
   await verifySignature(presentation, {
     challenge,
-    didResolve,
+    didResolveKey,
   })
 }
 
@@ -415,11 +421,17 @@ export async function createPresentation({
     excludedClaimProperties
   )
 
-  const { signature, keyUri } = await signPayload(
-    credential.claim.owner,
-    makeSigningData(presentation, challenge),
-    signCallback
-  )
+  const signature = await signCallback({
+    data: makeSigningData(presentation, challenge),
+    did: credential.claim.owner,
+    keyRelationship: 'authentication',
+  })
 
-  return { ...presentation, claimerSignature: { signature, keyUri, challenge } }
+  return {
+    ...presentation,
+    claimerSignature: {
+      ...signatureToJson(signature),
+      ...(challenge && { challenge }),
+    },
+  }
 }

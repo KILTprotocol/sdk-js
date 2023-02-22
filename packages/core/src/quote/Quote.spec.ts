@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,11 +9,8 @@
  * @group unit/quote
  */
 
-import { u8aToHex } from '@polkadot/util'
-
 import type {
   DidDocument,
-  DidResolutionResult,
   IClaim,
   ICostBreakdown,
   ICType,
@@ -21,8 +18,10 @@ import type {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   ICredential,
+  DidResourceUri,
+  ResolvedDidKey,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 import {
   createLocalDemoFullDidFromKeypair,
@@ -42,7 +41,6 @@ describe('Quote', () => {
 
   let invalidCost: ICostBreakdown
   let date: string
-  let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
   let credential: ICredential
@@ -54,19 +52,15 @@ describe('Quote', () => {
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
 
-  async function mockResolve(
-    didUri: string
-  ): Promise<DidResolutionResult | null> {
-    // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
-    const didWithoutFragment = didUri.split('#')[0]
-    switch (didWithoutFragment) {
-      case claimerIdentity?.uri:
-        return { document: claimerIdentity, metadata: { deactivated: false } }
-      case attesterIdentity?.uri:
-        return { document: attesterIdentity, metadata: { deactivated: false } }
-      default:
-        return null
-    }
+  async function mockResolveKey(
+    keyUri: DidResourceUri
+  ): Promise<ResolvedDidKey> {
+    const { did } = Did.parse(keyUri)
+    const document = [claimerIdentity, attesterIdentity].find(
+      ({ uri }) => uri === did
+    )
+    if (!document) throw new Error('Cannot resolve mocked DID')
+    return Did.keyToResolvedKey(document.authentication[0], did)
   }
 
   beforeAll(async () => {
@@ -80,20 +74,12 @@ describe('Quote', () => {
     } as unknown as ICostBreakdown
     date = new Date(2019, 11, 10).toISOString()
 
-    cTypeSchema = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Quote Information',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    testCType = CType.fromSchema(cTypeSchema)
+    testCType = CType.fromProperties('Quote Information', {
+      name: { type: 'string' },
+    })
 
     claim = {
-      cTypeHash: testCType.hash,
+      cTypeHash: CType.idToHash(testCType.$id),
       contents: {},
       owner: claimerIdentity.uri,
     }
@@ -144,7 +130,7 @@ describe('Quote', () => {
       claimer.getSignCallback(claimerIdentity),
       claimerIdentity.uri,
       {
-        didResolve: mockResolve,
+        didResolveKey: mockResolveKey,
       }
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
@@ -153,13 +139,21 @@ describe('Quote', () => {
 
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.uri)
-    expect(
-      await Did.signPayload(
-        claimerIdentity.uri,
-        Crypto.hashObjectAsStr(validAttesterSignedQuote),
-        claimer.getSignCallback(claimerIdentity)
-      )
-    ).toEqual(quoteBothAgreed.claimerSignature)
+    const sign = claimer.getSignCallback(claimerIdentity)
+    const signature = Did.signatureToJson(
+      await sign({
+        data: Crypto.hash(
+          Crypto.encodeObjectAsStr({
+            ...validAttesterSignedQuote,
+            claimerDid: claimerIdentity.uri,
+            rootHash: credential.rootHash,
+          })
+        ),
+        did: claimerIdentity.uri,
+        keyRelationship: 'authentication',
+      })
+    )
+    expect(signature).toEqual(quoteBothAgreed.claimerSignature)
 
     const { fragment: attesterKeyId } = Did.parse(
       validAttesterSignedQuote.attesterSignature.keyUri
@@ -167,24 +161,31 @@ describe('Quote', () => {
 
     expect(() =>
       Crypto.verify(
-        Crypto.hashObjectAsStr({
-          attesterDid: validQuoteData.attesterDid,
-          cTypeHash: validQuoteData.cTypeHash,
-          cost: validQuoteData.cost,
-          currency: validQuoteData.currency,
-          timeframe: validQuoteData.timeframe,
-          termsAndConditions: validQuoteData.termsAndConditions,
-        }),
+        Crypto.hashStr(
+          Crypto.encodeObjectAsStr({
+            attesterDid: validQuoteData.attesterDid,
+            cTypeHash: validQuoteData.cTypeHash,
+            cost: validQuoteData.cost,
+            currency: validQuoteData.currency,
+            timeframe: validQuoteData.timeframe,
+            termsAndConditions: validQuoteData.termsAndConditions,
+          })
+        ),
         validAttesterSignedQuote.attesterSignature.signature,
-        u8aToHex(
-          Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
-            new Uint8Array()
-        )
+        Did.getKey(attesterIdentity, attesterKeyId!)?.publicKey ||
+          new Uint8Array()
       )
     ).not.toThrow()
-    await Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
-      didResolve: mockResolve,
-    })
+    await expect(
+      Quote.verifyAttesterSignedQuote(validAttesterSignedQuote, {
+        didResolveKey: mockResolveKey,
+      })
+    ).resolves.not.toThrow()
+    await expect(
+      Quote.verifyQuoteAgreement(quoteBothAgreed, {
+        didResolveKey: mockResolveKey,
+      })
+    ).resolves.not.toThrow()
     expect(
       await Quote.createAttesterSignedQuote(
         validQuoteData,
@@ -198,5 +199,71 @@ describe('Quote', () => {
     expect(Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)).toBe(
       false
     )
+  })
+
+  it('detects tampering', async () => {
+    const messedWithCurrency: IQuoteAttesterSigned = {
+      ...validAttesterSignedQuote,
+      currency: 'Bananas',
+    }
+    await expect(
+      Quote.verifyAttesterSignedQuote(messedWithCurrency, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.SignatureUnverifiableError)
+    const messedWithRootHash: IQuoteAgreement = {
+      ...quoteBothAgreed,
+      rootHash: '0x1234',
+    }
+    await expect(
+      Quote.verifyQuoteAgreement(messedWithRootHash, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.SignatureUnverifiableError)
+  })
+
+  it('complains if attesterDid does not match attester signature', async () => {
+    const sign = claimer.getSignCallback(claimerIdentity)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { attesterSignature, ...attesterSignedQuote } =
+      validAttesterSignedQuote
+    const wrongSignerAttester: IQuoteAttesterSigned = {
+      ...attesterSignedQuote,
+      attesterSignature: Did.signatureToJson(
+        await sign({
+          data: Crypto.hash(Crypto.encodeObjectAsStr(attesterSignedQuote)),
+          did: claimerIdentity.uri,
+          keyRelationship: 'authentication',
+        })
+      ),
+    }
+
+    await expect(
+      Quote.verifyAttesterSignedQuote(wrongSignerAttester, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
+  })
+
+  it('complains if claimerDid does not match claimer signature', async () => {
+    const sign = attester.getSignCallback(attesterIdentity)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { claimerSignature, ...restQuote } = quoteBothAgreed
+    const wrongSignerClaimer: IQuoteAgreement = {
+      ...restQuote,
+      claimerSignature: Did.signatureToJson(
+        await sign({
+          data: Crypto.hash(Crypto.encodeObjectAsStr(restQuote)),
+          did: attesterIdentity.uri,
+          keyRelationship: 'authentication',
+        })
+      ),
+    }
+
+    await expect(
+      Quote.verifyQuoteAgreement(wrongSignerClaimer, {
+        didResolveKey: mockResolveKey,
+      })
+    ).rejects.toThrow(SDKErrors.DidSubjectMismatchError)
   })
 })

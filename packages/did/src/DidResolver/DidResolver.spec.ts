@@ -1,21 +1,26 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
 import { BN } from '@polkadot/util'
+import { base58Encode } from '@polkadot/util-crypto'
 
 import type {
+  ConformingDidKey,
+  ConformingDidServiceEndpoint,
   DidEncryptionKey,
   DidKey,
   DidResolutionDocumentMetadata,
+  DidResolutionMetadata,
   DidResolutionResult,
   DidResourceUri,
   DidServiceEndpoint,
   DidUri,
   DidVerificationKey,
+  KiltAddress,
   ResolvedDidKey,
   ResolvedDidServiceEndpoint,
   UriFragment,
@@ -25,14 +30,14 @@ import { ApiMocks, makeSigningKeyTool } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 
 import { getFullDidUriFromKey } from '../Did.utils'
-import {
-  documentFromChain,
-  resourceIdToChain,
-  serviceFromChain,
-  servicesFromChain,
-} from '../Did.chain.js'
+import { linkedInfoFromChain } from '../Did.rpc.js'
 
-import { resolve, resolveKey, resolveService, strictResolve } from './index.js'
+import {
+  resolve,
+  resolveCompliant,
+  resolveKey,
+  resolveService,
+} from './index.js'
 import * as Did from '../index.js'
 
 /**
@@ -49,39 +54,49 @@ const didWithServiceEndpoints: DidUri = `did:kilt:${addressWithServiceEndpoints}
 const deletedAddress = '4rrVTLAXgeoE8jo8si571HnqHtd5WmvLuzfH6e1xBsVXsRo7'
 const deletedDid: DidUri = `did:kilt:${deletedAddress}`
 
-const didNotFound = ApiMocks.mockChainQueryReturn('did', 'did')
-const encodedDidWithAuthenticationKey = ApiMocks.mockChainQueryReturn(
-  'did',
-  'did',
-  [
-    '01234567890123456789012345678901',
-    [],
-    undefined,
-    undefined,
-    [],
-    '123',
-    [addressWithAuthenticationKey, '0'],
-  ]
-)
 const didIsBlacklisted = ApiMocks.mockChainQueryReturn(
   'did',
   'didBlacklist',
   'true'
 )
 
+const augmentedApi = ApiMocks.createAugmentedApi()
+
 let mockedApi: any
 beforeAll(() => {
   mockedApi = ApiMocks.getMockedApi()
   ConfigService.set({ api: mockedApi })
 
-  mockedApi.query.did.did.mockReturnValue(encodedDidWithAuthenticationKey)
-  mockedApi.query.did.serviceEndpoints.mockReturnValue(
-    ApiMocks.mockChainQueryReturn('did', 'serviceEndpoints', [
-      'foo',
-      ['type-service-1'],
-      ['x:url-service-1'],
-    ])
-  )
+  // Mock `api.call.did.query(didUri)`
+  // By default it returns a simple LinkedDidInfo with no web3name and no accounts linked.
+  jest
+    .spyOn(mockedApi.call.did, 'query')
+    .mockImplementation(async (identifier) => {
+      return augmentedApi.createType('Option<RawDidLinkedInfo>', {
+        identifier,
+        accounts: [],
+        w3n: null,
+        serviceEndpoints: [
+          {
+            id: 'foo',
+            serviceTypes: ['type-service-1'],
+            urls: ['x:url-service-1'],
+          },
+        ],
+        details: {
+          authenticationKey: '01234567890123456789012345678901',
+          keyAgreementKeys: [],
+          delegationKey: null,
+          attestationKey: null,
+          publicKeys: [],
+          lastTxCounter: 123,
+          deposit: {
+            owner: addressWithAuthenticationKey,
+            amount: 0,
+          },
+        },
+      })
+    })
 })
 
 function generateAuthenticationKey(): DidVerificationKey {
@@ -128,25 +143,20 @@ function generateServiceEndpoint(serviceId: UriFragment): DidServiceEndpoint {
   }
 }
 
-jest.mock('../Did.chain.js')
+jest.mock('../Did.rpc.js')
+// By default its mock returns a DIDDocument with the test authentication key, test service, and the URI derived from the identifier provided in the resolution.
+jest.mocked(linkedInfoFromChain).mockImplementation((linkedInfo) => {
+  const { identifier } = linkedInfo.unwrap()
 
-jest.mocked(documentFromChain).mockReturnValue({
-  authentication: [generateAuthenticationKey()],
-  lastTxCounter: new BN(0),
-  deposit: {
-    amount: new BN(0),
-    owner: addressWithAuthenticationKey,
-  },
+  return {
+    accounts: [],
+    document: {
+      uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+      authentication: [generateAuthenticationKey()],
+      service: [generateServiceEndpoint('#service-1')],
+    },
+  }
 })
-jest
-  .mocked(serviceFromChain)
-  .mockReturnValue(generateServiceEndpoint('#service-1'))
-jest
-  .mocked(servicesFromChain)
-  .mockReturnValue([generateServiceEndpoint('#service-1')])
-jest
-  .mocked(resourceIdToChain)
-  .mockImplementation((id: string) => id.substring(1))
 
 describe('When resolving a key', () => {
   it('correctly resolves it for a full DID if both the DID and the key exist', async () => {
@@ -164,12 +174,12 @@ describe('When resolving a key', () => {
   it('returns null if either the DID or the key do not exist', async () => {
     let keyIdUri: DidResourceUri = `${deletedDid}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
 
     const didWithNoEncryptionKey = didWithAuthenticationKey
     keyIdUri = `${didWithNoEncryptionKey}#enc`
 
-    expect(await resolveKey(keyIdUri)).toBeNull()
+    await expect(resolveKey(keyIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
@@ -198,21 +208,38 @@ describe('When resolving a service endpoint', () => {
   })
 
   it('returns null if either the DID or the service do not exist', async () => {
-    mockedApi.query.did.serviceEndpoints.mockReturnValueOnce(
-      ApiMocks.mockChainQueryReturn('did', 'serviceEndpoints')
-    )
-    mockedApi.query.did.serviceEndpoints.mockReturnValueOnce(
-      ApiMocks.mockChainQueryReturn('did', 'serviceEndpoints')
-    )
+    // Mock transform function changed to not return any services (twice).
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+          authentication: [generateAuthenticationKey()],
+        },
+      }
+    })
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+          authentication: [generateAuthenticationKey()],
+        },
+      }
+    })
 
     let serviceIdUri: DidResourceUri = `${deletedDid}#service-1`
 
-    expect(await resolveService(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
 
     const didWithNoServiceEndpoints = didWithAuthenticationKey
     serviceIdUri = `${didWithNoServiceEndpoints}#service-1`
 
-    expect(await resolveService(serviceIdUri)).toBeNull()
+    await expect(resolveService(serviceIdUri)).rejects.toThrow()
   })
 
   it('throws for invalid URIs', async () => {
@@ -229,7 +256,7 @@ describe('When resolving a service endpoint', () => {
 describe('When resolving a full DID', () => {
   it('correctly resolves the document with an authentication key', async () => {
     const fullDidWithAuthenticationKey = didWithAuthenticationKey
-    const { document, metadata } = (await resolve(
+    const { document, metadata, web3Name } = (await resolve(
       fullDidWithAuthenticationKey
     )) as DidResolutionResult
     if (document === undefined) throw new Error('Document unresolved')
@@ -245,19 +272,24 @@ describe('When resolving a full DID', () => {
         publicKey: new Uint8Array(32).fill(0),
       },
     ])
+    expect(web3Name).toBeUndefined()
   })
 
   it('correctly resolves the document with all keys', async () => {
-    jest.mocked(documentFromChain).mockReturnValueOnce({
-      authentication: [generateAuthenticationKey()],
-      keyAgreement: [generateEncryptionKey()],
-      assertionMethod: [generateAttestationKey()],
-      capabilityDelegation: [generateDelegationKey()],
-      lastTxCounter: new BN(0),
-      deposit: {
-        amount: new BN(0),
-        owner: addressWithAuthenticationKey,
-      },
+    // Mock transform function changed to return all keys for the DIDDocument.
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          authentication: [generateAuthenticationKey()],
+          keyAgreement: [generateEncryptionKey()],
+          assertionMethod: [generateAttestationKey()],
+          capabilityDelegation: [generateDelegationKey()],
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+        },
+      }
     })
     const fullDidWithAllKeys = didWithAllKeys
     const { document, metadata } = (await resolve(
@@ -297,12 +329,22 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves the document with service endpoints', async () => {
-    jest
-      .mocked(servicesFromChain)
-      .mockReturnValue([
-        generateServiceEndpoint('#id-1'),
-        generateServiceEndpoint('#id-2'),
-      ])
+    // Mock transform function changed to return two service endpoints.
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          authentication: [generateAuthenticationKey()],
+          service: [
+            generateServiceEndpoint('#id-1'),
+            generateServiceEndpoint('#id-2'),
+          ],
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+        },
+      }
+    })
     const fullDidWithServiceEndpoints = didWithServiceEndpoints
     const { document, metadata } = (await resolve(
       fullDidWithServiceEndpoints
@@ -327,8 +369,40 @@ describe('When resolving a full DID', () => {
     ])
   })
 
+  it('correctly resolves the document with web3Name', async () => {
+    // Mock transform function changed to return two service endpoints.
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          authentication: [generateAuthenticationKey()],
+          service: [],
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+        },
+        web3Name: 'w3nick',
+      }
+    })
+    const { document, metadata, web3Name } = (await resolve(
+      didWithAuthenticationKey
+    )) as DidResolutionResult
+    if (document === undefined) throw new Error('Document unresolved')
+
+    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+    })
+    expect(document.uri).toStrictEqual<DidUri>(didWithAuthenticationKey)
+    expect(web3Name).toStrictEqual('w3nick')
+  })
+
   it('correctly resolves a non-existing DID', async () => {
-    mockedApi.query.did.did.mockReturnValueOnce(didNotFound)
+    // RPC call changed to not return anything.
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValueOnce(
+        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+      )
     const randomDid = getFullDidUriFromKey(
       makeSigningKeyTool().authentication[0]
     )
@@ -336,7 +410,12 @@ describe('When resolving a full DID', () => {
   })
 
   it('correctly resolves a deleted DID', async () => {
-    mockedApi.query.did.did.mockReturnValueOnce(didNotFound)
+    // RPC call changed to not return anything.
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValueOnce(
+        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+      )
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
     const { document, metadata } = (await resolve(
@@ -368,7 +447,12 @@ describe('When resolving a light DID', () => {
   const encryptionKey = Crypto.makeEncryptionKeypairFromSeed()
 
   beforeEach(() => {
-    mockedApi.query.did.did.mockReturnValue(didNotFound)
+    // RPC call changed to not return anything by default.
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValue(
+        augmentedApi.createType('Option<RawDidLinkedInfo>', null)
+      )
   })
 
   it('correctly resolves the document with an authentication key', async () => {
@@ -438,8 +522,26 @@ describe('When resolving a light DID', () => {
   })
 
   it('correctly resolves a migrated and not deleted DID', async () => {
-    mockedApi.query.did.did.mockReturnValueOnce(encodedDidWithAuthenticationKey)
-
+    // RPC call changed to return something.
+    jest.spyOn(mockedApi.call.did, 'query').mockResolvedValueOnce(
+      augmentedApi.createType('Option<RawDidLinkedInfo>', {
+        addressWithAuthenticationKey,
+        accounts: [],
+        w3n: null,
+        details: {
+          authenticationKey: '01234567890123456789012345678901',
+          keyAgreementKeys: [],
+          delegationKey: null,
+          attestationKey: null,
+          publicKeys: [],
+          lastTxCounter: 123,
+          deposit: {
+            owner: addressWithAuthenticationKey,
+            amount: 0,
+          },
+        },
+      })
+    )
     const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
     const { document, metadata } = (await resolve(
       migratedDid
@@ -452,23 +554,8 @@ describe('When resolving a light DID', () => {
     expect(document).toBe(undefined)
   })
 
-  it('correctly resolves a migrated and not deleted DID in compliant mode', async () => {
-    mockedApi.query.did.did.mockReturnValueOnce(encodedDidWithAuthenticationKey)
-
-    const migratedDid: DidUri = `did:kilt:light:00${addressWithAuthenticationKey}`
-    const { document, metadata } = (await strictResolve(
-      migratedDid
-    )) as DidResolutionResult
-    if (document === undefined) throw new Error('Document unresolved')
-
-    expect(metadata).toStrictEqual<DidResolutionDocumentMetadata>({
-      deactivated: false,
-      canonicalId: didWithAuthenticationKey,
-    })
-    expect(document).toEqual({ uri: migratedDid })
-  })
-
   it('correctly resolves a migrated and deleted DID', async () => {
+    // Mock the resolved DID as deleted.
     mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
 
     const migratedDid: DidUri = `did:kilt:light:00${deletedAddress}`
@@ -495,5 +582,135 @@ describe('When resolving a light DID', () => {
       deactivated: false,
     })
     expect(document?.uri).toStrictEqual<DidUri>(lightDid.uri)
+  })
+})
+
+describe('When resolving with the spec compliant resolver', () => {
+  beforeAll(() => {
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockImplementation(async (identifier) => {
+        return augmentedApi.createType('Option<RawDidLinkedInfo>', {
+          identifier,
+        })
+      })
+    // Mock transform function changed to return two service endpoints.
+    jest.mocked(linkedInfoFromChain).mockImplementationOnce((linkedInfo) => {
+      const { identifier } = linkedInfo.unwrap()
+
+      return {
+        accounts: [],
+        document: {
+          authentication: [generateAuthenticationKey()],
+          service: [
+            generateServiceEndpoint('#id-1'),
+            generateServiceEndpoint('#id-2'),
+          ],
+          uri: `did:kilt:${identifier as unknown as KiltAddress}`,
+        },
+        web3Name: 'w3nick',
+      }
+    })
+  })
+
+  it('returns a spec-compliant DID document', async () => {
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(didWithAuthenticationKey)
+    if (didDocument === undefined) throw new Error('Document unresolved')
+
+    expect(didDocumentMetadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+    })
+
+    expect(didResolutionMetadata).toStrictEqual({})
+
+    expect(didDocument.id).toStrictEqual<DidUri>(didWithAuthenticationKey)
+    expect(didDocument.authentication).toStrictEqual(['#auth'])
+    expect(didDocument.verificationMethod).toContainEqual<ConformingDidKey>({
+      id: `${didWithAuthenticationKey}${'#auth'}`,
+      controller: didWithAuthenticationKey,
+      type: 'Ed25519VerificationKey2018',
+      publicKeyBase58: base58Encode(new Uint8Array(32).fill(0)),
+    })
+    expect(didDocument.service).toStrictEqual<ConformingDidServiceEndpoint[]>([
+      {
+        id: `${didWithAuthenticationKey}#id-1`,
+        type: ['type-id-1'],
+        serviceEndpoint: ['x:url-id-1'],
+      },
+      {
+        id: `${didWithAuthenticationKey}#id-2`,
+        type: ['type-id-2'],
+        serviceEndpoint: ['x:url-id-2'],
+      },
+    ])
+    expect(didDocument).toHaveProperty('alsoKnownAs', ['w3n:w3nick'])
+  })
+
+  it('correctly resolves a non-existing DID', async () => {
+    // RPC call changed to not return anything.
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValueOnce(
+        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
+      )
+    const randomDid = getFullDidUriFromKey(
+      makeSigningKeyTool().authentication[0]
+    )
+
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(randomDid)
+
+    expect(didDocumentMetadata).toStrictEqual({})
+    expect(didResolutionMetadata).toHaveProperty('error', 'notFound')
+    expect(didDocument).toBeUndefined()
+  })
+
+  it('correctly resolves a deleted DID', async () => {
+    // RPC call changed to not return anything.
+    jest
+      .spyOn(mockedApi.call.did, 'query')
+      .mockResolvedValueOnce(
+        augmentedApi.createType('Option<RawDidLinkedInfoV2>', null)
+      )
+    mockedApi.query.did.didBlacklist.mockReturnValueOnce(didIsBlacklisted)
+
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(deletedDid)
+
+    expect(didDocumentMetadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: true,
+    })
+    expect(didResolutionMetadata).toStrictEqual({})
+    expect(didDocument).toStrictEqual({ id: deletedDid })
+  })
+
+  it('correctly resolves an upgraded light DID', async () => {
+    const key = makeSigningKeyTool().authentication[0]
+    const lightDid = Did.createLightDidDocument({ authentication: [key] }).uri
+    const fullDid = getFullDidUriFromKey(key)
+
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(lightDid)
+
+    expect(didDocumentMetadata).toStrictEqual<DidResolutionDocumentMetadata>({
+      deactivated: false,
+      canonicalId: fullDid,
+    })
+    expect(didResolutionMetadata).toStrictEqual({})
+    expect(didDocument).toStrictEqual({ id: lightDid })
+  })
+
+  it('does not dereference a DID URL (with fragment)', async () => {
+    const fullDidWithAuthenticationKey = didWithAuthenticationKey
+    const keyIdUri: DidUri = `${fullDidWithAuthenticationKey}#auth`
+    const { didDocument, didDocumentMetadata, didResolutionMetadata } =
+      await resolveCompliant(keyIdUri)
+
+    expect(didDocumentMetadata).toStrictEqual({})
+    expect(didResolutionMetadata).toHaveProperty<
+      DidResolutionMetadata['error']
+    >('error', 'invalidDid')
+    expect(didDocument).toBeUndefined()
   })
 })

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -23,6 +23,7 @@ const { kilt } = window
 const {
   Claim,
   Attestation,
+  ConfigService,
   Credential,
   CType,
   Did,
@@ -32,7 +33,7 @@ const {
   BalanceUtils,
 } = kilt
 
-kilt.ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+ConfigService.set({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
 
 function makeSignCallback(
   keypair: KeyringPair
@@ -132,6 +133,7 @@ async function createFullDidFromKeypair(
   keypair: KiltKeyringPair,
   encryptionKey: NewDidEncryptionKey
 ) {
+  const api = ConfigService.get('api')
   const sign = makeStoreDidCallback(keypair)
 
   const storeTx = await Did.getStoreTx(
@@ -146,9 +148,9 @@ async function createFullDidFromKeypair(
   )
   await Blockchain.signAndSubmitTx(storeTx, payer)
 
-  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
-  if (!fullDid) throw new Error('Cannot query created DID')
-  return fullDid
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const encodedDidDetails = await queryFunction(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  return Did.linkedInfoFromChain(encodedDidDetails).document
 }
 
 async function runAll() {
@@ -220,9 +222,9 @@ async function runAll() {
   )
   await Blockchain.signAndSubmitTx(didStoreTx, payer)
 
-  const fullDid = await Did.query(Did.getFullDidUriFromKey(keypair))
-  if (!fullDid) throw new Error('Could not fetch created DID document')
-
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const encodedDidDetails = await queryFunction(Did.toChain(Did.getFullDidUriFromKey(keypair)))
+  const fullDid = Did.linkedInfoFromChain(encodedDidDetails).document
   const resolved = await Did.resolve(fullDid.uri)
 
   if (
@@ -235,7 +237,7 @@ async function runAll() {
     throw new Error('DIDs do not match')
   }
 
-  const deleteTx = await Did.authorizeExtrinsic(
+  const deleteTx = await Did.authorizeTx(
     fullDid.uri,
     api.tx.did.delete(BalanceUtils.toFemtoKilt(0)),
     getSignCallback(fullDid),
@@ -252,22 +254,16 @@ async function runAll() {
 
   // CType workflow
   console.log('CType workflow started')
-  const DriversLicense = CType.fromSchema({
-    $id: 'kilt:ctype:0x1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Drivers License',
-    properties: {
-      name: {
-        type: 'string',
-      },
-      age: {
-        type: 'integer',
-      },
+  const DriversLicense = CType.fromProperties('Drivers License', {
+    name: {
+      type: 'string',
     },
-    type: 'object',
+    age: {
+      type: 'integer',
+    },
   })
 
-  const cTypeStoreTx = await Did.authorizeExtrinsic(
+  const cTypeStoreTx = await Did.authorizeTx(
     alice.uri,
     api.tx.ctype.add(CType.toChain(DriversLicense)),
     aliceSign(alice),
@@ -332,7 +328,7 @@ async function runAll() {
   Attestation.verifyAgainstCredential(attestation, credential)
   console.info('Attestation Data verified')
 
-  const attestationStoreTx = await Did.authorizeExtrinsic(
+  const attestationStoreTx = await Did.authorizeTx(
     alice.uri,
     api.tx.attestation.add(attestation.claimHash, attestation.cTypeHash, null),
     aliceSign(alice),

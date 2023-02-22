@@ -1,13 +1,13 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ICType } from './CType'
 import type { DidSignature, DidUri } from './DidDocument'
 import type { ICredential } from './Credential'
+import type { CTypeHash } from './CType'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>
@@ -16,7 +16,7 @@ export interface ICostBreakdown {
 }
 export interface IQuote {
   attesterDid: DidUri
-  cTypeHash: ICType['hash']
+  cTypeHash: CTypeHash
   cost: ICostBreakdown
   currency: string
   timeframe: string
@@ -28,5 +28,6 @@ export interface IQuoteAttesterSigned extends IQuote {
 
 export interface IQuoteAgreement extends IQuoteAttesterSigned {
   rootHash: ICredential['rootHash']
+  claimerDid: DidUri
   claimerSignature: DidSignature
 }

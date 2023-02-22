@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,7 +9,7 @@
 /* eslint-disable no-console */
 
 import { BN } from '@polkadot/util'
-import { ApiPromise, WsProvider } from '@polkadot/api'
+import { ApiPromise } from '@polkadot/api'
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 
 import { Crypto } from '@kiltprotocol/utils'
@@ -26,7 +26,7 @@ import type {
 import { ConfigService } from '@kiltprotocol/config'
 
 import * as CType from '../ctype'
-import { init } from '../kilt'
+import { connect, init } from '../kilt'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(10000)
@@ -39,7 +39,7 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
       process.env.TESTCONTAINERS_NODE_IMG || 'kiltprotocol/mashnet-node'
     console.log(`using testcontainer with image ${image}`)
     const testcontainer = new GenericContainer(image)
-      .withCmd(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
+      .withCommand(['--dev', `--ws-port=${WS_PORT}`, '--ws-external'])
       .withExposedPorts(WS_PORT)
       .withWaitStrategy(Wait.forLogMessage(`:${WS_PORT}`))
     const started = await testcontainer.start()
@@ -53,10 +53,8 @@ async function getStartedTestContainer(): Promise<StartedTestContainer> {
 }
 
 async function buildConnection(wsEndpoint: string): Promise<ApiPromise> {
-  const provider = new WsProvider(wsEndpoint)
-  const api = new ApiPromise({ provider })
-  await init({ api, submitTxResolveOn: Blockchain.IS_IN_BLOCK })
-  return api.isReadyOrError
+  await init({ submitTxResolveOn: Blockchain.IS_IN_BLOCK })
+  return connect(wsEndpoint)
 }
 
 export async function initializeApi(): Promise<ApiPromise> {
@@ -103,24 +101,18 @@ export async function isCtypeOnChain(ctype: ICType): Promise<boolean> {
   }
 }
 
-export const driversLicenseCType = CType.fromSchema({
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'Drivers License',
-  properties: {
-    name: {
-      type: 'string',
-    },
-    age: {
-      type: 'integer',
-    },
+export const driversLicenseCType = CType.fromProperties('Drivers License', {
+  name: {
+    type: 'string',
   },
-  type: 'object',
+  age: {
+    type: 'integer',
+  },
 })
 
-export const driversLicenseCTypeForDeposit = CType.fromSchema({
-  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-  title: 'Drivers License for deposit test',
-  properties: {
+export const driversLicenseCTypeForDeposit = CType.fromProperties(
+  'Drivers License for deposit test',
+  {
     name: {
       type: 'string',
     },
@@ -130,12 +122,17 @@ export const driversLicenseCTypeForDeposit = CType.fromSchema({
     location: {
       type: 'string',
     },
+  }
+)
+
+export const nftNameCType = CType.fromProperties('NFT collection name', {
+  name: {
+    type: 'string',
   },
-  type: 'object',
 })
 
 // Submits resolving when IS_IN_BLOCK
-export async function submitExtrinsic(
+export async function submitTx(
   extrinsic: SubmittableExtrinsic,
   submitter: KeyringPair,
   resolveOn?: SubscriptionPromise.ResultEvaluator
@@ -164,7 +161,7 @@ export async function fundAccount(
 ): Promise<void> {
   const api = ConfigService.get('api')
   const transferTx = api.tx.balances.transfer(address, amount)
-  await submitExtrinsic(transferTx, devFaucet)
+  await submitTx(transferTx, devFaucet)
 }
 
 export async function createEndowedTestAccount(

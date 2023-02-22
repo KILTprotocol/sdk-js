@@ -1,36 +1,23 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
 import type { HexString } from '@polkadot/util/types'
-import type { DidUri } from './DidDocument'
 
-export type InstanceType =
-  | 'array'
-  | 'boolean'
-  | 'integer'
-  | 'null'
-  | 'number'
-  | 'object'
-  | 'string'
+export type InstanceType = 'boolean' | 'integer' | 'number' | 'string'
 
-export interface ICTypeSchema {
-  $id: string
+export type CTypeHash = HexString
+
+export interface ICType {
+  $id: `kilt:ctype:${CTypeHash}`
   $schema: string
   title: string
   properties: {
-    [key: string]: { $ref?: string; type?: InstanceType; format?: string }
+    [key: string]: { type: InstanceType; format?: string } | { $ref: string }
   }
   type: 'object'
-}
-
-export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
-
-export interface ICType {
-  hash: HexString
-  owner: DidUri | null
-  schema: ICTypeSchema
+  additionalProperties?: false
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -9,13 +9,12 @@
  * @group unit/delegation
  */
 
-import type { HexString } from '@polkadot/util/types'
 import {
   IDelegationNode,
   IDelegationHierarchyDetails,
   Permission,
   DidUri,
-  ICType,
+  CTypeHash,
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { ApiMocks } from '@kiltprotocol/testing'
@@ -38,11 +37,11 @@ jest.mock('./DelegationNode.chain', () => ({
   getChildren: jest.fn(async (node: DelegationNode) =>
     node.childrenIds.map((id) => (id in nodes ? nodes[id] : null))
   ),
-  query: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
+  fetch: jest.fn(async (id: string) => (id in nodes ? nodes[id] : null)),
 }))
 
 jest.mock('./DelegationHierarchyDetails.chain', () => ({
-  query: jest.fn(async (id: string) =>
+  fetch: jest.fn(async (id: string) =>
     id in hierarchiesDetails ? hierarchiesDetails[id] : null
   ),
 }))
@@ -71,7 +70,7 @@ describe('DelegationNode', () => {
       })
     jest
       .mocked(mockedApi.tx.delegation.createHierarchy)
-      .mockImplementation(async (nodeId: string, cTypeHash: HexString) => {
+      .mockImplementation(async (nodeId: string, cTypeHash: CTypeHash) => {
         hierarchiesDetails[nodeId] = {
           id: nodeId,
           cTypeHash,
@@ -106,7 +105,7 @@ describe('DelegationNode', () => {
         revoked: false,
       })
       const hash = node.generateHash()
-      expect(hash).toBe(
+      expect(Crypto.u8aToHex(hash)).toBe(
         '0x3f3dc0df7527013f2373f18f55cf87847df3249526e9b1d5aa75df8eeb5b7d6e'
       )
     })
@@ -539,7 +538,7 @@ describe('DelegationNode', () => {
 })
 
 describe('DelegationHierarchy', () => {
-  let ctypeHash: ICType['hash']
+  let ctypeHash: CTypeHash
   let ROOT_IDENTIFIER: string
   let ROOT_SUCCESS: string
 
@@ -587,20 +586,15 @@ describe('DelegationHierarchy', () => {
     })
     await rootDelegation.getStoreTx()
 
-    const rootNode = await DelegationNode.query(ROOT_IDENTIFIER)
-    if (rootNode) {
-      expect(rootNode.id).toBe(ROOT_IDENTIFIER)
-    }
+    const rootNode = await DelegationNode.fetch(ROOT_IDENTIFIER)
+    expect(rootNode.id).toBe(ROOT_IDENTIFIER)
   })
 
-  it('query root delegation', async () => {
-    const queriedDelegation = await DelegationNode.query(ROOT_IDENTIFIER)
-    expect(queriedDelegation).not.toBe(undefined)
-    if (queriedDelegation) {
-      expect(queriedDelegation.account).toBe(didAlice)
-      expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)
-      expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
-    }
+  it('fetch root delegation', async () => {
+    const queriedDelegation = await DelegationNode.fetch(ROOT_IDENTIFIER)
+    expect(queriedDelegation.account).toBe(didAlice)
+    expect(await queriedDelegation.getCTypeHash()).toBe(ctypeHash)
+    expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
   })
 
   it('root delegation verify', async () => {
@@ -613,8 +607,8 @@ describe('DelegationHierarchy', () => {
       revoked: false,
     })
     await aDelegationRootNode.getRevokeTx(didAlice)
-    const node = await DelegationNode.query(ROOT_IDENTIFIER)
-    const fetchedNodeRevocationStatus = node?.revoked
+    const node = await DelegationNode.fetch(ROOT_IDENTIFIER)
+    const fetchedNodeRevocationStatus = node.revoked
     expect(fetchedNodeRevocationStatus).toEqual(true)
   })
 
@@ -632,7 +626,7 @@ describe('DelegationHierarchy', () => {
       account: didAlice,
       permissions: [Permission.ATTEST],
     })
-    expect(node.generateHash()).toMatchInlineSnapshot(
+    expect(Crypto.u8aToHex(node.generateHash())).toMatchInlineSnapshot(
       `"0xa344dddae169b49af834d22e6f148e019a12bd7ed929978713faf38221ae8504"`
     )
   })

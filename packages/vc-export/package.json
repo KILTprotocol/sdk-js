@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.30.0-23",
+  "version": "0.32.0-6",
   "description": "",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -36,16 +36,15 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@kiltprotocol/augment-api": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/did": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^9.4.1",
-    "@polkadot/types": "^9.4.1",
-    "@polkadot/util": "^10.0.0",
-    "@polkadot/util-crypto": "^10.0.0",
+    "@polkadot/api": "^9.10.2",
+    "@polkadot/types": "^9.10.2",
+    "@polkadot/util": "^10.2.1",
+    "@polkadot/util-crypto": "^10.2.1",
     "jsonld": "^2.0.2",
     "jsonld-signatures": "^5.0.0",
     "vc-js": "^0.6.4"

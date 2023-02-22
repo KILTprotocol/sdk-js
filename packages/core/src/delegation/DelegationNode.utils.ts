@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -47,9 +47,10 @@ export async function countNodeDepth(
   // if the attester is not the owner, we need to check the delegation tree
   if (attestation.owner !== attester && attestation.delegationId !== null) {
     delegationTreeTraversalSteps += 1
-    const delegationNode = await DelegationNode.query(attestation.delegationId)
-
-    if (typeof delegationNode !== 'undefined' && delegationNode !== null) {
+    try {
+      const delegationNode = await DelegationNode.fetch(
+        attestation.delegationId
+      )
       const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
       delegationTreeTraversalSteps += steps
       if (node === null) {
@@ -57,6 +58,8 @@ export async function countNodeDepth(
           'Attester is not authorized to revoke this attestation. (Attester not in delegation tree)'
         )
       }
+    } catch {
+      // ignore the error
     }
   } else if (attestation.owner !== attester) {
     throw new SDKErrors.UnauthorizedError(

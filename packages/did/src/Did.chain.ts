@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -8,9 +8,7 @@
 import type { Option } from '@polkadot/types'
 import type { AccountId32, Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { AnyNumber } from '@polkadot/types/types'
-import type { PalletWeb3NamesWeb3NameWeb3NameOwnership } from '@polkadot/types/lookup'
-import type { Bytes } from '@polkadot/types-codec'
-import { BN, hexToU8a } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 
 import type {
   Deposit,
@@ -18,7 +16,6 @@ import type {
   DidEncryptionKey,
   DidKey,
   DidServiceEndpoint,
-  DidSignature,
   DidUri,
   DidVerificationKey,
   KiltAddress,
@@ -283,18 +280,6 @@ export function serviceFromChain(
   }
 }
 
-/**
- * Decode service endpoint records associated with the full DID from the KILT blockchain.
- *
- * @param encoded The data returned by `api.query.did.serviceEndpoints.entries`.
- * @returns An array of service endpoint data or an empty array if the full DID does not exist or has no service endpoints associated with it.
- */
-export function servicesFromChain(
-  encoded: Array<[any, Option<DidServiceEndpointsDidEndpoint>]>
-): DidServiceEndpoint[] {
-  return encoded.map(([, encodedValue]) => serviceFromChain(encodedValue))
-}
-
 // ### EXTRINSICS types
 
 export type AuthorizeCallInput = {
@@ -505,7 +490,7 @@ export async function generateDidAuthenticatedTx({
  */
 export function didSignatureToChain(
   key: DidVerificationKey,
-  signature: Pick<DidSignature, 'signature'>
+  signature: Uint8Array
 ): EncodedSignature {
   if (!verificationKeyTypes.includes(key.type)) {
     throw new SDKErrors.DidError(
@@ -513,41 +498,5 @@ export function didSignatureToChain(
     )
   }
 
-  return { [key.type]: hexToU8a(signature.signature) } as EncodedSignature
-}
-
-/**
- * Web3Name is the type of nickname for a DID.
- */
-export type Web3Name = string
-
-/**
- * Decodes the web3name of a DID.
- *
- * @param encoded The value returned by `api.query.web3Names.names()`.
- * @returns The registered web3name for this DID if any.
- */
-export function web3NameFromChain(encoded: Option<Bytes>): Web3Name {
-  return encoded.unwrap().toUtf8()
-}
-
-/**
- * Decodes the DID of the owner of web3name.
- *
- * @param encoded The value returned by `api.query.web3Names.owner()`.
- * @returns The full DID uri, i.e. 'did:kilt:4abc...', if any.
- */
-export function web3NameOwnerFromChain(
-  encoded: Option<PalletWeb3NamesWeb3NameWeb3NameOwnership>
-): {
-  owner: DidUri
-  deposit: Deposit
-  claimedAt: BN
-} {
-  const { owner, deposit, claimedAt } = encoded.unwrap()
-  return {
-    owner: fromChain(owner),
-    deposit: depositFromChain(deposit),
-    claimedAt: claimedAt.toBn(),
-  }
+  return { [key.type]: signature } as EncodedSignature
 }

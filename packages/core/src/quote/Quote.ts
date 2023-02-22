@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -21,12 +21,16 @@ import type {
   IQuoteAttesterSigned,
   ICredential,
   SignCallback,
-  DidResolve,
+  DidResolveKey,
   DidUri,
 } from '@kiltprotocol/types'
 import { Crypto, JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import { resolve, verifyDidSignature } from '@kiltprotocol/did'
-import * as Did from '@kiltprotocol/did'
+import {
+  resolveKey,
+  verifyDidSignature,
+  signatureToJson,
+  signatureFromJson,
+} from '@kiltprotocol/did'
 import { QuoteSchema } from './QuoteSchema.js'
 
 /**
@@ -73,17 +77,14 @@ export async function createAttesterSignedQuote(
     throw new SDKErrors.QuoteUnverifiableError()
   }
 
-  const signature = await Did.signPayload(
-    quoteInput.attesterDid,
-    Crypto.hashObjectAsStr(quoteInput),
-    sign
-  )
+  const signature = await sign({
+    data: Crypto.hash(Crypto.encodeObjectAsStr(quoteInput)),
+    did: quoteInput.attesterDid,
+    keyRelationship: 'authentication',
+  })
   return {
     ...quoteInput,
-    attesterSignature: {
-      keyUri: signature.keyUri,
-      signature: signature.signature,
-    },
+    attesterSignature: signatureToJson(signature),
   }
 }
 
@@ -92,22 +93,23 @@ export async function createAttesterSignedQuote(
  *
  * @param quote The object which to be verified.
  * @param options Optional settings.
- * @param options.didResolve Resolve function used in the process of verifying the attester signature.
+ * @param options.didResolveKey Resolve function used in the process of verifying the attester signature.
  */
 export async function verifyAttesterSignedQuote(
   quote: IQuoteAttesterSigned,
   {
-    didResolve = resolve,
+    didResolveKey = resolveKey,
   }: {
-    didResolve?: DidResolve
+    didResolveKey?: DidResolveKey
   } = {}
 ): Promise<void> {
   const { attesterSignature, ...basicQuote } = quote
   await verifyDidSignature({
-    signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
+    ...signatureFromJson(attesterSignature),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
+    expectedSigner: basicQuote.attesterDid,
     expectedVerificationMethod: 'authentication',
-    didResolve,
+    didResolveKey,
   })
 
   const messages: string[] = []
@@ -124,7 +126,7 @@ export async function verifyAttesterSignedQuote(
  * @param sign The callback to sign with the private key.
  * @param claimerDid The DID of the Claimer, who has to sign.
  * @param options Optional settings.
- * @param options.didResolve Resolve function used in the process of verifying the attester signature.
+ * @param options.didResolveKey Resolve function used in the process of verifying the attester signature.
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 export async function createQuoteAgreement(
@@ -133,31 +135,64 @@ export async function createQuoteAgreement(
   sign: SignCallback,
   claimerDid: DidUri,
   {
-    didResolve = resolve,
+    didResolveKey = resolveKey,
   }: {
-    didResolve?: DidResolve
+    didResolveKey?: DidResolveKey
   } = {}
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
   await verifyDidSignature({
-    signature: attesterSignature,
-    message: Crypto.hashObjectAsStr(basicQuote),
+    ...signatureFromJson(attesterSignature),
+    message: Crypto.hashStr(Crypto.encodeObjectAsStr(basicQuote)),
     expectedVerificationMethod: 'authentication',
-    didResolve,
+    didResolveKey,
   })
 
-  const signature = await Did.signPayload(
-    claimerDid,
-    Crypto.hashObjectAsStr(attesterSignedQuote),
-    sign
-  )
-
-  return {
+  const quoteAgreement = {
     ...attesterSignedQuote,
     rootHash: credentialRootHash,
-    claimerSignature: signature,
+    claimerDid,
+  }
+  const signature = await sign({
+    data: Crypto.hash(Crypto.encodeObjectAsStr(quoteAgreement)),
+    did: claimerDid,
+    keyRelationship: 'authentication',
+  })
+
+  return {
+    ...quoteAgreement,
+    claimerSignature: signatureToJson(signature),
   }
 }
 
-// TODO: Should have a `verifyQuoteAgreement` function
+/**
+ * Verifies a [[IQuoteAgreement]] object.
+ *
+ * @param quote The object to be verified.
+ * @param options Optional settings.
+ * @param options.didResolveKey Resolve function used in the process of verifying the attester signature.
+ */
+export async function verifyQuoteAgreement(
+  quote: IQuoteAgreement,
+  {
+    didResolveKey = resolveKey,
+  }: {
+    didResolveKey?: DidResolveKey
+  } = {}
+): Promise<void> {
+  const { claimerSignature, claimerDid, rootHash, ...attesterSignedQuote } =
+    quote
+  // verify attester signature
+  await verifyAttesterSignedQuote(attesterSignedQuote, { didResolveKey })
+  // verify claimer signature
+  await verifyDidSignature({
+    ...signatureFromJson(claimerSignature),
+    message: Crypto.hashStr(
+      Crypto.encodeObjectAsStr({ ...attesterSignedQuote, claimerDid, rootHash })
+    ),
+    expectedSigner: claimerDid,
+    expectedVerificationMethod: 'authentication',
+    didResolveKey,
+  })
+}

@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'ts-jest/presets/js-with-ts',
+  preset: 'ts-jest',
   testEnvironment: 'node',
   clearMocks: true,
   runner: 'groups',
@@ -15,6 +15,10 @@ module.exports = {
       statements: 80,
     },
   },
+  transform: {
+    "\\.js$": "babel-jest",
+    "\\.ts$": "ts-jest"
+  },
   collectCoverageFrom: [
     '**/*/src/**/*.ts',
     '!**/index.ts',
@@ -29,11 +33,13 @@ module.exports = {
     '!utils/src/json-schema/*',
     '!testing/**',
     '!augment-api/**',
-    // TODO: write tests for these files and remove here
+    '!type-definitions/**',
     '!**/*.chain.ts',
     '!did/src/Did.chain.ts',
+    '!did/src/Did.rpc.ts',
     '!did/src/Did.utils.ts',
     '!utils/src/jsonabc.ts',
+    '!core/src/utils.ts',
   ],
   resolver: "ts-jest-resolver",
   rootDir: 'packages',

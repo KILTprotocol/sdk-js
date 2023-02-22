@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -26,6 +26,8 @@ import { Crypto } from '@kiltprotocol/utils'
 import * as Did from '@kiltprotocol/did'
 
 import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { ConfigService } from '@kiltprotocol/config'
+import { linkedInfoFromChain, toChain } from '@kiltprotocol/did'
 
 export type EncryptionKeyToolCallback = (
   didDocument: DidDocument
@@ -301,6 +303,7 @@ export async function createFullDidFromLightDid(
   lightDidForId: DidDocument,
   sign: StoreDidCallback
 ): Promise<DidDocument> {
+  const api = ConfigService.get('api')
   const { authentication, uri } = lightDidForId
   const tx = await Did.getStoreTx(
     {
@@ -314,9 +317,9 @@ export async function createFullDidFromLightDid(
     sign
   )
   await Blockchain.signAndSubmitTx(tx, payer)
-  const fullDid = await Did.query(Did.getFullDidUri(uri))
-  if (!fullDid) throw new Error('Could not fetch created DID document')
-  return fullDid
+  const queryFunction = api.call.did?.query ?? api.call.didApi.queryDid
+  const encodedDidDetails = await queryFunction(toChain(Did.getFullDidUri(uri)))
+  return linkedInfoFromChain(encodedDidDetails).document
 }
 
 export async function createFullDidFromSeed(

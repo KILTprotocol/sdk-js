@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -164,7 +164,7 @@ export const dispatchTx = submitSignedTx
  * Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
- * @param signer The [[IIdentity]] or KeyringPair used to sign and potentially re-sign the tx.
+ * @param signer The [[KiltKeyringPair]] used to sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.
  * @returns Promise result of executing the extrinsic, of type ISubmittableResult.

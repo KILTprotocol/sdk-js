@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -14,6 +14,7 @@ import type {
   DidKey,
   DidResourceUri,
   DidUri,
+  KeyRelationship,
 } from './DidDocument.js'
 
 /**
@@ -44,6 +45,10 @@ export type DidResolutionResult = {
    * The DID resolution metadata.
    */
   metadata: DidResolutionDocumentMetadata
+  /**
+   * The DID's web3Name, if any.
+   */
+  web3Name?: string
 }
 
 export type ResolvedDidKey = Pick<ConformingDidKey, 'id' | 'controller'> &
@@ -68,5 +73,6 @@ export type DidResolve = (did: DidUri) => Promise<DidResolutionResult | null>
  * the DID or key URI cannot be resolved.
  */
 export type DidResolveKey = (
-  didUri: DidResourceUri
-) => Promise<ResolvedDidKey | null>
+  didUri: DidResourceUri,
+  expectedVerificationMethod?: KeyRelationship
+) => Promise<ResolvedDidKey>

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -80,16 +80,16 @@ export function fromCredentialAndDid(
 }
 
 /**
- * Tries to query the delegationId and if successful query the rootId.
+ * Tries to fetch the delegationId and if successful fetch the rootId.
  *
  * @param input - The ID of the Delegation stored in [[Attestation]] , or the whole Attestation object.
- * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
+ * @returns A promise of the affiliated [[DelegationNode]].
  */
 export async function getDelegationDetails(
   input: IAttestation['delegationId'] | IAttestation
-): Promise<IDelegationHierarchyDetails | null> {
+): Promise<IDelegationHierarchyDetails> {
   if (input === null) {
-    return null
+    throw new SDKErrors.HierarchyQueryError('null')
   }
 
   let delegationId: IAttestation['delegationId']
@@ -101,13 +101,10 @@ export async function getDelegationDetails(
   }
 
   if (!delegationId) {
-    return null
+    throw new SDKErrors.HierarchyQueryError('null')
   }
 
-  const delegationNode = await DelegationNode.query(delegationId)
-  if (!delegationNode) {
-    return null
-  }
+  const delegationNode = await DelegationNode.fetch(delegationId)
   return delegationNode.getHierarchyDetails()
 }
 

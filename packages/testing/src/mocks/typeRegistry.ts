@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -13,6 +13,7 @@ import type { HexString } from '@polkadot/util/types'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { Metadata, TypeRegistry } from '@polkadot/types'
 
+import { types } from '@kiltprotocol/type-definitions'
 import metaStatic from '../metadata/spiritnet.js'
 
 // adapted from https://github.com/polkadot-js/apps/blob/master/packages/test-support/src/api/createAugmentedApi.ts
@@ -42,6 +43,7 @@ export function createAugmentedApi(
 
   const api = new ApiPromise({
     provider: new WsProvider('ws://', false),
+    types,
     registry,
   })
 

@@ -1,0 +1,36 @@
+{
+  "name": "@kiltprotocol/asset-did",
+  "version": "0.32.0-6",
+  "description": "",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/esm/index.js",
+  "types": "./lib/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js"
+    }
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "clean": "rimraf ./lib",
+    "build": "yarn clean && yarn build:ts",
+    "build:ts": "yarn build:cjs && yarn build:esm",
+    "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
+    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json"
+  },
+  "repository": "github:kiltprotocol/sdk-js",
+  "engines": {
+    "node": ">=14.0"
+  },
+  "author": "",
+  "license": "BSD-4-Clause",
+  "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
+  "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
+  "dependencies": {
+    "@kiltprotocol/types": "workspace:*",
+    "@kiltprotocol/utils": "workspace:*"
+  }
+}

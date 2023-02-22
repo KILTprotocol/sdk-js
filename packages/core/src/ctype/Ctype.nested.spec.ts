@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -16,49 +16,29 @@ import * as Claim from '../claim'
 
 describe('Nested CTypes', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
-  let passportCType: ICType['schema']
-  let kycCType: ICType['schema']
   let passport: ICType
   let kyc: ICType
   let claimContents: IClaimContents
   let claimDeepContents: IClaim['contents']
-  let nested: ICType['schema']
-  let nestedDeeply: ICType['schema']
   let nestedCType: ICType
   let deeplyNestedCType: ICType
   let nestedData: IClaim
   let nestedDeepData: IClaim
 
   beforeAll(async () => {
-    passportCType = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Passport',
-      properties: {
-        fullName: { type: 'string' },
-        passportIdentifier: { type: 'string' },
-        streetAddress: { type: 'string' },
-        city: { type: 'string' },
-        state: { type: 'string' },
-      },
-      type: 'object',
-    }
+    passport = CType.fromProperties('Passport', {
+      fullName: { type: 'string' },
+      passportIdentifier: { type: 'string' },
+      streetAddress: { type: 'string' },
+      city: { type: 'string' },
+      state: { type: 'string' },
+    })
 
-    kycCType = {
-      $id: 'kilt:ctype:0x2',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'KYC',
-      properties: {
-        ID: { type: 'string' },
-        number: { type: 'string' },
-        name: { type: 'string' },
-      },
-      type: 'object',
-    }
-
-    passport = CType.fromSchema(passportCType, didAlice)
-
-    kyc = CType.fromSchema(kycCType, didAlice)
+    kyc = CType.fromProperties('KYC', {
+      ID: { type: 'string' },
+      number: { type: 'string' },
+      name: { type: 'string' },
+    })
 
     claimContents = {
       fullName: 'Archer Macdonald',
@@ -86,67 +66,52 @@ describe('Nested CTypes', () => {
       },
     }
 
-    nested = {
-      $id: 'kilt:ctype:0x3',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'KYC and Passport',
-      type: 'object',
-      properties: {
-        fullName: {
-          $ref: `${passport.schema.$id}#/properties/fullName`,
-        },
-        passportIdentifier: {
-          $ref: `${passport.schema.$id}#/properties/passportIdentifier`,
-        },
-        streetAddress: {
-          $ref: `${passport.schema.$id}#/properties/streetAddress`,
-        },
-        city: {
-          $ref: `${passport.schema.$id}#/properties/city`,
-        },
-        state: {
-          $ref: `${passport.schema.$id}#/properties/state`,
-        },
-        ID: {
-          $ref: `${kyc.schema.$id}#/properties/ID`,
-        },
-        number: {
-          $ref: `${kyc.schema.$id}#/properties/number`,
-        },
-        name: {
-          $ref: `${kyc.schema.$id}#/properties/name`,
-        },
+    nestedCType = CType.fromProperties('KYC and Passport', {
+      fullName: {
+        $ref: `${passport.$id}#/properties/fullName`,
       },
-    }
-    nestedDeeply = {
-      $id: 'kilt:ctype:0x4',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'test',
-      type: 'object',
-      properties: {
-        passport: {
-          $ref: `${passport.schema.$id}`,
-        },
-        KYC: {
-          $ref: `${kyc.schema.$id}`,
-        },
+      passportIdentifier: {
+        $ref: `${passport.$id}#/properties/passportIdentifier`,
       },
-    }
+      streetAddress: {
+        $ref: `${passport.$id}#/properties/streetAddress`,
+      },
+      city: {
+        $ref: `${passport.$id}#/properties/city`,
+      },
+      state: {
+        $ref: `${passport.$id}#/properties/state`,
+      },
+      ID: {
+        $ref: `${kyc.$id}#/properties/ID`,
+      },
+      number: {
+        $ref: `${kyc.$id}#/properties/number`,
+      },
+      name: {
+        $ref: `${kyc.$id}#/properties/name`,
+      },
+    })
 
-    nestedCType = CType.fromSchema(nested, didAlice)
-
-    deeplyNestedCType = CType.fromSchema(nestedDeeply, didAlice)
+    deeplyNestedCType = CType.fromProperties('test', {
+      passport: {
+        $ref: `${passport.$id}`,
+      },
+      KYC: {
+        $ref: `${kyc.$id}`,
+      },
+    })
 
     nestedData = Claim.fromNestedCTypeClaim(
       nestedCType,
-      [passport.schema, kyc.schema],
+      [passport, kyc],
       claimContents,
       didAlice
     )
 
     nestedDeepData = Claim.fromNestedCTypeClaim(
       deeplyNestedCType,
-      [passport.schema, kyc.schema],
+      [passport, kyc],
       claimDeepContents,
       didAlice
     )
@@ -155,8 +120,8 @@ describe('Nested CTypes', () => {
   it('verify json-schema validator', () => {
     expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
-        nestedCType.schema,
-        [passport.schema, kyc.schema],
+        nestedCType,
+        [passport, kyc],
         claimContents
       )
     ).not.toThrow()
@@ -165,23 +130,23 @@ describe('Nested CTypes', () => {
     expect(() =>
       Claim.fromNestedCTypeClaim(
         nestedCType,
-        [passport.schema, kyc.schema],
+        [passport, kyc],
         claimContents,
         didAlice
       )
-    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
     expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
-        deeplyNestedCType.schema,
-        [passport.schema, kyc.schema],
+        deeplyNestedCType,
+        [passport, kyc],
         claimDeepContents
       )
     ).not.toThrow()
     ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
     expect(() =>
       CType.verifyClaimAgainstNestedSchemas(
-        deeplyNestedCType.schema,
-        [passport.schema, kyc.schema],
+        deeplyNestedCType,
+        [passport, kyc],
         claimDeepContents
       )
     ).toThrow()
@@ -195,10 +160,10 @@ describe('Nested CTypes', () => {
     expect(() =>
       Claim.fromNestedCTypeClaim(
         deeplyNestedCType,
-        [passport.schema, kyc.schema],
+        [passport, kyc],
         claimDeepContents,
         didAlice
       )
-    ).toThrowError(SDKErrors.NestedClaimUnverifiableError)
+    ).toThrowError(SDKErrors.ObjectUnverifiableError)
   })
 })

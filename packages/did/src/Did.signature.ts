@@ -1,31 +1,33 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { u8aToHex, isHex } from '@polkadot/util'
+import { isHex } from '@polkadot/util'
 
 import {
-  DidDocument,
-  DidResolve,
+  DidResolveKey,
   DidResourceUri,
   DidSignature,
-  UriFragment,
+  DidUri,
+  SignResponseData,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 
-import { resolve } from './DidResolver/index.js'
+import { resolveKey } from './DidResolver/index.js'
 import { parse, validateUri } from './Did.utils.js'
-import * as Did from './index.js'
 
 export type DidSignatureVerificationInput = {
   message: string | Uint8Array
-  signature: DidSignature
+  signature: Uint8Array
+  keyUri: DidResourceUri
+  expectedSigner?: DidUri
+  allowUpgraded?: boolean
   expectedVerificationMethod?: VerificationKeyRelationship
-  didResolve?: DidResolve
+  didResolveKey?: DidResolveKey
 }
 
 // Used solely for retro-compatibility with previously-generated DID signatures.
@@ -58,69 +60,45 @@ function verifyDidSignatureDataStructure(
  *
  * @param input Object wrapping all input.
  * @param input.message The message that was signed.
- * @param input.signature An object containing signature and signer key.
+ * @param input.signature Signature bytes.
+ * @param input.keyUri DID URI of the key used for signing.
+ * @param input.expectedSigner If given, verification fails if the controller of the signing key is not the expectedSigner.
+ * @param input.allowUpgraded If `expectedSigner` is a light DID, setting this flag to `true` will accept signatures by the corresponding full DID.
  * @param input.expectedVerificationMethod Which relationship to the signer DID the key must have.
- * @param input.didResolve Allows specifying a custom DID resolve. Defaults to the built-in [[resolve]].
+ * @param input.didResolveKey Allows specifying a custom DID key resolve. Defaults to the built-in [[resolveKey]].
  */
 export async function verifyDidSignature({
   message,
   signature,
+  keyUri,
+  expectedSigner,
+  allowUpgraded = false,
   expectedVerificationMethod,
-  didResolve = resolve,
+  didResolveKey = resolveKey,
 }: DidSignatureVerificationInput): Promise<void> {
-  verifyDidSignatureDataStructure(signature)
-  // Add support for old signatures that had the `keyId` instead of the `keyUri`
-  const inputUri = signature.keyUri || (signature as any).keyId
-  // Verification fails if the signature key URI is not valid
-  const { fragment } = parse(inputUri)
-  if (!fragment)
-    throw new SDKErrors.SignatureMalformedError(
-      `Signature key URI "${signature.keyUri}" invalid`
-    )
-
-  const keyId: UriFragment = fragment
-  const keyUri: DidResourceUri = inputUri
-
-  const resolutionDetails = await didResolve(keyUri)
-  // Verification fails if the DID does not exist at all.
-  if (!resolutionDetails) {
-    throw new SDKErrors.DidError(`No result for provided key URI "${keyUri}"`)
+  // checks if key uri points to the right did; alternatively we could check the key's controller
+  const signer = parse(keyUri)
+  if (expectedSigner && expectedSigner !== signer.did) {
+    // check for allowable exceptions
+    const expected = parse(expectedSigner)
+    // NECESSARY CONDITION: subjects and versions match
+    const subjectVersionMatch =
+      expected.address === signer.address && expected.version === signer.version
+    // EITHER: signer is a full did and we allow signatures by corresponding full did
+    const allowedUpgrade = allowUpgraded && signer.type === 'full'
+    // OR: both are light dids and their auth key type matches
+    const keyTypeMatch =
+      signer.type === 'light' &&
+      expected.type === 'light' &&
+      expected.authKeyTypeEncoding === signer.authKeyTypeEncoding
+    if (!(subjectVersionMatch && (allowedUpgrade || keyTypeMatch))) {
+      throw new SDKErrors.DidSubjectMismatchError(signer.did, expected.did)
+    }
   }
 
-  // Verification also fails if the DID has been deleted.
-  if (resolutionDetails.metadata.deactivated) {
-    throw new SDKErrors.DidError('DID for provided key is deactivated')
-  }
-  // Verification also fails if the signer is a migrated light DID.
-  if (resolutionDetails.metadata.canonicalId) {
-    throw new SDKErrors.DidError(
-      'DID for provided key has been migrated and not usable anymore'
-    )
-  }
+  const { publicKey } = await didResolveKey(keyUri, expectedVerificationMethod)
 
-  // Otherwise, the document used is either the migrated full DID document or the light DID document.
-  const did = (
-    resolutionDetails.metadata.canonicalId !== undefined
-      ? (await didResolve(resolutionDetails.metadata.canonicalId))?.document
-      : resolutionDetails.document
-  ) as DidDocument
-
-  const key = Did.getKey(did, keyId)
-  if (!key) {
-    throw new SDKErrors.DidError(
-      `No key with ID "${keyId}" for the DID ${did.uri}`
-    )
-  }
-  // Check whether the provided key ID is within the keys for a given verification relationship, if provided.
-  if (
-    expectedVerificationMethod &&
-    !did[expectedVerificationMethod]?.map((verKey) => verKey.id).includes(keyId)
-  ) {
-    throw new SDKErrors.DidError(
-      `No key with ID "${keyId}" for the verification method "${expectedVerificationMethod}"`
-    )
-  }
-  Crypto.verify(message, signature.signature, u8aToHex(key.publicKey))
+  Crypto.verify(message, signature, publicKey)
 }
 
 /**
@@ -139,4 +117,34 @@ export function isDidSignature(
   } catch (cause) {
     return false
   }
+}
+
+/**
+ * Transforms the output of a [[SignCallback]] into the [[DidSignature]] format suitable for json-based data exchange.
+ *
+ * @param input Signature data returned from the [[SignCallback]].
+ * @param input.signature Signature bytes.
+ * @param input.keyUri DID URI of the key used for signing.
+ * @returns A [[DidSignature]] object where signature is hex-encoded.
+ */
+export function signatureToJson({
+  signature,
+  keyUri,
+}: SignResponseData): DidSignature {
+  return { signature: Crypto.u8aToHex(signature), keyUri }
+}
+
+/**
+ * Deserializes a [[DidSignature]] for signature verification.
+ * Handles backwards compatibility to an older version of the interface where the `keyUri` property was called `keyId`.
+ *
+ * @param input A [[DidSignature]] object.
+ * @returns The deserialized DidSignature where the signature is represented as a Uint8Array.
+ */
+export function signatureFromJson(
+  input: DidSignature | OldDidSignature
+): Pick<SignResponseData, 'keyUri' | 'signature'> {
+  const keyUri = 'keyUri' in input ? input.keyUri : input.keyId
+  const signature = Crypto.coToUInt8(input.signature)
+  return { signature, keyUri }
 }

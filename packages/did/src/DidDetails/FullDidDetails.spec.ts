@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -10,8 +10,6 @@ import { randomAsHex } from '@polkadot/util-crypto'
 
 import type {
   DidDocument,
-  DidServiceEndpoint,
-  DidUri,
   KiltKeyringPair,
   SignCallback,
   SubmittableExtrinsic,
@@ -23,15 +21,8 @@ import {
 } from '@kiltprotocol/testing'
 import { ConfigService } from '@kiltprotocol/config'
 
-import {
-  documentFromChain,
-  generateDidAuthenticatedTx,
-  servicesFromChain,
-} from '../Did.chain'
-
 import * as Did from './index.js'
-
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { generateDidAuthenticatedTx } from '../Did.chain.js'
 
 /**
  * @group unit/did
@@ -41,166 +32,18 @@ const augmentedApi = ApiMocks.createAugmentedApi()
 const mockedApi: any = ApiMocks.getMockedApi()
 ConfigService.set({ api: mockedApi })
 
-const existingAddress = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
-const existingDid: DidUri = `did:kilt:${existingAddress}`
-const nonExistingDid: DidUri = `did:kilt:4pnAJ41mGHGDKCGBGY2zzu1hfvPasPkGAKDgPeprSkxnUmGM`
-
-const existingServiceEndpoints: DidServiceEndpoint[] = [
-  {
-    id: '#service1',
-    type: ['type-1'],
-    serviceEndpoint: ['url-1'],
-  },
-  {
-    id: '#service2',
-    type: ['type-2'],
-    serviceEndpoint: ['url-2'],
-  },
-]
-
 jest.mock('../Did.chain')
-jest.mocked(documentFromChain).mockReturnValue({
-  authentication: [
-    {
-      id: '#auth1',
-      publicKey: new Uint8Array(32).fill(0),
-      type: 'sr25519',
-      includedAt: new BN(0),
-    },
-  ],
-  keyAgreement: [
-    {
-      id: '#enc1',
-      publicKey: new Uint8Array(32).fill(1),
-      type: 'x25519',
-      includedAt: new BN(0),
-    },
-    {
-      id: '#enc2',
-      publicKey: new Uint8Array(32).fill(2),
-      type: 'x25519',
-      includedAt: new BN(0),
-    },
-  ],
-  assertionMethod: [
-    {
-      id: '#att1',
-      publicKey: new Uint8Array(32).fill(3),
-      type: 'ed25519',
-      includedAt: new BN(0),
-    },
-  ],
-  capabilityDelegation: [
-    {
-      id: '#del1',
-      publicKey: new Uint8Array(32).fill(4),
-      type: 'ecdsa',
-      includedAt: new BN(0),
-    },
-  ],
-  lastTxCounter: new BN('1'),
-  deposit: {
-    amount: new BN(2),
-    owner: existingAddress,
-  },
-})
-jest.mocked(servicesFromChain).mockReturnValue(existingServiceEndpoints)
 jest
   .mocked(generateDidAuthenticatedTx)
   .mockResolvedValue({} as SubmittableExtrinsic)
 
-mockedApi.query.did.did.mockReturnValue(
-  ApiMocks.mockChainQueryReturn('did', 'did', [
-    '01234567890123456789012345678901',
-    [],
-    undefined,
-    undefined,
-    [],
-    '123',
-    [existingAddress, '0'],
-  ])
-)
-
 /*
- * Functions tested:
- * - query
- *
  * Functions tested in integration tests:
  * - getKeysForExtrinsic
  * - authorizeExtrinsic
  */
 
 describe('When creating an instance from the chain', () => {
-  it('correctly assign the right keys and the right service endpoints', async () => {
-    const fullDid = await Did.query(existingDid)
-
-    expect(fullDid).not.toBeNull()
-    if (!fullDid) throw new Error('Cannot load created DID')
-
-    expect(fullDid).toEqual(<DidDocument>{
-      uri: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
-      authentication: [
-        {
-          id: '#auth1',
-          publicKey: new Uint8Array(32).fill(0),
-          type: 'sr25519',
-          includedAt: new BN(0),
-        },
-      ],
-      keyAgreement: [
-        {
-          id: '#enc1',
-          publicKey: new Uint8Array(32).fill(1),
-          type: 'x25519',
-          includedAt: new BN(0),
-        },
-        {
-          id: '#enc2',
-          publicKey: new Uint8Array(32).fill(2),
-          type: 'x25519',
-          includedAt: new BN(0),
-        },
-      ],
-      assertionMethod: [
-        {
-          id: '#att1',
-          publicKey: new Uint8Array(32).fill(3),
-          type: 'ed25519',
-          includedAt: new BN(0),
-        },
-      ],
-      capabilityDelegation: [
-        {
-          id: '#del1',
-          publicKey: new Uint8Array(32).fill(4),
-          type: 'ecdsa',
-          includedAt: new BN(0),
-        },
-      ],
-      service: [
-        {
-          id: '#service1',
-          type: ['type-1'],
-          serviceEndpoint: ['url-1'],
-        },
-        {
-          id: '#service2',
-          type: ['type-2'],
-          serviceEndpoint: ['url-2'],
-        },
-      ],
-    })
-  })
-
-  it('returns null if the DID does not exist', async () => {
-    mockedApi.query.did.did.mockReturnValueOnce(
-      ApiMocks.mockChainQueryReturn('did', 'did')
-    )
-
-    const fullDid = await Did.query(nonExistingDid)
-    expect(fullDid).toBeNull()
-  })
-
   describe('authorizeBatch', () => {
     let keypair: KiltKeyringPair
     let sign: SignCallback
@@ -213,7 +56,7 @@ describe('When creating an instance from the chain', () => {
       sign = keyTool.getSignCallback(fullDid)
     })
 
-    describe('.addSingleExtrinsic()', () => {
+    describe('.addSingleTx()', () => {
       it('fails if the extrinsic does not require a DID', async () => {
         const extrinsic = augmentedApi.tx.indices.claim(1)
         await expect(async () =>
@@ -325,13 +168,13 @@ const mockApi = ApiMocks.createAugmentedApi()
 
 describe('When creating an instance from the chain', () => {
   it('Should return correct KeyRelationship for single valid call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.attestation.add(new Uint8Array(32), new Uint8Array(32), null)
     )
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batched call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.batch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -348,7 +191,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for batchAll call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.batchAll([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -365,7 +208,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return correct KeyRelationship for forceBatch call', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),
@@ -382,7 +225,7 @@ describe('When creating an instance from the chain', () => {
     expect(keyRelationship).toBe('assertionMethod')
   })
   it('Should return undefined for batch with mixed KeyRelationship calls', () => {
-    const keyRelationship = Did.getKeyRelationshipForExtrinsic(
+    const keyRelationship = Did.getKeyRelationshipForTx(
       mockApi.tx.utility.forceBatch([
         mockApi.tx.attestation.add(
           new Uint8Array(32),

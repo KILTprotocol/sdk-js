@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2022, BOTLabs GmbH.
+ * Copyright (c) 2018-2023, BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
@@ -40,7 +40,7 @@ function jsonLDcontents(
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
   if (!cTypeHash) throw new SDKErrors.CTypeHashMissingError()
-  const vocabulary = `${CType.getIdForCTypeHash(cTypeHash)}#`
+  const vocabulary = `${CType.hashToId(cTypeHash)}#`
   const result: Record<string, unknown> = {}
   if (owner) result['@id'] = owner
   if (!expanded) {
@@ -74,7 +74,7 @@ export function toJsonLD(
     [`${prefix}credentialSubject`]: credentialSubject,
   }
   result[`${prefix}credentialSchema`] = {
-    '@id': CType.getIdForCTypeHash(claim.cTypeHash),
+    '@id': CType.hashToId(claim.cTypeHash),
   }
   if (!expanded) result['@context'] = { '@vocab': VC_VOCAB }
   return result
@@ -198,7 +198,7 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw new SDKErrors.CTypeHashMissingError()
   }
-  if (input.owner) {
+  if ('owner' in input) {
     Did.validateUri(input.owner, 'Did')
   }
   if (input.contents !== undefined) {
@@ -215,24 +215,14 @@ export function verifyDataStructure(input: IClaim | PartialClaim): void {
   DataUtils.verifyIsHex(input.cTypeHash, 256)
 }
 
-function verifyAgainstCType(
-  claimContents: IClaim['contents'],
-  cTypeSchema: ICType['schema']
-): void {
-  CType.verifyClaimAgainstSchema(claimContents, cTypeSchema)
-}
-
 /**
  * Verifies the data structure and schema of a Claim.
  *
  * @param claimInput IClaim to verify.
- * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
+ * @param cType ICType to verify claimInput's contents.
  */
-export function verify(
-  claimInput: IClaim,
-  cTypeSchema: ICType['schema']
-): void {
-  verifyAgainstCType(claimInput.contents, cTypeSchema)
+export function verify(claimInput: IClaim, cType: ICType): void {
+  CType.verifyClaimAgainstSchema(claimInput.contents, cType)
   verifyDataStructure(claimInput)
 }
 
@@ -248,18 +238,14 @@ export function verify(
  */
 export function fromNestedCTypeClaim(
   cTypeInput: ICType,
-  nestedCType: Array<ICType['schema']>,
+  nestedCType: ICType[],
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  CType.verifyClaimAgainstNestedSchemas(
-    cTypeInput.schema,
-    nestedCType,
-    claimContents
-  )
+  CType.verifyClaimAgainstNestedSchemas(cTypeInput, nestedCType, claimContents)
 
   const claim = {
-    cTypeHash: cTypeInput.hash,
+    cTypeHash: CType.idToHash(cTypeInput.$id),
     contents: claimContents,
     owner: claimOwner,
   }
@@ -270,20 +256,20 @@ export function fromNestedCTypeClaim(
 /**
  * Constructs a new Claim from the given [[ICType]], IClaim['contents'] and [[DidUri]].
  *
- * @param ctypeInput [[ICType]] for which the Claim will be built.
+ * @param cType [[ICType]] for which the Claim will be built.
  * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
  * @param claimOwner The DID to be used as the Claim owner.
  * @returns A Claim object.
  */
 export function fromCTypeAndClaimContents(
-  ctypeInput: ICType,
+  cType: ICType,
   claimContents: IClaim['contents'],
   claimOwner: DidUri
 ): IClaim {
-  CType.verifyDataStructure(ctypeInput)
-  verifyAgainstCType(claimContents, ctypeInput.schema)
+  CType.verifyDataStructure(cType)
+  CType.verifyClaimAgainstSchema(claimContents, cType)
   const claim = {
-    cTypeHash: ctypeInput.hash,
+    cTypeHash: CType.idToHash(cType.$id),
     contents: claimContents,
     owner: claimOwner,
   }
