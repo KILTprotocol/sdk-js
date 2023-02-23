@@ -176,10 +176,6 @@ describe('jsigs', () => {
 })
 
 describe('vc-js', () => {
-  async function checkStatus(x: { credential: VerifiableCredential }) {
-    return suite.checkStatus(x)
-  }
-
   const mockSuite = new KiltAttestationV1Suite({
     api: {
       genesisHash,
@@ -191,9 +187,6 @@ describe('vc-js', () => {
       },
     } as any,
   })
-  async function mockCheckStatus(x: { credential: VerifiableCredential }) {
-    return mockSuite.checkStatus(x)
-  }
 
   describe('attested', () => {
     it('verifies Kilt Attestation Proof', async () => {
@@ -202,7 +195,7 @@ describe('vc-js', () => {
         suite,
         purpose,
         documentLoader,
-        checkStatus,
+        checkStatus: suite.checkStatus,
       })
       expect(result).toHaveProperty('verified', true)
       expect(result).not.toHaveProperty('error')
@@ -217,7 +210,7 @@ describe('vc-js', () => {
           suite,
           purpose,
           documentLoader,
-          checkStatus: mockCheckStatus,
+          checkStatus: mockSuite.checkStatus,
         })
       ).toMatchObject({ verified: false })
     })
@@ -231,7 +224,7 @@ describe('vc-js', () => {
           suite,
           purpose,
           documentLoader,
-          checkStatus,
+          checkStatus: suite.checkStatus,
         })
       ).toMatchObject({ verified: false })
     })

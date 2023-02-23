@@ -47,17 +47,19 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
   }
 
   /**
-   * @param args
-   * @param args.credential
+   *
    */
-  public async checkStatus({
-    credential,
-  }: {
-    credential: VerifiableCredential
-  }): Promise<{ verified: boolean; error?: unknown }> {
-    return checkStatus(this.api, credential.credentialStatus, credential)
-      .then(() => ({ verified: true }))
-      .catch((error) => ({ verified: false, error }))
+  public get checkStatus() {
+    const { api } = this
+    return async ({
+      credential,
+    }: {
+      credential: VerifiableCredential
+    }): Promise<{ verified: boolean; error?: unknown }> => {
+      return checkStatus(api, credential.credentialStatus, credential)
+        .then(() => ({ verified: true }))
+        .catch((error) => ({ verified: false, error }))
+    }
   }
 
   /**
