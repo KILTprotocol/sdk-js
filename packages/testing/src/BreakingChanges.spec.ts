@@ -36,7 +36,7 @@ jest.spyOn(nacl, 'randomBytes').mockReturnValue(new Uint8Array(24).fill(42))
 
 function makeLightDidFromSeed(seed: string) {
   const keypair = Utils.Crypto.makeKeypairFromUri(seed, 'sr25519')
-  const { keyAgreement, encrypt } = makeEncryptionKeyTool(seed)
+  const { keyAgreement, encrypt, decrypt } = makeEncryptionKeyTool(seed)
 
   const did = Did.createLightDidDocument({
     authentication: [keypair],
@@ -52,7 +52,7 @@ function makeLightDidFromSeed(seed: string) {
     ],
   })
 
-  return { did, encrypt }
+  return { did, encrypt, decrypt }
 }
 
 function makeResolveKey(document: DidDocument) {
@@ -89,7 +89,7 @@ describe('Breaking Changes', () => {
       const { did: aliceDid, encrypt } = makeLightDidFromSeed(
         '0xdc6f4d21a91848eeeac1811c73a2323060ef2d8d4a07ece2f216d5b8f977520b'
       )
-      const { did: bobDid } = makeLightDidFromSeed(
+      const { did: bobDid, decrypt } = makeLightDidFromSeed(
         '0xa748f38e896ddc52b6e5cc5baa754f7f841381ef32bf1d86d51026857c6c05dc'
       )
 
@@ -119,6 +119,12 @@ describe('Breaking Changes', () => {
       )
 
       expect(encrypted).toMatchSnapshot()
+
+      const decrypted = await Message.decrypt(encrypted, decrypt, {
+        resolveKey: makeResolveKey(aliceDid),
+      })
+
+      expect(decrypted).toMatchSnapshot()
     })
 
     it('does not break for attestation flow', async () => {

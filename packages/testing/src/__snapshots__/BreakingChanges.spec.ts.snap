@@ -122,6 +122,24 @@ Object {
 }
 `;
 
+exports[`Breaking Changes Messages does not break Message & EncryptedMessage structure 3`] = `
+Object {
+  "body": Object {
+    "content": Object {
+      "cTypeHash": "0x1234",
+    },
+    "type": "request-terms",
+  },
+  "createdAt": 1657727664899,
+  "inReplyTo": undefined,
+  "messageId": "0xa3970143a4d6796c764c4fb49cecfb55229429f6fb8d7748969bf1f3679db22a",
+  "receivedAt": undefined,
+  "receiver": "did:kilt:light:004rzcHqKvv6TbsA46VpG53JrvdzRr6ccyboUNeCGTvDw2AozU:z1msTRicERqs59nwMvp3yzMRBhQhYShb1vEhbpWo5ZbqVAgi2UFELJk7MbUSeEfBdAVsJhdqcEAhXxH4YrV5nwgTYjFYszWKLFnYvSUhgZ7teDiLt1FbAo484ihnagUKQkE46o3fqSv52WgM6VatrEqetD3ekokxFtz4yn2vFYPdDMPmKE3cVxdKqPMa3Ewh6k46SENeEDZFLg1L8Yi73ZVEA9AwDg2RDuBDnpjetxBC6U5qMKVfqbh1rjgxpubpSj6sppHDq8xZ4LDU2bs1a9g6qcWJjkrtS69t3PTFZv5Ey84epnvbXEm8hsVnzTKsY6LbQmCiVqwKWUPUwXpj83",
+  "references": undefined,
+  "sender": "did:kilt:light:004rn1Xps9QSMiAb2aMoKQbAred94wh1iLjGmNBYy1FVCS81ry:z1msTRicERqs59nwMvp3yzMRBhRatQoZZaiSZfyN7TzqeEs1bHHTCH3RURC6zWk5B8HXGZThZos9PJFJrkiYchNGbAGQRKSKucBVDVoXBLDyEm4P1dsco9wyoaWa5kkFw6DZgnKrTJg8Y8iCy7k2yo8GeMXAuR8qoBFFXj7Up7DxKJrMoQudvFHTy2uk2HPNfqkzJX17Wqsny1MKHD82eC3TcjrGCkhMZy3NmzkySmLsDmmHnG2csZ5vvefFRFZ1hSKfUtcV8EnLd3zozsiZByaLrED2XVbuHqPVzqcnrCJF8fSm49NcGDgsQkwnQwbuKfMkov9WwJoxhDSYG6e7WP",
+}
+`;
+
 exports[`Breaking Changes Messages does not break for attestation flow: attestation 1`] = `
 Object {
   "cTypeHash": "0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c",
