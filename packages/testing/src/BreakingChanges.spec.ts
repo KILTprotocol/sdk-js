@@ -80,6 +80,8 @@ describe('Breaking Changes', () => {
       expect(did.uri).toMatchInlineSnapshot(
         `"did:kilt:light:004quk8nu1MLvzdoT4fE6SJsLS4fFpyvuGz7sQpMF7ZAWTDoF5:z1msTRicERqs59nwMvp3yzMRBhUYGmkum7ehY7rtKQc8HzfEx4b4eyRhrc37ZShT3oG7E89x89vaG9W4hRxPS23EAFnCSeVbVRrKGJmFQvYhjgKSMmrGC7gSxgHe1a3g41uamhD49AEi13YVMkgeHpyEQJBy7N7gGyW7jTWFcwzAnws4wSazBVG1qHmVJrhmusoJoTfKTPKXkExKyur8Z341EkcRkHteY8dV3VjLXHnfhRW2yU9oM2cRm5ozgaufxrXsQBx33ygTW2wvrfzzXsYw4Bs6Vf2tC3ipBTDcKyCk6G88LYnzBosRM15W3KmDRciJ2iPjqiQkhYm77EQyaw"`
       )
+
+      expect(Did.parseDocumentFromLightDid(did.uri)).toMatchSnapshot()
     })
   })
   describe('Messages', () => {
@@ -152,6 +154,8 @@ describe('Breaking Changes', () => {
         { name: 'Bob' },
         attester.did.uri
       )
+      expect(claim).toMatchSnapshot('claim')
+
       const submitTerms: MessageBody = {
         type: 'submit-terms',
         content: {
@@ -163,6 +167,8 @@ describe('Breaking Changes', () => {
 
       claim.owner = user.did.uri
       const credential = Credential.fromClaim(claim, { legitimations: [] })
+      expect(credential).toMatchSnapshot('credential')
+
       const requestAttestation: MessageBody = {
         type: 'request-attestation',
         content: { credential },
@@ -173,6 +179,8 @@ describe('Breaking Changes', () => {
         credential,
         attester.did.uri
       )
+      expect(attestation).toMatchSnapshot('attestation')
+
       const submitAttestation: MessageBody = {
         type: 'submit-attestation',
         content: { attestation },
@@ -206,6 +214,8 @@ describe('Breaking Changes', () => {
           keyType: user.did.authentication[0].type,
         }),
       })
+      expect(presentation).toMatchSnapshot('presentation')
+
       const submitCredential: MessageBody = {
         type: 'submit-credential',
         content: [presentation],
