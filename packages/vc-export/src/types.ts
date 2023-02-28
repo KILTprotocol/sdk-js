@@ -13,6 +13,7 @@ import type {
   DidUri,
   Caip2ChainId,
 } from '@kiltprotocol/types'
+import { Proof } from 'jsonld-signatures'
 import type {
   ATTESTATION_PROOF_V1_TYPE,
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -28,7 +29,7 @@ import type {
 
 export type IPublicKeyRecord = ConformingDidKey
 
-export interface KiltAttestationProofV1 {
+export interface KiltAttestationProofV1 extends Proof {
   type: typeof ATTESTATION_PROOF_V1_TYPE
   block: string
   commitments: string[]

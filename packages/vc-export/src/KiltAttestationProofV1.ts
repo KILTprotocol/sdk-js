@@ -61,18 +61,15 @@ import {
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
-import type { CredentialSubject, VerifiableCredential } from './types.js'
+import type {
+  CredentialSubject,
+  KiltAttestationProofV1,
+  VerifiableCredential,
+} from './types.js'
 import {
   CredentialMalformedError,
   ProofMalformedError,
 } from './verificationUtils.js'
-
-export interface KiltAttestationProofV1 {
-  type: typeof ATTESTATION_PROOF_V1_TYPE
-  block: string
-  commitments: string[]
-  salt: string[]
-}
 
 export const spiritnetGenesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
