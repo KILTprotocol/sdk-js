@@ -196,6 +196,11 @@ export async function getLinkingArguments(
 }
 
 /**
+ * Identifies the strategy to wrap raw bytes for signing.
+ */
+export type WrappingStrategy = 'ethereum' | 'polkadot'
+
+/**
  * Wraps the provided challenge according to the key type.
  *
  * Ethereum addresses will cause the challenge to be prefixed with
@@ -208,7 +213,7 @@ export async function getLinkingArguments(
  * @returns The wrapped challenge.
  */
 export function getWrappedChallenge(
-  type: KeypairType,
+  type: WrappingStrategy,
   challenge: Uint8Array
 ): Uint8Array {
   if (type === 'ethereum') {
@@ -242,7 +247,7 @@ export async function associateAccountToChainArgs(
 
   const challenge = await getLinkingChallenge(did, validTill)
 
-  const predictedType = accountAddress.length === 20 ? 'ethereum' : 'sr25519'
+  const predictedType = accountAddress.length === 20 ? 'ethereum' : 'polkadot'
   const wrappedChallenge = u8aToHex(
     getWrappedChallenge(predictedType, challenge)
   )
