@@ -129,7 +129,7 @@ function getUnprefixedSignature(
 
 /**
  * Generates the challenge that links a DID to an account.
- * The account has to sign the raw challenge, while the DID will sign the extrinsic that contains the challenge and will
+ * The account has to sign the challenge, while the DID will sign the extrinsic that contains the challenge and will
  * link the account to the DID.
  *
  * @param did The URI of the DID that that should be linked to an account.
