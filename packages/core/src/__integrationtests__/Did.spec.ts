@@ -184,7 +184,9 @@ describe('write and didDeleteTx', () => {
     // Will fail because count provided is too low
     await expect(submitTx(submittable, paymentAccount)).rejects.toMatchObject({
       section: 'did',
-      name: 'StoredEndpointsCountTooLarge',
+      name: expect.stringMatching(
+        /^(StoredEndpointsCountTooLarge|MaxStoredEndpointsCountExceeded)$/
+      ),
     })
   }, 60_000)
 
@@ -555,7 +557,7 @@ describe('DID authorization', () => {
     )
     await expect(submitTx(tx2, paymentAccount)).rejects.toMatchObject({
       section: 'did',
-      name: 'DidNotPresent',
+      name: expect.stringMatching(/^(DidNotPresent|NotFound)$/),
     })
 
     await expect(CType.verifyStored(ctype)).rejects.toThrow()
@@ -983,7 +985,7 @@ describe('DID management batching', () => {
       // Now, submitting will result in the second operation to fail AND the batch to fail, so we can test the atomic flag.
       await expect(submitTx(updateTx, paymentAccount)).rejects.toMatchObject({
         section: 'did',
-        name: 'ServiceAlreadyPresent',
+        name: expect.stringMatching(/^ServiceAlready(Exists|Present)$/),
       })
 
       const updatedFullDidLinkedInfo = await api.call.did.query(
