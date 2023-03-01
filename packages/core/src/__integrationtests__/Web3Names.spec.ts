@@ -120,7 +120,7 @@ describe('When there is an Web3NameCreator and a payer', () => {
 
     await expect(p).rejects.toMatchObject({
       section: 'web3Names',
-      name: 'Web3NameAlreadyClaimed',
+      name: expect.stringMatching(/^(Web3NameAlreadyClaimed|AlreadyExists)$/),
     })
   }, 30_000)
 

@@ -76,7 +76,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
   )
   await expect(submitTx(tx, paymentAccount)).rejects.toMatchObject({
     section: 'ctype',
-    name: 'CTypeNotFound',
+    name: expect.stringMatching(/^(CType)?NotFound$/),
   })
 }, 30_000)
 
