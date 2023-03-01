@@ -27,7 +27,9 @@ import { ConfigService } from '@kiltprotocol/config'
 import { EncodedSignature } from '../Did.utils.js'
 import { toChain } from '../Did.chain.js'
 
-/// A chain-agnostic address, which can be encoded using any network prefix.
+/**
+ *  A chain-agnostic address, which can be encoded using any network prefix.
+ */
 export type SubstrateAddress = KeyringPair['address']
 
 export type EthereumAddress = HexString
