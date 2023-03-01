@@ -211,7 +211,9 @@ describe('When there is an on-chain DID', () => {
         expect(queryByAccount.document.uri).toStrictEqual(did.uri)
       })
       it('should be possible to associate the account to a new DID while the sender pays the deposit', async () => {
-        if (skip) return
+        if (skip) {
+          return
+        }
         const args = await Did.associateAccountToChainArgs(
           keypair.address,
           newDid.uri,
@@ -245,7 +247,9 @@ describe('When there is an on-chain DID', () => {
         expect(queryByAccount.document.uri).toStrictEqual(newDid.uri)
       })
       it('should be possible for the DID to remove the link', async () => {
-        if (skip) return
+        if (skip) {
+          return
+        }
         const removeLinkTx =
           api.tx.didLookup.removeAccountAssociation(keypairChain)
         const signedTx = await Did.authorizeTx(
