@@ -195,7 +195,7 @@ describe('and attestation rights have been delegated', () => {
     await expect(
       Credential.verifySignature(presentation)
     ).resolves.not.toThrow()
-    await Credential.verifyPresentation(presentation)
+    Credential.verifyWellFormed(presentation, { ctype: driversLicenseCType })
 
     const attestation = Attestation.fromCredentialAndDid(
       credential,

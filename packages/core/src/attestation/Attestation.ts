@@ -136,12 +136,22 @@ export function verifyAgainstCredential(
   attestation: IAttestation,
   credential: ICredential
 ): void {
-  if (
-    credential.claim.cTypeHash !== attestation.cTypeHash ||
-    credential.rootHash !== attestation.claimHash
-  ) {
+  const credentialMismatch =
+    credential.claim.cTypeHash !== attestation.cTypeHash
+  const ctypeMismatch = credential.rootHash !== attestation.claimHash
+  const delegationMismatch =
+    credential.delegationId !== attestation.delegationId
+  if (credentialMismatch || ctypeMismatch || delegationMismatch) {
     throw new SDKErrors.CredentialUnverifiableError(
-      'Attestation does not match credential'
+      `Some attributes of the on-chain attestation diverge from the credential: ${[
+        'cTypeHash',
+        'delegationId',
+        'claimHash',
+      ]
+        .filter(
+          (_, i) => [ctypeMismatch, delegationMismatch, credentialMismatch][i]
+        )
+        .join(', ')}`
     )
   }
   Credential.verifyDataIntegrity(credential)
