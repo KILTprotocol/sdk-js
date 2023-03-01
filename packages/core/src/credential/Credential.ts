@@ -309,7 +309,7 @@ export function verifyWellFormed(
  * Queries the attestation record for a credential and matches their data. Fails if no attestation exists, if it is revoked, or if the attestation data does not match the credential.
  *
  * @param credential The [[ICredential]] whose attestation status should be checked.
- * @returns Information on the attester and revocation status of the on-chain attestation.
+ * @returns An object containing the `attester` DID and `revoked` status of the on-chain attestation.
  */
 export async function verifyAttested(credential: ICredential): Promise<{
   attester: DidUri
@@ -339,7 +339,8 @@ export interface VerifiedCredential extends ICredential {
  * Updates the revocation status of a previously verified credential to allow checking if it is still valid.
  *
  * @param verifiedCredential The output of [[verifyCredential]] or [[verifyPresentation]], which adds a `revoked` and `attester` property.
- * @returns A promise of resolving to the same object but with the `revoked` property updated. The promise rejects if the attestation has been deleted or its data changed since verification.
+ * @returns A promise of resolving to the same object but with the `revoked` property updated.
+ * The promise rejects if the attestation has been deleted or its data changed since verification.
  */
 export async function refreshRevocationStatus(
   verifiedCredential: VerifiedCredential
@@ -369,6 +370,7 @@ export async function refreshRevocationStatus(
  * @param credential - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
+ * @returns A [[VerifiedCredential]] object, which is the orignal credential with two additional properties: a boolean `revoked` status flag and the `attester` DID.
  */
 export async function verifyCredential(
   credential: ICredential,
@@ -385,15 +387,21 @@ export async function verifyCredential(
 
 /**
  * Performs all steps to verify a credential presentation (signed).
- * In addition to verifying data structure, data integrity, and looking up the attestation record on the KILT blockchain, this involves verifying the claimer's signature over the credential.
+ * In addition to verifying data structure, data integrity, and looking up the attestation record on the KILT blockchain,
+ * this involves verifying the claimer's signature over the credential.
  *
  * This is the function verifiers would typically call upon receiving a credential presentation from a third party.
+ * The attester's identity and the credential revocation status returned by this function would then be either displayed to an end user
+ * or processed in application logic deciding whether to accept or reject a credential submission
+ * (e.g., by matching the attester DID against an allow-list of trusted attesters).
  *
  * @param presentation - The object to check.
  * @param options - Additional parameter for more verification steps.
  * @param options.ctype - CType which the included claim should be checked against.
  * @param options.challenge -  The expected value of the challenge. Verification will fail in case of a mismatch.
  * @param options.didResolveKey - The function used to resolve the claimer's key. Defaults to [[resolveKey]].
+ * @returns A [[VerifiedCredential]] object, which is the orignal credential presentation with two additional properties:
+ * a boolean `revoked` status flag and the `attester` DID.
  */
 export async function verifyPresentation(
   presentation: ICredentialPresentation,
