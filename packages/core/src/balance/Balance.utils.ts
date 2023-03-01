@@ -43,7 +43,7 @@ export const Prefixes = new Map<MetricPrefix, number>([
  * @returns String representation of the given BN with prefix and unit ('KILT' as default).
  */
 export function formatKiltBalance(
-  amount: BN,
+  amount: BalanceNumber,
   additionalOptions?: BalanceOptions
 ): string {
   const options = {
@@ -144,17 +144,15 @@ export function toFemtoKilt(
 export function fromFemtoKilt(
   input: BalanceNumber,
   decimals = 4,
-  options?: BalanceOptions
+  options: BalanceOptions = {}
 ): string {
+  const { locale, ...opts } = options
   const inputBN = new BN(balanceNumberToString(input))
-  const formatted = formatKiltBalance(inputBN, options)
+  const formatted = formatKiltBalance(inputBN, opts)
   const [number, ...rest] = formatted.split(' ')
-  const negative = number.startsWith('-')
-  const localeNumber = new Intl.NumberFormat(options?.locale, {
-    minimumFractionDigits: 4,
-  }).format(Number(negative ? number.slice(1) : number))
-  return `${negative ? '-' : ''}${localeNumber.slice(
-    0,
-    localeNumber.length - 4 + decimals
-  )} ${rest.join(' ')}`
+  const localeNumber = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: decimals + 1,
+    maximumFractionDigits: decimals + 1,
+  }).format(Number(number))
+  return `${localeNumber.slice(0, localeNumber.length - 1)} ${rest.join(' ')}`
 }
