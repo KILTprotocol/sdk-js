@@ -249,7 +249,9 @@ export async function associateAccountToChainArgs(
 
   const challenge = await getLinkingChallenge(did, validTill)
 
-  const predictedType = accountAddress.length === 20 ? 'ethereum' : 'polkadot'
+  // ethereum addresses are 42 characters long since they are 20 bytes hex encoded strings 
+  // (they start with 0x, 2 characters per byte)
+  const predictedType = accountAddress.length === 42 ? 'ethereum' : 'polkadot'
   const wrappedChallenge = u8aToHex(
     getWrappedChallenge(predictedType, challenge)
   )
