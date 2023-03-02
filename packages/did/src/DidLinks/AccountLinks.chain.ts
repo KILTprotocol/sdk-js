@@ -127,16 +127,7 @@ function getUnprefixedSignature(
   throw new SDKErrors.SignatureUnverifiableError()
 }
 
-/**
- * Generates the challenge that links a DID to an account.
- * The account has to sign the challenge, while the DID will sign the extrinsic that contains the challenge and will
- * link the account to the DID.
- *
- * @param did The URI of the DID that that should be linked to an account.
- * @param validUntil Last blocknumber that this challenge is valid for.
- * @returns The encoded challenge.
- */
-export async function getLinkingChallenge(
+async function getLinkingChallengeV1(
   did: DidUri,
   validUntil: BN
 ): Promise<Uint8Array> {
@@ -157,6 +148,32 @@ export async function getLinkingChallenge(
   return api
     .createType(`(${DidAddress}, ${BlockNumber})`, [toChain(did), validUntil])
     .toU8a()
+}
+
+function getLinkingChallengeV2(did: DidUri, validUntil: BN): Uint8Array {
+  return stringToU8a(
+    `Publicly link the signing address to ${did} before block number ${validUntil}`
+  )
+}
+
+/**
+ * Generates the challenge that links a DID to an account.
+ * The account has to sign the challenge, while the DID will sign the extrinsic that contains the challenge and will
+ * link the account to the DID.
+ *
+ * @param did The URI of the DID that that should be linked to an account.
+ * @param validUntil Last blocknumber that this challenge is valid for.
+ * @returns The encoded challenge.
+ */
+export async function getLinkingChallenge(
+  did: DidUri,
+  validUntil: BN
+): Promise<Uint8Array> {
+  const api = ConfigService.get('api')
+  if (isEthereumEnabled(api)) {
+    return getLinkingChallengeV2(did, validUntil)
+  }
+  return getLinkingChallengeV1(did, validUntil)
 }
 
 /**
@@ -249,7 +266,7 @@ export async function associateAccountToChainArgs(
 
   const challenge = await getLinkingChallenge(did, validTill)
 
-  // ethereum addresses are 42 characters long since they are 20 bytes hex encoded strings 
+  // ethereum addresses are 42 characters long since they are 20 bytes hex encoded strings
   // (they start with 0x, 2 characters per byte)
   const predictedType = accountAddress.length === 42 ? 'ethereum' : 'polkadot'
   const wrappedChallenge = u8aToHex(
