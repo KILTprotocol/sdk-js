@@ -111,7 +111,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await expect(
       submitTx(authorizedStoreTx2, paymentAccount)
-    ).rejects.toMatchObject({ section: 'ctype', name: 'CTypeAlreadyExists' })
+    ).rejects.toMatchObject({
+      section: 'ctype',
+      name: expect.stringMatching(/^(CType)?AlreadyExists$/),
+    })
 
     if (hasBlockNumbers) {
       const retrievedCType = await CType.fetchFromChain(ctype.$id)
