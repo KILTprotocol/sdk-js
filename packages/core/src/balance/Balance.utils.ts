@@ -146,11 +146,11 @@ export function fromFemtoKilt(
   decimals = 4,
   options: BalanceOptions = {}
 ): string {
-  const { locale, ...opts } = options
   const inputBN = new BN(balanceNumberToString(input))
-  const formatted = formatKiltBalance(inputBN, opts)
+  // overwriting the locale as parsing a number from a string only works with English locale formatted numbers
+  const formatted = formatKiltBalance(inputBN, { ...options, locale: 'en' })
   const [number, ...rest] = formatted.split(' ')
-  const localeNumber = new Intl.NumberFormat(locale, {
+  const localeNumber = new Intl.NumberFormat(options.locale, {
     minimumFractionDigits: decimals + 1,
     maximumFractionDigits: decimals + 1,
   }).format(Number(number))
