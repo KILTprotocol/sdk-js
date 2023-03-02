@@ -21,7 +21,7 @@ import { deriveProof } from '../../KiltAttestationProofV1'
 import ingosCredential from '../examples/ingos-cred.json'
 import { documentLoader } from '../documentLoader'
 import { KiltAttestationProofV1, VerifiableCredential } from '../../types'
-import { AnyProofPurpose } from './AnyProofPurpose.js'
+import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import * as KiltCredentialV1 from '../../KiltCredentialV1.js'
 
 let api: ApiPromise
@@ -56,7 +56,7 @@ let proof: KiltAttestationProofV1
 beforeAll(async () => {
   api = await connect('wss://spiritnet.kilt.io')
   suite = new KiltAttestationV1Suite({ api })
-  purpose = new AnyProofPurpose()
+  purpose = new KiltAttestationProofV1Purpose()
   proof = attestedCredential.proof as KiltAttestationProofV1
 })
 

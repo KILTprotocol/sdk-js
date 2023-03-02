@@ -6,4 +6,3 @@
  */
 
 export * from './KiltAttestationProofV1.js'
-export * from './AnyProofPurpose.js'

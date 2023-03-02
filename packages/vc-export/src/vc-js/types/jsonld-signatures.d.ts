@@ -33,19 +33,27 @@ declare module 'jsonld-signatures' {
   function extendContextLoader(loader: DocumentLoader): DocumentLoader
   export namespace purposes {
     export class ProofPurpose {
-      constructor(
-        term: string,
-        date?: Date | string | number,
+      constructor(options: {
+        term: string
+        date?: Date | string | number
         maxTimestampDelta?: number
-      )
-      match(
-        proof: Proof,
+      })
+      match<T extends Proof>(
+        proof: T,
         options: {
           document?: JsonLdObj
           documentLoader?: DocumentLoader
           expansionMap?: ExpansionMap
         }
       ): Promise<boolean>
+      validate<T extends Proof>(
+        proof: T,
+        options: {
+          document?: JsonLdObj
+          documentLoader?: DocumentLoader
+          expansionMap?: ExpansionMap
+        }
+      )
     }
     export class AssertionProofPurpose extends ProofPurpose {}
   }
