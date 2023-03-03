@@ -10,7 +10,15 @@ declare module 'jsonld-signatures' {
   type DocumentLoader = (url: Url) => Promise<RemoteDocument>
   type ExpansionMap = (info: any) => any
   interface Signer {
-    sign: ({ data }: { data: Uint8Array }) => Promise<Buffer>
+    sign: (data: { data: Uint8Array }) => Promise<Uint8Array>
+    id?: string
+  }
+  interface Verifier {
+    verify: (data: {
+      data: Uint8Array
+      signature: Uint8Array
+    }) => Promise<boolean>
+    id?: string
   }
   function verify(
     document: JsonLdObj,
@@ -61,13 +69,13 @@ declare module 'jsonld-signatures' {
     abstract class LinkedDataProof {
       type: string
       constructor(options: { type: string })
-      abstract createProof(options: {
+      createProof(options: {
         document: JsonLdObj
         purpose?: purposes.ProofPurpose
         documentLoader?: DocumentLoader
         expansionMap?: ExpansionMap
       }): Promise<Proof>
-      abstract verifyProof(options: {
+      verifyProof(options: {
         proof: Proof
         document?: JsonLdObj
         purpose?: purposes.ProofPurpose
@@ -81,6 +89,24 @@ declare module 'jsonld-signatures' {
         documentLoader?: DocumentLoader
         expansionMap?: ExpansionMap
       }): Promise<boolean>
+    }
+    abstract class LinkedDataSignature extends LinkedDataProof {
+      public signer?: Signer
+      public verifier?: Verifier
+      public LDKeyClass: Class
+      public key?: LDKeyPair
+
+      constructor(options: {
+        type: string
+        LDKeyClass: Class
+        contextUrl: string
+        proof?: Proof
+        date?: string | Date
+        key?: Object
+        signer?: Signer
+        verifier?: Verifier
+        useNativeCanonize?: boolean
+      })
     }
   }
 }

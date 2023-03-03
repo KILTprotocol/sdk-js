@@ -2082,11 +2082,14 @@ __metadata:
     "@polkadot/util": ^10.2.1
     "@polkadot/util-crypto": ^10.2.1
     "@types/jsonld": 1.5.1
+    crypto-ld: ^6.0.0
     jsonld: ^5.2.0
     jsonld-signatures: ^9.0.2
     rimraf: ^3.0.2
     typescript: ^4.8.3
     uint8arrays: ^3.1.1
+  peerDependencies:
+    crypto-ld: ^6.0.0
   languageName: unknown
   linkType: soft
 
@@ -4649,6 +4652,13 @@ __metadata:
     randombytes: ^2.0.0
     randomfill: ^1.0.3
   checksum: c1609af82605474262f3eaa07daa0b2140026bd264ab316d4bf1170272570dbe02f0c49e29407fe0d3634f96c507c27a19a6765fb856fed854a625f9d15618e2
+  languageName: node
+  linkType: hard
+
+"crypto-ld@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "crypto-ld@npm:6.0.0"
+  checksum: ad274e675270a15498c0262e92fde0080bec3328c508c614fb584a1c218a68df24853420977108f7ab7ea8121ea64f2312baaa9d1368f27ea48144bb2ca0fc5d
   languageName: node
   linkType: hard
 

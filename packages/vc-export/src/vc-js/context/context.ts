@@ -88,5 +88,65 @@ export const context = {
         },
       },
     },
+    Sr25519Signature2020: {
+      '@id': 'kilt:Sr25519Signature2020',
+      '@context': {
+        '@protected': true,
+        id: '@id',
+        type: '@type',
+        challenge: 'https://w3id.org/security#challenge',
+        created: {
+          '@id': 'http://purl.org/dc/terms/created',
+          '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+        },
+        domain: 'https://w3id.org/security#domain',
+        expires: {
+          '@id': 'https://w3id.org/security#expiration',
+          '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+        },
+        nonce: 'https://w3id.org/security#nonce',
+        proofPurpose: {
+          '@id': 'https://w3id.org/security#proofPurpose',
+          '@type': '@vocab',
+          '@context': {
+            '@protected': true,
+            id: '@id',
+            type: '@type',
+            assertionMethod: {
+              '@id': 'https://w3id.org/security#assertionMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            authentication: {
+              '@id': 'https://w3id.org/security#authenticationMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            capabilityInvocation: {
+              '@id': 'https://w3id.org/security#capabilityInvocationMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            capabilityDelegation: {
+              '@id': 'https://w3id.org/security#capabilityDelegationMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+            keyAgreement: {
+              '@id': 'https://w3id.org/security#keyAgreementMethod',
+              '@type': '@id',
+              '@container': '@set',
+            },
+          },
+        },
+        jws: {
+          '@id': 'https://w3id.org/security#jws',
+        },
+        verificationMethod: {
+          '@id': 'https://w3id.org/security#verificationMethod',
+          '@type': '@id',
+        },
+      },
+    },
   },
 }

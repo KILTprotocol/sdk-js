@@ -13,14 +13,28 @@ import jsigs, { Proof, purposes } from 'jsonld-signatures'
 import { connect, Credential, disconnect } from '@kiltprotocol/core'
 import vcjs from '@digitalbazaar/vc'
 import jsonld from 'jsonld'
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, Keyring } from '@polkadot/api'
 import { hexToU8a } from '@polkadot/util'
-import { IClaim, ICredential } from '@kiltprotocol/types'
-import { KiltAttestationV1Suite } from './KiltAttestationProofV1'
-import { deriveProof } from '../../KiltAttestationProofV1'
+import type {
+  DidDocument,
+  IClaim,
+  ICredential,
+  KiltKeyringPair,
+} from '@kiltprotocol/types'
+import { createLightDidDocument } from '@kiltprotocol/did'
+import { Sr25519Signature2020 } from './Sr25519Signature2020.js'
+import { KiltAttestationV1Suite } from './KiltAttestationProofV1.js'
+import { deriveProof } from '../../KiltAttestationProofV1.js'
 import ingosCredential from '../examples/ingos-cred.json'
-import { documentLoader } from '../documentLoader'
-import { KiltAttestationProofV1, VerifiableCredential } from '../../types'
+import {
+  combineDocumentLoaders,
+  documentLoader,
+  kiltDidLoader,
+} from '../documentLoader.js'
+import type {
+  KiltAttestationProofV1,
+  VerifiableCredential,
+} from '../../types.js'
 import { KiltAttestationProofV1Purpose } from '../purposes/KiltAttestationProofV1Purpose.js'
 import * as KiltCredentialV1 from '../../KiltCredentialV1.js'
 
@@ -189,6 +203,34 @@ describe('vc-js', () => {
   })
 
   describe('attested', () => {
+    let did: DidDocument
+    let signingSuite: any
+    let didDocumentLoader: jsigs.DocumentLoader
+    beforeAll(async () => {
+      const keypair = new Keyring({ type: 'sr25519' }).addFromMnemonic(
+        '//Alice'
+      ) as KiltKeyringPair & { type: 'sr25519' }
+      did = createLightDidDocument({ authentication: [keypair] })
+      const signer = {
+        sign: async ({ data }: { data: Uint8Array }) => keypair.sign(data),
+        id: did.uri + did.authentication[0].id,
+      }
+      signingSuite = new Sr25519Signature2020({ signer })
+      didDocumentLoader = combineDocumentLoaders([
+        documentLoader,
+        // @ts-ignore
+        async (url, dl) => {
+          const result = await kiltDidLoader(url, dl)
+          // we need to add the context url to keys or it won't be accepted
+          result.document['@context'] = [
+            ...result?.document?.['@context'],
+            Sr25519Signature2020.CONTEXT_URL,
+          ]
+          return result
+        },
+      ])
+    })
+
     it('verifies Kilt Attestation Proof', async () => {
       const result = await vcjs.verifyCredential({
         credential: attestedCredential,
@@ -199,6 +241,81 @@ describe('vc-js', () => {
       })
       expect(result).toHaveProperty('verified', true)
       expect(result).not.toHaveProperty('error')
+    })
+
+    it('creates and verifies a signed presentation', async () => {
+      const verifiableCredential = { ...attestedCredential }
+      let presentation = vcjs.createPresentation({
+        verifiableCredential,
+        holder: did.uri,
+      })
+
+      presentation = await vcjs.signPresentation({
+        presentation,
+        suite: signingSuite,
+        challenge: '0x1234',
+        documentLoader,
+      })
+
+      const result = await vcjs.verify({
+        presentation,
+        suite: [suite, new Sr25519Signature2020()],
+        // TODO: vcjs is currently broken and ignores the presentationPurpose if a purpose is given; so we can't actually verify the credential within unfortunately
+        // purpose: new AnyProofPurpose(),
+        challenge: '0x1234',
+        documentLoader: didDocumentLoader,
+        checkStatus: suite.checkStatus,
+      })
+
+      expect(result.presentationResult).not.toHaveProperty(
+        'error',
+        expect.any(Array)
+      )
+      expect(result).toMatchObject({
+        // verified: true,
+        // error: undefined,
+        presentationResult: { verified: true },
+        // credentialResults: [{verified: true, error: undefined}]
+      })
+    })
+
+    it('issues and verifies a signed credential', async () => {
+      const credential = { ...attestedCredential, issuer: did.uri }
+      delete credential.proof
+      // @ts-ignore
+      delete credential.credentialStatus
+      // TODO: light DIDs don't support assertionMethods
+      const mockDidDocumentLoader = combineDocumentLoaders([
+        documentLoader,
+        // @ts-ignore
+        async (url, dl) => {
+          const result = await kiltDidLoader(url, dl)
+          // we need to add the context url to keys or it won't be accepted
+          result.document['@context'] = [
+            ...result?.document?.['@context'],
+            Sr25519Signature2020.CONTEXT_URL,
+          ]
+          if ('authentication' in result.document) {
+            // @ts-ignore
+            result.document.assertionMethod = result.document.authentication
+          }
+          return result
+        },
+      ])
+
+      const verifiableCredential = await vcjs.issue({
+        credential,
+        suite: signingSuite,
+        documentLoader,
+      })
+
+      const result = await vcjs.verifyCredential({
+        credential: verifiableCredential,
+        suite: new Sr25519Signature2020(),
+        documentLoader: mockDidDocumentLoader,
+      })
+      expect(result).not.toHaveProperty('error')
+      expect(result).toHaveProperty('verified', true)
     })
   })
 
