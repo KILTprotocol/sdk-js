@@ -17,12 +17,12 @@ import {
 } from '@kiltprotocol/did'
 import { validationContexts } from './context/index.js'
 
-type DocumentLoader = jsigs.DocumentLoader &
-  ((
+interface DocumentLoader extends jsigs.DocumentLoader {
+  (
     url: string,
     documentLoader: jsigs.DocumentLoader
-  ) => ReturnType<jsigs.DocumentLoader>)
-
+  ): ReturnType<jsigs.DocumentLoader>
+}
 /**
  * @param loaders
  */
@@ -37,14 +37,14 @@ export function combineDocumentLoaders(
     }
     return response
   })
-  thisLoader = jsigs.extendContextLoader(async (url: string) => {
+  thisLoader = async (url: string) => {
     return Promise.any(wrappedLoaders.map((i) => i(url))).catch((e) => {
       throw new Error(
         `${url} could not be resolved by any of the available document loaders`,
         { cause: e.errors }
       )
     })
-  })
+  }
   return thisLoader
 }
 
