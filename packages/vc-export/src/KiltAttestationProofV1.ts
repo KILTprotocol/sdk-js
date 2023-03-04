@@ -61,7 +61,7 @@ export interface KiltAttestationProofV1 {
   type: typeof ATTESTATION_PROOF_V1_TYPE
   block: string
   commitments: string[]
-  revealProof: string[]
+  salt: string[]
 }
 
 /**
@@ -82,15 +82,15 @@ export function fromICredential(
     base58Encode(hexToU8a(i))
   )
   // salt/nonces must be sorted by statment digest (keys) and base58 encoded
-  const revealProof = Object.entries(credential.claimNonceMap)
-    .map(([hash, salt]) => [hexToU8a(hash), stringToU8a(salt)])
+  const salt = Object.entries(credential.claimNonceMap)
+    .map(([hsh, slt]) => [hexToU8a(hsh), stringToU8a(slt)])
     .sort((a, b) => u8aCmp(a[0], b[0]))
     .map((i) => base58Encode(i[1]))
   return {
     type: ATTESTATION_PROOF_V1_TYPE,
     block,
     commitments,
-    revealProof,
+    salt,
   }
 }
 
@@ -113,14 +113,14 @@ export const proofSchema: JsonSchema.Schema = {
       type: 'array',
       items: { type: 'string' },
     },
-    revealProof: {
+    salt: {
       type: 'array',
       items: { type: 'string' },
     },
   },
 
   additionalProperties: false,
-  required: ['type', 'block', 'commitments', 'revealProof'],
+  required: ['type', 'block', 'commitments', 'salt'],
 }
 
 const schemaValidator = new JsonSchema.Validator(proofSchema)
@@ -284,16 +284,16 @@ export async function verifyProof(
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   // 7. Transform to normalized statments and hash
   const { statements, digests } = normalizeClaims(expandedContents)
-  if (statements.length !== proof.revealProof.length)
+  if (statements.length !== proof.salt.length)
     throw new Error(
-      'Violated expectation: number of normalized statements === number of revealProofs'
+      'Violated expectation: number of normalized statements === number of salts'
     )
   // 8. Re-compute commitments
   digests.forEach((digest, index) => {
     // initialize array with 36 + 2 + 64 bytes
     const bytes = new Uint8Array(102)
     // decode salt and add to array
-    const salt = proof.revealProof[index]
+    const salt = proof.salt[index]
     bytes.set(base58Decode(salt))
     // add bytes 0x30 & 0x78
     bytes.set([48, 120], 36)
@@ -416,7 +416,7 @@ export async function verifyProof(
  * @param credentialInput The original verifiable credential.
  * @param proofInput The original proof.
  * @param disclosedClaims An array of claims that are to be revealed. The `id` of the credentialSubject is always revealed.
- * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `revealProof` entries for these.
+ * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `salt` entries for these.
  * @example
  * ```
  * const { proof, credential } = deriveProof(
@@ -440,9 +440,9 @@ export function deriveProof(
   // 1. Make normalized statements sorted by their hash value
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   const { statements: statementsOriginal } = normalizeClaims(expandedContents)
-  if (statementsOriginal.length !== proofInput.revealProof.length)
+  if (statementsOriginal.length !== proofInput.salt.length)
     throw new Error(
-      'Violated expectation: number of normalized statements === number of revealProofs'
+      'Violated expectation: number of normalized statements === number of salts'
     )
   // 2. Filter credentialSubject for claims to be revealed
   const reducedSubject = Object.entries(credentialSubject).reduce(
@@ -459,17 +459,17 @@ export function deriveProof(
   const { statements: reducedSet } = normalizeClaims(
     jsonLdExpandCredentialSubject(reducedSubject)
   )
-  // 4. The order of the original statements (sorted by their hash) allows mapping them to the respective revealProof.
-  // If a statement from the original set is also contained within the reduced set, keep the revealProof at the respective index.
-  const revealProof = statementsOriginal.reduce((arr, statement, index) => {
+  // 4. The order of the original statements (sorted by their hash) allows mapping them to the respective salt.
+  // If a statement from the original set is also contained within the reduced set, keep the salt at the respective index.
+  const salt = statementsOriginal.reduce((arr, statement, index) => {
     if (reducedSet.includes(statement)) {
-      return [...arr, proofInput.revealProof[index]]
+      return [...arr, proofInput.salt[index]]
     }
     return arr
   }, [] as string[])
 
   return {
     credential: { ...remainder, credentialSubject: reducedSubject },
-    proof: { ...proofInput, revealProof },
+    proof: { ...proofInput, salt },
   }
 }

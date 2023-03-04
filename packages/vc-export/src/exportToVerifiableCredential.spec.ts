@@ -228,7 +228,7 @@ it('VC has correct format (full example)', () => {
     proof: {
       type: 'KiltAttestationProofV1',
       commitments: expect.any(Array),
-      revealProof: expect.any(Array),
+      salt: expect.any(Array),
       block: expect.any(String),
     },
   })
@@ -269,7 +269,7 @@ describe('proofs', () => {
   })
 
   it('it verifies credential with all properties revealed', async () => {
-    expect(VC.proof?.revealProof).toHaveLength(4)
+    expect(VC.proof?.salt).toHaveLength(4)
     const { proof, ...cred } = VC
     await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
   })

@@ -32,7 +32,7 @@ export interface KiltAttestationProofV1 {
   type: typeof ATTESTATION_PROOF_V1_TYPE
   block: string
   commitments: string[]
-  revealProof: string[]
+  salt: string[]
 }
 
 export interface JsonSchemaValidator2018 {
