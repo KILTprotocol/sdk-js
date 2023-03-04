@@ -357,7 +357,7 @@ export async function verifyProof(
 /**
  * Helps with producing a derivative proof for selective disclosure of claims in credentialSubject.
  *
- * @param credentialInput The original credentialSubject.
+ * @param credentialInput The original verifiable credential.
  * @param proofInput The original proof.
  * @param disclosedClaims An array of claims that are to be revealed. The `id` of the credentialSubject is always revealed.
  * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `revealProof` entries for these.
