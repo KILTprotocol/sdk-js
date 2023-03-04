@@ -233,7 +233,7 @@ export const credentialSchema: JsonSchema.Schema = {
     },
     issuanceDate: {
       type: 'string',
-      // not sure if there is difference between format: 'date-time' and the XSD date format
+      format: 'date-time',
     },
     credentialStatus: {
       type: 'object',
