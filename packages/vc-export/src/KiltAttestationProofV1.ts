@@ -21,7 +21,11 @@ import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import type { ApiPromise } from '@polkadot/api'
 import type { QueryableStorageEntry } from '@polkadot/api/types/storage.js'
 import type { Option, u64, Vec } from '@polkadot/types'
-import type { AccountId, Hash } from '@polkadot/types/interfaces/types.js'
+import type {
+  AccountId,
+  Extrinsic,
+  Hash,
+} from '@polkadot/types/interfaces/types.js'
 import type { IEventData } from '@polkadot/types/types/events.js'
 import {
   hexToU8a,
@@ -36,6 +40,7 @@ import {
   base58Encode,
   blake2AsU8a,
   encodeAddress,
+  randomAsU8a,
 } from '@polkadot/util-crypto'
 import { Caip2, Caip19 } from './CAIP/index.js'
 import {
@@ -51,9 +56,11 @@ import {
   credentialIdToRootHash,
   delegationIdFromAttesterDelegation,
   ExpandedContents,
+  getDelegationNodeIdForCredential,
   jsonLdExpandCredentialSubject,
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1.js'
+import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import type { CredentialSubject, VerifiableCredential } from './types.js'
 import {
   CredentialMalformedError,
@@ -66,6 +73,10 @@ export interface KiltAttestationProofV1 {
   commitments: string[]
   salt: string[]
 }
+
+export const spiritnetGenesisHash = hexToU8a(
+  '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
+)
 
 /**
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].
@@ -475,4 +486,145 @@ export function deriveProof(
     credential: { ...remainder, credentialSubject: reducedSubject },
     proof: { ...proofInput, salt },
   }
+}
+
+/**
+ * @param credential
+ * @param proof
+ */
+export function calculateRootHash(
+  credential: VerifiableCredential,
+  proof: KiltAttestationProofV1
+): Uint8Array {
+  const rootHashInputs = [
+    // Collect commitments for root hash
+    ...proof.commitments.map((i) => base58Decode(i)),
+    // Collect trust model items for root hash
+    ...(credential.federatedTrustModel ?? []).map((entry) => {
+      if (entry.type === KILT_ATTESTER_LEGITIMATION_V1_TYPE) {
+        // get root hash from credential id
+        return credentialIdToRootHash(entry.id)
+      }
+      if (entry.type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
+        // get on-chain id from delegation id
+        return delegationIdFromAttesterDelegation(entry)
+      }
+      throw new Error(
+        `unknown type ${
+          (entry as { type: string }).type
+        } in federatedTrustModel`
+      )
+    }),
+  ]
+  // Concatenate and hash to produce root hash
+  return blake2AsU8a(u8aConcatStrict(rootHashInputs), 256)
+}
+
+/**
+ * @param credential
+ */
+export function initializeProof(
+  credential: VerifiableCredential
+): [
+  KiltAttestationProofV1,
+  Parameters<ApiPromise['tx']['attestation']['add']>
+] {
+  const { credentialSubject, credentialSchema } = credential
+  // 1. json-ld expand credentialSubject
+  const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
+  // 2. Transform to normalized statments and hash
+  const { digests } = normalizeClaims(expandedContents)
+
+  const salt: string[] = []
+  const commitments: Uint8Array[] = []
+  // 3. Produce commitments
+  digests.forEach((digest, index) => {
+    // initialize array with 36 + 2 + 64 bytes
+    const bytes = new Uint8Array(102)
+    // produce entropy and add to array
+    const entropy = randomAsU8a(36)
+    bytes.set(entropy)
+    // add bytes 0x30 & 0x78
+    bytes.set([48, 120], 36)
+    // add hex encoded digest
+    bytes.set(stringToU8a(u8aToHex(digest, undefined, false)), 38)
+    // compute commitment
+    const commitment = blake2AsU8a(bytes, 256)
+    salt.push(base58Encode(entropy))
+    commitments.push(commitment)
+  })
+  // 4. Create proof object
+  const proof: KiltAttestationProofV1 = {
+    type: ATTESTATION_PROOF_V1_TYPE,
+    block: '',
+    commitments: commitments.sort(u8aCmp).map((i) => base58Encode(i)),
+    salt,
+  }
+  // 5. Prepare call
+  const rootHash = calculateRootHash(credential, proof)
+  const delegationId = getDelegationNodeIdForCredential(credential)
+
+  return [
+    proof,
+    [
+      rootHash,
+      CType.idToHash(credentialSchema.id as ICType['$id']),
+      delegationId && { Delegation: delegationId },
+    ],
+  ]
+}
+
+/**
+ * @param credential
+ * @param proof
+ * @param includedAt
+ * @param includedAt.blockHash
+ * @param includedAt.timestamp
+ * @param includedAt.genesisHash
+ */
+export function finalizeProof(
+  credential: VerifiableCredential,
+  proof: KiltAttestationProofV1,
+  {
+    blockHash,
+    timestamp,
+    genesisHash = spiritnetGenesisHash,
+  }: { blockHash: Uint8Array; timestamp: number; genesisHash: Uint8Array }
+) {
+  const rootHash = calculateRootHash(credential, proof)
+  return {
+    ...credential,
+    id: credentialIdFromRootHash(rootHash),
+    credentialStatus: fromGenesisAndRootHash(genesisHash, rootHash),
+    issuanceDate: new Date(timestamp).toISOString(),
+    proof: { ...proof, block: base58Encode(blockHash) },
+  }
+}
+
+export type AttestationHandler = (tx: Extrinsic) => Promise<{
+  blockHash: Uint8Array
+  timestamp?: number
+}>
+
+/**
+ * @param api
+ * @param credential
+ * @param submissionHandler
+ */
+export async function createProof(
+  api: ApiPromise,
+  credential: VerifiableCredential,
+  submissionHandler: AttestationHandler
+): Promise<VerifiableCredential> {
+  const [proof, callArgs] = initializeProof(credential)
+  const call = api.tx.attestation.add(...callArgs)
+  const {
+    blockHash,
+    timestamp = (await api.query.timestamp.now.at(blockHash)).toNumber(),
+  } = await submissionHandler(call)
+  return finalizeProof(credential, proof, {
+    blockHash,
+    timestamp,
+    genesisHash: api.genesisHash,
+  })
 }

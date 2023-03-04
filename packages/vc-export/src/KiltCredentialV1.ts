@@ -11,7 +11,6 @@ import type {
   ICType,
   ICredential,
   DidUri,
-  Caip2ChainId,
   IDelegationNode,
 } from '@kiltprotocol/types'
 import { JsonSchema } from '@kiltprotocol/utils'
@@ -25,7 +24,6 @@ import {
   KILT_CREDENTIAL_CONTEXT_URL,
   KILT_CREDENTIAL_IRI_PREFIX,
   KILT_CREDENTIAL_TYPE,
-  KILT_REVOCATION_STATUS_V1_TYPE,
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
 } from './constants.js'
@@ -33,12 +31,11 @@ import type {
   JsonSchemaValidator2018,
   KiltAttesterDelegationV1,
   KiltAttesterLegitimationV1,
-  KiltRevocationStatusV1,
   VerifiableCredential,
 } from './types.js'
 import { CredentialMalformedError } from './verificationUtils.js'
 import * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
-import { Caip2 } from './CAIP/index.js'
+import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 
 /**
  * Extracts the credential root hash from a KILT VC's id.
@@ -117,7 +114,10 @@ export function fromInput({
   chainGenesisHash,
   legitimations,
   delegationId,
-}: CredentialInput): Omit<VerifiableCredential, 'proof' | 'id'> {
+}: CredentialInput): Omit<
+  VerifiableCredential,
+  'proof' | 'id' | 'credentialStatus'
+> {
   // write root hash to id
   const id = credentialIdFromRootHash(hexToU8a(claimHash))
 
@@ -142,12 +142,6 @@ export function fromInput({
   if ('properties' in cType) {
     credentialSchema.name = cType.title
     credentialSchema.schema = cType
-  }
-
-  const chainId: Caip2ChainId = Caip2.chainIdFromGenesis(chainGenesisHash)
-  const credentialStatus: KiltRevocationStatusV1 = {
-    id: `${chainId}/kilt:attestation/${base58Encode(hexToU8a(claimHash))}`,
-    type: KILT_REVOCATION_STATUS_V1_TYPE,
   }
 
   const federatedTrustModel: VerifiableCredential['federatedTrustModel'] = []
@@ -180,7 +174,9 @@ export function fromInput({
     credentialSchema,
     issuer,
     issuanceDate,
-    credentialStatus,
+    ...(claimHash && {
+      credentialStatus: fromGenesisAndRootHash(chainGenesisHash, claimHash),
+    }),
     ...(federatedTrustModel.length > 0 && { federatedTrustModel }),
   }
 }
@@ -418,4 +414,17 @@ export function delegationIdFromAttesterDelegation(
       `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${delegation.id}`
     )
   return base58Decode(match.groups.delegationId)
+}
+
+/**
+ * @param credential
+ */
+export function getDelegationNodeIdForCredential(
+  credential: Pick<VerifiableCredential, 'federatedTrustModel'>
+): Uint8Array | null {
+  const delegation = credential.federatedTrustModel?.find(
+    (i): i is KiltAttesterDelegationV1 =>
+      i.type === KILT_ATTESTER_DELEGATION_V1_TYPE
+  )
+  return delegation ? delegationIdFromAttesterDelegation(delegation) : null
 }

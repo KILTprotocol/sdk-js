@@ -6,20 +6,16 @@
  */
 
 import { Attestation, CType } from '@kiltprotocol/core'
+import { Caip2ChainId } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
-import { u8aToHex } from '@polkadot/util'
-import { base58Decode } from '@polkadot/util-crypto'
+import { u8aToHex, u8aToU8a } from '@polkadot/util'
+import { base58Decode, base58Encode } from '@polkadot/util-crypto'
+import { U8aLike } from '@polkadot/util/types.js'
+import { chainIdFromGenesis } from './CAIP/caip2.js'
 import { Caip19, Caip2 } from './CAIP/index.js'
-import {
-  KILT_ATTESTER_DELEGATION_V1_TYPE,
-  KILT_REVOCATION_STATUS_V1_TYPE,
-} from './constants.js'
-import { delegationIdFromAttesterDelegation } from './KiltCredentialV1.js'
-import type {
-  KiltAttesterDelegationV1,
-  KiltRevocationStatusV1,
-  VerifiableCredential,
-} from './types.js'
+import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
+import { getDelegationNodeIdForCredential } from './KiltCredentialV1.js'
+import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
 
 /**
  * Check attestation and revocation status of a credential at the latest block available.
@@ -62,13 +58,7 @@ export async function checkStatus(
 
   const decoded = Attestation.fromChain(encoded, u8aToHex(rootHash))
   const onChainCType = CType.hashToId(decoded.cTypeHash)
-  const delegation = credential.federatedTrustModel?.find(
-    (i): i is KiltAttesterDelegationV1 =>
-      i.type === KILT_ATTESTER_DELEGATION_V1_TYPE
-  )
-  const delegationId = delegation
-    ? u8aToHex(delegationIdFromAttesterDelegation(delegation))
-    : null
+  const delegationId = getDelegationNodeIdForCredential(credential)
   if (
     decoded.owner !== credential.issuer ||
     onChainCType !== credential.credentialSchema.id ||
@@ -80,5 +70,25 @@ export async function checkStatus(
   }
   if (decoded.revoked !== false) {
     throw new Error('Attestation revoked')
+  }
+}
+
+/**
+ * @param chainIdOrGenesisHash
+ * @param rootHash
+ */
+export function fromGenesisAndRootHash(
+  chainIdOrGenesisHash: Caip2ChainId | U8aLike,
+  rootHash: U8aLike
+): KiltRevocationStatusV1 {
+  const chainId =
+    typeof chainIdOrGenesisHash === 'string' &&
+    chainIdOrGenesisHash.startsWith('polkadot')
+      ? chainIdOrGenesisHash
+      : chainIdFromGenesis(u8aToU8a(chainIdOrGenesisHash))
+
+  return {
+    id: `${chainId}/kilt:attestation/${base58Encode(rootHash)}`,
+    type: KILT_REVOCATION_STATUS_V1_TYPE,
   }
 }
