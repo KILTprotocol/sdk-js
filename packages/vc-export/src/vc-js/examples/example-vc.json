@@ -1,0 +1,66 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.kilt.io/contexts/credentials"
+    ],
+    "type": [
+        "VerifiableCredential",
+        "KiltCredentialV1"
+    ],
+    "id": "kilt:credential:3Rv7TqF9vdiu8tG3TDJKLwqmjdDc4ifQSTzzY2qftDbr",
+    "nonTransferable": true,
+    "credentialSubject": {
+        "@context": {
+            "@vocab": "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf#"
+        },
+        "id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
+        "birthday": "1991-01-01",
+        "name": "Kurt",
+        "premium": true
+    },
+    "credentialSchema": {
+        "id": "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf",
+        "type": "JsonSchemaValidator2018",
+        "name": "membership",
+        "schema": {
+            "$schema": "http://kilt-protocol.org/draft-01/ctype#",
+            "title": "membership",
+            "properties": {
+                "birthday": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "premium": {
+                    "type": "boolean"
+                }
+            },
+            "type": "object",
+            "$id": "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf"
+        }
+    },
+    "issuer": "did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG",
+    "issuanceDate": "1970-01-01T00:20:34.567Z",
+    "credentialStatus": {
+        "id": "polkadot:411f057b9107718c9624d6aa4a3f23c1",
+        "type": "KiltRevocationStatusV1"
+    },
+    "proof": {
+        "type": "KiltAttestationProofV1",
+        "block": "6kwUS8zMNj7CVf2TSHnpxFtDZWCoRohCDBc9wRduczqc",
+        "commitments": [
+            "NZmtXZjRv2SwMU2jARtRzJgdXupJH9wPksaW8t7A4H3",
+            "4nuyLTnF6r9rQe5qt9DZGXFW7yMhbu5jLjuCJFKCgy9A",
+            "81mXfvMJxJdMGmAAsns6EVDNST3JsgMb8GcuKnWjFJeT",
+            "A9xh3ZKtaovt3LJrkj66UKDAFAtjWvcHBXF3ZUwtGrnq"
+        ],
+        "revealProof": [
+            "n6UCfVL9RtnhS3xeRsMQnn3ghVecsyPR4fvvLtT1pC8qoERH9",
+            "meucBK2C33rrMo8zD8VmhVAak7HpvwgtUJUzxVMtMVLkzF3SK",
+            "medL8tPLsjDnrLriVQNESsw7J5ZUTVKVmqyh7BPP2MmjhKaqa",
+            "jtkaxjDf71jkCXjV9D3coLUkaYeHccSaCXYNuS8KK3Mu3fRrn"
+        ]
+    }
+}
