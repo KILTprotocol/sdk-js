@@ -129,9 +129,10 @@ export interface VerifiableCredential {
 }
 
 export interface VerifiablePresentation {
+  id?: string
   '@context': [typeof W3C_CREDENTIAL_CONTEXT_URL, ...string[]]
   type: [typeof W3C_PRESENTATION_TYPE, ...string[]]
   verifiableCredential: VerifiableCredential | VerifiableCredential[]
   holder?: string
-  proof: Record<string, unknown> | Array<Record<string, unknown>>
+  proof?: Record<string, unknown> | Array<Record<string, unknown>>
 }
