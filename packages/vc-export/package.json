@@ -52,6 +52,6 @@
     "uint8arrays": "^3.1.1"
   },
   "peerDependencies": {
-    "crypto-ld": "^6.0.0"
+    "crypto-ld": "*"
   }
 }
