@@ -12,7 +12,6 @@
 export * from './types.js'
 export * as constants from './constants.js'
 export * as verification from './verificationUtils.js'
-export * as presentation from './presentationUtils.js'
 export * as vcjsSuites from './vc-js/index.js'
 export * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
 export * as KiltCredentialV1 from './KiltCredentialV1.js'
