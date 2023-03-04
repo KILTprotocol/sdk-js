@@ -39,6 +39,7 @@ import {
 import { Caip2, Caip19 } from './CAIP/index.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
+  DEFAULT_CREDENTIAL_CONTEXTS,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
   KILT_REVOCATION_STATUS_V1_TYPE,
@@ -97,6 +98,10 @@ export const proofSchema: JsonSchema.Schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
+    '@context': {
+      type: 'array',
+      const: DEFAULT_CREDENTIAL_CONTEXTS,
+    },
     type: {
       type: 'string',
       const: ATTESTATION_PROOF_V1_TYPE,
@@ -346,9 +351,15 @@ export async function verifyProof(
     )
   }
   // 16. Check timestamp
-  if (timestamp !== new Date(credential.issuanceDate).getTime())
+  // 1-second precision should be enough
+  if (
+    Math.round(timestamp / 1000) !==
+    Math.round(new Date(credential.issuanceDate).getTime() / 1000)
+  )
     throw new Error(
-      `block time ${new Date(timestamp).toISOString()} does not match issuedAt`
+      `block time ${new Date(
+        timestamp
+      ).toISOString()} does not match issuedAt (${credential.issuanceDate})`
     )
   // 17. + 18. validate federatedTrustModel items
   await Promise.all(

@@ -45,6 +45,7 @@ export async function checkStatus(
   if (
     decoded.owner !== credential.issuer ||
     onChainCType !== credential.credentialSchema.id
+    // TODO: this must also check that the delegation hasn't changed.
   ) {
     throw new Error(
       `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`
