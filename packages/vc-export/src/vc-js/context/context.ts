@@ -16,19 +16,8 @@ export const context = {
     cred: 'https://www.w3.org/2018/credentials#',
     sec: 'https://w3id.org/security#',
     xsd: 'http://www.w3.org/2001/XMLSchema#',
-    verificationMethod: {
-      '@id': 'sec:verificationMethod',
-      '@type': '@id',
-    },
-    proofPurpose: {
-      '@id': 'sec:proofPurpose',
-      '@type': '@vocab',
-      '@context': {
-        '@vocab': 'sec',
-      },
-    },
     KiltCredentialV1: {
-      '@id': 'kilt:KiltCredential',
+      '@id': 'kilt:KiltCredentialV1',
       '@context': {
         '@version': 1.1,
         '@protected': true,
@@ -50,6 +39,53 @@ export const context = {
         block: { '@id': 'kilt:blockHash' },
         commitments: { '@id': 'kilt:commitments', '@container': '@set' },
         salt: { '@id': 'kilt:salt', '@container': '@list' },
+      },
+    },
+    KiltRevocationStatusV1: {
+      '@id': 'kilt:KiltRevocationStatusV1',
+      '@context': {
+        '@version': 1.1,
+        '@protected': true,
+
+        id: '@id',
+        type: '@type',
+      },
+    },
+    federatedTrustModel: {
+      '@id': 'kilt:federatedTrustModel',
+      '@type': '@id',
+      '@container': '@set',
+    },
+    KiltAttesterLegitimationV1: {
+      '@id': 'kilt:KiltAttesterLegitimationV1',
+      '@context': {
+        '@version': 1.1,
+        '@protected': true,
+
+        id: '@id',
+        type: '@type',
+
+        verifiableCredential: {
+          '@id': 'cred:verifiableCredential',
+          '@type': '@id',
+          '@container': '@graph',
+        },
+      },
+    },
+    KiltAttesterDelegationV1: {
+      '@id': 'kilt:KiltAttesterDelegationV1',
+      '@context': {
+        '@version': 1.1,
+        '@protected': true,
+
+        id: '@id',
+        type: '@type',
+
+        delegators: {
+          '@id': 'kilt:delegators',
+          '@type': '@id',
+          '@container': '@list',
+        },
       },
     },
   },

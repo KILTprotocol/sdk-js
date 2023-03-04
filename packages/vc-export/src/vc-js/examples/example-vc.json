@@ -44,7 +44,7 @@
     "issuer": "did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG",
     "issuanceDate": "1970-01-01T00:20:34.567Z",
     "credentialStatus": {
-        "id": "polkadot:411f057b9107718c9624d6aa4a3f23c1",
+        "id": "polkadot:411f057b9107718c9624d6aa4a3f23c1/kilt:attestation/3Rv7TqF9vdiu8tG3TDJKLwqmjdDc4ifQSTzzY2qftDbr",
         "type": "KiltRevocationStatusV1"
     },
     "proof": {
