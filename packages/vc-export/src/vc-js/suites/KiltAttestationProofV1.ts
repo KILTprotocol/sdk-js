@@ -87,11 +87,6 @@ export class KiltAttestationV1Suite extends LinkedDataProof {
       await verifyProof(document, proof, this.api)
       return {
         verified: true,
-        verificationMethod: {
-          id: document.credentialStatus.id,
-          type: 'KiltAttestationRecord',
-          controller: document.issuer,
-        },
       }
     } catch (error) {
       return {
