@@ -49,7 +49,7 @@ export const context = {
 
         block: { '@id': 'kilt:blockHash' },
         commitments: { '@id': 'kilt:commitments', '@container': '@set' },
-        revealProof: { '@id': 'kilt:salt', '@container': '@list' },
+        salt: { '@id': 'kilt:salt', '@container': '@list' },
       },
     },
   },
