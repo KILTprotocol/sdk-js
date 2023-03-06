@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { isHex, stringToU8a } from '@polkadot/util'
+import { isHex, u8aToU8a } from '@polkadot/util'
 import { signatureVerify } from '@polkadot/util-crypto'
 
 import {
@@ -124,7 +124,7 @@ export async function verifyDidSignature({
     )
   if (
     verifiers[type](
-      typeof message === 'string' ? stringToU8a(message) : message,
+      typeof message === 'string' ? u8aToU8a(message) : message,
       signature,
       publicKey
     ) !== true
