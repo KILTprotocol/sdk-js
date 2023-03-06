@@ -5,8 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Caip2ChainNamespace, Caip2ChainReference } from '@kiltprotocol/types'
 import { u8aToHex } from '@polkadot/util'
+
+import type {
+  Caip2ChainNamespace,
+  Caip2ChainReference,
+} from '@kiltprotocol/types'
 
 /**
  * Produces the CAIP-2 identifier for a polkadot-based chain from its genesis hash.

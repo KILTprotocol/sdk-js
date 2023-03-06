@@ -9,6 +9,7 @@
 
 import { CType } from '@kiltprotocol/core'
 import { SDKErrors } from '@kiltprotocol/utils'
+
 import { jsonLdExpandCredentialSubject } from './KiltCredentialV1.js'
 import type { VerifiableCredential } from './types.js'
 

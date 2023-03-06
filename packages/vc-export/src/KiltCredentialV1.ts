@@ -7,14 +7,19 @@
 
 import { hexToU8a } from '@polkadot/util'
 import { base58Decode, base58Encode } from '@polkadot/util-crypto'
+
+import { JsonSchema } from '@kiltprotocol/utils'
+import { CType } from '@kiltprotocol/core'
 import type {
   ICType,
   ICredential,
   DidUri,
   IDelegationNode,
 } from '@kiltprotocol/types'
-import { JsonSchema } from '@kiltprotocol/utils'
-import { CType } from '@kiltprotocol/core'
+
+import { CredentialMalformedError } from './verificationUtils.js'
+import * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
+import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   DEFAULT_CREDENTIAL_TYPES,
@@ -33,9 +38,6 @@ import type {
   KiltAttesterLegitimationV1,
   VerifiableCredential,
 } from './types.js'
-import { CredentialMalformedError } from './verificationUtils.js'
-import * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
-import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 
 /**
  * Extracts the credential root hash from a KILT VC's id.

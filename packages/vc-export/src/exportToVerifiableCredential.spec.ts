@@ -9,16 +9,18 @@
  * @group unit/vc-export
  */
 
-import {
+import { randomAsU8a } from '@polkadot/util-crypto'
+import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
+import type { U8aLike } from '@polkadot/util/types'
+
+import { Credential } from '@kiltprotocol/core'
+import { ApiMocks } from '@kiltprotocol/testing'
+import type {
   IAttestation,
   ICType,
   ICredentialPresentation,
 } from '@kiltprotocol/types'
-import { Credential } from '@kiltprotocol/core'
-import { ApiMocks } from '@kiltprotocol/testing'
-import { randomAsU8a } from '@polkadot/util-crypto'
-import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util'
-import { U8aLike } from '@polkadot/util/types'
+
 import type { VerifiableCredential } from './types'
 import {
   credentialIdFromRootHash,
@@ -29,9 +31,8 @@ import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   DEFAULT_CREDENTIAL_TYPES,
 } from './constants'
-
-import { verifyProof } from './KiltAttestationProofV1.js'
-import { validateSchema } from './verificationUtils.js'
+import { verifyProof } from './KiltAttestationProofV1'
+import { validateSchema } from './verificationUtils'
 import { checkStatus } from './KiltRevocationStatusV1'
 
 const mockedApi = ApiMocks.createAugmentedApi()

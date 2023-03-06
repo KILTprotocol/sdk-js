@@ -5,28 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type {
-  FrameSystemEventRecord,
-  RuntimeCommonAuthorizationAuthorizationId,
-} from '@kiltprotocol/augment-api'
-import { CType } from '@kiltprotocol/core'
-import { getFullDidUri, validateUri } from '@kiltprotocol/did'
-import type {
-  DidUri,
-  ICredential,
-  ICType,
-  IDelegationNode,
-} from '@kiltprotocol/types'
-import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
-import type { ApiPromise } from '@polkadot/api'
-import type { QueryableStorageEntry } from '@polkadot/api/types/storage.js'
-import type { Option, u64, Vec } from '@polkadot/types'
-import type {
-  AccountId,
-  Extrinsic,
-  Hash,
-} from '@polkadot/types/interfaces/types.js'
-import type { IEventData } from '@polkadot/types/types/events.js'
 import {
   hexToU8a,
   stringToU8a,
@@ -42,6 +20,30 @@ import {
   encodeAddress,
   randomAsU8a,
 } from '@polkadot/util-crypto'
+import type { ApiPromise } from '@polkadot/api'
+import type { QueryableStorageEntry } from '@polkadot/api/types'
+import type { Option, u64, Vec } from '@polkadot/types'
+import type {
+  AccountId,
+  Extrinsic,
+  Hash,
+} from '@polkadot/types/interfaces/types.js'
+import type { IEventData } from '@polkadot/types/types'
+
+import { CType } from '@kiltprotocol/core'
+import { getFullDidUri, validateUri } from '@kiltprotocol/did'
+import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
+import type {
+  FrameSystemEventRecord,
+  RuntimeCommonAuthorizationAuthorizationId,
+} from '@kiltprotocol/augment-api'
+import type {
+  DidUri,
+  ICredential,
+  ICType,
+  IDelegationNode,
+} from '@kiltprotocol/types'
+
 import { Caip2, Caip19 } from './CAIP/index.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
