@@ -291,7 +291,9 @@ describe('proofs', () => {
   it('it verifies proof', async () => {
     // verify
     const { proof, ...cred } = VC
-    await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
+    await expect(
+      verifyProof(cred, proof!, { api: mockedApi })
+    ).resolves.not.toThrow()
   })
 
   it('it verifies status', async () => {
@@ -319,7 +321,9 @@ describe('proofs', () => {
   it('it verifies credential with all properties revealed', async () => {
     expect(VC.proof?.salt).toHaveLength(4)
     const { proof, ...cred } = VC
-    await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
+    await expect(
+      verifyProof(cred, proof!, { api: mockedApi })
+    ).resolves.not.toThrow()
   })
 
   it('it verifies credential with selected properties revealed', async () => {
@@ -336,7 +340,7 @@ describe('proofs', () => {
     )
 
     await expect(
-      verifyProof(reducedVC, proof!, mockedApi)
+      verifyProof(reducedVC, proof!, { api: mockedApi })
     ).resolves.not.toThrow()
   })
 
@@ -377,7 +381,7 @@ describe('proofs', () => {
       // @ts-ignore
       delete VC.proof
       await expect(
-        verifyProof(VC, { type: 'SomeOtherProof' } as any, mockedApi)
+        verifyProof(VC, { type: 'SomeOtherProof' } as any, { api: mockedApi })
       ).rejects.toThrow()
     })
 
@@ -402,7 +406,9 @@ describe('proofs', () => {
       // @ts-ignore
       VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
       const { proof, ...cred } = VC
-      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
+      await expect(
+        verifyProof(cred, proof!, { api: mockedApi })
+      ).rejects.toThrow()
     })
 
     it('it detects tampering with credential fields', async () => {
@@ -413,13 +419,17 @@ describe('proofs', () => {
         },
       ]
       const { proof, ...cred } = VC
-      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
+      await expect(
+        verifyProof(cred, proof!, { api: mockedApi })
+      ).rejects.toThrow()
     })
 
     it('it detects tampering on claimed properties', async () => {
       VC.credentialSubject.name = 'Kort'
       const { proof, ...cred } = VC
-      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
+      await expect(
+        verifyProof(cred, proof!, { api: mockedApi })
+      ).rejects.toThrow()
     })
 
     // it('it detects schema violations', () => {
@@ -444,7 +454,9 @@ describe('proofs', () => {
           mockedApi.createType('Vec<FrameSystemEventRecord>', []) as any
         )
       const { proof, ...cred } = VC
-      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
+      await expect(
+        verifyProof(cred, proof!, { api: mockedApi })
+      ).rejects.toThrow()
       await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
 
@@ -461,7 +473,9 @@ describe('proofs', () => {
         .mocked(mockedApi.query.system.events)
         .mockResolvedValueOnce(makeEvent(attestationCreatedIndex, []) as any)
       const { proof, ...cred } = VC
-      await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
+      await expect(
+        verifyProof(cred, proof!, { api: mockedApi })
+      ).rejects.toThrow()
       await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
 
@@ -485,7 +499,9 @@ describe('proofs', () => {
         )
 
       const { proof, ...cred } = VC
-      await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
+      await expect(
+        verifyProof(cred, proof!, { api: mockedApi })
+      ).resolves.not.toThrow()
       await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
   })

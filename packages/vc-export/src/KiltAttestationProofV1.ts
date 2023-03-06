@@ -33,6 +33,7 @@ import type { IEventData } from '@polkadot/types/types'
 import { CType } from '@kiltprotocol/core'
 import { getFullDidUri, validateUri } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 import type {
   FrameSystemEventRecord,
   RuntimeCommonAuthorizationAuthorizationId,
@@ -186,9 +187,9 @@ export function normalizeClaims(
 }
 
 async function verifyAttestedAt(
-  api: ApiPromise,
   claimHash: Uint8Array,
-  blockHash: Uint8Array
+  blockHash: Uint8Array,
+  opts: { api?: ApiPromise } = {}
 ): Promise<{
   verified: boolean
   timestamp: number
@@ -196,6 +197,7 @@ async function verifyAttestedAt(
   cTypeId: ICType['$id']
   delegationId: IDelegationNode['id'] | null
 }> {
+  const { api = ConfigService.get('api') } = opts
   const apiAt = await api.at(blockHash)
   // TODO: should we look up attestation storage as well and take attestation info from there? That gives us the definitive attestation state in this block (e.g. makes sure it hasn't been removed after)
   const [events, time] = await apiAt.queryMulti<
@@ -265,13 +267,14 @@ function assertMatchingConnection(
  *
  * @param credentialInput Verifiable Credential to verify proof against.
  * @param proof KiltAttestationProofV1 proof object to be verified. Any proofs embedded in the credentialInput are stripped and ignored.
- * @param api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
+ * @param opts Additional parameters.
+ * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @returns Object indicating whether proof could be verified.
  */
 export async function verifyProof(
   credentialInput: VerifiableCredential,
   proof: KiltAttestationProofV1,
-  api: ApiPromise
+  opts: { api?: ApiPromise } = {}
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { proof: _, ...credential } = credentialInput
@@ -360,6 +363,7 @@ export async function verifyProof(
     throw new Error('root hash not verifiable')
 
   // 13. check that api is connected to the right network
+  const { api = ConfigService.get('api') } = opts
   assertMatchingConnection(api, credential)
   // 14. query info from chain
   const {
@@ -367,7 +371,7 @@ export async function verifyProof(
     attester,
     timestamp,
     delegationId,
-  } = await verifyAttestedAt(api, rootHash, base58Decode(proof.block))
+  } = await verifyAttestedAt(rootHash, base58Decode(proof.block), { api })
 
   if (attester !== issuer || onChainCType !== credential.credentialSchema.id) {
     throw new Error(
@@ -410,7 +414,7 @@ export async function verifyProof(
         await verifyProof(
           legitimation,
           legitimationProof as KiltAttestationProofV1,
-          api
+          { api }
         ).catch((cause) => {
           throw new Error(`failed to verify legitimation ${i.id}`, {
             cause,
@@ -606,16 +610,18 @@ export type AttestationHandler = (tx: Extrinsic) => Promise<{
 }>
 
 /**
- * @param api
  * @param credential
  * @param submissionHandler
+ * @param opts Additional parameters.
+ * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential shall be anchored.
  */
 export async function createProof(
-  api: ApiPromise,
   credential: VerifiableCredential,
-  submissionHandler: AttestationHandler
+  submissionHandler: AttestationHandler,
+  opts: { api?: ApiPromise } = {}
 ): Promise<VerifiableCredential> {
   const [proof, callArgs] = initializeProof(credential)
+  const { api = ConfigService.get('api') } = opts
   const call = api.tx.attestation.add(...callArgs)
   const {
     blockHash,
