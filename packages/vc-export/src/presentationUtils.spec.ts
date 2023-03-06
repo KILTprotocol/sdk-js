@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @group unit/vc-export
+ */
+
 import { verifyJWT } from 'did-jwt'
 import { hexToU8a } from '@polkadot/util'
 import {
