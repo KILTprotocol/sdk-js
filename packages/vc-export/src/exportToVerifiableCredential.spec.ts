@@ -24,15 +24,15 @@ import type {
 import type { VerifiableCredential } from './types'
 import {
   credentialIdFromRootHash,
-  fromICredential,
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1'
+import { exportICredentialToVc } from './fromICredential'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
   DEFAULT_CREDENTIAL_TYPES,
 } from './constants'
 import { verifyProof } from './KiltAttestationProofV1'
-import { validateSchema } from './verificationUtils'
+import { validateSchema } from './CredentialSchema'
 import { checkStatus } from './KiltRevocationStatusV1'
 
 const mockedApi = ApiMocks.createAugmentedApi()
@@ -169,7 +169,7 @@ mockedApi.query.system = {
 } as any
 
 it('exports credential to VC', () => {
-  const exported = fromICredential(
+  const exported = exportICredentialToVc(
     credential,
     attestation.owner,
     mockedApi.genesisHash,
@@ -199,7 +199,7 @@ it('exports credential to VC', () => {
 })
 
 it('exports includes ctype as schema', () => {
-  const exported = fromICredential(
+  const exported = exportICredentialToVc(
     credential,
     attestation.owner,
     mockedApi.genesisHash,
@@ -220,7 +220,7 @@ it('exports includes ctype as schema', () => {
 
 it('VC has correct format (full example)', () => {
   expect(
-    fromICredential(
+    exportICredentialToVc(
       credential,
       attestation.owner,
       mockedApi.genesisHash,
@@ -279,7 +279,7 @@ it('VC has correct format (full example)', () => {
 describe('proofs', () => {
   let VC: VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
   beforeAll(() => {
-    VC = fromICredential(
+    VC = exportICredentialToVc(
       credential,
       attestation.owner,
       mockedApi.genesisHash,
@@ -302,7 +302,7 @@ describe('proofs', () => {
   })
 
   it('it verifies schema', () => {
-    const VCWithSchema = fromICredential(
+    const VCWithSchema = exportICredentialToVc(
       credential,
       attestation.owner,
       mockedApi.genesisHash,
@@ -330,7 +330,7 @@ describe('proofs', () => {
       'name',
       'birthday',
     ])
-    const { proof, ...reducedVC } = fromICredential(
+    const { proof, ...reducedVC } = exportICredentialToVc(
       reducedCredential,
       attestation.owner,
       mockedApi.genesisHash,
@@ -367,7 +367,7 @@ describe('proofs', () => {
 
   describe('negative tests', () => {
     beforeEach(() => {
-      VC = fromICredential(
+      VC = exportICredentialToVc(
         credential,
         attestation.owner,
         mockedApi.genesisHash,

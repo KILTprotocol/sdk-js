@@ -57,22 +57,21 @@ import {
 import {
   credentialIdFromRootHash,
   credentialIdToRootHash,
-  delegationIdFromAttesterDelegation,
-  ExpandedContents,
-  getDelegationNodeIdForCredential,
-  jsonLdExpandCredentialSubject,
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
+import {
+  jsonLdExpandCredentialSubject,
+  ExpandedContents,
+  delegationIdFromAttesterDelegation,
+  getDelegationNodeIdForCredential,
+} from './common.js'
+import { CredentialMalformedError, ProofMalformedError } from './errors.js'
 import type {
   CredentialSubject,
   KiltAttestationProofV1,
   VerifiableCredential,
 } from './types.js'
-import {
-  CredentialMalformedError,
-  ProofMalformedError,
-} from './verificationUtils.js'
 
 export const spiritnetGenesisHash = hexToU8a(
   '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
@@ -168,7 +167,7 @@ export interface VerificationResult {
  * @param expandedContents JSON-LD expansion of credentialSubject, where keys are either '@id' or full URIs.
  * @returns An array of normalized `statements` sorted by their digests, and the sorted array of `digests`.
  */
-export function normalizeClaims(
+function normalizeClaims(
   expandedContents: ExpandedContents<CredentialSubject>
 ): { statements: string[]; digests: Uint8Array[] } {
   const statements = Object.entries(expandedContents).map(([key, value]) =>

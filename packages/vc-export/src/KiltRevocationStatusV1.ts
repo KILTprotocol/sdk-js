@@ -17,7 +17,7 @@ import type { Caip2ChainId } from '@kiltprotocol/types'
 import { chainIdFromGenesis } from './CAIP/caip2.js'
 import { Caip19, Caip2 } from './CAIP/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
-import { getDelegationNodeIdForCredential } from './KiltCredentialV1.js'
+import { getDelegationNodeIdForCredential } from './common.js'
 import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
 
 /**
