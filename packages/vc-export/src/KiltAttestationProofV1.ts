@@ -619,7 +619,10 @@ export function finalizeProof(
   }
 }
 
-export type AttestationHandler = (tx: Extrinsic) => Promise<{
+export type AttestationHandler = (
+  tx: Extrinsic,
+  api: ApiPromise
+) => Promise<{
   blockHash: Uint8Array
   timestamp?: number
 }>
@@ -653,7 +656,7 @@ export async function createProof(
   const {
     blockHash,
     timestamp = (await api.query.timestamp.now.at(blockHash)).toNumber(),
-  } = await submissionHandler(call)
+  } = await submissionHandler(call, api)
   return finalizeProof(credential, proof, {
     blockHash,
     timestamp,
