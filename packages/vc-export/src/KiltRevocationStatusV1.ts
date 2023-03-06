@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType } from '@kiltprotocol/core'
 import { Caip2ChainId } from '@kiltprotocol/types'
 import type { ApiPromise } from '@polkadot/api'
@@ -20,17 +21,21 @@ import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
 /**
  * Check attestation and revocation status of a credential at the latest block available.
  *
- * @param api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
- * @param credentialStatus A [[KiltRevocationStatusV1]] object.
  * @param credential The KiltCredentialV1 to which the status method is linked to.
+ * @param opts Additional parameters.
+ * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
+ * If not given this function will try to retrieve a cached connection from the [[ConfigService]].
  */
 export async function checkStatus(
-  api: ApiPromise,
-  credentialStatus: KiltRevocationStatusV1,
-  credential: VerifiableCredential
+  credential: VerifiableCredential,
+  opts: { api?: ApiPromise } = {}
 ): Promise<void> {
-  if (credentialStatus.type !== KILT_REVOCATION_STATUS_V1_TYPE)
-    throw new Error('method type mismatch')
+  const { credentialStatus } = credential
+  if (credentialStatus?.type !== KILT_REVOCATION_STATUS_V1_TYPE)
+    throw new Error(
+      `credential must have a credentialStatus of type ${KILT_REVOCATION_STATUS_V1_TYPE}`
+    )
+  const { api = ConfigService.get('api') } = opts
   const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
   const { chainId, assetInstance, assetNamespace, assetReference } =
     Caip19.parse(credentialStatus.id)

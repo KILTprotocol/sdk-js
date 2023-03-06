@@ -296,9 +296,7 @@ describe('proofs', () => {
   it('it verifies status', async () => {
     // verify
     const { proof, ...cred } = VC
-    await expect(
-      checkStatus(mockedApi, cred.credentialStatus, cred)
-    ).resolves.not.toThrow()
+    await expect(checkStatus(cred, { api: mockedApi })).resolves.not.toThrow()
   })
 
   it('it verifies schema', () => {
@@ -446,9 +444,7 @@ describe('proofs', () => {
         )
       const { proof, ...cred } = VC
       await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
-      await expect(
-        checkStatus(mockedApi, cred.credentialStatus, cred)
-      ).rejects.toThrow()
+      await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
 
     it('fails if attestation on chain not identical', async () => {
@@ -465,9 +461,7 @@ describe('proofs', () => {
         .mockResolvedValueOnce(makeEvent(attestationCreatedIndex, []) as any)
       const { proof, ...cred } = VC
       await expect(verifyProof(cred, proof!, mockedApi)).rejects.toThrow()
-      await expect(
-        checkStatus(mockedApi, cred.credentialStatus, cred)
-      ).rejects.toThrow()
+      await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
 
     it('verifies proof but not status if attestation revoked', async () => {
@@ -491,9 +485,7 @@ describe('proofs', () => {
 
       const { proof, ...cred } = VC
       await expect(verifyProof(cred, proof!, mockedApi)).resolves.not.toThrow()
-      await expect(
-        checkStatus(mockedApi, cred.credentialStatus, cred)
-      ).rejects.toThrow()
+      await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
   })
 })
