@@ -81,8 +81,11 @@ export async function checkStatus(
 }
 
 /**
- * @param chainIdOrGenesisHash
- * @param rootHash
+ * Creates a [[KiltRevocationStatusV1]] object from a credential hash and blochain identifier, which allow locating the credential's attestation record.
+ *
+ * @param chainIdOrGenesisHash The genesis hash (or CAIP-2 identifier) of the substrate chain on which the attestation record lives.
+ * @param rootHash The credential hash identifying the relevant attestation record on that chain.
+ * @returns A new [[KiltRevocationStatusV1]] object.
  */
 export function fromGenesisAndRootHash(
   chainIdOrGenesisHash: Caip2ChainId | U8aLike,

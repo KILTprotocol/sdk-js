@@ -339,7 +339,7 @@ export function fromICredential(
   blockHash: Uint8Array,
   timestamp: number,
   ctype?: ICType
-): VerifiableCredential {
+): VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>> {
   const {
     legitimations: legitimationsInput,
     delegationId,
@@ -402,7 +402,10 @@ const delegationIdPattern =
   /^kilt:delegation\/(?<delegationId>[-a-zA-Z0-9]{1,78})$/
 
 /**
- * @param delegation
+ * Extract the local (i.e., unique within a KILT blockchain network) delegation node identifier from a [[KiltAttesterDelegationV1]] object.
+ *
+ * @param delegation A [[KiltAttesterDelegationV1]] object.
+ * @returns A delegation id.
  */
 export function delegationIdFromAttesterDelegation(
   delegation: KiltAttesterDelegationV1
@@ -419,7 +422,10 @@ export function delegationIdFromAttesterDelegation(
 }
 
 /**
- * @param credential
+ * Extract the local (i.e., unique within a KILT blockchain network) delegation node identifier from a credential's federatedTrustModel entries.
+ *
+ * @param credential A [[KiltCredentialV1]] type VerifiableCredential.
+ * @returns A delegation id or `null` if there is no [[KiltAttesterDelegationV1]] type entry in the federatedTrustModel.
  */
 export function getDelegationNodeIdForCredential(
   credential: Pick<VerifiableCredential, 'federatedTrustModel'>

@@ -160,6 +160,7 @@ export interface VerificationResult {
   verified: boolean
   errors: Error[]
 }
+
 /**
  * Normalizes claims in credentialSubject for the commitment scheme of this proof method.
  * This involves sorting the normalized representation of claims by their blake2b digests.
@@ -492,8 +493,11 @@ export function deriveProof(
 }
 
 /**
- * @param credential
- * @param proof
+ * Re-computes the root hash / credential hash from a credential and proof.
+ *
+ * @param credential A [[KiltCredentialV1]] type credential.
+ * @param proof A [[KiltAttestationProofV1]] type proof for this credential.
+ * @returns The root hash.
  */
 export function calculateRootHash(
   credential: VerifiableCredential,
@@ -524,7 +528,15 @@ export function calculateRootHash(
 }
 
 /**
- * @param credential
+ * Initialize a new, prelimiary [[KiltAttestationProofV1]], which is the first step in issuing a new credential.
+ *
+ * @example
+ * const [proof, args] = initializeProof(credential)
+ * const tx = api.tx.attestation.add(...args)
+ * await tx.signAndSend(signerKeypair)
+ *
+ * @param credential A KiltCredentialV1 for which a proof shall be created.
+ * @returns A tuple where the first entry is the (partial) proof object and the second entry are the arguments required to create an extrinsic that anchors the proof on the KILT blockchain.
  */
 export function initializeProof(
   credential: VerifiableCredential
@@ -541,7 +553,7 @@ export function initializeProof(
   const salt: string[] = []
   const commitments: Uint8Array[] = []
   // 3. Produce commitments
-  digests.forEach((digest, index) => {
+  digests.forEach((digest) => {
     // initialize array with 36 + 2 + 64 bytes
     const bytes = new Uint8Array(102)
     // produce entropy and add to array
@@ -578,12 +590,15 @@ export function initializeProof(
 }
 
 /**
- * @param credential
- * @param proof
- * @param includedAt
- * @param includedAt.blockHash
- * @param includedAt.timestamp
- * @param includedAt.genesisHash
+ * Finalizes a [[KiltAttestationProofV1]] after anchoring the prelimiary proof's root hash on the KILT blockchain.
+ *
+ * @param credential The KiltCredentialV1 for which the proof was initialized.
+ * @param proof The partial proof object created via `initializeProof`.
+ * @param includedAt Information on the addition of the attestation record anchoring the proof on the KILT blockchain.
+ * @param includedAt.blockHash The hash of the block in which the attestation record was added to the KILT blockchain.
+ * @param includedAt.timestamp The timestamp of that block.
+ * @param includedAt.genesisHash The genesis hash of the blockchain network. Default to the KILT mainnet (spiritnet).
+ * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export function finalizeProof(
   credential: VerifiableCredential,
@@ -592,8 +607,8 @@ export function finalizeProof(
     blockHash,
     timestamp,
     genesisHash = spiritnetGenesisHash,
-  }: { blockHash: Uint8Array; timestamp: number; genesisHash: Uint8Array }
-) {
+  }: { blockHash: Uint8Array; timestamp: number; genesisHash?: Uint8Array }
+): VerifiableCredential {
   const rootHash = calculateRootHash(credential, proof)
   return {
     ...credential,
@@ -610,10 +625,22 @@ export type AttestationHandler = (tx: Extrinsic) => Promise<{
 }>
 
 /**
- * @param credential
- * @param submissionHandler
+ *
+ * Creates a complete [[KiltAttestationProofV1]] for issuing a new credential.
+ *
+ * @example
+ * const [proof, args] = initializeProof(credential)
+ * const tx = api.tx.attestation.add(...args)
+ * await tx.signAndSend(signerKeypair)
+ *
+ * @param credential A KiltCredentialV1 for which a proof shall be created.
+ * @param submissionHandler Callback function handling extrinsic submission.
+ * It receives an unsigned extrinsic and is expected to return the `blockHash` and `timestamp` when the extrinsic was included in a block.
+ * This callback must thus take care of signing and submitting the extrinsic to the KILT blockchain as well as noting the inclusion block.
+ * If no `timestamp` is returned by the callback, the timestamp is queried from the blockchain based on the block hash.
  * @param opts Additional parameters.
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential shall be anchored.
+ * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function createProof(
   credential: VerifiableCredential,

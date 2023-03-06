@@ -277,7 +277,7 @@ it('VC has correct format (full example)', () => {
 })
 
 describe('proofs', () => {
-  let VC: VerifiableCredential
+  let VC: VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
   beforeAll(() => {
     VC = fromICredential(
       credential,
@@ -292,14 +292,13 @@ describe('proofs', () => {
     // verify
     const { proof, ...cred } = VC
     await expect(
-      verifyProof(cred, proof!, { api: mockedApi })
+      verifyProof(cred, proof, { api: mockedApi })
     ).resolves.not.toThrow()
   })
 
   it('it verifies status', async () => {
     // verify
-    const { proof, ...cred } = VC
-    await expect(checkStatus(cred, { api: mockedApi })).resolves.not.toThrow()
+    await expect(checkStatus(VC, { api: mockedApi })).resolves.not.toThrow()
   })
 
   it('it verifies schema', () => {
@@ -322,7 +321,7 @@ describe('proofs', () => {
     expect(VC.proof?.salt).toHaveLength(4)
     const { proof, ...cred } = VC
     await expect(
-      verifyProof(cred, proof!, { api: mockedApi })
+      verifyProof(cred, proof, { api: mockedApi })
     ).resolves.not.toThrow()
   })
 
@@ -340,7 +339,7 @@ describe('proofs', () => {
     )
 
     await expect(
-      verifyProof(reducedVC, proof!, { api: mockedApi })
+      verifyProof(reducedVC, proof, { api: mockedApi })
     ).resolves.not.toThrow()
   })
 
@@ -407,7 +406,7 @@ describe('proofs', () => {
       VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
       const { proof, ...cred } = VC
       await expect(
-        verifyProof(cred, proof!, { api: mockedApi })
+        verifyProof(cred, proof, { api: mockedApi })
       ).rejects.toThrow()
     })
 
@@ -420,7 +419,7 @@ describe('proofs', () => {
       ]
       const { proof, ...cred } = VC
       await expect(
-        verifyProof(cred, proof!, { api: mockedApi })
+        verifyProof(cred, proof, { api: mockedApi })
       ).rejects.toThrow()
     })
 
@@ -428,7 +427,7 @@ describe('proofs', () => {
       VC.credentialSubject.name = 'Kort'
       const { proof, ...cred } = VC
       await expect(
-        verifyProof(cred, proof!, { api: mockedApi })
+        verifyProof(cred, proof, { api: mockedApi })
       ).rejects.toThrow()
     })
 
@@ -455,7 +454,7 @@ describe('proofs', () => {
         )
       const { proof, ...cred } = VC
       await expect(
-        verifyProof(cred, proof!, { api: mockedApi })
+        verifyProof(cred, proof, { api: mockedApi })
       ).rejects.toThrow()
       await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
@@ -474,7 +473,7 @@ describe('proofs', () => {
         .mockResolvedValueOnce(makeEvent(attestationCreatedIndex, []) as any)
       const { proof, ...cred } = VC
       await expect(
-        verifyProof(cred, proof!, { api: mockedApi })
+        verifyProof(cred, proof, { api: mockedApi })
       ).rejects.toThrow()
       await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
@@ -500,7 +499,7 @@ describe('proofs', () => {
 
       const { proof, ...cred } = VC
       await expect(
-        verifyProof(cred, proof!, { api: mockedApi })
+        verifyProof(cred, proof, { api: mockedApi })
       ).resolves.not.toThrow()
       await expect(checkStatus(cred, { api: mockedApi })).rejects.toThrow()
     })
