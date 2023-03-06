@@ -122,13 +122,7 @@ export async function verifyDidSignature({
     throw new Error(
       `no signature verification function available for key type ${type}`
     )
-  if (
-    verifiers[type](
-      typeof message === 'string' ? u8aToU8a(message) : message,
-      signature,
-      publicKey
-    ) !== true
-  )
+  if (verifiers[type](u8aToU8a(message), signature, publicKey) !== true)
     throw new SDKErrors.SignatureUnverifiableError()
 }
 
