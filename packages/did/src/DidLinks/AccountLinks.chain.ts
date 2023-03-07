@@ -201,7 +201,7 @@ export async function getLinkingArguments(
       // Force type cast to enable the old blockchain types to accept the future format
       return result as unknown as AssociateAccountToChainResult
     }
-    const result = [{ Dotsama: [accountAddress, proof] }, validUntil]
+    const result = [{ Polkadot: [accountAddress, proof] }, validUntil]
     // Force type cast to enable the old blockchain types to accept the future format
     return result as unknown as AssociateAccountToChainResult
   }
