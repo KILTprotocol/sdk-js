@@ -27,117 +27,22 @@ yarn add @kiltprotocol/vc-export
 ## Contents
 
 - exporting
-  - `fromCredentialAndAttestation()`: translates `Credential` to `VerifiableCredential`
-- presentation utils
-  - `makePresentation()`: creates `VerifiablePresentation` ()
-  - `removeProperties()`: derives a new `VerifiableCredential` from an existing one with a reduced set of disclosed attributes
-- verification utils
-  - functions that verify three proof types:
-    - claimer's self-signed proof over the credential digest
-    - credential digest proof that assures the integrity of disclosed attributes, claimer identity, legitimations and delegations
-    - attestation proof that assures the credential is attested by the identity disclosed as the `issuer` and not revoked
-  - a function to validate the disclosed claim properties against the schema of a KILT CType, which is a prescriptive schema detailing fields and their data types.
-- vc-js suites: tooling to integrate KILT VCs with `vc-js` and `jsonld-signatures^5.0.0`
-  - `suites`: contains suites to verify the three KILT proof types that secure a KILT VC.
-    - `KiltIntegritySuite`: provides integrity protection for essential components of the credential while allowing for blinding of claims relating to the `credentialSubject`.
-    - `KiltSignatureSuite`: verifies the signature over the root hash of a KILT credential.
-    - `KiltAttestedSuite`: provides lookup functionality to the KILT blockchain to check whether a credential is attested and still valid.
-  - `context`: contains a json-ld `@context` definitions for KILT VCs.
-  - `documentLoader`: an implementation of the DocumentLoader required to use `vc-js` / `jsonld-signatures` which allows to serve essential `@context` definitions to the json-ld processor, including the `context` included here.
+  - `exportICredentialToVc()`: translates an existing `ICredential` object to a `VerifiableCredential` with an embedded proof.
+    The resulting VC still verifies against the original attestation record and thus is valid as long as the original credential remains valid (i.e., not revoked).
+- `KiltCredentialV1`
+  - functions that create a VC of type `KiltCredentialV1` either from claims and other input, or of an existing `ICredential`.
+  - a JSON-schema and functions to validate the structure and data model of a `KiltCredentialV1` type VC.
+- `KiltAttestationProofV1`
+  - functions that verify VCs with a proof type `KiltAttestationProofV1`.
+  - functions that help in creating a new `KiltAttestationProofV1` type proof for a `KiltCredentialV1` type VC.
+  - functions that produce a `KiltAttestationProofV1` type from an existing `ICredential`.
+  - functions that update a `KiltAttestationProofV1` after applying selective disclosure.
+- `KiltRevocationStatusV1`
+  - a function to check the revocation status of a VC with a `KiltAttestationProofV1`.
+  - a function to help create a `credentialStatus` object of type `KiltRevocationStatusV1`.
+- `CredentialSchema`
+  - a function to validate the disclosed `credentialSubject` properties against the schema of a KILT CType, which is a prescriptive schema detailing fields and their data types.
 
 ## Examples
 
-### Presenting a KILT `Credential` as a `VerifiableCredential`
-
-Given we are in possession of an attested KILT claim and the associated KILT identity:
-
-```typescript
-import { Attestation, ICredential } from '@kiltprotocol/sdk-js'
-import * as vcExport from '@kiltprotocol/vc-export'
-
-let credential: ICredential
-
-// fetch the attestion
-const api = await kilt.connect('wss://spiritnet.kilt.io/')
-const attestation = Attestation.fromChain(
-  await api.query.attestation.attestations(credential.rootHash),
-  credential.rootHash
-)
-// turn the KILT credential into a VerifiableCredential
-const VC = vcExport.fromCredentialAndAttestation(credential, attestation)
-
-// produce a reduced copy of the VC where only selected attributes are disclosed
-const nameOnly = await vcExport.presentation.removeProperties(VC, ['name'])
-// or directly produce a VerifiablePresentation, which implicitly performs the step above
-const presentation = await vcExport.presentation.makePresentation(VC, ['name'])
-```
-
-A verifier can now check the proofs attached to the VerifiableCredential but can only see the disclosed attributes:
-
-```typescript
-// Here's an example for verifying the attestation proof
-const api = await kilt.connect('wss://spiritnet.kilt.io/')
-try {
-  presentation.verifiableCredential.proof.foreach((proof) => {
-    if (proof.type === vcExport.constants.KILT_ATTESTED_PROOF_TYPE)
-      vcExport.verification.verifyAttestedProof(
-        presentation.verifiableCredential,
-        proof,
-        api
-      )
-  })
-
-  console.log(
-    `Name of the crook: ${presentation.verifiableCredential.credentialSubject.name}`
-  ) // prints 'Billy The Kid'
-  console.log(
-    `Reward: ${presentation.verifiableCredential.credentialSubject.reward}`
-  ) // undefined
-} catch (e) {
-  console.error('Failed verification', e)
-}
-```
-
-### Verifying a KILT VC with `vc-js`
-
-Assuming we have a KILT credential expressed as a VC (`credential`), for example as produced by the example above.
-
-```typescript
-import * as kilt from '@kiltprotocol/sdk-js'
-import { vcjsSuites, verification } from '@kiltprotocol/vc-export'
-import vcjs from 'vc-js'
-import jsigs from 'jsonld-signatures'
-
-// 1. set up suites
-const { KiltIntegritySuite, KiltSignatureSuite, KiltAttestedSuite } =
-  vcjsSuites.suites
-const signatureSuite = new KiltSignatureSuite.KiltSignatureSuite()
-const integritySuite = new KiltIntegritySuite.KiltDisclosureSuite()
-// the KiltAttestedSuite requires a connection object that allows access to the KILT blockchain, which we can obtain via the KILT sdk
-const KiltConnection = await kilt.connect('wss://spiritnet.kilt.io/')
-const attestedSuite = new KiltAttestedSuite.KiltAttestedSuite({
-  KiltConnection,
-})
-
-// 2. verify credential schema
-const schemaVerified = verification.validateSchema(credential).verified
-// unfortunately the VC credentialSchema definition is underspecified in their context - we therefore have to remove it before credential verification
-delete credential['credentialSchema']
-
-// 3. obtain default kilt context loader
-const { documentLoader } = vcjsSuites
-
-// 4. obtain the `assertionMethod` proof purpose from `jsonld-signatures`
-const purpose = new jsigs.purposes.AssertionProofPurpose()
-
-// 5. call vc-js.verifyCredential with suites and context loader
-const result = await vcjs.verifyCredential({
-  credential,
-  suite: [signatureSuite, integritySuite, attestedSuite],
-  purpose,
-  documentLoader,
-})
-
-// 6. make sure all `results` indicate successful verification
-const verified = result.results.every((i) => i.verified === true)
-```
+See [unit tests file](./src/exportToVerifiableCredential.spec.ts) for usage examples.
