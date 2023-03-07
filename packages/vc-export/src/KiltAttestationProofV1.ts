@@ -184,6 +184,63 @@ function normalizeClaims(
   }
 }
 
+function makeCommitments(
+  statementDigests: Uint8Array[],
+  salt: Uint8Array[]
+): Uint8Array[] {
+  return statementDigests.map((digest, index) => {
+    // initialize array with 36 + 2 + 64 bytes
+    const bytes = new Uint8Array(102)
+    // add salt to array
+    bytes.set(salt[index])
+    // add bytes 0x30 & 0x78
+    bytes.set([48, 120], 36)
+    // add hex encoded digest
+    bytes.set(stringToU8a(u8aToHex(digest, undefined, false)), 38)
+    // compute commitment
+    return blake2AsU8a(bytes, 256)
+  })
+}
+
+/**
+ * (Re-)computes the root hash / credential hash from a credential and proof.
+ *
+ * @param credential A [[KiltCredentialV1]] type credential.
+ * @param proof A [[KiltAttestationProofV1]] type proof for this credential.
+ * @returns The root hash.
+ */
+export function calculateRootHash(
+  credential: Pick<VerifiableCredential, 'federatedTrustModel'> &
+    Partial<VerifiableCredential>,
+  proof: Pick<KiltAttestationProofV1, 'commitments'> &
+    Partial<KiltAttestationProofV1>
+): Uint8Array {
+  const { federatedTrustModel = [] } = credential
+  const { commitments } = proof
+  const rootHashInputs = [
+    // Collect commitments for root hash
+    ...commitments.map((i) => base58Decode(i)),
+    // Collect trust model items for root hash
+    ...federatedTrustModel.map((entry) => {
+      if (entry.type === KILT_ATTESTER_LEGITIMATION_V1_TYPE) {
+        // get root hash from credential id
+        return credentialIdToRootHash(entry.id)
+      }
+      if (entry.type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
+        // get on-chain id from delegation id
+        return delegationIdFromAttesterDelegation(entry)
+      }
+      throw new Error(
+        `unknown type ${
+          (entry as { type: string }).type
+        } in federatedTrustModel`
+      )
+    }),
+  ]
+  // Concatenate and hash to produce root hash
+  return blake2AsU8a(u8aConcatStrict(rootHashInputs), 256)
+}
+
 async function verifyAttestedAt(
   claimHash: Uint8Array,
   blockHash: Uint8Array,
@@ -266,13 +323,8 @@ export async function verifyProof(
   validateStructure(proof)
   // 1 - 3. check credential structure
   validateCredentialStructure(credential)
-  const {
-    nonTransferable,
-    credentialStatus,
-    credentialSubject,
-    issuer,
-    federatedTrustModel = [],
-  } = credential
+  const { nonTransferable, credentialStatus, credentialSubject, issuer } =
+    credential
   validateUri(issuer, 'Did')
   // 4. check nonTransferable
   if (nonTransferable !== true)
@@ -285,15 +337,16 @@ export async function verifyProof(
   const { assetInstance, assetNamespace, assetReference } = Caip19.parse(
     credentialStatus.id
   )
+  const expectedAttestationId = credential.id.substring(
+    KILT_CREDENTIAL_IRI_PREFIX.length
+  )
   if (
     assetNamespace !== 'kilt' ||
     assetReference !== 'attestation' ||
-    assetInstance !== credential.id.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
+    assetInstance !== expectedAttestationId
   ) {
     throw new Error(
-      `credentialStatus.id must end on 'kilt:attestation/${credential.id.substring(
-        KILT_CREDENTIAL_IRI_PREFIX.length
-      )} in order to be verifiable with this proof`
+      `credentialStatus.id must end on 'kilt:attestation/${expectedAttestationId} in order to be verifiable with this proof`
     )
   }
   // 6. json-ld expand credentialSubject
@@ -304,44 +357,22 @@ export async function verifyProof(
     throw new Error(
       'Violated expectation: number of normalized statements === number of salts'
     )
-  // 8. Re-compute commitments
-  digests.forEach((digest, index) => {
-    // initialize array with 36 + 2 + 64 bytes
-    const bytes = new Uint8Array(102)
-    // decode salt and add to array
-    const salt = proof.salt[index]
-    bytes.set(base58Decode(salt))
-    // add bytes 0x30 & 0x78
-    bytes.set([48, 120], 36)
-    // add hex encoded digest
-    bytes.set(stringToU8a(u8aToHex(digest, undefined, false)), 38)
-    // recompute commitment
-    const recomputed = blake2AsU8a(bytes, 256)
+  // 8-9. Re-compute commitments
+  const commitments = makeCommitments(
+    digests,
+    proof.salt.map((salt) => base58Decode(salt))
+  )
+  // 10. Assert commitments are in proof
+  commitments.forEach((recomputed, index) => {
     if (!proof.commitments.includes(base58Encode(recomputed)))
       throw new Error(
         `No commitment for statement with digest ${u8aToHex(
-          digest
-        )} and salt ${salt}`
+          digests[index]
+        )} and salt ${proof.salt[index]}`
       )
   })
-  const rootHashInputs = [
-    // 9. Collect commitments for root hash
-    ...proof.commitments.map((i) => base58Decode(i)),
-    // 10. Collect trust model items for root hash
-    ...federatedTrustModel.map(({ type, id }) => {
-      if (type === KILT_ATTESTER_LEGITIMATION_V1_TYPE) {
-        // get root hash from credential id
-        return credentialIdToRootHash(id as VerifiableCredential['id'])
-      }
-      if (type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
-        // get on-chain id from delegation id
-        return delegationIdFromAttesterDelegation({ type, id })
-      }
-      throw new Error(`unknown type ${type} in federatedTrustModel`)
-    }),
-  ]
-  // 11. Concatenate and hash
-  const rootHash = blake2AsU8a(u8aConcatStrict(rootHashInputs), 256)
+  // 11. Compute root hash
+  const rootHash = calculateRootHash(credential, proof)
   // 12. Compare against credential id
   if (credentialIdFromRootHash(rootHash) !== credential.id)
     throw new Error('root hash not verifiable')
@@ -476,41 +507,6 @@ export function deriveProof(
 }
 
 /**
- * Re-computes the root hash / credential hash from a credential and proof.
- *
- * @param credential A [[KiltCredentialV1]] type credential.
- * @param proof A [[KiltAttestationProofV1]] type proof for this credential.
- * @returns The root hash.
- */
-export function calculateRootHash(
-  credential: VerifiableCredential,
-  proof: KiltAttestationProofV1
-): Uint8Array {
-  const rootHashInputs = [
-    // Collect commitments for root hash
-    ...proof.commitments.map((i) => base58Decode(i)),
-    // Collect trust model items for root hash
-    ...(credential.federatedTrustModel ?? []).map((entry) => {
-      if (entry.type === KILT_ATTESTER_LEGITIMATION_V1_TYPE) {
-        // get root hash from credential id
-        return credentialIdToRootHash(entry.id)
-      }
-      if (entry.type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
-        // get on-chain id from delegation id
-        return delegationIdFromAttesterDelegation(entry)
-      }
-      throw new Error(
-        `unknown type ${
-          (entry as { type: string }).type
-        } in federatedTrustModel`
-      )
-    }),
-  ]
-  // Concatenate and hash to produce root hash
-  return blake2AsU8a(u8aConcatStrict(rootHashInputs), 256)
-}
-
-/**
  * Initialize a new, prelimiary [[KiltAttestationProofV1]], which is the first step in issuing a new credential.
  *
  * @example
@@ -533,25 +529,14 @@ export function initializeProof(
   // 2. Transform to normalized statments and hash
   const { digests } = normalizeClaims(expandedContents)
 
-  const salt: string[] = []
-  const commitments: Uint8Array[] = []
-  // 3. Produce commitments
-  digests.forEach((digest) => {
-    // initialize array with 36 + 2 + 64 bytes
-    const bytes = new Uint8Array(102)
-    // produce entropy and add to array
-    const entropy = randomAsU8a(36)
-    bytes.set(entropy)
-    // add bytes 0x30 & 0x78
-    bytes.set([48, 120], 36)
-    // add hex encoded digest
-    bytes.set(stringToU8a(u8aToHex(digest, undefined, false)), 38)
-    // compute commitment
-    const commitment = blake2AsU8a(bytes, 256)
-    salt.push(base58Encode(entropy))
-    commitments.push(commitment)
-  })
+  // 3. Produce entropy & commitments
+  const entropy = new Array(digests.length)
+    .fill(undefined)
+    .map(() => randomAsU8a(36))
+  const commitments = makeCommitments(digests, entropy)
+
   // 4. Create proof object
+  const salt = entropy.map((e) => base58Encode(e))
   const proof: KiltAttestationProofV1 = {
     type: ATTESTATION_PROOF_V1_TYPE,
     block: '',
