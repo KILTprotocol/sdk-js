@@ -45,7 +45,7 @@ import type {
   IDelegationNode,
 } from '@kiltprotocol/types'
 
-import { Caip2, Caip19 } from './CAIP/index.js'
+import { Caip19 } from './CAIP/index.js'
 import {
   ATTESTATION_PROOF_V1_TYPE,
   DEFAULT_CREDENTIAL_CONTEXTS,
@@ -66,6 +66,7 @@ import {
   ExpandedContents,
   delegationIdFromAttesterDelegation,
   getDelegationNodeIdForCredential,
+  assertMatchingConnection,
 } from './common.js'
 import { CredentialMalformedError, ProofMalformedError } from './errors.js'
 import type {
@@ -241,20 +242,6 @@ async function verifyAttestedAt(
     cTypeId,
     delegationId,
   }
-}
-
-function assertMatchingConnection(
-  api: ApiPromise,
-  { credentialStatus }: VerifiableCredential
-): `polkadot:${string}` {
-  const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
-  const { chainId } = Caip19.parse(credentialStatus.id)
-  if (apiChainId !== chainId) {
-    throw new Error(
-      `api must be connected to network ${chainId} to verify this credential`
-    )
-  }
-  return apiChainId
 }
 
 /**

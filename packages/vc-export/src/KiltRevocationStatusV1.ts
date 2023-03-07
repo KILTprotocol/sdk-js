@@ -14,10 +14,12 @@ import { ConfigService } from '@kiltprotocol/config'
 import { Attestation, CType } from '@kiltprotocol/core'
 import type { Caip2ChainId } from '@kiltprotocol/types'
 
-import { chainIdFromGenesis } from './CAIP/caip2.js'
-import { Caip19, Caip2 } from './CAIP/index.js'
+import { Caip2 } from './CAIP/index.js'
 import { KILT_REVOCATION_STATUS_V1_TYPE } from './constants.js'
-import { getDelegationNodeIdForCredential } from './common.js'
+import {
+  assertMatchingConnection,
+  getDelegationNodeIdForCredential,
+} from './common.js'
 import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
 
 /**
@@ -38,14 +40,8 @@ export async function checkStatus(
       `credential must have a credentialStatus of type ${KILT_REVOCATION_STATUS_V1_TYPE}`
     )
   const { api = ConfigService.get('api') } = opts
-  const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
-  const { chainId, assetInstance, assetNamespace, assetReference } =
-    Caip19.parse(credentialStatus.id)
-  if (apiChainId !== chainId) {
-    throw new Error(
-      `api must be connected to network ${chainId} to verify this credential`
-    )
-  }
+  const { assetNamespace, assetReference, assetInstance } =
+    assertMatchingConnection(api, credential)
   if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
     throw new Error(
       `cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
@@ -95,7 +91,7 @@ export function fromGenesisAndRootHash(
     typeof chainIdOrGenesisHash === 'string' &&
     chainIdOrGenesisHash.startsWith('polkadot')
       ? chainIdOrGenesisHash
-      : chainIdFromGenesis(u8aToU8a(chainIdOrGenesisHash))
+      : Caip2.chainIdFromGenesis(u8aToU8a(chainIdOrGenesisHash))
 
   return {
     id: `${chainId}/kilt:attestation/${base58Encode(rootHash)}`,

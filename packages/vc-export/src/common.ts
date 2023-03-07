@@ -6,6 +6,9 @@
  */
 
 import { base58Decode } from '@polkadot/util-crypto'
+import type { ApiPromise } from '@polkadot/api'
+
+import { Caip19, Caip2 } from './CAIP/index.js'
 
 import { KILT_ATTESTER_DELEGATION_V1_TYPE } from './constants.js'
 import type { KiltAttesterDelegationV1, VerifiableCredential } from './types.js'
@@ -80,4 +83,28 @@ export function getDelegationNodeIdForCredential(
       i.type === KILT_ATTESTER_DELEGATION_V1_TYPE
   )
   return delegation ? delegationIdFromAttesterDelegation(delegation) : null
+}
+
+/**
+ * Makes sure that we are connected to the right blockchain network, against which the credential may be verified.
+ * Throws if that is not the case.
+ *
+ * @param api The api instance wrapping a connection to a blockchain network against which the credential is to be verified.
+ * @param credential The verifiable credential to be verified.
+ * @param credential.credentialStatus The credential's status update method containing the identifier of the expected network.
+ * @returns The result of parsing the CAIP-19 identifier pointing to the attestation record by which the credential has been anchored to a blockchain network.
+ * @private
+ */
+export function assertMatchingConnection(
+  api: ApiPromise,
+  { credentialStatus }: VerifiableCredential
+): ReturnType<typeof Caip19.parse> {
+  const apiChainId = Caip2.chainIdFromGenesis(api.genesisHash)
+  const parsed = Caip19.parse(credentialStatus.id)
+  if (apiChainId !== parsed.chainId) {
+    throw new Error(
+      `api must be connected to network ${parsed.chainId} to verify this credential`
+    )
+  }
+  return parsed
 }
