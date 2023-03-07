@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { hexToU8a } from '@polkadot/util'
+
 /**
  * Credential context URL required by VC specifications.
  */
@@ -54,3 +56,7 @@ export const KILT_ATTESTER_DELEGATION_V1_TYPE = 'KiltAttesterDelegationV1'
 export const JSON_SCHEMA_TYPE = 'JsonSchemaValidator2018'
 
 export const KILT_CREDENTIAL_IRI_PREFIX = 'kilt:credential:'
+
+export const spiritnetGenesisHash = hexToU8a(
+  '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
+)

@@ -53,6 +53,7 @@ import {
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
   KILT_CREDENTIAL_IRI_PREFIX,
   KILT_REVOCATION_STATUS_V1_TYPE,
+  spiritnetGenesisHash,
 } from './constants.js'
 import {
   credentialIdFromRootHash,
@@ -72,10 +73,6 @@ import type {
   KiltAttestationProofV1,
   VerifiableCredential,
 } from './types.js'
-
-export const spiritnetGenesisHash = hexToU8a(
-  '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21'
-)
 
 /**
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].
