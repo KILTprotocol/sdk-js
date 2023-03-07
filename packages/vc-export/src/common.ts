@@ -21,6 +21,7 @@ export type ExpandedContents<
  *
  * @param credentialSubject The object containing claims about the credentialSubject.
  * @returns The `credentialSubject` where each key is either `@id` or the result of concatenating the `@vocab` with the original key.
+ * @private
  */
 export function jsonLdExpandCredentialSubject<
   T extends VerifiableCredential['credentialSubject']
@@ -48,6 +49,7 @@ const delegationIdPattern =
  *
  * @param delegation A [[KiltAttesterDelegationV1]] object.
  * @returns A delegation id.
+ * @private
  */
 export function delegationIdFromAttesterDelegation(
   delegation: KiltAttesterDelegationV1
@@ -68,6 +70,7 @@ export function delegationIdFromAttesterDelegation(
  *
  * @param credential A [[KiltCredentialV1]] type VerifiableCredential.
  * @returns A delegation id or `null` if there is no [[KiltAttesterDelegationV1]] type entry in the federatedTrustModel.
+ * @private
  */
 export function getDelegationNodeIdForCredential(
   credential: Pick<VerifiableCredential, 'federatedTrustModel'>
