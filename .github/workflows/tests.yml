@@ -18,6 +18,7 @@ on:
     branches:
       - develop
       - master
+      - rf-new-vcs
 
 env:
   TESTCONTAINERS_WATCHER_IMG: testcontainers/ryuk:0.3.2
