@@ -51,7 +51,7 @@ export function credentialIdToRootHash(
   try {
     return base58Decode(base58String, false)
   } catch (cause) {
-    throw new Error(
+    throw new CredentialMalformedError(
       'Credential id is not a valid identifier (could not extract base58 encoded string)',
       { cause }
     )
@@ -294,6 +294,7 @@ export const credentialSchema: JsonSchema.Schema = {
   ],
 }
 
+// draft version '7' should align with $schema property of the schema above
 const schemaValidator = new JsonSchema.Validator(credentialSchema, '7')
 schemaValidator.addSchema(CType.Schemas.CTypeModel)
 

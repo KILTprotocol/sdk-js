@@ -93,7 +93,7 @@ export function fromICredential(
   const commitments = credential.claimHashes.map((i) =>
     base58Encode(hexToU8a(i))
   )
-  // salt/nonces must be sorted by statment digest (keys) and base58 encoded
+  // salt/nonces must be sorted by statement digest (keys) and base58 encoded
   const salt = Object.entries(credential.claimNonceMap)
     .map(([hsh, slt]) => [hexToU8a(hsh), stringToU8a(slt)])
     .sort((a, b) => u8aCmp(a[0], b[0]))
@@ -135,7 +135,8 @@ export const proofSchema: JsonSchema.Schema = {
   required: ['type', 'block', 'commitments', 'salt'],
 }
 
-const schemaValidator = new JsonSchema.Validator(proofSchema)
+// draft version '7' should align with $schema property of the schema above
+const schemaValidator = new JsonSchema.Validator(proofSchema, '7')
 
 /**
  * Validates a proof object against the KiltAttestationProofV1 data model.
@@ -231,7 +232,7 @@ export function calculateRootHash(
         // get on-chain id from delegation id
         return delegationIdFromAttesterDelegation(entry)
       }
-      throw new Error(
+      throw new CredentialMalformedError(
         `unknown type ${
           (entry as { type: string }).type
         } in federatedTrustModel`
@@ -346,7 +347,7 @@ export async function verifyProof(
     assetReference !== 'attestation' ||
     assetInstance !== expectedAttestationId
   ) {
-    throw new Error(
+    throw new CredentialMalformedError(
       `credentialStatus.id must end on 'kilt:attestation/${expectedAttestationId} in order to be verifiable with this proof`
     )
   }
@@ -355,7 +356,7 @@ export async function verifyProof(
   // 7. Transform to normalized statments and hash
   const { statements, digests } = normalizeClaims(expandedContents)
   if (statements.length !== proof.salt.length)
-    throw new Error(
+    throw new ProofMalformedError(
       'Violated expectation: number of normalized statements === number of salts'
     )
   // 8-9. Re-compute commitments
@@ -366,7 +367,7 @@ export async function verifyProof(
   // 10. Assert commitments are in proof
   commitments.forEach((recomputed, index) => {
     if (!proof.commitments.includes(base58Encode(recomputed)))
-      throw new Error(
+      throw new SDKErrors.CredentialUnverifiableError(
         `No commitment for statement with digest ${u8aToHex(
           digests[index]
         )} and salt ${proof.salt[index]}`
@@ -376,7 +377,7 @@ export async function verifyProof(
   const rootHash = calculateRootHash(credential, proof)
   // 12. Compare against credential id
   if (credentialIdFromRootHash(rootHash) !== credential.id)
-    throw new Error('root hash not verifiable')
+    throw new SDKErrors.CredentialUnverifiableError('root hash not verifiable')
 
   // 13. check that api is connected to the right network
   const { api = ConfigService.get('api') } = opts
@@ -390,7 +391,7 @@ export async function verifyProof(
   } = await verifyAttestedAt(rootHash, base58Decode(proof.block), { api })
 
   if (attester !== issuer || onChainCType !== credential.credentialSchema.id) {
-    throw new Error(
+    throw new SDKErrors.CredentialUnverifiableError(
       `Credential not matching on-chain data: issuer "${attester}", CType: "${onChainCType}"`
     )
   }
@@ -400,7 +401,7 @@ export async function verifyProof(
     Math.round(timestamp / 1000) !==
     Math.round(new Date(credential.issuanceDate).getTime() / 1000)
   )
-    throw new Error(
+    throw new SDKErrors.CredentialUnverifiableError(
       `block time ${new Date(
         timestamp
       ).toISOString()} does not match issuedAt (${credential.issuanceDate})`
@@ -413,7 +414,9 @@ export async function verifyProof(
         if (
           !u8aEq(delegationIdFromAttesterDelegation(i), hexToU8a(delegationId))
         )
-          throw new Error(`Delegation ${i.id} does not match on-chain records`)
+          throw new SDKErrors.CredentialUnverifiableError(
+            `Delegation ${i.id} does not match on-chain records`
+          )
         // TODO: check delegators
         if (i.delegators) {
           // const node = await DelegationNode.fetch(onChain.delegationId as string)
@@ -432,13 +435,18 @@ export async function verifyProof(
           legitimationProof as KiltAttestationProofV1,
           { api }
         ).catch((cause) => {
-          throw new Error(`failed to verify legitimation ${i.id}`, {
-            cause,
-          })
+          throw new SDKErrors.CredentialUnverifiableError(
+            `failed to verify legitimation ${i.id}`,
+            {
+              cause,
+            }
+          )
         })
         return
       }
-      throw new Error(`unknown type ${i.type} in federatedTrustModel`)
+      throw new CredentialMalformedError(
+        `unknown type ${i.type} in federatedTrustModel`
+      )
     }) ?? []
   )
 }
@@ -474,7 +482,7 @@ export function deriveProof(
   const expandedContents = jsonLdExpandCredentialSubject(credentialSubject)
   const { statements: statementsOriginal } = normalizeClaims(expandedContents)
   if (statementsOriginal.length !== proofInput.salt.length)
-    throw new Error(
+    throw new ProofMalformedError(
       'Violated expectation: number of normalized statements === number of salts'
     )
   // 2. Filter credentialSubject for claims to be revealed

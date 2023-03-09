@@ -14,6 +14,7 @@ import type {
   ConformingDidKey,
   DidUri,
   Caip2ChainId,
+  IClaimContents,
 } from '@kiltprotocol/types'
 
 import type {
@@ -54,12 +55,11 @@ export interface KiltRevocationStatusV1 {
   type: typeof KILT_REVOCATION_STATUS_V1_TYPE
 }
 
-export interface CredentialSubject {
+export interface CredentialSubject extends IClaimContents {
   '@context': {
     '@vocab': string
   }
   id: DidUri
-  [k: string]: Record<string, unknown> | string | number | boolean
 }
 
 interface IssuerBacking {

@@ -11,6 +11,7 @@ import type { ApiPromise } from '@polkadot/api'
 import { Caip19, Caip2 } from './CAIP/index.js'
 
 import { KILT_ATTESTER_DELEGATION_V1_TYPE } from './constants.js'
+import { CredentialMalformedError } from './errors.js'
 import type { KiltAttesterDelegationV1, VerifiableCredential } from './types.js'
 
 export type ExpandedContents<
@@ -58,12 +59,14 @@ export function delegationIdFromAttesterDelegation(
   delegation: KiltAttesterDelegationV1
 ): Uint8Array {
   if (delegation.type !== KILT_ATTESTER_DELEGATION_V1_TYPE) {
-    throw new Error(`type must be ${KILT_ATTESTER_DELEGATION_V1_TYPE}`)
+    throw new TypeError(
+      `The value of type must be ${KILT_ATTESTER_DELEGATION_V1_TYPE}`
+    )
   }
   const match = delegationIdPattern.exec(delegation.id)
   if (!match || !match.groups?.delegationId)
-    throw new Error(
-      `not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${delegation.id}`
+    throw new CredentialMalformedError(
+      `Not a valid id for type ${KILT_ATTESTER_DELEGATION_V1_TYPE}: ${delegation.id}`
     )
   return base58Decode(match.groups.delegationId)
 }

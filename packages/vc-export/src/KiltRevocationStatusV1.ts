@@ -11,7 +11,7 @@ import type { ApiPromise } from '@polkadot/api'
 import type { U8aLike } from '@polkadot/util/types'
 
 import { ConfigService } from '@kiltprotocol/config'
-import { Attestation, CType } from '@kiltprotocol/core'
+import { Attestation, CType, SDKErrors } from '@kiltprotocol/core'
 import type { Caip2ChainId } from '@kiltprotocol/types'
 
 import { Caip2 } from './CAIP/index.js'
@@ -20,6 +20,7 @@ import {
   assertMatchingConnection,
   getDelegationNodeIdForCredential,
 } from './common.js'
+import { CredentialMalformedError } from './errors.js'
 import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
 
 /**
@@ -36,26 +37,26 @@ export async function checkStatus(
 ): Promise<void> {
   const { credentialStatus } = credential
   if (credentialStatus?.type !== KILT_REVOCATION_STATUS_V1_TYPE)
-    throw new Error(
-      `credential must have a credentialStatus of type ${KILT_REVOCATION_STATUS_V1_TYPE}`
+    throw new TypeError(
+      `The credential must have a credentialStatus of type ${KILT_REVOCATION_STATUS_V1_TYPE}`
     )
   const { api = ConfigService.get('api') } = opts
   const { assetNamespace, assetReference, assetInstance } =
     assertMatchingConnection(api, credential)
   if (assetNamespace !== 'kilt' || assetReference !== 'attestation') {
     throw new Error(
-      `cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
+      `Cannot handle revocation status checks for asset type ${assetNamespace}:${assetReference}`
     )
   }
   if (!assetInstance) {
-    throw new Error(
-      'The CAIP-19 identifier must contain a token id decoding to the credential root hash'
+    throw new CredentialMalformedError(
+      "The attestation record's CAIP-19 identifier must contain a token id decoding to the credential root hash"
     )
   }
   const rootHash = base58Decode(assetInstance)
   const encoded = await api.query.attestation.attestations(rootHash)
   if (encoded.isNone)
-    throw new Error(
+    throw new SDKErrors.CredentialUnverifiableError(
       `Attestation data not found at latest block ${encoded.createdAtHash}`
     )
 
@@ -67,12 +68,12 @@ export async function checkStatus(
     onChainCType !== credential.credentialSchema.id ||
     delegationId !== decoded.delegationId
   ) {
-    throw new Error(
+    throw new SDKErrors.CredentialUnverifiableError(
       `Credential not matching on-chain data: issuer "${decoded.owner}", CType: "${onChainCType}"`
     )
   }
   if (decoded.revoked !== false) {
-    throw new Error('Attestation revoked')
+    throw new SDKErrors.CredentialUnverifiableError('Attestation revoked')
   }
 }
 
