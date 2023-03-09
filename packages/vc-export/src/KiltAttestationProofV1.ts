@@ -415,17 +415,18 @@ export async function verifyProof(
       `Credential not matching on-chain data: issuer "${attester}", CType: "${onChainCType}"`
     )
   }
-  // 16. Check timestamp
-  // 1-second precision should be enough
+  // 16. Check issuance timestamp
+  const tIssuance = new Date(credential.issuanceDate).getTime()
+  // Accept exact matches as well as timestamps rounded to 1-second precision
   if (
-    Math.round(timestamp / 1000) !==
-    Math.round(new Date(credential.issuanceDate).getTime() / 1000)
-  )
+    !(timestamp === tIssuance || Math.round(timestamp / 1000) === tIssuance)
+  ) {
     throw new SDKErrors.CredentialUnverifiableError(
       `block time ${new Date(
         timestamp
       ).toISOString()} does not match issuedAt (${credential.issuanceDate})`
     )
+  }
   // 17. + 18. validate federatedTrustModel items
   const { federatedTrustModel = [] } = credential
   await Promise.all(
