@@ -76,12 +76,12 @@ export function credentialIdFromRootHash(
 interface CredentialInput {
   subject: DidUri
   claims: ICredential['claim']['contents']
-  cType: ICType | Pick<ICType, '$id'>
+  cType: ICType | ICType['$id']
   issuer: DidUri
   timestamp: number
   chainGenesisHash?: Uint8Array
   claimHash?: ICredential['rootHash']
-  legitimations?: Array<VerifiableCredential | Pick<VerifiableCredential, 'id'>>
+  legitimations?: Array<VerifiableCredential | VerifiableCredential['id']>
   delegationId?: IDelegationNode['id']
 }
 interface CredentialInputWithRootHash extends CredentialInput {
@@ -102,7 +102,7 @@ export function fromInput(
  * @param input.timestamp Timestamp of a block at which the credential can be verified, in milliseconds since January 1, 1970, UTC (UNIX epoch).
  * @param input.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
  * @param input.claimHash Optional: digest of the credential contents needed to produce a credential id.
- * @param input.legitimations Optional: array of credentials which function as legitimations to this credential.
+ * @param input.legitimations Optional: array of credentials (or credential ids) which function as legitimations to this credential.
  * @param input.delegationId Optional: the id of a delegation node which was used in attesting this credential.
  * @returns A VerfiableCredential (without proof) conforming to the KiltCredentialV1 data model. The `id` is omitted if no `claimHash` was specified.
  */
@@ -123,38 +123,44 @@ export function fromInput({
   // write root hash to id
   const id = credentialIdFromRootHash(hexToU8a(claimHash))
 
+  const cTypeId = typeof cType === 'object' ? cType.$id : cType
   // transform & annotate claim to be json-ld and VC conformant
   const credentialSubject = {
-    '@context': { '@vocab': `${cType.$id}#` },
+    '@context': { '@vocab': `${cTypeId}#` },
     id: subject,
   }
 
   Object.entries(claims).forEach(([key, claim]) => {
     if (key.startsWith('@') || key === 'id' || key === 'type') {
-      credentialSubject[`${cType.$id}#${key}`] = claim
+      credentialSubject[`${cTypeId}#${key}`] = claim
     } else {
       credentialSubject[key] = claim
     }
   })
 
   const credentialSchema: JsonSchemaValidator2018 = {
-    id: cType.$id,
+    id: cTypeId,
     type: JSON_SCHEMA_TYPE,
   }
-  if ('properties' in cType) {
+  if (typeof cType === 'object') {
     credentialSchema.name = cType.title
     credentialSchema.schema = cType
   }
 
   const federatedTrustModel: VerifiableCredential['federatedTrustModel'] = []
   legitimations?.forEach((legitimation) => {
-    const entry: KiltAttesterLegitimationV1 = {
-      id: legitimation.id,
-      type: KILT_ATTESTER_LEGITIMATION_V1_TYPE,
-    }
-    if ('credentialSubject' in legitimation) {
-      entry.verifiableCredential = legitimation
-    }
+    const type = KILT_ATTESTER_LEGITIMATION_V1_TYPE
+    const entry: KiltAttesterLegitimationV1 =
+      typeof legitimation === 'object'
+        ? {
+            id: legitimation.id,
+            type,
+            verifiableCredential: legitimation,
+          }
+        : {
+            id: legitimation,
+            type,
+          }
     federatedTrustModel.push(entry)
   })
   if (delegationId) {
@@ -349,11 +355,11 @@ export function fromICredential(
     claim,
   } = input
   const { cTypeHash, owner: subject, contents: claims } = claim
-  const cType = ctype ?? { $id: CType.hashToId(cTypeHash) }
+  const cType = ctype ?? CType.hashToId(cTypeHash)
 
-  const legitimations = legitimationsInput.map(({ rootHash: legHash }) => ({
-    id: credentialIdFromRootHash(hexToU8a(legHash)),
-  }))
+  const legitimations = legitimationsInput.map(({ rootHash: legHash }) =>
+    credentialIdFromRootHash(hexToU8a(legHash))
+  )
 
   const vc = fromInput({
     claimHash,
