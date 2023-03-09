@@ -25,11 +25,8 @@ import {
   JSON_SCHEMA_TYPE,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
-  KILT_CREDENTIAL_CONTEXT_URL,
   KILT_CREDENTIAL_IRI_PREFIX,
   KILT_CREDENTIAL_TYPE,
-  W3C_CREDENTIAL_CONTEXT_URL,
-  W3C_CREDENTIAL_TYPE,
   spiritnetGenesisHash,
 } from './constants.js'
 import type {
@@ -202,17 +199,7 @@ export const credentialSchema: JsonSchema.Schema = {
       uniqueItems: true,
       minItems: 2,
       maxItems: 2,
-      oneOf: [
-        { items: { enum: DEFAULT_CREDENTIAL_TYPES } },
-        {
-          items: {
-            enum: [
-              `${W3C_CREDENTIAL_CONTEXT_URL}#${W3C_CREDENTIAL_TYPE}`,
-              `${KILT_CREDENTIAL_CONTEXT_URL}#${KILT_CREDENTIAL_TYPE}`,
-            ],
-          },
-        },
-      ],
+      items: { enum: DEFAULT_CREDENTIAL_TYPES },
     },
     id: {
       type: 'string',
