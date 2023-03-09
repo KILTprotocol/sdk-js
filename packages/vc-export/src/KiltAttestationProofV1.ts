@@ -407,47 +407,52 @@ export async function verifyProof(
       ).toISOString()} does not match issuedAt (${credential.issuanceDate})`
     )
   // 17. + 18. validate federatedTrustModel items
+  const { federatedTrustModel = [] } = credential
   await Promise.all(
-    credential.federatedTrustModel?.map(async (i) => {
-      if (i.type === KILT_ATTESTER_DELEGATION_V1_TYPE) {
-        // make sure on-chain delegation matches delegation on credential
-        if (
-          !u8aEq(delegationIdFromAttesterDelegation(i), hexToU8a(delegationId))
-        )
-          throw new SDKErrors.CredentialUnverifiableError(
-            `Delegation ${i.id} does not match on-chain records`
-          )
-        // TODO: check delegators
-        if (i.delegators) {
-          // const node = await DelegationNode.fetch(onChain.delegationId as string)
-          throw new Error('not implemented')
+    federatedTrustModel.map(async (i) => {
+      switch (i.type) {
+        case KILT_ATTESTER_DELEGATION_V1_TYPE: {
+          // make sure on-chain delegation matches delegation on credential
+          const credentialDelegationId = delegationIdFromAttesterDelegation(i)
+          const onChainDelegationId = hexToU8a(delegationId)
+          if (!u8aEq(credentialDelegationId, onChainDelegationId))
+            throw new SDKErrors.CredentialUnverifiableError(
+              `Delegation ${i.id} does not match on-chain records`
+            )
+          // TODO: check delegators
+          if (i.delegators) {
+            // const node = await DelegationNode.fetch(onChain.delegationId as string)
+            throw new Error('not implemented')
+          }
+          break
         }
-        return
-      }
-      if (
-        i.type === KILT_ATTESTER_LEGITIMATION_V1_TYPE &&
-        i.verifiableCredential
-      ) {
-        const { proof: legitimationProof, ...legitimation } =
-          i.verifiableCredential
-        await verifyProof(
-          legitimation,
-          legitimationProof as KiltAttestationProofV1,
-          { api }
-        ).catch((cause) => {
-          throw new SDKErrors.CredentialUnverifiableError(
-            `failed to verify legitimation ${i.id}`,
-            {
-              cause,
-            }
+        case KILT_ATTESTER_LEGITIMATION_V1_TYPE: {
+          const legitimation = i.verifiableCredential
+          if (legitimation) {
+            await verifyProof(
+              legitimation,
+              legitimation.proof as KiltAttestationProofV1,
+              { api }
+            ).catch((cause) => {
+              throw new SDKErrors.CredentialUnverifiableError(
+                `failed to verify legitimation ${i.id}`,
+                {
+                  cause,
+                }
+              )
+            })
+          }
+          break
+        }
+        default: {
+          throw new CredentialMalformedError(
+            `unknown type ${
+              (i as { type: string }).type
+            } in federatedTrustModel`
           )
-        })
-        return
+        }
       }
-      throw new CredentialMalformedError(
-        `unknown type ${i.type} in federatedTrustModel`
-      )
-    }) ?? []
+    })
   )
 }
 
