@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts",
+    "jest.config.js",
+    "docs",
+    "**/*.spec.ts",
+    "src/__integrationtests__",
+    "**/test"
+  ],
+  // indicates package dependencies; must be in sync with @kiltprotocol imports in package.json
+  "references": [
+    { "path": "../augment-api" },
+    { "path": "../config" },
+    { "path": "../types" },
+    { "path": "../utils" }
+  ]
+}

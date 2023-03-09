@@ -15,7 +15,7 @@
       "packages/core/src/index.ts",
       "packages/messaging/src/index.ts",
       "packages/vc-export/src/index.ts",
-      "packages/sdk-js/src/index.ts",
+      "packages/sdk-js/src/index.ts"
     ],
     "out": "docs/api",
     "theme": "default",

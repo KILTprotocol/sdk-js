@@ -53,7 +53,7 @@ jobs:
             yarn.lock
 
       - name: yarn build
-        run: yarn build
+        run: yarn build:release
       - name: zip build
         run: zip -r build.zip .
       - name: upload build

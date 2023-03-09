@@ -1,10 +1,16 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "include": ["bundle-test.ts", "types.d.ts"],
   "compilerOptions": {
     "module": "None",
     "resolveJsonModule": false,
     "sourceMap": false,
     "outDir": "dist"
-  }
+  },
+  // indicates package dependencies; must be in sync with @kiltprotocol imports in package.json
+  // note that circular dependcies are not allowed; to avoid them, none of the other packages are marked as depending on this.
+  "references": [
+    {"path": "../packages/types"},
+    {"path": "../packages/sdk-js"},
+  ]
 }

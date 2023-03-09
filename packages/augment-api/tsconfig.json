@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "paths": {
+      "@kiltprotocol/augment-api/*": ["./src/*"],
+      "@polkadot/api/augment": ["./src/interfaces/augment-api.ts"],
+      "@polkadot/types/augment": ["./src/interfaces/augment-types.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["coverage", "**/*.spec.ts", "src/**/definitions.ts"],
+  // indicates package dependencies; must be in sync with @kiltprotocol imports in package.json
+  "references": [
+    {
+      "path": "../type-definitions"
+    }
+  ]
+}

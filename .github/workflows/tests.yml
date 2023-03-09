@@ -45,7 +45,7 @@ jobs:
       - name: yarn install
         run: yarn install --immutable
       - name: yarn build
-        run: yarn build
+        run: yarn build:release
       - name: zip build
         run: zip -r build.zip .
       - name: upload build

@@ -13,16 +13,17 @@
     }
   },
   "files": [
-    "lib/**/*"
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "lib/**/*.json"
   ],
   "scripts": {
     "clean": "rimraf ./lib",
-    "build": "yarn clean && yarn build:ts",
+    "build": "yarn build:cjs && yarn build:esm",
+    "build:cjs": "tsc -b tsconfig.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
+    "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
     "build:types": "yarn generate:defs && yarn generate:meta && yarn build:fixes",
     "build:fixes": "node scripts/fixTypes.mjs",
-    "build:ts": "yarn build:cjs && yarn build:esm",
-    "build:cjs": "tsc --declaration -p tsconfig.build.json && echo '{\"type\":\"commonjs\"}' > ./lib/cjs/package.json",
-    "build:esm": "tsc --declaration -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > ./lib/esm/package.json",
     "generate:defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs --package @kiltprotocol/augment-api --input ./src/interfaces --endpoint ./metadata/spiritnet.json",
     "generate:meta": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --package @kiltprotocol/augment-api --endpoint ./metadata/spiritnet.json --output ./src/interfaces  --strict",
     "update-metadata": "node ./scripts/fetchMetadata.js -o './metadata/spiritnet.json' -e 'wss://spiritnet.kilt.io/'"

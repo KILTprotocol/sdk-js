@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["coverage", "**/*.spec.ts"],
+  // indicates package dependencies; must be in sync with @kiltprotocol imports in package.json
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
+}

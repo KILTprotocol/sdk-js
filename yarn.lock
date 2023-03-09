@@ -1849,6 +1849,8 @@ __metadata:
   dependencies:
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
+    rimraf: ^3.0.2
+    typescript: ^4.8.3
   languageName: unknown
   linkType: soft
 
@@ -9192,9 +9194,9 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"root-workspace-0b6124@workspace:.":
+"root-workspace@workspace:.":
   version: 0.0.0-use.local
-  resolution: "root-workspace-0b6124@workspace:."
+  resolution: "root-workspace@workspace:."
   dependencies:
     "@babel/preset-env": ^7.20.2
     "@commitlint/cli": ^9.0.1
