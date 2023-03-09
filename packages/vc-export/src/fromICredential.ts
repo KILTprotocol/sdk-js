@@ -5,34 +5,34 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DidUri, ICredential, ICType } from '@kiltprotocol/types'
+import type { ICredential } from '@kiltprotocol/types'
 
 import { fromICredential as vcFromCredential } from './KiltCredentialV1.js'
 import { fromICredential as proofFromCredential } from './KiltAttestationProofV1.js'
 import type { KiltAttestationProofV1, VerifiableCredential } from './types.js'
 
+type Params = Parameters<typeof vcFromCredential>[1] &
+  Parameters<typeof proofFromCredential>[1]
+
 /**
  * Transforms an [[ICredential]] object to conform to the KiltCredentialV1 data model.
  *
  * @param input An [[ICredential]] object.
- * @param issuer The issuer of the attestation to this credential (attester).
- * @param chainGenesisHash Genesis hash of the chain against which the credential is verifiable.
- * @param blockHash Hash of any block at which the credential is verifiable (i.e. Attested and not revoked).
- * @param timestamp Timestamp of the block referenced by blockHash in milliseconds since January 1, 1970, UTC (UNIX epoch).
- * @param ctype Optional: The CType object referenced by the [[ICredential]].
+ * @param opts Additional required and optional parameters for producing a VC from an [[ICredential]].
+ * @param opts.issuer The issuer of the attestation to this credential (attester).
+ * @param opts.blockHash Hash of any block at which the credential is verifiable (i.e. Attested and not revoked).
+ * @param opts.timestamp Timestamp of the block referenced by blockHash in milliseconds since January 1, 1970, UTC (UNIX epoch).
+ * @param opts.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
+ * @param opts.cType Optional: The CType object referenced by the [[ICredential]].
  * @returns A KiltCredentialV1 with embedded KiltAttestationProofV1 proof.
  */
 export function exportICredentialToVc(
   input: ICredential,
-  issuer: DidUri,
-  chainGenesisHash: Uint8Array,
-  blockHash: Uint8Array,
-  timestamp: number,
-  ctype?: ICType
+  { blockHash, issuer, chainGenesisHash, timestamp, cType }: Params
 ): VerifiableCredential & { proof: KiltAttestationProofV1 } {
-  const proof = proofFromCredential(input, blockHash)
+  const proof = proofFromCredential(input, { blockHash })
   return {
-    ...vcFromCredential(input, issuer, chainGenesisHash, timestamp, ctype),
+    ...vcFromCredential(input, { issuer, chainGenesisHash, timestamp, cType }),
     proof,
   }
 }

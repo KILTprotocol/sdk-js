@@ -30,6 +30,7 @@ import {
   KILT_CREDENTIAL_TYPE,
   W3C_CREDENTIAL_CONTEXT_URL,
   W3C_CREDENTIAL_TYPE,
+  spiritnetGenesisHash,
 } from './constants.js'
 import type {
   JsonSchemaValidator2018,
@@ -78,7 +79,7 @@ interface CredentialInput {
   cType: ICType | Pick<ICType, '$id'>
   issuer: DidUri
   timestamp: number
-  chainGenesisHash: Uint8Array
+  chainGenesisHash?: Uint8Array
   claimHash?: ICredential['rootHash']
   legitimations?: Array<VerifiableCredential | Pick<VerifiableCredential, 'id'>>
   delegationId?: IDelegationNode['id']
@@ -99,7 +100,7 @@ export function fromInput(
  * @param input.cType The CType (or alternatively its id) to which the claims conform.
  * @param input.issuer The issuer of the credential.
  * @param input.timestamp Timestamp of a block at which the credential can be verified, in milliseconds since January 1, 1970, UTC (UNIX epoch).
- * @param input.chainGenesisHash Genesis hash of the chain against which this credential is verifiable.
+ * @param input.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
  * @param input.claimHash Optional: digest of the credential contents needed to produce a credential id.
  * @param input.legitimations Optional: array of credentials which function as legitimations to this credential.
  * @param input.delegationId Optional: the id of a delegation node which was used in attesting this credential.
@@ -112,7 +113,7 @@ export function fromInput({
   cType,
   issuer,
   timestamp,
-  chainGenesisHash,
+  chainGenesisHash = spiritnetGenesisHash,
   legitimations,
   delegationId,
 }: CredentialInput): Omit<
@@ -324,35 +325,40 @@ export function validateStructure(credential: VerifiableCredential): void {
  * Transforms an [[ICredential]] object to conform to the KiltCredentialV1 data model.
  *
  * @param input An [[ICredential]] object.
- * @param issuer The issuer of the attestation to this credential (attester).
- * @param chainGenesisHash Genesis hash of the chain against which the credential is verifiable.
- * @param timestamp Timestamp of the block referenced by blockHash in milliseconds since January 1, 1970, UTC (UNIX epoch).
- * @param ctype Optional: The CType object referenced by the [[ICredential]].
+ * @param options Additional required and optional parameters for producing a VC from an [[ICredential]].
+ * @param options.issuer The issuer of the attestation to this credential (attester).
+ * @param options.timestamp Timestamp of the block referenced by blockHash in milliseconds since January 1, 1970, UTC (UNIX epoch).
+ * @param options.cType Optional: The CType object referenced by the [[ICredential]].
+ * @param options.chainGenesisHash Optional: Genesis hash of the chain against which this credential is verifiable. Defaults to the spiritnet genesis hash.
  * @returns A KiltCredentialV1 with embedded KiltAttestationProofV1 proof.
  */
 export function fromICredential(
   input: ICredential,
-  issuer: DidUri,
-  chainGenesisHash: Uint8Array,
-  timestamp: number,
-  ctype?: ICType
+  {
+    issuer,
+    timestamp,
+    cType: ctype,
+    chainGenesisHash = spiritnetGenesisHash,
+  }: Pick<CredentialInput, 'chainGenesisHash' | 'timestamp' | 'issuer'> &
+    Partial<Pick<CredentialInput, 'cType'>>
 ): VerifiableCredential {
   const {
     legitimations: legitimationsInput,
     delegationId,
-    rootHash,
+    rootHash: claimHash,
     claim,
   } = input
-  const cType = ctype ?? { $id: CType.hashToId(claim.cTypeHash) }
+  const { cTypeHash, owner: subject, contents: claims } = claim
+  const cType = ctype ?? { $id: CType.hashToId(cTypeHash) }
 
   const legitimations = legitimationsInput.map(({ rootHash: legHash }) => ({
     id: credentialIdFromRootHash(hexToU8a(legHash)),
   }))
 
   const vc = fromInput({
-    claimHash: rootHash,
-    subject: claim.owner,
-    claims: claim.contents,
+    claimHash,
+    subject,
+    claims,
     chainGenesisHash,
     cType,
     issuer,

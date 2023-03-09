@@ -52,7 +52,7 @@ function makeEvent(idx: U8aLike, eventData: unknown[]) {
   ])
 }
 
-const ctype: ICType = {
+const cType: ICType = {
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
   title: 'membership',
   properties: {
@@ -169,14 +169,13 @@ mockedApi.query.system = {
 } as any
 
 it('exports credential to VC', () => {
-  const exported = exportICredentialToVc(
-    credential,
-    attestation.owner,
-    mockedApi.genesisHash,
+  const exported = exportICredentialToVc(credential, {
+    issuer: attestation.owner,
+    chainGenesisHash: mockedApi.genesisHash,
     blockHash,
     timestamp,
-    ctype
-  )
+    cType,
+  })
   expect(exported).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
     type: DEFAULT_CREDENTIAL_TYPES,
@@ -199,20 +198,19 @@ it('exports credential to VC', () => {
 })
 
 it('exports includes ctype as schema', () => {
-  const exported = exportICredentialToVc(
-    credential,
-    attestation.owner,
-    mockedApi.genesisHash,
+  const exported = exportICredentialToVc(credential, {
+    issuer: attestation.owner,
+    chainGenesisHash: mockedApi.genesisHash,
     blockHash,
     timestamp,
-    ctype
-  )
+    cType,
+  })
   expect(exported).toMatchObject({
     credentialSchema: {
-      id: ctype.$id,
-      name: ctype.title,
+      id: cType.$id,
+      name: cType.title,
       type: 'JsonSchemaValidator2018',
-      schema: ctype,
+      schema: cType,
     },
   })
   expect(() => validateCredentialStructure(exported)).not.toThrow()
@@ -220,14 +218,13 @@ it('exports includes ctype as schema', () => {
 
 it('VC has correct format (full example)', () => {
   expect(
-    exportICredentialToVc(
-      credential,
-      attestation.owner,
-      mockedApi.genesisHash,
+    exportICredentialToVc(credential, {
+      issuer: attestation.owner,
+      chainGenesisHash: mockedApi.genesisHash,
       blockHash,
       timestamp,
-      ctype
-    )
+      cType,
+    })
   ).toMatchObject({
     '@context': DEFAULT_CREDENTIAL_CONTEXTS,
     type: DEFAULT_CREDENTIAL_TYPES,
@@ -279,13 +276,12 @@ it('VC has correct format (full example)', () => {
 describe('proofs', () => {
   let VC: VerifiableCredential & Required<Pick<VerifiableCredential, 'proof'>>
   beforeAll(() => {
-    VC = exportICredentialToVc(
-      credential,
-      attestation.owner,
-      mockedApi.genesisHash,
+    VC = exportICredentialToVc(credential, {
+      issuer: attestation.owner,
+      chainGenesisHash: mockedApi.genesisHash,
       blockHash,
-      timestamp
-    )
+      timestamp,
+    })
   })
 
   it('it verifies proof', async () => {
@@ -302,14 +298,13 @@ describe('proofs', () => {
   })
 
   it('it verifies schema', () => {
-    const VCWithSchema = exportICredentialToVc(
-      credential,
-      attestation.owner,
-      mockedApi.genesisHash,
+    const VCWithSchema = exportICredentialToVc(credential, {
+      issuer: attestation.owner,
+      chainGenesisHash: mockedApi.genesisHash,
       blockHash,
       timestamp,
-      ctype
-    )
+      cType,
+    })
     expect(() => validateSchema(VCWithSchema)).not.toThrow()
 
     VCWithSchema.credentialSubject.name = 5
@@ -330,13 +325,12 @@ describe('proofs', () => {
       'name',
       'birthday',
     ])
-    const { proof, ...reducedVC } = exportICredentialToVc(
-      reducedCredential,
-      attestation.owner,
-      mockedApi.genesisHash,
+    const { proof, ...reducedVC } = exportICredentialToVc(reducedCredential, {
+      issuer: attestation.owner,
+      chainGenesisHash: mockedApi.genesisHash,
       blockHash,
-      timestamp
-    )
+      timestamp,
+    })
 
     await expect(
       verifyProof(reducedVC, proof, { api: mockedApi })
@@ -367,13 +361,12 @@ describe('proofs', () => {
 
   describe('negative tests', () => {
     beforeEach(() => {
-      VC = exportICredentialToVc(
-        credential,
-        attestation.owner,
-        mockedApi.genesisHash,
+      VC = exportICredentialToVc(credential, {
+        issuer: attestation.owner,
+        chainGenesisHash: mockedApi.genesisHash,
         blockHash,
-        timestamp
-      )
+        timestamp,
+      })
     })
 
     it('errors on proof mismatch', async () => {

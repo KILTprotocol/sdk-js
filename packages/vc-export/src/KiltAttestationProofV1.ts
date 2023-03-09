@@ -79,12 +79,13 @@ import type {
  * Produces an instance of [[KiltAttestationProofV1]] from an [[ICredential]].
  *
  * @param credential Input credential.
- * @param blockHash Hash of a block at which the proof must be verifiable.
+ * @param opts Additional parameters required for creating a proof from an [[ICredential]].
+ * @param opts.blockHash Hash of a block at which the proof must be verifiable.
  * @returns An embedded proof for a verifiable credential derived from the input.
  */
 export function fromICredential(
   credential: ICredential,
-  blockHash: Uint8Array
+  { blockHash }: { blockHash: Uint8Array }
 ): KiltAttestationProofV1 {
   // `block` field is base58 encoding of block hash
   const block = base58Encode(blockHash)
