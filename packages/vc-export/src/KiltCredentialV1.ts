@@ -296,7 +296,8 @@ export const credentialSchema: JsonSchema.Schema = {
 
 // draft version '7' should align with $schema property of the schema above
 const schemaValidator = new JsonSchema.Validator(credentialSchema, '7')
-schemaValidator.addSchema(CType.Schemas.CTypeModel)
+// we define an id when adding the CTypeModel because more than one anonymous schema is not allowed
+schemaValidator.addSchema(CType.Schemas.CTypeModel, 'kilt.schemas/CTypeModel')
 
 /**
  * Validates an object against the KiltCredentialV1 data model.
