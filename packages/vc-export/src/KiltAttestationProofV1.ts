@@ -30,7 +30,7 @@ import type {
 } from '@polkadot/types/interfaces/types.js'
 import type { IEventData } from '@polkadot/types/types'
 
-import { CType } from '@kiltprotocol/core'
+import { CType, DelegationNode } from '@kiltprotocol/core'
 import { getFullDidUri, validateUri } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
@@ -303,6 +303,26 @@ async function verifyAttestedAt(
   }
 }
 
+async function findDelegators(
+  nodeId: string,
+  delegators: Set<DidUri>
+): Promise<void> {
+  const node = await DelegationNode.fetch(nodeId)
+  delegators.delete(node.account)
+  if (delegators.size === 0) {
+    return
+  }
+  if (node.parentId) {
+    await findDelegators(node.parentId, delegators)
+    return
+  }
+  throw new SDKErrors.CredentialUnverifiableError(
+    `The following delegators are not in the attestation's delegation hierarchy: ${[
+      ...delegators,
+    ]}`
+  )
+}
+
 /**
  * Verifies a KILT attestation proof by querying data from the KILT blockchain.
  * This includes querying the KILT blockchain with the credential id, which returns an attestation record if attested.
@@ -413,18 +433,18 @@ export async function verifyProof(
       switch (i.type) {
         case KILT_ATTESTER_DELEGATION_V1_TYPE: {
           // make sure on-chain delegation matches delegation on credential
-          const credentialDelegationId = delegationIdFromAttesterDelegation(i)
-          const onChainDelegationId = hexToU8a(delegationId)
-          if (!u8aEq(credentialDelegationId, onChainDelegationId))
-            throw new SDKErrors.CredentialUnverifiableError(
-              `Delegation ${i.id} does not match on-chain records`
-            )
-          // TODO: check delegators
-          if (i.delegators) {
-            // const node = await DelegationNode.fetch(onChain.delegationId as string)
-            throw new Error('not implemented')
+          if (typeof delegationId === 'string') {
+            const credentialDelegationId = delegationIdFromAttesterDelegation(i)
+            if (u8aEq(credentialDelegationId, delegationId)) {
+              if (i.delegators) {
+                await findDelegators(delegationId, new Set(i.delegators))
+              }
+              return
+            }
           }
-          break
+          throw new SDKErrors.CredentialUnverifiableError(
+            `Delegation ${i.id} does not match on-chain records (${delegationId})`
+          )
         }
         case KILT_ATTESTER_LEGITIMATION_V1_TYPE: {
           const legitimation = i.verifiableCredential
