@@ -22,9 +22,7 @@ import type {
 } from '@kiltprotocol/types'
 
 import type { VerifiableCredential } from './types'
-import {
-  validateStructure as validateCredentialStructure,
-} from './KiltCredentialV1'
+import { validateStructure as validateCredentialStructure } from './KiltCredentialV1'
 import { exportICredentialToVc } from './fromICredential'
 import {
   DEFAULT_CREDENTIAL_CONTEXTS,
