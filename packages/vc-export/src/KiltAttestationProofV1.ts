@@ -57,11 +57,7 @@ import {
   KILT_REVOCATION_STATUS_V1_TYPE,
   spiritnetGenesisHash,
 } from './constants.js'
-import {
-  credentialIdFromRootHash,
-  credentialIdToRootHash,
-  validateStructure as validateCredentialStructure,
-} from './KiltCredentialV1.js'
+import { validateStructure as validateCredentialStructure } from './KiltCredentialV1.js'
 import { fromGenesisAndRootHash } from './KiltRevocationStatusV1.js'
 import {
   jsonLdExpandCredentialSubject,
@@ -69,6 +65,8 @@ import {
   delegationIdFromAttesterDelegation,
   getDelegationNodeIdForCredential,
   assertMatchingConnection,
+  credentialIdFromRootHash,
+  credentialIdToRootHash,
 } from './common.js'
 import { CredentialMalformedError, ProofMalformedError } from './errors.js'
 import type {

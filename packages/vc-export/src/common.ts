@@ -5,12 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { base58Decode } from '@polkadot/util-crypto'
+import { base58Decode, base58Encode } from '@polkadot/util-crypto'
 import type { ApiPromise } from '@polkadot/api'
 
 import { Caip19, Caip2 } from './CAIP/index.js'
 
-import { KILT_ATTESTER_DELEGATION_V1_TYPE } from './constants.js'
+import {
+  KILT_ATTESTER_DELEGATION_V1_TYPE,
+  KILT_CREDENTIAL_IRI_PREFIX,
+} from './constants.js'
 import { CredentialMalformedError } from './errors.js'
 import type { KiltAttesterDelegationV1, VerifiableCredential } from './types.js'
 
@@ -110,4 +113,38 @@ export function assertMatchingConnection(
     )
   }
   return parsed
+}
+
+/**
+ * Extracts the credential root hash from a KILT VC's id.
+ *
+ * @param credentialId The IRI that serves as the credential id on KILT VCs.
+ * @returns The credential root hash as a Uint8Array.
+ */
+export function credentialIdToRootHash(
+  credentialId: VerifiableCredential['id']
+): Uint8Array {
+  const base58String = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
+    ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
+    : credentialId
+  try {
+    return base58Decode(base58String, false)
+  } catch (cause) {
+    throw new CredentialMalformedError(
+      'Credential id is not a valid identifier (could not extract base58 encoded string)',
+      { cause }
+    )
+  }
+}
+
+/**
+ * Transforms the credential root hash to an IRI that functions as the VC's id.
+ *
+ * @param rootHash Credential root hash as a Uint8Array.
+ * @returns An IRI composed by prefixing the root hash with the [[KILT_CREDENTIAL_IRI_PREFIX]].
+ */
+export function credentialIdFromRootHash(
+  rootHash: Uint8Array
+): VerifiableCredential['id'] {
+  return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(rootHash, false)}`
 }

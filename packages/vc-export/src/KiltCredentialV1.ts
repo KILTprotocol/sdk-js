@@ -6,7 +6,7 @@
  */
 
 import { hexToU8a } from '@polkadot/util'
-import { base58Decode, base58Encode } from '@polkadot/util-crypto'
+import { base58Encode } from '@polkadot/util-crypto'
 
 import { JsonSchema } from '@kiltprotocol/utils'
 import { CType } from '@kiltprotocol/core'
@@ -25,7 +25,6 @@ import {
   JSON_SCHEMA_TYPE,
   KILT_ATTESTER_DELEGATION_V1_TYPE,
   KILT_ATTESTER_LEGITIMATION_V1_TYPE,
-  KILT_CREDENTIAL_IRI_PREFIX,
   KILT_CREDENTIAL_TYPE,
   spiritnetGenesisHash,
 } from './constants.js'
@@ -35,40 +34,7 @@ import type {
   KiltAttesterLegitimationV1,
   VerifiableCredential,
 } from './types.js'
-
-/**
- * Extracts the credential root hash from a KILT VC's id.
- *
- * @param credentialId The IRI that serves as the credential id on KILT VCs.
- * @returns The credential root hash as a Uint8Array.
- */
-export function credentialIdToRootHash(
-  credentialId: VerifiableCredential['id']
-): Uint8Array {
-  const base58String = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
-    ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
-    : credentialId
-  try {
-    return base58Decode(base58String, false)
-  } catch (cause) {
-    throw new CredentialMalformedError(
-      'Credential id is not a valid identifier (could not extract base58 encoded string)',
-      { cause }
-    )
-  }
-}
-
-/**
- * Transforms the credential root hash to an IRI that functions as the VC's id.
- *
- * @param rootHash Credential root hash as a Uint8Array.
- * @returns An IRI composed by prefixing the root hash with the [[KILT_CREDENTIAL_IRI_PREFIX]].
- */
-export function credentialIdFromRootHash(
-  rootHash: Uint8Array
-): VerifiableCredential['id'] {
-  return `${KILT_CREDENTIAL_IRI_PREFIX}${base58Encode(rootHash, false)}`
-}
+import { credentialIdFromRootHash } from './common.js'
 
 interface CredentialInput {
   subject: DidUri

@@ -23,7 +23,6 @@ import type {
 
 import type { VerifiableCredential } from './types'
 import {
-  credentialIdFromRootHash,
   validateStructure as validateCredentialStructure,
 } from './KiltCredentialV1'
 import { exportICredentialToVc } from './fromICredential'
@@ -34,6 +33,7 @@ import {
 import { verify } from './KiltAttestationProofV1'
 import { validateSchema } from './CredentialSchema'
 import { checkStatus } from './KiltRevocationStatusV1'
+import { credentialIdFromRootHash } from './common'
 
 const mockedApi = ApiMocks.createAugmentedApi()
 
