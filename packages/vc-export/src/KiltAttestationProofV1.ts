@@ -206,7 +206,7 @@ function makeCommitments(
  * @param proof A [[KiltAttestationProofV1]] type proof for this credential.
  * @returns The root hash.
  */
-export function calculateRootHash(
+function calculateRootHash(
   credential: Pick<VerifiableCredential, 'federatedTrustModel'> &
     Partial<VerifiableCredential>,
   proof: Pick<KiltAttestationProofV1, 'commitments'> &
@@ -325,7 +325,7 @@ async function verifyLegitimation(
   if (verifiableCredential) {
     try {
       // eslint-disable-next-line no-use-before-define
-      await verifyProof(
+      await verify(
         verifiableCredential,
         verifiableCredential.proof as KiltAttestationProofV1,
         { api }
@@ -352,7 +352,7 @@ async function verifyLegitimation(
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * @returns Object indicating whether proof could be verified.
  */
-export async function verifyProof(
+export async function verify(
   credentialInput: VerifiableCredential,
   proof: KiltAttestationProofV1,
   opts: { api?: ApiPromise } = {}
@@ -493,7 +493,7 @@ export async function verifyProof(
  * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `salt` entries for these.
  * @example
  * ```
- * const { proof, credential } = deriveProof(
+ * const { proof, credential } = updateProof(
  *  originalCredential,
  *  originalProof,
  *  ['name', 'address']
@@ -501,7 +501,7 @@ export async function verifyProof(
  * const derivedCredential = { ...credential, proof }
  * ```
  */
-export function deriveProof(
+export function updateProof(
   credentialInput: VerifiableCredential,
   proofInput: KiltAttestationProofV1,
   disclosedClaims: Array<keyof CredentialSubject>
@@ -662,7 +662,7 @@ export type AttestationHandler = (
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential shall be anchored.
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
-export async function createProof(
+export async function issue(
   credential: VerifiableCredential,
   {
     did,
