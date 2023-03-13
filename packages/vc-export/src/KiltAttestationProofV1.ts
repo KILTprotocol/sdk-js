@@ -158,11 +158,6 @@ export function validateStructure(proof: KiltAttestationProofV1): void {
     )
 }
 
-export interface VerificationResult {
-  verified: boolean
-  errors: Error[]
-}
-
 /**
  * Normalizes claims in credentialSubject for the commitment scheme of this proof method.
  * This involves sorting the normalized representation of claims by their blake2b digests.
