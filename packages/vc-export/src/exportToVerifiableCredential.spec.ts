@@ -31,7 +31,7 @@ import {
   DEFAULT_CREDENTIAL_TYPES,
 } from './constants'
 import { verify } from './KiltAttestationProofV1'
-import { validateSchema } from './CredentialSchema'
+import { validateSubject } from './CredentialSchema'
 import { check as checkStatus } from './KiltRevocationStatusV1'
 import { credentialIdFromRootHash } from './common'
 
@@ -303,11 +303,11 @@ describe('proofs', () => {
       timestamp,
       cType,
     })
-    expect(() => validateSchema(VCWithSchema)).not.toThrow()
+    expect(() => validateSubject(VCWithSchema)).not.toThrow()
 
     VCWithSchema.credentialSubject.name = 5
 
-    expect(() => validateSchema(VCWithSchema)).toThrow()
+    expect(() => validateSubject(VCWithSchema)).toThrow()
   })
 
   it('it verifies credential with all properties revealed', async () => {

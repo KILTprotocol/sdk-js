@@ -19,7 +19,7 @@ import type { VerifiableCredential } from './types.js'
  * @param credential.credentialSchema The credentialSchema to be applied.
  * @param cType Optionally pass the CType definition to be used if it is not embedded in the credentialSchema.
  */
-export function validateSchema(
+export function validateSubject(
   { credentialSubject, credentialSchema }: VerifiableCredential,
   cType?: ICType
 ): void {
