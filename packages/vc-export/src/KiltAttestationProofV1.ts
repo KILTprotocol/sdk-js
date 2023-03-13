@@ -552,10 +552,11 @@ export function deriveProof(
  * Initialize a new, prelimiary [[KiltAttestationProofV1]], which is the first step in issuing a new credential.
  *
  * @example
+ * // start with initializing proof
  * const [proof, args] = initializeProof(credential)
  * const tx = api.tx.attestation.add(...args)
- * const didSigned = await Did.authorizeTx(did, tx, signCallback)
- * await didSigned.signAndSend(signerKeypair)
+ * // after DID-authorizing and submitting transaction (taking note of the block hash and timestamp where the transaction was included)
+ * const verifiableCredential = finalizeProof(credential, proof, {blockHash, timestamp})
  *
  * @param credential A KiltCredentialV1 for which a proof shall be created.
  * @returns A tuple where the first entry is the (partial) proof object and the second entry are the arguments required to create an extrinsic that anchors the proof on the KILT blockchain.
@@ -603,6 +604,13 @@ export function initializeProof(
 /**
  * Finalizes a [[KiltAttestationProofV1]] after anchoring the prelimiary proof's root hash on the KILT blockchain.
  *
+ * @example
+ * // start with initializing proof
+ * const [proof, args] = initializeProof(credential)
+ * const tx = api.tx.attestation.add(...args)
+ * // after DID-authorizing and submitting transaction (taking note of the block hash and timestamp where the transaction was included)
+ * const verifiableCredential = finalizeProof(credential, proof, {blockHash, timestamp})
+ *
  * @param credential The KiltCredentialV1 for which the proof was initialized.
  * @param proof The partial proof object created via `initializeProof`.
  * @param includedAt Information on the addition of the attestation record anchoring the proof on the KILT blockchain.
@@ -642,7 +650,7 @@ export type AttestationHandler = (
  *
  * Creates a complete [[KiltAttestationProofV1]] for issuing a new credential.
  *
- * @param credential A KiltCredentialV1 for which a proof shall be created.
+ * @param credential A [[KiltCredentialV1]] for which a proof shall be created.
  * @param opts Additional parameters.
  * @param opts.did The attester's DID URI.
  * @param opts.didSigner A signing callback to create the attester's signature over the transaction to store an attestation record on-chain.
