@@ -74,6 +74,7 @@ import { CredentialMalformedError, ProofMalformedError } from './errors.js'
 import type {
   CredentialSubject,
   KiltAttestationProofV1,
+  KiltAttesterLegitimationV1,
   VerifiableCredential,
 } from './types.js'
 
@@ -305,7 +306,7 @@ async function verifyAttestedAt(
   }
 }
 
-async function findDelegators(
+async function verifyAuthoritiesInHierarchy(
   nodeId: string,
   delegators: Set<DidUri>
 ): Promise<void> {
@@ -315,7 +316,7 @@ async function findDelegators(
     return
   }
   if (node.parentId) {
-    await findDelegators(node.parentId, delegators)
+    await verifyAuthoritiesInHierarchy(node.parentId, delegators)
     return
   }
   throw new SDKErrors.CredentialUnverifiableError(
@@ -323,6 +324,29 @@ async function findDelegators(
       ...delegators,
     ]}`
   )
+}
+
+async function verifyLegitimation(
+  { verifiableCredential, id }: KiltAttesterLegitimationV1,
+  api: ApiPromise
+): Promise<void> {
+  if (verifiableCredential) {
+    try {
+      // eslint-disable-next-line no-use-before-define
+      await verifyProof(
+        verifiableCredential,
+        verifiableCredential.proof as KiltAttestationProofV1,
+        { api }
+      )
+    } catch (cause) {
+      throw new SDKErrors.CredentialUnverifiableError(
+        `failed to verify legitimation ${id}`,
+        {
+          cause,
+        }
+      )
+    }
+  }
 }
 
 /**
@@ -412,9 +436,16 @@ export async function verifyProof(
     delegationId,
   } = await verifyAttestedAt(rootHash, base58Decode(proof.block), { api })
 
-  if (attester !== issuer || onChainCType !== credential.credentialSchema.id) {
+  const issuerMatches = attester === issuer
+  const cTypeMatches = onChainCType === credential.credentialSchema.id
+  const delegationMatches = u8aEq(
+    delegationId ?? new Uint8Array(),
+    getDelegationNodeIdForCredential(credential) ?? new Uint8Array()
+  )
+
+  if (!(issuerMatches && cTypeMatches && delegationMatches)) {
     throw new SDKErrors.CredentialUnverifiableError(
-      `Credential not matching on-chain data: issuer "${attester}", CType: "${onChainCType}"`
+      `Credential not matching on-chain data: issuer "${attester}", CType: "${onChainCType}", delegationId: "${delegationId}"`
     )
   }
   // 16. Check issuance timestamp
@@ -435,36 +466,18 @@ export async function verifyProof(
     federatedTrustModel.map(async (i) => {
       switch (i.type) {
         case KILT_ATTESTER_DELEGATION_V1_TYPE: {
-          // make sure on-chain delegation matches delegation on credential
-          if (typeof delegationId === 'string') {
-            const credentialDelegationId = delegationIdFromAttesterDelegation(i)
-            if (u8aEq(credentialDelegationId, delegationId)) {
-              if (i.delegators) {
-                await findDelegators(delegationId, new Set(i.delegators))
-              }
-              return
-            }
+          // check for expected authorities in delegation hierarchy
+          if (i.delegators && typeof delegationId === 'string') {
+            await verifyAuthoritiesInHierarchy(
+              delegationId,
+              new Set(i.delegators)
+            )
           }
-          throw new SDKErrors.CredentialUnverifiableError(
-            `Delegation ${i.id} does not match on-chain records (${delegationId})`
-          )
+          break
         }
         case KILT_ATTESTER_LEGITIMATION_V1_TYPE: {
-          const legitimation = i.verifiableCredential
-          if (legitimation) {
-            await verifyProof(
-              legitimation,
-              legitimation.proof as KiltAttestationProofV1,
-              { api }
-            ).catch((cause) => {
-              throw new SDKErrors.CredentialUnverifiableError(
-                `failed to verify legitimation ${i.id}`,
-                {
-                  cause,
-                }
-              )
-            })
-          }
+          // verify credentials used as legitimations
+          await verifyLegitimation(i, api)
           break
         }
         default: {

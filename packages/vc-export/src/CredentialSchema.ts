@@ -7,6 +7,7 @@
 
 import { CType } from '@kiltprotocol/core'
 import type { ICType } from '@kiltprotocol/types'
+
 import { jsonLdExpandCredentialSubject } from './common.js'
 import type { VerifiableCredential } from './types.js'
 
