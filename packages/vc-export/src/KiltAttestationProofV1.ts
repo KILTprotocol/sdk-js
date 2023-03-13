@@ -31,7 +31,7 @@ import type {
 import type { IEventData } from '@polkadot/types/types'
 
 import { CType, DelegationNode } from '@kiltprotocol/core'
-import { getFullDidUri, validateUri } from '@kiltprotocol/did'
+import { authorizeTx, getFullDidUri, validateUri } from '@kiltprotocol/did'
 import { JsonSchema, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
@@ -43,6 +43,8 @@ import type {
   ICredential,
   ICType,
   IDelegationNode,
+  KiltAddress,
+  SignCallback,
 } from '@kiltprotocol/types'
 
 import { Caip19 } from './CAIP/index.js'
@@ -547,7 +549,8 @@ export function deriveProof(
  * @example
  * const [proof, args] = initializeProof(credential)
  * const tx = api.tx.attestation.add(...args)
- * await tx.signAndSend(signerKeypair)
+ * const didSigned = await Did.authorizeTx(did, tx, signCallback)
+ * await didSigned.signAndSend(signerKeypair)
  *
  * @param credential A KiltCredentialV1 for which a proof shall be created.
  * @returns A tuple where the first entry is the (partial) proof object and the second entry are the arguments required to create an extrinsic that anchors the proof on the KILT blockchain.
@@ -634,32 +637,48 @@ export type AttestationHandler = (
  *
  * Creates a complete [[KiltAttestationProofV1]] for issuing a new credential.
  *
- * @example
- * const [proof, args] = initializeProof(credential)
- * const tx = api.tx.attestation.add(...args)
- * await tx.signAndSend(signerKeypair)
- *
  * @param credential A KiltCredentialV1 for which a proof shall be created.
- * @param submissionHandler Callback function handling extrinsic submission.
+ * @param opts Additional parameters.
+ * @param opts.did The attester's DID URI.
+ * @param opts.didSigner A signing callback to create the attester's signature over the transaction to store an attestation record on-chain.
+ * @param opts.submitterAddress The address of the wallet that's going to cover the transaction fees.
+ * @param opts.txSubmissionHandler Callback function handling extrinsic submission.
  * It receives an unsigned extrinsic and is expected to return the `blockHash` and `timestamp` when the extrinsic was included in a block.
  * This callback must thus take care of signing and submitting the extrinsic to the KILT blockchain as well as noting the inclusion block.
  * If no `timestamp` is returned by the callback, the timestamp is queried from the blockchain based on the block hash.
- * @param opts Additional parameters.
  * @param opts.api A polkadot-js/api instance connected to the blockchain network on which the credential shall be anchored.
  * @returns The credential where `id`, `credentialStatus`, and `issuanceDate` have been updated based on the on-chain attestation record, containing a finalized proof.
  */
 export async function createProof(
   credential: VerifiableCredential,
-  submissionHandler: AttestationHandler,
-  opts: { api?: ApiPromise } = {}
+  {
+    did,
+    didSigner,
+    submitterAddress,
+    txSubmissionHandler,
+    api = ConfigService.get('api'),
+    ...otherParams
+  }: {
+    didSigner: SignCallback
+    did: DidUri
+    submitterAddress: KiltAddress
+    txSubmissionHandler: AttestationHandler
+    api?: ApiPromise
+  } & Parameters<typeof authorizeTx>[4]
 ): Promise<VerifiableCredential> {
   const [proof, callArgs] = initializeProof(credential)
-  const { api = ConfigService.get('api') } = opts
   const call = api.tx.attestation.add(...callArgs)
+  const didSigned = await authorizeTx(
+    did,
+    call,
+    didSigner,
+    submitterAddress,
+    otherParams
+  )
   const {
     blockHash,
     timestamp = (await api.query.timestamp.now.at(blockHash)).toNumber(),
-  } = await submissionHandler(call, api)
+  } = await txSubmissionHandler(didSigned, api)
   return finalizeProof(credential, proof, {
     blockHash,
     timestamp,
