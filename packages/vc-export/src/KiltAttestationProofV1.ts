@@ -184,19 +184,16 @@ function normalizeClaims(
   }
 }
 
+const OX = stringToU8a('0x')
 function makeCommitments(
   statementDigests: Uint8Array[],
   salt: Uint8Array[]
 ): Uint8Array[] {
   return statementDigests.map((digest, index) => {
-    // initialize array with 36 + 2 + 64 bytes
-    const bytes = new Uint8Array(102)
-    // add salt to array
-    bytes.set(salt[index])
-    // add bytes 0x30 & 0x78
-    bytes.set([48, 120], 36)
-    // add hex encoded digest
-    bytes.set(stringToU8a(u8aToHex(digest, undefined, false)), 38)
+    // hex encoded digest, encoded as UTF-8
+    const digestAsHex = stringToU8a(u8aToHex(digest, undefined, false))
+    // concatenate salt, 0x, and hex-encoded digest to yield input for commitment
+    const bytes = u8aConcatStrict([salt[index], OX, digestAsHex])
     // compute commitment
     return blake2AsU8a(bytes, 256)
   })
