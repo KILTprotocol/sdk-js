@@ -31,7 +31,7 @@ import type { KiltRevocationStatusV1, VerifiableCredential } from './types.js'
  * @param opts.api An optional polkadot-js/api instance connected to the blockchain network on which the credential is anchored.
  * If not given this function will try to retrieve a cached connection from the [[ConfigService]].
  */
-export async function checkStatus(
+export async function check(
   credential: VerifiableCredential,
   opts: { api?: ApiPromise } = {}
 ): Promise<void> {

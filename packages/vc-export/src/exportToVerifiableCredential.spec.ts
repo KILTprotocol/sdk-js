@@ -32,7 +32,7 @@ import {
 } from './constants'
 import { verify } from './KiltAttestationProofV1'
 import { validateSchema } from './CredentialSchema'
-import { checkStatus } from './KiltRevocationStatusV1'
+import { check as checkStatus } from './KiltRevocationStatusV1'
 import { credentialIdFromRootHash } from './common'
 
 const mockedApi = ApiMocks.createAugmentedApi()
