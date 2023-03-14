@@ -50,7 +50,7 @@ export async function check(
   }
   if (!assetInstance) {
     throw new CredentialMalformedError(
-      "The attestation record's CAIP-19 identifier must contain a token id decoding to the credential root hash"
+      "The attestation record's CAIP-19 identifier must contain an asset index ('token_id') decoding to the credential root hash"
     )
   }
   const rootHash = base58Decode(assetInstance)
