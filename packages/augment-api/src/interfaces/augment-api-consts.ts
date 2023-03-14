@@ -25,14 +25,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxDelegatedAttestations: u32 & AugmentedConst<ApiType>;
     };
-    authorship: {
-      /**
-       * The number of blocks back we should accept uncles.
-       * This means that we will deal with uncle-parents that are
-       * `UncleGenerations + 1` before `now`.
-       **/
-      uncleGenerations: u64 & AugmentedConst<ApiType>;
-    };
     balances: {
       /**
        * The minimum amount required to keep an account open.
