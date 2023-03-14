@@ -151,8 +151,10 @@ export function fromFemtoKilt(
   const formatted = formatKiltBalance(inputBN, { ...options, locale: 'en' })
   const [number, ...rest] = formatted.split(' ')
   const localeNumber = new Intl.NumberFormat(options.locale, {
+    // flooring the fraction by having the formatter use 1 more than the desired decimals and removing the extra digit
     minimumFractionDigits: decimals + 1,
     maximumFractionDigits: decimals + 1,
   }).format(Number(number))
+  // removing the extra digit here
   return `${localeNumber.slice(0, localeNumber.length - 1)} ${rest.join(' ')}`
 }
