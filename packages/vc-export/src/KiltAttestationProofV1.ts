@@ -503,7 +503,7 @@ export async function verify(
  * @returns A copy of the `credential` (without proof) where `credentialSubject` contains only selected claims and a copy of `proof` containing only `salt` entries for these.
  * @example
  * ```
- * const { proof, credential } = updateProof(
+ * const { proof, credential } = applySelectiveDisclosure(
  *  originalCredential,
  *  originalProof,
  *  ['name', 'address']
@@ -511,7 +511,7 @@ export async function verify(
  * const derivedCredential = { ...credential, proof }
  * ```
  */
-export function updateProof(
+export function applySelectiveDisclosure(
   credentialInput: VerifiableCredential,
   proofInput: KiltAttestationProofV1,
   disclosedClaims: Array<keyof CredentialSubject>

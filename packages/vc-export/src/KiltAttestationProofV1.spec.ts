@@ -29,7 +29,7 @@ import { exportICredentialToVc } from './fromICredential'
 import {
   finalizeProof,
   initializeProof,
-  updateProof,
+  applySelectiveDisclosure,
   verify,
 } from './KiltAttestationProofV1'
 import { check as checkStatus } from './KiltRevocationStatusV1'
@@ -83,7 +83,7 @@ describe('proofs', () => {
   })
 
   it('applies selective disclosure to proof', async () => {
-    const updated = updateProof(VC, VC.proof, ['name'])
+    const updated = applySelectiveDisclosure(VC, VC.proof, ['name'])
     const { contents, owner } = credential.claim
     expect(updated.credential).toHaveProperty('credentialSubject', {
       '@context': expect.any(Object),
@@ -215,13 +215,13 @@ describe('negative tests', () => {
 
   it.skip('rejects selecting non-existent properties for presentation', async () => {
     expect(() =>
-      updateProof(VC, VC.proof, ['name', 'age', 'profession'])
+      applySelectiveDisclosure(VC, VC.proof, ['name', 'age', 'profession'])
     ).toThrow()
 
-    const updated = updateProof(VC, VC.proof, ['name'])
+    const updated = applySelectiveDisclosure(VC, VC.proof, ['name'])
 
     expect(() =>
-      updateProof(updated.credential, updated.proof, ['premium'])
+      applySelectiveDisclosure(updated.credential, updated.proof, ['premium'])
     ).toThrow()
   })
 
