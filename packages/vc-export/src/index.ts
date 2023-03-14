@@ -9,9 +9,11 @@
  * @module @kiltprotocol/vc-export
  */
 
+export * from './fromICredential.js'
+export * as KiltCredentialV1 from './KiltCredentialV1.js'
+export * as KiltAttestationProofV1 from './KiltAttestationProofV1.js'
+export * as KiltRevocationStatusV1 from './KiltRevocationStatusV1.js'
+export * as CredentialSchema from './CredentialSchema.js'
 export * from './types.js'
 export * as constants from './constants.js'
-export * as verification from './verificationUtils.js'
-export * as presentation from './presentationUtils.js'
-export { fromCredentialAndAttestation } from './exportToVerifiableCredential.js'
-export * as vcjsSuites from './vc-js/index.js'
+export * from './errors.js'
